@@ -3384,4 +3384,12 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Added a repository-root regression that makes scope resolution assert the old manifest asset still exists. It fails under the previous read-after-delete ordering and proves the scope callback executes exactly once before bundle replacement.
 - This fixes publication atomicity/order only. The rebuilt providers are not considered published or functional until a fresh Projection Reconcile reaches fixed point and pushes the exact reconciled transaction.
 
+## 2026-11-16 — Projection fixed point now reconciles runtime-visible static authority
+
+- Projection Reconcile `43796854416` reached a real Global byte fixed point after the transaction fix: all 46 detected Global active providers rebuilt, `FIELD_PROVIDER_PROJECTION_DRIFT providers=0`, CONFIG validation passed, and Purstream no longer failed after asset replacement.
+- The subsequent static audit exposed pre-existing authority debt on the baseline rather than a rebuild deletion: `automation/provider-v3-static-knowledge.json` contains 78 identities while the canonical Global+France runtime-visible scope requires 108, leaving exactly 30 France-only/runtime-visible identities absent.
+- Root cause: `reconcile_active_global()` could recover static DATA only while iterating **active** Global+France rows. Retained disabled runtime-visible rows were never recoverable there, and Projection Reconcile did not run static-authority recovery before its union audit.
+- Fix: static authority recovery now walks the exact runtime-visible Global+France row set (active + retained disabled, excluding pending), reconstructs only missing rows from each provider's exact managed CONFIG Lego without HTTP or provider-JS execution, removes identities outside the canonical runtime-visible set, and retains executable materialization as active-only.
+- Projection Reconcile now runs this deterministic static reconciliation before `audit_provider_v3_static.py` and stages `automation/provider-v3-static-knowledge.json` (plus any deterministic activation-authority normalization) in the same atomic publication transaction.
+- No provider gains functional/playback status from this recovery. It restores Brain reconstruction authority from already-published exact bytes; provider execution and publication proofs remain separate.
 

@@ -26,6 +26,7 @@ from urllib.parse import urlparse
 
 from current_provider_scope import (
     active_provider_rows,
+    visible_provider_rows,
     projection_active_provider_ids,
     projection_runtime_visible_provider_ids,
 )
@@ -90,6 +91,44 @@ def active_current_rows() -> list[dict[str, Any]]:
         seen.add(pid)
         rows.append(dict(row))
     return rows
+
+
+def runtime_visible_current_rows() -> list[dict[str, Any]]:
+    """Return exact Global+France runtime-visible rows, including retained disabled.
+
+    Pending onboarding rows are deliberately excluded by the canonical projection
+    runtime scope. France-only rows come from provider_catalog authority and are
+    never injected into the Global manifest.
+    """
+    rows = [dict(row) for row in visible_provider_rows() if isinstance(row, dict)]
+    seen = {canonical_id(row.get("id")) for row in rows if canonical_id(row.get("id"))}
+    for row in france_only_catalog_rows(root=ROOT):
+        if not isinstance(row, dict):
+            continue
+        pid = canonical_id(row.get("id"))
+        if not pid:
+            raise ValueError("France-only runtime-visible provider without canonical id")
+        if pid in seen:
+            raise ValueError(f"{pid}: France-only identity collides with Global visible scope")
+        seen.add(pid)
+        rows.append(dict(row))
+
+    runtime_ids = projection_runtime_visible_provider_ids()
+    filtered = [
+        row for row in rows
+        if canonical_id(row.get("id")) in runtime_ids
+    ]
+    filtered_ids = {
+        canonical_id(row.get("id"))
+        for row in filtered
+        if canonical_id(row.get("id"))
+    }
+    if filtered_ids != runtime_ids:
+        raise ValueError(
+            "runtime-visible current row mismatch "
+            f"missing={sorted(runtime_ids-filtered_ids)} extra={sorted(filtered_ids-runtime_ids)}"
+        )
+    return filtered
 
 
 
@@ -457,9 +496,37 @@ def reconcile_active_global(*, apply: bool) -> dict[str, Any]:
         raise ValueError("structured provider authority maps required")
 
     current_rows = active_current_rows()
+    runtime_rows = runtime_visible_current_rows()
     activation_reconciled = normalize_active_activation_overrides(overrides, current_rows)
 
     recovered: list[dict[str, str]] = []
+
+    # Static knowledge is Brain reconstruction authority, not executable-only
+    # authority. Recover every current runtime-visible identity (active plus
+    # retained disabled, Global plus France-only) from its exact managed CONFIG
+    # Lego before validating the canonical union.
+    for row in runtime_rows:
+        pid = canonical_id(row.get("id"))
+        if isinstance(static_rows.get(pid), dict):
+            continue
+        bundle = (ROOT / str(row.get("filename") or "")).resolve()
+        model = decode_exact_model(pid, bundle)
+        static_rows[pid] = static_row_from_exact_model(
+            pid,
+            model,
+            source="current-runtime-visible-config-recovery",
+        )
+        recovered.append({"provider": pid, "authority": "provider-v3-static-knowledge"})
+
+    runtime_visible = projection_runtime_visible_provider_ids()
+    retired_static = sorted(
+        canonical_id(value)
+        for value in list(static_rows)
+        if canonical_id(value) and canonical_id(value) not in runtime_visible
+    )
+    for pid in retired_static:
+        static_rows.pop(pid, None)
+
     for row in current_rows:
         pid = canonical_id(row.get("id"))
         bundle = (ROOT / str(row.get("filename") or "")).resolve()
@@ -497,7 +564,6 @@ def reconcile_active_global(*, apply: bool) -> dict[str, Any]:
             recovered.append({"provider": pid, "authority": "provider-v3-static-knowledge"})
 
     refresh_static_counts(static)
-    runtime_visible = projection_runtime_visible_provider_ids()
     static_ids = {canonical_id(value) for value in static_rows}
     missing_runtime_static = sorted(runtime_visible - static_ids)
     extra_runtime_static = sorted(static_ids - runtime_visible)
@@ -506,7 +572,7 @@ def reconcile_active_global(*, apply: bool) -> dict[str, Any]:
             "provider-v3-static-knowledge/runtime-visible identity mismatch "
             f"missing={missing_runtime_static} extra={extra_runtime_static}"
         )
-    if apply and (recovered or activation_reconciled):
+    if apply and (recovered or retired_static or activation_reconciled):
         write(OVERRIDES, overrides)
         write(STATIC, static)
     materialization = reconcile_materialization_from_active_bundles(apply=apply)
@@ -525,6 +591,9 @@ def reconcile_active_global(*, apply: bool) -> dict[str, Any]:
         "activeCurrent": len(active_current_rows()),
         "activeProjectionUnion": len(projection_active_provider_ids()),
         "runtimeVisibleProjectionUnion": len(runtime_visible),
+        "runtimeVisibleCurrent": len(runtime_rows),
+        "staticRetiredCount": len(retired_static),
+        "staticRetired": retired_static,
         "apply": bool(apply),
     }
 

@@ -23,6 +23,32 @@ mod.france_only_catalog_rows=lambda root=None:[
 rows=mod.active_current_rows()
 assert [mod.canonical_id(row.get("id")) for row in rows]==["global-a","fr-a"],rows
 
+# Static authority spans the runtime-visible union, not only active execution.
+# Retained disabled Global/France rows remain Brain reconstruction knowledge;
+# pending identities are excluded by projection_runtime_visible_provider_ids.
+mod.visible_provider_rows=lambda:[
+    {"id":"global-a","enabled":True,"filename":"providers/global-a.js"},
+    {"id":"global-disabled","enabled":False,"filename":"provider-disabled/global-disabled.js"},
+]
+mod.france_only_catalog_rows=lambda root=None:[
+    {"id":"fr-a","enabled":True,"filename":"providers/fr-a.js"},
+    {"id":"fr-disabled","enabled":False,"filename":"provider-disabled/fr-disabled.js"},
+    {"id":"fr-pending","enabled":False,"filename":"provider-disabled/fr-pending.js"},
+]
+mod.projection_runtime_visible_provider_ids=lambda:{
+    "global-a","global-disabled","fr-a","fr-disabled"
+}
+runtime_rows=mod.runtime_visible_current_rows()
+assert [mod.canonical_id(row.get("id")) for row in runtime_rows]==[
+    "global-a","global-disabled","fr-a","fr-disabled"
+],runtime_rows
+
+# Restore active-only setup for activation-authority checks below.
+mod.france_only_catalog_rows=lambda root=None:[
+    {"id":"fr-a","enabled":True,"filename":"providers/fr-a.js"},
+    {"id":"fr-disabled","enabled":False,"filename":"provider-disabled/fr-disabled.js"},
+]
+
 # Active provider folders are activation authority. Stale lifecycle flags must
 # be removed without deleting unrelated manifest overrides.
 overrides={

@@ -16,6 +16,9 @@ for required in (
     "publication_contract_fingerprint_test.py",
     "provider_projection_drift_detector_test.py",
     "audit_provider_v3_static.py",
+    "reconcile_provider_static_authority.py --apply",
+    "provider_static_authority_france_only_test.py",
+    "automation/provider-v3-static-knowledge.json",
     "reapply_published_overrides.py --check",
     "published_provider_lego_contract_test.py",
     "provider_js_lego_ownership_test.py",
@@ -36,6 +39,8 @@ for required in (
 prove = wf.split("- name: Prove projection fixed point", 1)[1].split("- name: Build atomic provider publication", 1)[0]
 assert prove.index("reindex_provider_publication_fingerprints.py") < prove.index("detect_provider_projection_drift.py"), prove
 assert prove.count("reindex_provider_publication_fingerprints.py") == 1, prove
+assert prove.index("validate_published_provider_config.py") < prove.index("reconcile_provider_static_authority.py --apply"), prove
+assert prove.index("reconcile_provider_static_authority.py --apply") < prove.index("audit_provider_v3_static.py"), prove
 
 publisher=wf.split("- name: Publish exact reconciled projection", 1)[1].split("- name: Report no-op", 1)[0]
 assert publisher.index("git merge-base --is-ancestor") < publisher.index("domain_refresh_publication_drift_gate.py")
