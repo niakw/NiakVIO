@@ -96,7 +96,7 @@ def main() -> int:
         "client": "NuvioTV",
         "platform": "android-tv",
         "integration": "plugin-provider-repository",
-        "runtime_contract": "getStreams(tmdbId, mediaType, season, episode) plus global SCRAPER_ID, SCRAPER_SETTINGS and TV-only TMDB_API_KEY",
+        "runtime_contract": "getStreams(tmdbId, mediaType, season, episode) plus global SCRAPER_ID, SCRAPER_SETTINGS and runtime TMDB_API_KEY",
         "player_model": "direct-media-first",
     }
     for key, value in expected.items():
