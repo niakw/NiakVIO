@@ -1,3 +1,10 @@
+## 2026-11-16 — Current Global+France providers regain durable version floors
+
+- Workflow Gate `43927767184` exposed a release-authority gap after the catalogue expansion: 20 current runtime-visible providers had no entry in `provider-version-floors.json`. Without a floor, byte-changing reapplication could not prove monotonic provider versions against already exposed client-cache versions.
+- All 20 affected rows are currently published at exactly `1.0.0` in the Global/VF projections: aniflix-uno, animejlprovider, documentary-area, flixhq, french-anime, fsharetv, hexa, ihavenotv, moiflix, moviebite, overlook, pstream, rarefilmm, reanime-to, rivestream-app, rivestream-ru, stigstream, voirserie, watchott and zone-telechargement.
+- Commit `b4db9f8f` records `1.0.0` as the highest already exposed floor for those identities and stores source release `5.21.146` provenance. This does not bump or republish them by itself; the next byte-changing publication must become strictly greater than the floor.
+- The existing dynamic `provider_version_floor_test.py` remains the authority and is already executed by Workflow Gate and Provider Non-Regression. No provider health/playback claim is made by this metadata repair.
+
 ## 2026-11-16 — Runtime-family sanitizer is clean; reconstruction test import path repaired
 
 - Reconstruction run `43927767181` on `782072c9` proved the common runtime-family correction: static authority reached 75/75 active identities, candidate preparation produced 675 routes / 18 recipes, local recognition covered 108 runtime-visible providers, and the sanitizer completed with `providers=108 family_derived=67 active_unknown=0`.
