@@ -1,3 +1,10 @@
+## 2026-11-16 — Release certification now proves live Nuvio head freshness
+
+- NiakVIO release finalization previously checked the stored runtime/compatibility contracts but set `NUVIO_SKIP_CLIENT_UPSTREAM_GUARD=1`, so internally consistent audited refs could become stale after an official Nuvio branch advanced. That was a métier-infrastructure gap: a release could reach ABI validation without first proving that the recorded refs still matched acceptable current upstream heads.
+- `release-finalize.yml` now runs `check_nuvio_client_upstreams.py` in strict mode before rendering or validating the runtime contracts. The checker now returns failure on `verification_inconclusive` unless explicitly invoked with `--no-fail`; network/DNS/TLS inability to establish current upstream freshness can no longer certify a release.
+- Machine authority is explicit in `VALIDATION.json` schema >=72 and `automation/provider-v3-architecture.json` schema >=11: current official-head freshness is mandatory before release, the checker is the gate owner, and inconclusive verification blocks publication. Regression tests lock both the checker policy and finalizer ordering.
+- Current source-audited refs remain Mobile `fc05fe8e516a5bd749c8a4e7b1c05143acd3f031`, Desktop `913c84787f8d866a2eea69f57813843a68020c49`, TV `2c853c1786743822c5ec7932e855529e0c731221`. This is still source/ABI proof only; canonical finalizer + reverse rebuild + integrity seal + five independent Native Labs remain required before the NiakVIO métier base is certified.
+
 ## 2026-11-16 — Current Nuvio heads re-audited before NiakVIO release certification
 
 - NiakVIO métier remains the priority before Brain Repair. The official client heads moved after the earlier ABI audit: NuvioMobile `cmp-rewrite` is now `fc05fe8e516a5bd749c8a4e7b1c05143acd3f031`; NuvioTV `dev` is now `2c853c1786743822c5ec7932e855529e0c731221`; NuvioDesktop remains `913c84787f8d866a2eea69f57813843a68020c49`.
