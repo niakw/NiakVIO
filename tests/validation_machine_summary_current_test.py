@@ -7,7 +7,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
-from current_provider_scope import projection_active_provider_count, projection_visible_provider_count
+from current_provider_scope import projection_active_provider_count, projection_active_provider_ids, projection_visible_provider_count
 validation = json.loads((ROOT / "VALIDATION.json").read_text(encoding="utf-8"))
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 corpus = json.loads((ROOT / ".github/triggers/rotating-popular-corpus.json").read_text(encoding="utf-8"))
@@ -21,6 +21,7 @@ native_ids = {
     if isinstance(row, dict) and str(row.get("id") or "").strip()
 }
 assert len(native_ids) == projection_active_provider_count()
+assert native_ids == projection_active_provider_ids()
 assert set(validation["native_sampling"]["global_lists"]) == {"movie", "tv", "anime"}
 assert set(corpus.get("lists") or {}) == {"movie", "tv", "anime"}
 for lane in ("movie", "tv", "anime"):
