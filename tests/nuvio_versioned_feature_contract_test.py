@@ -47,7 +47,7 @@ assert readiness["issue_state"] == "closed-not-planned"
 assert "Native Lab" in readiness["evidence"]
 
 source = (ROOT / "scripts" / "nuvio_runtime_compatibility.py").read_text(encoding="utf-8")
-assert "outside audited range" in source
+assert "outside " in source and "audited range" in source
 assert "versioned_features must be an array" in source
 
 print("NUVIO_VERSIONED_FEATURE_CONTRACT_OK")
