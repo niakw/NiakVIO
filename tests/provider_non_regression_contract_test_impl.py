@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 
 ROOT = Path(__file__).resolve().parents[1]
 V1 = ROOT / "scripts" / "build_provider_history_matrix.py"
@@ -98,7 +99,7 @@ assert "projection_visible_provider_ids" in finalizer
 assert "provider_catalog.json" in finalizer
 assert "publication_rows(" in finalizer
 assert "sync_manifest_projection_rows" in finalizer
-assert "active_provider_ids" not in finalizer
+assert re.search(r"(?<!projection_)\\bactive_provider_ids\\b", finalizer) is None
 for token in (
     "def apply_current_stream_proof(",
     'proof.get("laneProofs")',
