@@ -40,7 +40,29 @@ with tempfile.TemporaryDirectory() as tmp_name:
     digest = hashlib.sha256(raw).hexdigest()
 
     (root / "manifest.json").write_text(json.dumps({
-        "scrapers": [{"id": "vidlove", "filename": current_rel}]
+        "scrapers": [{
+            "id": "vidlove",
+            "filename": current_rel,
+            "version": "1.0.7",
+            "enabled": True,
+            "supportedTypes": ["anime", "tv"],
+            "canonicalSupportedTypes": ["anime"],
+            "disabledPlatforms": [],
+        }]
+    }), encoding="utf-8")
+    (root / "provider_catalog.json").write_text(json.dumps({
+        "providers": [{
+            "canonicalId": "vidlove",
+            "scraper": {
+                "id": "vidlove",
+                "filename": "providers/vidlove--nuvio--old000000000000.js",
+                "version": "1.0.6",
+                "enabled": True,
+                "supportedTypes": ["movie"],
+                "disabledPlatforms": ["android"],
+            },
+            "projections": {"general": True, "vf": False},
+        }]
     }), encoding="utf-8")
     (root / "provider-v3-materialization.json").write_text(json.dumps({
         "providers": [{
@@ -73,11 +95,20 @@ with tempfile.TemporaryDirectory() as tmp_name:
     manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
     material = json.loads((root / "provider-v3-materialization.json").read_text(encoding="utf-8"))
     provenance = json.loads((root / "PROVENANCE.json").read_text(encoding="utf-8"))
+    catalog = json.loads((root / "provider_catalog.json").read_text(encoding="utf-8"))
     mrow = manifest["scrapers"][0]
+    crow = catalog["providers"][0]
+    cscraper = crow["scraper"]
     prow = material["providers"][0]
     vrow = provenance["providers"]["vidlove"]
 
     assert mrow["filename"] == prow["file"]
+    assert cscraper["filename"] == mrow["filename"]
+    assert cscraper["version"] == mrow["version"] == "1.0.7"
+    assert cscraper["supportedTypes"] == ["anime"], cscraper
+    assert "canonicalSupportedTypes" not in cscraper
+    assert cscraper["disabledPlatforms"] == []
+    assert crow["projections"] == {"general": True, "vf": False}
     assert mrow["filename"].startswith("providers/vidlove--nuvio--")
     assert mrow["filename"].endswith(f"{digest[:16]}.js")
     assert (root / mrow["filename"]).read_bytes() == raw
