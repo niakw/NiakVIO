@@ -5,6 +5,8 @@ from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
 policy=json.loads((ROOT/"automation/provider-v3-architecture.json").read_text(encoding="utf-8"))
+health_config=json.loads((ROOT/"health-config.json").read_text(encoding="utf-8"))
+sources=json.loads((ROOT/"sources.json").read_text(encoding="utf-8"))
 routine=(ROOT/".github/workflows/sync.yml").read_text(encoding="utf-8")
 brain=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
 repair=(ROOT/".github/workflows/provider-recognition-repair-v6.yml").read_text(encoding="utf-8")
@@ -42,6 +44,17 @@ for forbidden in (
 assert "audit_provider_v3_static.py" in routine
 assert "build_published_provider_stage.py" in routine
 assert "build_observational_health_report.py" in routine
+
+activation=health_config.get("activation") or {}
+selection=sources.get("selection_policy") or {}
+for dead in ("publish_every_discovered_provider","include_unconfirmed_providers","disable_all_other_statuses"):
+    assert dead not in activation, f"obsolete automatic promotion flag returned: {dead}"
+assert int(selection.get("minimum_score_enabled",-1))==int(activation.get("minimum_score_enabled",-2))
+assert selection.get("quick_deep_mutation_authority") is False
+assert "provider-folder lifecycle" in str(selection.get("enabled_status") or "")
+assert "proof-driven" in str(selection.get("activation_authority") or "")
+assert "promote_candidates.py" not in routine
+assert "promote_refresh_candidates.py" not in routine
 
 # Brain owns evidence/memory/hypothesis intelligence. Canonical Repair remains
 # the only execution authority and invokes the Brain only inside its strict
