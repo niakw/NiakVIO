@@ -10,15 +10,14 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-from current_provider_scope import active_provider_count
+from current_provider_scope import projection_runtime_visible_provider_count, projection_runtime_visible_provider_rows
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_STAGE = ROOT / "staging" / "provider-v3-static-knowledge"
 DEFAULT_OUTPUT = ROOT / "automation" / "provider-v3-static-knowledge.json"
-MANIFEST = ROOT / "manifest.json"
 OVERRIDES = ROOT / "provider-overrides.json"
-EXPECTED = active_provider_count()
+EXPECTED = projection_runtime_visible_provider_count()
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -196,16 +195,17 @@ def main() -> int:
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
 
-    manifest = load(MANIFEST)
     overrides = load(OVERRIDES)
     registry = load(args.stage.resolve() / "candidates.json")
     current = {
         canonical(row.get("id")): row
-        for row in manifest.get("scrapers") or []
+        for row in projection_runtime_visible_provider_rows()
         if isinstance(row, dict) and canonical(row.get("id"))
     }
     if len(current) != EXPECTED:
-        raise ValueError(f"manifest provider count={len(current)} expected={EXPECTED}")
+        raise ValueError(
+            f"Global+France runtime-visible provider count={len(current)} expected={EXPECTED}"
+        )
 
     grouped: dict[str, list[dict[str, Any]]] = {provider_id: [] for provider_id in current}
     for candidate in registry.get("candidates") or []:
