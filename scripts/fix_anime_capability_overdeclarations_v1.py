@@ -38,7 +38,7 @@ def main() -> int:
             raise SystemExit(f"missing provider patch: {provider_id}")
         row["published_types"]=["anime"]
         notes=uniq(row.get("notes") or [])
-        note="Semantic movie support removed: current repair evidence did not prove identity-safe movie output; TV/series remain transport aliases for anime only."
+        note="Semantic movie support removed: current repair evidence did not prove identity-safe movie output; TV remains the only published transport alias for anime-only providers."
         if note not in notes: notes.append(note)
         row["notes"]=notes
         disp=row.get("repair_disposition")
@@ -68,7 +68,7 @@ def main() -> int:
         provider_id=cid(row.get("id"))
         if provider_id not in TARGETS: continue
         row["canonicalSupportedTypes"]=["anime"]
-        row["supportedTypes"]=["anime","tv","series"]
+        row["supportedTypes"]=["anime","tv"]
         seen.add(provider_id)
     missing=TARGETS-seen
     if missing: raise SystemExit("manifest rows missing: "+",".join(sorted(missing)))
