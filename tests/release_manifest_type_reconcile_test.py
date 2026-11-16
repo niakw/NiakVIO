@@ -37,4 +37,32 @@ assert "canonicalSupportedTypes" not in rows["purstream"]
 assert rows["anime-demo"]["supportedTypes"] == ["anime", "tv"]
 assert rows["anime-demo"]["canonicalSupportedTypes"] == ["anime"]
 assert rows["stable"]["supportedTypes"] == ["movie", "tv"]
+
+catalog = {
+    "providers": [
+        {
+            "canonicalId": "purstream",
+            "scraper": {"id": "purstream", "supportedTypes": ["movie"], "enabled": True},
+            "projections": {"general": True, "vf": True},
+        },
+        {
+            "canonicalId": "fr-only",
+            "scraper": {"id": "fr-only", "supportedTypes": ["movie"], "enabled": True},
+            "projections": {"general": False, "vf": True},
+        },
+    ]
+}
+catalog_config = {
+    **config,
+    "provider_patches": {
+        **config["provider_patches"],
+        "fr-only": {"published_types": ["anime"]},
+    },
+}
+catalog_changed = mod.reconcile_catalog(catalog, catalog_config)
+assert catalog_changed == ["fr-only", "purstream"], catalog_changed
+catalog_rows = {row["canonicalId"]: row["scraper"] for row in catalog["providers"]}
+assert catalog_rows["purstream"]["supportedTypes"] == ["movie", "tv"]
+assert catalog_rows["fr-only"]["supportedTypes"] == ["anime", "tv"]
+assert catalog_rows["fr-only"]["canonicalSupportedTypes"] == ["anime"]
 print("RELEASE_MANIFEST_TYPE_RECONCILE_OK")
