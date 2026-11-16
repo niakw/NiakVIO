@@ -60,8 +60,8 @@ jobs:
           node tests/availability_fallback_policy.test.cjs
           python tests/availability_tmdb_auth_workflow_test.py
 
-      - name: Stage current published providers
-        run: python scripts/stage_published.py
+      - name: Stage current published Global + France providers
+        run: python scripts/stage_published.py --projection-union
 
       - name: Lock staged provider code against modification
         run: |
