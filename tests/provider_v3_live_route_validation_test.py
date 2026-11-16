@@ -50,7 +50,7 @@ assert not recipe_is_live(
 
 providers = {}
 patches = {}
-for index in range(96):
+for index in range(4):
     provider_id = f"fixture-{index:02d}"
     providers[provider_id] = {
         "model": {
@@ -118,6 +118,19 @@ providers["fixture-02"]["model"].update({
 })
 patches["fixture-02"] = {"learned_routes": ["/static-only/{id}"]}
 
+providers["fixture-03"]["model"].update({
+    "routes": ["/retained/{id}"],
+    "routeData": [{
+        "route": "/retained/{id}",
+        "role": "detail",
+        "method": "GET",
+        "executedEvidence": True,
+        "httpUsed": True,
+        "confidence": 0.99,
+    }],
+})
+patches["fixture-03"] = {"learned_routes": ["/retained/{id}"]}
+
 knowledge = {"providers": providers}
 overrides = {"provider_patches": patches}
 tasks = [
@@ -159,7 +172,15 @@ tasks = [
     },
 ]
 
-knowledge, overrides, report = validate_and_promote(knowledge, overrides, tasks)
+active_ids = {"fixture-00", "fixture-01", "fixture-02"}
+retained_before = copy.deepcopy(knowledge["providers"]["fixture-03"])
+retained_patch_before = copy.deepcopy(overrides["provider_patches"]["fixture-03"])
+knowledge, overrides, report = validate_and_promote(
+    knowledge,
+    overrides,
+    tasks,
+    active_provider_ids=active_ids,
+)
 
 live = knowledge["providers"]["fixture-00"]["model"]
 assert live["routes"] == ["/api/search?q={query}"], live
@@ -191,6 +212,11 @@ assert candidate["validationState"] == "candidate-not-executed", candidate
 assert candidate["executedEvidence"] is False, candidate
 assert candidate["httpUsed"] is False, candidate
 
+# Disabled-retained/runtime-visible knowledge is not part of active live probing.
+# Absence of an active task must never erase its durable route evidence.
+assert knowledge["providers"]["fixture-03"] == retained_before
+assert overrides["provider_patches"]["fixture-03"] == retained_patch_before
+
 assert report["candidateRouteCount"] == 4, report
 assert report["attemptedRouteCount"] == 2, report
 assert report["liveValidatedRouteCount"] == 1, report
@@ -200,5 +226,6 @@ assert report["providersWithLiveValidatedRouteCount"] == 1, report
 
 print(
     "Provider v3 live route validation tests passed: static evidence stays candidate, "
-    "403 stays blocked, and only successful runtime HTTP traversal is promoted."
+    "403 stays blocked, only successful active runtime HTTP traversal is promoted, "
+    "and disabled-retained knowledge is preserved."
 )
