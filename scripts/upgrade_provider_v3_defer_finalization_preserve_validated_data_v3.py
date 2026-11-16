@@ -10,6 +10,7 @@ bundle probe for a separate runtime/materialization reason. In that case:
 """
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -184,10 +185,27 @@ def validate_validator(text: str) -> None:
         'row.get("validationState") != "failed-live"',
         'row.get("validationState") == "live-validated"',
         '"executionPlanRetainsFailedLive": False',
-        '"blockedNon2xxPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"}',
     ):
         if needle not in text:
             raise AssertionError(f"validator preserve-DATA contract missing: {needle}")
+
+    # V3 owns the minimum blocked/non-2xx preservation semantics, not the full
+    # future completion-state vocabulary. Later validators may safely extend
+    # this set (for example with resample-required) without invalidating V3.
+    required_states = {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"}
+    for key in ("executionPlanRetainsAttemptedNon2xx", "blockedNon2xxPlanPreserved"):
+        match = re.search(
+            rf'"{re.escape(key)}"\s*:\s*completion_state\s+in\s+\{{(?P<body>[^}}]*)\}}',
+            text,
+        )
+        if not match:
+            raise AssertionError(f"validator preserve-DATA contract missing state predicate: {key}")
+        actual = set(re.findall(r'["\']([^"\']+)["\']', match.group("body")))
+        if not required_states <= actual:
+            raise AssertionError(
+                f"validator preserve-DATA contract lost required states for {key}: "
+                f"required={sorted(required_states)} actual={sorted(actual)}"
+            )
 
 
 def validate_batch(text: str) -> None:
