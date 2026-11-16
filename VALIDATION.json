@@ -1,5 +1,5 @@
 {
-  "schema_version": 70,
+  "schema_version": 71,
   "release": "dynamic",
   "release_authority": "manifest.json:version",
   "candidate_track": "main",
@@ -204,6 +204,22 @@
     "rich_fields_are_additive_only": true,
     "historical_platform_matrix_is_current_authority": false,
     "france_only_projection_is_first_class": true,
-    "native_platform_proof_is_independent": true
+    "native_platform_proof_is_independent": true,
+    "published_supported_types": [
+      "movie",
+      "tv",
+      "anime"
+    ],
+    "provider_runtime_request_types": [
+      "movie",
+      "tv"
+    ],
+    "tv_input_aliases": [
+      "series",
+      "show",
+      "other"
+    ],
+    "anime_provider_runtime_type": "tv",
+    "series_published_supported_type": false
   }
 }
