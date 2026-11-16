@@ -102,13 +102,10 @@ result = run(manifest, missing_active)
 assert result.returncode != 0
 assert "active provider has no sequential live report" in (result.stdout + result.stderr)
 
-current_manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
-active_count = sum(
-    1
-    for row in current_manifest.get("scrapers") or []
-    if isinstance(row, dict) and row.get("enabled") is not False
-)
-assert active_count > 0, "current manifest must contain at least one active provider"
+sys.path.insert(0, str(ROOT / "scripts"))
+from current_provider_scope import projection_active_provider_count
+active_count = projection_active_provider_count()
+assert active_count > 0, "current Global+France projections must contain at least one active provider"
 
 print(
     f"Active provider live coverage tests passed: current active={active_count}, publication requires "
