@@ -39,6 +39,14 @@ assert '"historicalGreenMayBecomeUnknownSilently": False' in v3
 assert "historical_lanes = verified_lanes(row.get(\"historical52136\") or {})" in v3
 assert "baseline = lanes_from_rows(by36.get(pid) or qrows)" not in v1
 assert "baseline = lanes_from_rows(by36.get(pid) or [])" in v1
+assert "projection_visible_provider_ids" in v1
+assert "projection_visible_provider_rows" in v1
+assert "visible_provider_ids" not in v1.replace("projection_visible_provider_ids", "")
+assert 'current_map = {canon(row.get("id")): row for row in projection_visible_provider_rows()' in v1
+assert 'current Global+France projection identity mismatch' in v1
+assert "from current_provider_scope import projection_visible_provider_rows" in v3
+assert '"current": {canon(row.get("id")): row for row in projection_visible_provider_rows()' in v3
+assert '"current": manifest_map(load(ROOT / "manifest.json"))' not in v3
 
 for token in (
     "def canonical_semantic_types(",
