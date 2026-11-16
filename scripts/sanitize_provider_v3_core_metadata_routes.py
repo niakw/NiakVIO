@@ -144,6 +144,12 @@ def derive_runtime_family(
     strategy = str(model.get("strategy") or "unknown").strip().casefold()
     if strategy == "quarantined":
         return "unknown"
+    # Dedicated open-archive providers execute through a provider-owned runtime
+    # resolver rather than generic catalogue/detail routes. Classify the
+    # mechanism from its declared strategy so zero generic routes do not leave
+    # otherwise valid active Provider DATA at an unknown topology.
+    if strategy == "open_archive_public_domain":
+        return "open-archive-public-domain"
 
     routes = [str(value or "").strip() for value in model.get("routes") or [] if str(value or "").strip()]
     joined = "\n".join(routes)
