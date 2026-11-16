@@ -67,6 +67,12 @@ assert "planStreams.push(...detailStreams)" in search_plan
 assert "planStreams.push(...crawled)" in search_plan
 assert "return _dedupeStreamRows(planStreams).slice(0, 40);" in search_plan
 
+resolve_html = base.split("async function _resolveHtml", 1)[1].split("function _externalEpisodeMarker", 1)[0]
+assert "NIAKVIO_PROVIDER_HTML_SEARCH_CANDIDATE_COVERAGE_V33" in resolve_html
+assert "if (candidates.length) break;" not in resolve_html
+assert "_searchUrls(meta, mediaType, season, episode).slice(0, 2)" in resolve_html
+assert "_strictHtmlIdentityOk(html, meta, mediaType)" in resolve_html
+
 assert "NIAKVIO_PROVIDER_EXTERNAL_IDENTITY_COVERAGE_V28" in base
 external_plan = base.split("async function _resolveExternalIdentityPlan", 1)[1].split("async function getStreams", 1)[0]
 assert "return _streams(selected" not in external_plan
