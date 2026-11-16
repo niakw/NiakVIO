@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Provider v3 strategy-to-executable-plan contract for the 46-row catalogue with matrix-driven activation.
+"""Provider v3 strategy-to-executable-plan contract for the current Global+France catalogue.
 
 Catalogue membership and activation are separate concerns:
-- only the 46 hub Provider Objects remain in the executable catalogue;
-- the hub matrix defines the current active execution set, while manifest.json remains the visible catalogue during disabled retention;
+- the Global + France projection union defines the current visible/executable catalogue;
+- the historical Hub-46 matrix is evidence only and never defines current activation;
 - non-hub providers survive only as historical ProviderBase bytes and Repair must not resurrect them;
 - a provider with executable LIVE DATA/recipe/Lego is directly executable;
 - a provider without a currently executable plan is accepted only when Repair V6
   attached an audited ``routeDataState=repair`` or ``routeDataState=off``
-  disposition whose activation state matches the exact 46-target policy;
+  disposition whose activation state matches current projection authority;
 - quarantined providers carry an audited OFF disposition so runtime execution
   remains fail-closed rather than pretending that quarantine is a live route.
 
@@ -27,7 +27,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "scripts" / "provider_patches"))
 
-from current_provider_scope import active_provider_ids, disabled_provider_ids, pending_provider_ids, visible_provider_ids
+from current_provider_scope import (projection_active_provider_ids, projection_disabled_provider_ids, projection_visible_provider_ids, projection_visible_provider_rows, pending_provider_ids)
 HUB46 = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
 LIFECYCLE = ROOT / "automation" / "provider-disabled-lifecycle.json"
 ALLOWED = {
@@ -175,15 +175,14 @@ def main() -> int:
     run_child_test("provider_contract_recognizer_test.py")
     run_child_test("provider_v3_local_recognition_contract_test.py")
 
-    manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
     overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
     knowledge = json.loads(
         (ROOT / "automation/provider-v3-static-knowledge.json").read_text(encoding="utf-8")
     )
     targets = hub46_targets()
-    visible_ids = visible_provider_ids()
-    active_ids = active_provider_ids()
-    disabled_ids = disabled_provider_ids()
+    visible_ids = projection_visible_provider_ids()
+    active_ids = projection_active_provider_ids()
+    disabled_ids = projection_disabled_provider_ids()
     pending_ids = pending_provider_ids() & visible_ids
     assert pending_ids <= disabled_ids, (sorted(pending_ids), sorted(disabled_ids))
     lifecycle = json.loads(LIFECYCLE.read_text(encoding="utf-8"))
@@ -194,9 +193,9 @@ def main() -> int:
         and str(record.get("state") or "").strip().casefold() == "archived-provider-old"
     }
     # Hub46 is historical campaign evidence, not catalogue cardinality authority.
-    # New providers and lifecycle-visible disabled providers need not belong to it.
-    # The only invariant is that a historical matrix member still resolves to a
-    # visible provider record; activation remains provider-folder authority.
+    # New Global/France-only providers and lifecycle-visible disabled providers
+    # need not belong to it. Historical membership cannot narrow the current
+    # projection union; activation remains current publication/folder authority.
     matrix_only = sorted(targets - visible_ids)
     assert set(matrix_only).issubset(archived_ids), (
         f"hub46 matrix references non-visible non-archived providers: {matrix_only} "
@@ -209,7 +208,7 @@ def main() -> int:
     )
     assert not (active_ids & disabled_ids), sorted(active_ids & disabled_ids)
 
-    rows = manifest.get("scrapers") or []
+    rows = projection_visible_provider_rows()
     assert len({cid(row.get("id")) for row in rows}) == len(rows), "provider ids must be unique"
     ids = [cid(row.get("id")) for row in rows]
     assert len(set(ids)) == len(ids), "provider ids must be unique after canonical case-fold"
