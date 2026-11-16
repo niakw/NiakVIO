@@ -1,3 +1,10 @@
+## 2026-11-16 — Platform runtime schema v3 is executable release authority, not a stale v2 renderer assumption
+
+- Release finalizer run `43908174054` reached the current Nuvio upstream freshness check. Mobile and TV matched their accepted heads; Desktop advanced from accepted `913c84787f8d...` to `226bbbec1bec...` and was classified `safe_advance_available` with no hard/semantic runtime contract drift. That notice did **not** cause the job failure.
+- The actual failure was immediately afterward: `render_platform_runtime_contracts.py` still hard-required `schema_version == 2` while `automation/platform-runtime-contracts.json` is intentionally schema 3 after the direct-anime runtime ABI correction. This was a NiakVIO métier contract-consumer regression, not a provider or Nuvio runtime failure.
+- Commit `520a9386` updates the renderer to require the current schema 3. Commit `37075f34` binds the Provider-v3 documentation regression to both the JSON schema and renderer expectation so a future machine-contract bump cannot silently leave release rendering behind.
+- Desktop's safe upstream advance remains separate accepted-head bookkeeping; the audited `contract_ref` stays pinned until a real contract re-audit is required. The canonical finalizer and exact-final-SHA native certification still must complete before NiakVIO is considered métier-certified.
+
 ## 2026-11-16 — NiakVIO métier native targeting and Repair sweep align with the Global+France authority
 
 - The NiakVIO-first audit found two remaining executable Global-only fallbacks even though the documented Provider-v3 authority had already moved to the Global+France union.
