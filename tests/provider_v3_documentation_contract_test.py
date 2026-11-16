@@ -146,6 +146,10 @@ assert scopes["pending_is_executable"] is False
 assert scopes["pending_is_lifecycle_retention"] is False
 assert scopes["france_only_must_not_leak_global"] is True
 assert machine["provider_source_of_truth"]["runtime_ledger_scope_authority"] == "scripts/current_provider_scope.py:projection_runtime_visible_provider_ids"
+domain_refresh = machine["domain_refresh"]
+assert domain_refresh["provider_scope_authority"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
+assert domain_refresh["global_publication_authority"] == "manifest.json"
+assert domain_refresh["france_only_publication_authority"] == "provider_catalog.json projections general=false,vf=true"
 assert machine["route_recognition"]["provider_scope_authority"] == "scripts/current_provider_scope.py:runtime_visible_provider_ids"
 
 assert machine["routine"]["quick"]["repair_allowed"] is False
