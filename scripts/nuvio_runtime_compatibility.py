@@ -78,6 +78,11 @@ def validate_matrix() -> list[str]:
                     f"{client_id}: unsupported version ordering "
                     f"min={minimum} baseline={baseline_code} current={current_code} max={maximum}"
                 )
+            if minimum != baseline_code or maximum != current_code:
+                errors.append(
+                    f"{client_id}: supported version bounds must equal the exact audited range "
+                    f"min={minimum} baseline={baseline_code} current={current_code} max={maximum}"
+                )
 
         capabilities = {
             str(value)
