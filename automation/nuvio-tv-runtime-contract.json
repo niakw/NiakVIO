@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "client": "NuvioTV",
   "platform": "android-tv",
   "integration": "plugin-provider-repository",
@@ -17,9 +17,6 @@
   "player_source_prefix": "app/src/main/java/com/nuvio/tv/ui/screens/player/",
   "cross_client_contract": "automation/platform-runtime-contracts.json",
   "probe": "scripts/nuvio_tv_probe_v2.cjs",
-  "promoter": "scripts/promote_global_nuvio_tv_candidates.py",
-  "direct_media_patch": "scripts/provider_patches/nuvio_tv_direct_media_v2.py",
-  "promotion_report": "automation/nuvio-tv-global-promotion.json",
   "media_gate": [
     "hls-extm3u",
     "dash-mpd",
@@ -79,8 +76,18 @@
     "NuvioTV parses supportedPlatforms/disabledPlatforms in the manifest model but PluginManager does not apply those fields when building enabled scrapers.",
     "A zero-stream result is not by itself proof of incompatibility.",
     "Providers blocked on every Mobile/Desktop runtime but still enabled in the shared manifest must sanitize all NuvioTV-returned URLs against real media payloads.",
-    "Promoted direct-media wrappers require strict HLS, DASH or real container evidence.",
+    "Current terminal media safety is owned by the shared Core sanitizer; historical TV-specific direct-media promotion is non-authoritative.",
     "Cross-work infinite loading that clears immediately after restarting NuvioTV is client lifecycle/executor exhaustion evidence, not provider disablement proof.",
-    "NuvioTV does not expose TextEncoder/TextDecoder or WebAssembly from PluginRuntime."
-  ]
+    "NuvioTV does not expose TextEncoder/TextDecoder or WebAssembly from PluginRuntime.",
+    "The canonical Node TV probe may use non-authoritative fallback invocation only for diagnostics; release/playback authority requires the exact four-positional-argument NuvioTV call path."
+  ],
+  "media_safety_authority": "scripts/provider_patches/stream_output_sanitizer_v10.py",
+  "historical_direct_media_promotion": {
+    "authority": false,
+    "promoter": "scripts/promote_global_nuvio_tv_candidates.py",
+    "promotion_report": "automation/nuvio-tv-global-promotion.json",
+    "retired_patch": "scripts/provider_patches/nuvio_tv_direct_media_v2.py",
+    "retired_patch_removed_in": "c346341c7eed58dfb00ac7397ff7f23a3c59e4fd",
+    "note": "Historical promotion evidence only. The V2 patch was removed from the production tree on 2026-09-02; current publication safety is owned by the shared Core terminal sanitizer."
+  }
 }
