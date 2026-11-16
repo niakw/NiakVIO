@@ -1,3 +1,9 @@
+## 2026-11-16 — Restart family Learning after 12/12 ProviderBase proof with pre-LLM oracle reduction
+
+- Learning 43782282464 on `a0eac702...` successfully passed exact 12-provider published staging, observation scope validation, and clean ProviderBase reconstruction from local structured authority. It then spent the slot generating advisor guidance for the full 12-provider cohort because its pinned Brain SHA predated advisor-family-wave support.
+- Main now contains the NiakVIO caller flag and Brain main `7b4cb144591f9714f7b29bf4e727d141108b0151` has green Brain CI 43783148306. Refresh the official trigger for the same cohort; push-trigger concurrency may cancel the older redundant run. The new run should reduce expensive advisor calls to family representatives while keeping every sibling pending for independent canonical Repair validation.
+- The validated 12/12 ProviderBase stage is pipeline evidence, not a provider repair or playback success. No publication threshold is weakened.
+
 ## 2026-11-16 — Fast-Handoff advisor now opts into Brain family-wave planning
 
 - Brain main `7b4cb144591f9714f7b29bf4e727d141108b0151` passed Brain LLM CI 43783148306 and supports the exact NiakVIO caller shape `--mode brain --advisor-only --advisor-family-wave`.
