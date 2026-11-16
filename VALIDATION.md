@@ -43,7 +43,7 @@ Le corpus global ordinaire est défini par `.github/triggers/rotating-popular-co
 
 ### Couverture dérivée, jamais figée
 
-Le scope exécutable courant est dérivé dynamiquement par `scripts/current_provider_scope.py:active_provider_ids`. Le catalogue visible peut contenir en plus des lignes disabled-lifecycle et bulk-pending ; elles ne font pas partie du dénominateur des cinq Labs. `runtime_visible_provider_ids` conserve les actifs + disabled-lifecycle pour les ledgers de runtime/historique, tout en excluant le staging pending. Les **50 providers historiques** restent archivés comme connaissance/provenance hors du manifest courant. Les artefacts nommés Hub-46 restent des références historiques/compatibilité et ne sont plus un dénominateur courant. Le nombre de routes est calculé depuis le scope actif et ses `supportedTypes` ; il ne doit pas être recopié comme constante historique.
+Le scope d’acceptation natif courant est dérivé dynamiquement par `scripts/current_provider_scope.py:projection_active_provider_ids`, c’est-à-dire l’union active **Global + France-only**. `active_provider_ids` reste l’autorité du seul manifest Global et ne doit plus servir de dénominateur aux cinq Labs. Le catalogue visible peut contenir des lignes disabled-lifecycle et bulk-pending ; elles restent auditables mais ne sont pas exécutées par les Labs. `projection_runtime_visible_provider_ids` porte le scope runtime/ledger Global+France hors staging pending. Les **50 providers historiques** restent archivés comme connaissance/provenance. Les noms Hub-46 sont uniquement des chemins historiques/compatibilité ; aucune cardinalité 46/44/96 n’est une politique courante. Le nombre de routes est calculé depuis les projections actives et leurs `supportedTypes`.
 
 La distinction est obligatoire :
 
@@ -66,6 +66,19 @@ Un workflow vert ne signifie donc jamais « tous les providers actifs ont renvoy
 
 Un mauvais média, mauvais épisode, mauvaise identité ou contradiction de type reste un échec de preuve même si une URL est techniquement lisible.
 
+### Multiplicité des flux
+
+La validation doit observer la multiplicité réelle du runtime, pas seulement les premiers éléments :
+
+- une page peut fournir plusieurs lecteurs/serveurs/sources ;
+- chaque lecteur peut fournir plusieurs URLs/qualités ;
+- le contrat courant conserve jusqu’à **40 identités de playback** après énumération bornée ;
+- l’identité de déduplication est l’URL **avec les headers de requête nécessaires**, pas l’URL seule ;
+- les Labs complets utilisent `probe_all_streams=true` avec un safety cap de 40 ;
+- une qualité annoncée n’est pas une preuve : la qualité explicite reste un hint jusqu’à validation, et les faits HLS mesurés priment.
+
+`tests/provider_stream_multiplicity_contract_test.py` verrouille la structure et `tests/stream_output_sanitizer_multi_variant_test.py` exécute un cas synthétique de 24 variantes ainsi qu’un même URL avec deux `Referer` distincts.
+
 ### Les Labs n’adaptent pas les repos Nuvio
 
 Les Labs doivent utiliser le comportement officiel observé. Ils peuvent ajouter du plumbing de test strictement nécessaire pour atteindre/exposer le chemin officiel, mais ils ne doivent pas patcher NuvioTV, NuvioMobile ou NuvioDesktop pour contourner :
@@ -86,6 +99,12 @@ Chaque provider est borné individuellement ; un timeout devient une observation
 Une exécution native commence par une seule œuvre de chaque réserve globale : **1 movie + 1 TV + 1 anime**. Le reste des 32 œuvres/lane est une réserve, pas un batch. Seul un provider/lane qui a terminé normalement avec `0 streams` avance vers une autre œuvre de la même lane. Dès qu’un flux positif est prouvé, ce provider/lane sort de la rotation. Une erreur technique, un timeout, un échec de chargement/player/transport ou une contradiction d’identité ne déclenche jamais une rotation destinée à cacher l’erreur.
 
 Le gate final doit agréger ces essais successifs par provider/lane : `FULL`, `PARTIAL`, `RESAMPLE` et `ZERO` décrivent des preuves distinctes ; un clean miss de catalogue n’est pas une régression.
+
+### Épisodes spéciaux / saison 0
+
+`season=0` est une coordonnée TV valide et doit rester `0` de l’entrée Nuvio jusqu’à la sélection épisode, aux sous-titres et à l’identité média. Aucun `0 || 1`, fallback implicite S1 ou premier épisode d’une autre saison n’est accepté.
+
+La fixture `spartacus-s00e01` (`TMDB 46296`, S00E01) est une **régression obligatoire additive** au corpus adaptatif des cinq Labs. Un succès sur une autre fixture TV ne permet pas de la sauter. `tests/special_season_zero_identity_test.py` vérifie également que S00 rejette les preuves explicites S01/S02/S03 contradictoires.
 
 ## Cycle Provider v3
 
