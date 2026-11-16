@@ -336,9 +336,20 @@ jobs:
           fi
 
           FINAL_SHA="$(git rev-parse HEAD)"
+          git fetch --no-tags origin main
+          REMOTE_SHA="$(git rev-parse origin/main)"
+          if [ "$REMOTE_SHA" != "$FINAL_SHA" ]; then
+            echo "FIELD_PROVIDER_PROJECTION_VALIDATION_SKIPPED reason=main_advanced expected=$FINAL_SHA current=$REMOTE_SHA" >&2
+            exit 1
+          fi
           echo "FIELD_PROVIDER_PROJECTION_VALIDATION_DISPATCH sha=$FINAL_SHA"
-          gh workflow run temp-current-bytes-full-provider-census.yml --repo "$GITHUB_REPOSITORY" --ref main
-          gh workflow run github-actions-gate.yml --repo "$GITHUB_REPOSITORY" --ref main
-          gh workflow run sync.yml --repo "$GITHUB_REPOSITORY" --ref main -f mode=quick
-          gh workflow run codeql.yml --repo "$GITHUB_REPOSITORY" --ref main
-          gh workflow run security-final-gate.yml --repo "$GITHUB_REPOSITORY" --ref main
+          gh workflow run temp-current-bytes-full-provider-census.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f expected_sha="$FINAL_SHA" -f materialization_base_sha="$FINAL_SHA"
+          gh workflow run github-actions-gate.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f expected_sha="$FINAL_SHA"
+          gh workflow run sync.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f mode=quick -f expected_sha="$FINAL_SHA"
+          gh workflow run codeql.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f expected_sha="$FINAL_SHA"
+          gh workflow run security-final-gate.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f expected_sha="$FINAL_SHA"
