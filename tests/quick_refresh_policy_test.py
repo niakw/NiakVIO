@@ -16,7 +16,7 @@ catalog = json.loads((ROOT / "provider_catalog.json").read_text(encoding="utf-8"
 assert catalog.get("sourceOfTruth") is True
 assert catalog.get("policy", {}).get("repairBeforeTriage") is True
 assert catalog.get("policy", {}).get("retainLastKnownGoodOnInconclusive") is True
-assert catalog.get("policy", {}).get("quickRefreshMayRepairAndPublish") is True
+assert catalog.get("policy", {}).get("quickRefreshMayRepairAndPublish") is False
 
 manifest = {
     "scrapers": [
