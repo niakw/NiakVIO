@@ -4,13 +4,13 @@
   "notice": "Third-party files retain upstream authorship and licence. See THIRD_PARTY_NOTICES.md.",
   "provider_base_store": {
     "schema_version": 4,
-    "provider_count": 46,
-    "unique_base_count": 46,
+    "provider_count": 75,
+    "unique_base_count": 75,
     "initial_reconstruction_scope": 10,
     "migration_scope": "all-current-providers",
     "owner": "provider_pipeline",
     "future_source": "provider_pipeline_only",
-    "clean_reconstructed": 46,
+    "clean_reconstructed": 75,
     "reconstruction_required": 0,
     "authoring_version": 3,
     "authoring_policy": "niakvio-owned-clean-reconstruction-only",
@@ -66,7 +66,8 @@
     "episode_identity_guard": "v22.1",
     "manual_tv_live_regressions": "v34",
     "mugiwara_episode_fail_closed": "v2",
-    "stream_sanitizer": "v8"
+    "stream_sanitizer": "v8",
+    "scope_authority": "scripts/current_provider_scope.py:projection_active_provider_ids"
   },
   "providers": {
     "1shows": {
@@ -19614,7 +19615,7 @@
           "evidence": {
             "healthy_fixtures": 0,
             "fixtures_tested": 6,
-            "healthy_fixture_ratio": 0.0,
+            "healthy_fixture_ratio": 0,
             "required_categories": [
               "movie",
               "tv"
@@ -25584,7 +25585,7 @@
           "evidence": {
             "healthy_fixtures": 0,
             "fixtures_tested": 6,
-            "healthy_fixture_ratio": 0.0,
+            "healthy_fixture_ratio": 0,
             "required_categories": [
               "movie",
               "tv"
@@ -29053,7 +29054,7 @@
           "evidence": {
             "healthy_fixtures": 3,
             "fixtures_tested": 3,
-            "healthy_fixture_ratio": 1.0,
+            "healthy_fixture_ratio": 1,
             "required_categories": [
               "anime",
               "movie",
