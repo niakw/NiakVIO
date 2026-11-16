@@ -18,7 +18,7 @@ step from being reintroduced into a current successful request chain while still
 preserving historical proof memory for transiently unproven lanes.
 
 The registry is proof memory, not publication authority: normal reconstruction,
-identity/content guards, targeted yield gates and the full 96-provider gate still
+identity/content guards, targeted yield gates and the full current Global+France projection gate still
 run on every candidate.
 """
 from __future__ import annotations
