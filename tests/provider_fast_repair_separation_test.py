@@ -142,4 +142,19 @@ assert 'args+=(-f architecture_force=true)' in workflow
 assert 'architecture_force=$force_mode' in workflow
 assert 'publish_proposal=$publish_proposal' in workflow
 
+validated_publish_block = workflow.split(
+    'if [ "$publish" = "true" ] && [ "$publication_allowed" = "true" ]; then',
+    1,
+)[1].split("else", 1)[0]
+for publication_file in (
+    "manifest.json",
+    "vf/manifest.json",
+    "no-anime/manifest.json",
+    "vf-no-anime/manifest.json",
+    "provider_catalog.json",
+    "PROVENANCE.json",
+    "provider-v3-materialization.json",
+):
+    assert publication_file in validated_publish_block, publication_file
+
 print("provider fast repair separation contract passed")
