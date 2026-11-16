@@ -51,6 +51,9 @@ assert "Package validated provider transaction" in ADD
 assert "Download validated provider transaction" in ADD
 assert "git diff --cached --binary --full-index" in ADD
 assert "git apply --3way --index" in ADD
+assert "verify_unrelated_active_provider_bytes.py" in ADD
+assert ADD.index("Capture unrelated active exact-byte baseline") < ADD.index("Stage clean NiakVIO ProviderBase")
+assert ADD.index("Rebuild publication after exact verification") < ADD.index("Require unrelated active bytes unchanged")
 # ProviderBase is derived automatically by NiakVIO onboarding. A provider may
 # never enter catalogue staging with a manually-authored/missing base prerequisite.
 assert "Stage clean NiakVIO ProviderBase and structured route knowledge" in ADD
