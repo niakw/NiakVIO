@@ -113,6 +113,8 @@ assert 'git diff --quiet "$GITHUB_SHA" "$remote_main" --' in workflow
 assert "automation/brain-repair-memory.json" in workflow
 assert "automation/brain-positive-program-memory.json" in workflow
 assert "automation/provider-repair-candidate-evidence.json" in workflow
+assert "automation/provider-repair-batch-refined-latest.json" in workflow
+assert "automation/provider-targeted-regression-recovery-latest.json" in workflow
 assert "automation/provider-census-status.json" in workflow
 for causal_field in (
     "latestLaneVerdicts",
