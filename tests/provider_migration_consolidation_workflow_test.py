@@ -25,6 +25,18 @@ for retired in (
     "dle-anime-two-provider-repair-short.yml",
     "french-manga-dle-repair-short.yml",
     "voiranime-homes-dle-repair-short.yml",
+    "neko-sama-runtime-v2-short.yml",
+    "castle-language-roles-short.yml",
+    "kehflix-current-live-short.yml",
+    "kehflix-terminal-data-publish-short.yml",
+    "voiranime-domain-authority-repair-short.yml",
+    "quick-proven-fixes-publish-short.yml",
+    "stream-sanitizer-v9-source-short.yml",
+    "hls-master-facts-short.yml",
+    "provider-parity-short-vod-short.yml",
+    "provider-parity-order-bias-short.yml",
+    "provider-parity-deep-hls-terminal-short.yml",
+    "provider-parity-local-only-publish-short.yml",
 ):
     assert not (ROOT / ".github/workflows" / retired).exists(), retired
 
