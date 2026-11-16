@@ -32,19 +32,28 @@ jobs:
         run: |
           python - <<'PY' >> "$GITHUB_OUTPUT"
           import json
+          import sys
           from pathlib import Path
+
+          sys.path.insert(0, str(Path("scripts").resolve()))
+          from current_provider_scope import projection_active_provider_ids, projection_active_provider_rows
 
           def cid(value):
               return str(value or "").strip().casefold().replace("_", "-")
 
-          manifest = json.loads(Path("manifest.json").read_text(encoding="utf-8"))
-          providers = []
-          for row in manifest.get("scrapers") or []:
-              if not isinstance(row, dict):
-                  continue
-              provider_id = cid(row.get("id"))
-              if provider_id and provider_id not in providers:
-                  providers.append(provider_id)
+          rows = projection_active_provider_rows()
+          providers = [
+              cid(row.get("id"))
+              for row in rows
+              if isinstance(row, dict) and cid(row.get("id"))
+          ]
+          expected = projection_active_provider_ids()
+          if len(providers) != len(set(providers)) or set(providers) != expected:
+              raise SystemExit(
+                  "parallel sweep projection drift "
+                  f"rows={len(providers)} unique={len(set(providers))} "
+                  f"missing={sorted(expected-set(providers))} extra={sorted(set(providers)-expected)}"
+              )
 
           groups = []
           for index in range(0, len(providers), 4):
