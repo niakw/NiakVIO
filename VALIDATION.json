@@ -1,5 +1,5 @@
 {
-  "schema_version": 71,
+  "schema_version": 72,
   "release": "dynamic",
   "release_authority": "manifest.json:version",
   "candidate_track": "main",
@@ -220,6 +220,9 @@
       "other"
     ],
     "anime_provider_runtime_type": "tv",
-    "series_published_supported_type": false
+    "series_published_supported_type": false,
+    "official_head_freshness_required_before_release": true,
+    "upstream_head_gate": "scripts/check_nuvio_client_upstreams.py",
+    "network_verification_inconclusive_blocks_release": true
   }
 }
