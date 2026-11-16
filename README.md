@@ -280,7 +280,7 @@ Labs consume the official clients as-is. An upstream compile, dependency, packag
 
 <br>
 
-Native acceptance derives its provider denominator from `scripts/current_provider_scope.py:active_provider_ids`. Lifecycle-disabled and bulk-pending catalogue rows remain visible maintenance/staging state but are not executed by the five Labs. `automation/evidence/hub-lab-matrix-46.json` and `native-hub46/manifest.json` are retained compatibility/history artifacts, not the current acceptance denominator.
+Native acceptance derives its provider denominator from `scripts/current_provider_scope.py:projection_active_provider_ids`: the active **Global + France-only** executable union. Lifecycle-disabled and bulk-pending catalogue rows remain visible maintenance/staging state but are not executed by the five Labs. `automation/evidence/hub-lab-matrix-46.json` is historical evidence only; `native-hub46/manifest.json` keeps its legacy path name but is rebuilt as the immutable transport of the current projection union.
 
 The ordinary Lab corpus is adaptive. `.github/triggers/rotating-popular-corpus.json` owns three recent global reserves — **movie, TV and anime**. A native campaign starts with **1 movie + 1 TV episode + 1 anime episode**. A provider/lane advances only after a clean `0 streams` result. Positive proof stops rotation; runtime/load/timeout/transport/player/identity failures stop and remain visible instead of being rotated away.
 
