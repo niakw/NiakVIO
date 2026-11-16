@@ -135,7 +135,12 @@
     "requires_codeql_security_extended": true,
     "requires_npm_audit_high": true,
     "requires_fixed_point_and_reverse_rebuild": true,
-    "requires_immutable_pinned_native_transport": true
+    "requires_immutable_pinned_native_transport": true,
+    "requires_exact_final_release_sha_native_labs": true,
+    "requires_current_nuvio_client_refs": true,
+    "native_proof_transitive_between_clients": false,
+    "post_finalization_native_certification_workflow": ".github/workflows/release-candidate-validation.yml",
+    "requires_final_native_hub46_manifest_regeneration": true
   },
   "limitations": [
     "A CI IP can be blocked while a residential IP works.",
@@ -223,6 +228,7 @@
     "series_published_supported_type": false,
     "official_head_freshness_required_before_release": true,
     "upstream_head_gate": "scripts/check_nuvio_client_upstreams.py",
-    "network_verification_inconclusive_blocks_release": true
+    "network_verification_inconclusive_blocks_release": true,
+    "subtitle_specific_headers_preserved": true
   }
 }
