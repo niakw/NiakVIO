@@ -1,3 +1,10 @@
+## 2026-11-16 — Reconstruction may no longer certify workspace-only source migrations
+
+- The canonical reconstruction workflow still invoked the cumulative source-plan/runtime/finalization migration entry points before rebuilding Provider v3. Those entry points are valid compatibility/fixed-point checkers, but the workflow did not prove they were no-ops before continuing. A stale checked-in source could therefore be silently rewritten in the runner and then validated as if those bytes were the exact repository source.
+- Commit `41519b7b` adds a mandatory source-migration fixed-point barrier immediately after the source-plan/runtime/finalization and semantic-transport passes and before structured DATA reconciliation. Any tracked diff fails reconstruction and must be persisted/reviewed separately; the workflow emits `FIELD_PROVIDER_SOURCE_MIGRATION_FIXED_POINT changed=false` only for exact checked-in source.
+- Commit `69ccb7f0` locks the barrier and its ordering in the workflow-ownership regression. This makes reconstruction a proof of repository authority rather than a hidden migration mechanism.
+- The earlier Projection Reconcile trigger predates this architecture change and is therefore superseded for final certification; a descendant exact-head replay is required.
+
 ## 2026-11-16 — Provider non-regression Gate now watches France projection directly
 
 - After fixing the historical matrix freshness, the dedicated `provider-non-regression.yml` was still triggered by Global `manifest.json` and `provider_catalog.json` but not by `vf/manifest.json`. A France-only projection change could therefore avoid an immediate candidate non-regression run when no other watched authority changed.
