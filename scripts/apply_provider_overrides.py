@@ -1938,9 +1938,11 @@ def apply_overrides(
             # Do not silently collapse a 10-20 reader/source/quality fan-out to
             # the historical eight-probe window. The sanitizer remains bounded
             # and fail-closed; the provider deadline stops pathological tails.
-            sanitizer_options["max_probes"] = max(
-                1, min(int(sanitizer_options.get("max_probes") or 40), 40)
-            )
+            # Publication is fail-closed for unprobed overflow rows, so a
+            # provider-local historical probe cap cannot be lower than the
+            # canonical playback-identity output cap without silently dropping
+            # otherwise valid reader/language/quality variants.
+            sanitizer_options["max_probes"] = PROVIDER_STREAM_OUTPUT_CAP
             sanitizer_options.setdefault("probe_timeout_ms", 6500)
             sanitizer_options.setdefault("min_vod_duration_seconds", 60)
             before = text
