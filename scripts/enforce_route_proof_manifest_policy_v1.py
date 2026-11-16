@@ -1,23 +1,32 @@
 #!/usr/bin/env python3
-"""Record route-proof diagnostics without mutating catalogue activation.
+"""Project current route-proof evidence into health diagnostics without owning activation.
 
-Route proof owns route/DATA confidence, not publication exposure. A provider with no
-currently proven route may be diagnostic ``off`` and must still remain present in the
-catalogue. Route proof must not write, remove, or reinterpret any ``enabled`` field in
-the manifest or provider overrides. Runtime repair remains fail-closed when no usable
-route exists; activation is owned exclusively by the catalogue/final publication policy.
+Route proof owns route/DATA confidence only. Publication activation belongs to the
+current Global+France catalogue/finalization transaction. This helper therefore:
 
-The health report still records the no-proven-route gate so Repair/Learn can retain the
-debt and evidence without turning that evidence into a destructive catalogue change.
+* derives current publication membership from the Global+France projection union
+  when operating on the repository manifest;
+* limits health updates to the targeted repair cohort when the merged report exposes
+  `portfolioRepair.targetedProviders`;
+* never writes manifest or provider-overrides bytes;
+* records proven/no-proven-route state as diagnostic evidence only.
+
+The historical filename is retained for workflow compatibility; there is no
+provider-specific policy in this implementation.
 """
 from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from current_provider_scope import projection_visible_provider_ids, projection_visible_provider_rows  # noqa: E402
+
 DEFAULT_REPORT = ROOT / "automation" / "provider-route-recovery-v5.json"
 DEFAULT_MANIFEST = ROOT / "manifest.json"
 DEFAULT_OVERRIDES = ROOT / "provider-overrides.json"
@@ -43,6 +52,31 @@ def cid(value: object) -> str:
     return str(value or "").strip().casefold().replace("_", "-")
 
 
+def manifest_rows(value: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    return {
+        cid(row.get("id")): dict(row)
+        for row in value.get("scrapers") or []
+        if isinstance(row, dict) and cid(row.get("id"))
+    }
+
+
+def publication_rows(manifest_path: Path, manifest: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    if manifest_path.resolve() == DEFAULT_MANIFEST.resolve():
+        rows = {
+            cid(row.get("id")): dict(row)
+            for row in projection_visible_provider_rows()
+            if isinstance(row, dict) and cid(row.get("id"))
+        }
+        expected = projection_visible_provider_ids()
+        if set(rows) != expected:
+            raise SystemExit(
+                "route-proof publication scope drift "
+                f"missing={sorted(expected-set(rows))} extra={sorted(set(rows)-expected)}"
+            )
+        return rows
+    return manifest_rows(manifest)
+
+
 def health_row(health: dict[str, Any], provider_id: str) -> dict[str, Any]:
     providers = health.get("providers")
     if not isinstance(providers, list):
@@ -56,6 +90,16 @@ def health_row(health: dict[str, Any], provider_id: str) -> dict[str, Any]:
     return row
 
 
+def targeted_ids(report: dict[str, Any], recovered: dict[str, dict[str, Any]]) -> set[str]:
+    portfolio = report.get("portfolioRepair") if isinstance(report.get("portfolioRepair"), dict) else {}
+    explicit = {
+        cid(value)
+        for value in portfolio.get("targetedProviders") or []
+        if cid(value)
+    }
+    return explicit or set(recovered)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
@@ -66,115 +110,74 @@ def main() -> int:
 
     report = load(args.report)
     manifest = load(args.manifest)
-    overrides = load(args.overrides)
+    # Parse overrides to preserve CLI/data-contract validation, but route proof is
+    # deliberately forbidden from mutating this publication-owned document.
+    load(args.overrides)
     health = load(args.health_report) if args.health_report.is_file() else {"providers": []}
-    rows = report.get("providers") if isinstance(report.get("providers"), list) else []
+
     recovered = {
-        cid(row.get("providerId")): row
-        for row in rows
-        if isinstance(row, dict) and cid(row.get("providerId"))
+        cid(row.get("providerId") or row.get("id") or row.get("provider")): row
+        for row in report.get("providers") or []
+        if isinstance(row, dict) and cid(row.get("providerId") or row.get("id") or row.get("provider"))
     }
-    patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
+    current = publication_rows(args.manifest, manifest)
+    requested = targeted_ids(report, recovered)
+    unknown = sorted(requested - set(current))
+    if unknown:
+        raise SystemExit("route-proof targeted providers outside current publication: " + ",".join(unknown))
 
-    manifest_rows = manifest.get("scrapers") if isinstance(manifest.get("scrapers"), list) else []
-    current_ids = {
-        cid(row.get("id"))
-        for row in manifest_rows
-        if isinstance(row, dict) and cid(row.get("id"))
-    }
-    if "movix" not in current_ids:
-        print(
-            "ROUTE_PROOF_MANIFEST_POLICY_V1_OK "
-            f"current_scope={len(current_ids)} movix_current=false state=not-applicable "
-            "activation_mutated=false"
-        )
-        return 0
+    processed = proven = unresolved = missing = 0
+    proof_version = int(report.get("schemaVersion") or 0)
+    for provider_id in sorted(requested):
+        proof = recovered.get(provider_id)
+        if not isinstance(proof, dict):
+            missing += 1
+            continue
+        processed += 1
+        routes = [str(value).strip() for value in proof.get("routes") or [] if str(value).strip()]
+        state = str(proof.get("status") or "").strip().casefold()
+        row = health_row(health, provider_id)
+        row["enabled"] = current[provider_id].get("enabled") is not False
+        evidence = row.get("evidence") if isinstance(row.get("evidence"), dict) else {}
 
-    movix_proof = recovered.get("movix")
-    movix_patch = patches.get("movix") if isinstance(patches.get("movix"), dict) else None
-    if not isinstance(movix_proof, dict) or not isinstance(movix_patch, dict):
-        raise SystemExit("MOVIX route proof/DATA missing for current provider")
-
-    proven_routes = [str(value) for value in movix_proof.get("routes") or [] if str(value).strip()]
-    route_proof = movix_patch.get("route_proof") if isinstance(movix_patch.get("route_proof"), dict) else {}
-    live_gate = movix_patch.get("live_route_gate") if isinstance(movix_patch.get("live_route_gate"), dict) else {}
-    explicit_block = (
-        str(live_gate.get("completion_state") or "").casefold() == "terminal-blocked"
-        or int(route_proof.get("provenRouteCount") or 0) == 0
-    )
-
-    movix_manifest = next(
-        (row for row in manifest_rows if isinstance(row, dict) and cid(row.get("id")) == "movix"),
-        None,
-    )
-    if not isinstance(movix_manifest, dict):
-        raise SystemExit("MOVIX manifest row missing")
-
-    # Activation is deliberately read-only here. Keep whatever publication state
-    # currently exists in both the manifest and provider-overrides byte-for-byte.
-    activation_before = movix_manifest.get("enabled")
-    manifest_overrides = movix_patch.get("manifest_overrides")
-    override_enabled_present = isinstance(manifest_overrides, dict) and "enabled" in manifest_overrides
-    override_enabled_before = manifest_overrides.get("enabled") if override_enabled_present else None
-
-    report_row = health_row(health, "movix")
-    evidence = report_row.get("evidence") if isinstance(report_row.get("evidence"), dict) else {}
-    report_row["enabled"] = movix_manifest.get("enabled") is not False
-
-    if not proven_routes and explicit_block:
-        report_row["action"] = ROUTE_PROOF_DIAGNOSTIC_ACTION
-        report_row["failed_gates"] = [ROUTE_PROOF_FAILED_GATE]
-        report_row["observed_status"] = "no-proven-route"
-        evidence.update({
-            "authority": ROUTE_PROOF_AUTHORITY,
-            "provider_id": "movix",
-            "route_proof_version": 5,
-            "proven_route_count": 0,
-            "status": "no-proven-route",
-            "activation_destructive": False,
-        })
-        report_row["evidence"] = evidence
-        state = "diagnostic-no-proven-route"
-    else:
-        if str(report_row.get("action") or "") in {
-            ROUTE_PROOF_DIAGNOSTIC_ACTION,
-            LEGACY_ROUTE_PROOF_DISABLE_ACTION,
-        }:
-            report_row["action"] = "route-proof-present-preserve-activation"
-            report_row["failed_gates"] = [
-                value for value in report_row.get("failed_gates") or []
+        if routes:
+            proven += 1
+            if str(row.get("action") or "") in {
+                ROUTE_PROOF_DIAGNOSTIC_ACTION,
+                LEGACY_ROUTE_PROOF_DISABLE_ACTION,
+            }:
+                row["action"] = "route-proof-present-preserve-activation"
+            row["failed_gates"] = [
+                value for value in row.get("failed_gates") or []
                 if str(value) != ROUTE_PROOF_FAILED_GATE
             ]
+            evidence_state = state or "proven"
+        else:
+            unresolved += 1
+            row["action"] = ROUTE_PROOF_DIAGNOSTIC_ACTION
+            failed = [str(value) for value in row.get("failed_gates") or [] if str(value)]
+            if ROUTE_PROOF_FAILED_GATE not in failed:
+                failed.append(ROUTE_PROOF_FAILED_GATE)
+            row["failed_gates"] = failed
+            row["observed_status"] = state or "no-proven-route"
+            evidence_state = state or "no-proven-route"
+
         evidence.update({
             "authority": ROUTE_PROOF_AUTHORITY,
-            "provider_id": "movix",
-            "route_proof_version": 5,
-            "proven_route_count": len(proven_routes),
-            "status": str(movix_proof.get("status") or "proven"),
+            "provider_id": provider_id,
+            "route_proof_version": proof_version,
+            "proven_route_count": len(routes),
+            "status": evidence_state,
             "activation_destructive": False,
         })
-        report_row["evidence"] = evidence
-        state = "proof-present-preserve-activation"
+        row["evidence"] = evidence
 
-    # Fail closed if this diagnostic owner ever starts mutating activation again.
-    if movix_manifest.get("enabled") != activation_before:
-        raise SystemExit("route proof attempted to mutate MOVIX manifest activation")
-    manifest_overrides_after = movix_patch.get("manifest_overrides")
-    override_enabled_present_after = isinstance(manifest_overrides_after, dict) and "enabled" in manifest_overrides_after
-    override_enabled_after = manifest_overrides_after.get("enabled") if override_enabled_present_after else None
-    if (override_enabled_present_after, override_enabled_after) != (override_enabled_present, override_enabled_before):
-        raise SystemExit("route proof attempted to mutate MOVIX override activation")
-
-    patches["movix"] = movix_patch
-    overrides["provider_patches"] = patches
-    write(args.manifest, manifest)
-    write(args.overrides, overrides)
     write(args.health_report, health)
-
     print(
         "ROUTE_PROOF_MANIFEST_POLICY_V1_OK "
-        f"movix_routes={len(proven_routes)} movix_enabled={str(movix_manifest.get('enabled')).lower()} "
-        f"state={state} activation_mutated=false health_action={report_row.get('action')}"
+        f"targeted={len(requested)} processed={processed} proven={proven} "
+        f"unresolved={unresolved} missing={missing} activation_mutated=false "
+        "scope=current-publication provider_specific_rules=0"
     )
     return 0
 
