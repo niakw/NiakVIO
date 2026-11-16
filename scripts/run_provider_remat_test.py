@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 import run_provider_retest as retest  # noqa: E402
+from current_provider_scope import projection_visible_provider_rows  # noqa: E402
 
 STATUS = ROOT / "automation" / "provider-census-status.json"
 AUTHORITY = ROOT / "automation" / "provider-authority-status.json"
@@ -44,11 +45,11 @@ def run(*args: str) -> None:
 
 
 def manifest_rows() -> dict[str, dict[str, Any]]:
-    manifest = load(MANIFEST)
+    """Current Global+France publication rows with repository-relative filenames."""
     return {
         cid(row.get("id")): row
-        for row in manifest.get("scrapers") or []
-        if isinstance(row, dict) and cid(row.get("id"))
+        for row in projection_visible_provider_rows()
+        if cid(row.get("id"))
     }
 
 
