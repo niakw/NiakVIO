@@ -763,7 +763,7 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
         "policy": {
             "blocking": False,
             "block_identity_contradictions": True,
-            "require_identity_match": False,
+            "require_identity_match": True,
         },
     }
 
@@ -938,6 +938,7 @@ def finalize(provider_id: str, report_path: Path) -> bool:
     requested = [str(value) for value in report.get("clients") or ["tv", "desktop", "mobile"]]
     all_playable = bool(requested) and all(
         str((clients.get(client) or {}).get("verdict") or "") == "playable"
+        and int((clients.get(client) or {}).get("identity_match_count") or 0) > 0
         and int((clients.get(client) or {}).get("identity_contradiction_count") or 0) == 0
         for client in requested
     )
