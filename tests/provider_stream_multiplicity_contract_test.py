@@ -40,6 +40,10 @@ assert "function playbackKey(stream,url)" in sanitizer
 assert "var batchSize=4" in sanitizer
 assert 'min(int(sanitizer_options.get("max_probes") or 40), 40)' in apply_source
 assert 'min(int(sanitizer_options.get("max_probes") or 8), 8)' not in apply_source
+assert "PROVIDER_STREAM_OUTPUT_CAP = 40" in apply_source
+assert "_normalize_provider_stream_output_options" in apply_source
+assert "_normalize_provider_owned_stream_output_cap" in apply_source
+assert '"type": "provider_stream_output_cap"' in apply_source
 
 # Labs: full acceptance actually observes the multiplicity instead of only the
 # first 2/3 results, and S00 is a mandatory additive regression.
