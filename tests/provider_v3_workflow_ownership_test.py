@@ -159,6 +159,10 @@ assert 'FIELD_RELEASE_PUBLISH_BLOCKED reason=executable_main_drift' in finalizer
 assert 'python3 scripts/validate_release_integrity.py' in finalizer
 assert finalizer.index('git merge --no-ff --no-edit origin/main') < finalizer.index('git push origin HEAD:main')
 assert "git push --force" not in finalizer
+assert "actions: write" in finalizer
+assert "post_census:" in finalizer
+assert "FIELD_RELEASE_POST_CENSUS_DISPATCH" in finalizer
+assert "gh workflow run provider-census-sharded.yml" in finalizer
 sanitizer=(ROOT/"scripts/sanitize_provider_hub_registry.py").read_text(encoding="utf-8")
 for required in (
     'parser.add_argument("--manifest", default="manifest.json")',
