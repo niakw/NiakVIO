@@ -660,6 +660,9 @@ jobs:
             for provider in "${providers[@]}"; do
               [ -z "$provider" ] || args+=(--provider "$provider")
             done
+            # ProviderBase is derived from NiakVIO-owned structured authority.
+            # Targeted Learning must not depend on external discovery/upstreams.
+            args+=(--local-catalog-only)
           fi
           "${args[@]}"
           if [ "$FAST_HANDOFF" != "true" ]; then

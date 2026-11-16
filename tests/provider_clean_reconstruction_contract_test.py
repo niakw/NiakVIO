@@ -118,6 +118,14 @@ assert "materialize_provider_v3_all.py" not in routine
 assert "verify_provider_v3_reverse_rebuild.py" not in routine
 assert "run_brain_learning_queue.py" in learn
 
+# Fast-Handoff reconstruction must derive ProviderBase from local structured authority.
+learn_stage=learn.split("      - name: Build clean ProviderBase reconstruction stage",1)[1].split("      - name:",1)[0]
+assert "--clean-reconstruction" in learn_stage
+assert "--provider" in learn_stage
+assert "--local-catalog-only" in learn_stage
+assert learn_stage.index("--provider") < learn_stage.index("--local-catalog-only")
+assert "ProviderBase is derived from NiakVIO-owned structured authority" in learn_stage
+
 print(
     "PROVIDER_V3_CLEAN_RECONSTRUCTION_OK "
     f"providers={len(provider_ids)} common_base_sha={expected_sha[:16]} "

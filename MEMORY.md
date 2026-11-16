@@ -1,3 +1,9 @@
+## 2026-11-16 — Fast-Handoff ProviderBase reconstruction restored to structured NiakVIO authority
+
+- Brain Learning runs 43767643223 and 43768412945 observed 11/11 then 12/12 selected published identities, but the later clean reconstruction stage lost most of the same providers before ProviderBase materialization. Root cause in workflow wiring: the initial Fast-Handoff stage already used local structured authority, while the clean ProviderBase stage invoked `discover_candidates.py --clean-reconstruction` without `--local-catalog-only`, reintroducing external discovery as an accidental prerequisite.
+- The targeted reconstruction stage now passes every selected provider ID and `--local-catalog-only`. `discover_candidates.py` already implements this mode by emptying upstream discovery and rebuilding from the current local catalogue/structured authority. ProviderBase remains deterministic and derived; no per-provider base is manually authored.
+- `tests/provider_clean_reconstruction_contract_test.py` now pins this workflow invariant. The change does not weaken canonical proof, playback, identity, materialization or publication gates. Fresh Learning execution is still required before claiming repaired providers.
+
 ## 2026-11-16 — Global rematerialization must resync projections before second union audit
 
 - Finalizer run 43779626305 proved the first projection-sync fix: it passed the initial Global+France reconciliation, recovered the active materialization authority, and entered canonical Global Provider-v3 materialization. It then failed later on `neko-sama` because `materialize_provider_v3_all.py` rotated Global content-addressed filenames again while VF still held the immediately-prior filenames.

@@ -1,3 +1,7 @@
+## 2026-11-16 — ProviderBase is derived, never a Learning prerequisite
+
+Targeted Brain Learning must reconstruct ProviderBase from the selected NiakVIO structured objects (catalogue + DATA + owned Lego) without requiring external upstream discovery. The Fast-Handoff clean-reconstruction stage therefore runs in local-catalog-only mode for its exact provider cohort. External sources may supply bounded observations elsewhere, but absence from an upstream discovery pass cannot remove an already-selected NiakVIO object from ProviderBase generation. Canonical validation, materialization, exact-byte replay and publication remain downstream authorities.
+
 ## 2026-11-16 — Global rematerialization must resync projections before second union audit
 
 - Finalizer run 43779626305 proved the first projection-sync fix: it passed the initial Global+France reconciliation, recovered the active materialization authority, and entered canonical Global Provider-v3 materialization. It then failed later on `neko-sama` because `materialize_provider_v3_all.py` rotated Global content-addressed filenames again while VF still held the immediately-prior filenames.
