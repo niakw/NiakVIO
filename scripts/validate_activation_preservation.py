@@ -35,7 +35,6 @@ MAIN = ROOT / "manifest.json"
 VF = ROOT / "vf" / "manifest.json"
 REPORT = ROOT / "health-report.json"
 OVERRIDES = ROOT / "provider-overrides.json"
-HUB_MATRIX = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
 PROVENANCE = ROOT / "PROVENANCE.json"
 SAFETY_FINDINGS = ROOT / "automation" / "nuvio-client-safety-findings.json"
 QUARANTINE_PATCH = "scripts/provider_patches/quarantine_provider_v1.py"
@@ -400,12 +399,6 @@ def validate() -> list[str]:
     main_rows = rows(load(MAIN))
     vf_rows = rows(load(VF))
     patches_by_id = provider_patch_rows(load_optional(OVERRIDES))
-    matrix = load(HUB_MATRIX)
-    target = {
-        str(row.get("manifestId") or "").strip().casefold().replace("_", "-")
-        for row in matrix.get("rows") or []
-        if isinstance(row, dict) and str(row.get("manifestId") or "").strip()
-    }
     active = {
         provider_id
         for provider_id, row in main_rows.items()
@@ -425,17 +418,15 @@ def validate() -> list[str]:
             "manifest activation differs from providers/ authority: "
             f"manifest_only={sorted(active-expected_active)} folder_only={sorted(expected_active-active)}"
         )
-    if target != expected_active:
-        # Hub matrix is diagnostic evidence and may lag a lifecycle change.
-        target = set(expected_active)
+    target = set(expected_active)
 
     missing = sorted(target - set(main_rows))
     extra = sorted(active - target)
     disabled_target = sorted(target - active)
     if missing:
-        errors.append("active-hub target missing from canonical catalogue: " + ",".join(missing))
+        errors.append("active-scope target missing from canonical catalogue: " + ",".join(missing))
     if disabled_target:
-        errors.append("active-hub target unexpectedly disabled: " + ",".join(disabled_target))
+        errors.append("active-scope target unexpectedly disabled: " + ",".join(disabled_target))
     if extra:
         errors.append("non-target provider unexpectedly enabled: " + ",".join(extra))
 
@@ -460,7 +451,7 @@ def validate() -> list[str]:
     )
     if registry_only:
         print(
-            "FIELD_ACTIVATION_HUB46_REGISTRY_ONLY "
+            "FIELD_ACTIVATION_SCOPE_REGISTRY_ONLY "
             f"count={len(registry_only)} activation_authority=provider_folders"
         )
 
