@@ -1,3 +1,10 @@
+## 2026-11-16 — Presentation migration preserves current age/language rendering
+
+- Reconstruction run `43926609162` on `e367a2f9` advanced through the prior migration fixes, then the historical presentation hardener rejected two obsolete source literals: direct `🔞 + f.ageRating` and the old French-flag language line.
+- Current Stream Presentation V34 has stronger equivalents: `durationAgeLine()` resolves canonical age-badge text and `languageLine()` renders structured audio/subtitle tracks under the global-language line. Reintroducing the old literals would regress the current Core.
+- Commit `fbeda48a` therefore keeps the migration as a minimum visual/metadata contract: it accepts either the historical inline form or the richer current age/language helper path, while all existing placeholder, title, description, badge and metadata guarantees remain mandatory.
+- Run `43926609162` produced no accepted reconstruction. The next exact-source reconstruction must pass this layer before ProviderBase regeneration is interpreted.
+
 ## 2026-11-16 — Presentation metadata migration now recognizes current Core supersets
 
 - Reconstruction run `43926074302` on `84b6db8a` passed the repaired finalization migration but then failed in the semantic/transport preparation step because `harden_stream_presentation_metadata_fallbacks.py` still required the historical exact `providerName` source string.
