@@ -52,7 +52,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     )
     probe_direct = bool(options.get("probe_direct_media", False))
     probe_all = bool(options.get("probe_all_urls", False))
-    max_probes = max(0, min(int(options.get("max_probes", 6)), 20))
+    max_probes = max(0, min(int(options.get("max_probes", 6)), 40))
     timeout_ms = max(1000, min(int(options.get("probe_timeout_ms", 4500)), 12000))
     min_vod_duration = max(0, min(int(options.get("min_vod_duration_seconds", 60)), 1800))
     blocked_paths = sorted(
@@ -113,6 +113,16 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   function streamSlot(value){if(Array.isArray(value))return {key:null,list:value};if(value&&typeof value==="object"){for(var i=0;i<3;i++){var key=["streams","results","data"][i];if(Array.isArray(value[key]))return {key:key,list:value[key]}}}return null}
   function rebuild(value,slot,list){if(slot.key===null)return list;var out=Object.assign({},value);out[slot.key]=list;return out}
   function urlOf(stream){return stream&&typeof stream.url==="string"?stream.url.trim():""}
+  /* NUVIO_STREAM_PLAYBACK_IDENTITY_V11 */
+  function playbackKey(stream,url){
+    var headers={},legacy=stream&&stream.headers,proxy=null;
+    try{proxy=stream&&stream.behaviorHints&&stream.behaviorHints.proxyHeaders&&stream.behaviorHints.proxyHeaders.request}catch(_e){}
+    function merge(source){if(!source||typeof source!=="object")return;try{Object.keys(source).forEach(function(key){if(source[key]!=null)headers[String(key).toLowerCase()]=String(source[key])})}catch(_e){}}
+    merge(legacy);merge(proxy);
+    var keys=Object.keys(headers).sort(),parts=[];
+    for(var i=0;i<keys.length;i++)parts.push(keys[i]+":"+headers[keys[i]]);
+    return String(url||"")+"|"+parts.join("|");
+  }
   function directExtension(url){return /(?:\.m3u8?|\.mpd|\.mp4|\.m4v|\.mov|\.mkv|\.webm|\.mpeg|\.mpg|\.ogv)(?:[?#]|$)/i.test(String(url||""))}
   function isDirect(stream,url){
     var hint=String((stream&&(stream.type||stream.format||stream.mimeType||stream.contentType))||"").toLowerCase();
@@ -263,10 +273,10 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       if(!slot.list.length)return result;
       var rows=slot.list,seen=Object.create(null),candidates=[],probeCount=0;
       for(var i=0;i<rows.length;i++){
-        var stream=rows[i],url=urlOf(stream);
-        if(!url||blocked(url)||seen[url])continue;
-        seen[url]=true;
-        candidates.push({stream:stream,url:url,rank:rank(stream,url),index:i});
+        var stream=rows[i],url=urlOf(stream),identity=playbackKey(stream,url);
+        if(!url||blocked(url)||!identity||seen[identity])continue;
+        seen[identity]=true;
+        candidates.push({stream:stream,url:url,rank:rank(stream,url),index:i,identity:identity});
       }
       candidates.sort(function(a,b){return a.rank-b.rank||a.index-b.index});
       for(var c=0;c<candidates.length;c++){
@@ -279,7 +289,16 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       }
       var checked=[];
       if(nativeHost()){
-        for(var p=0;p<candidates.length;p++)checked.push(await checkItem(candidates[p]));
+        // Native bridges are often serialized internally, but a small bounded
+        // batch prevents 20+ valid reader/quality variants from being starved
+        // behind the historical eight-probe window. Global provider deadline
+        // still wins and unverified remainder stays fail-closed.
+        var batchSize=4;
+        for(var p=0;p<candidates.length;p+=batchSize){
+          if(providerDeadlineExpired())break;
+          var batch=await Promise.all(candidates.slice(p,p+batchSize).map(checkItem));
+          checked.push.apply(checked,batch);
+        }
       }else{
         checked=await Promise.all(candidates.map(checkItem));
       }
