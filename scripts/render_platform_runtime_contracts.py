@@ -42,6 +42,10 @@ LABELS = {
 }
 
 HARD_DIFFERENCE_STATES = {"absent", "incompatible", "audit-required"}
+PORTABLE_PROVIDER_RESULT_FIELDS = (
+    "title", "name", "url", "quality", "size", "language", "provider",
+    "type", "seeders", "peers", "infoHash", "headers", "subtitles",
+)
 
 
 def load_contract() -> dict:
@@ -79,6 +83,12 @@ def load_contract() -> dict:
         raise SystemExit("media identity contract must not require end-user TMDB credential")
     if identity.get("secret_projection_to_provider_javascript") is not False:
         raise SystemExit("media identity contract forbids embedding TMDB credentials in published provider bytes")
+
+    portable = data.get("portable_provider_result_fields")
+    if portable != list(PORTABLE_PROVIDER_RESULT_FIELDS):
+        raise SystemExit("portable provider result ABI drifted")
+    if not str(data.get("portable_presentation_rule") or "").strip():
+        raise SystemExit("portable provider presentation rule is missing")
 
     for client_id, client in clients.items():
         for key in ("display_name", "family", "source_repository", "source_branch", "source_ref", "audit_status", "audited_at"):
@@ -179,6 +189,14 @@ def render(data: dict) -> str:
         "- Une clé/credential TMDB fournie par l'utilisateur n'est **jamais** une précondition de compatibilité NiakVIO.",
         "- Un secret TMDB ne doit jamais être embarqué dans les octets publiés du provider uniquement pour reconstruire l'identité IMDb ; une capacité runtime officielle reste distincte du code provider.",
         "- Un client peut fournir une capacité équivalente d'hydratation, mais la disponibilité d'un seul TMDB ID ne permet jamais de conclure que l'identité dual-ID est disponible.",
+        "",
+        "## ABI portable de sortie provider",
+        "",
+        "Champs consommables sur toutes les familles Nuvio officielles : "
+        + ", ".join(f"`{esc(field)}`" for field in data["portable_provider_result_fields"])
+        + ".",
+        "",
+        esc(data["portable_presentation_rule"]),
         "",
         "## Révisions auditées",
         "",
