@@ -63,6 +63,9 @@ assert '"api_templates"' in ONBOARD
 assert '"type": "search"' in ONBOARD
 assert "upstream" not in ONBOARD.casefold() or "upstream_id" in ONBOARD
 assert "clean_reconstruction_verified" in ONBOARD
+assert '"max_streams_per_runtime": 40' in ONBOARD
+assert '"probe_all_streams": True' in ONBOARD
+assert '"all_streams_safety_cap": 40' in ONBOARD
 
 SITE_PROBE = (ROOT / "scripts/probe_provider_site_structure.py").read_text(encoding="utf-8")
 assert 'f"/title/{kind}/{quote(tmdb_id)}-{quote(slug)}"' in SITE_PROBE
