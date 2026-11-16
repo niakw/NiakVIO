@@ -23,7 +23,11 @@ import time
 import urllib.parse
 from collections import Counter, defaultdict
 from pathlib import Path
-from current_provider_scope import projection_active_provider_count, projection_active_provider_rows
+from current_provider_scope import (
+    projection_active_provider_count,
+    projection_active_provider_ids,
+    projection_active_provider_rows,
+)
 from typing import Any, Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -318,15 +322,24 @@ def success(fetch: dict[str, Any]) -> bool:
     return not fetch.get("error") and 200 <= status < 400
 
 
-def prepare_candidates(knowledge_path: Path, overrides_path: Path) -> dict[str, int]:
+def prepare_candidates(
+    knowledge_path: Path,
+    overrides_path: Path,
+    *,
+    active_provider_ids: set[str] | None = None,
+) -> dict[str, int]:
     knowledge = load(knowledge_path)
     overrides = load(overrides_path)
     restored_routes = 0
     restored_recipes = 0
     providers = knowledge.get("providers") if isinstance(knowledge.get("providers"), dict) else {}
+    active_ids = set(active_provider_ids) if active_provider_ids is not None else projection_active_provider_ids()
+    missing = sorted(active_ids - set(providers))
+    if missing:
+        raise ValueError(f"live route candidate preparation missing active providers: {missing}")
     patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
     for provider_id, row in providers.items():
-        if not isinstance(row, dict):
+        if provider_id not in active_ids or not isinstance(row, dict):
             continue
         model = row.get("model") if isinstance(row.get("model"), dict) else {}
         candidate_data = model.get("candidateRouteData") if isinstance(model.get("candidateRouteData"), list) else None
@@ -364,10 +377,18 @@ def validate_and_promote(
     knowledge: dict[str, Any],
     overrides: dict[str, Any],
     task_rows: list[dict[str, Any]],
+    *,
+    active_provider_ids: set[str] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
-    providers = knowledge.get("providers") if isinstance(knowledge.get("providers"), dict) else {}
-    if len(providers) != EXPECTED:
-        raise ValueError(f"live route validation expects {EXPECTED} providers, got {len(providers)}")
+    all_providers = knowledge.get("providers") if isinstance(knowledge.get("providers"), dict) else {}
+    active_ids = set(active_provider_ids) if active_provider_ids is not None else projection_active_provider_ids()
+    missing = sorted(active_ids - set(all_providers))
+    if missing:
+        raise ValueError(f"live route validation missing active providers: {missing}")
+    providers = {provider_id: all_providers[provider_id] for provider_id in sorted(active_ids)}
+    expected = len(active_ids)
+    if active_provider_ids is None and expected != EXPECTED:
+        raise ValueError(f"live route validation active scope drifted: expected={EXPECTED} actual={expected}")
     patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
     by_provider: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for task in task_rows:
