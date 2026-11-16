@@ -112,8 +112,12 @@ media_migration = enforcer.split('def patch_media_transport() -> bool:', 1)[1].s
 assert 'NUVIO_GLOBAL_CANONICAL_ANIME_PROVIDER_ABI_V35' in media_migration
 assert 'if(canonical==="anime")return"anime";' in media_migration
 assert 'tmdb-data-contract-launch-gate-v35-canonical-anime-provider-abi' in media_migration
-assert 'if(canonical==="anime")return namespace==="movie"?"movie":"tv";' not in media_migration
-assert 'if(semantic.indexOf(ns)>=0)return ns;' not in media_migration
+media_source = (ROOT / "scripts/provider_patches/global_media_type_resolution_v1.py").read_text(encoding="utf-8")
+provider_transport = media_source.split("function providerTransport(canonical,namespace){", 1)[1].split("function namespaceCandidates", 1)[0]
+assert 'if(canonical==="anime")return namespace==="movie"?"movie":"tv";' not in provider_transport
+assert 'if(semantic.indexOf(ns)>=0)return ns;' not in provider_transport
+assert 'if(canonical==="anime")return namespace==="movie"?"movie":"tv";' in media_migration, "migration must keep detecting the retired rewrite"
+assert "return False" in media_migration, "media migration must remain validation-only"
 assert 'anime semantic/TV transport split failed' not in enforcer
 assert 'canonical anime provider ABI lost' in enforcer
 assert 'declared anime->tv provider alias not honored' in enforcer
