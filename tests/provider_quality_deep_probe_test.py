@@ -7,6 +7,8 @@ from pathlib import Path
 import sys
 sys.path.insert(0, str(Path("scripts").resolve()))
 from summarize_provider_quality_probe import summarize
+from select_provider_quality_diagnostic_cohort import select as select_quality_cohort
+from current_provider_scope import projection_active_provider_ids
 
 sha = "a"*40
 provider = "castle"
@@ -64,18 +66,39 @@ for token in (
     "node scripts/health_check.mjs --deep",
     "summarize_provider_quality_probe.py",
     "tests/provider_quality_deep_probe_test.py",
-    "provider: castle",
-    "provider: uhdmovies",
-    "provider: allanime",
-    "provider: hindmoviez",
-    "provider: streamzo",
+    "scripts/select_provider_quality_diagnostic_cohort.py",
+    "scripts/current_provider_scope.py",
+    "provider_catalog.json",
+    "vf/manifest.json",
+    "Derive active runtime-family representatives",
+    "fromJSON(needs.prepare.outputs.matrix)",
     "contents: read",
 ):
     assert token in wf, token
 assert "contents: write" not in wf
 assert "git push" not in wf
 assert "NIAKVIO_ALLOW_PAID_API" not in wf
+for stale in (
+    "provider: hindmoviez",
+    "provider: 4khdhub",
+    "provider: uhdmovies",
+    "provider: allanime",
+    "provider: moviesmod",
+):
+    assert stale not in wf, f"quality workflow regained frozen provider matrix: {stale}"
+
+cohort = select_quality_cohort(max_providers=8)
+active = projection_active_provider_ids()
+assert 1 <= len(cohort) <= 8, cohort
+assert {row["provider"] for row in cohort} <= active, cohort
+assert len({row["provider"] for row in cohort}) == len(cohort), cohort
+assert len({row["family"] for row in cohort}) == len(cohort), cohort
+assert {"movie", "tv", "anime"} <= {
+    media_type
+    for row in cohort
+    for media_type in row.get("types") or []
+}, cohort
 upload = wf.split("      - name: Upload sanitized quality-only proof",1)[1]
 assert "quality-summary.json" in upload
 assert "health-results.json" not in upload
-print("PROVIDER_QUALITY_DEEP_TEST_OK evidence-only multi-family")
+print("PROVIDER_QUALITY_DEEP_TEST_OK evidence-only dynamic-active-runtime-family-cohort")
