@@ -26,7 +26,6 @@ required=[
     "merge-multiple: true",
     "automation/provider-repair-batch-plan-latest.json",
     "automation/provider-bulk-activation-latest.json",
-    "'provider_catalog.json'",
     "provider:\\ bulk\\ activate\\ *",
     'args+=(--provider "$providers")',
     "ci(census-sharded): persist",
