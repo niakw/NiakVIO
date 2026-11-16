@@ -14,7 +14,7 @@ _spv4ResolveDetail before falling back to the player crawler.
 V18/V18.1/V18.2/V18.4/V18.5/V18.6/V18.7 are chained from this canonical owner so
 every V17 consumer also receives proof-correlated provider-value DATA,
 provider-native JSON identity scoring, V16 proof authority, JSON-text identity
-decoding, canonical anime <-> TV transport lane handling, safe generic packed-
+decoding, canonical provider media-lane handling after Core aliases, safe generic packed-
 player decoding, and bounded same-player route normalization. No provider ids,
 hosts, fixture titles or provider-specific routes are encoded.
 """
@@ -179,7 +179,7 @@ def main() -> int:
     )
     print(
         f"PROVIDER_CORRELATED_VALUE_SEMANTIC_LANE_V18_5_OK changed={str(v18_5_changed).lower()} "
-        "canonical_anime_tv_transport=1 generic_tv_to_anime=0 shared_plan_gate=1 provider_specific_rules=0"
+        "canonical_provider_lane=1 implicit_anime_tv_alias=0 shared_plan_gate=1 provider_specific_rules=0"
     )
     print(
         f"PROVIDER_PACKED_PLAYER_V18_6_OK changed={str(v18_6_changed).lower()} "
