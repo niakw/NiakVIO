@@ -28,16 +28,11 @@ def load(path: Path) -> dict[str, Any]:
 
 
 def manifest_ids() -> set[str]:
-    manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
-    return {
-        current_scope.cid(row.get("id"))
-        for row in (manifest.get("scrapers") or [])
-        if isinstance(row, dict) and current_scope.cid(row.get("id"))
-    }
+    return current_scope.projection_visible_provider_ids()
 
 
 def merge(paths: list[Path], scope: str) -> dict[str, Any]:
-    expected = current_scope.active_provider_ids() if scope == "active" else manifest_ids()
+    expected = current_scope.projection_active_provider_ids() if scope == "active" else manifest_ids()
     rows: dict[str, dict[str, Any]] = {}
     source_files: dict[str, str] = {}
     for path in paths:
