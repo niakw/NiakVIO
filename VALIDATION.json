@@ -1,22 +1,33 @@
 {
-  "schema_version": 66,
-  "release": "5.21.48",
+  "schema_version": 67,
+  "release": "dynamic",
+  "release_authority": "manifest.json:version",
   "candidate_track": "main",
-  "purpose": "Current NiakVIO validation contract: 96-provider recovery census, fail-closed Core ownership, immutable physical Hub-46 transport, adaptive recent fixture sampling, route repair and cache-safe publication.",
+  "purpose": "Current NiakVIO validation contract: Provider v3 projection-union authority, fail-closed Core ownership, five first-class Nuvio Labs, adaptive recent fixture sampling, repair separation and cache-safe publication.",
   "catalogue": {
-    "provider_objects": 46,
-    "active_provider_objects": 44,
-    "disabled_retained_provider_objects": 2,
+    "cardinality_policy": "derived-never-frozen",
+    "global_visible_authority": "scripts/current_provider_scope.py:visible_provider_ids",
+    "global_active_authority": "scripts/current_provider_scope.py:active_provider_ids",
+    "projection_visible_authority": "scripts/current_provider_scope.py:projection_visible_provider_ids",
+    "projection_active_authority": "scripts/current_provider_scope.py:projection_active_provider_ids",
+    "projection_runtime_visible_authority": "scripts/current_provider_scope.py:projection_runtime_visible_provider_ids",
+    "pending_authority": "scripts/current_provider_scope.py:pending_provider_ids",
+    "france_only_authority": "provider_catalog.json:projections general=false,vf=true",
+    "france_only_first_class": true,
     "historical_archive_provider_objects": 50,
-    "historical_recovery_census": 96,
-    "physical_native_lab_scope": 44,
-    "scope_authority": "automation/evidence/hub-lab-matrix-46.json",
+    "historical_archive_authority": "provider-old/",
+    "native_lab_scope_authority": "scripts/current_provider_scope.py:projection_active_provider_ids",
+    "native_transport_source": "manifest-hub46.json",
     "native_transport_manifest": "native-hub46/manifest.json",
-    "catalogue_rows_outside_active_native_scope_remain_visible": true
+    "disabled_and_pending_rows_remain_auditable": true
   },
   "native_sampling": {
     "authority": ".github/triggers/rotating-popular-corpus.json",
-    "global_lists": ["movie", "tv", "anime"],
+    "global_lists": [
+      "movie",
+      "tv",
+      "anime"
+    ],
     "reserve_size_per_lane": 32,
     "minimum_year": 2010,
     "maximum_year_policy": "current_year_minus_1",
@@ -28,19 +39,22 @@
     "identity_contradiction_stops_and_reports": true,
     "historical_targeted_fixture_authority": ".github/triggers/nuvio-client-lab.json"
   },
-  "native_platforms": ["TVAndroid", "MobileAndroid", "MobileIOS", "DesktopMACOS", "DesktopWindows"],
+  "native_platforms": [
+    "TVAndroid",
+    "MobileAndroid",
+    "MobileIOS",
+    "DesktopMACOS",
+    "DesktopWindows"
+  ],
   "native_transport": {
-    "provider_publication_sha": "425756cf1646380fb8172f380d176758c3734ce6",
-    "pr": 120,
-    "merge_sha": "e401e61688dd79996002f9e37b9abfc923846735",
-    "pinned_blob_invariant_test": "tests/native_hub46_transport_manifest_test.py",
-    "current_full_lab_trigger_sha": "6b28f3b2c53f5ca6cfb4bc11a3af139c21d6dee1",
-    "current_runs": {
-      "android_tv_and_mobile": 35033132967,
-      "ios": 35033132980,
-      "desktop_macos_and_windows": 35033133048
-    },
-    "current_status": "in_progress"
+    "source_builder": "scripts/generate_hub46_manifest.py",
+    "pinned_builder": "scripts/build_hub46_native_manifest.py",
+    "scope": "Global+France active projection union",
+    "provider_bytes_pinned_to_immutable_sha": true,
+    "provider_urls_are_absolute": true,
+    "legacy_hub46_matrix_is_current_scope_authority": false,
+    "coverage_gate": "scripts/gate_native_declared_provider_matrix.py",
+    "current_status": "derived-from-current-projections"
   },
   "native_prebuild_cache": {
     "enabled_for_future_runs": true,
@@ -53,24 +67,25 @@
     "runtime_timer_compatibility_owner": "Core",
     "http_403_policy": "fail_closed",
     "stale_navigation_result_reinjection": false,
-    "stream_sanitizer": "strict_v8",
+    "stream_sanitizer": "strict_v10",
     "wrong_media_is_failure": true,
-    "clean_zero_is_not_automatic_provider_failure": true
+    "clean_zero_is_not_automatic_provider_failure": true,
+    "media_identity_required_for_positive_proof": true
   },
   "checks": {
     "node_provider_worker_syntax": true,
     "python_compile_scripts": true,
-    "published_provider_config_expected": 96,
     "provider_core_runtime_ownership": true,
     "desktop_runtime_without_host_timers": true,
-    "native_hub46_terminal_manifest_transport": true,
-    "native_hub46_pinned_blob_integrity": true,
+    "native_projection_union_transport": true,
+    "native_pinned_blob_integrity": true,
     "native_adaptive_catalog_contract": true,
     "domain_refresh_transaction_v2_contract": true,
     "route_override_schema": true,
     "route_regression_self_test": true,
     "published_override_regressions": true,
-    "codeql_pr120_final_head": true
+    "reverse_rebuild_required": true,
+    "release_integrity_required": true
   },
   "domain_refresh": {
     "authority": "scripts/domain_refresh_transaction_v2.py",
@@ -88,7 +103,13 @@
     "minimizer_stage": "after functional/provider/Core stabilization"
   },
   "route_observability": {
-    "fields": ["stage", "host", "method", "path_pattern", "status"],
+    "fields": [
+      "stage",
+      "host",
+      "method",
+      "path_pattern",
+      "status"
+    ],
     "query_values_redacted": true,
     "long_tokens_redacted": true,
     "raw_stream_urls_not_published": true
@@ -97,24 +118,29 @@
     "central_config": "provider-overrides.json",
     "provider_scoped": true,
     "automatic_global_blind_rewrite": false,
-    "obsolete_statuses": [404, 410],
+    "obsolete_statuses": [
+      404,
+      410
+    ],
     "minimum_requests": 3,
     "obsolete_ratio": 0.75,
     "strict_gate_is_opt_in_after_fixture_validation": true
   },
   "final_certification": {
-    "status": "pending_current_five_native_lab_verdicts",
+    "status": "pending_current_projection_union_five_native_lab_verdicts",
     "requires_five_native_platforms": true,
+    "requires_projection_union_coverage": true,
     "requires_codeql_security_extended": true,
     "requires_npm_audit_high": true,
     "requires_fixed_point_and_reverse_rebuild": true,
-    "requires_immutable_native_hub46_transport": true
+    "requires_immutable_pinned_native_transport": true
   },
   "limitations": [
     "A CI IP can be blocked while a residential IP works.",
     "A sampled work is catalogue evidence, not proof for every title in a provider.",
     "Evidence from one official Nuvio client/platform does not certify another platform.",
     "A clean zero-stream result is catalogue uncertainty and must not be promoted to a provider regression without upstream-positive comparison evidence.",
-    "The current five Native Labs remain authoritative only after their exhaustive Hub-46 matrix steps complete."
+    "Workflow success, CHAIN REACHED, a generated repair, or an URL alone is not playable/identity proof.",
+    "The five Native Labs are authoritative only after the current Global+France active projection union has completed its declared route matrix."
   ]
 }
