@@ -43,6 +43,12 @@ assert "NIAKVIO_PROVIDER_API_RECIPE_SOURCE_COVERAGE_V27" in base
 assert "minStreamsBeforeStop" not in base
 assert "if (_dedupeStreamRows(streams).length >= 40) break;" in base
 assert "return _dedupeStreamRows(streams).slice(0, 40);" in base
+assert "NIAKVIO_PROVIDER_API_ROUTE_COVERAGE_V30" in base
+api_route = base.split("async function _resolveApi(tmdbId", 1)[1].split("async function _resolveRuntimeApi", 1)[0]
+assert "if (streams.length) break;" not in api_route
+assert "if (_uniq(streams).length >= 40) break;" in api_route
+assert "return _streams(_uniq(streams).slice(0, 40)" in api_route
+
 assert "NIAKVIO_PROVIDER_RUNTIME_PLAYER_COVERAGE_V27" in base
 runtime_api = base.split("async function _resolveRuntimeApi", 1)[1].split("async function _resolveKnownPlayer", 1)[0]
 assert "if (streams.length) break;" not in runtime_api
