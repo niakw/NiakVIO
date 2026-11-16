@@ -1591,3 +1591,8 @@ Fast Repair's explicit `provider-repair-learn-handoff-v1.json` row `owner=LEARN,
 ### 2026-11-16 — Provider-owned Lego identity requirements are mode-specific
 
 Provider-owned executable Legos must satisfy the same identity input semantics as the ProviderBase runtime. A `catalog_search` plan consumes hydrated `title+mediaType`; `tmdb_direct` consumes direct `tmdbId+mediaType` without requiring a second metadata-preflight flag, while the existing minimum `external_id` contract consumes `tmdbId+mediaType` after its declared preflight. A generic tmdbId requirement must not reject catalogue-search Legos after Core has performed the declared TMDB preflight. This predicate grants execution-plan authority only; it does not create route proof, media identity proof, playback proof or activation authority.
+
+### 2026-11-16 — Projection publication snapshots identity authority before replacing bytes
+
+Targeted projection reconciliation is a transaction over content-addressed provider bytes plus manifest/catalog, materialization and provenance. The canonical active Global+France identity set must be resolved while the pre-transaction disk projection still points to existing bytes, then held immutable for the transaction. Provider files may be replaced/unlinked while the new projection exists only in memory, but no scope/audit helper may re-read the stale disk manifest during that interval. Only after every requested provider reaches its minimized fixed point are the projection authorities written and later committed atomically.
+

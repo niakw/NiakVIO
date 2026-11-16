@@ -103,6 +103,22 @@ def reconcile(
     if unknown:
         raise RuntimeError("unknown published providers: " + ",".join(unknown))
 
+    # Snapshot executable identity authority while the on-disk projection and
+    # its content-addressed assets are still mutually consistent. The loop
+    # below intentionally replaces provider files before the new manifest is
+    # published; re-reading projection scope after those old assets are
+    # unlinked creates a read-after-delete race against the stale disk manifest.
+    if root.resolve() == ROOT.resolve():
+        active_ids = set(projection_active_provider_ids())
+    else:
+        # Unit/workbench roots do not share the repository providers/ tree.
+        # Their local manifest/catalog is the only valid active-scope authority.
+        active_ids = {
+            provider_id
+            for provider_id, (row, _authority) in publication_by_id.items()
+            if row.get("enabled") is not False
+        }
+
     updates: list[dict[str, str]] = []
     for provider_id in requested:
         manifest_row, entry_authority = publication_by_id[provider_id]
@@ -203,18 +219,9 @@ def reconcile(
             "savedBytes": str(minimized.saved_bytes),
         })
 
-    if root.resolve() == ROOT.resolve():
-        active_ids = set(projection_active_provider_ids())
-        # Materialization is authority for the executable Global+France union.
-        # Targeting only Global publication must never retire France-only rows.
-    else:
-        # Unit/workbench roots do not share the repository providers/ tree.
-        # Their local manifest is the only valid active-scope authority.
-        active_ids = {
-            provider_id
-            for provider_id, (row, _authority) in publication_by_id.items()
-            if row.get("enabled") is not False
-        }
+    # Materialization is authority for the executable Global+France union.
+    # The identity snapshot above is stable across this transaction; targeting
+    # only Global publication must never retire France-only rows.
     material_rows[:] = [
         row for row in material_rows
         if cid(row.get("provider")) in active_ids

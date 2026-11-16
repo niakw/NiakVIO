@@ -3376,3 +3376,12 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Fix: provider-owned Lego execution now validates both required fields and preflight semantics per identity mode. `tmdb_direct` requires no metadata preflight; `catalog_search` and the existing `external_id` path still require it. Negative tests reject inverted preflight semantics and missing identity fields.
 - This grants only structured execution-plan authority to a declared provider-owned Lego. Projection fixed point, exact bytes, playback/identity evidence and publication gates remain independent.
 
+## 2026-11-16 — Projection publication snapshots active authority before asset replacement
+
+- Projection Reconcile run `43795601562` proved both identity-contract fixes in real execution: all 46 detected Global active providers rebuilt, including French-Manga `730009eb33882e84` and Internet Archive `3860a87b1b8467d9`. The rebuild then failed after the last provider with `manifest.json: missing or escaped managed asset: purstream`.
+- Root cause was transactional and generic, not Purstream: `reconcile_targeted_provider_publication.py` replaced/unlinked old content-addressed bundles in memory, then called `projection_active_provider_ids()` before writing the updated manifest. That helper re-read the stale on-disk manifest, which still referenced already deleted assets.
+- Fix: snapshot the canonical active Global+France identity authority before the first provider asset is replaced. The same immutable identity set is used for materialization filtering after the loop; manifest/catalog/materialization/provenance remain published together only after all provider mutations succeed.
+- Added a repository-root regression that makes scope resolution assert the old manifest asset still exists. It fails under the previous read-after-delete ordering and proves the scope callback executes exactly once before bundle replacement.
+- This fixes publication atomicity/order only. The rebuilt providers are not considered published or functional until a fresh Projection Reconcile reaches fixed point and pushes the exact reconciled transaction.
+
+

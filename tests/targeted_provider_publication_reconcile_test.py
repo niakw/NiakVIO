@@ -98,6 +98,76 @@ with tempfile.TemporaryDirectory() as tmp_name:
     assert updates[0]["to"] == mrow["filename"]
 
 
+
+# Repository-root scope authority must be read before any old provider bundle
+# is removed. Re-reading the disk projection after mutation would see manifest
+# filenames that still point at deleted content-addressed assets.
+with tempfile.TemporaryDirectory() as tmp_name:
+    root = Path(tmp_name)
+    (root / "providers").mkdir(parents=True)
+    provider = "scope-race"
+    data = {
+        "providerId": provider,
+        "apiRecipe": {
+            "base": "https://scope-race.example",
+            "directRoute": "/{media}?id={tmdbId}",
+        },
+    }
+    payload = base64.b64encode(
+        json.dumps(data, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).decode("ascii")
+    body = (
+        "/* STARTFIX:PROVIDER.SCOPE-RACE.CONFIG.V1 */ "
+        f"/* FIXDATA:PROVIDER.SCOPE-RACE.CONFIG.V1:{payload} */ "
+        "const NIAKVIO_PROVIDER_MODEL = Object.freeze({}); "
+        "/* CLOSEFIX:PROVIDER.SCOPE-RACE.CONFIG.V1 */"
+    )
+    current_rel = "providers/scope-race-workspace.js"
+    current_path = root / current_rel
+    current_path.write_text(body, encoding="utf-8")
+    digest = hashlib.sha256(body.encode("utf-8")).hexdigest()
+    (root / "manifest.json").write_text(json.dumps({
+        "scrapers": [{"id": provider, "enabled": True, "filename": current_rel}]
+    }), encoding="utf-8")
+    (root / "provider-v3-materialization.json").write_text(json.dumps({
+        "providers": [{
+            "provider": provider,
+            "file": current_rel,
+            "sha256": digest,
+            "providerDataSha256": data_digest(data),
+        }]
+    }), encoding="utf-8")
+
+    import reconcile_targeted_provider_publication as publication
+
+    old_root = publication.ROOT
+    old_scope = publication.projection_active_provider_ids
+    scope_observations = []
+    try:
+        publication.ROOT = root
+        def snapshot_scope():
+            disk_manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+            disk_rel = disk_manifest["scrapers"][0]["filename"]
+            scope_observations.append((disk_rel, (root / disk_rel).is_file()))
+            assert disk_rel == current_rel
+            assert (root / disk_rel).is_file(), "scope must be resolved before old bundle deletion"
+            return {provider}
+        publication.projection_active_provider_ids = snapshot_scope
+        updates = publication.reconcile(root, [provider])
+    finally:
+        publication.ROOT = old_root
+        publication.projection_active_provider_ids = old_scope
+
+    assert scope_observations == [(current_rel, True)], scope_observations
+    new_manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+    new_rel = new_manifest["scrapers"][0]["filename"]
+    assert new_rel != current_rel
+    assert (root / new_rel).is_file()
+    assert not current_path.exists()
+    assert updates[0]["to"] == new_rel
+
+print("repository-root scope snapshot must happen before bundle replacement")
+
 # Targeted materialization must upsert its exact row even when the historical
 # ledger is partial, remove inactive rows, and never claim completeness until
 # every active identity has a ledger row.
