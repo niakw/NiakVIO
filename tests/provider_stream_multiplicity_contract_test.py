@@ -80,6 +80,13 @@ assert "if (streams.length) return streams;" not in family_path
 assert "familyStreams.push(...streams)" in family_path
 assert "return _dedupeStreamRows(familyStreams).slice(0, 40);" in family_path
 
+assert "NIAKVIO_PROVIDER_DLE_FULL_STORY_COVERAGE_V31" in base
+full_story = base.split("async function _spv4FullStory", 1)[1].split("async function _spv4PlayEpisode", 1)[0]
+assert "if (direct.length) return direct;" not in full_story
+assert "if (nested.length) return nested;" not in full_story
+assert "streams.push(...direct)" in full_story
+assert "streams.push(...nested)" in full_story
+
 assert "NIAKVIO_PROVIDER_DLE_PLAYER_COVERAGE_V29" in base
 play_episode = base.split("async function _spv4PlayEpisode", 1)[1].split("function _spv4SagaTargets", 1)[0]
 assert "if (direct.length) return direct;" not in play_episode
