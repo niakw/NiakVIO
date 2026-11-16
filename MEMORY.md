@@ -1,3 +1,10 @@
+## 2026-11-16 — Reconstruction stream-scope regression aligned with canonical anime provider ABI
+
+- Exact reconstruction run `43976374227` passed the repaired source-migration fixed point and failed later in `tests/provider_stream_scope_architecture_test.py`. The failure was a stale assertion requiring canonical anime to be rewritten to the TMDB movie/tv namespace before provider execution.
+- Current Core authority already does the correct split: `namespaceCandidates()` may search both TMDB movie/tv namespaces for identity, while `providerTransport()` returns canonical `anime` by default and only uses movie/tv when structured `requestTypeAliases` explicitly requests it.
+- Commit `1b4711f3` updates only the regression contract: it requires canonical anime provider ABI, preserves movie/tv TMDB identity lookup, proves explicit `tmdb_namespace` alias support and forbids the old implicit anime→movie/tv provider rewrite.
+- No runtime/provider bytes changed in this correction. Fresh exact-head reconstruction must progress beyond reconstruction-input validation before downstream publication certification.
+
 ## 2026-11-16 — Onboarding freshness path normalization and architecture terminology fixed
 
 - Provider Non-Regression on source `54f69b69` exposed a real neutral-drift classifier bug: `normalize_path(...).lstrip("./")` removed the leading dot from `.github/triggers/**`, so explicit control triggers documented as neutral were misclassified as executable drift. Commit `99846d60` strips only repeated leading `./` pairs and leading slashes, preserving dot-prefixed repository paths; workflows/tests remain blocking.
