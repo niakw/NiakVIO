@@ -10,7 +10,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import visible_provider_ids
+from current_provider_scope import projection_visible_provider_ids, projection_visible_provider_rows
 CURRENT_MANIFEST = ROOT / "manifest.json"
 QUICK_YIELD = ROOT / "provider-v3-quick-yield.json"
 RETENTION = ROOT / "providers" / ".generation-retention.json"
@@ -141,11 +141,11 @@ def main() -> int:
     retention = load_json(RETENTION) if RETENTION.exists() else {}
     learn = load_json(LEARN_HANDOFF)
     evidence = load_json(EVIDENCE)
-    current_map = manifest_map(current)
-    current_ids = visible_provider_ids()
+    current_map = {canon(row.get("id")): row for row in projection_visible_provider_rows() if canon(row.get("id"))}
+    current_ids = projection_visible_provider_ids()
     if set(current_map) != current_ids:
         raise SystemExit(
-            "current manifest/folder identity mismatch "
+            "current Global+France projection identity mismatch "
             f"manifest_only={sorted(set(current_map) - current_ids)} "
             f"folder_only={sorted(current_ids - set(current_map))}"
         )
