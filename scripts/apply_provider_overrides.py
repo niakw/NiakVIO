@@ -1325,6 +1325,72 @@ def _strip_generated_core_tail(text: str) -> tuple[str, bool]:
         return text[:min(starts)].rstrip(), True
     return text, text != original
 
+
+PROVIDER_STREAM_OUTPUT_CAP = 40
+_PROVIDER_STREAM_CAP_LITERAL_RE = re.compile(
+    r'(?P<prefix>(?:["\']?maxStreams["\']?|["\']?max_streams["\']?)\s*:\s*)'
+    r'(?P<quote>["\']?)(?P<value>\d+)(?P=quote)'
+)
+
+
+def _normalize_provider_stream_output_options(options: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+    """Make provider-local output caps match the canonical 40-playback contract.
+
+    Only the explicit output-count option names are normalized. Request/page/depth/
+    timeout budgets remain provider-owned and unchanged.
+    """
+    normalized = dict(options)
+    changed: list[str] = []
+    for key in ("maxStreams", "max_streams"):
+        if key not in normalized:
+            continue
+        raw = normalized.get(key)
+        if isinstance(raw, bool):
+            continue
+        try:
+            value = int(raw)
+        except (TypeError, ValueError):
+            continue
+        if value <= 0:
+            continue
+        if value != PROVIDER_STREAM_OUTPUT_CAP:
+            normalized[key] = PROVIDER_STREAM_OUTPUT_CAP
+            changed.append(key)
+    return normalized, changed
+
+
+def _normalize_provider_owned_stream_output_cap(
+    text: str,
+    managed_fix_id: str,
+) -> tuple[str, int]:
+    """Normalize rendered provider-owned CONFIG output caps without touching Core.
+
+    Some historical Lego builders clamp the incoming option before embedding CONFIG.
+    Normalizing the caller option alone cannot recover those variants, so the
+    rendered numeric CONFIG property is rebound inside the exact owned span.
+    """
+    span = owned_span(text, managed_fix_id)
+    if span is None:
+        return text, 0
+    start, end = span
+    block = text[start:end]
+    changed = 0
+
+    def replace(match: re.Match[str]) -> str:
+        nonlocal changed
+        value = int(match.group("value"))
+        if value <= 0 or value == PROVIDER_STREAM_OUTPUT_CAP:
+            return match.group(0)
+        changed += 1
+        quote = match.group("quote")
+        return f'{match.group("prefix")}{quote}{PROVIDER_STREAM_OUTPUT_CAP}{quote}'
+
+    normalized = _PROVIDER_STREAM_CAP_LITERAL_RE.sub(replace, block)
+    if normalized == block:
+        return text, 0
+    return text[:start] + normalized + text[end:], changed
+
+
 def apply_overrides(
     provider_id: str,
     data: bytes,
@@ -1528,13 +1594,20 @@ def apply_overrides(
                         f"provider={provider_id} generic Lego {patch_script} must bind "
                         f"provider option to the current provider, got {option_provider!r}"
                     )
+            normalized_options, normalized_option_keys = _normalize_provider_stream_output_options(
+                dict(options)
+            )
             before = text
             text = _apply_patch_script(
                 text,
                 provider_id,
                 patch_script,
-                dict(options),
+                normalized_options,
                 "provider_lego",
+            )
+            text, normalized_rendered_caps = _normalize_provider_owned_stream_output_cap(
+                text,
+                managed_fix_id,
             )
             if text != before:
                 applied.append({
@@ -1542,6 +1615,16 @@ def apply_overrides(
                     "path": patch_script,
                     "phase": phase,
                     "scope": managed_fix_id,
+                })
+            if normalized_option_keys or normalized_rendered_caps:
+                applied.append({
+                    "type": "provider_stream_output_cap",
+                    "path": patch_script,
+                    "phase": phase,
+                    "scope": managed_fix_id,
+                    "cap": PROVIDER_STREAM_OUTPUT_CAP,
+                    "optionKeys": normalized_option_keys,
+                    "renderedConfigRewrites": normalized_rendered_caps,
                 })
 
     core_options = specific.get("core_options") or {}
