@@ -33,7 +33,6 @@ def dump(path: Path, value: dict) -> None:
 def upgrade_platform(data: dict) -> None:
     if data.get("schema_version") != 2:
         raise SystemExit("platform-runtime-contracts schema_version must remain 2")
-    data["audited_at"] = "2026-09-09"
     order = list(data.get("capability_order") or [])
     if CAPABILITY not in order:
         try:
@@ -42,38 +41,57 @@ def upgrade_platform(data: dict) -> None:
             raise SystemExit("tmdb_api_key capability missing") from exc
         order.insert(index, CAPABILITY)
     data["capability_order"] = order
-    data["media_identity_contract"] = {
+
+    identity = data.setdefault("media_identity_contract", {})
+    identity.update({
         "version": 1,
         "positional_tmdb_id_is_complete_identity": False,
         "canonical_context_imdb_path": CONTEXT_PATH,
         "canonical_metadata_cache_global": CACHE_GLOBAL,
         "canonical_metadata_cache_entry_shape": CACHE_SHAPE,
-        "cache_population_timing": "after provider/Core bundle initialization and before getStreams invocation when supplied by the host",
+        "cache_population_timing": (
+            "after provider/Core bundle initialization and before getStreams invocation "
+            "using an audited official runtime capability or canonical host context"
+        ),
         "user_tmdb_credential_required": False,
         "secret_projection_to_provider_javascript": False,
-        "rule": "Preserve TMDB and IMDb identity as one media identity contract. A client may provide equivalent hydration through a host metadata bridge or an audited runtime metadata capability, but must not require an end-user TMDB credential.",
-    }
+        "rule": (
+            "Preserve TMDB and IMDb as one media identity contract. Current official "
+            "clients may expose an audited runtime TMDB key capability that lets NiakVIO "
+            "Core hydrate its canonical metadata cache; the credential must never be "
+            "embedded in published provider bytes and an end-user key must not be required "
+            "when the official build supplies its fallback."
+        ),
+    })
+
     clients = data.get("clients") or {}
     for client_id, client in clients.items():
         caps = client.setdefault("capabilities", {})
-        if client_id == "android-tv":
-            caps[CAPABILITY] = {
-                "state": "bridge",
-                "detail": "Equivalent Core hydration available through the audited TV TMDB runtime bridge; Core can resolve TMDB metadata/external_ids and derive IMDb without a user-supplied key.",
-            }
-        else:
-            caps[CAPABILITY] = {
-                "state": "absent",
-                "detail": "Current official runtime forwards only the positional TMDB id and exposes no host-populated canonical TMDB/IMDb metadata context/cache; identity hydration is a documented client gap.",
-            }
+        tmdb = caps.get("tmdb_api_key") or {}
+        tmdb_state = str(tmdb.get("state") or "").casefold()
+        if tmdb_state not in {"native", "bridge"}:
+            raise SystemExit(
+                f"{client_id}: audited runtime TMDB capability missing; "
+                "refuse to fabricate identity hydration"
+            )
+        caps[CAPABILITY] = {
+            "state": "bridge",
+            "detail": (
+                "NiakVIO Core can hydrate its canonical TMDB/IMDb metadata cache from "
+                "the audited runtime TMDB capability without embedding a credential in "
+                "published provider bytes."
+            ),
+        }
 
 
 def upgrade_matrix(data: dict) -> None:
     policy = data.setdefault("policy", {})
     policy["media_identity_contract"] = (
-        "The positional getStreams(tmdbId, mediaType, season, episode) argument is transport, not the full media identity. "
-        f"NiakVIO's canonical IMDb metadata path is {CONTEXT_PATH} and its shared metadata cache is {CACHE_GLOBAL}. "
-        "Equivalent client hydration is allowed, but no end-user TMDB credential may be required and no TMDB secret may be projected into provider JavaScript solely to recover IMDb identity."
+        "The positional getStreams(tmdbId, mediaType, season, episode) argument is "
+        "transport, not the full media identity. NiakVIO Core owns the canonical "
+        f"TMDB/IMDb metadata path {CONTEXT_PATH} and cache {CACHE_GLOBAL}. "
+        "An audited official runtime TMDB capability may hydrate that cache, while "
+        "published provider bytes remain credential-free."
     )
     clients = data.get("clients") or {}
     for client_id, client in clients.items():
@@ -84,18 +102,12 @@ def upgrade_matrix(data: dict) -> None:
         contract["canonical_identity_cache_entry_shape"] = CACHE_SHAPE
         contract["user_tmdb_credential_required"] = False
         contract["tmdb_secret_projection_required"] = False
-        if client_id == "nuvio-tv":
-            contract["identity_hydration_status"] = "equivalent-runtime-metadata-bridge"
-            contract["identity_hydration_note"] = (
-                "TV currently supplies an audited TMDB runtime capability that lets Core hydrate external_ids/IMDb. "
-                "This is equivalent identity capability, not permission for shared providers to depend on TMDB_API_KEY."
-            )
-        else:
-            contract["identity_hydration_status"] = "client-gap-host-bridge-required"
-            contract["identity_hydration_note"] = (
-                "Official runtime currently normalizes to the positional TMDB id without a canonical host TMDB/IMDb metadata bridge. "
-                "A host bridge must populate the canonical context/cache after Core initialization and before getStreams, while keeping provider bytes and secrets untouched."
-            )
+        contract["identity_hydration_status"] = "equivalent-runtime-tmdb-key-bridge"
+        contract["identity_hydration_note"] = (
+            "The currently audited official runtime exposes a TMDB key capability "
+            "to the plugin host. NiakVIO Core may use it to hydrate external_ids/IMDb; "
+            "shared provider bytes must not embed or directly require the credential."
+        )
 
 
 def main() -> int:
