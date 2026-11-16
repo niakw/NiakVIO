@@ -8,6 +8,18 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+
+provider_base_source = (ROOT / "scripts/provider_base_store.py").read_text(encoding="utf-8")
+provider_transport = provider_base_source.split("/* NIAKVIO_PROVIDER_CANONICAL_MEDIA_TRANSPORT_V32 */", 1)[1].split("function _playerLike", 1)[0]
+assert 'if (value === "anime") return "anime";' in provider_transport
+assert "ctx.tmdbNamespace" not in provider_transport.split("function _tmdbNamespace", 1)[0]
+assert 'function _tmdbNamespace(mediaType)' in provider_transport
+assert 'return _mediaNamespace(mediaType) === "movie" ? "movie" : "tv";' in provider_transport
+assert 'const type = _tmdbNamespace(mediaType);' in provider_base_source
+assert 'const transport = _mediaNamespace(mediaType);' in provider_base_source
+route_compat = provider_base_source.split("function _spv34RouteMediaCompatible", 1)[1].split("function _learnedUrls", 1)[0]
+assert 'actual === "series" || actual === "anime"' not in route_compat
+assert 'if (actual === "series") actual = "tv";' in route_compat
 sys.path.insert(0, str(ROOT / "scripts"))
 PATCH = ROOT / "scripts" / "provider_patches" / "global_media_type_resolution_v1.py"
 spec = importlib.util.spec_from_file_location("global_media_type_resolution_v1", PATCH)
