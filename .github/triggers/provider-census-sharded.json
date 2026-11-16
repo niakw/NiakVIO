@@ -1,13 +1,13 @@
 {
   "schemaVersion": 2,
   "scope": "all",
-  "reason": "Validate monotonic Repair activity merge after source-pinned census persistence race fix",
-  "requestedAt": "2026-11-16T02:20:00+01:00",
-  "validation": "byte-bound-all-scope-global-plus-france-only-sharded-union-plus-monotonic-repair-attempt",
-  "source": "brain-control-plane-persistence-revalidation",
+  "reason": "Validate canonical merged census dashboard plus current Global+France Brain transaction after publication/staging fixes",
+  "requestedAt": "2026-11-16T03:20:00+01:00",
+  "validation": "byte-bound-all-scope-global-plus-france-only-sharded-union-plus-monotonic-repair-attempt-plus-canonical-dashboard-render",
+  "source": "brain-union-transaction-revalidation",
   "targetProviders": [],
   "allowPendingTargets": false,
-  "requiredEvidence": "Full current catalogue census must publish without regressing lastRepairAttempt from a newer canonical Repair/FORCE run; provider evidence remains byte-bound and proof thresholds unchanged",
-  "retryRevision": 10,
-  "fullRefreshRevision": 10
+  "requiredEvidence": "Full current catalogue census must remain byte-bound; preserve any newer concurrent Repair/FORCE attempt in canonical JSON and render Markdown from that merged state",
+  "retryRevision": 11,
+  "fullRefreshRevision": 11
 }
