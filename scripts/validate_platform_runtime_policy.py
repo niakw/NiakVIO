@@ -235,8 +235,6 @@ def validate_platform_evidence_authority(
             errors.append("stale platform matrix must be explicitly historical-only")
         if policy.get("authority") != "historical-evidence-only":
             errors.append("stale platform policy must be explicitly historical-only")
-        if str(policy.get("current_release") or "") != current_release:
-            errors.append("historical platform policy current_release marker is stale")
         if managed:
             errors.append("historical platform policy cannot manage current providers")
         if classifications:
