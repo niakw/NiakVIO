@@ -250,8 +250,10 @@ def projected_transport_types(semantic_types: object) -> list[str]:
     semantic = _normalized_media_types(semantic_types)
     transport = list(semantic)
     if "anime" in semantic and "tv" not in transport:
-        # Nuvio launches episodic anime through its TV namespace. Movie is not a
-        # generic anime alias: only semantic movie capability may select movie.
+        # supportedTypes is a client selection/launch surface. Anime-only
+        # providers expose TV as a compatibility launch alias, but Core preserves
+        # canonical anime as the provider runtime media type unless DATA
+        # explicitly declares a requestTypeAlias.
         transport.append("tv")
     return transport
 
