@@ -308,6 +308,8 @@ def main() -> int:
 
     run(sys.executable, "scripts/validate_published_provider_config.py", "--expected", str(len(catalogue)))
     for test in (
+        "tests/provider_route_proof_manifest_current_scope_test.py",
+        "tests/route_proof_manifest_policy_test.py",
         "tests/episodic_identity_runtime_test.py",
         "tests/episodic_year_identity_regression_test.py",
         "tests/global_media_type_resolution_test.py",
