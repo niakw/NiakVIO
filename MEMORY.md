@@ -1,3 +1,10 @@
+## 2026-11-16 — ProviderBase now separates provider transport from TMDB identity namespace
+
+- The NiakVIO-first runtime audit found a remaining contradiction after Core/Native anime realignment. Core already preserves canonical `anime` for provider calls unless a provider explicitly declares a `requestTypeAliases` mapping, but the shared ProviderBase still used `__nuvioMediaContext.tmdbNamespace` as its transport helper. That silently converted anime to TMDB `tv` inside learned routes, API/player routes and route compatibility.
+- Commit `6a8b08e5` splits the axes in `provider_base_store.py`: `_mediaNamespace()` is now provider transport and preserves `movie|tv|anime`; `_tmdbNamespace()` is identity-only and remains `movie|tv`. Learned route expansion and runtime player/API routing use provider transport; only TMDB metadata lookup uses the TMDB namespace. Explicit Core aliases such as `anime -> tv` remain authoritative because Core passes that provider media type into ProviderBase before execution.
+- Commit `040412b0` locks the separation in the media-type regression. Commit `5cd47cb2` documents the rule. Machine authority is now Provider-v3 architecture schema 15 (`16a02431`) and `VALIDATION.json` schema 75 (`00ef0283`), with documentation-contract enforcement in `14bd9136`.
+- This changes the shared ProviderBase source and therefore invalidates the previously persisted active ProviderBase hashes/bundles until canonical materialization rotates the 75 active Global+France bases and downstream Provider-v3 bytes. No earlier census/native result may certify the V32 transport semantics.
+
 ## 2026-11-16 — HD/4K diagnostic no longer samples a mostly disabled September cohort
 
 - The NiakVIO-first quality audit found that the read-only Deep HD/4K workflow still hard-coded eight named providers from an older campaign. Five of the eight are currently disabled (`hindmoviez`, `4khdhub`, `uhdmovies`, `allanime`, `moviesmod`), so the scheduled diagnostic could spend most of its jobs on non-executable rows and no longer represent current architecture quality coverage.
