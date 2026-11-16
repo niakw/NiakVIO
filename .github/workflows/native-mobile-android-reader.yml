@@ -180,7 +180,7 @@ jobs:
           NIAKVIO_TV_ROUTE_TIMEOUT_MINUTES: "45"
           NIAKVIO_TV_CHECKPOINT_DIR: ${{ github.workspace }}/native-evidence/tv/checkpoints
           NIAKVIO_TV_RESUME_CHECKPOINT_DIR: ${{ github.workspace }}/native-evidence/tv/checkpoints
-          NIAKVIO_PRIMARY_STREAM_SCOPE: "2"
+          NIAKVIO_PRIMARY_STREAM_SCOPE: all
           NIAKVIO_REGRESSION_STREAM_SCOPE: all
         with:
           api-level: 31
