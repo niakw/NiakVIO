@@ -12,8 +12,13 @@ sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "scripts" / "provider_patches"))
 
 subprocess.run([sys.executable, "scripts/upgrade_mugiwara_episode_failclosed_v2.py"], cwd=ROOT, check=True)
+provider_base_before_v34 = (ROOT / "scripts/provider_base_store.py").read_bytes()
 subprocess.run([sys.executable, "scripts/upgrade_manual_tv_live_regressions_v34.py"], cwd=ROOT, check=True)
 provider_base_after_first = (ROOT / "scripts/provider_base_store.py").read_bytes()
+assert provider_base_after_first == provider_base_before_v34, (
+    "committed ProviderBase must already be at the canonical V34 fixed point; "
+    "the validation test may not repair repository bytes"
+)
 subprocess.run([sys.executable, "scripts/upgrade_manual_tv_live_regressions_v34.py"], cwd=ROOT, check=True)
 assert (ROOT / "scripts/provider_base_store.py").read_bytes() == provider_base_after_first, (
     "V34 ProviderBase migration must be byte-idempotent on reapplication"
