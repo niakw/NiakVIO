@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "43791368666",
-  "sourceTriggerSha": "07201ed93653cabc21478d83b8b6deec6258cc1a",
+  "sourceRunId": "43792255663",
+  "sourceTriggerSha": "58f7d23df4b7e60815e2a21a033b61c460d06f9e",
   "unresolvedProviderCount": 64,
   "dynamicVariantProviderCount": 4,
   "dynamicVariantProviders": [
@@ -22,7 +22,6 @@
     "allwish",
     "anidb",
     "aniflix-uno",
-    "anikototv",
     "anime-sama",
     "anime-ultime",
     "animejlprovider",
@@ -33,10 +32,8 @@
     "animesultra",
     "animevost-fr",
     "animevostfr",
-    "anisama",
     "arrowtv",
     "boredflix",
-    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -56,7 +53,6 @@
     "franime",
     "frembed",
     "french-anime",
-    "french-manga",
     "frenchstream",
     "fsharetv",
     "fullanime",
@@ -64,7 +60,6 @@
     "hianime",
     "hindmoviez",
     "ihavenotv",
-    "internet-archive",
     "kehflix",
     "kidraz",
     "kurage",
@@ -78,30 +73,22 @@
     "movish",
     "movix-fr",
     "movy",
-    "mugiwarastream",
-    "nakios",
-    "neko-sama",
     "neobam",
     "neonflix",
     "overlook",
-    "papadustream",
     "persianstremio",
     "playimdb",
     "primewire",
     "pstream",
-    "purstream",
     "rarefilmm",
     "reanime-to",
     "rivestream-app",
     "rivestream-ru",
     "sadisflix",
-    "sekai",
     "showbox",
     "shuttletv",
     "skstream",
     "stigstream",
-    "streamzo",
-    "topcartoons",
     "uhdmovies",
     "videasy",
     "vidfast",
@@ -117,7 +104,6 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
-    "webflix",
     "wookafr",
     "yflix",
     "youtitou",
@@ -125,7 +111,7 @@
     "zone-telechargement"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 13,
+  "groupCount": 12,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -248,7 +234,6 @@
       "runtimeFamilySignature": "mixed_embed_resolver",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "chain",
         "lookup"
       ],
       "dominantIssues": [
@@ -256,15 +241,16 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 9,
+      "providerCount": 10,
       "providers": [
+        "cinematheque-de-bretagne",
         "fawesome",
         "frembed",
         "frenchstream",
         "kidraz",
-        "movix-fr",
         "neobam",
         "sadisflix",
+        "skstream",
         "youtitou",
         "zone-telechargement"
       ],
@@ -272,9 +258,7 @@
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [
-        "movix-fr"
-      ],
+      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -364,9 +348,8 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 4,
+      "providerCount": 3,
       "providers": [
-        "cinematheque-de-bretagne",
         "hianime",
         "showbox",
         "zone-streaming"
@@ -376,6 +359,38 @@
         "provider-census-status.json:brainCheckRequired"
       ],
       "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "variant-coverage|mixed_embed_resolver|runtime:mixed_embed_resolver",
+      "repairScope": "variant-coverage",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "mixed_embed_resolver",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 2,
+      "providers": [
+        "movix-fr",
+        "nakios"
+      ],
+      "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
+      "selectionAuthorities": [
+        "provider-census-sharded-latest.json:dynamic-variant-debt"
+      ],
+      "dynamicVariantProviders": [
+        "movix-fr",
+        "nakios"
+      ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -400,36 +415,6 @@
       "providerCount": 1,
       "providers": [
         "movy"
-      ],
-      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:native-policy-reachable",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "not-applicable",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "native-policy-reachable"
-      ],
-      "transportSignature": "native-policy-reachable",
-      "providerCount": 1,
-      "providers": [
-        "skstream"
       ],
       "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
@@ -553,36 +538,6 @@
       ],
       "dynamicVariantProviders": [
         "papadustream"
-      ],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "variant-coverage|mixed_embed_resolver|runtime:mixed_embed_resolver",
-      "repairScope": "variant-coverage",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_zero_result"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "nakios"
-      ],
-      "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
-      "selectionAuthorities": [
-        "provider-census-sharded-latest.json:dynamic-variant-debt"
-      ],
-      "dynamicVariantProviders": [
-        "nakios"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
