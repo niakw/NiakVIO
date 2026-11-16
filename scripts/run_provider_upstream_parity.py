@@ -19,6 +19,8 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+from current_provider_scope import projection_visible_provider_rows
+
 ROOT = Path(__file__).resolve().parents[1]
 WORKER = ROOT / "scripts/provider_worker.cjs"
 DEFAULT_OUT = ROOT / "automation/provider-upstream-parity.json"
@@ -105,11 +107,9 @@ def upstream_catalog() -> tuple[dict[str, dict[str, Any]], list[dict[str, str]]]
 
 
 def local_catalog() -> dict[str, dict[str, Any]]:
-    manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+    """Current Global+France catalogue using repository-relative provider paths."""
     out = {}
-    for row in manifest.get("scrapers") or []:
-        if not isinstance(row, dict):
-            continue
+    for row in projection_visible_provider_rows():
         provider_id = cid(row.get("id"))
         filename = str(row.get("filename") or "").strip()
         if provider_id and filename:
