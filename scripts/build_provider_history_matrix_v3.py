@@ -3,10 +3,13 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+from current_provider_scope import projection_visible_provider_rows
 V2 = ROOT / "scripts" / "build_provider_history_matrix_v2.py"
 OUT_JSON = ROOT / "automation" / "provider-history-matrix.json"
 OUT_MD = ROOT / "automation" / "PROVIDER-HISTORY-MATRIX.md"
@@ -228,7 +231,7 @@ def main() -> int:
         "5.21.0": manifest_map(git_json(ref0, "manifest.json")),
         "5.21.16": manifest_map(git_json(ref16, "manifest.json")),
         "5.21.36": manifest_map(git_json(ref36, "manifest.json")),
-        "current": manifest_map(load(ROOT / "manifest.json")),
+        "current": {canon(row.get("id")): row for row in projection_visible_provider_rows() if canon(row.get("id"))},
     }
     fixture0 = load(CAP_5210) if CAP_5210.exists() else {}
     fixture0_rows = fixture0.get("providers") or {}
