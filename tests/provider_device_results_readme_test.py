@@ -12,6 +12,12 @@ assert spec and spec.loader
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
+source = MODULE_PATH.read_text(encoding="utf-8")
+active_body = source.split("def active_providers() -> list[dict[str, Any]]:", 1)[1].split("\ndef provider_proof_summary", 1)[0]
+assert "projection_active_provider_rows()" in active_body
+assert 'load_json(ROOT / "manifest.json"' not in active_body
+assert "canonicalSupportedTypes" in active_body or "supportedTypes" in active_body
+
 module.active_providers = lambda: [
     {
         "id": "demo",
