@@ -10,10 +10,10 @@
   "maxRoundsPerBatch": 3,
   "publishValidated": true,
   "architectureForce": true,
-  "reason": "Representative replay of every current Repair family on corrected Global+France stage/materialize/fixed-point/publish transaction; no manual provider patch.",
-  "sourceCensusRunId": "43789755892",
-  "sourcePipelineSha": "07201ed93653cabc21478d83b8b6deec6258cc1a",
+  "reason": "Representative replay of current repair-eligible causal families on corrected Global+France stage/materialize/fixed-point/publish transaction; movy excluded because current census classifies it as HARNESS MISMATCH, not provider Repair.",
+  "sourceCensusRunId": "43794096301",
+  "sourcePipelineSha": "e1d37e4ea202b8775a50d67604d33d9f9891850e",
   "proofGoal": "Each target must stage exact published bytes from its projection authority, run Brain strategy/generation, apply only accepted DATA, materialize and reconcile publication fixed point, then pass independent terminal+identity replay and persist exact projection bytes; otherwise retain exact causal failure and Learning debt.",
-  "requestedAt": "2026-11-16T03:21:00+01:00",
-  "retry": 40
+  "requestedAt": "2026-11-16T11:37:00+01:00",
+  "retry": 41
 }
