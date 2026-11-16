@@ -36,19 +36,12 @@ on:
       - completed
   push:
     branches: [main]
+    # Ordinary provider/runtime pushes are routed by the canonical current-byte
+    # census workflow, which chooses mono <=120 or dispatches this sharded
+    # workflow >120 using the Global+France runtime-visible cardinality.
+    # Direct push activation here is reserved for this workflow/its explicit trigger.
     paths:
-      - 'scripts/provider_patches/**'
-      - 'provider-overrides.json'
-      - 'provider-hubs.json'
-      - 'scripts/provider_base_store.py'
-      - 'scripts/apply_provider_overrides.py'
-      - 'scripts/materialize_provider_v3_all.py'
-      - 'scripts/audit_provider_quick_yield.py'
-      - 'scripts/render_provider_census_status.py'
-      - 'scripts/classify_provider_authority.py'
-      - 'scripts/probe_waf_browser_session.py'
       - '.github/workflows/provider-census-sharded.yml'
-      - 'provider_catalog.json'
       - '.github/triggers/provider-census-sharded.json'
 
 permissions:
@@ -198,15 +191,16 @@ jobs:
           echo "shard_count=$shard_count" >> "$GITHUB_OUTPUT"
           echo "shards_json=$shards_json" >> "$GITHUB_OUTPUT"
           echo "FIELD_SHARDED_CENSUS_PARTITION scope=$census_scope targets=${target_providers:-none} shard_count=$shard_count"
-          # Every push reaching this workflow already matched a causal path in
-          # the on.push.paths allowlist. Never self-cancel that evidence refresh
-          # based on a historical Global-only catalogue-size threshold.
+          # Ordinary causal pushes are routed by the mono current-byte census.
+          # A push reaches this workflow directly only when the sharded workflow
+          # itself or its explicit trigger changed; workflow_run/dispatch remain
+          # first-class entrypoints for activation, onboarding and explicit replay.
           if [ "$GITHUB_EVENT_NAME" != "push" ] || [ -n "$changed_paths" ]; then
             echo "should_run=true" >> "$GITHUB_OUTPUT"
-            echo "FIELD_SHARDED_CENSUS_PREPARE should_run=true explicit_trigger=$explicit_trigger provider_count=$count authority=projection-runtime-visible"
+            echo "FIELD_SHARDED_CENSUS_PREPARE should_run=true explicit_trigger=$explicit_trigger provider_count=$count authority=projection-runtime-visible routing=explicit-or-event"
           else
             echo "should_run=false" >> "$GITHUB_OUTPUT"
-            echo "FIELD_SHARDED_CENSUS_PREPARE should_run=false explicit_trigger=$explicit_trigger provider_count=$count reason=no-causal-push-diff"
+            echo "FIELD_SHARDED_CENSUS_PREPARE should_run=false explicit_trigger=$explicit_trigger provider_count=$count reason=no-explicit-sharded-push"
           fi
 
   shard:
