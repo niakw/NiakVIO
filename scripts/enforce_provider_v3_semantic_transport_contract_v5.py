@@ -105,55 +105,49 @@ def patch_gowaru_route_normalizer() -> bool:
 
 
 def patch_media_transport() -> bool:
+    """Validate the current canonical provider media ABI; never rewrite it.
+
+    This compatibility entry point is executed by canonical reconstruction.
+    Historical V27 behavior mapped canonical anime back to the TMDB movie/tv
+    namespace. That is no longer provider ABI authority: Core may use the TMDB
+    namespace for identity lookup, but provider transport remains canonical
+    anime unless structured DATA declares an explicit requestTypeAlias.
+    """
     path = ROOT / "scripts" / "provider_patches" / "global_media_type_resolution_v1.py"
     text = path.read_text(encoding="utf-8")
-    changed = False
-    old = '''function providerTransport(canonical,namespace){
-  var map=c.requestTypeAliases&&typeof c.requestTypeAliases==="object"?c.requestTypeAliases:{};
-  var mapped=s(map[canonical]).toLowerCase();
-  if(mapped==="tmdb_namespace")return namespace==="movie"?"movie":"tv";
-  if(mapped)return alias(mapped);
-  var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
-  if(canonical==="anime"){
-    var ns=namespace==="movie"?"movie":"tv";
-    if(semantic.indexOf(ns)>=0)return ns;
-    return"anime";
-  }
-  return canonical==="movie"?"movie":"tv";
-}'''
-    new = '''function providerTransport(canonical,namespace){
-  var map=c.requestTypeAliases&&typeof c.requestTypeAliases==="object"?c.requestTypeAliases:{};
-  var mapped=s(map[canonical]).toLowerCase();
-  if(mapped==="tmdb_namespace")return namespace==="movie"?"movie":"tv";
-  if(mapped)return alias(mapped);
-  // Anime is semantic, not a TMDB namespace. Once authoritative metadata has
-  // classified the work as anime, preserve its real TV/movie namespace for the
-  // provider API. The semantic capability gate still rejects non-anime works.
-  if(canonical==="anime")return namespace==="movie"?"movie":"tv";
-  return canonical==="movie"?"movie":"tv";
-}'''
-    if new not in text:
-        if text.count(old) != 1:
-            raise AssertionError("Core anime transport source shape drifted")
-        text = text.replace(old, new, 1)
-        changed = True
-    old_revision = '"revision": "tmdb-data-contract-launch-gate-v26-authoritative-context-reconcile",'
-    new_revision = '"revision": "tmdb-data-contract-launch-gate-v27-anime-semantic-transport",'
-    revision_match = re.search(r'"revision"\s*:\s*"tmdb-data-contract-launch-gate-v(\d+)-[^"]+"', text)
-    if not revision_match:
-        raise AssertionError("Core media revision source shape drifted")
-    revision_number = int(revision_match.group(1))
-    if revision_number < 27:
-        if revision_number != 26 or text.count(old_revision) != 1:
-            raise AssertionError("Core media revision is older than semantic transport v27 but not migratable")
-        text = text.replace(old_revision, new_revision, 1)
-        changed = True
-    # A newer Core revision is authoritative. Do not downgrade it merely to make
-    # this historical migration marker exact; providerTransport above is the
-    # semantic/transport invariant this migration owns.
-    path.write_text(text, encoding="utf-8")
-    return changed
+    required = (
+        "/* NUVIO_GLOBAL_CANONICAL_ANIME_PROVIDER_ABI_V35 */",
+        'if(mapped==="tmdb_namespace")return namespace==="movie"?"movie":"tv";',
+        "if(mapped)return alias(mapped);",
+        'if(canonical==="anime")return"anime";',
+        '"revision": "tmdb-data-contract-launch-gate-v35-canonical-anime-provider-abi",',
+    )
+    for needle in required:
+        if needle not in text:
+            raise AssertionError(f"Core canonical anime provider ABI missing: {needle}")
 
+    forbidden = (
+        'if(canonical==="anime")return namespace==="movie"?"movie":"tv";',
+        'if(canonical==="anime"){',
+        'var ns=namespace==="movie"?"movie":"tv";',
+        'if(semantic.indexOf(ns)>=0)return ns;',
+    )
+    provider_transport = text.split("function providerTransport(canonical,namespace){", 1)[1].split(
+        "function namespaceCandidates", 1
+    )[0]
+    for needle in forbidden:
+        if needle in provider_transport:
+            raise AssertionError(
+                f"historical implicit anime/TMDB provider transport returned: {needle}"
+            )
+
+    revision_match = re.search(
+        r'"revision"\s*:\s*"tmdb-data-contract-launch-gate-v(\d+)-([^"]+)"',
+        text,
+    )
+    if not revision_match or int(revision_match.group(1)) < 35:
+        raise AssertionError("Core media revision predates canonical anime provider ABI v35")
+    return False
 
 def patch_materializer() -> bool:
     path = ROOT / "scripts" / "materialize_provider_v3_all.py"
@@ -189,7 +183,9 @@ def patch_runtime_regression_expectations() -> bool:
     text = path.read_text(encoding="utf-8")
     required = (
         "global.TMDB_API_KEY='0123456789abcdef0123456789abcdef'",
-        "anime semantic/TV transport split failed",
+        "canonical anime provider ABI lost",
+        "anime movie must keep canonical provider ABI while TMDB namespace stays movie",
+        "declared anime->tv provider alias not honored",
         "non-launch must return []",
         "zero output caused TMDB work",
         "TV-only provider leaked anime",
