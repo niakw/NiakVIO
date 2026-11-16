@@ -67,6 +67,10 @@ for pid,row in disabled.items():
 workflow=(ROOT/".github/workflows/provider-disabled-lifecycle.yml").read_text(encoding="utf-8")
 assert "- 'automation/provider-census-status.json'" in workflow, "fresh canonical census must trigger lifecycle"
 assert "python scripts/reconcile_provider_static_authority.py --apply" in workflow, "lifecycle must self-heal exact managed static authority before projection"
+audit_source=(ROOT/"scripts/audit_provider_v3_static.py").read_text(encoding="utf-8")
+assert '"current-published-config-recovery"' in audit_source
+assert '"activation-static-config"' in audit_source, "proof-bound activation CONFIG must remain exact audit authority"
+assert '"managed-config-lego"' in audit_source
 reconcile_pos=workflow.index("python scripts/reconcile_provider_static_authority.py --apply")
 classify_pos=workflow.index("python scripts/classify_provider_authority.py --apply-safe-disables")
 manage_pos=workflow.index("python scripts/manage_provider_lifecycle.py --apply")
