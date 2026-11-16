@@ -140,8 +140,8 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-          from scripts.current_provider_scope import active_provider_count
-          expected=active_provider_count()
+          from scripts.current_provider_scope import projection_runtime_visible_provider_count
+          expected=projection_runtime_visible_provider_count()
           report=json.loads(Path("provider-v3-live-route-validation.json").read_text(encoding="utf-8"))
           assert report.get("providerCount") == expected, (report.get("providerCount"), expected)
           assert report.get("completedProviderCount") == expected, (report.get("completedProviderCount"), expected)
@@ -167,22 +167,25 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-          from scripts.current_provider_scope import active_provider_count, active_provider_ids
-          expected=active_provider_count()
-          m=json.loads(Path("manifest.json").read_text(encoding="utf-8"))
+          from scripts.current_provider_scope import projection_active_provider_count, projection_active_provider_ids
+          expected=projection_active_provider_count()
           r=json.loads(Path("provider-v3-materialization.json").read_text(encoding="utf-8"))
           live=json.loads(Path("provider-v3-live-route-validation.json").read_text(encoding="utf-8"))
-          rows=m.get("scrapers") or []
-          active=sum(1 for row in rows if row.get("enabled") is not False)
-          assert active==expected, (active,expected)
-          assert {str(row.get("id") or "").strip().casefold().replace("_","-") for row in rows if row.get("enabled") is not False}==active_provider_ids()
+          material_ids={
+              str(row.get("provider") or "").strip().casefold().replace("_","-")
+              for row in r.get("providers") or []
+              if isinstance(row,dict)
+          }
+          active_ids=projection_active_provider_ids()
+          assert len(active_ids)==expected, (len(active_ids),expected)
+          assert material_ids==active_ids, (len(material_ids),len(active_ids))
           assert r.get("providerCount")==expected, (r.get("providerCount"),expected)
           assert r.get("context")=="workspace", r.get("context")
           assert r.get("publication") is False
           assert r.get("mainTouched") is False
-          assert all(str(x.get("filename") or "").startswith("providers/") for x in rows)
+          assert all(str(x.get("file") or "").startswith("providers/") for x in r.get("providers") or [])
           print(
-              f"FIELD_MANUAL_RECONSTRUCTION providers={expected} active={active} context=workspace "
+              f"FIELD_MANUAL_RECONSTRUCTION providers={expected} active={len(active_ids)} context=workspace "
               f"mainTouched=false liveRoutes={live.get('liveValidatedRouteCount', 0)}"
           )
           PY
