@@ -1,5 +1,5 @@
 {
-  "schema_version": 13,
+  "schema_version": 14,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -24,7 +24,11 @@
     ],
     "core_boundary": "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
     "published_provider_js_is_reconstruction_seed": false,
-    "runtime_ledger_scope_authority": "scripts/current_provider_scope.py:projection_runtime_visible_provider_ids"
+    "runtime_ledger_scope_authority": "scripts/current_provider_scope.py:projection_runtime_visible_provider_ids",
+    "canonical_provider_base_materializer": "scripts/materialize_provider_base_v3_store.py",
+    "structured_data_sanitization_may_converge_before_materialization": true,
+    "common_source_migrations_validation_only": true,
+    "common_source_migration_fixed_point_guard": "scripts/materialize_provider_base_v3_store.py:SOURCE_MIGRATION_PATHS"
   },
   "media_types": {
     "semantic_field": "canonicalSupportedTypes",
@@ -139,7 +143,10 @@
     "provider_scope_authority": "scripts/current_provider_scope.py:projection_active_provider_ids",
     "sequential_audit_scope_authority": "scripts/current_provider_scope.py:projection_runtime_visible_provider_ids",
     "global_publication_authority": "manifest.json",
-    "france_only_publication_authority": "provider_catalog.json projections general=false,vf=true"
+    "france_only_publication_authority": "provider_catalog.json projections general=false,vf=true",
+    "requires_source_migration_fixed_point": true,
+    "source_migration_fixed_point_marker": "FIELD_PROVIDER_SOURCE_MIGRATION_FIXED_POINT changed=false",
+    "requires_clean_provider_base_current_source": true
   },
   "native_labs": [
     "TVAndroid",
