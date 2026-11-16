@@ -129,12 +129,16 @@ assert "material_ids==active_ids" in manual
 assert "==46" not in manual and "46/46" not in manual
 
 
-assert machine["schema_version"] >= 13
+assert machine["schema_version"] >= 14
 source = machine["provider_source_of_truth"]
 assert source["canonical_provider_base_marker"] == "NIAKVIO_PROVIDER_BASE_OWNED_V3"
 assert source["legacy_provider_js_seed_allowed"] is False
 assert source["upstream_provider_js_seed_allowed"] is False
 assert source["published_provider_js_is_reconstruction_seed"] is False
+assert source["canonical_provider_base_materializer"] == "scripts/materialize_provider_base_v3_store.py"
+assert source["structured_data_sanitization_may_converge_before_materialization"] is True
+assert source["common_source_migrations_validation_only"] is True
+assert source["common_source_migration_fixed_point_guard"] == "scripts/materialize_provider_base_v3_store.py:SOURCE_MIGRATION_PATHS"
 
 media = machine["media_types"]
 assert media["semantic_field"] == "canonicalSupportedTypes"
@@ -178,6 +182,9 @@ assert machine["manual_reconstruction"]["global_publication_authority"] == "mani
 assert machine["manual_reconstruction"]["france_only_publication_authority"] == "provider_catalog.json projections general=false,vf=true"
 assert machine["manual_reconstruction"]["historical_provider_count"] == HISTORICAL_PROVIDER_COUNT
 assert machine["manual_reconstruction"]["historical_provider_directory"] == "provider-old"
+assert machine["manual_reconstruction"]["requires_source_migration_fixed_point"] is True
+assert machine["manual_reconstruction"]["source_migration_fixed_point_marker"] == "FIELD_PROVIDER_SOURCE_MIGRATION_FIXED_POINT changed=false"
+assert machine["manual_reconstruction"]["requires_clean_provider_base_current_source"] is True
 assert machine["native_labs"] == [
     "TVAndroid",
     "MobileAndroid",
@@ -255,7 +262,11 @@ assert machine["provider_scopes"]["availability_report_visible"] == "scripts/cur
 
 assert platform_runtime_machine["schema_version"] == 3
 assert 'data.get("schema_version") != 3' in renderer_source
-assert validation_machine["schema_version"] >= 73
+assert validation_machine["schema_version"] >= 74
+assert validation_machine["checks"]["clean_provider_base_matches_current_common_source"] is True
+assert validation_machine["checks"]["common_provider_source_migrations_validation_only"] is True
+assert validation_machine["final_certification"]["requires_clean_provider_base_current_source"] is True
+assert validation_machine["final_certification"]["requires_common_source_migration_fixed_point"] is True
 runtime_contract = validation_machine["nuvio_runtime_contract"]
 assert runtime_contract["current_audited_refs_must_match"] is True
 assert runtime_contract["official_head_freshness_required_before_release"] is True
