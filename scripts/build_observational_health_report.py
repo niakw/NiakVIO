@@ -4,7 +4,7 @@ from __future__ import annotations
 import argparse, json
 from datetime import datetime, timezone
 from pathlib import Path
-from current_provider_scope import runtime_visible_provider_count
+from current_provider_scope import projection_active_provider_count, projection_active_provider_rows
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -24,11 +24,15 @@ def main()->int:
     p.add_argument("--output",type=Path,default=ROOT/"health-report.json")
     args=p.parse_args()
     raw=json.loads(args.results.read_text(encoding="utf-8"))
-    manifest=json.loads(args.manifest.read_text(encoding="utf-8"))
-    manifest_by={str(r.get("id") or "").casefold():r for r in manifest.get("scrapers") or [] if isinstance(r,dict)}
+    if args.manifest.resolve() == (ROOT/"manifest.json").resolve():
+        manifest_rows = projection_active_provider_rows()
+    else:
+        manifest=json.loads(args.manifest.read_text(encoding="utf-8"))
+        manifest_rows=[r for r in manifest.get("scrapers") or [] if isinstance(r,dict) and r.get("enabled") is not False]
+    manifest_by={str(r.get("id") or "").casefold().replace("_","-"):r for r in manifest_rows}
     providers=[]
     for item in raw.get("results") or []:
-        pid=str(item.get("canonical_id") or "").casefold()
+        pid=str(item.get("canonical_id") or "").casefold().replace("_","-")
         row=manifest_by.get(pid,{})
         ev=item.get("evidence") if isinstance(item.get("evidence"),dict) else {}
         providers.append({
@@ -65,8 +69,15 @@ def main()->int:
         },
         "providers":providers,
     }
-    if len(providers) != runtime_visible_provider_count():
-        raise SystemExit(f"observation report incomplete: {len(providers)} != {runtime_visible_provider_count()}")
+    expected = projection_active_provider_count() if args.manifest.resolve() == (ROOT/"manifest.json").resolve() else len(manifest_by)
+    observed_ids = {str(row.get("id") or "").strip().casefold().replace("_","-") for row in providers}
+    expected_ids = set(manifest_by)
+    if len(providers) != expected or observed_ids != expected_ids:
+        raise SystemExit(
+            "observation report incomplete: "
+            f"providers={len(providers)}/{expected} "
+            f"missing={sorted(expected_ids-observed_ids)} extra={sorted(observed_ids-expected_ids)}"
+        )
     args.output.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     print(f"FIELD_PROVIDER_OBSERVATION_REPORT mode={raw.get('mode')} providers={len(providers)} repair=false")
     return 0
