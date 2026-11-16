@@ -5,10 +5,11 @@ import json
 import re
 import sys
 from pathlib import Path
-from current_provider_scope import projection_runtime_visible_provider_count
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
+
+from current_provider_scope import projection_runtime_visible_provider_count  # noqa: E402
 from sanitize_provider_v3_core_metadata_routes import (  # noqa: E402
     derive_runtime_family,
     is_tmdb_url_or_route,
