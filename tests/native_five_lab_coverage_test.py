@@ -14,6 +14,7 @@ ios = (ROOT / ".github/workflows/native-mobile-ios-reader.yml").read_text(encodi
 desktop = (ROOT / ".github/workflows/native-desktop-reader-acceptance.yml").read_text(encoding="utf-8")
 
 for text in (android, ios, desktop):
+    assert "\nenv:\n\njobs:\n" not in text, "workflow must not contain a null top-level env mapping"
     assert ".github/triggers/full-native-lab-validation.json" in text
     assert "workbench/provider-v3-performance-playback" not in text
     assert "workbench/provider-v3-recognition-routes-data" not in text
