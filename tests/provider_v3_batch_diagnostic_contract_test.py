@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -61,7 +62,13 @@ assert 'promotedDataRolledBack' not in source
 assert 'PROVIDER_V3_FAILED_LIVE_NOT_EXECUTION_DATA_V2' in validator
 assert 'row.get("validationState") != "failed-live"' in validator
 assert '"executionPlanRetainsFailedLive": False' in validator
-assert '"blockedNon2xxPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"}' in validator
+blocked_match = re.search(
+    r'"blockedNon2xxPlanPreserved"\s*:\s*completion_state\s+in\s+\{(?P<body>[^}]*)\}',
+    validator,
+)
+assert blocked_match, "blocked non-2xx preservation predicate missing"
+blocked_states = set(re.findall(r'["\']([^"\']+)["\']', blocked_match.group("body")))
+assert {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"} <= blocked_states, blocked_states
 
 # A successful recognition slice is not allowed to exist only inside a runner
 # artifact. Persist canonical DATA, the exact per-run report and MEMORY state in
