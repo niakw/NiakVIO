@@ -8,10 +8,9 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import active_provider_count
+from current_provider_scope import projection_active_provider_count, projection_active_provider_rows
 
 OVERRIDES = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
-MANIFEST = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 APPLY = (ROOT / "scripts/apply_provider_overrides.py").read_text(encoding="utf-8")
 RUNTIME = (ROOT / "scripts/provider_patches/global_runtime_compat_v1.py").read_text(encoding="utf-8")
 DESKTOP = (ROOT / "scripts/provider_patches/desktop_runtime_compat_v1.py").read_text(encoding="utf-8")
@@ -72,8 +71,8 @@ assert 'out.displayBadges=g?[g].concat(cleanDisplay):cleanDisplay' in STREAM_SCO
 for forbidden in ("streamflix", "movix", "vidrock", "cineby", "coflix"):
     assert forbidden not in SANITIZER_V10.casefold(), forbidden
 
-rows = [row for row in (MANIFEST.get("scrapers") or []) if row.get("enabled") is not False]
-assert len(rows) == active_provider_count()
+rows = projection_active_provider_rows()
+assert len(rows) == projection_active_provider_count()
 for row in rows:
     provider_id = str(row.get("id") or "")
     path = ROOT / str(row.get("filename") or "")
@@ -98,4 +97,4 @@ for row in rows:
     assert text.count("/* STARTFIX:CORE.TELEMETRY.V1 */") == 1, provider_id
     assert text.count("/* CLOSEFIX:CORE.TELEMETRY.V1 */") == 1, provider_id
 
-print(f"GLOBAL_CORE_RUNTIME_OWNERSHIP_OK providers={len(rows)} timers=core 403=core sanitizer_v10=network-evidence stream_score=core provider_specific_runtime_hacks=forbidden")
+print(f"GLOBAL_CORE_RUNTIME_OWNERSHIP_OK providers={len(rows)} scope=Global+France timers=core 403=core sanitizer_v10=network-evidence stream_score=core telemetry=core provider_specific_runtime_hacks=forbidden")
