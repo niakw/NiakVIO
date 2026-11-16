@@ -109,7 +109,9 @@ assert "subprocess.Popen(" in LEARNING
 assert '"provider_timeout_ms": 12000' in LEARNING
 assert '"retry_provider_timeouts": False' in LEARNING
 assert '"max_settings_profiles": 1' in LEARNING
-assert '"max_streams_per_runtime": max(1, min(int(stream_cap), 2))' in LEARNING
+assert "learning_stream_probe_policy" in LEARNING
+assert "requires_full_variant_probe" in LEARNING
+assert '"probe_all_streams": probe_all_streams' in LEARNING
 assert '"playback_timeout_ms": 5000' in LEARNING
 
 # iOS exposes the same quick/full distinction. Device IPA is a full gate;
