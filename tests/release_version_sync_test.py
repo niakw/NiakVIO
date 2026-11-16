@@ -160,6 +160,67 @@ with tempfile.TemporaryDirectory() as tmp:
     assert catalog["manifestMeta"]["vf"]["name"] == "NiakVIO v9.8.7 — VF uniquement"
     assert "nuvio_client_compatibility" not in sources
 
+# Provider catalogue rows must mirror the final projection generation after
+# release/provider version synchronization. Global rows own the published
+# artifact while canonicalSupportedTypes removes Nuvio transport aliases from
+# the catalogue semantic contract.
+with tempfile.TemporaryDirectory() as tmp:
+    root = pathlib.Path(tmp)
+    write_release_fixture(root, "1.0.0")
+    manifest = {
+        "name": "NiakVIO",
+        "version": "1.0.0",
+        "scrapers": [{
+            "id": "alpha",
+            "version": "1.0.2",
+            "enabled": True,
+            "supportedTypes": ["anime", "tv"],
+            "canonicalSupportedTypes": ["anime"],
+            "filename": "providers/alpha-new.js",
+            "disabledPlatforms": [],
+        }],
+    }
+    vf_manifest = {
+        "name": "NiakVIO — VF uniquement",
+        "version": "1.0.0",
+        "scrapers": [{
+            **manifest["scrapers"][0],
+            "filename": "../providers/alpha-new.js",
+        }],
+    }
+    (root / "manifest.json").write_text(json.dumps(manifest))
+    (root / "vf/manifest.json").write_text(json.dumps(vf_manifest))
+    catalog = json.loads((root / "provider_catalog.json").read_text())
+    catalog["providers"] = [{
+        "canonicalId": "alpha",
+        "scraper": {
+            "id": "alpha",
+            "version": "1.0.1",
+            "enabled": True,
+            "supportedTypes": ["movie"],
+            "filename": "providers/alpha-old.js",
+            "disabledPlatforms": ["android"],
+        },
+        "projections": {"general": True, "vf": True},
+    }]
+    (root / "provider_catalog.json").write_text(json.dumps(catalog))
+
+    script = script_source.replace(
+        "ROOT = pathlib.Path(__file__).resolve().parents[1]",
+        f"ROOT = pathlib.Path({str(root)!r})",
+    )
+    test_script = root / "sync.py"
+    test_script.write_text(script, encoding="utf-8")
+    subprocess.run([sys.executable, str(test_script), "--version", "1.0.0"], check=True)
+
+    synced = json.loads((root / "provider_catalog.json").read_text())
+    scraper = synced["providers"][0]["scraper"]
+    assert scraper["version"] == "1.0.2"
+    assert scraper["filename"] == "providers/alpha-new.js"
+    assert scraper["supportedTypes"] == ["anime"]
+    assert scraper["disabledPlatforms"] == []
+
+
 # Regression lock for the real failure mode that occurred during the main
 # consolidation: a previously published 5.21.39 must never become 5.21.37.
 with tempfile.TemporaryDirectory() as tmp:
