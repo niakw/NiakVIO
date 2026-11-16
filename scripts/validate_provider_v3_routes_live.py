@@ -23,7 +23,7 @@ import time
 import urllib.parse
 from collections import Counter, defaultdict
 from pathlib import Path
-from current_provider_scope import active_provider_count
+from current_provider_scope import projection_active_provider_count, projection_active_provider_rows
 from typing import Any, Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,7 +33,7 @@ PROBE = ROOT / "scripts" / "nuvio_tv_probe_route_validation.cjs"
 KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
 OVERRIDES = ROOT / "provider-overrides.json"
 OUTPUT = ROOT / "provider-v3-live-route-validation.json"
-EXPECTED = active_provider_count()
+EXPECTED = projection_active_provider_count()
 REPRESENTATIVE = {
     "movie": "interstellar",
     "tv": "breaking-bad-s01e01",
@@ -111,13 +111,10 @@ def fixture_map() -> dict[str, dict[str, Any]]:
 
 
 def build_tasks() -> tuple[list[dict[str, Any]], int]:
-    manifest = load(MANIFEST)
     fixtures = fixture_map()
     tasks: list[dict[str, Any]] = []
     provider_count = 0
-    for row in manifest.get("scrapers") or []:
-        if not isinstance(row, dict):
-            continue
+    for row in projection_active_provider_rows():
         provider_id = str(row.get("id") or "").strip().casefold()
         filename = str(row.get("filename") or "").strip()
         if not provider_id or not filename or not (ROOT / filename).is_file():
