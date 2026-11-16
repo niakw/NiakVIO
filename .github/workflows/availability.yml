@@ -59,6 +59,7 @@ jobs:
           node tests/provider_semantics.test.cjs
           node tests/availability_fallback_policy.test.cjs
           python tests/availability_tmdb_auth_workflow_test.py
+          python tests/availability_projection_union_contract_test.py
 
       - name: Stage current published Global + France providers
         run: python scripts/stage_published.py --projection-union
