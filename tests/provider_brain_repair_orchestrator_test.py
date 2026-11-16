@@ -566,6 +566,7 @@ for required in (
     "brain-repair-experience.json",
     "stage_published.py",
     "materialize_provider_v3_one.py",
+    "reconcile_targeted_provider_publication.py",
     "PROVIDER_BRAIN_INCREMENTAL_MATERIALIZATION_V1",
     "validatedRepairLearningExecuted",
     "family-batched-multi-wave-brain-repair",
