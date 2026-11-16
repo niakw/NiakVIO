@@ -16,6 +16,7 @@ required=[
     'if [ "$preflight_mode" = "none" ]',
     'FIELD_PROVIDER_PREFLIGHT_MATERIALIZATION mode=none skipped=true',
     'scripts/materialize_provider_v3_all.py',
+    '--source-catalog provider_catalog.json',
     'FIELD_PROVIDER_PREFLIGHT_MATERIALIZATION mode=$preflight_mode skipped=false',
 ]
 for needle in required:
@@ -27,5 +28,6 @@ full=block.index("scripts/materialize_provider_v3_all.py")
 discovery=block.index("python tests/provider_discovery_v3_composition_test.py")
 assert scope < branch < full < discovery
 assert block.count("scripts/materialize_provider_v3_all.py") == 1
+assert block.count("--source-catalog provider_catalog.json") == 1
 
 print("Brain preflight incremental materialization scope contract passed")
