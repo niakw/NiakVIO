@@ -162,5 +162,5 @@ print(
     f"union_visible={len(union_visible)} global_active={len(active_set)} "
     f"projection_active={len(projection_active)} historical={len(archive)} "
     "vf=global-subset+france-only no-anime=global-subset vf-no-anime=vf-subset "
-    "hub46/native-hub46=global-active"
+    "hub46/native-hub46=Global+France-active-union"
 )
