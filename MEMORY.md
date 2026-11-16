@@ -1,3 +1,11 @@
+## 2026-11-16 — Repair route merge tolerates stale historical catalogue without inventing proof
+
+- Brain Learning run `43785085475` successfully returned its 12-provider cohort to canonical Repair, but Repair run `43787089404` failed before candidate application even though targeted Papadustream route recovery produced six proven routes. The failure was generic: `merge_provider_repair_report_v6.py` required the historical V5 route report to contain every currently active Global provider.
+- The historical V5/V6 route ledgers still describe the older 96-provider catalogue. Current Global has 46 active identities, including 33 activation-era providers absent from that history. Treating those absent historical rows as fatal prevented every targeted Repair from reaching application/materialization.
+- The merge now represents each current-active identity absent from historical route history as `catalogue-presence-only`: exact catalogue membership, empty route/routeData/executionRoutes, `proofAuthority=false`, `executionAuthority=false`, and explicit preservation of existing runtime DATA. `apply_provider_route_recovery_report.py` skips those rows entirely. A fresh targeted route row replaces the placeholder normally.
+- This change does **not** promote route proof, activation, playback or provider health. It removes a stale-ledger orchestration blocker while keeping historical absence visible in `portfolioRepair.historicalBaselineMissingProviders`.
+- Regression coverage: `tests/provider_repair_merge_catalogue_presence_test.py`, wired into both canonical Repair and fast-targeted Repair test loops.
+
 ## 2026-11-16 — Final publication reconcile resyncs projections after the second reapply
 
 - Release finalizer run 43780182607 on `a75e4fd040eb09c2324628a848979c6c29c5813d` passed canonical Global materialization (46 providers), restored the executable Global+France authority (76 active identities, including 30 recovered France-only rows), reached minimizer fixed points and rebound offline proofs. It then performed the intended second durable reapply/minimizer pass, which rotated Global content-addressed filenames again.

@@ -950,6 +950,7 @@ def main() -> int:
     for test in (
         "tests/provider_route_proof_authority_test.py",
         "tests/provider_repair_v6_recipe_regression_test.py",
+        "tests/provider_repair_merge_catalogue_presence_test.py",
         "tests/provider_route_recovery_apply_scope_test.py",
         "tests/provider_route_proof_manifest_current_scope_test.py",
         "tests/provider_repair_merge_typed_recipe_test.py",

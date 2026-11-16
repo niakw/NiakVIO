@@ -17,6 +17,24 @@ import runtime_structured_plan_cap_v1 as structured_policy  # noqa: E402
 import runtime_execution_authority_cap_v1 as authority_policy  # noqa: E402
 import current_provider_scope as current_scope  # noqa: E402
 
+CATALOGUE_PRESENCE_ONLY_POLICY = "catalogue-presence-only"
+
+
+def is_catalogue_presence_only(row: object) -> bool:
+    return bool(
+        isinstance(row, dict)
+        and row.get("mergePolicy") == CATALOGUE_PRESENCE_ONLY_POLICY
+        and row.get("preserveExistingRuntimePlan") is True
+        and row.get("proofAuthority") is False
+        and row.get("executionAuthority") is False
+        and not (row.get("routes") or row.get("routeData") or row.get("executionRoutes") or row.get("apiRecipe"))
+    )
+
+
+def provider_rows_for_apply(report: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = [row for row in report.get("providers") or [] if isinstance(row, dict)]
+    return [row for row in rows if not is_catalogue_presence_only(row)]
+
 
 def validate_report_scope(value: dict[str, object]) -> list[dict[str, object]]:
     expected_ids = current_scope.active_provider_ids()
@@ -84,7 +102,8 @@ def main() -> int:
 
     print(
         "FIELD_ROUTE_RECOVERY_REPORT_APPLIED "
-        f"providers={summary['patchedProviders']} evidence_routes={summary['provenRoutes']} recipes={summary['apiRecipes']} "
+        f"providers={summary['patchedProviders']} preserved_untouched={summary['preservedUntouchedProviders']} "
+        f"evidence_routes={summary['provenRoutes']} recipes={summary['apiRecipes']} "
         f"v19_bridged_providers={bridge_summary['bridgedProviders']} v19_bridged_plans={bridge_summary['bridgedPlans']} "
         f"normal_entry_target={route_summary['target']} runtime_route_max={route_summary['maxAfter']} "
         f"runtime_optimized={route_summary['optimizedProviders']} runtime_exceptions={route_summary['exceptionProviders']} "

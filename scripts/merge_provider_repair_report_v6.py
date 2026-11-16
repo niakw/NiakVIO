@@ -18,6 +18,7 @@ from typing import Any
 import provider_route_proof_lkg as route_lkg
 
 ROOT = Path(__file__).resolve().parents[1]
+CATALOGUE_PRESENCE_ONLY_POLICY = "catalogue-presence-only"
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -84,6 +85,42 @@ def current_active_ids(manifest: dict[str, Any]) -> list[str]:
     return ids
 
 
+def catalogue_presence_only_row(provider_id: str) -> dict[str, Any]:
+    """Represent current catalogue membership without inventing route proof.
+
+    This row exists solely so a targeted Repair report can retain exact current
+    manifest cardinality when the historical route baseline predates activation
+    of a provider. Downstream application must leave existing provider DATA
+    untouched until that identity is actually reprobed.
+    """
+    return {
+        "providerId": provider_id,
+        "status": "current-active-not-in-historical-route-baseline",
+        "routes": [],
+        "routeData": [],
+        "executionRoutes": [],
+        "mergePolicy": CATALOGUE_PRESENCE_ONLY_POLICY,
+        "preserveExistingRuntimePlan": True,
+        "proofAuthority": False,
+        "executionAuthority": False,
+    }
+
+
+def baseline_rows_for_catalogue(
+    baseline: dict[str, Any], catalogue_ids: list[str]
+) -> tuple[dict[str, dict[str, Any]], list[str]]:
+    catalogue_set = set(catalogue_ids)
+    rows = {
+        pid(row): copy.deepcopy(row)
+        for row in baseline.get("providers") or []
+        if isinstance(row, dict) and pid(row) in catalogue_set
+    }
+    missing = sorted(catalogue_set - set(rows))
+    for provider_id in missing:
+        rows[provider_id] = catalogue_presence_only_row(provider_id)
+    return rows, missing
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--baseline", type=Path, default=Path("automation/provider-route-recovery-v5.json"))
@@ -100,13 +137,7 @@ def main() -> int:
     catalogue_ids = current_active_ids(manifest)
     catalogue_set = set(catalogue_ids)
 
-    baseline_rows = [
-        row for row in baseline.get("providers") or []
-        if isinstance(row, dict) and pid(row) in catalogue_set
-    ]
-    missing_baseline = sorted(catalogue_set - {pid(row) for row in baseline_rows})
-    if missing_baseline:
-        raise SystemExit("historical baseline missing current active providers: " + ",".join(missing_baseline))
+    rows, missing_baseline = baseline_rows_for_catalogue(baseline, catalogue_ids)
 
     lkg_path = ROOT / args.lkg
     lkg = route_lkg.load(lkg_path, missing_ok=True)
@@ -120,7 +151,6 @@ def main() -> int:
     route_lkg.write(lkg_path, lkg)
     lkg_providers = lkg.get("providers") if isinstance(lkg.get("providers"), dict) else {}
 
-    rows = {pid(row): row for row in baseline_rows if pid(row)}
     targeted_rows = [row for row in targeted.get("providers") or [] if isinstance(row, dict) and pid(row)]
     targeted_ids = {pid(row) for row in targeted_rows}
     outside = sorted(targeted_ids - catalogue_set)
@@ -168,6 +198,16 @@ def main() -> int:
             "targetedProviders": sorted(targeted_ids),
             "preservedProviderCount": len(catalogue_ids) - len(targeted_ids),
             "preservedProvidersNotReprobed": sorted(set(rows) - targeted_ids),
+            "historicalBaselineMissingProviderCount": len(missing_baseline),
+            "historicalBaselineMissingProviders": missing_baseline,
+            "cataloguePresenceOnlyProviderCount": sum(
+                1 for row in merged_rows
+                if row.get("mergePolicy") == CATALOGUE_PRESENCE_ONLY_POLICY
+            ),
+            "cataloguePresenceOnlyPolicy": (
+                "current manifest identity only; zero route/execution authority; "
+                "application preserves existing runtime DATA until a fresh targeted probe replaces the row"
+            ),
             "targetedDurationMs": int(targeted.get("durationMs") or 0),
             "proofMethod": targeted.get("method"),
             "typedRecipeDirectRouteSanitizedCount": len(typed_recipe_sanitized),
@@ -185,6 +225,8 @@ def main() -> int:
     print(
         "PROVIDER_REPAIR_REPORT_V6_MERGED "
         f"active={len(catalogue_ids)} targeted={len(targeted_ids)} preserved={len(catalogue_ids)-len(targeted_ids)} "
+        f"baseline_missing={len(missing_baseline)} "
+        f"presence_only={merged['portfolioRepair']['cataloguePresenceOnlyProviderCount']} "
         f"proven={merged['providersWithProvenRoutes']} routes={merged['provenRouteCount']} "
         f"recipes={merged['simpleApiRecipeCount']} typed_direct_sanitized={len(typed_recipe_sanitized)} "
         f"route_bootstrap={seed_stats.get('updatedProviders', 0)} "

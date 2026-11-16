@@ -270,6 +270,7 @@ def main() -> int:
     run("node", "--check", "scripts/provider_worker.cjs")
     for test in (
         "tests/provider_repair_v6_recipe_regression_test.py",
+        "tests/provider_repair_merge_catalogue_presence_test.py",
         "tests/provider_repair_merge_typed_recipe_test.py",
         "tests/provider_repair_v8_partial_typed_resolver_test.py",
         "tests/provider_text_body_request_v9_test.py",

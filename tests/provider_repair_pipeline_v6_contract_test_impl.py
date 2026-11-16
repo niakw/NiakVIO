@@ -145,6 +145,7 @@ for required in (
     'tests/provider_neko_sama_retirement_v21_11_test.py',
     'tests/stream_output_correlated_player_fallback_v7_test.py',
     'tests/provider_repair_merge_typed_recipe_test.py',
+    'tests/provider_repair_merge_catalogue_presence_test.py',
 ):
     assert required in pipeline, required
 
@@ -214,6 +215,8 @@ assert '--candidate-retry' in portfolio_compare
 assert 'TARGETED_YIELD_RETRY_DONE' in targeted_retry
 assert 'attempts = max(1, min(int(args.attempts), 3))' in targeted_retry
 assert 'normalize_typed_api_recipe' in merge_repair
+assert 'catalogue_presence_only_row' in merge_repair
+assert 'historicalBaselineMissingProviderCount' in merge_repair
 assert 'typedRecipeDirectRouteSanitizedCount' in merge_repair
 assert 'recipe.pop("directRoute", None)' in merge_repair
 assert 'recipe.pop("directRequest", None)' in merge_repair
