@@ -18,7 +18,7 @@ for needle in [
     "target_providers: ${{ steps.route.outputs.target_providers }}",
     "scripts/select_provider_materialization_scope.py",
     "TARGET_PROVIDERS: ${{ needs.size.outputs.target_providers }}",
-    "scripts/materialize_provider_v3_one.py",
+    'scripts/materialize_provider_v3_one.py "$provider" --preserve-structured-data',
     "FIELD_TARGETED_RECOVERY_MATERIALIZATION mode=providers",
     'args+=(--provider "$provider")',
     "FIELD_TARGETED_RECOVERY_STALE_NOT_PERSISTED",

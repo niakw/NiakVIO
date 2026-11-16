@@ -332,7 +332,7 @@ jobs:
               provider="$(printf '%s' "$provider" | xargs)"
               [ -z "$provider" ] && continue
               python scripts/reconcile_provider_domain_metadata.py --rebuild --provider "$provider"
-              python scripts/materialize_provider_v3_one.py "$provider"
+              python scripts/materialize_provider_v3_one.py "$provider" --preserve-structured-data
               reconcile+=(--provider "$provider")
             done
             "${reconcile[@]}"
