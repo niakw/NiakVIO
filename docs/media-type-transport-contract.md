@@ -48,7 +48,7 @@ Native evidence keeps the two concepts separate:
 - logical/canonical type: semantic identity used for provider eligibility;
 - request/launch type: the bounded surface actually exercised by Nuvio.
 
-Coverage is derived from the current 46-provider manifest. The 50 archived historical providers remain knowledge/provenance only and are not injected into the current transport denominator.
+Coverage is derived from the current active **Global + France-only** projection union (`scripts/current_provider_scope.py:projection_active_provider_ids`). Historical Hub-46/96-provider material remains knowledge/provenance only and is never injected into the current transport denominator.
 
 ## Implementation authority
 
