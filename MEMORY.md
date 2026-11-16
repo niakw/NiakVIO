@@ -1,3 +1,10 @@
+## 2026-11-16 — Non-regression history freshness now follows Global+France projection authority
+
+- The NiakVIO-first audit found that the non-regression builders had already been corrected to derive current rows from `projection_visible_provider_rows()`, but `.github/workflows/provider-history-matrix.yml` still retriggered only on root `manifest.json`. A France-only `vf/manifest.json`, `provider_catalog.json`, or `current_provider_scope.py` change could therefore leave the persisted historical matrix stale even though its code understood the Global+France union. The stale checked-in artifacts (82 matrix rows / 44 candidate scope) are evidence of that freshness gap, not current catalogue authority.
+- Commit `518b0b33` adds VF manifest, provider catalogue and current-scope resolver to the history workflow's push authority. Commit `7f689cc6` locks those trigger dependencies in the non-regression contract test.
+- The history workflow still persists only the historical matrix/Markdown; it intentionally does not persist the ledger-mode `provider-non-regression-gate.json` as candidate acceptance authority. Candidate non-regression remains owned by its dedicated workflow.
+- This is control-plane freshness work. A fresh matrix run must regenerate the current Global+France identity set before its counts can be used as current non-regression evidence.
+
 ## 2026-11-16 — Retired identity-only ProviderBase authority cannot regress the current base
 
 - The NiakVIO-first architecture audit found one remaining executable historical entry point, `scripts/materialize_provider_base_identity_only.py`, that still owned a Global-only `active_provider_count()` scope and replayed `upgrade_provider_base_runtime_v5.py` in isolation. Although no current workflow directly invokes it, the path remains tracked by the non-regression inventory; invoking it could therefore recreate stale ProviderBase/provenance authority after the V31 current-base work.
