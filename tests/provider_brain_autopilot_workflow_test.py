@@ -186,4 +186,14 @@ for active, count, failure, expected in (
     assert result.returncode == 0, (active, failure, result.stderr)
     assert result.stdout.strip().splitlines()[-1] == expected, (active, failure, result.stdout)
 
+# The causal execution planner already rejects multiple owner lanes for one
+# provider. A non-empty DOMAIN_REFRESH cohort must therefore not globally
+# suppress a disjoint FAST_REPAIR cohort.
+fast_dispatch_start = autopilot.index('if [ -n "$FAST" ]; then')
+fast_dispatch_end = autopilot.index("# Learning debt", fast_dispatch_start)
+fast_dispatch_block = autopilot[fast_dispatch_start:fast_dispatch_end]
+assert '[ -z "$DOMAIN" ]' not in fast_dispatch_block
+assert "targeted-domain-publication-in-flight" not in fast_dispatch_block
+assert "provider-fast-repair.yml" in fast_dispatch_block
+
 print("provider Autopilot in-flight fail-closed guard passed")

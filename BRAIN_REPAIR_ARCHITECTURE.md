@@ -1575,3 +1575,8 @@ provider zero-request status. Publication remains disabled; even a model edit
 must pass canonical source apply, materialized bytes, per-fixture baseline →
 candidate → confirmation Deep with playable correct media identity, then
 independent production acceptance.
+
+### 2026-11-16 — Causal owner lanes serialize per lane, not globally
+
+The causal execution plan assigns exactly one owner lane to each provider and rejects conflicting ownership before dispatch. Operational serialization must therefore protect a lane from duplicate in-flight work without turning an unrelated provider cohort into a global mutex. In particular, a targeted `DOMAIN_REFRESH` cohort may run beside a disjoint `FAST_REPAIR` cohort; a provider that actually needs fresh domain authority remains exclusively owned by Domain Refresh and cannot simultaneously enter Fast Repair. This changes orchestration throughput only: provider mutation, exact-byte materialization, playable-media/identity proof, non-regression and publication authority remain fail-closed.
+

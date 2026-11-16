@@ -201,7 +201,11 @@ jobs:
             fi
           fi
 
-          if [ -n "$FAST" ] && [ -z "$DOMAIN" ]; then
+          # The causal execution plan already enforces one owner lane per
+          # provider. DOMAIN_REFRESH and FAST_REPAIR may therefore run together
+          # when their provider cohorts are disjoint; only serialize Fast Repair
+          # against another in-flight Fast Repair workflow.
+          if [ -n "$FAST" ]; then
             if lane_busy provider-fast-repair.yml; then
               echo "FIELD_PROVIDER_AUTOPILOT deferred=FAST_REPAIR providers=$FAST reason=lane-in-flight-or-query-unavailable"
             else
@@ -210,8 +214,6 @@ jobs:
               "${args[@]}"
               echo "FIELD_PROVIDER_AUTOPILOT dispatch=FAST_REPAIR providers=$FAST"
             fi
-          elif [ -n "$FAST" ]; then
-            echo "FIELD_PROVIDER_AUTOPILOT deferred=FAST_REPAIR providers=$FAST reason=targeted-domain-publication-in-flight"
           fi
 
           # Learning debt must not wait for the nightly slot. Dispatch the exact
