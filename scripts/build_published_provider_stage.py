@@ -2,7 +2,7 @@
 from __future__ import annotations
 import argparse, hashlib, json, shutil
 from pathlib import Path
-from current_provider_scope import active_provider_rows
+from current_provider_scope import projection_active_provider_rows
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -80,7 +80,7 @@ def main()->int:
         payload=json.loads(args.manifest.read_text(encoding="utf-8"))
         rows=[r for r in payload.get("scrapers") or [] if isinstance(r,dict) and r.get("enabled") is not False and str(r.get("filename") or "").startswith("providers/")]
     else:
-        rows=active_provider_rows()
+        rows=projection_active_provider_rows()
     if args.stage.exists(): shutil.rmtree(args.stage)
     (args.stage/"providers").mkdir(parents=True,exist_ok=True)
     candidates=[]; seen=set()
