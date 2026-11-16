@@ -178,14 +178,16 @@ jobs:
           if [ "$projection_drift" -gt 0 ] && [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
             gh workflow run provider-projection-reconcile.yml \
               --repo "$GITHUB_REPOSITORY" \
-              --ref main
+              --ref main \
+              -f expected_sha="$GITHUB_SHA"
             echo "FIELD_CENSUS_PROJECTION_HANDOFF drift=$projection_drift workflow=provider-projection-reconcile.yml"
           elif [ "$use_sharded" = "true" ] && [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
             gh workflow run provider-census-sharded.yml \
               --repo "$GITHUB_REPOSITORY" \
               --ref main \
               -f scope=unresolved \
-              -f persist=true
+              -f persist=true \
+              -f expected_sha="$GITHUB_SHA"
             echo "FIELD_CENSUS_SHARDED_HANDOFF providers=$count workflow=provider-census-sharded.yml authority=projection-runtime-visible"
           fi
 
@@ -475,7 +477,7 @@ jobs:
           )"
           if [ "$projection_drift" -gt 0 ]; then
             echo "FIELD_CURRENT_BYTES_CENSUS_DEFERRED reason=unpublished-provider-projection drift=$projection_drift"
-            gh workflow run provider-projection-reconcile.yml               --repo "$GITHUB_REPOSITORY"               --ref main
+            gh workflow run provider-projection-reconcile.yml               --repo "$GITHUB_REPOSITORY"               --ref main               -f expected_sha="$GITHUB_SHA"
             exit 0
           fi
 
