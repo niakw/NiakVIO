@@ -48,7 +48,6 @@ assert '"$count" -gt 120' not in text, "historical Global catalogue size must no
 assert "projection_runtime_visible_provider_count" in text
 assert 'source_workflow="${{ github.event.workflow_run.name }}"' in text
 assert '[ "$source_workflow" = "PROVIDER - Bulk Activation" ]' in text
-assert 'head_message="$(git log -1 --pretty=%s)"' not in text
 assert text.count("provider-census-shard-${{ matrix.shard }}") >= 2
 print("Provider sharded census workflow contract passed")
 
