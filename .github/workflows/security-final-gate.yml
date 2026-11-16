@@ -17,6 +17,9 @@ on:
       - 'PATCH-SHA256SUMS.txt'
       - 'SHA256SUMS.json'
       - 'manifest.json'
+      - 'vf/manifest.json'
+      - 'provider_catalog.json'
+      - 'scripts/current_provider_scope.py'
       - 'provider-overrides.json'
       - 'provider-security-revocations.json'
       - 'provider-bases/**'
@@ -109,19 +112,19 @@ jobs:
           root=Path('.')
           sys.path.insert(0, str((root/'scripts').resolve()))
           from provider_security_hardening import known_unsafe_findings
-          manifest=json.loads((root/'manifest.json').read_text())
+          from current_provider_scope import projection_visible_provider_rows
           failures=[]
-          manifest_rows=[row for row in (manifest.get('scrapers') or []) if isinstance(row,dict)]
-          rows=[row for row in manifest_rows if str(row.get('filename') or '').strip()]
+          visible_rows=projection_visible_provider_rows()
+          rows=[row for row in visible_rows if str(row.get('filename') or '').strip()]
           if not rows:
-              failures.append(('catalogue', 'empty_provider_catalogue', 'manifest.json'))
-          if len(rows) != len(manifest_rows):
-              failures.append(('catalogue', f'missing_filename:{len(manifest_rows)-len(rows)}', 'manifest.json'))
-          ids=[str(row.get('id') or '').strip().casefold() for row in rows]
+              failures.append(('catalogue', 'empty_provider_catalogue', 'global+france'))
+          if len(rows) != len(visible_rows):
+              failures.append(('catalogue', f'missing_filename:{len(visible_rows)-len(rows)}', 'global+france'))
+          ids=[str(row.get('id') or '').strip().casefold().replace('_','-') for row in rows]
           if any(not provider_id for provider_id in ids):
-              failures.append(('catalogue', 'missing_provider_id', 'manifest.json'))
+              failures.append(('catalogue', 'missing_provider_id', 'global+france'))
           if len(set(ids)) != len(ids):
-              failures.append(('catalogue', 'duplicate_provider_id', 'manifest.json'))
+              failures.append(('catalogue', 'duplicate_provider_id', 'global+france'))
           expected=len(rows)
           checked=0
           for row in rows:
@@ -135,12 +138,12 @@ jobs:
               if findings:
                   failures.append((str(row.get('id')), ','.join(sorted(set(findings))), rel))
           if checked != expected:
-              failures.append(('catalogue', f'incomplete_scan:{checked}/{expected}', 'manifest.json'))
+              failures.append(('catalogue', f'incomplete_scan:{checked}/{expected}', 'global+france'))
           if failures:
               for item in failures:
                   print('UNSAFE_PROVIDER=' + '|'.join(item))
               raise SystemExit(f'known unsafe provider shapes or incomplete catalogue scan remain: {len(failures)}')
-          print(f'FIELD_PUBLISHED_PROVIDER_SECURITY_SCAN checked={checked} expected={expected} unsafe=0')
+          print(f'FIELD_PUBLISHED_PROVIDER_SECURITY_SCAN checked={checked} expected={expected} unsafe=0 authority=global+france')
           PY
 
       # An early CodeQL analysis (e.g. Actions) is NOT the complete five-job
