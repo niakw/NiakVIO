@@ -1,3 +1,10 @@
+## 2026-11-16 — Current Nuvio stream ABI rechecked; TV additive behavior hints are now regression-tested
+
+- Direct GitHub source verification confirms the stored audited refs are still the exact official heads: NuvioMobile `fc05fe8e516a5bd749c8a4e7b1c05143acd3f031`, NuvioDesktop `3020193d8303c38ce88381f0a2a613b389219e62`, NuvioTV `2c853c1786743822c5ec7932e855529e0c731221`. The same refs are consistent across upstream, platform-runtime, compatibility and `sources.json` authorities.
+- Mobile/Desktop `PluginRuntimeResult` and TV `LocalScraperResult` consume the same portable fields: title/name/url/quality/size/language/provider/type/seeders/peers/infoHash/headers/subtitles. Subtitle-specific headers are parsed independently. TV additionally reads `behaviorHints.audioDelayMs` and `behaviorHints.audioDelayLanguage`.
+- Commit `3d811647` extends the shared Core metadata-preservation regression with those TV additive behavior hints plus nested proxyHeaders. The Core must preserve them while normalizing quality/language/technical facts.
+- This is ABI/non-regression evidence, not a Native-Lab playback verdict. Exact-final-SHA TV/Android/iOS/macOS/Windows execution remains mandatory.
+
 ## 2026-11-16 — Machine architecture now codifies ProviderBase source purity
 
 - Human documentation and runtime guards were no longer enough for a business invariant this central. `automation/provider-v3-architecture.json` schema 14 now declares the canonical ProviderBase materializer, allows structured DATA convergence, marks common source migrations validation-only, and requires the explicit source-migration fixed-point plus clean-current-base proof for manual reconstruction.
