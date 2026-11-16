@@ -9,7 +9,8 @@ from current_provider_scope import projection_active_provider_ids
 
 def main()->int:
  source=active_manifest.load_json(ROOT/"manifest.json")
- vf=active_manifest.load_json(ROOT/"vf/manifest.json")\n built=active_manifest.build(source,vf)
+ vf=active_manifest.load_json(ROOT/"vf/manifest.json")
+ built=active_manifest.build(source,vf)
  rows=built.get("scrapers") or []
  expected=projection_active_provider_ids()
  actual=[str(row.get("id") or "").strip().casefold().replace("_","-") for row in rows]
