@@ -4959,6 +4959,7 @@ def provider_base_store_metadata(
         "schema_version": max(4, int(previous.get("schema_version") or 0)),
         "provider_count": int(provider_count),
         "unique_base_count": int(unique_base_count),
+        "scope_authority": "scripts/current_provider_scope.py:projection_active_provider_ids",
         "initial_reconstruction_scope": initial_scope,
         "migration_scope": "all-current-providers",
         "owner": "provider_pipeline",
