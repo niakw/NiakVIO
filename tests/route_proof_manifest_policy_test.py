@@ -148,4 +148,10 @@ with tempfile.TemporaryDirectory(prefix="niakvio-route-policy-positive-") as raw
     assert evidence.get("proven_route_count") == 1, health_movix
     assert evidence.get("activation_destructive") is False, health_movix
 
+source = SCRIPT.read_text(encoding="utf-8")
+assert 'provider_specific_rules=0' in source
+assert 'if "movix" not in current_ids' not in source
+assert 'patches["movix"]' not in source
+assert 'MOVIX route proof' not in source
+
 print("route-proof diagnostic-only activation policy tests passed: manifest+override activation bytes preserved")
