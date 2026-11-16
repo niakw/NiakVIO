@@ -1,3 +1,10 @@
+## 2026-11-16 — Release finalization now gates clean ProviderBase authority before reverse rebuild
+
+- The release finalizer already performed deterministic reverse Provider-v3 rebuild, but that proof starts from the persisted ProviderBase store. It did not run `provider_clean_reconstruction_contract_test.py`, so a stale ProviderBase store could theoretically rebuild byte-identically while no longer matching the current common runtime generator.
+- Commit `28c129f3` adds the clean ProviderBase contract to the pre-mutation Nuvio métier validation step and makes changes to the canonical ProviderBase materializer/clean-base contract retrigger finalization. Release sealing therefore requires the persisted active Global+France base set to match the current generated clean ProviderBase before any reapply/minimization/reverse proof.
+- Commit `4c985486` locks both the preflight ordering and trigger ownership in the release-finalizer transaction test.
+- This completes the proof chain at the base boundary: current common source -> clean ProviderBase store -> Provider-v3 composition -> minimizer/publication fixed point -> reverse rebuild -> version/hash seal -> exact-final-SHA Native Labs. The chain still requires successful exact-head execution before certification.
+
 ## 2026-11-16 — Canonical ProviderBase materialization no longer mutates common source
 
 - The earlier reconstruction-only fixed-point barrier was insufficient because `materialize_provider_base_v3_store.py` is also called by Non-Regression, Projection Reconcile and Repair. Its `prepare_runtime()` still executed cumulative historical source migrations before composing ProviderBase, so those callers could validate a runtime common source that existed only as an uncommitted workspace mutation.
