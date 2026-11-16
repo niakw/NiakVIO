@@ -10,7 +10,6 @@ required=[
     "source_sha: ${{ steps.pin.outputs.sha }}",
     "should_run: ${{ steps.pin.outputs.should_run }}",
     "ref: ${{ needs.prepare.outputs.source_sha }}",
-    '"$count" -gt 120',
     'head_message="$(git log -1 --pretty=%s)"',
     '[[ "$head_message" == provider:\\ bulk\\ activate\\ * ]]',
     "shards_json: ${{ steps.pin.outputs.shards_json }}",
@@ -46,6 +45,8 @@ for needle in required:
 assert "matrix.shard + 1" not in text
 assert "permissions:\n  contents: write\n  actions: write" in text
 assert "permissions:\n      contents: write" in text
+assert '"$count" -gt 120' not in text, "historical Global catalogue size must not suppress causal census refresh"
+assert "projection_runtime_visible_provider_count" in text
 assert text.count("provider-census-shard-${{ matrix.shard }}") >= 2
 print("Provider sharded census workflow contract passed")
 
