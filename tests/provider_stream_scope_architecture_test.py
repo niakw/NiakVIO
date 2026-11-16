@@ -74,9 +74,9 @@ assert config["activation"]["zero_stream_is_per_work_not_manifest_disable"] is T
 assert config["activation"]["deep_learning_may_fallback_after_zero_stream"] is True
 
 # Media context is request-local and identity lookup can cross TMDB movie/tv
-# namespaces. Canonical anime stays semantic, while provider transport may use
-# tv OR movie so anime films remain reachable without granting ordinary-movie
-# semantic capability to anime-only providers.
+# namespaces. Canonical anime stays anime at the provider ABI by default;
+# provider/site transport adaptation is allowed only through explicit
+# requestTypeAliases. TMDB movie/tv remains identity lookup metadata.
 assert "delete g.__nuvioMediaContext" in media
 assert "__nuvioProviderRequestToken" in media
 assert "requestDeadline=Date.now()+providerBudgetMs()" in media
@@ -84,7 +84,9 @@ assert "g.__nuvioProviderRequestToken!==requestToken" in media
 assert 'return["movie","tv"]' in media
 assert 'return["tv","movie"]' in media
 assert 'canonical==="anime"' in media
-assert 'if(canonical==="anime")return namespace==="movie"?"movie":"tv";' in media
+assert 'if(mapped==="tmdb_namespace")return namespace==="movie"?"movie":"tv";' in media
+assert 'if(canonical==="anime")return"anime";' in media
+assert 'if(canonical==="anime")return namespace==="movie"?"movie":"tv";' not in media
 
 # Architecture tests assert the semantic/transport boundary, not one historical
 # implementation of the materializer. The dedicated anime contract test checks
@@ -93,4 +95,4 @@ assert "def normalize_anime_transport_compatibility(" in materializer
 assert 'entry["canonicalSupportedTypes"]' in materializer
 assert 'entry["supportedTypes"]' in materializer
 
-print("provider/type/stream architecture scopes verified: anime canonical, tv/movie transport compatible")
+print("provider/type/stream architecture scopes verified: anime canonical provider ABI, movie/tv TMDB identity namespaces")
