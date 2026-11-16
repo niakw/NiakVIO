@@ -6,6 +6,8 @@ on:
       - main
     paths:
       - automation/provider-fast-trigger.json
+      - scripts/provider_parallel_sweep_plan_v1.py
+      - tests/provider_parallel_sweep_projection_scope_test.py
   workflow_dispatch:
 
 permissions:
@@ -32,6 +34,8 @@ jobs:
           python-version: "3.12"
       - name: Security policy preflight
         run: python3 tests/workflow_security_policy_test.py
+      - name: Validate current executable sweep scope
+        run: python tests/provider_parallel_sweep_projection_scope_test.py
       - name: Build deterministic six-batch matrix
         id: plan
         shell: bash
