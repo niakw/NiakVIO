@@ -111,20 +111,35 @@ class CrossProviderTests(unittest.TestCase):
         self.assertEqual(mode['provider_timeout_ms'], 70000)
         self.assertEqual(mode['stream_probe_timeout_ms'], 18000)
 
-    def test_staged_bytes_match_registry_and_current_published_manifest(self):
+    def test_staged_bytes_match_registry_and_current_published_projection(self):
         with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp); stage = root / 'stage'; providers = root / 'providers'
-            stage.mkdir(); providers.mkdir()
+            root = Path(tmp); stage = root / 'stage'; providers = root / 'providers'; vf = root / 'vf'
+            stage.mkdir(); providers.mkdir(); vf.mkdir()
             data = b'published provider bytes'; digest = hashlib.sha256(data).hexdigest()
             filename = 'providers/anime-sama-' + digest[:16] + '.js'
             (root / filename).write_bytes(data); (stage / 'provider.js').write_bytes(data)
             (root / 'manifest.json').write_text(json.dumps({'scrapers': [
                 {'id': 'ANIME-SAMA', 'enabled': True, 'filename': filename}]}))
+            (vf / 'manifest.json').write_text(json.dumps({'scrapers': []}))
             (stage / 'candidates.json').write_text(json.dumps({'candidates': [
                 {'canonical_id': 'anime-sama', 'local_path': 'provider.js', 'sha256': digest}]}))
             self.assertEqual(mod.staged_hash('anime-sama', stage, root), digest)
             (stage / 'provider.js').write_bytes(b'mutated')
             self.assertRaises(ValueError, mod.staged_hash, 'anime-sama', stage, root)
+
+    def test_staged_bytes_accept_strict_france_only_projection(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); stage = root / 'stage'; providers = root / 'providers'; vf = root / 'vf'
+            stage.mkdir(); providers.mkdir(); vf.mkdir()
+            data = b'france only published provider bytes'; digest = hashlib.sha256(data).hexdigest()
+            filename = 'providers/frenchstream-' + digest[:16] + '.js'
+            (root / filename).write_bytes(data); (stage / 'provider.js').write_bytes(data)
+            (root / 'manifest.json').write_text(json.dumps({'scrapers': []}))
+            (vf / 'manifest.json').write_text(json.dumps({'scrapers': [
+                {'id': 'FRENCHSTREAM', 'enabled': True, 'filename': '../' + filename}]}))
+            (stage / 'candidates.json').write_text(json.dumps({'candidates': [
+                {'canonical_id': 'frenchstream', 'local_path': 'provider.js', 'sha256': digest}]}))
+            self.assertEqual(mod.staged_hash('frenchstream', stage, root), digest)
 
 
 if __name__ == '__main__':
