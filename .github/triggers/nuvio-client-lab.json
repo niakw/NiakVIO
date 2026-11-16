@@ -224,6 +224,25 @@
       }
     },
     {
+      "slug": "spartacus-s00e01",
+      "providers": [],
+      "fixture": {
+        "tmdbId": "46296",
+        "mediaType": "tv",
+        "title": "Spartacus",
+        "year": 2010,
+        "season": 0,
+        "episode": 1,
+        "category": "tv",
+        "expectedDurationMinutes": 51,
+        "aliases": [
+          "Spartacus",
+          "Spartacus: Gods of the Arena"
+        ],
+        "expectedEpisodeTitle": "Past Transgressions"
+      }
+    },
+    {
       "slug": "revenant-s01e01",
       "providers": [
         "cineby",
@@ -590,7 +609,7 @@
     "desktop",
     "mobile"
   ],
-  "run_revision": "native-reader-diagnostics-v19-full-96-provider-matrix",
+  "run_revision": "native-reader-diagnostics-v20-projection-union-multi-variant-s00",
   "policy": {
     "target_total": 10,
     "minimum_vf": 3,
@@ -603,7 +622,7 @@
   "enforce_policy": false,
   "provider_concurrency": 2,
   "max_settings_profiles": 4,
-  "max_streams_per_runtime": 3,
+  "max_streams_per_runtime": 40,
   "provider_timeout_ms": 25000,
   "retry_provider_timeouts": false,
   "retry_provider_timeout_ms": 25000,
@@ -615,9 +634,12 @@
     "primary_fixture": "interstellar",
     "regression_fixtures": [
       "breaking-bad-s01e01",
-      "jujutsu-kaisen-s01e01"
+      "jujutsu-kaisen-s01e01",
+      "spartacus-s00e01"
     ],
-    "tv_priority_regressions": [],
+    "tv_priority_regressions": [
+      "spartacus-s00e01"
+    ],
     "publication_requires_fresh_reader_proof": true,
     "one_fixture_per_type_per_provider": true,
     "fixture_by_type": {
@@ -626,16 +648,18 @@
       "anime": "jujutsu-kaisen-s01e01"
     },
     "exhaustive_declared_matrix": {
-      "provider_count": 96,
-      "route_count": 214,
-      "by_type": {
-        "movie": 82,
-        "tv": 92,
-        "anime": 40
-      },
+      "scope_authority": "scripts/current_provider_scope.py:projection_active_provider_ids",
+      "route_count_policy": "derived-from-current-Global+France-supportedTypes",
+      "fixed_provider_or_route_counts": false,
       "missing_provider_or_declared_route_is_blocking": true,
       "reader_outcomes": "observational",
       "external_client_failures_are_never_repaired_by_lab": true
-    }
-  }
+    },
+    "mandatory_regression_fixtures": [
+      "spartacus-s00e01"
+    ]
+  },
+  "probe_all_streams": true,
+  "all_streams_safety_cap": 40,
+  "stream_sampling": "spread"
 }
