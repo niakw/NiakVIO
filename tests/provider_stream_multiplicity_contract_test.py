@@ -121,7 +121,8 @@ assert 'min(int(options.get("max_probes", 6)), 40)' in sanitizer
 assert "NUVIO_STREAM_PLAYBACK_IDENTITY_V11" in sanitizer
 assert "function playbackKey(stream,url)" in sanitizer
 assert "var batchSize=4" in sanitizer
-assert 'min(int(sanitizer_options.get("max_probes") or 40), 40)' in apply_source
+assert 'sanitizer_options["max_probes"] = PROVIDER_STREAM_OUTPUT_CAP' in apply_source
+assert 'min(int(sanitizer_options.get("max_probes") or 40), 40)' not in apply_source
 assert 'min(int(sanitizer_options.get("max_probes") or 8), 8)' not in apply_source
 assert "PROVIDER_STREAM_OUTPUT_CAP = 40" in apply_source
 assert "_normalize_provider_stream_output_options" in apply_source
