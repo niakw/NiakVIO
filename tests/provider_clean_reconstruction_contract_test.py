@@ -110,6 +110,9 @@ for forbidden in (
 
 assert "materialize_provider_base_v3_store.py" in manual
 assert "materialize_provider_v3_all.py" in manual
+assert "python scripts/reconcile_provider_static_authority.py --apply" in manual
+assert manual.index("python scripts/reconcile_provider_static_authority.py --apply") < manual.index("python scripts/enrich_provider_v3_static_knowledge.py")
+assert "python tests/provider_static_authority_france_only_test.py" in manual
 assert "verify_provider_v3_reverse_rebuild.py" in manual
 assert "materialize_provider_v3_all.py" not in routine
 assert "verify_provider_v3_reverse_rebuild.py" not in routine
