@@ -1477,7 +1477,7 @@ def main() -> int:
     family_frontier: list[str] = []
     family_deferred: list[str] = []
     if fair_handoff:
-        family_frontier, family_deferred = causal_family_frontier(order, batch_plan, by_id)
+        family_frontier, family_deferred = causal_family_frontier(order, batch_plan, info_by_id)
         # The caller's explicit cohort is an eligibility boundary, not an
         # instruction to replay every sibling serially. Execute one oracle per
         # causal family first; preserve all siblings as pending so canonical

@@ -1,3 +1,9 @@
+## 2026-11-16 — Family Learning NameError fixed after 12/12 ProviderBase reconstruction
+
+- Brain Repair Lab 43783417705 on `15c6e39152105b8aadad127a1beaf9df24faf6c2` proved the selected structured cohort survives both stages: published stage 12/12 and clean ProviderBase reconstruction 12/12. Brain `7b4cb144...` then reduced nine LLM targets to seven repair-family representatives and produced compact advisor output before the NiakVIO queue crashed.
+- Root cause: `run_brain_learning_queue.py` receives the health map as `info_by_id` from `build_queue()`, while the newly wired causal-family frontier referenced an undefined legacy local `by_id`. Replace only that call-site with `info_by_id` and pin the exact source invariant in the causal-wave regression test.
+- This is orchestration-only. No provider bytes, manifests, proof thresholds, family selection policy or publication authority changed. Fresh exact-SHA Learning execution is required before interpreting any provider result.
+
 ## 2026-11-16 — Restart family Learning after 12/12 ProviderBase proof with pre-LLM oracle reduction
 
 - Learning 43782282464 on `a0eac702...` successfully passed exact 12-provider published staging, observation scope validation, and clean ProviderBase reconstruction from local structured authority. It then spent the slot generating advisor guidance for the full 12-provider cohort because its pinned Brain SHA predated advisor-family-wave support.
