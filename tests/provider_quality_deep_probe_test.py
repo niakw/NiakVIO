@@ -71,6 +71,7 @@ for token in (
     "provider_catalog.json",
     "vf/manifest.json",
     "Derive active runtime-family representatives",
+    "python scripts/stage_published.py --projection-union",
     "fromJSON(needs.prepare.outputs.matrix)",
     "contents: read",
 ):
