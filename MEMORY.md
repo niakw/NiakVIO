@@ -1,3 +1,10 @@
+## 2026-11-16 — Machine architecture now codifies ProviderBase source purity
+
+- Human documentation and runtime guards were no longer enough for a business invariant this central. `automation/provider-v3-architecture.json` schema 14 now declares the canonical ProviderBase materializer, allows structured DATA convergence, marks common source migrations validation-only, and requires the explicit source-migration fixed-point plus clean-current-base proof for manual reconstruction.
+- `VALIDATION.json` schema 74 now requires the clean ProviderBase to match current common source and requires common source migrations to remain fixed-point before final certification.
+- Commit `f8753fe1` raises the machine-contract floors in `provider_v3_documentation_contract_test.py` and asserts every new field. This turns the September-equivalent/current ProviderBase ownership model into executable architecture authority, not prose.
+- These machine-contract changes retrigger release validation. Certification remains pending exact-head fixed point and native proof.
+
 ## 2026-11-16 — Release finalization now gates clean ProviderBase authority before reverse rebuild
 
 - The release finalizer already performed deterministic reverse Provider-v3 rebuild, but that proof starts from the persisted ProviderBase store. It did not run `provider_clean_reconstruction_contract_test.py`, so a stale ProviderBase store could theoretically rebuild byte-identically while no longer matching the current common runtime generator.
