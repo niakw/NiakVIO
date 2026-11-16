@@ -2,12 +2,13 @@
 """Enforce the Provider v3 semantic/transport split for anime catalogues.
 
 Canonical provider capability answers *what content the provider serves*.
-Transport capability answers *which Nuvio/TMDB namespace can launch it*.
-Every provider whose canonical catalogue includes ``anime`` keeps that semantic
-capability while accepting the Nuvio episodic TV transport alias.
-Movie transport is exposed only when movie is a canonical provider capability.
+Published ``supportedTypes`` is a client selection/launch surface: an anime-only
+provider may expose ``tv`` there as a compatibility launch alias without changing
+the provider runtime media type. Provider runtime transport remains canonical
+``movie|tv|anime`` after explicit structured ``requestTypeAliases``; TMDB identity
+namespace remains independently ``movie|tv``.
 Authoritative TMDB metadata still decides whether the work is anime before the
-semantic gate lets an anime catalogue serve an episodic TV-shaped request.
+semantic gate lets an anime catalogue serve a request.
 
 This migration is deliberately idempotent. It patches NiakVIO-owned source,
 normalizes current manifest projections from provider_catalog.json semantics,
@@ -48,7 +49,7 @@ def normalized_types(values: object) -> list[str]:
     return out
 
 
-def normalized_transport_types(values: object) -> list[str]:
+def normalized_launch_types(values: object) -> list[str]:
     out: list[str] = []
     for value in values if isinstance(values, list) else []:
         item = str(value or "").strip().casefold()
@@ -57,8 +58,8 @@ def normalized_transport_types(values: object) -> list[str]:
     return out
 
 
-def anime_transport(canonical: list[str]) -> list[str]:
-    """Project semantic capability to transport without inventing movie."""
+def project_launch_types(canonical: list[str]) -> list[str]:
+    """Project semantic capability to supportedTypes launch aliases only."""
     wanted = list(canonical)
     if "anime" in canonical and "tv" not in wanted:
         wanted.append("tv")
@@ -213,10 +214,10 @@ def normalize_manifest(path: Path, semantics: dict[str, list[str]]) -> int:
         canonical = list(semantics.get(provider_id) or [])
         if not canonical:
             raise AssertionError(f"{path}:{provider_id}: missing canonical semantics")
-        wanted = anime_transport(canonical)
-        current_transport = normalized_transport_types(entry.get("supportedTypes"))
+        wanted = project_launch_types(canonical)
+        current_launch = normalized_launch_types(entry.get("supportedTypes"))
         current_canonical = normalized_types(entry.get("canonicalSupportedTypes"))
-        if current_transport != wanted or (wanted != canonical and current_canonical != canonical):
+        if current_launch != wanted or (wanted != canonical and current_canonical != canonical):
             entry["supportedTypes"] = wanted
             if wanted != canonical or current_canonical:
                 entry["canonicalSupportedTypes"] = canonical
