@@ -159,10 +159,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python -m py_compile scripts/add_provider.py scripts/stage_provider_batch.py scripts/audit_provider_quick_yield.py scripts/merge_provider_census_shards.py scripts/reconcile_provider_static_authority.py scripts/activate_bulk_offline_proven_providers.py
+          python -m py_compile scripts/add_provider.py scripts/stage_provider_batch.py scripts/audit_provider_quick_yield.py scripts/merge_provider_census_shards.py scripts/reconcile_provider_static_authority.py scripts/activate_bulk_offline_proven_providers.py scripts/check_provider_onboarding_neutral_drift.py
           python tests/provider_bulk_onboarding_test.py
           python tests/provider_bulk_onboarding_workflow_test.py
           python tests/provider_bulk_active_byte_stability_test.py
+          python tests/provider_onboarding_publish_drift_test.py
           python tests/provider_pending_minimizer_test.py
           python tests/provider_executable_plan_contract_test.py
           python tests/provider_bulk_offline_rematerialization_contract_test.py
@@ -342,6 +343,7 @@ jobs:
               echo "Validated bulk base $BASE_SHA is not an ancestor of current main." >&2
               exit 3
             }
+            python scripts/check_provider_onboarding_neutral_drift.py --base "$BASE_SHA" --head HEAD
             if [ ! -s "$PATCH" ]; then
               echo "published_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
               exit 0
