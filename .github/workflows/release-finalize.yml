@@ -441,6 +441,24 @@ jobs:
           echo 'FIELD_RELEASE_PUBLISH_BLOCKED reason=remote_did_not_converge' >&2
           exit 1
 
+      - name: Dispatch five-platform certification for exact finalized SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          FINAL_SHA="$(git rev-parse HEAD)"
+          REMOTE_SHA="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')"
+          test "$FINAL_SHA" = "$REMOTE_SHA" || {
+            echo "FIELD_RELEASE_NATIVE_CERTIFICATION_NOT_DISPATCHED reason=main_moved final=$FINAL_SHA remote=$REMOTE_SHA" >&2
+            exit 1
+          }
+          gh workflow run release-candidate-validation.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref main \
+            -f expected_sha="$FINAL_SHA"
+          echo "FIELD_RELEASE_NATIVE_CERTIFICATION_DISPATCHED final=$FINAL_SHA workflow=release-candidate-validation.yml"
+
       - name: Re-census lifecycle-finalized bytes before Brain
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.post_census == true }}
         env:
