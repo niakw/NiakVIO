@@ -672,8 +672,12 @@ def main() -> int:
         elif status == "verification_inconclusive":
             report["inconclusive"].append(key)
             message = f"{key}: upstream transport verification inconclusive; preserving accepted_ref"
-            annotation("warning", "Nuvio client upstream check inconclusive", message)
-            print(message)
+            annotation(
+                "warning" if args.no_fail else "error",
+                "Nuvio client upstream check inconclusive",
+                message,
+            )
+            print(message, file=sys.stderr if not args.no_fail else sys.stdout)
         else:
             report["review_required"].append(key)
             hard = result.get("contract_changed_files") or []
@@ -729,7 +733,7 @@ def main() -> int:
         f"inconclusive={','.join(report['inconclusive']) or '-'}; "
         f"review_required={','.join(report['review_required']) or '-'}"
     )
-    if failures and not args.no_fail:
+    if (failures or report["inconclusive"]) and not args.no_fail:
         return 2
     return 0
 
