@@ -1,3 +1,9 @@
+## 2026-11-16 — Batch-workbench contract syntax repaired before exact replay
+
+- Workflow Gate run `43931759860` on `2e28c88e` failed in the repository-wide Python syntax pass before any métier contract ran: the prior stale-workflow test edit had accidentally persisted literal `\\n` characters between four Python statements.
+- Commit `bdb954ea` restores real line breaks. Re-fetch inspection confirms the test now parses as ordinary Python and still enforces the intended current contract: the retired batch workflow remains absent, the bounded batch script is non-publishing, and canonical sequential reconstruction + reverse rebuild + direct-main denial are the authority.
+- This was a test-file serialization defect only. No ProviderBase, DATA, route, Core, manifest, proof or activation bytes changed. A fresh exact-head Gate/reconstruction must supersede the failed syntax run.
+
 ## 2026-11-16 — Retired batch workbench workflow no longer blocks canonical reconstruction
 
 - Exact-head Workflow Gate run `43930687745` failed after the current Provider-v3 finalization contract passed because `tests/provider_v3_batch_diagnostic_contract_test.py` still opened the deleted `.github/workflows/provider-v3-batch-diagnostic.yml`.
