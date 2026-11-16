@@ -1,3 +1,9 @@
+## 2026-11-16 — Provider non-regression Gate now watches France projection directly
+
+- After fixing the historical matrix freshness, the dedicated `provider-non-regression.yml` was still triggered by Global `manifest.json` and `provider_catalog.json` but not by `vf/manifest.json`. A France-only projection change could therefore avoid an immediate candidate non-regression run when no other watched authority changed.
+- Commit `9f4c2064` adds `vf/manifest.json` to both push and pull-request path filters. Commit `0929b3aa` locks the two trigger surfaces in the existing non-regression contract suite.
+- No non-regression threshold or historical floor was relaxed. This only ensures that the current Global+France business authority actually invokes the existing gate.
+
 ## 2026-11-16 — Non-regression history freshness now follows Global+France projection authority
 
 - The NiakVIO-first audit found that the non-regression builders had already been corrected to derive current rows from `projection_visible_provider_rows()`, but `.github/workflows/provider-history-matrix.yml` still retriggered only on root `manifest.json`. A France-only `vf/manifest.json`, `provider_catalog.json`, or `current_provider_scope.py` change could therefore leave the persisted historical matrix stale even though its code understood the Global+France union. The stale checked-in artifacts (82 matrix rows / 44 candidate scope) are evidence of that freshness gap, not current catalogue authority.
