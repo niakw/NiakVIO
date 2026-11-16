@@ -772,8 +772,10 @@ harnesses. Without that identity bootstrap, a provider can never issue
 a provider-owned network request; `provider_unreachable` on a credentialless
 host is inconclusive, not a provider diagnosis. The availability health step
 receives only existing GitHub TMDB secrets, fails closed when absent, and
-retains report-only (never manifest activation or disabling). This does not
-constitute playable or correct HD/4K stream evidence.
+observes the exact active **Global + France-only** projection union. Its durable
+history/report covers the visible projection union while publication manifests
+remain unchanged by the workflow. This report-only signal never grants activation,
+disabling, playable-media or correct HD/4K proof.
 
 
 ### Deep 1080p / 4K gap oracle (2026-11-14)
