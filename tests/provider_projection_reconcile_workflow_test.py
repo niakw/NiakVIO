@@ -21,6 +21,9 @@ for required in (
     "sanitize_provider_v3_core_metadata_routes.py",
     "provider_v3_core_metadata_route_sanitizer_test.py",
     "reconcile_provider_static_authority.py --apply",
+    "materialize_provider_base_v3_store.py",
+    "provider_base_store.py validate",
+    "provider_clean_reconstruction_contract_test.py",
     "provider_static_authority_france_only_test.py",
     "automation/provider-v3-static-knowledge.json",
     "reapply_published_overrides.py --check",
@@ -43,6 +46,11 @@ for required in (
 prepare = wf.split("- name: Prepare canonical durable static authority", 1)[1].split("- name: Detect exact published projection drift", 1)[0]
 assert "python scripts/reconcile_provider_static_authority.py --apply" in prepare
 assert "python scripts/sanitize_provider_v3_core_metadata_routes.py" in prepare
+assert "python scripts/materialize_provider_base_v3_store.py" in prepare
+assert "python scripts/provider_base_store.py validate" in prepare
+assert "python tests/provider_clean_reconstruction_contract_test.py" in prepare
+assert prepare.index("python scripts/sanitize_provider_v3_core_metadata_routes.py") < prepare.index("python scripts/materialize_provider_base_v3_store.py")
+assert prepare.index("python scripts/materialize_provider_base_v3_store.py") < prepare.index("python tests/provider_clean_reconstruction_contract_test.py")
 assert "python tests/provider_v3_core_metadata_route_sanitizer_test.py" in prepare
 assert wf.index("- name: Prepare canonical durable static authority") < wf.index("- name: Detect exact published projection drift")
 
@@ -68,6 +76,10 @@ assert "materialize_provider_v3_all.py" not in wf
 assert 'steps.drift.outputs.count != \'0\'' in wf
 assert "Projection reconcile staged a forbidden path." in wf
 assert "PROVENANCE.json provider-overrides.json provider-v3-materialization.json" in wf
+assert "automation/provider-v3-static-knowledge.json provider-bases/" in wf
+assert "provider-bases/[^/]+" in wf
+assert '"git","diff","--name-only","--","PROVENANCE.json","provider-bases/"' in wf
+assert "ProviderBase durable store changed without provider projection drift" in wf
 assert "automation/provider-v3-static-knowledge.json" in wf
 assert "Reconcile durable static authority at projection fixed point" in wf
 static_fixed=wf.split("- name: Reconcile durable static authority at projection fixed point",1)[1].split("- name: Report projection byte no-op",1)[0]
