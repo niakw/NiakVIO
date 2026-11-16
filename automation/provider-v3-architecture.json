@@ -1,5 +1,5 @@
 {
-  "schema_version": 11,
+  "schema_version": 12,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -382,6 +382,10 @@
     "native_proof_transitive_between_clients": false,
     "release_upstream_head_gate": "scripts/check_nuvio_client_upstreams.py",
     "release_requires_current_official_heads": true,
-    "network_verification_inconclusive_blocks_release": true
+    "network_verification_inconclusive_blocks_release": true,
+    "subtitle_specific_headers_preserved": true,
+    "post_finalization_certification_workflow": ".github/workflows/release-candidate-validation.yml",
+    "final_native_certification_requires_exact_release_sha": true,
+    "final_native_certification_transitive_between_clients": false
   }
 }
