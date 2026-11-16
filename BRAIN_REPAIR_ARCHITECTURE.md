@@ -1584,3 +1584,10 @@ The causal execution plan assigns exactly one owner lane to each provider and re
 
 Canonical `automation/provider-v3-static-knowledge.json` is keyed by the current Global+France projection union after onboarding-pending identities are removed. Consumers of that knowledge use `projection_runtime_visible_provider_ids/count`, not the legacy Global-only `runtime_visible_provider_ids/count`. Executable byte authority is deliberately narrower: `provider-v3-materialization.json` contains only the active Global+France union and uses `projection_active_provider_ids/count`. Global-only helpers remain valid only for workflows whose declared contract is the root Global manifest.
 
+### 2026-11-16 — Exhausted Fast Repair handoff is Brain architecture debt
+
+Fast Repair's explicit `provider-repair-learn-handoff-v1.json` row `owner=LEARN,status=pending,reason=brain-strategy-exhausted` is an architecture-debt authority alongside bounded negative experiment memory. Learning may promote only rows that still intersect the current census Repair set and current staged/provider evidence; ordinary `brain-unresolved`, completed, stale or non-current handoff rows must not be treated as exhausted. This authority is used to generate provider-local strategy blueprints after the existing strategy family is exhausted. It is not publication authority: generated edits still require compilation, exact-byte materialization, replay, playable media/identity proof and non-regression before promotion.
+
+### 2026-11-16 — Provider-owned Lego identity requirements are mode-specific
+
+Provider-owned executable Legos must satisfy the same identity input semantics as the ProviderBase runtime. A `catalog_search` plan consumes hydrated `title+mediaType`; `tmdb_direct` and the existing minimum `external_id` contract consume `tmdbId+mediaType`. A generic tmdbId requirement must not reject catalogue-search Legos after Core has performed the declared TMDB preflight. This predicate grants execution-plan authority only; it does not create route proof, media identity proof, playback proof or activation authority.

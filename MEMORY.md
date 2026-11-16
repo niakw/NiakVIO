@@ -3356,3 +3356,10 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Fix: Learning now treats the explicit current Fast Repair handoff reason `brain-strategy-exhausted` as an independent architecture-debt authority, intersected with the current census Repair set and staged/current provider evidence. Ordinary `brain-unresolved`, completed, stale, or non-current handoff rows do **not** become exhausted architecture debt.
 - This repairs the Brain handoff pipeline only. It does not declare Frenchstream, Hianime or Stigstream repaired; the next Learning/FORCE replay must still produce a provider-local executable strategy, materialize it, execute current bytes and pass playback/identity/non-regression gates.
 
+## 2026-11-16 — Provider-owned Lego identity contract is mode-specific
+
+- Projection Reconcile run `43794300523` correctly detected 46 active projection drifts and rematerialized them sequentially, but stopped at `french-manga` with `projection-only DATA lacks executable plan`.
+- French-Manga is not a missing-plan provider: current provider DATA has a provider-owned DLE Lego, route-proof v5/API-recipe authority and `identity_input.mode=catalog_search` with `required_fields=[title,mediaType]`; current census still retains FULL anime proof. The generic predicate `provider_patch_has_owned_identity_lego_execution()` incorrectly required `tmdbId+mediaType` for every identity mode.
+- Fix: provider-owned Lego execution now validates required fields by identity mode. `catalog_search` requires `title+mediaType`; the previous minimum for `tmdb_direct` and `external_id` remains `tmdbId+mediaType`. TMDB preflight remains mandatory for this provider-owned-Lego authority, and negative tests reject catalogue Legos lacking title or preflight.
+- This only makes canonical rematerialization consistent with the declared identity contract. It does not create route proof, terminal playback proof or permission to activate/publish a provider that lacks those independent authorities. Projection Reconcile must still reach a fixed point before its drift is considered resolved.
+

@@ -300,16 +300,24 @@ def provider_patch_has_owned_identity_lego_execution(patch: dict[str, Any]) -> b
         for value in (identity.get("required_fields") or [])
         if str(value).strip()
     }
+    mode = str(identity.get("mode") or "").strip().casefold()
+    # Provider-owned Legos consume the same identity contract as ProviderBase.
+    # Catalogue search is title-driven after Core's TMDB preflight; requiring a
+    # tmdbId here made valid title+mediaType Legos impossible to rematerialize.
+    required_by_mode = {
+        "tmdb_direct": {"tmdbId", "mediaType"},
+        "catalog_search": {"title", "mediaType"},
+        # Preserve the existing minimum external-id contract. Individual Legos
+        # may require additional IDs (IMDb, etc.) in their own DATA.
+        "external_id": {"tmdbId", "mediaType"},
+    }
+    required_identity = required_by_mode.get(mode)
     return bool(
         scripts
         and all(value.startswith("scripts/provider_patches/") for value in scripts)
-        and str(identity.get("mode") or "").strip().casefold() in {
-            "tmdb_direct",
-            "catalog_search",
-            "external_id",
-        }
+        and required_identity is not None
         and identity.get("requires_tmdb_before_run") is True
-        and {"tmdbId", "mediaType"} <= required
+        and required_identity <= required
     )
 
 

@@ -92,6 +92,33 @@ owned_external_patch = {
     },
 }
 assert materializer_module.provider_patch_has_owned_identity_lego_execution(owned_external_patch)
+
+owned_catalogue_patch = {
+    "provider_lego_scripts": ["scripts/provider_patches/example_catalogue_runtime_v1.py"],
+    "identity_input": {
+        "mode": "catalog_search",
+        "requires_tmdb_before_run": True,
+        "required_fields": ["title", "mediaType"],
+    },
+}
+assert materializer_module.provider_patch_has_owned_identity_lego_execution(owned_catalogue_patch)
+assert not materializer_module.provider_patch_has_owned_identity_lego_execution({
+    **owned_catalogue_patch,
+    "identity_input": {
+        "mode": "catalog_search",
+        "requires_tmdb_before_run": True,
+        "required_fields": ["tmdbId", "mediaType"],
+    },
+})
+assert not materializer_module.provider_patch_has_owned_identity_lego_execution({
+    **owned_catalogue_patch,
+    "identity_input": {
+        "mode": "catalog_search",
+        "requires_tmdb_before_run": False,
+        "required_fields": ["title", "mediaType"],
+    },
+})
+
 owned_external_model = materializer_module.provider_model(
     "example-owned-lego",
     owned_external_patch,
