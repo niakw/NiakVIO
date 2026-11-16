@@ -70,12 +70,14 @@ for needle in (
 # Regression for Repair->Learning Fast-Handoff initialization. The real handoff
 # previously crashed before provider 1 because causal_waves read fair_handoff
 # before the local had been assigned. Keep the runtime dependency order locked.
-fair_assignment = source.index("fair_handoff = bool(handoff_priority) and not bool(args.provider)")
+fair_assignment = source.index("fair_handoff = bool(handoff_priority or explicit_cohort) and not bool(args.provider)")
 frontier_assignment = source.index("family_frontier, family_deferred = causal_family_frontier(order, batch_plan, by_id)")
 wave_assignment = source.index("causal_waves = causal_family_waves(full_handoff_order, batch_plan, max_parallel=4) if fair_handoff else []")
 assert fair_assignment < frontier_assignment < wave_assignment, (fair_assignment, frontier_assignment, wave_assignment)
 assert "fastRepairHandoffDeferredFamilySiblings" in source
 assert "if explicit_cohort:" in source
+assert "fair_handoff = bool(handoff_priority or explicit_cohort) and not bool(args.provider)" in source
+assert "bool(handoff_priority) and not bool(args.provider)" not in source
 assert "order = family_frontier" in source
 assert "family_deferred = []" not in source
 assert 'p.add_argument("--provider-filter", default=""' in source

@@ -14,6 +14,7 @@ assert 'p.add_argument("--provider-filter", default=""' in snippet
 assert "requested_set = set(explicit_cohort)" in snippet
 assert "family_deferred = []" not in snippet
 assert "order = family_frontier" in snippet
+assert "fair_handoff = bool(handoff_priority or explicit_cohort) and not bool(args.provider)" in snippet
 assert '"explicit-cohort-one-representative-per-causal-family-siblings-pending"' in snippet
 assert "if provider_id not in staged_candidates or provider_id not in info_by_id" in snippet
 assert "fastRepairHandoffParallelExecutionEnabled" in snippet

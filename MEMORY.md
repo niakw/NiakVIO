@@ -1,3 +1,9 @@
+## 2026-11-16 — Explicit Learning cohorts now enter causal-family fair handoff
+
+- Run 43774049543 used an explicit 12-provider Learning cohort and passed clean ProviderBase reconstruction, but remained for hours in `Run adaptive Learning provider queue`. The queue already had one-oracle-per-family logic, 45–120 second fair-share slices and deferred siblings, yet `fair_handoff` was gated only by a non-empty Repair handoff list. A directly supplied explicit cohort therefore bypassed the very family frontier its metadata claimed to use.
+- Treat either a canonical Repair handoff or an explicit provider cohort as family-handoff authority, unless a single provider is explicitly requested. The exact cohort remains the eligibility boundary; one evidence-strong representative per causal family executes first, siblings remain pending for independent Repair validation, and acceptance thresholds are unchanged.
+- Regression tests now require the explicit-cohort boolean to activate the same family frontier/fair-share path. This is an orchestration fix: no provider route, stream logic, publication threshold or proof is fabricated. A fresh Learning run must demonstrate bounded execution and persisted family evidence.
+
 ## 2026-11-16 — Release finalizer dependency trigger completeness
 
 - The canonical finalizer calls `reconcile_active_provider_publication.py`, which delegates to `reconcile_targeted_provider_publication.py`. These executable transaction components were missing from the workflow's push-path dependency list, so changing publication authority could leave the finalizer unexercised on the exact new HEAD.

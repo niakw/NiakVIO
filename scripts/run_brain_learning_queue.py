@@ -1472,7 +1472,7 @@ def main() -> int:
     # returns new strategy memory to canonical Repair. Siblings are deliberately
     # deferred to Repair/next Learning phase instead of replaying the same
     # expensive sandbox path serially in one slot.
-    fair_handoff = bool(handoff_priority) and not bool(args.provider)
+    fair_handoff = bool(handoff_priority or explicit_cohort) and not bool(args.provider)
     full_handoff_order = list(order)
     family_frontier: list[str] = []
     family_deferred: list[str] = []

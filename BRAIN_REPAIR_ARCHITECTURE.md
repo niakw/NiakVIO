@@ -1,3 +1,9 @@
+## 2026-11-16 — Explicit Learning cohorts now enter causal-family fair handoff
+
+- Run 43774049543 used an explicit 12-provider Learning cohort and passed clean ProviderBase reconstruction, but remained for hours in `Run adaptive Learning provider queue`. The queue already had one-oracle-per-family logic, 45–120 second fair-share slices and deferred siblings, yet `fair_handoff` was gated only by a non-empty Repair handoff list. A directly supplied explicit cohort therefore bypassed the very family frontier its metadata claimed to use.
+- Treat either a canonical Repair handoff or an explicit provider cohort as family-handoff authority, unless a single provider is explicitly requested. The exact cohort remains the eligibility boundary; one evidence-strong representative per causal family executes first, siblings remain pending for independent Repair validation, and acceptance thresholds are unchanged.
+- Regression tests now require the explicit-cohort boolean to activate the same family frontier/fair-share path. This is an orchestration fix: no provider route, stream logic, publication threshold or proof is fabricated. A fresh Learning run must demonstrate bounded execution and persisted family evidence.
+
 ## 2026-11-16 — Targeted publication preserves Global+France materialization authority
 
 - Exact source before change: `463c3da9f10951aed9da462bafec4785acc62578`. `reconcile_targeted_provider_publication.py` finalized requested Global providers and then filtered `provider-v3-materialization.json` through `active_provider_ids()`, which is the legacy Global execution scope. That silently removed France-only materialization rows after the earlier union reconstruction.
