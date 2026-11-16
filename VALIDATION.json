@@ -1,5 +1,5 @@
 {
-  "schema_version": 72,
+  "schema_version": 73,
   "release": "dynamic",
   "release_authority": "manifest.json:version",
   "candidate_track": "main",
@@ -217,18 +217,20 @@
     ],
     "provider_runtime_request_types": [
       "movie",
-      "tv"
+      "tv",
+      "anime"
     ],
     "tv_input_aliases": [
       "series",
       "show",
       "other"
     ],
-    "anime_provider_runtime_type": "tv",
+    "anime_provider_runtime_type": "anime",
     "series_published_supported_type": false,
     "official_head_freshness_required_before_release": true,
     "upstream_head_gate": "scripts/check_nuvio_client_upstreams.py",
     "network_verification_inconclusive_blocks_release": true,
-    "subtitle_specific_headers_preserved": true
+    "subtitle_specific_headers_preserved": true,
+    "anime_tv_launch_alias_is_compatibility_only": true
   }
 }
