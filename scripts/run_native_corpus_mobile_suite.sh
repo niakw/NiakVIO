@@ -42,7 +42,7 @@ PLAYER_PROBES="${NIAKVIO_PLAYER_PROBES:-1}"
 READER_ACCEPTANCE="${NIAKVIO_READER_ACCEPTANCE:-0}"
 PRIMARY_FIXTURE="${NIAKVIO_PRIMARY_FIXTURE:-interstellar}"
 PRIMARY_STREAM_SCOPE="${NIAKVIO_PRIMARY_STREAM_SCOPE:-all}"
-REGRESSION_STREAM_SCOPE="${NIAKVIO_REGRESSION_STREAM_SCOPE:-2}"
+REGRESSION_STREAM_SCOPE="${NIAKVIO_REGRESSION_STREAM_SCOPE:-all}"
 SOURCE_SHA="${NIAKVIO_SOURCE_SHA:-$(git -C "$NIAKVIO" rev-parse HEAD)}"
 SOURCE_REPOSITORY="${GITHUB_REPOSITORY:-niakw/NiakVIO}"
 source "$REPOSITORY_RESOLVER"
@@ -71,6 +71,16 @@ elif [[ -n "$TARGET_FIXTURE" && "$TARGET_FIXTURE" != "all" ]]; then
   FIXTURES=("$TARGET_FIXTURE")
 else
   FIXTURES=("${DEFAULT_FIXTURES[@]}")
+fi
+if [[ -z "$TARGET_FIXTURES" && ( -z "$TARGET_FIXTURE" || "$TARGET_FIXTURE" = "all" ) && "$READER_ACCEPTANCE" = "1" ]]; then
+  while IFS= read -r mandatory_fixture; do
+    [[ -z "$mandatory_fixture" ]] && continue
+    present=false
+    for existing_fixture in "${FIXTURES[@]}"; do
+      if [[ "$existing_fixture" = "$mandatory_fixture" ]]; then present=true; break; fi
+    done
+    if [[ "$present" != "true" ]]; then FIXTURES+=("$mandatory_fixture"); fi
+  done < <(python3 "${NIAKVIO}/scripts/native_regression_fixtures.py")
 fi
 SOFT_FAILURES=0
 READER_FAILURES=0
