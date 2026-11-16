@@ -31,7 +31,6 @@ PORTFOLIO_CANDIDATE = ROOT / "automation" / "provider-repair-portfolio-candidate
 PORTFOLIO_RETRY = ROOT / "automation" / "provider-repair-portfolio-retry.json"
 PORTFOLIO_LOSSES = ROOT / "automation" / "provider-repair-portfolio-losses.json"
 DISPOSITION = ROOT / "automation" / "provider-repair-disposition.json"
-HUB_MATRIX = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
 RUNTIME_PLAN_LKG = Path(os.environ.get("RUNNER_TEMP") or (ROOT / "automation")) / "provider-runtime-plan-lkg-v1.json"
 CENSUS_STATUS = ROOT / "automation" / "provider-census-status.json"
 CENSUS_SHARDED_PATH = ROOT / "automation" / "provider-census-sharded-latest.json"
@@ -749,15 +748,6 @@ def main() -> int:
         )
     active_ids = projection_active_provider_ids()
     active_catalogue = [cid(row.get("id")) for row in catalogue_rows if cid(row.get("id")) in active_ids]
-    matrix = load(HUB_MATRIX)
-    matrix_ids = {cid(row.get("manifestId") or row.get("provider")) for row in matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId") or row.get("provider"))}
-    if matrix_ids != active_ids:
-        print(
-            "FIELD_PROVIDER_REPAIR_MATRIX_STALE "
-            f"matrix_only={','.join(sorted(matrix_ids-active_ids)) or '-'} "
-            f"active_only={','.join(sorted(active_ids-matrix_ids)) or '-'}",
-            flush=True,
-        )
     requested = {cid(value) for value in args.provider if cid(value)}
     unknown = sorted(requested - set(catalogue))
     if unknown:
