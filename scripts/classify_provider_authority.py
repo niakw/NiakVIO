@@ -25,6 +25,7 @@ from typing import Any
 from urllib.parse import urlsplit
 
 from current_provider_scope import pending_provider_ids
+from provider_production_freshness import ProductionFreshnessAuthority
 
 ROOT = Path(__file__).resolve().parents[1]
 HUBS = ROOT / "provider-hubs.json"
@@ -568,6 +569,10 @@ def main() -> int:
     patches = overrides.setdefault("provider_patches", {})
     histories = history.get("providers") if isinstance(history.get("providers"), dict) else {}
     pending = pending_provider_ids()
+    production_freshness = ProductionFreshnessAuthority(ROOT)
+    production_freshness_authoritative = (
+        int(production_freshness.all_scope_state.get("artifactHashSchemaVersion") or 0) >= 1
+    )
     census_by_provider = {
         cid(row.get("provider")): row
         for row in census.get("providers") or []
@@ -589,17 +594,29 @@ def main() -> int:
             pending_onboarding=provider in pending,
         )
         census_row = census_by_provider.get(provider)
-        if manifest_row.get("enabled") is not False and current_architecture_nonfunctional(census_row):
-            current_status = str(census_row.get("status") or "")
+        production_authorized = True
+        production_proof_authority = "freshness-ledger-unavailable"
+        if (
+            manifest_row.get("enabled") is not False
+            and provider not in pending
+            and production_freshness_authoritative
+        ):
+            production_authorized, production_proof_authority = production_freshness.authorize(
+                manifest_row,
+                "global",
+            )
+        if manifest_row.get("enabled") is not False and not production_authorized:
+            current_status = str((census_row or {}).get("status") or "")
             result = {
                 **result,
                 "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
                 "repairEligible": False,
-                "confidence": "current-census",
+                "confidence": "current-byte-production-proof",
                 "authorityClass": "current-architecture-nonfunctional",
                 "reasons": list(result.get("reasons") or []) + [
-                    "current_census_tested_without_terminal_verified_playback",
-                    "current_status:" + current_status,
+                    "current_bytes_lack_production_freshness_authority",
+                    "production_proof:" + production_proof_authority,
+                    "current_status:" + (current_status or "unknown"),
                 ],
             }
         if args.apply_safe_disables and result["action"] in {
@@ -624,7 +641,7 @@ def main() -> int:
             "apiBackendMayOperateWithoutHomepage": True,
             "manualOffEntersDisabledRetentionImmediately": True,
             "effectiveOperatorShutdownEntersDisabledRetentionImmediately": True,
-            "currentTestedNonfunctionalEntersDisabledRetention": True,
+            "currentByteUnprovenEntersDisabledRetention": True,
             "terminalPlaybackRequiredForActiveCurrentBytes": True,
             "bulkOnboardingPendingGetsTargetedProofWithoutRuntimeAuthority": True,
         },
