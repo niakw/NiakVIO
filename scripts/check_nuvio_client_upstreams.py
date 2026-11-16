@@ -15,6 +15,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = ROOT / "automation" / "nuvio-client-upstreams.json"
 PLATFORM_CONTRACTS = ROOT / "automation" / "platform-runtime-contracts.json"
+COMPATIBILITY_MATRIX = ROOT / "automation" / "nuvio-client-compatibility-matrix.json"
 TV_CONTRACT = ROOT / "automation" / "nuvio-tv-runtime-contract.json"
 SOURCES_PATH = ROOT / "sources.json"
 
@@ -103,6 +104,8 @@ def validate_config(config: dict[str, Any]) -> list[str]:
 
     platform = load(PLATFORM_CONTRACTS)
     platform_clients = platform.get("clients") or {}
+    compatibility = load(COMPATIBILITY_MATRIX)
+    compatibility_clients = compatibility.get("clients") or {}
     tv = load(TV_CONTRACT)
 
     for key, row in clients.items():
@@ -127,6 +130,18 @@ def validate_config(config: dict[str, Any]) -> list[str]:
             errors.append(f"{key}: semantic_review_paths must be a list")
         if semantic_paths and (not isinstance(semantic_tokens, list) or not semantic_tokens):
             errors.append(f"{key}: semantic_review_tokens is empty")
+
+        matrix_row = compatibility_clients.get(key)
+        if not isinstance(matrix_row, dict):
+            errors.append(f"{key}: compatibility matrix row missing")
+        else:
+            if matrix_row.get("repository") != repository:
+                errors.append(f"{key}: compatibility matrix repository mismatch")
+            if matrix_row.get("branch") != branch:
+                errors.append(f"{key}: compatibility matrix branch mismatch")
+            audited = matrix_row.get("current_audited") or {}
+            if str(audited.get("ref") or "") != verified_ref:
+                errors.append(f"{key}: compatibility matrix audited ref mismatch")
 
         if key == "nuvio-tv":
             if tv.get("source_repository") != repository:
