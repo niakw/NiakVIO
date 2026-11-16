@@ -55,8 +55,6 @@ def main() -> int:
         '"🎬 "',
         '"📺 "',
         '"⏱ "+humanDuration',
-        '"🔞 "+f.ageRating',
-        '"🇫🇷 "',
         '"🌐 "',
         'out.title=provider+(f.quality?" - "+qualityLabel(f.quality):"")',
         'out.description=lines.join("\\n")',
@@ -74,6 +72,27 @@ def main() -> int:
         and "meaningful(q&&q.title)" in text
     ):
         raise AssertionError("stream presentation metadata fallback floor is not satisfied")
+
+    # Age/language presentation evolved after this historical migration. Accept
+    # either the older inline rendering or the richer current fact/badge helpers;
+    # never force a current Core back to the old emoji source shape.
+    legacy_age = '"🔞 "+f.ageRating' in text
+    current_age = (
+        "function durationAgeLine(f)" in text
+        and '"🔞 "+ageBadgeText(f)' in text
+        and "function ageBadgeText(f)" in text
+    )
+    if not (legacy_age or current_age):
+        raise AssertionError("stream presentation age contract drifted")
+
+    legacy_language = '"🇫🇷 "' in text
+    current_language = (
+        "function languageLine(f)" in text
+        and '"🌐 "+' in text
+        and "languageTracks" in text
+    )
+    if not (legacy_language or current_language):
+        raise AssertionError("stream presentation language contract drifted")
 
     forbidden_render = (
         'parts.push("Unknown")',
