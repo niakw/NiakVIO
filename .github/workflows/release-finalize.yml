@@ -20,7 +20,19 @@ on:
       # Core/ProviderBase edits must reach published bundles, not stop at source tests.
       - 'scripts/provider_patches/**'
       - 'scripts/provider_base_store.py'
+      - 'scripts/current_provider_scope.py'
       - 'scripts/apply_provider_overrides.py'
+      - 'engine_v2/src/provider-catalog.mjs'
+      - 'engine_v2/tests/provider-catalog.test.mjs'
+      - 'provider_catalog.json'
+      - 'automation/provider-v3-architecture.json'
+      - 'VALIDATION.json'
+      - 'tests/provider_v3_documentation_contract_test.py'
+      - 'tests/provider_v3_strategy_plan_contract_test.py'
+      - 'tests/provider_cardinality_source_of_truth_test.py'
+      - 'tests/provider_anime_semantic_transport_contract_test.py'
+      - 'tests/native_five_lab_coverage_test.py'
+      - 'tests/native_hub46_scope_contract_test.py'
       - 'scripts/generate_hub46_manifest.py'
       - 'scripts/build_hub46_native_manifest.py'
       - 'tests/provider_stream_multiplicity_contract_test.py'
@@ -162,6 +174,14 @@ jobs:
           python3 scripts/validate_nuvio_tv_runtime_policy.py
           python3 tests/platform_runtime_projection_authority_test.py
           python3 tests/nuvio_portable_stream_result_contract_test.py
+          python3 tests/provider_v3_documentation_contract_test.py
+          python3 tests/provider_v3_strategy_plan_contract_test.py
+          python3 tests/provider_cardinality_source_of_truth_test.py
+          python3 tests/provider_anime_semantic_transport_contract_test.py
+          python3 tests/provider_stream_multiplicity_contract_test.py
+          python3 tests/special_season_zero_identity_test.py
+          python3 tests/native_five_lab_coverage_test.py
+          python3 tests/native_hub46_scope_contract_test.py
           python3 tests/language_manifest_metadata_consistency_test.py
 
       - name: Reapply durable provider patches, minimize and rebuild current projections
@@ -244,12 +264,11 @@ jobs:
             --apply
           python3 scripts/validate_provider_materialization_authority.py
           python3 scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
-          # prune_unreferenced_providers.py treats manifest-hub46.json as a current
-          # local retention authority. Provider reapplication changes content-addressed
-          # filenames, so reproject Hub46 before pruning superseded bundles.
+          # Rebuild the current active Global+France projection transport before
+          # pruning superseded bundles. Historical Hub-46 evidence is not scope authority.
           python3 scripts/generate_hub46_manifest.py \
             --source manifest.json \
-            --matrix automation/evidence/hub-lab-matrix-46.json \
+            --vf-source vf/manifest.json \
             --output manifest-hub46.json
           python3 scripts/prune_unreferenced_providers.py
           python3 tests/provider_html_filter_security_test.py --published
@@ -274,7 +293,7 @@ jobs:
           python3 scripts/validate_provider_materialization_authority.py
           python3 scripts/generate_hub46_manifest.py \
             --source manifest.json \
-            --matrix automation/evidence/hub-lab-matrix-46.json \
+            --vf-source vf/manifest.json \
             --output manifest-hub46.json
 
       - name: Stage provider generation locally
