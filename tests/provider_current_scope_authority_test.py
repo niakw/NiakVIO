@@ -35,6 +35,9 @@ assert "Deprecated compatibility input" in disposition
 activation = sources["activation"]
 assert "active_provider_ids()" in activation
 assert "visible_provider_ids()" in activation
+assert "projection_visible_provider_ids()" in activation
+assert "projection_active_provider_ids()" in activation
+assert "Global+France projection authority" in activation
 assert "HUB_MATRIX" not in activation
 assert "hub-lab-matrix-46.json" not in activation
 assert "FIELD_ACTIVATION_SCOPE_REGISTRY_ONLY" in activation
