@@ -40,6 +40,11 @@ on:
         required: false
         type: boolean
         default: false
+      expected_sha:
+        description: "Optional exact SHA required for dispatched analysis"
+        required: false
+        type: string
+        default: ""
 
 concurrency:
   # Automated census/evidence commits advance main while CodeQL is still scanning.
@@ -57,7 +62,26 @@ permissions:
   security-events: write
 
 jobs:
+  validate-dispatch-sha:
+    name: "CodeQL · expected SHA"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require expected dispatch SHA
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.expected_sha != '' }}
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_SHA" = "$EXPECTED_SHA" || {
+            echo "FIELD_CODEQL_EXPECTED_SHA_MISMATCH expected=$EXPECTED_SHA actual=$GITHUB_SHA" >&2
+            exit 1
+          }
+          echo "FIELD_CODEQL_EXPECTED_SHA_OK sha=$GITHUB_SHA"
+
   dismiss-open-alerts:
+    needs: [validate-dispatch-sha]
     name: "CodeQL · dismiss disabled-provider alerts"
     if: ${{ (github.event_name == 'workflow_dispatch' && inputs.dismiss_open_alerts == true) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[dismiss-codeql-alerts]')) }}
     runs-on: ubuntu-latest
@@ -128,6 +152,7 @@ jobs:
           echo 'All provider-disabled/** CodeQL alerts are dismissed.'
 
   analyze:
+    needs: [validate-dispatch-sha]
     if: ${{ !((github.event_name == 'workflow_dispatch' && inputs.dismiss_open_alerts == true) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[dismiss-codeql-alerts]'))) }}
     name: "${{ matrix.check_name }}"
     runs-on: ubuntu-latest
