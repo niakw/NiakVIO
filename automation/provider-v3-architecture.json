@@ -1,5 +1,5 @@
 {
-  "schema_version": 12,
+  "schema_version": 13,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -42,15 +42,17 @@
     "capability_gate_before_provider_network": true,
     "provider_runtime_request_values": [
       "movie",
-      "tv"
+      "tv",
+      "anime"
     ],
     "tv_input_aliases": [
       "series",
       "show",
       "other"
     ],
-    "anime_provider_runtime_type": "tv",
-    "series_published_supported_type": false
+    "anime_provider_runtime_type": "anime",
+    "series_published_supported_type": false,
+    "anime_tv_launch_alias_is_compatibility_only": true
   },
   "route_recognition": {
     "canonical_route_data": "provider.model.routeData",
