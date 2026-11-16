@@ -79,11 +79,11 @@ global.fetch = async (url) => {
 const provider=require(process.argv[2]);
 (async()=>{
   const value=await provider.getStreams("280049","series",1,11);
-  if(!Array.isArray(value)||!value.length||value[0].canonicalMediaType!=="anime"||value[0].mediaType!=="tv")
-    throw new Error("anime semantic/TV transport split failed: "+JSON.stringify(value));
+  if(!Array.isArray(value)||!value.length||value[0].canonicalMediaType!=="anime"||value[0].mediaType!=="anime"||value[0].providerMediaType!=="anime")
+    throw new Error("canonical anime provider ABI lost: "+JSON.stringify(value));
   const again=await provider.getStreams("280049","series",1,12);
-  if(!Array.isArray(again)||!again.length||again[0].canonicalMediaType!=="anime"||again[0].mediaType!=="tv")
-    throw new Error("anime cache/transport lost");
+  if(!Array.isArray(again)||!again.length||again[0].canonicalMediaType!=="anime"||again[0].mediaType!=="anime")
+    throw new Error("anime cache/provider ABI lost");
   if(calls!==1)throw new Error("TMDB lookup was not cached: "+calls);
 })().catch(e=>{console.error(e);process.exit(1)});
 ''')
@@ -105,9 +105,35 @@ const provider=require(process.argv[2]);
   const value=await provider.getStreams('129','movie',null,null);
   if(!Array.isArray(value)||!value.length)throw new Error('anime movie was suppressed');
   if(value[0].canonicalMediaType!=='anime')throw new Error('anime movie lost canonical anime identity: '+JSON.stringify(value));
-  if(value[0].mediaType!=='movie'||value[0].providerMediaType!=='movie')
-    throw new Error('anime movie transport must stay movie: '+JSON.stringify(value));
+  if(value[0].mediaType!=='anime'||value[0].providerMediaType!=='anime')
+    throw new Error('anime movie must keep canonical provider ABI while TMDB namespace stays movie: '+JSON.stringify(value));
   if(calls!==1)throw new Error('anime movie TMDB verification count '+calls);
+})().catch(e=>{console.error(e);process.exit(1)});
+''')
+
+anime_tv_alias = mod.apply(
+    BASE,
+    options={"semantic_types": ["anime"], "request_type_aliases": {"anime": "tv"}},
+)
+run_case(anime_tv_alias, '''
+let calls=0;
+global.fetch=async(url)=>{
+  calls++;
+  const value=String(url);
+  if(!value.includes('/tv/280049?'))throw new Error('anime alias TMDB namespace mismatch: '+value);
+  return{ok:true,status:200,json:async()=>({
+    id:280049,genres:[{id:16,name:'Animation'}],original_language:'ja',
+    origin_country:['JP'],keywords:{results:[{name:'anime'}]}
+  })};
+};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams('280049','anime',1,11);
+  if(!Array.isArray(value)||!value.length||value[0].canonicalMediaType!=='anime')
+    throw new Error('explicit anime alias lost semantic identity: '+JSON.stringify(value));
+  if(value[0].mediaType!=='tv'||value[0].providerMediaType!=='tv')
+    throw new Error('declared anime->tv provider alias not honored: '+JSON.stringify(value));
+  if(calls!==1)throw new Error('anime alias TMDB verification count '+calls);
 })().catch(e=>{console.error(e);process.exit(1)});
 ''')
 
@@ -176,4 +202,4 @@ const provider=require(process.argv[2]);
 })().catch(e=>{console.error(e);process.exit(1)});
 ''')
 
-print('global media resolver: runtime-only TMDB credentials, launch gate, canonical anime + tv/movie transport, and deferred verification passed')
+print('global media resolver: runtime-only TMDB credentials, canonical anime provider ABI + explicit transport aliases, launch gate and deferred verification passed')
