@@ -146,9 +146,22 @@ def assert_projection(manifest_path: Path, projection: str, catalog: dict[str, d
 catalog, orders = validate_catalog(ROOT / "provider_catalog.json")
 canonical_count, canonical_anime = assert_projection(ROOT / "manifest.json", "general", catalog, orders)
 vf_count, vf_anime = assert_projection(ROOT / "vf/manifest.json", "vf", catalog, orders)
-assert canonical_count == len(catalog), (canonical_count, len(catalog))
+assert canonical_count == len(orders["general"]), (canonical_count, len(orders["general"]))
+assert vf_count == len(orders["vf"]), (vf_count, len(orders["vf"]))
+assert set(orders["general"]) | set(orders["vf"]) == set(catalog), (
+    "provider_catalog must equal the Global + France projection union",
+    len(catalog),
+    len(set(orders["general"]) | set(orders["vf"])),
+)
+france_only = set(orders["vf"]) - set(orders["general"])
+assert france_only, "current catalogue must preserve first-class France-only providers"
+assert france_only == {
+    key
+    for key, entry in catalog.items()
+    if entry["projections"].get("vf") is True
+    and entry["projections"].get("general") is not True
+}, "France-only projection membership drift"
 assert canonical_anime > 0, "general projection must retain anime providers"
-assert vf_count > 0, vf_count
 assert vf_anime > 0, "VF projection must retain its anime providers"
 
 corpus = json.loads((ROOT / ".github/triggers/nuvio-client-lab.json").read_text(encoding="utf-8"))
