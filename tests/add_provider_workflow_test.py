@@ -61,6 +61,12 @@ assert SCRIPT.index("base_store.persist_clean_provider_seed(") < SCRIPT.index("m
 assert '"clean_reconstruction_required": False' in SCRIPT
 assert '"clean_reconstruction_verified": True' in SCRIPT
 
+refresh_body = SCRIPT.split("def refresh(", 1)[1].split("\ndef finalize(", 1)[0]
+assert 'scope = normalized_scope(current.get("scope") or "global")' in refresh_body
+assert 'target_manifest_path = VF_MANIFEST if scope == "france" else MANIFEST' in refresh_body
+assert '"../" + published_relative if scope == "france" else published_relative' in refresh_body
+assert 'write_json(target_manifest_path, manifest)' in refresh_body
+
 finalize_body = SCRIPT.split("def finalize(", 1)[1].split("\ndef main()", 1)[0]
 assert 'scope = normalized_scope(current.get("scope") or "global")' in finalize_body
 assert 'target_manifest_path = VF_MANIFEST if scope == "france" else MANIFEST' in finalize_body
