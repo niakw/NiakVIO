@@ -40,7 +40,7 @@ def projection_manifest(global_manifest: dict, vf_manifest: dict) -> dict:
             if not isinstance(row, dict) or row.get('enabled') is False:
                 continue
             provider = cid(row.get('id'))
-            filename = str(row.get('filename') or '').strip().replace('\\\\', '/')
+            filename = str(row.get('filename') or '').strip().replace('\\', '/')
             if not provider or not filename:
                 raise ValueError(f'{label}_manifest_contract')
             if prefix:
