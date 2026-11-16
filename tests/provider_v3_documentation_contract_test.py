@@ -278,6 +278,10 @@ assert machine_runtime["native_labs_use_latest_official_head"] is True
 assert machine_runtime["release_upstream_head_gate"] == "scripts/check_nuvio_client_upstreams.py"
 assert machine_runtime["release_requires_current_official_heads"] is True
 assert machine_runtime["network_verification_inconclusive_blocks_release"] is True
+assert machine_runtime["subtitle_specific_headers_preserved"] is True
+assert machine_runtime["post_finalization_certification_workflow"] == ".github/workflows/release-candidate-validation.yml"
+assert machine_runtime["final_native_certification_requires_exact_release_sha"] is True
+assert machine_runtime["final_native_certification_transitive_between_clients"] is False
 assert machine_runtime["native_proof_transitive_between_clients"] is False
 assert machine_runtime["france_only_projection_authority"] == "provider_catalog.json projections general=false,vf=true"
 assert validation_machine["release_authority"] == "manifest.json:version"
