@@ -40,6 +40,9 @@ assert '--previous "$RUNNER_TEMP/published-manifest-baseline.json"' in text
 assert "python tests/release_auto_bump_test.py" in text
 assert "python scripts/generate_hub46_manifest.py" in text
 assert "python scripts/build_hub46_native_manifest.py" in text
+assert '--vf-source vf/manifest.json' in text
+assert '--output "$RUNNER_TEMP/domain-observation-manifest.json"' in text
+assert '--manifest "$RUNNER_TEMP/domain-observation-manifest.json"' in text
 assert "python scripts/generate_release_hashes.py" in text
 assert "python scripts/validate_release_integrity.py" in text
 assert 'git rev-parse HEAD > "$RUNNER_TEMP/domain-base-sha"' in text
