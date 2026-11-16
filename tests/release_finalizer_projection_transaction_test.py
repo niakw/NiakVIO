@@ -11,9 +11,11 @@ sync = workflow.index("python3 scripts/sync_manifest_projection_rows.py", reappl
 sync_check = workflow.index("python3 scripts/sync_manifest_projection_rows.py --check", sync)
 reconcile = workflow.index("python3 scripts/reconcile_provider_static_authority.py --apply", sync_check)
 materialize = workflow.index("python3 scripts/materialize_provider_v3_all.py", reconcile)
-second_reconcile = workflow.index("python3 scripts/reconcile_provider_static_authority.py --apply", materialize)
+sync2 = workflow.index("python3 scripts/sync_manifest_projection_rows.py", materialize)
+sync2_check = workflow.index("python3 scripts/sync_manifest_projection_rows.py --check", sync2)
+second_reconcile = workflow.index("python3 scripts/reconcile_provider_static_authority.py --apply", sync2_check)
 validate = workflow.index("python3 scripts/validate_provider_materialization_authority.py", second_reconcile)
 
-assert reapply < sync < sync_check < reconcile < materialize < second_reconcile < validate
+assert reapply < sync < sync_check < reconcile < materialize < sync2 < sync2_check < second_reconcile < validate
 assert "'scripts/sync_manifest_projection_rows.py'" in workflow
 print("release finalizer projection transaction ordering passed")

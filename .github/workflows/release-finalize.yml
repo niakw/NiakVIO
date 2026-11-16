@@ -135,6 +135,10 @@ jobs:
           # active production scope before static audit. Targeted workflows may
           # legitimately leave a partial materialization report on main.
           python3 scripts/materialize_provider_v3_all.py
+          # Canonical Global materialization rotates content-addressed filenames
+          # again. Restore every derived projection before the second union audit.
+          python3 scripts/sync_manifest_projection_rows.py
+          python3 scripts/sync_manifest_projection_rows.py --check
           # materialize_provider_v3_all.py owns the canonical Global rebuild.
           # Rebind its ledger to the already-published France-only active bytes
           # before validating executable authority.

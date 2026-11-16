@@ -1,3 +1,9 @@
+## 2026-11-16 — Global rematerialization must resync projections before second union audit
+
+- Finalizer run 43779626305 proved the first projection-sync fix: it passed the initial Global+France reconciliation, recovered the active materialization authority, and entered canonical Global Provider-v3 materialization. It then failed later on `neko-sama` because `materialize_provider_v3_all.py` rotated Global content-addressed filenames again while VF still held the immediately-prior filenames.
+- Add a second deterministic projection sync/check immediately after canonical Global materialization and before the second Global+France authority reconciliation. The transaction-order regression test now requires both sync barriers.
+- This generalizes the Purstream finding: every Global byte rewrite must re-establish derived projection parity before union authority checks. No provider-specific repair or proof relaxation is introduced.
+
 ## 2026-11-16 — Explicit Learning cohorts now enter causal-family fair handoff
 
 - Run 43774049543 used an explicit 12-provider Learning cohort and passed clean ProviderBase reconstruction, but remained for hours in `Run adaptive Learning provider queue`. The queue already had one-oracle-per-family logic, 45–120 second fair-share slices and deferred siblings, yet `fair_handoff` was gated only by a non-empty Repair handoff list. A directly supplied explicit cohort therefore bypassed the very family frontier its metadata claimed to use.
