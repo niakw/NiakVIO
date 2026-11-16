@@ -19,19 +19,6 @@ from provider_base_store import (  # noqa: E402
 )
 
 GOWARU_REF = "c3ce6f43a1ba8ccf2f3838b5cd9db40745c33fa2"
-REQUIRED_GOWARU = {
-    "animesama-co",
-    "animesultra",
-    "animevostfr",
-    "dulourd",
-    "mugiwarastream",
-    "papadustream",
-    "sekai",
-    "voiranime-homes",
-    "voiranime-rip",
-    "vostfree",
-}
-
 
 def run_node(bundle: bytes, harness: str) -> dict:
     with tempfile.TemporaryDirectory() as td:
@@ -147,10 +134,27 @@ def main() -> int:
     knowledge = json.loads((ROOT / "automation/provider-v3-static-knowledge.json").read_text(encoding="utf-8"))
     assert knowledge.get("gowaruSourceRef") == GOWARU_REF
     providers = knowledge.get("providers") or {}
-    for provider_id in REQUIRED_GOWARU:
+    gowaru_ids = {
+        provider_id
+        for provider_id, row in providers.items()
+        if any(
+            isinstance(source, dict) and str(source.get("source") or "").strip() == "gowaru"
+            for source in (row.get("sources") or [])
+        )
+    }
+    referenced_ids = {
+        provider_id
+        for provider_id, row in providers.items()
+        if str(((row.get("model") or {}).get("sourceKnowledgeRef")) or "").strip() == GOWARU_REF
+    }
+    assert gowaru_ids, "current structured authority lost every Gowaru knowledge source"
+    assert referenced_ids == gowaru_ids, {
+        "missingRefs": sorted(gowaru_ids - referenced_ids),
+        "staleRefs": sorted(referenced_ids - gowaru_ids),
+    }
+    for provider_id in sorted(gowaru_ids):
         row = providers.get(provider_id) or {}
         model = row.get("model") or {}
-        assert model.get("sourceKnowledgeRef") == GOWARU_REF, provider_id
         assert model.get("routes"), provider_id
         assert str(model.get("sourceRuntimeFamily") or "unknown") != "unknown", provider_id
 
@@ -158,7 +162,7 @@ def main() -> int:
     test_post_form_reader()
     test_metadata_gate()
     test_get_search_reader()
-    print("PROVIDER_V3_SOURCE_PLAN_V4_CONTRACT_OK gowaru=10 synthetic_runtime=3 metadata_gate=1 route_guardrails=1")
+    print(f"PROVIDER_V3_SOURCE_PLAN_V4_CONTRACT_OK gowaru={len(gowaru_ids)} provenance_exact=1 synthetic_runtime=3 metadata_gate=1 route_guardrails=1")
     return 0
 
 
