@@ -43,6 +43,15 @@ assert "NIAKVIO_PROVIDER_API_RECIPE_SOURCE_COVERAGE_V27" in base
 assert "minStreamsBeforeStop" not in base
 assert "if (_dedupeStreamRows(streams).length >= 40) break;" in base
 assert "return _dedupeStreamRows(streams).slice(0, 40);" in base
+assert "NIAKVIO_PROVIDER_RUNTIME_PLAYER_COVERAGE_V27" in base
+runtime_api = base.split("async function _resolveRuntimeApi", 1)[1].split("async function _resolveKnownPlayer", 1)[0]
+assert "if (streams.length) break;" not in runtime_api
+assert "if (_dedupeStreamRows(streams).length >= 40) break;" in runtime_api
+known_player = base.split("async function _resolveKnownPlayer", 1)[1].split("function _htmlVisibleText", 1)[0]
+assert "if (runtime.length) return runtime;" not in known_player
+assert "if (direct.length) return _streams" not in known_player
+assert "streams.push(...runtime)" in known_player
+assert "streams.push(..._streams(direct, responseUrl))" in known_player
 
 # Core: validation capacity must match the runtime output contract. Dedupe is by
 # exact playback identity (URL + request headers), not bare URL.
