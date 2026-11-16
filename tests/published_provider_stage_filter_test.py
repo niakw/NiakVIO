@@ -80,7 +80,7 @@ with TemporaryDirectory() as td:
 source=(ROOT/"scripts"/"build_published_provider_stage.py").read_text(encoding="utf-8")
 assert "if requested:" in source
 assert "rows=projection_active_provider_rows()" in source
-assert "active_provider_rows" not in source
+assert "rows=active_provider_rows()" not in source
 assert "projection_rows(args.manifest,args.france_manifest)" in source
 assert source.index("if requested:") < source.index("rows=projection_active_provider_rows()")
 workflow=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
