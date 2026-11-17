@@ -1,23 +1,29 @@
 {
-  "providerCount": 1,
+  "providerCount": 3,
   "newProviderCount": 0,
-  "replaceProviderCount": 1,
+  "replaceProviderCount": 3,
   "newProviders": [],
   "replaceProviders": [
+    "dpstream",
+    "flickystream",
     "meowtv"
   ],
   "strategies": {
-    "api_stream_resolver": 1
+    "api_stream_resolver": 1,
+    "mixed_embed_resolver": 2
   },
   "declaredTypeCounts": {
-    "anime": 1,
-    "movie": 1,
-    "tv": 1
+    "anime": 2,
+    "movie": 3,
+    "tv": 3
   },
   "scopeCounts": {
-    "global": 1
+    "france": 1,
+    "global": 2
   },
   "safePendingRestageProviders": [
+    "dpstream",
+    "flickystream",
     "meowtv"
   ],
   "schemaVersion": 1,
@@ -28,6 +34,21 @@
   "activationAttempted": false,
   "nextStage": "sharded census -> repair batches -> proof-driven activation",
   "providers": [
+    {
+      "id": "flickystream",
+      "name": "FlickyStream",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://flickystream.mov",
+      "scope": "global",
+      "pendingFilename": "provider-disabled/flickystream--nuvio--f28eae3a3924e7fd.js",
+      "pendingSha256": "f28eae3a3924e7fda137fef59f0fb082d32f3eb9409d51d066644f472a093c70",
+      "pendingFixedPoint": true
+    },
     {
       "id": "meowtv",
       "name": "MeowTV",
@@ -41,6 +62,20 @@
       "scope": "global",
       "pendingFilename": "provider-disabled/meowtv--nuvio--6e46650c4b7fa712.js",
       "pendingSha256": "6e46650c4b7fa7120e393d4b30f7065896e9010f7056b67b505fab34568d88dd",
+      "pendingFixedPoint": true
+    },
+    {
+      "id": "dpstream",
+      "name": "DPStream",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "site": "https://dpstream.fyi/",
+      "scope": "france",
+      "pendingFilename": "provider-disabled/dpstream--nuvio--e5e1c3b834afd449.js",
+      "pendingSha256": "e5e1c3b834afd4493552869d7b47fc3d0da66aeae7de5b5f1b9693b6229f3fdb",
       "pendingFixedPoint": true
     }
   ]
