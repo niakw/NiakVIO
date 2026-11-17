@@ -349,7 +349,10 @@ Règles :
 - les Labs utilisent les bytes NiakVIO candidats exacts ;
 - **aucun Lab ne patch NuvioTV/NuvioMobile/NuvioDesktop pour contourner un bug upstream** ;
 - un bug de compilation, packaging, runtime, QuickJS ou player upstream reste une preuve externe rouge ;
-- le plumbing de test est autorisé uniquement s’il expose le chemin officiel sans changer le comportement production ni réparer le défaut observé.
+- le plumbing de test est autorisé uniquement s’il expose le chemin officiel sans changer le comportement production ni réparer le défaut observé ;
+- la preuve multi-audio est causale et player-first : le player de production consomme d'abord le stream, puis un probe transport borné peut compter les renditions `EXT-X-MEDIA:TYPE=AUDIO` du master ; lorsqu'un master prouve au moins deux pistes, le même Lab doit observer au moins deux pistes exposées par le player de production ;
+- Mobile Android et Desktop lisent cette cardinalité via `PlayerEngineController.getAudioTracks()`, iOS via `NuvioPlayerBridge.getAudioTrackCount()`, et TV via l'overlay utilisateur réel « Pistes audio » ; le harness ne patch jamais le code production Nuvio pour fabriquer cette preuve ;
+- un master multi-audio prouvé mais réduit à moins de deux pistes par le player est classé `client_runtime`, pas provider Repair.
 
 Le trigger commun est `.github/triggers/full-native-lab-validation.json`.
 
@@ -538,7 +541,7 @@ Subtitle chips remain absent from runtime `badgeIds`; subtitle information stays
 Legacy labels such as `VF`, `VFF`, `VFQ`, `VO`, `VOSTFR` and `MULTI` are accepted only as input aliases/roles. Public language identity is a canonical international code (`fr`, `fr-ca`, `ja`, `ko`, `hi`, etc.) or null when a single audio language cannot be proven. Provider-manifest language fallback is allowed only when no stronger stream/player evidence exists.
 
 
-**Selectable audio is a terminal-media property, not a rich plugin-metadata guarantee.** The official Nuvio provider-result ABI transports the portable stream fields and subtitles but does not transport NiakVIO's internal `audioTracks` array. Therefore a multi-audio HLS source must reach the client as the actual HLS master (or another terminal container that exposes all tracks); Core must not replace a proven multi-audio master with an earlier playable child rendition merely because that child validates first. Internal `audioTracks` remain useful facts for presentation/diagnostics, but they are not a substitute for preserving the media resource that the Nuvio player inspects.
+**Selectable audio is a terminal-media property, not a rich plugin-metadata guarantee.** The official Nuvio provider-result ABI transports the portable stream fields and subtitles but does not transport NiakVIO's internal `audioTracks` array. Therefore a multi-audio HLS source must reach the client as the actual HLS master (or another terminal container that exposes all tracks); Core must not replace a proven multi-audio master with an earlier playable child rendition merely because that child validates first. Internal `audioTracks` remain useful facts for presentation/diagnostics, but they are not a substitute for preserving the media resource that the Nuvio player inspects. Native acceptance closes the loop: after the production player has consumed the media, a bounded post-player transport observation may establish the master's audio-rendition cardinality. If that evidence proves at least two audio tracks, a Lab cannot pass that stream while the production player exposes fewer than two selectable tracks.
 
 Provider ownership and terminal playback provenance are separate. Nuvio groups a result under the scraper/provider that produced it; that remains the logical owner. When a provider resolves an external player/host, Core may append the proven terminal player host to the visible stream label (for example `Provider · player.example`) without reassigning ownership to that host. This prevents a recovered cross-host media URL from being presented as though it were served directly by the provider while preserving stable provider grouping.
 
