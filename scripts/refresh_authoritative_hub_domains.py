@@ -493,6 +493,31 @@ def _update_history_on_change(history_row: dict[str, Any], item: dict[str, Any])
     history_row.pop("pending", None)
 
 
+def _no_address_authority_items(
+    selected_ids: set[str],
+    hubs: dict[str, dict[str, Any]],
+    eligible_ids: set[str],
+) -> dict[str, dict[str, Any]]:
+    """Make explicit targets without refresh authority visible in the report."""
+    if not selected_ids:
+        return {}
+    output: dict[str, dict[str, Any]] = {}
+    for provider_id in sorted(selected_ids - eligible_ids):
+        cfg = hubs.get(provider_id)
+        output[provider_id] = {
+            "provider_id": provider_id,
+            "status": "no_address_authority",
+            "reason": (
+                "provider_missing_from_current_hub_registry"
+                if not isinstance(cfg, dict)
+                else "no_configured_authoritative_address_source"
+            ),
+            "terminal_probe_skipped": True,
+            "publication_authority": False,
+        }
+    return output
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default="health-output/provider-hub-report.json")
@@ -523,13 +548,19 @@ def main() -> int:
             continue
         work.append((provider_id, dict(cfg), history_providers.setdefault(provider_id, {})))
 
+    eligible_ids = {provider_id for provider_id, _cfg, _history in work}
+    no_address_items = _no_address_authority_items(selected_ids, hubs, eligible_ids)
+
     report: dict[str, Any] = {
         "schema_version": 4,
         "generated_at": hubresolver.now_iso(),
         "mode": args.mode,
         "authority": "official_hub",
         "terminal_validation_required": False,
-        "providers": {},
+        "requested_provider_count": len(selected_ids) if selected_ids else len(work),
+        "eligible_provider_count": len(work),
+        "no_address_authority_count": len(no_address_items),
+        "providers": dict(no_address_items),
         "applied": 0,
     }
 
@@ -591,9 +622,12 @@ def main() -> int:
 
     resolved = sum(1 for row in report["providers"].values() if row.get("status") == "site_authoritative")
     unresolved = sum(1 for row in report["providers"].values() if row.get("status") == "hub_unresolved")
+    no_address = sum(1 for row in report["providers"].values() if row.get("status") == "no_address_authority")
     print(
         "authoritative hub domain refresh complete: "
-        f"resolved={resolved} unresolved={unresolved} applied={report['applied']} terminal_probe=false"
+        f"resolved={resolved} unresolved={unresolved} no_address={no_address} "
+        f"reported={len(report['providers'])} requested={report['requested_provider_count']} "
+        f"applied={report['applied']} terminal_probe=false"
     )
     return 0
 
