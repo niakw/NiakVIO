@@ -1,5 +1,5 @@
 {
-  "schema_version": 80,
+  "schema_version": 81,
   "release": "dynamic",
   "release_authority": "manifest.json:version",
   "candidate_track": "main",
@@ -111,7 +111,13 @@
     ],
     "public_telegram_requires_web_preview": true,
     "interactive_telegram_bot_is_automatic_authority": false,
-    "link_aggregators_use_generic_html_hub_parser": true
+    "link_aggregators_use_generic_html_hub_parser": true,
+    "direct_failure_search_fallback_enabled": true,
+    "reachable_direct_suppresses_search_fallback": true,
+    "search_fallback_requires_runtime_terminal_validation": true,
+    "search_fallback_requires_consecutive_confirmation": true,
+    "search_fallback_minimum_confirmation_runs": 2,
+    "operator_pin_never_superseded_by_search": true
   },
   "repair": {
     "certain_regression_definition": "upstream positive for the same work/lane while NiakVIO is non-positive",
