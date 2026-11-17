@@ -55,6 +55,21 @@ assert "provider-folder lifecycle" in str(selection.get("enabled_status") or "")
 assert "proof-driven" in str(selection.get("activation_authority") or "")
 assert "promote_candidates.py" not in routine
 assert "promote_refresh_candidates.py" not in routine
+retired_activation_writers = (
+    "upgrade_moviebox_hub46_runtime_v1.py",
+    "promote_candidates.py",
+    "promote_refresh_candidates.py",
+)
+workflow_text = "\n".join(
+    path.read_text(encoding="utf-8")
+    for path in (ROOT / ".github" / "workflows").glob("*.yml")
+)
+for retired in retired_activation_writers:
+    assert retired not in workflow_text, f"retired activation writer must not be invoked by current workflows: {retired}"
+moviebox_migration = (ROOT / "scripts" / "upgrade_moviebox_hub46_runtime_v1.py").read_text(encoding="utf-8")
+assert 'manifest_overrides", {})["enabled"] = True' not in moviebox_migration
+assert 'manifest_overrides.pop("enabled", None)' in moviebox_migration
+
 
 # Brain owns evidence/memory/hypothesis intelligence. Canonical Repair remains
 # the only execution authority and invokes the Brain only inside its strict
