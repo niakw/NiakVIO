@@ -57,6 +57,20 @@ def unit_contract() -> None:
         "routes": ["/watch/{slug}", "/embed/{id}"],
     }) == "catalogue-html-embed"
     assert derive_runtime_family({
+        "strategy": "mixed_embed_resolver",
+        "sourceRuntimeFamily": "unknown",
+        "routes": [
+            "/play/movie/{tmdbId}",
+            "/play/tv/{tmdbId}/{season}/{episode}",
+            "/anime/{tmdbId}",
+        ],
+    }) == "tmdb-direct-api"
+    assert derive_runtime_family({
+        "strategy": "mixed_embed_resolver",
+        "sourceRuntimeFamily": "unknown",
+        "routes": ["/search/{query}", "/play/movie/{tmdbId}"],
+    }) == "catalogue-html-embed"
+    assert derive_runtime_family({
         "strategy": "direct_media",
         "sourceRuntimeFamily": "unknown",
         "routes": ["/moviebox/{media}/{id}"],
