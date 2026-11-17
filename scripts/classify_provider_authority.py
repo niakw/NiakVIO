@@ -539,6 +539,10 @@ def with_current_byte_proof_debt(
 
 
 DEPRECATED_NONFUNCTIONAL_AUTO_OFF = "auto_off_current_architecture_nonfunctional"
+# One-time rollback boundary: the 2026-11-17 lifecycle wave disabled 66 identities
+# solely because exact-byte FULL proof was missing. Older auto-off cohorts are not
+# automatically re-enabled; they keep their historical recovery/diagnostic state.
+DEPRECATED_PROOF_ABSENCE_ROLLBACK_DATE = "2026-11-17"
 
 
 def restore_deprecated_nonfunctional_auto_off(
@@ -555,6 +559,8 @@ def restore_deprecated_nonfunctional_auto_off(
     if row.get("enabled") is not False:
         return False
     if str(row.get("disabledReason") or "").strip() != DEPRECATED_NONFUNCTIONAL_AUTO_OFF:
+        return False
+    if str(row.get("disabledAt") or "").strip() != DEPRECATED_PROOF_ABSENCE_ROLLBACK_DATE:
         return False
 
     row["enabled"] = True
@@ -766,6 +772,7 @@ def main() -> int:
             "currentByteUnprovenEntersDisabledRetention": False,
             "missingCurrentByteProofIsDiagnosticOnly": True,
             "deprecatedNonfunctionalAutoOffIsReclassified": True,
+            "deprecatedNonfunctionalRollbackDate": DEPRECATED_PROOF_ABSENCE_ROLLBACK_DATE,
             "terminalPlaybackRequiredForActiveCurrentBytes": True,
             "bulkOnboardingPendingGetsTargetedProofWithoutRuntimeAuthority": True,
         },
