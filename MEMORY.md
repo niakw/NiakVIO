@@ -1,3 +1,12 @@
+## 2026-11-17 — Pre-Brain pending cohort now has an exact-current-byte census request
+
+- Read-back on main found 32 `ONBOARDING_PENDING` identities: 17 Global-only and 15 France-only, retained disabled with staged provider bytes. The most recent persisted isolated pending census had sampled only `internet-archive`, not the current 32.
+- Push trigger `df423afb9f19afd8d6dd91623d9d7159bbb42ba2` requests the canonical sharded pending census for all 32 exact IDs, with `scope=unresolved`, `allowPendingTargets=true`, and isolated pending evidence persistence. It **does not** enable any candidate, touch manifests/ProviderBase/Core or grant FULL proof by request alone.
+- The existing activation authority remains strict: fresh FULL OK, tested on this exact staged byte source, all declared media lanes verified, identity/stream validity and structured portfolio rank. Capacity is independent Global 60 / France 60; candidates in excess or lacking structured ranking remain disabled/pending, not suppressed or falsely promoted.
+- September MAXIHUBS inventory was checked for the four current Global pending identities without structured ranking (asiaflix/rivestream/sflix/vidsrc2). It supplies some historical location/channel evidence (e.g. SFlix) but not a safe current structured inventory rank for all four. No fake ranking or old terminal URL was injected.
+- Current active publication remains 45 Global / 38 France / 75 unique, manifest 5.21.153. The source-level certification/runtime five-platform multi-audio language and provenance gates remain **not certified** until exact-final-SHA execution and read-back. Brain phase remains disabled pending explicit user checkpoint.
+- NEXT: inspect the pending cohort's actual run IDs / per-lane failures / FULL counts and run the bounded activation transaction only if the proof gate accepts; complete current-head Finalizer reverse-byte/integrity + exact-five-Native Labs and security, census, hygiene read-back before briefing the user.
+
 ## 2026-11-17 — Bulk activation no longer assigns production slots to unranked pending providers
 
 - The 32 current `ONBOARDING_PENDING` rows split into 17 Global / 15 France. Four older Global pending identities (`asiaflix`, `rivestream`, `sflix`, `vidsrc2`) are not represented in the current structured onboarding batch ranking.
