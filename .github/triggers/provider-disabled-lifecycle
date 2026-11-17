@@ -65,3 +65,9 @@ validation: do not trust pre-change census OK/FULL; restore only invalid proof-a
 requested_head: 0432a50081cae89ea62290543dc5bdddab1668e6
 reason: re-run deprecated proof-absence rollback after canonical materialization recovery fix
 validation: exact retained bytes -> updated Global+France authority -> canonical materialization rebuild -> strict lifecycle checks; no health promotion
+
+2026-11-17 bounded faulty-wave rollback replay:
+requested_head: 881a1bfbc71a8d4501b41cc1c5128da3754d5ec3
+reason: restore only 66 proof-absence auto-off transitions dated 2026-11-17; preserve older retained cohorts
+expected_preproof_scope: 75 unique active identities before new census/identity proof
+validation: canonical ledger recovery + strict static audit + no health promotion
