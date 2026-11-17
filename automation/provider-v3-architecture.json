@@ -379,7 +379,10 @@
     "native_multi_audio_expected_source": "post-player HLS master EXT-X-MEDIA TYPE=AUDIO cardinality",
     "native_multi_audio_player_parity_required_when_master_has_multiple_audio": true,
     "native_multi_audio_probe_order": "production player first, transport evidence second",
-    "terminal_source_provenance_may_augment_visible_label": true
+    "terminal_source_provenance_may_augment_visible_label": true,
+    "indirect_hls_candidate_probe_cap": 16,
+    "stream_sanitizer_authority": "strict_v12",
+    "multi_audio_candidate_policy": "prefer proven HLS master; stop early only after multi-audio master rank"
   },
   "nuvio_runtime_contract": {
     "audit_authority": "automation/nuvio-client-compatibility-matrix.json + automation/nuvio-client-upstreams.json",
