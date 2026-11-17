@@ -240,16 +240,18 @@ def _latest_telegram_move_candidate(
     return latest
 
 
-def _authoritative_candidate_key(row: dict[str, Any]) -> tuple[int, int, str]:
-    """Preserve trust score while preferring newer chronological Telegram posts."""
+def _authoritative_candidate_key(row: dict[str, Any]) -> tuple[bool, int, int, int, str]:
+    """Prefer live primary authorities before explicitly declared fallbacks."""
     source_type = str(row.get("source_type") or "").strip().casefold()
     try:
         message_id = int(row.get("message_id") or -1) if source_type == "telegram_public" else -1
     except (TypeError, ValueError):
         message_id = -1
     return (
+        bool(row.get("source_fallback")),
         -int(row.get("score") or 0),
         -message_id,
+        -int(row.get("source_priority") or 0),
         _candidate_url(row),
     )
 
@@ -276,12 +278,16 @@ def _redirect_candidates_from_source_observations(
             continue
         if hubresolver.host(final_url) in source_hosts:
             continue
+        source_role = str(observation.get("source_role") or "primary").strip().casefold()
         output.append({
             "url": final_url,
             "label": "authoritative source redirect destination",
             "score": 120,
             "source_type": source_type,
             "source": source_url,
+            "source_role": source_role,
+            "source_priority": int(observation.get("source_priority") or 0),
+            "source_fallback": source_role in {"fallback", "secondary", "backup"},
             "source_redirect": True,
         })
     return output
@@ -325,15 +331,24 @@ def resolve_authoritative_hub_domain(
         ],
     ]
     current_url = _candidate_url(explicit_current or {})
+    # A fallback hub/channel is consulted only when no primary/supplementary
+    # address source produced a usable current candidate. This keeps secondary
+    # authorities from silently overriding a still-live primary source merely
+    # because their link label or Telegram post scores higher.
+    primary_live_candidates = [
+        row for row in live_candidates
+        if not bool(row.get("source_fallback"))
+    ]
+    move_candidates = primary_live_candidates or live_candidates
     latest_telegram_move = _latest_telegram_move_candidate(
         provider_id,
         authority_cfg,
-        live_candidates,
+        move_candidates,
         current_url,
     )
     fresh_authoritative_move = bool(latest_telegram_move) or any(
         _fresh_authoritative_move_candidate(provider_id, authority_cfg, row, current_url)
-        for row in live_candidates
+        for row in move_candidates
     )
     immutable_operator_pin = bool(
         explicit_current and explicit_current.get("registry_operator_pin") is True
@@ -352,7 +367,16 @@ def resolve_authoritative_hub_domain(
         if not url or not _safe_authoritative_candidate(provider_id, authority_cfg, row):
             continue
         previous = deduped.get(url)
-        if previous is None or int(row.get("score") or 0) > int(previous.get("score") or 0):
+        row_fallback = bool(row.get("source_fallback"))
+        previous_fallback = bool(previous.get("source_fallback")) if previous else True
+        if (
+            previous is None
+            or (previous_fallback and not row_fallback)
+            or (
+                previous_fallback == row_fallback
+                and int(row.get("score") or 0) > int(previous.get("score") or 0)
+            )
+        ):
             deduped[url] = row
     ordered = sorted(
         deduped.values(),
