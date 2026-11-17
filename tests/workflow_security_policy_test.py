@@ -45,6 +45,7 @@ for path in sorted([*WORKFLOWS.glob('*.yml'), *WORKFLOWS.glob('*.yaml')]):
 release_candidate = (WORKFLOWS / 'release-candidate-validation.yml').read_text(encoding='utf-8')
 for marker in (
     'dispatch github-actions-gate.yml -f "inputs[expected_sha]=${TARGET_SHA}"',
+    'dispatch sync.yml -f \'inputs[mode]=quick\' -f "inputs[expected_sha]=${TARGET_SHA}"',
     'dispatch codeql.yml -f "inputs[expected_sha]=${TARGET_SHA}"',
     'dispatch security-final-gate.yml -f "inputs[expected_sha]=${TARGET_SHA}"',
     'dispatch external-code-audit.yml -f "inputs[ref]=${TARGET_SHA}" -F \'inputs[publish]=false\'',
@@ -73,6 +74,7 @@ for marker in (
 # authoritative certification while it is in flight.
 for filename in (
     'github-actions-gate.yml',
+    'sync.yml',
     'provider-non-regression.yml',
     'core-stream-metadata-contract.yml',
     'canonical-media-types.yml',
