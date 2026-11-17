@@ -172,6 +172,59 @@ def restore_pending_artifacts(
     provenance_row["published_filename"]=active_relative
     return active_relative
 
+
+def portfolio_targets(policy:dict[str,Any])->tuple[int,int]:
+    portfolio=policy.get("portfolio") if isinstance(policy.get("portfolio"),dict) else {}
+    target_global=int(portfolio.get("target_global_active") or 60)
+    target_france=int(portfolio.get("target_france_active") or 60)
+    if target_global < 1 or target_france < 1:
+        raise RuntimeError("provider portfolio projection targets must be positive")
+    return target_global,target_france
+
+
+def onboarding_priority(batch:dict[str,Any])->dict[str,tuple[int,float,str]]:
+    """Return deterministic onboarding rank without granting health authority."""
+    result:dict[str,tuple[int,float,str]]={}
+    candidates=[]
+    for key in ("providers","deferredProviders"):
+        rows=batch.get(key) if isinstance(batch.get(key),list) else []
+        candidates.extend(row for row in rows if isinstance(row,dict))
+    for row in candidates:
+        pid=norm(row.get("id"))
+        if not pid:
+            continue
+        try:
+            rank=int(row.get("inventory_rank") or row.get("inventoryRank") or 1_000_000)
+        except (TypeError,ValueError):
+            rank=1_000_000
+        try:
+            score=float(row.get("inventory_score") or row.get("inventoryScore") or 0)
+        except (TypeError,ValueError):
+            score=0.0
+        key=(rank,-score,pid)
+        previous=result.get(pid)
+        if previous is None or key < previous:
+            result[pid]=key
+    return result
+
+
+def projection_active_counts(catalog:dict[str,Any])->tuple[int,int]:
+    global_count=0
+    france_count=0
+    for entry in catalog.get("providers") or []:
+        if not isinstance(entry,dict):
+            continue
+        scraper=entry.get("scraper") if isinstance(entry.get("scraper"),dict) else {}
+        if scraper.get("enabled") is False:
+            continue
+        projections=entry.get("projections") if isinstance(entry.get("projections"),dict) else {}
+        if projections.get("general") is True:
+            global_count+=1
+        if projections.get("vf") is True:
+            france_count+=1
+    return global_count,france_count
+
+
 def main()->int:
     ap=argparse.ArgumentParser(description="Activate only bulk-pending providers with current FULL OK proof")
     ap.add_argument("--status",type=Path,default=STATUS)
@@ -188,6 +241,12 @@ def main()->int:
     static_knowledge=load(STATIC_KNOWLEDGE,{"schemaVersion":1,"providers":{}})
     version_floor_payload=load_version_floor_payload()
     version_floor_updates=[]
+    portfolio_policy=load(ROOT/".github/provider-portfolio-policy.json",{})
+    onboarding_batch=load(ROOT/".github/provider-onboarding/batch.json",{})
+    target_global,target_france=portfolio_targets(portfolio_policy)
+    active_global,active_france=projection_active_counts(catalog)
+    active_global_before,active_france_before=active_global,active_france
+    priority=onboarding_priority(onboarding_batch)
 
     status_map={
         norm(row.get("provider")):row
@@ -209,9 +268,12 @@ def main()->int:
     hub_map=hubs.get("providers") if isinstance(hubs.get("providers"),dict) else {}
 
     pending=sorted(
-        norm(pid)
-        for pid,row in prov_map.items()
-        if isinstance(row,dict) and str(row.get("activation_mode") or "")=="bulk_onboarding_pending"
+        (
+            norm(pid)
+            for pid,row in prov_map.items()
+            if isinstance(row,dict) and str(row.get("activation_mode") or "")=="bulk_onboarding_pending"
+        ),
+        key=lambda pid:priority.get(pid,(1_000_000,0.0,pid)),
     )
     activated=[]
     blocked=[]
@@ -253,6 +315,28 @@ def main()->int:
         prov=prov_map.get(pid)
         if not isinstance(manifest_row,dict) or not isinstance(patch,dict) or not isinstance(prov,dict):
             blocked.append({"provider":pid,"reason":"canonical_provider_state_missing"})
+            continue
+        projections=catalog_entry.get("projections") if isinstance(catalog_entry,dict) and isinstance(catalog_entry.get("projections"),dict) else {}
+        wants_global=projections.get("general") is True
+        wants_france=projections.get("vf") is True
+        if not wants_global and not wants_france:
+            blocked.append({"provider":pid,"reason":"production_projection_missing"})
+            continue
+        capacity_reached=[]
+        if wants_global and active_global >= target_global:
+            capacity_reached.append("global")
+        if wants_france and active_france >= target_france:
+            capacity_reached.append("france")
+        if capacity_reached:
+            blocked.append({
+                "provider":pid,
+                "reason":"portfolio_projection_capacity_reached",
+                "projections":capacity_reached,
+                "activeGlobal":active_global,
+                "targetGlobal":target_global,
+                "activeFrance":active_france,
+                "targetFrance":target_france,
+            })
             continue
         filename=str(manifest_row.get("filename") or "").replace("../","",1)
         pending_path=(ROOT/filename).resolve()
@@ -326,6 +410,10 @@ def main()->int:
             "proofSource":"onboarding-pending-status",
         }
         activated.append(pid)
+        if wants_global:
+            active_global+=1
+        if wants_france:
+            active_france+=1
 
     payload={
         "schemaVersion":1,
@@ -337,8 +425,17 @@ def main()->int:
         "activationScopes":{pid:("global" if pid in manifest_map else "france") for pid in activated},
         "blockedCount":len(blocked),
         "blockedProviders":blocked,
+        "portfolio":{
+            "targetGlobal":target_global,
+            "targetFrance":target_france,
+            "activeGlobalBefore":active_global_before,
+            "activeFranceBefore":active_france_before,
+            "activeGlobalAfter":active_global,
+            "activeFranceAfter":active_france,
+            "priorityAuthority":".github/provider-onboarding/batch.json inventory rank/score; health authority remains current FULL proof",
+        },
         "versionFloorUpdates":version_floor_updates,
-        "policy":"fresh FULL OK (testedThisRun) + every declared lane currently verified + no remaining Brain check",
+        "policy":"fresh FULL OK + all declared lanes current + no Brain check + ranked projection capacity; over-cap FULL stays pending",
         "dryRun":bool(args.dry_run),
     }
     if not args.dry_run and activated:
