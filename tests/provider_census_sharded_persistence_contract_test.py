@@ -31,7 +31,9 @@ required = [
 for needle in required:
     assert needle in workflow, f"missing sharded census authority persistence contract: {needle}"
 
-assert "github.event_name == 'push' && github.sha || 'main'" in workflow, "push census prepare must pin the exact event SHA"
+assert "(github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.sha || 'main'" in workflow, (
+    "push/dispatch census prepare must pin the exact event SHA"
+)
 assert "projection_runtime_visible_provider_count" in workflow
 assert "[ \"$count\" -gt 120 ]" not in workflow, "causal push must not self-cancel on historical Global-only cardinality"
 assert "authority=projection-runtime-visible" in workflow
