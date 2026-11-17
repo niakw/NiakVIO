@@ -2847,7 +2847,6 @@
           }
         ]
       },
-      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -2917,10 +2916,7 @@
         "2026-09-19 provider identity remains AniKotoTV; MegaPlay is transport only and must not replace official_site authority.",
         "2026-09-24 structured route authority aligned to Runtime V2: TMDB mapping -> MegaPlay stream page -> getSources; historical AniKoto search/watch/ajax routes remain candidate/history only and are no longer executable learned_routes."
       ],
-      "manifest_overrides": {
-        "enabled": false
-      },
-      "activation_eligible": false
+      "manifest_overrides": {}
     },
     "animekai": {
       "capability": "mixed_embed_resolver",
@@ -6947,7 +6943,6 @@
           }
         ]
       },
-      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -7024,10 +7019,7 @@
       },
       "source_runtime_family": "sitemap-script-family",
       "reconstruction_state": "provider-local-current-site",
-      "manifest_overrides": {
-        "enabled": false
-      },
-      "activation_eligible": false
+      "manifest_overrides": {}
     },
     "streamzo": {
       "notes": [
@@ -7358,14 +7350,11 @@
         "formats": [
           "mp4",
           "m3u8"
-        ],
-        "enabled": false
+        ]
       },
       "learned_routes": [
         "/seed?mediaId={id}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "vidfast": {
       "notes": [
@@ -10216,16 +10205,13 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/search?s={query}",
         "/voir-anime/{slug}",
         "/voir-anime/{slug}/episode/{episode}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "mallumv": {
       "notes": [
@@ -10714,14 +10700,11 @@
         "tv"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/search?keyword={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "vidlove": {
       "capability": "html_scraper",
@@ -11136,14 +11119,11 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "yablom": {
       "notes": [
@@ -11230,14 +11210,11 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/embed/movie/{tmdbId}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "nakastream": {
       "notes": [
@@ -11280,14 +11257,11 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/index.php?do=search&subaction=search&story={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "dotriv": {
       "notes": [
@@ -11352,15 +11326,12 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}",
         "/index.php?do=search&subaction=search&story={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "kordoz": {
       "notes": [
@@ -11403,14 +11374,11 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "internet-archive": {
       "notes": [
@@ -11475,17 +11443,14 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/movies/{tmdbId}-{slug}",
         "/tv?s={query}",
         "/search?q={query}",
         "/tv/search?q={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "emnexmovies": {
       "notes": [
@@ -11506,8 +11471,7 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/movie/{tmdbId}-{slug}",
@@ -11534,9 +11498,7 @@
         "/movie/559969-el-camino-a-{slug}-movie",
         "/tv/337563-{slug}-original-minisodes",
         "/tv/232533-{slug}-fortune-teller"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "latestmovies": {
       "notes": [
@@ -11557,15 +11519,12 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/play?id={tmdbId}&type={media}&title=Breaking%20Bad&poster=%2FanFx9aTOOYqgS3v7x3R84Kz67ly.jpg&backdrop=%2FtsRy63Mu5cu8etL1X7ZLyf7UP1M.jpg",
         "/tv/{tmdbId}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "movy": {
       "notes": [
@@ -11587,8 +11546,7 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/seed?mediaId={tmdbId}",
@@ -11632,9 +11590,7 @@
           "year",
           "imdbId"
         ]
-      },
-      "route_data_state": "off",
-      "activation_eligible": false
+      }
     },
     "arrowtv": {
       "notes": [
@@ -11655,15 +11611,12 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/movie/{tmdbId}",
         "/tv/{tmdbId}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "chillflix": {
       "notes": [
@@ -11757,14 +11710,11 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/tv/{tmdbId}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "boredflix": {
       "notes": [
@@ -11785,15 +11735,12 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}",
         "/search?q={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "fexini": {
       "notes": [
@@ -11814,14 +11761,11 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/series/{slug}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "animeonsen": {
       "notes": [
@@ -11840,15 +11784,12 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}",
         "/search?q={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "shuttletv": {
       "notes": [
@@ -11869,15 +11810,12 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/recherche?q={query}",
         "/recherche?query={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "primewire": {
       "notes": [
@@ -11897,14 +11835,11 @@
         "tv"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/movie/{tmdbId}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "67movies": {
       "notes": [
@@ -11925,14 +11860,11 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "watch-cartoon-online": {
       "notes": [
@@ -11953,14 +11885,11 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "cinemabz": {
       "notes": [
@@ -11981,14 +11910,11 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/api/tv/{tmdbId}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "flixer": {
       "notes": [
@@ -12009,15 +11935,12 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}",
         "/search?q={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "cinegram": {
       "notes": [
@@ -12038,8 +11961,7 @@
         "movie"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "https://cinegram.tv/index.php?menu=search&query={query}"
@@ -12065,9 +11987,7 @@
           "year"
         ]
       },
-      "route_proof_version": 5,
-      "route_data_state": "off",
-      "activation_eligible": false
+      "route_proof_version": 5
     },
     "movish": {
       "notes": [
@@ -12088,14 +12008,11 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/search?q={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "vuflix": {
       "notes": [
@@ -12116,15 +12033,12 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/search?q={query}",
         "/search?keyword={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "anisama": {
       "notes": [
@@ -12143,15 +12057,12 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}",
         "/recherche?q={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "zone-streaming": {
       "notes": [
@@ -12172,15 +12083,12 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}",
         "/index.php?do=search&subaction=search&story={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "dulourd": {
       "notes": [
@@ -12200,14 +12108,11 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/index.php?do=search&subaction=search&story={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "franime": {
       "notes": [
@@ -12226,15 +12131,12 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}",
         "/recherche?q={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "nakios": {
       "notes": [
@@ -12254,14 +12156,11 @@
         "tv"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "fawesome": {
       "notes": [
@@ -12281,15 +12180,12 @@
         "tv"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}",
         "/search?q={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "cinetimes": {
       "notes": [
@@ -12309,15 +12205,12 @@
         "tv"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}",
         "/search?query={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "sadisflix": {
       "notes": [
@@ -12337,14 +12230,11 @@
         "tv"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/search?q={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "skstream": {
       "notes": [
@@ -12364,14 +12254,11 @@
         "tv"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "youtitou": {
       "notes": [
@@ -12390,14 +12277,11 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "waveanime": {
       "notes": [
@@ -12416,14 +12300,11 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "cinematheque-de-bretagne": {
       "notes": [
@@ -12442,15 +12323,12 @@
         "movie"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}",
         "/index.php?do=search&subaction=search&story={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "film-a-revoir": {
       "notes": [
@@ -12469,14 +12347,11 @@
         "movie"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/search?q={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "hianime": {
       "notes": [
@@ -12495,15 +12370,12 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}",
         "/search?q={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "rivestream-app": {
       "notes": [
@@ -12524,8 +12396,7 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/search/multi?query={query}",
@@ -12535,9 +12406,7 @@
         "/search/collection?query={query}",
         "/api/search?query={query}",
         "/api/search-with-title?query={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "overlook": {
       "notes": [
@@ -12558,14 +12427,11 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/api/search?q={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "hexa": {
       "notes": [
@@ -12586,15 +12452,12 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/search/{slug}",
         "/recherche/{slug}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "rivestream-ru": {
       "notes": [
@@ -12615,8 +12478,7 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/search/multi?query={query}",
@@ -12626,9 +12488,7 @@
         "/search/collection?query={query}",
         "/api/search?query={query}",
         "/api/search-with-title?query={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "moviebite": {
       "notes": [
@@ -12649,15 +12509,12 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/search/{slug}",
         "/recherche/{slug}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "pstream": {
       "notes": [
@@ -12678,14 +12535,11 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/media/anilist-anime-113415-{slug}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "ihavenotv": {
       "notes": [
@@ -12705,15 +12559,12 @@
         "tv"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}",
         "/?q={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "reanime-to": {
       "notes": [
@@ -12732,14 +12583,11 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/search?q={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "flixhq": {
       "notes": [
@@ -12759,14 +12607,11 @@
         "tv"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/search?keyword={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "topcartoons": {
       "notes": [
@@ -12790,14 +12635,11 @@
         "formats": [
           "mp4",
           "m3u8"
-        ],
-        "enabled": false
+        ]
       },
       "learned_routes": [
         "/?s={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "vidlink": {
       "notes": [
@@ -12821,15 +12663,12 @@
         "formats": [
           "mp4",
           "m3u8"
-        ],
-        "enabled": false
+        ]
       },
       "learned_routes": [
         "/movie/{tmdbId}",
         "/tv/{tmdbId}/{season}/{episode}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "documentary-area": {
       "notes": [
@@ -12848,14 +12687,11 @@
         "movie"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/results.php?search={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "fsharetv": {
       "notes": [
@@ -12874,14 +12710,11 @@
         "movie"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/movie/{slug}-episode-1-tt0816692"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "aniflix-uno": {
       "notes": [
@@ -12900,15 +12733,12 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}",
         "/?q={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "anidb": {
       "notes": [
@@ -12931,15 +12761,12 @@
         "formats": [
           "mp4",
           "m3u8"
-        ],
-        "enabled": false
+        ]
       },
       "learned_routes": [
         "/watch/${slug}",
         "/?search={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "rarefilmm": {
       "notes": [
@@ -12958,14 +12785,11 @@
         "movie"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "frenchstream": {
       "notes": [
@@ -12986,15 +12810,12 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/search/{slug}",
         "/recherche/{slug}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "stigstream": {
       "notes": [
@@ -13015,15 +12836,12 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/tv/{tmdbId}",
         "/watch/{tmdbId}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "french-anime": {
       "notes": [
@@ -13042,15 +12860,12 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/?s={query}",
         "/?q={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "moiflix": {
       "notes": [
@@ -13070,14 +12885,11 @@
         "tv"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/search/{slug}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "voirserie": {
       "notes": [
@@ -13097,14 +12909,11 @@
         "tv"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/recherche?q={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "watchott": {
       "notes": [
@@ -13126,16 +12935,13 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/search?q={query}",
         "/movie/{tmdbId}-{slug}",
         "/tv/{tmdbId}-{slug}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "animejlprovider": {
       "notes": [
@@ -13154,14 +12960,11 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
+        "disabledPlatforms": []
       },
       "learned_routes": [
         "/animes?q={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "webflix": {
       "notes": [
@@ -13246,17 +13049,14 @@
         "formats": [
           "mp4",
           "m3u8"
-        ],
-        "enabled": false
+        ]
       },
       "learned_routes": [
         "/?search={query}",
         "/?p=films&search={query}",
         "/?s={query}&search={query}",
         "/?p=404&search={query}"
-      ],
-      "route_data_state": "off",
-      "activation_eligible": false
+      ]
     },
     "flickystream": {
       "notes": [

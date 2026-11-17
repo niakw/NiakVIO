@@ -14,19 +14,29 @@
     "effectiveOperatorShutdownEntersDisabledRetentionImmediately": true,
     "currentByteUnprovenEntersDisabledRetention": false,
     "missingCurrentByteProofIsDiagnosticOnly": true,
+    "deprecatedNonfunctionalAutoOffIsReclassified": true,
+    "deprecatedNonfunctionalRollbackDate": "2026-11-17",
     "terminalPlaybackRequiredForActiveCurrentBytes": true,
     "bulkOnboardingPendingGetsTargetedProofWithoutRuntimeAuthority": true
   },
   "providerCount": 140,
   "projectionScope": "Global+France visible union",
   "repairEligible": [
+    "anikototv",
     "castle",
+    "french-anime",
     "french-manga",
+    "frenchstream",
+    "moiflix",
+    "movy",
     "mugiwarastream",
+    "nakios",
     "neko-sama",
     "papadustream",
     "purstream",
-    "streamzo"
+    "sekai",
+    "streamzo",
+    "webflix"
   ],
   "repairBlocked": [
     "1jour1film0626",
@@ -39,7 +49,6 @@
     "allwish",
     "anidb",
     "aniflix-uno",
-    "anikototv",
     "anime-sama",
     "anime-ultime",
     "animejlprovider",
@@ -84,8 +93,6 @@
     "flixhq",
     "franime",
     "frembed",
-    "french-anime",
-    "frenchstream",
     "fsharetv",
     "fullanime",
     "hexa",
@@ -103,17 +110,14 @@
     "latestmovies",
     "mallumv",
     "meowtv",
-    "moiflix",
     "moviebite",
     "moviebox",
     "movieshunt",
     "moviesmod",
     "movish",
     "movix-fr",
-    "movy",
     "myfluneo",
     "nakastream",
-    "nakios",
     "neobam",
     "neonflix",
     "nomorflix",
@@ -129,7 +133,6 @@
     "rivestream-app",
     "rivestream-ru",
     "sadisflix",
-    "sekai",
     "sflix",
     "showbox",
     "shuttletv",
@@ -153,7 +156,6 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
-    "webflix",
     "willow",
     "wookafr",
     "wowfilms0626",
@@ -164,17 +166,91 @@
     "zone-telechargement"
   ],
   "disabledNow": [],
+  "restoredDeprecatedNonfunctionalAutoOff": [
+    "1jour1film0626",
+    "67movies",
+    "anidb",
+    "aniflix-uno",
+    "anikototv",
+    "animejlprovider",
+    "animeonsen",
+    "anisama",
+    "arrowtv",
+    "boredflix",
+    "cinegram",
+    "cinemabz",
+    "cinematheque-de-bretagne",
+    "cinetimes",
+    "corsflix",
+    "documentary-area",
+    "dulourd",
+    "emnexmovies",
+    "fawesome",
+    "fexini",
+    "film-a-revoir",
+    "flixer",
+    "flixhq",
+    "franime",
+    "frembed",
+    "french-anime",
+    "frenchstream",
+    "fsharetv",
+    "fullanime",
+    "hexa",
+    "hianime",
+    "ihavenotv",
+    "kidraz",
+    "latestmovies",
+    "moiflix",
+    "moviebite",
+    "movish",
+    "movix-fr",
+    "movy",
+    "nakios",
+    "neobam",
+    "neonflix",
+    "overlook",
+    "primewire",
+    "pstream",
+    "rarefilmm",
+    "reanime-to",
+    "rivestream-app",
+    "rivestream-ru",
+    "sadisflix",
+    "sekai",
+    "showbox",
+    "shuttletv",
+    "skstream",
+    "stigstream",
+    "topcartoons",
+    "videasy",
+    "vidlink",
+    "voirserie",
+    "vuflix",
+    "watch-cartoon-online",
+    "watchott",
+    "waveanime",
+    "youtitou",
+    "zone-streaming",
+    "zone-telechargement"
+  ],
   "providers": [
     {
       "provider": "1jour1film0626",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "4khdhub",
@@ -189,14 +265,20 @@
     },
     {
       "provider": "67movies",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "7movies",
@@ -255,36 +337,53 @@
     },
     {
       "provider": "anidb",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "aniflix-uno",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "anikototv",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "authoritative_route_source",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "anime-sama",
@@ -310,14 +409,20 @@
     },
     {
       "provider": "animejlprovider",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "animekai",
@@ -343,14 +448,20 @@
     },
     {
       "provider": "animeonsen",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "animesalt",
@@ -409,25 +520,37 @@
     },
     {
       "provider": "anisama",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "arrowtv",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "asiaflix",
@@ -453,14 +576,20 @@
     },
     {
       "provider": "boredflix",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "castle",
@@ -500,14 +629,20 @@
     },
     {
       "provider": "cinegram",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "cinejoy",
@@ -522,25 +657,37 @@
     },
     {
       "provider": "cinemabz",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "cinematheque-de-bretagne",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "cinestream",
@@ -555,14 +702,20 @@
     },
     {
       "provider": "cinetimes",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "coflix",
@@ -577,14 +730,20 @@
     },
     {
       "provider": "corsflix",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "cpasmal",
@@ -621,14 +780,20 @@
     },
     {
       "provider": "documentary-area",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "dotriv",
@@ -654,58 +819,88 @@
     },
     {
       "provider": "dulourd",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "emnexmovies",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "fawesome",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "fexini",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "film-a-revoir",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "flemmix",
@@ -742,58 +937,87 @@
     },
     {
       "provider": "flixer",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "flixhq",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "franime",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "frembed",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "french-anime",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "authoritative_route_source",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "french-manga",
@@ -809,58 +1033,87 @@
     },
     {
       "provider": "frenchstream",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "authoritative_route_source",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "fsharetv",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "fullanime",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "hexa",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "hianime",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "hindmoviez",
@@ -875,14 +1128,20 @@
     },
     {
       "provider": "ihavenotv",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "ilmiv",
@@ -931,14 +1190,20 @@
     },
     {
       "provider": "kidraz",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "kisskh",
@@ -975,14 +1240,20 @@
     },
     {
       "provider": "latestmovies",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "mallumv",
@@ -1008,25 +1279,36 @@
     },
     {
       "provider": "moiflix",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "authoritative_route_source",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "moviebite",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "moviebox",
@@ -1063,36 +1345,56 @@
     },
     {
       "provider": "movish",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "movix-fr",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "movy",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "action": "KEEP_BACKEND",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "api-or-backend",
       "failureCount": 0,
+      "backendUrls": [
+        "https://api.wecollege.net"
+      ],
       "reasons": [
-        "already_disabled"
-      ]
+        "structured_backend_authority",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "mugiwarastream",
@@ -1129,14 +1431,19 @@
     },
     {
       "provider": "nakios",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "authoritative_route_source",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "neko-sama",
@@ -1152,25 +1459,37 @@
     },
     {
       "provider": "neobam",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "neonflix",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "nomorflix",
@@ -1196,14 +1515,20 @@
     },
     {
       "provider": "overlook",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "papadustream",
@@ -1240,25 +1565,37 @@
     },
     {
       "provider": "primewire",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "pstream",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "purstream",
@@ -1276,25 +1613,37 @@
     },
     {
       "provider": "rarefilmm",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "reanime-to",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "rivestream",
@@ -1309,47 +1658,71 @@
     },
     {
       "provider": "rivestream-app",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "rivestream-ru",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "sadisflix",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "sekai",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "action": "KEEP_DIRECT",
+      "repairEligible": true,
+      "confidence": "medium",
+      "authorityClass": "direct",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "curated_direct",
+        "existing_positive_route_prior",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "sflix",
@@ -1364,47 +1737,71 @@
     },
     {
       "provider": "showbox",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "shuttletv",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "skstream",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "stigstream",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "streamzo",
@@ -1431,14 +1828,20 @@
     },
     {
       "provider": "topcartoons",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "uhdmovies",
@@ -1453,14 +1856,20 @@
     },
     {
       "provider": "videasy",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "vidfast",
@@ -1475,14 +1884,20 @@
     },
     {
       "provider": "vidlink",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "vidlove",
@@ -1552,14 +1967,20 @@
     },
     {
       "provider": "voirserie",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "vostfree",
@@ -1574,50 +1995,6 @@
     },
     {
       "provider": "vuflix",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "already_disabled"
-      ]
-    },
-    {
-      "provider": "watch-cartoon-online",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "already_disabled"
-      ]
-    },
-    {
-      "provider": "watchott",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "already_disabled"
-      ]
-    },
-    {
-      "provider": "waveanime",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "already_disabled"
-      ]
-    },
-    {
-      "provider": "webflix",
       "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
       "confidence": "low",
@@ -1625,7 +2002,74 @@
       "failureCount": 0,
       "reasons": [
         "direct_candidate_unproven",
-        "search_supplement_only"
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
+    },
+    {
+      "provider": "watch-cartoon-online",
+      "action": "REDISCOVER_SEARCH",
+      "repairEligible": false,
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
+    },
+    {
+      "provider": "watchott",
+      "action": "REDISCOVER_SEARCH",
+      "repairEligible": false,
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
+    },
+    {
+      "provider": "waveanime",
+      "action": "REDISCOVER_SEARCH",
+      "repairEligible": false,
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
+      "failureCount": 0,
+      "reasons": [
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
+    },
+    {
+      "provider": "webflix",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source"
       ]
     },
     {
@@ -1685,36 +2129,54 @@
     },
     {
       "provider": "youtitou",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "zone-streaming",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "zone-telechargement",
-      "action": "KEEP_DISABLED",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "direct_candidate_unproven",
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:DISABLED"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     }
   ]
 }
