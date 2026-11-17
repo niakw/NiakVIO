@@ -19,12 +19,21 @@ for provider_id in ('frenchstream', 'movix', 'nakios', 'toflix', 'flemmix', 'woo
     assert hubs[provider_id].get('direct_fallback'), provider_id
     assert hubs[provider_id].get('sources') or hubs[provider_id].get('direct_candidates'), provider_id
 
-# Frenchstream and Movix have separate official address sources. fstream.top is
-# only a blocked output/player host and must never become a terminal site.
-assert hubs['frenchstream']['hub'] == 'https://fstream.org/'
+# Frenchstream has a stable address hub but an intentionally rotating terminal.
+# The regression must follow current registry authority instead of pinning an
+# ephemeral fsXX.lol generation. fstream.top is an output/player host only.
+raw_registry = json.loads((ROOT / 'provider-hubs.json').read_text())
+french_registry = raw_registry['providers']['frenchstream']
+current_french_host = resolver.host(french_registry['direct'])
+assert any(
+    row.get('type') == 'hub'
+    and row.get('url') == 'https://fstream.info/'
+    and row.get('role') == 'primary'
+    for row in french_registry.get('sources') or []
+), french_registry
 french_hosts = {resolver.host(url) for url in hubs['frenchstream']['direct_candidates']}
-assert french_hosts == {'fs16.lol'}, french_hosts
-assert resolver.host(hubs['frenchstream']['direct_fallback']) == 'fs16.lol'
+assert current_french_host in french_hosts, (current_french_host, french_hosts)
+assert resolver.host(hubs['frenchstream']['direct_fallback']) == current_french_host
 assert 'fstream.top' in hubs['frenchstream']['blocked_hosts']
 assert resolver.same_brand('frenchstream', 'https://fs17.lol/', hubs['frenchstream'])
 
