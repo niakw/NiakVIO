@@ -16,9 +16,11 @@ ANALYZER = (ROOT / "scripts/analyze_native_ios_results.py").read_text(encoding="
 
 assert "httpGetTextWithHeaders(row.url, row.headers.orEmpty())" in PREPARE
 assert "masterAudioTrackCount" in PREPARE
+assert "masterAudioTrackLanguages" in PREPARE
 assert "getAudioTrackCount()" in PREPARE
+assert "getAudioTrackLang(index)" in PREPARE
 assert PREPARE.index("val player = probeProductionPlayer(row, playerTimeoutMs)") < PREPARE.index(
-    "hlsMasterAudioTrackCount(row)"
+    "hlsMasterAudioFacts(row)"
 )
 assert "gate_native_ios_multi_audio.py" in SUITE
 assert 'MULTI_AUDIO_STATUS=${PIPESTATUS[0]}' in SUITE
@@ -27,6 +29,7 @@ assert "--require-witness" in WORKFLOW
 assert "inputs.certify_multi_audio" in WORKFLOW
 assert "native-mobile-ios-reader.yml -f 'inputs[mode]=full' -F 'inputs[certify_multi_audio]=true'" in RELEASE
 assert '"multi_audio_player_collapsed"' in ANALYZER
+assert '"multi_audio_language_collapsed"' in ANALYZER
 assert '"client_runtime" if multi_audio_collapsed else ""' in ANALYZER
 assert '"blocking": multi_audio_collapsed' in ANALYZER
 
@@ -53,7 +56,9 @@ collapsed = run([
         "provider": "example",
         "state": "ready",
         "masterAudioTrackCount": 2,
+        "masterAudioTrackLanguages": "en,fr",
         "audioTrackCount": 1,
+        "audioTrackLanguages": "en",
     }
 ])
 assert collapsed.returncode == 2, (collapsed.stdout, collapsed.stderr)
@@ -66,11 +71,28 @@ preserved = run([
         "provider": "example",
         "state": "ready",
         "masterAudioTrackCount": 2,
+        "masterAudioTrackLanguages": "en,fr",
         "audioTrackCount": 2,
+        "audioTrackLanguages": "en,fr",
     }
 ])
 assert preserved.returncode == 0, (preserved.stdout, preserved.stderr)
 assert "expected=1 verified=1 collapsed=0" in preserved.stdout
+assert "language_expected=1 language_verified=1" in preserved.stdout
+
+language_collapsed = run([
+    {
+        "fixture": "interstellar",
+        "provider": "example",
+        "state": "ready",
+        "masterAudioTrackCount": 2,
+        "masterAudioTrackLanguages": "en,fr",
+        "audioTrackCount": 2,
+        "audioTrackLanguages": "en",
+    }
+])
+assert language_collapsed.returncode == 2, (language_collapsed.stdout, language_collapsed.stderr)
+assert "language_collapsed=1" in language_collapsed.stdout
 
 single = run([
     {
@@ -78,7 +100,9 @@ single = run([
         "provider": "example",
         "state": "ready",
         "masterAudioTrackCount": 1,
+        "masterAudioTrackLanguages": "en",
         "audioTrackCount": 1,
+        "audioTrackLanguages": "en",
     }
 ])
 assert single.returncode == 0, (single.stdout, single.stderr)
@@ -97,13 +121,31 @@ assert strict_missing.returncode == 3, (strict_missing.stdout, strict_missing.st
 assert "status=unproven" in strict_missing.stdout
 assert "require_witness=true" in strict_missing.stdout
 
-strict_preserved = run([
+strict_no_language_witness = run([
     {
         "fixture": "interstellar",
         "provider": "example",
         "state": "ready",
         "masterAudioTrackCount": 2,
         "audioTrackCount": 2,
+        "audioTrackLanguages": "en,fr",
+    }
+], require_witness=True)
+assert strict_no_language_witness.returncode == 3, (
+    strict_no_language_witness.stdout,
+    strict_no_language_witness.stderr,
+)
+assert "reason=no_distinct_language_witness" in strict_no_language_witness.stdout
+
+strict_preserved = run([
+    {
+        "fixture": "interstellar",
+        "provider": "example",
+        "state": "ready",
+        "masterAudioTrackCount": 2,
+        "masterAudioTrackLanguages": "en,fr",
+        "audioTrackCount": 2,
+        "audioTrackLanguages": "en,fr",
     }
 ], require_witness=True)
 assert strict_preserved.returncode == 0, (strict_preserved.stdout, strict_preserved.stderr)
