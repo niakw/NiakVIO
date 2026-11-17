@@ -105,6 +105,7 @@ private data class PlayerObservation(
     val audioTrackCount: Int = -1,
     val audioTrackLanguages: String = "",
     val masterAudioTrackCount: Int = 0,
+    val masterAudioTrackLanguages: String = "",
 )
 
 private data class ProductionPlayerProbe(
@@ -151,14 +152,19 @@ private fun codeUrl(manifestUrl: String, filename: String): String {
 
 private fun hostOnly(url: String): String = NSURL.URLWithString(url)?.host.orEmpty()
 
-private suspend fun hlsMasterAudioTrackCount(row: PluginRuntimeResult): Int {
+private data class HlsAudioFacts(
+    val count: Int = 0,
+    val languages: String = "",
+)
+
+private suspend fun hlsMasterAudioFacts(row: PluginRuntimeResult): HlsAudioFacts {
     val body = runCatching {
         withTimeout(5000L) {
             httpGetTextWithHeaders(row.url, row.headers.orEmpty())
         }
-    }.getOrNull() ?: return 0
-    if (!body.trimStart().startsWith("#EXTM3U", ignoreCase = true)) return 0
-    return body.lineSequence()
+    }.getOrNull() ?: return HlsAudioFacts()
+    if (!body.trimStart().startsWith("#EXTM3U", ignoreCase = true)) return HlsAudioFacts()
+    val rows = body.lineSequence()
         .map { it.trim() }
         .filter { line ->
             line.startsWith("#EXT-X-MEDIA", ignoreCase = true) &&
@@ -166,7 +172,19 @@ private suspend fun hlsMasterAudioTrackCount(row: PluginRuntimeResult): Int {
                     .containsMatchIn(line.substringAfter(':', line))
         }
         .distinct()
-        .count()
+        .toList()
+    val languages = rows.mapNotNull { line ->
+        val attrs = line.substringAfter(':', line)
+        Regex("""(?:^|,)\s*LANGUAGE\s*=\s*"?([^",]+)"?""", RegexOption.IGNORE_CASE)
+            .find(attrs)
+            ?.groupValues
+            ?.getOrNull(1)
+            ?.trim()
+            ?.replace('_', '-')
+            ?.lowercase()
+            ?.takeIf { it.isNotBlank() && it != "und" }
+    }.distinct().joinToString(",")
+    return HlsAudioFacts(rows.size, languages)
 }
 
 private suspend fun probeProductionPlayer(row: PluginRuntimeResult, playerTimeoutMs: Long): ProductionPlayerProbe =
@@ -349,9 +367,9 @@ private suspend fun runLab(manifestUrl: String) {
                 val playerRows = if (learning) rows.take(1) else rows.take(40)
                 playerRows.forEach { row ->
                     val player = probeProductionPlayer(row, playerTimeoutMs)
-                    val masterAudioTrackCount = if (player.state == "ready" || player.state == "ended") {
-                        hlsMasterAudioTrackCount(row)
-                    } else 0
+                    val masterAudioFacts = if (player.state == "ready" || player.state == "ended") {
+                        hlsMasterAudioFacts(row)
+                    } else HlsAudioFacts()
                     emit(
                         "FIELD_NATIVE_IOS_PLAYER",
                         PlayerObservation(
@@ -365,7 +383,8 @@ private suspend fun runLab(manifestUrl: String) {
                             errorClass = if (player.state == "error") "player_error" else "",
                             audioTrackCount = player.audioTrackCount,
                             audioTrackLanguages = player.audioTrackLanguages,
-                            masterAudioTrackCount = masterAudioTrackCount,
+                            masterAudioTrackCount = masterAudioFacts.count,
+                            masterAudioTrackLanguages = masterAudioFacts.languages,
                         ),
                     )
                 }
