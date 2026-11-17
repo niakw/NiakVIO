@@ -212,9 +212,9 @@ jobs:
           dispatch provider-overrides-gate.yml
           dispatch codeql.yml
           dispatch external-code-audit.yml -f "inputs[ref]=${TARGET_REF}" -F 'inputs[publish]=false'
-          dispatch native-mobile-android-reader.yml
-          dispatch native-mobile-ios-reader.yml -f 'inputs[mode]=full'
-          dispatch native-desktop-reader-acceptance.yml
+          dispatch native-mobile-android-reader.yml -F 'inputs[certify_multi_audio]=true'
+          dispatch native-mobile-ios-reader.yml -f 'inputs[mode]=full' -F 'inputs[certify_multi_audio]=true'
+          dispatch native-desktop-reader-acceptance.yml -F 'inputs[certify_multi_audio]=true'
 
       - name: Wait for exact candidate workflow conclusions
         shell: bash
