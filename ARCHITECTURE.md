@@ -336,6 +336,10 @@ Une identité provider peut déclarer plusieurs sources d'adresse ordonnées. Le
 
 Un canal Telegram n'est automatique que lorsqu'il expose une preview web publique `/s/<channel>`, avec résolution par chronologie ou description. Un bot Telegram interactif, un canal privé/authentifié ou une source nécessitant une action utilisateur reste **preuve manuelle uniquement** et ne peut jamais devenir autorité de publication Domain Refresh. Une source fallback n'est consultée comme autorité que lorsque les sources primary/supplementary n'ont produit aucun terminal exploitable.
 
+
+
+Pour les providers sans hub/canal autoritaire, un domaine direct reste prioritaire tant qu'un probe borné le rejoint. Si **tous** les directs curatés échouent sans redirection exploitable, le cron `quick` peut ouvrir un seul fallback search borné. Un résultat search simple n'est jamais publié immédiatement : le terminal doit être réellement validé, correspondre au provider, puis être observé identique sur au moins deux runs consécutifs. Le premier run ne fait que persister `pending_confirmation`; le second peut produire `search_confirmed`. Un `operator_pin` n'est jamais supersédé par ce mécanisme.
+
 L'inventaire historique de septembre peut donc servir de **prior de découverte** pour des hubs secondaires, mais une ancienne URL n'est jamais recopiée comme autorité courante sans revalidation ou redécouverte par une source actuelle.
 
 ## 11. Cinq Native Labs
