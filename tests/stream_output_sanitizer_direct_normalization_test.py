@@ -210,7 +210,7 @@ let calls=0,active=0,maxActive=0;
 const sandbox={module:{exports:{}},exports:{},URL,AbortController,setTimeout,clearTimeout,Uint8Array,encodeURIComponent};
 sandbox.globalThis=sandbox;
 sandbox.__native_fetch=function(){};
-sandbox.__nuvioProviderDeadlineMs=Date.now()+5;
+sandbox.__nuvioProviderDeadlineMs=Date.now()+100;
 sandbox.fetch=async function(url){
   calls++;active++;maxActive=Math.max(maxActive,active);
   await new Promise(resolve=>setTimeout(resolve,20));
