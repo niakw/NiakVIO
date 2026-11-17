@@ -1,3 +1,10 @@
+## 2026-11-17 — Finalizer now owns census proof-classification semantics
+
+- The pending clean-seed proof-gap correction changes `scripts/render_provider_census_status.py`, which is part of the production proof/activation authority. Prior `release-finalize.yml` neither watched this script or its regression nor executed the regression during the pre-release métier ABI gate. A release could therefore be treated as certified after a proof-rule change that never re-ran release checks.
+- `02a4a054` adds the renderer and `tests/provider_census_status_markdown_test.py` to Finalizer watched inputs and runs the regression immediately after portfolio cardinality checks, before semantic transport checks. `767c541f` and `47908096` lock both watched paths and correct ordering in `tests/release_finalizer_projection_transaction_test.py`.
+- At this entry, exact source HEAD `47908096dcf3a8057e01ca5f5b743ded46faf28f` launched Workflow Gate `44176464930` (in progress at inspection) and Finalizer `44176464844` (queued). Older Finalizer `44174539163` failed closed on executable drift after census/test changes; this is expected fail-closed behavior, not evidence of provider playback failure.
+- The staged 32 cohort still requires real route/API HTTP+identity proof and candidate-to-runtime-plan materialization. No pending providers were activated; 45 Global / 38 France remains current, no five-platform native proof yet. No Brain-LLM changes; user checkpoint remains required before Brain.
+
 ## 2026-11-17 — Pending cohort live census confirms missing executable plans, not 32 proven broken providers
 
 - Isolated 32-provider pending census `44173257457` on exact staged source `df423afb9f19afd8d6dd91623d9d7159bbb42ba2` completed SUCCESS as a workflow and published its result at `259488a3`. Both 16-provider shards completed; 90 media-lane tasks returned **0 raw, 0 playable, 0 verified**. All tasks stopped at `gate_runtime_plan_missing` before any provider network request; no new FULL or activation is justified.
