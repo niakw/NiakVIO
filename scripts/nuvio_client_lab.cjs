@@ -197,62 +197,130 @@ function streamIdentity(stream, fixture) {
   const aliases = [fixture?.title, fixture?.label, ...(Array.isArray(fixture?.aliases) ? fixture.aliases : [])].filter(Boolean);
   const forbiddenAliases = (Array.isArray(fixture?.forbiddenAliases) ? fixture.forbiddenAliases : []).map(normalizeIdentity).filter(Boolean);
   const expected = aliases.map(normalizeIdentity).filter(Boolean);
-  const expectedTokens = new Set(aliases.flatMap(identityTokens));
-  const metadataParts = [stream?.title, stream?.description, stream?.filename]
-    .map((value) => String(value || '').trim())
-    .filter(Boolean);
-  if (!metadataParts.length && stream?.name) metadataParts.push(String(stream.name).trim());
-  const metadataLabel = metadataParts.join(' ');
-  const mediaFilename = humanMediaFilename(stream?.url);
-  const label = [metadataLabel, mediaFilename].filter(Boolean).join(' ');
-  const normalized = normalizeIdentity(label);
   const mediaType = String(fixture?.mediaType || fixture?.type || 'movie').toLowerCase();
   const wantedSeason = Number(fixture?.season || 0);
   const wantedEpisode = Number(fixture?.episode || 0);
-  const seasonEpisode = /(?:^|\D)s(?:eason|aison)?\s*0*(\d{1,3})\s*[-_. ]*e(?:p(?:isode)?)?\s*0*(\d{1,4})(?:\D|$)/i.exec(label)
-    || /(?:season|saison)\s*0*(\d{1,3})[^\d]{0,12}(?:episode|ep)\s*0*(\d{1,4})/i.exec(label);
-  const episodeOnly = /(?:^|\D)(?:episode|ep)\s*0*(\d{1,4})(?:\D|$)/i.exec(label);
-  const providerTokens = new Set(identityTokens(stream?.name || stream?.provider || ''));
+  const wantedYear = Number(fixture?.year || 0);
+
+  // CORE.STREAM_FACTS preserves provider-owned values under source* before
+  // presentation rewrites title/name/description from the TMDB request. Identity
+  // validation must prefer those pre-presentation facts or it becomes circular:
+  // "requested title -> Core label -> requested title matches".
+  const preserved = [stream?.sourceTitle, stream?.sourceDescription, stream?.sourceLabel, stream?.sourceName]
+    .some((value) => String(value || '').trim());
+  const primaryTitle = String(
+    preserved
+      ? (stream?.sourceTitle || stream?.sourceLabel || '')
+      : (stream?.title || '')
+  ).trim();
+  const sourceDescription = String(
+    preserved ? (stream?.sourceDescription || '') : (stream?.description || '')
+  ).trim();
+  const mediaFilename = humanMediaFilename(stream?.url);
+  const filename = String(stream?.filename || '').trim();
+
+  const providerTokens = new Set(
+    [stream?.provider, stream?.sourceProvider, stream?.name, stream?.sourceName]
+      .flatMap(identityTokens)
+  );
   const genericIdentityTokens = new Set([
     'unknown', 'inconnue', 'inconnu', 'source', 'stream', 'streaming', 'player', 'lecteur',
     'audio', 'dual', 'multi', 'truefrench', 'french', 'vostfr', 'vf', 'vo', 'fr', 'en',
     'hd', 'fullhd', 'uhd', '4k', '2160p', '1440p', '1080p', '720p', '480p', '360p',
     'hls', 'dash', 'm3u8', 'mp4', 'web', 'webrip', 'webdl', 'bluray', 'brrip', 'hdr', 'dv',
   ]);
-  const contentTokens = (value) => identityTokens(value).filter((token) => !providerTokens.has(token) && !genericIdentityTokens.has(token));
-  const strongIdentityLabels = [stream?.title, stream?.filename, mediaFilename]
-    .map((value) => String(value || '').trim())
-    .filter(Boolean);
-  if (normalized && forbiddenAliases.some((alias) => normalized.includes(alias))) return { status: 'contradiction', reason: 'forbidden_title_alias' };
-  for (const strongLabel of strongIdentityLabels) {
-    const carriesEpisodeIdentity = /(?:^|\D)s(?:eason|aison)?\s*0*\d{1,3}\s*[-_. ]*e(?:p(?:isode)?)?\s*0*\d{1,4}(?:\D|$)/i.test(strongLabel)
-      || /(?:season|saison)\s*0*\d{1,3}/i.test(strongLabel)
-      || /(?:^|\D)(?:episode|ep)\s*0*\d{1,4}(?:\D|$)/i.test(strongLabel);
-    if (carriesEpisodeIdentity) continue;
-    const strongTokens = contentTokens(strongLabel);
-    if (strongTokens.length >= 2 && expectedTokens.size && !strongTokens.some((token) => expectedTokens.has(token))) {
-      return { status: 'contradiction', reason: mediaFilename && strongLabel === mediaFilename ? 'media_filename_title_mismatch' : 'strong_title_mismatch' };
-    }
+  const contentTokens = (value) => identityTokens(value)
+    .filter((token) => !providerTokens.has(token) && !genericIdentityTokens.has(token));
+  const expectedGroups = aliases
+    .map((value) => contentTokens(value))
+    .filter((tokens) => tokens.length);
+
+  function titleEvidence(value) {
+    const tokens = [...new Set(contentTokens(value))];
+    if (!tokens.length || !expectedGroups.length) return false;
+    return expectedGroups.some((group) => {
+      const wanted = [...new Set(group)];
+      const overlap = wanted.filter((token) => tokens.includes(token)).length;
+      if (wanted.length === 1) return overlap === 1;
+      const required = Math.max(2, Math.ceil(wanted.length * 0.67));
+      return overlap >= Math.min(required, wanted.length);
+    });
   }
-  if (mediaType === 'movie' && seasonEpisode) return { status: 'contradiction', reason: 'movie_row_is_episode' };
+
+  function explicitYears(value) {
+    const years = [];
+    for (const match of String(value || '').matchAll(/(?:^|\D)((?:19|20)\d{2})(?=\D|$)/g)) {
+      const year = Number(match[1]);
+      if (year >= 1900 && year <= 2099 && !years.includes(year)) years.push(year);
+    }
+    return years;
+  }
+
+  const primaryTokens = contentTokens(primaryTitle);
+  const primaryMatches = titleEvidence(primaryTitle);
+  // Description is usable only when the provider-owned primary label is generic
+  // or already agrees with the requested work. A conflicting contentful title
+  // cannot be rescued by Core/request-derived descriptive text.
+  const allowDescription = primaryTokens.length < 2 || primaryMatches;
+  const evidenceLabel = [primaryTitle, allowDescription ? sourceDescription : '', filename, mediaFilename]
+    .filter(Boolean).join(' ');
+  const normalized = normalizeIdentity(evidenceLabel);
+  const seasonEpisode = /(?:^|\D)s(?:eason|aison)?\s*0*(\d{1,3})\s*[-_. ]*e(?:p(?:isode)?)?\s*0*(\d{1,4})(?:\D|$)/i.exec(evidenceLabel)
+    || /(?:season|saison)\s*0*(\d{1,3})[^\d]{0,12}(?:episode|ep)\s*0*(\d{1,4})/i.exec(evidenceLabel);
+  const episodeOnly = /(?:^|\D)(?:episode|ep)\s*0*(\d{1,4})(?:\D|$)/i.exec(evidenceLabel);
+
+  if (normalized && forbiddenAliases.some((alias) => normalized.includes(alias))) {
+    return { status: 'contradiction', reason: 'forbidden_title_alias' };
+  }
+
+  // A human-readable media filename is source evidence, unlike the UI label.
+  // Require substantial title overlap; one shared word ("Last", "Return", etc.)
+  // cannot suppress an otherwise obvious wrong-file contradiction.
+  const mediaTokens = contentTokens(mediaFilename);
+  if (mediaTokens.length >= 2 && expectedGroups.length && !titleEvidence(mediaFilename)) {
+    return { status: 'contradiction', reason: 'media_filename_title_mismatch' };
+  }
+
+  if (mediaType === 'movie' && seasonEpisode) {
+    return { status: 'contradiction', reason: 'movie_row_is_episode' };
+  }
   if (seasonEpisode && (mediaType === 'tv' || mediaType === 'anime')) {
     const season = Number(seasonEpisode[1] || 0);
     const episode = Number(seasonEpisode[2] || 0);
     if ((wantedSeason && season && season !== wantedSeason) || (wantedEpisode && episode && episode !== wantedEpisode)) {
       return { status: 'contradiction', reason: 'wrong_season_episode' };
     }
-    return { status: 'match', reason: 'season_episode_match' };
+    if (titleEvidence(evidenceLabel)) return { status: 'match', reason: 'season_episode_match' };
+    return { status: 'unknown', reason: 'insufficient_identity_metadata' };
   }
   if (episodeOnly && (mediaType === 'tv' || mediaType === 'anime')) {
     const episode = Number(episodeOnly[1] || 0);
-    if (wantedEpisode && episode && episode !== wantedEpisode) return { status: 'contradiction', reason: 'wrong_episode' };
-    if (wantedEpisode && episode === wantedEpisode) return { status: 'match', reason: 'episode_match' };
+    if (wantedEpisode && episode && episode !== wantedEpisode) {
+      return { status: 'contradiction', reason: 'wrong_episode' };
+    }
+    if (wantedEpisode && episode === wantedEpisode && titleEvidence(evidenceLabel)) {
+      return { status: 'match', reason: 'episode_match' };
+    }
+    return { status: 'unknown', reason: 'insufficient_identity_metadata' };
   }
-  if (normalized && expected.some((alias) => normalized.includes(alias))) return { status: 'match', reason: 'expected_title_alias' };
-  const rowTokens = contentTokens(label);
-  if (rowTokens.length >= 2 && expectedTokens.size) {
-    const overlap = rowTokens.filter((token) => expectedTokens.has(token));
-    if (overlap.length === 0) return { status: 'contradiction', reason: mediaFilename ? 'media_filename_title_mismatch' : 'strong_title_mismatch' };
+
+  const matchedAlias = expected.find((alias) => normalized && normalized.includes(alias));
+  if (matchedAlias && titleEvidence(evidenceLabel)) {
+    // A one-token movie title is ambiguous across remakes/shorts/cartoons. When
+    // a release year is known, require that year in source evidence here; Deep
+    // duration identity can still establish the work when the provider omits it.
+    const matchedGroup = contentTokens(matchedAlias);
+    if (mediaType === 'movie' && wantedYear && matchedGroup.length === 1) {
+      const years = explicitYears(evidenceLabel);
+      if (!years.length) return { status: 'unknown', reason: 'insufficient_identity_metadata' };
+      if (!years.includes(wantedYear)) return { status: 'contradiction', reason: 'strong_title_mismatch' };
+    }
+    return { status: 'match', reason: 'expected_title_alias' };
+  }
+
+  const primaryStrong = primaryTokens.length >= 2;
+  if (mediaType === 'movie' && primaryStrong && expectedGroups.length && !primaryMatches) {
+    return { status: 'contradiction', reason: 'strong_title_mismatch' };
   }
   return { status: 'unknown', reason: 'insufficient_identity_metadata' };
 }
