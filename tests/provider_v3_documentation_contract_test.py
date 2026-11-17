@@ -129,7 +129,7 @@ assert "material_ids==active_ids" in manual
 assert "==46" not in manual and "46/46" not in manual
 
 
-assert machine["schema_version"] >= 18
+assert machine["schema_version"] >= 19
 source = machine["provider_source_of_truth"]
 assert source["canonical_provider_base_marker"] == "NIAKVIO_PROVIDER_BASE_OWNED_V3"
 assert source["legacy_provider_js_seed_allowed"] is False
@@ -278,7 +278,7 @@ assert machine["provider_scopes"]["availability_report_visible"] == "scripts/cur
 
 assert platform_runtime_machine["schema_version"] == 3
 assert 'data.get("schema_version") != 3' in renderer_source
-assert validation_machine["schema_version"] >= 76
+assert validation_machine["schema_version"] >= 77
 assert validation_machine["checks"]["clean_provider_base_matches_current_common_source"] is True
 assert validation_machine["checks"]["common_provider_source_migrations_validation_only"] is True
 assert validation_machine["final_certification"]["requires_clean_provider_base_current_source"] is True
@@ -359,6 +359,19 @@ assert validation_machine["stream_multiplicity"]["terminal_validation_cap"] == 4
 assert validation_machine["stream_multiplicity"]["first_success_does_not_end_discovery"] is True
 assert validation_machine["stream_multiplicity"]["hls_multi_audio_requires_master_preservation"] is True
 assert validation_machine["stream_multiplicity"]["indirect_media_resolution_prefers_richer_hls_master"] is True
+
+terminal_pipeline = machine["terminal_media_pipeline"]
+assert terminal_pipeline["order"] == [
+    "STREAM_FACTS", "STREAM_SANITIZER", "STREAM_IDENTITY",
+    "MEDIA_TYPE_RESOLUTION", "STREAM_PRESENTATION",
+]
+assert terminal_pipeline["terminal_resolution_before_identity"] is True
+assert terminal_pipeline["terminal_resolution_before_presentation"] is True
+assert terminal_pipeline["recovered_url_identity_revalidated"] is True
+assert terminal_pipeline["terminal_audio_tracks_presented"] is True
+assert validation_machine["terminal_media_pipeline"]["order"] == terminal_pipeline["order"]
+assert validation_machine["terminal_media_pipeline"]["recovered_url_identity_revalidated"] is True
+assert validation_machine["terminal_media_pipeline"]["terminal_audio_tracks_presented"] is True
 assert validation_machine["special_episodes"]["season_zero_valid"] is True
 assert validation_machine["special_episodes"]["season_zero_fallback_to_one"] is False
 assert validation_machine["special_episodes"]["mandatory_native_fixture"] == "spartacus-s00e01"
