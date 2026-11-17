@@ -21,7 +21,7 @@ def load(path: Path, name: str):
 
 presentation = load(ROOT / "scripts/provider_patches/global_stream_presentation_v1.py", "cross_presentation")
 branding = load(ROOT / "scripts/provider_patches/global_provider_branding_v1.py", "cross_branding")
-assert presentation.REVISION == "all-providers-client-projection-evidence-language-v24"
+assert presentation.REVISION == "all-providers-client-projection-terminal-audio-authority-v35"
 
 apply_source = (ROOT / "scripts/apply_provider_overrides.py").read_text(encoding="utf-8")
 assert apply_source.index("CORE.STREAM_FACTS.V1") < apply_source.index("CORE.STREAM_SANITIZER.V6")
@@ -35,7 +35,7 @@ presentation_source = (ROOT / "scripts/provider_patches/global_stream_presentati
 assert 'return s(c.languageFallback)||(vfMode?"VF":"VO")' not in presentation_source
 assert 'r&&r.name,r&&r.title,r&&r.label,r&&r.sourceLabel' not in presentation_source.split('function language(r)',1)[1].split('function detailedLanguage',1)[0]
 branding_source = (ROOT / "scripts/provider_patches/global_provider_branding_v1.py").read_text(encoding="utf-8")
-assert "post-safety-uniform-final-label-v9" in branding_source
+assert "post-safety-terminal-source-label-v11" in branding_source
 assert 'return q?v+" - "+q:v' in branding_source
 assert 'if(placeholder(o.quality))delete o.quality' in branding_source
 
