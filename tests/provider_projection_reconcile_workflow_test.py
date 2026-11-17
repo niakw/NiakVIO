@@ -118,6 +118,20 @@ assert 'CURRENT_SHA="$(git rev-parse origin/main)"' in static_fixed
 assert 'if [ "$CURRENT_SHA" != "$GITHUB_SHA" ]; then' in static_fixed
 assert "git push origin HEAD:main" in static_fixed
 assert "FIELD_PROVIDER_STATIC_AUTHORITY_PUBLISHED" in static_fixed
+gate=(ROOT/".github/workflows/github-actions-gate.yml").read_text(encoding="utf-8")
+release=(ROOT/".github/workflows/release-finalize.yml").read_text(encoding="utf-8")
+assert "python3 tests/provider_projection_reconcile_workflow_test.py" in gate
+for token in (
+    "'.github/workflows/provider-projection-reconcile.yml'",
+    "'scripts/materialize_provider_v3_one.py'",
+    "'scripts/reconcile_provider_static_authority.py'",
+    "'scripts/sanitize_provider_v3_core_metadata_routes.py'",
+    "'tests/provider_projection_reconcile_workflow_test.py'",
+    "'tests/provider_static_authority_france_only_test.py'",
+):
+    assert token in release, token
+assert "python3 tests/provider_projection_reconcile_workflow_test.py" in release
+assert "python3 tests/provider_static_authority_france_only_test.py" in release
 print("provider projection reconcile workflow contract passed")
 
 from sys import path as _pythonpath

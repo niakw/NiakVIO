@@ -27,6 +27,12 @@ on:
       - '.github/provider-onboarding/batch.json'
       - 'scripts/provider_base_store.py'
       - 'scripts/materialize_provider_base_v3_store.py'
+      - 'scripts/materialize_provider_v3_one.py'
+      - 'scripts/reconcile_provider_static_authority.py'
+      - 'scripts/sanitize_provider_v3_core_metadata_routes.py'
+      - '.github/workflows/provider-projection-reconcile.yml'
+      - 'tests/provider_projection_reconcile_workflow_test.py'
+      - 'tests/provider_static_authority_france_only_test.py'
       - 'scripts/upgrade_provider_route_media_binding_v35.py'
       - 'tests/provider_route_media_binding_v35_test.py'
       - 'tests/provider_clean_reconstruction_contract_test.py'
@@ -264,6 +270,8 @@ jobs:
           set -euo pipefail
           # The finalizer's own ordering/watch contract is release authority.
           python3 tests/release_finalizer_projection_transaction_test.py
+          python3 tests/provider_projection_reconcile_workflow_test.py
+          python3 tests/provider_static_authority_france_only_test.py
           # A release may only certify the stored ABI after proving that the
           # official client branches are still reachable and have no unreviewed
           # contract/semantic drift from the accepted refs.

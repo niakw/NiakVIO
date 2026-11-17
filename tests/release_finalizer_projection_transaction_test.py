@@ -132,6 +132,12 @@ for required in (
     "'scripts/check_nuvio_client_upstreams.py'",
     "'scripts/runtime_contract_gate.py'",
     "'scripts/materialize_provider_base_v3_store.py'",
+    "'scripts/materialize_provider_v3_one.py'",
+    "'scripts/reconcile_provider_static_authority.py'",
+    "'scripts/sanitize_provider_v3_core_metadata_routes.py'",
+    "'.github/workflows/provider-projection-reconcile.yml'",
+    "'tests/provider_projection_reconcile_workflow_test.py'",
+    "'tests/provider_static_authority_france_only_test.py'",
     "'scripts/upgrade_provider_route_media_binding_v35.py'",
     "'tests/provider_route_media_binding_v35_test.py'",
     "'tests/provider_clean_reconstruction_contract_test.py'",
@@ -168,4 +174,6 @@ for required in (
     "'tests/global_core_runtime_ownership_test.py'",
 ):
     assert required in workflow, required
+assert "python3 tests/provider_projection_reconcile_workflow_test.py" in workflow
+assert "python3 tests/provider_static_authority_france_only_test.py" in workflow
 print("release finalizer projection transaction ordering passed")
