@@ -82,23 +82,34 @@ TV_HELPERS = PROBE_MODEL + r'''
         fun playerSettingsDataStore(): PlayerSettingsDataStore
     }
 
-    private fun probeTvAudioTrackCount(
+    private data class TvAudioTrackProbe(
+        val count: Int = -1,
+        val languages: String = "",
+    )
+
+    private fun probeTvAudioTracks(
         instrumentation: android.app.Instrumentation,
         context: android.content.Context,
-    ): Int {
+    ): TvAudioTrackProbe {
         return try {
             val device = UiDevice.getInstance(instrumentation)
             device.pressDPadCenter()
             val label = context.getString(R.string.cd_audio_tracks)
-            val button = device.wait(Until.findObject(By.desc(label)), 2500L) ?: return -1
+            val button = device.wait(Until.findObject(By.desc(label)), 2500L)
+                ?: return TvAudioTrackProbe()
             button.click()
             device.waitForIdle()
             Thread.sleep(300L)
-            val count = device.findObjects(By.clazz("android.widget.RadioButton")).size
+            val tracks = device.findObjects(By.clazz("android.widget.RadioButton"))
+            val languages = tracks.mapNotNull { track ->
+                sequenceOf(track.text, track.contentDescription)
+                    .map { it?.trim().orEmpty() }
+                    .firstOrNull { it.isNotBlank() && !it.equals("und", ignoreCase = true) }
+            }.distinct().joinToString(",")
             device.pressBack()
-            count
+            TvAudioTrackProbe(tracks.size, languages)
         } catch (_: Throwable) {
-            -1
+            TvAudioTrackProbe()
         }
     }
 
@@ -158,7 +169,11 @@ TV_HELPERS = PROBE_MODEL + r'''
                 else -> NativePlayerProbe("error", "nuvio-tv-production", "PlayerRuntimeController", sanitizeDiag(diagnostics.result), 0, "player", diagnostics.host.ifBlank { host }, durationSeconds)
             }
             if (result.state == "ready" || result.state == "short_media") {
-                result.copy(audioTrackCount = probeTvAudioTrackCount(instrumentation, context))
+                val audioTracks = probeTvAudioTracks(instrumentation, context)
+                result.copy(
+                    audioTrackCount = audioTracks.count,
+                    audioTrackLanguages = audioTracks.languages,
+                )
             } else result
         } catch (error: kotlinx.coroutines.TimeoutCancellationException) {
             NativePlayerProbe("timeout", "nuvio-tv-production", error::class.qualifiedName.orEmpty(), "READER_TIMEOUT", 0, "timeout", host, null)
