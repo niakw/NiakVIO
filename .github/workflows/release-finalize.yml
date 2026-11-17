@@ -112,6 +112,7 @@ on:
       - 'scripts/prepare_native_ios_reader_acceptance.py'
       - 'scripts/gate_native_ios_multi_audio.py'
       - 'scripts/gate_native_multi_audio_coverage.cjs'
+      - 'scripts/gate_native_provider_provenance.cjs'
       - 'scripts/native_evidence_completeness.cjs'
       - 'scripts/analyze_native_ios_results.py'
       - 'scripts/prebuild_native_android_reader_suite.sh'
@@ -128,6 +129,7 @@ on:
       - 'tests/native_evidence_codegen_pipeline_test.py'
       - 'tests/native_ios_multi_audio_gate_test.py'
       - 'tests/native_multi_audio_coverage_gate_test.cjs'
+      - 'tests/native_provider_provenance_gate_test.cjs'
       - '.github/workflows/native-mobile-android-reader.yml'
       - '.github/workflows/native-mobile-ios-reader.yml'
       - '.github/workflows/native-desktop-reader-acceptance.yml'
@@ -259,6 +261,7 @@ jobs:
           python3 tests/native_evidence_codegen_pipeline_test.py
           python3 tests/native_ios_multi_audio_gate_test.py
           node tests/native_multi_audio_coverage_gate_test.cjs
+          node tests/native_provider_provenance_gate_test.cjs
           python3 tests/global_stream_presentation_test.py
           python3 tests/global_stream_metadata_preservation_contract_test.py
           python3 tests/global_stream_presentation_pipeline_test.py
