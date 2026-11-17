@@ -175,6 +175,9 @@ def _census_runtime_focus(provider_id: str) -> dict[str, Any]:
         state = str(row.get("status") or "")
         dominant_issue = str(row.get("dominantIssue") or "")[:240]
         issue = dominant_issue.casefold()
+        evidence_depth = " ".join(
+            str(value or "").casefold() for value in row.get("evidenceDepth") or []
+        )
         profiles = {
             "CHAIN REACHED": {
                 "focus": "terminal-chain",
@@ -203,7 +206,10 @@ def _census_runtime_focus(provider_id: str) -> dict[str, Any]:
             "identity_mismatch",
             "identity_contradiction",
         ))
-        structural_state = state in {"CHAIN REACHED", "ROUTE PROVEN", "CANDIDATE OK"}
+        candidate_state = state == "CANDIDATE OK"
+        chain_evidence = state == "CHAIN REACHED" or "chain_reached" in evidence_depth
+        route_state = state == "ROUTE PROVEN"
+        structural_state = candidate_state or chain_evidence or route_state
         # BRAIN_TRANSPORT_BARE_TIMEOUT_V1: census may emit the compact
         # dominantIssue "timeout"; it has the same causal owner as
         # provider_network_timeout and must receive transport-first runtime focus.
@@ -226,6 +232,15 @@ def _census_runtime_focus(provider_id: str) -> dict[str, Any]:
                 "max_embeds": 14,
                 "max_depth": 4,
             }
+        elif candidate_state:
+            result = dict(profiles["CANDIDATE OK"])
+        elif chain_evidence:
+            # The declarative gap classifier gives chain evidence precedence over
+            # a downstream HTTP/timeout symptom. Keep runtime focus on terminal
+            # extraction when a REGRESSION row still proves chain_reached.
+            result = dict(profiles["CHAIN REACHED"])
+        elif route_state:
+            result = dict(profiles["ROUTE PROVEN"])
         elif not structural_state and (
             any(token in issue for token in ("waf", "challenge", "blocked"))
             or network_regression

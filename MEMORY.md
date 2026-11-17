@@ -1,3 +1,9 @@
+## 2026-11-17 — Runtime repair focus now follows the same causal precedence as Brain planning
+
+- Workflow Gate run `44113431275` on `b2a3cfad010c6ec961ecdb0e2d7288dfb8543f8a` passed the new proof-debt boundary and then failed later on current provider `sekai`: declarative planning correctly classified its retained `chain_reached` evidence as `chain_terminal_gap`, while adaptive runtime reclassified the same row as `transport-first` only because its latest dominant issue was `provider_network_http_error`.
+- This was a cross-layer métier contradiction, not a Sekai-specific provider defect. Adaptive runtime now gives content identity first, then candidate/chain/route structural evidence, and only then bare transport symptoms. A REGRESSION/HTTP row that still proves `chain_reached` therefore keeps the terminal-chain focus used by the declarative Brain layer.
+- `tests/brain_force_full_cohort_readiness_test.py` now carries a synthetic REGRESSION+HTTP+`chain_reached` witness so this precedence cannot silently diverge again. No provider bytes, manifests, route DATA or acceptance threshold changed; fresh Workflow Gate/Verify/non-regression execution is required on the descendant SHA.
+
 ## 2026-11-17 — Fresh census restored scope; proof debt and Domain race are separated from negative authority
 
 - Exact-current-byte sharded census run `44110423782` on source `21de026cfcfbc562603db08e46b25b42887d5bff` completed SUCCESS after the bounded lifecycle rollback. The executable Global+France union remains **75 active identities** (45 Global / 38 VF rows), while current proof is deliberately stricter: 9 FULL OK, 20 CHAIN REACHED, 15 NO PROOF, 17 HARNESS/ENV BLOCKED, 3 HARNESS MISMATCH, 6 PROVIDER NETWORK BLOCKED, 3 REGRESSION PROVIDER and 2 PROVIDER JS BROKEN among the current census rows; the older disabled cohort remains disabled. This is proof debt, not permission to relabel the 66 non-FULL active identities as healthy.

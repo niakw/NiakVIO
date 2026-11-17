@@ -4,6 +4,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -88,6 +89,26 @@ rotated_profiles = {
 }
 missing_advisor_profiles = rotated_profiles - set(brain_runtime.LLM_ADVISOR_PROFILES)
 assert not missing_advisor_profiles, sorted(missing_advisor_profiles)
+
+# Cross-layer causal precedence must be identical. A current row may be labelled
+# REGRESSION PROVIDER because its latest terminal request is HTTP-failed while
+# still carrying stronger chain_reached evidence. Declarative planning calls that
+# a chain_terminal_gap, so adaptive runtime must not demote it to transport-first.
+_original_census_path = runtime.CENSUS_STATUS_PATH
+with tempfile.TemporaryDirectory(prefix="niakvio-runtime-focus-") as _tmp:
+    _path = Path(_tmp) / "census.json"
+    _path.write_text(json.dumps({
+        "providers": [{
+            "provider": "synthetic-chain-regression",
+            "status": "REGRESSION PROVIDER",
+            "dominantIssue": "provider_network_http_error",
+            "evidenceDepth": ["anime=chain_reached"],
+        }]
+    }), encoding="utf-8")
+    runtime.CENSUS_STATUS_PATH = _path
+    _focus = runtime._census_runtime_focus("synthetic-chain-regression")
+    assert _focus["focus"] == "terminal-chain", _focus
+runtime.CENSUS_STATUS_PATH = _original_census_path
 
 coverage = {}
 for provider in sorted(queue):
