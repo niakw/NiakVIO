@@ -239,6 +239,27 @@ def select_to_target(
     return selected, pool
 
 
+def representative_hold_partition(
+    request: dict[str, Any],
+    qualified: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], str | None, str | None]:
+    """Keep a representative validation wave single-provider until an external proof owner clears it.
+
+    Route discovery may refresh knowledge for the whole reserve, but it may not widen
+    the executable onboarding wave while routeDiscoveryWave.representativeHold=true.
+    """
+    wave = request.get("routeDiscoveryWave") if isinstance(request.get("routeDiscoveryWave"), dict) else {}
+    if wave.get("representativeHold") is not True:
+        return list(qualified), [], None, None
+    representative = norm(wave.get("representativeProvider"))
+    if not representative:
+        raise SystemExit("representativeHold requires routeDiscoveryWave.representativeProvider")
+    allowed = [row for row in qualified if norm(row.get("id") or row.get("provider")) == representative]
+    held = [row for row in qualified if norm(row.get("id") or row.get("provider")) != representative]
+    blocked_until = str(wave.get("expansionBlockedUntil") or "").strip() or None
+    return allowed, held, representative, blocked_until
+
+
 def source_rows(request: dict[str, Any]) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     seen: set[str] = set()
@@ -336,8 +357,9 @@ def main() -> int:
             deferred.append(deferred_row)
 
     active_state = current_active_state()
-    qualified_global = [row for row in qualified if str(row.get("scope") or "global").casefold() == "global"]
-    qualified_france = [row for row in qualified if str(row.get("scope") or "global").casefold() == "france"]
+    selection_pool, representative_standby, representative_provider, expansion_blocked_until = representative_hold_partition(request, qualified)
+    qualified_global = [row for row in selection_pool if str(row.get("scope") or "global").casefold() == "global"]
+    qualified_france = [row for row in selection_pool if str(row.get("scope") or "global").casefold() == "france"]
     selected_global, standby_global = select_to_target(
         qualified_global, scope="global", current=active_state["global"]
     )
@@ -346,10 +368,19 @@ def main() -> int:
         qualified_france, scope="france", current=france_after_shared_global
     )
     selected = selected_global + selected_france
-    standby = standby_global + standby_france
+    standby = representative_standby + standby_global + standby_france
+    representative_hold = representative_provider is not None
+    representative_standby_ids = {
+        norm(row.get("id") or row.get("provider")) for row in representative_standby
+    }
     for row in standby:
         held = dict(row)
-        held["routeDiscoveryLastReason"] = "qualified_standby_target_60"
+        pid = norm(row.get("id") or row.get("provider"))
+        held["routeDiscoveryLastReason"] = (
+            "qualified_standby_representative_hold"
+            if representative_hold and pid in representative_standby_ids
+            else "qualified_standby_target_60"
+        )
         deferred.append(held)
 
     global_add = len(selected_global)
@@ -420,6 +451,11 @@ def main() -> int:
         "expectedShardCount": int(args.expected_shards),
         "completeShardSet": len(args.shards) == int(args.expected_shards),
         "activationRequiresExecutablePlan": True,
+        **({
+            "representativeHold": True,
+            "representativeProvider": representative_provider,
+            "expansionBlockedUntil": expansion_blocked_until,
+        } if representative_hold else {}),
     }
     write(args.output_request, next_request)
     print(

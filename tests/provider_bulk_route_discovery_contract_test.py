@@ -110,8 +110,35 @@ selected, standby = apply_mod.select_to_target(
 assert selected == [] and [row["id"] for row in standby] == ["overflow"]
 assert apply_mod.TARGET_ACTIVE == 60
 assert apply_mod.TARGET_LANE == 20
+
+representative_pool, representative_held, representative_id, blocked_until = apply_mod.representative_hold_partition(
+    {
+        "routeDiscoveryWave": {
+            "representativeHold": True,
+            "representativeProvider": "meowtv",
+            "expansionBlockedUntil": "terminal + identity + native proof",
+        }
+    },
+    [
+        {"id":"flickystream","scope":"global","types":["movie","tv","anime"]},
+        {"id":"meowtv","scope":"global","types":["movie","tv","anime"]},
+        {"id":"dpstream","scope":"france","types":["movie","tv"]},
+    ],
+)
+assert [row["id"] for row in representative_pool] == ["meowtv"], representative_pool
+assert {row["id"] for row in representative_held} == {"flickystream","dpstream"}, representative_held
+assert representative_id == "meowtv"
+assert blocked_until == "terminal + identity + native proof"
+normal_pool, normal_held, normal_id, normal_block = apply_mod.representative_hold_partition(
+    {"routeDiscoveryWave": {"representativeHold": False}},
+    [{"id":"a"},{"id":"b"}],
+)
+assert [row["id"] for row in normal_pool] == ["a","b"]
+assert normal_held == [] and normal_id is None and normal_block is None
 apply_source=apply_path.read_text(encoding="utf-8")
 assert '"global": TARGET_ACTIVE' in apply_source
+assert '"representativeHold": True' in apply_source
+assert '"qualified_standby_representative_hold"' in apply_source
 assert '"france": TARGET_ACTIVE' in apply_source
 assert '"global": current_global + global_add' not in apply_source
 assert '"france": current_france + france_add' not in apply_source
