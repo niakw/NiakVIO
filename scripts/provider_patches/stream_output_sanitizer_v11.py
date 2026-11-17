@@ -37,11 +37,51 @@ OLD_HLS = r'''        var hls=normalizeHlsText(text,finalUrl);
         syncPlaybackHeaders(stream);
         return true;'''
 
+PREVIOUS_V11_HLS = r'''        var hls=normalizeHlsText(text,finalUrl);
+        if(!hls)return false;
+        recoverQuality(stream,hls.text,finalUrl);
+        var master=/#EXT-X-STREAM-INF\s*:/i.test(hls.text),audioCount=0,am,reAudio=/#EXT-X-MEDIA\s*:[^\r\n]*TYPE\s*=\s*["']?AUDIO["']?[^\r\n]*/gi;
+        while((am=reAudio.exec(hls.text))!==null)audioCount++;
+        if(depth>0){
+          stream.__nuvioHlsMasterV1=master;
+          stream.__nuvioHlsMasterAudioCountV1=master?audioCount:0;
+        }
+        if(depth>0&&referer)try{stream.playerHost=hostOf(referer)}catch(_e){}
+        try{stream.terminalHost=hostOf(finalUrl)}catch(_e){}
+        if(hls.repaired){
+          stream.url=repairedHlsUrl(hls.text);
+          if(!stream.type)stream.type="hls";
+          if(!stream.mimeType)stream.mimeType="application/vnd.apple.mpegurl";
+          stream.isDirect=true;
+        }else markDirect(stream,finalUrl);
+        syncPlaybackHeaders(stream);
+        return true;'''
+
 NEW_HLS = r'''        var hls=normalizeHlsText(text,finalUrl);
         if(!hls)return false;
         recoverQuality(stream,hls.text,finalUrl);
         var master=/#EXT-X-STREAM-INF\s*:/i.test(hls.text),audioCount=0,am,reAudio=/#EXT-X-MEDIA\s*:[^\r\n]*TYPE\s*=\s*["']?AUDIO["']?[^\r\n]*/gi;
         while((am=reAudio.exec(hls.text))!==null)audioCount++;
+        var masterAudioTracks=[],mediaLineMatch,mediaLineRe=/#EXT-X-MEDIA\s*:[^\r\n]*/gi;
+        function hlsAttr(line,key){
+          var body=String(line||"").replace(/^#EXT-X-MEDIA\s*:/i,"");
+          var re=new RegExp("(?:^|,)\\s*"+key+"\\s*=\\s*(?:\\\"([^\\\"]*)\\\"|'([^']*)'|([^,\\r\\n]+))","i"),m=body.match(re);
+          return m?String(m[1]||m[2]||m[3]||"").trim():"";
+        }
+        while((mediaLineMatch=mediaLineRe.exec(hls.text))!==null){
+          var mediaLine=mediaLineMatch[0];
+          if(!/\bTYPE\s*=\s*["']?AUDIO["']?(?:\s*,|$)/i.test(mediaLine))continue;
+          var trackLanguage=hlsAttr(mediaLine,"LANGUAGE"),trackName=hlsAttr(mediaLine,"NAME"),trackChannels=hlsAttr(mediaLine,"CHANNELS");
+          if(!trackLanguage&&!trackName)continue;
+          var terminalTrack={};
+          if(trackLanguage)terminalTrack.language=trackLanguage;
+          if(trackName)terminalTrack.name=trackName;
+          if(trackChannels)terminalTrack.channels=trackChannels;
+          terminalTrack.source="HLS master";
+          masterAudioTracks.push(terminalTrack);
+          if(masterAudioTracks.length>=16)break;
+        }
+        if(master&&masterAudioTracks.length)stream.audioTracks=masterAudioTracks;
         if(depth>0){
           stream.__nuvioHlsMasterV1=master;
           stream.__nuvioHlsMasterAudioCountV1=master?audioCount:0;
@@ -111,9 +151,14 @@ def _restore_v10_source(text: str) -> str:
     if source.count(MARKER_COMMENT) != 1:
         raise ValueError(f"stream sanitizer v11 marker count={source.count(MARKER_COMMENT)}")
     source = source.replace(MARKER_COMMENT + "\n", "", 1)
-    if NEW_HLS not in source or NEW_CANDIDATES not in source:
-        raise ValueError("stream sanitizer v11 existing hooks missing")
-    source = source.replace(NEW_HLS, OLD_HLS, 1)
+    if NEW_CANDIDATES not in source:
+        raise ValueError("stream sanitizer v11 existing candidate hook missing")
+    if NEW_HLS in source:
+        source = source.replace(NEW_HLS, OLD_HLS, 1)
+    elif PREVIOUS_V11_HLS in source:
+        source = source.replace(PREVIOUS_V11_HLS, OLD_HLS, 1)
+    else:
+        raise ValueError("stream sanitizer v11 existing HLS hook missing")
     source = source.replace(NEW_CANDIDATES, OLD_CANDIDATES, 1)
     return source
 
@@ -141,6 +186,8 @@ def validate(text: str) -> None:
         "probeLimit=Math.min(candidates.length,6)",
         "__nuvioHlsMasterV1",
         "__nuvioHlsMasterAudioCountV1",
+        'terminalTrack.source="HLS master"',
+        "stream.audioTracks=masterAudioTracks",
         "candidateRank>=3",
         "playerHost=hostOf(referer)",
         "terminalHost=hostOf(finalUrl)",
