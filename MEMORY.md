@@ -1,3 +1,11 @@
+## 2026-11-17 — Domain/Release replay triggers no longer invalidate each other
+
+- Exact-head certification exposed a control-plane race unrelated to provider/Core bytes: Release Finalizer and Domain Refresh share the serialized `niakvio-core-release-mutation-main` writer, but `domain_refresh_publication_drift_gate.py` treated changes to their replay trigger files as executable/publication drift. Relauching one transaction after the other could therefore make the older run fail before useful work even though only a control-plane request changed.
+- `34d1fc3c` classifies only `.github/triggers/release-finalize.json` and `.github/triggers/domain-refresh` as neutral replay-request drift; workflows, scripts, provider/manifests/DATA and every other trigger remain fail-closed unless explicitly proven safe. `8ad8fa8d` locks both trigger files as safe and retains workflow/provider-byte examples as rejected drift.
+- `release-finalize.yml` now watches the drift-gate implementation/test so future changes to this publication boundary retrigger release certification.
+- Certification order is intentionally Domain-first: current stable source `bf3590e77327c29895b07898e778be9797cd4999` was rebound by trigger commit `6a397890f65acd765dc87cf5dbe5fdd8c7202511` for a full Global+France multi-hub Domain replay. A real Domain publication may change CONFIG/manifests and must complete (or no-op) before the Release Finalizer is rebound to the resulting main.
+- No provider health, domain transition, release integrity or native playback result is claimed by these orchestration commits. The next proof boundary is the Domain Refresh verdict, then exact resulting-head Finalizer -> reverse rebuild/integrity -> five strict Native Labs.
+
 ## 2026-11-17 — Current Nuvio Desktop/TV heads re-audited after exact-head finalizer block
 
 - Exact-head release finalizer run `44120192009` on NiakVIO `439a3ba9c40e86b13f2efc11114cc19e0eb0c803` failed closed in the Nuvio upstream gate, before provider-byte mutation. Mobile remained accepted at `dd0e84704df5...`; Desktop required review because current `Dev` changed three configured stream UI files; TV was reported as a safe head advance.
