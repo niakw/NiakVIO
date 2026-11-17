@@ -100,6 +100,10 @@ jobs:
             done
           fi
           "${args[@]}"
+          # The transaction guard baseline begins after deterministic preflight
+          # sanitation. Otherwise sanitizer-only registry cleanup is misclassified
+          # later as an undeclared domain mutation.
+          cp provider-hubs.json "$RUNNER_TEMP/provider-hubs.before.json"
           cp provider-domain-history.json "$RUNNER_TEMP/provider-domain-history.before.json"
 
       - name: Resolve and publish authoritative hub terminal DATA
