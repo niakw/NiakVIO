@@ -662,13 +662,18 @@ def main() -> int:
                 projection,
             )
         if manifest_row.get("enabled") is not False and not production_authorized:
+            # An absent exact-byte positive result is a proof debt, not negative
+            # provider or network evidence. Core/ProviderBase rematerialization
+            # invalidates old FULL proofs without demonstrating that a provider
+            # became nonfunctional. Keep the independently classified action;
+            # only separately proven shutdown/manual/source/domain authority may
+            # authorize disabled retention. Publication freshness still fails
+            # closed in its dedicated gate.
             current_status = str((census_row or {}).get("status") or "")
             result = {
                 **result,
-                "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
-                "repairEligible": False,
-                "confidence": "current-byte-production-proof",
-                "authorityClass": "current-architecture-nonfunctional",
+                "productionFreshnessAuthorized": False,
+                "productionProofAuthority": production_proof_authority,
                 "reasons": list(result.get("reasons") or []) + [
                     "current_bytes_lack_production_freshness_authority",
                     "production_proof:" + production_proof_authority,
@@ -703,7 +708,8 @@ def main() -> int:
             "apiBackendMayOperateWithoutHomepage": True,
             "manualOffEntersDisabledRetentionImmediately": True,
             "effectiveOperatorShutdownEntersDisabledRetentionImmediately": True,
-            "currentByteUnprovenEntersDisabledRetention": True,
+            "currentByteUnprovenEntersDisabledRetention": False,
+            "missingCurrentByteProofIsDiagnosticOnly": True,
             "terminalPlaybackRequiredForActiveCurrentBytes": True,
             "bulkOnboardingPendingGetsTargetedProofWithoutRuntimeAuthority": True,
         },
