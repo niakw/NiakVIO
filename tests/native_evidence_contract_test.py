@@ -25,6 +25,8 @@ client_head_resolver = text("scripts/resolve_nuvio_lab_heads.py")
 reader_runtime_scope = text("scripts/scope_native_reader_learning_runtime.py")
 android_player = text("scripts/native_player_diagnostics_codegen.py")
 desktop_player = text("scripts/augment_native_desktop_player.py")
+ios_player = text("scripts/prepare_native_ios_reader_acceptance.py")
+native_corpus = text("scripts/prepare_native_corpus_validation.py")
 android_transport = text("scripts/configure_native_android_lab_transport.py")
 tv_suite = text("scripts/run_native_corpus_tv_suite.sh")
 mobile_suite = text("scripts/run_native_corpus_mobile_suite.sh")
@@ -171,6 +173,37 @@ for forbidden in (
 ):
     assert forbidden not in android_player, forbidden
 
+# Multi-audio proof is test-owned and consumes only production player APIs/UI.
+# It never patches Nuvio production code: Mobile/Desktop use PlayerEngineController,
+# iOS uses the official bridge and TV observes the actual Audio Tracks overlay.
+for required in (
+    "PlayerEngineController",
+    "getAudioTracks()",
+    "audio_track_count=",
+    "audio_track_languages64=",
+    "UiDevice.getInstance(instrumentation)",
+    "R.string.cd_audio_tracks",
+    'By.clazz("android.widget.RadioButton")',
+):
+    assert required in android_player, required
+for required in (
+    "PlayerEngineController",
+    "getAudioTracks()",
+    "audio_track_count=",
+    "audio_track_languages64=",
+):
+    assert required in desktop_player, required
+for required in (
+    "getAudioTrackCount()",
+    "getAudioTrackLang(index)",
+    "audioTrackCount",
+    "audioTrackLanguages",
+):
+    assert required in ios_player, required
+assert "hlsAudioTrackCount" in native_corpus
+assert 'TYPE\\s*=\\s*AUDIO' in native_corpus
+assert 'androidx.test.uiautomator:uiautomator:2.3.0' in native_corpus
+
 assert "PlatformPlayerSurface(" in desktop_player
 assert "probeDesktopProductionPlayer" in desktop_player
 assert "sourceHeaders = headers.orEmpty()" in desktop_player
@@ -258,6 +291,9 @@ for required in (
     "player_terminal:",
     "http_terminal:",
     "missing_frontend_phase:",
+    "multi_audio_player_observation_missing:",
+    "multi_audio_player_collapsed:",
+    "multiAudioVerified",
 ):
     assert required in completeness, required
 for required in (
