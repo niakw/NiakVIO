@@ -25,7 +25,7 @@ import resolve_provider_hubs as hubresolver
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = ROOT / "provider-overrides.json"
 HISTORY_PATH = ROOT / "provider-domain-history.json"
-ALLOWED_SOURCE_TYPES = {"hub", "telegram_public", "redirect", "source_redirect"}
+ALLOWED_SOURCE_TYPES = {"hub", "telegram_public", "redirect", "source_redirect", "search_confirmed"}
 
 
 def has_domain_refresh_source(cfg: dict[str, Any], mode: str) -> bool:
@@ -330,6 +330,67 @@ def resolve_authoritative_hub_domain(
             if str(row.get("source_type") or "").strip().casefold() in ALLOWED_SOURCE_TYPES
         ],
     ]
+
+    # Plain search ranking is never immediate publication authority. It is used
+    # only when gather_candidates deliberately enabled search after a bounded
+    # direct-address failure (or an explicit legacy/deep search path). Validate
+    # the terminal now, then require the same terminal on consecutive runs.
+    # The pending confirmation lives in provider-domain-history.json and is
+    # persisted even though provider bytes stay untouched on the first sighting.
+    search_confirmation: dict[str, Any] | None = None
+    if not live_candidates and str(authority_cfg.get("direct_authority") or "").strip().casefold() != "operator_pin":
+        for search_row in [
+            dict(row)
+            for row in discovered
+            if str(row.get("source_type") or "").strip().casefold() == "search"
+        ][:4]:
+            validation = hubresolver.validate_terminal(
+                provider_id,
+                authority_cfg,
+                _candidate_url(search_row),
+                timeout,
+            )
+            observations.append({
+                "source_type": "search_validation",
+                "url": _candidate_url(search_row),
+                "source": search_row.get("source"),
+                "query": search_row.get("query"),
+                "ok": bool(validation.get("ok")),
+                "status": validation.get("status"),
+                "final_url": validation.get("final_url"),
+                "brand_match": validation.get("brand_match"),
+            })
+            if not validation.get("ok"):
+                continue
+            terminal = str(validation.get("final_url") or search_row.get("url") or "").strip().rstrip("/")
+            if not terminal or not hubresolver.same_brand(provider_id, terminal, authority_cfg):
+                continue
+            confirmed, confirmation = hubresolver._apply_confirmation(
+                history_row,
+                terminal,
+                "search",
+                int(authority_cfg.get("search_confirmation_runs") or 2),
+            )
+            search_confirmation = {
+                **confirmation,
+                "url": terminal,
+                "source": search_row.get("source"),
+                "query": search_row.get("query"),
+            }
+            if confirmed:
+                live_candidates.append({
+                    "url": terminal,
+                    "label": "confirmed search fallback after direct authority failure",
+                    "score": 70,
+                    "source_type": "search_confirmed",
+                    "source": search_row.get("source"),
+                    "source_role": "fallback",
+                    "source_priority": 20,
+                    "source_fallback": True,
+                    "search_confirmation": confirmation,
+                })
+            break
+
     current_url = _candidate_url(explicit_current or {})
     # A fallback hub/channel is consulted only when no primary/supplementary
     # address source produced a usable current candidate. This keeps secondary
@@ -394,7 +455,13 @@ def resolve_authoritative_hub_domain(
     if latest_telegram_move:
         item["latest_telegram_message_id"] = latest_telegram_move.get("message_id")
     if not ordered:
-        item["reason"] = "authoritative_hub_no_safe_terminal_candidate"
+        if search_confirmation is not None:
+            item["status"] = "pending_confirmation"
+            item["reason"] = "search_fallback_requires_consecutive_confirmation"
+            item["confirmation"] = search_confirmation
+            item["terminal_probe_skipped"] = False
+        else:
+            item["reason"] = "authoritative_hub_no_safe_terminal_candidate"
         return item
 
     selected = ordered[0]
@@ -407,7 +474,11 @@ def resolve_authoritative_hub_domain(
             else (
                 "registry_explicit_current_terminal_authority"
                 if selected.get("registry_explicit_current")
-                else "authoritative_hub_primary_domain_observed_no_terminal_probe"
+                else (
+                    "confirmed_search_fallback_after_direct_unreachable"
+                    if str(selected.get("source_type") or "").casefold() == "search_confirmed"
+                    else "authoritative_hub_primary_domain_observed_no_terminal_probe"
+                )
             )
         ),
         "official_site": terminal,
@@ -421,7 +492,8 @@ def resolve_authoritative_hub_domain(
             and fresh_authoritative_move
             and not selected.get("registry_explicit_current")
         ),
-        "terminal_probe_skipped": True,
+        "terminal_probe_skipped": str(selected.get("source_type") or "").casefold() != "search_confirmed",
+        "search_confirmation": selected.get("search_confirmation"),
         "api_candidates": [],
         "api_probes": [],
         "validated_api": None,
@@ -486,11 +558,16 @@ def _update_history_on_change(history_row: dict[str, Any], item: dict[str, Any])
         "url": terminal,
         "host": hubresolver.host(terminal),
         "observed_at": hubresolver.now_iso(),
-        "authority": "official_hub",
+        "authority": (
+            "confirmed_search_fallback"
+            if str(item.get("selected_source_type") or "").casefold() == "search_confirmed"
+            else "official_hub"
+        ),
         "source_type": item.get("selected_source_type"),
         "source": item.get("selected_source"),
     }
     history_row.pop("pending", None)
+    history_row.pop("pending_search", None)
 
 
 def _no_address_authority_items(
@@ -552,11 +629,12 @@ def main() -> int:
     no_address_items = _no_address_authority_items(selected_ids, hubs, eligible_ids)
 
     report: dict[str, Any] = {
-        "schema_version": 4,
+        "schema_version": 5,
         "generated_at": hubresolver.now_iso(),
         "mode": args.mode,
         "authority": "official_hub",
         "terminal_validation_required": False,
+        "terminal_validation_policy": "official hub/telegram/redirect are address authority without terminal probe; plain search fallback requires runtime validation plus consecutive confirmation",
         "requested_provider_count": len(selected_ids) if selected_ids else len(work),
         "eligible_provider_count": len(work),
         "no_address_authority_count": len(no_address_items),
