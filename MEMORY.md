@@ -1,3 +1,10 @@
+## 2026-11-17 — Active fleet scan excludes byte-level cross-provider dispatch contamination
+
+- After the logical-owner correction, the exact current 75-provider Global+France transport was audited provider by provider. The active materialization ledger has no duplicate final provider SHA-256 and no duplicate structured Provider DATA SHA-256. The 75 currently referenced provider bundles were also scanned for literal portable `provider` assignments; none contains a foreign provider id relative to its manifest identity.
+- This narrows the user-observed “another provider's stream” symptom: there is no evidence that current active manifest rows point at another provider's bytes. External player/host reuse and portable-provider provenance were the real generic ambiguity boundaries. Core now keeps the NiakVIO scraper as logical owner and exposes an intermediary player separately instead of treating it as ownership.
+- Historical/source-only code can still contain foreign player/provider labels (for example old/raw resolver code), which is why the common Core/Engine ownership guard remains necessary. Brain Repair must not infer cross-provider backend contamination from a shared terminal host or player label alone.
+- This audit is structural evidence, not playback proof. The rematerialized V11/V12 generation and exact-final-SHA Native Labs remain required.
+
 ## 2026-11-17 — Logical provider ownership is separate from terminal player provenance
 
 - User testing reported that a selected NiakVIO provider could appear to play media associated with another provider/player while the displayed provider name stayed unchanged. The Core V11 player-provenance work exposed the underlying contract gap: final branding changed `title/name` but did not force the portable `provider` field, and Engine v2 normalization preferred `raw.provider` over the executing provider context.
