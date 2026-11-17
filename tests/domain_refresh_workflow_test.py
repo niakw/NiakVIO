@@ -53,6 +53,7 @@ assert '--manifest "$RUNNER_TEMP/domain-observation-manifest.json"' in text
 assert "python scripts/generate_release_hashes.py" in text
 assert "python scripts/validate_release_integrity.py" in text
 assert 'git rev-parse HEAD > "$RUNNER_TEMP/domain-base-sha"' in text
+assert "ref: ${{ github.event_name == 'push' && github.sha || 'main' }}" in text, "triggered Domain Refresh must execute the exact triggering source SHA"
 assert 'PROVIDER_SHA="$(git rev-parse HEAD)"' in text
 assert 'BASE_SHA="$(cat "$RUNNER_TEMP/domain-base-sha")"' in text
 assert text.count("NUVIO_SKIP_CLIENT_UPSTREAM_GUARD: '1'") == 1, "Domain Refresh may scope the client-head bypass only to its domain-only release projection step"
