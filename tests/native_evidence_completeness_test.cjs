@@ -82,6 +82,29 @@ try {
   assert.equal(collapsedAssessment.stats.multiAudioExpected, 1);
   assert.equal(collapsedAssessment.stats.multiAudioVerified, 0);
 
+  const languageCollapsedMultiAudio = writeLog(tmp, 'multi-audio-language-collapsed.log', baseEvidence([
+    'FIELD_NATIVE_PROVIDER_BEGIN client=tv fixture=sinners-2025 provider=test request_type=movie',
+    'FIELD_NATIVE_RESULT client=tv fixture=sinners-2025 provider=test request_type=movie returned=1',
+    'FIELD_NATIVE_PLAYER_BEGIN client=tv fixture=sinners-2025 provider=test request_type=movie index=0',
+    'FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider=test request_type=movie index=0 state=ready audio_track_count=2 audio_track_languages64=ZW4',
+    'FIELD_NATIVE_TRANSPORT client=tv fixture=sinners-2025 provider=test request_type=movie index=0 state=ok kind=hls audio_track_count=2 audio_track_languages64=ZW4sZnI',
+  ], [
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=provider-loading',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=provider-result',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=player-start',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=player-result',
+  ]));
+  const languageCollapsedAssessment = assessNativeEvidence([languageCollapsedMultiAudio]);
+  assert.equal(languageCollapsedAssessment.complete, false, 'matching track counts with a missing language must fail');
+  assert.ok(
+    languageCollapsedAssessment.problems.some((row) => row.startsWith('multi_audio_language_observation_missing:tv:sinners-2025:test:0:')),
+    `missing multi-audio language collapse problem: ${JSON.stringify(languageCollapsedAssessment.problems)}`,
+  );
+  assert.equal(languageCollapsedAssessment.stats.multiAudioExpected, 1);
+  assert.equal(languageCollapsedAssessment.stats.multiAudioVerified, 1);
+  assert.equal(languageCollapsedAssessment.stats.multiAudioLanguageExpected, 1);
+  assert.equal(languageCollapsedAssessment.stats.multiAudioLanguageVerified, 0);
+
   const preservedMultiAudio = writeLog(tmp, 'multi-audio-preserved.log', baseEvidence([
     'FIELD_NATIVE_PROVIDER_BEGIN client=tv fixture=sinners-2025 provider=test request_type=movie',
     'FIELD_NATIVE_RESULT client=tv fixture=sinners-2025 provider=test request_type=movie returned=1',
