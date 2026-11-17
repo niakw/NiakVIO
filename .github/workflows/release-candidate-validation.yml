@@ -20,8 +20,10 @@ permissions:
   actions: write
 
 concurrency:
-  group: release-candidate-validation-${{ github.ref }}
-  cancel-in-progress: true
+  # Finalizer-dispatched exact-SHA certifications are immutable proof runs.
+  # Legacy trigger-push runs remain latest-wins.
+  group: release-candidate-validation-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
   normalize:
