@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "authority": "brain-disabled-recovery-lab-v1",
   "sourceLifecycleUpdatedAt": "2026-11-17",
-  "sourceCensusRunId": "44092397246",
+  "sourceCensusRunId": "44096825177",
   "proofAuthority": false,
   "executionAuthority": false,
   "publicationAuthority": false,
@@ -89,10 +89,10 @@
       "asset": "provider-disabled/allwish--nuvio--e067beed64be354d.js",
       "assetSha256": "e067beed64be354d98e0bc578009b1511d35e46442853f887f3f0b42252883b3",
       "lastCensusStatus": "DISABLED",
-      "lastDominantIssue": "provider_network_zero_result×2",
+      "lastDominantIssue": "timeout×2",
       "lastLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result",
-        "tv=no_streams/provider_network_zero_result"
+        "movie=timeout",
+        "tv=timeout"
       ],
       "brainLabEligible": true,
       "productionExecutionAllowed": false,
@@ -482,9 +482,9 @@
       "asset": "provider-disabled/cinematheque-de-bretagne--nuvio--b78dad1c1c5f2c02.js",
       "assetSha256": "b78dad1c1c5f2c026c619c56ed2cdc00b4a5d1b14dc80a7f37ba8c24e2c3aeb4",
       "lastCensusStatus": "DISABLED",
-      "lastDominantIssue": "none",
+      "lastDominantIssue": "provider_network_zero_result",
       "lastLaneVerdicts": [
-        "movie=OK"
+        "movie=no_streams/provider_network_zero_result"
       ],
       "brainLabEligible": true,
       "productionExecutionAllowed": false,
@@ -546,11 +546,11 @@
       "asset": "provider-disabled/corsflix--nuvio--1c5b1c886de43dcd.js",
       "assetSha256": "1c5b1c886de43dcdb543d7c8ee2b1d09778d5398b0c4ae773a6b6ef46aeaf699",
       "lastCensusStatus": "DISABLED",
-      "lastDominantIssue": "provider_network_zero_result×2, provider_waf_challenge",
+      "lastDominantIssue": "provider_waf_challenge, provider_network_zero_result, provider_network_http_error",
       "lastLaneVerdicts": [
-        "anime=no_streams/provider_network_zero_result",
+        "anime=no_streams/provider_waf_challenge",
         "movie=no_streams/provider_network_zero_result",
-        "tv=no_streams/provider_waf_challenge"
+        "tv=no_streams/provider_network_http_error"
       ],
       "brainLabEligible": true,
       "productionExecutionAllowed": false,
@@ -738,10 +738,10 @@
       "asset": "provider-disabled/flixhq--nuvio--07e425dff16ed0ad.js",
       "assetSha256": "07e425dff16ed0addc1a4d405f5b4512f9570a0ae43247c65efc9acb3858ad8b",
       "lastCensusStatus": "DISABLED",
-      "lastDominantIssue": "timeout, provider_waf_challenge",
+      "lastDominantIssue": "timeout×2",
       "lastLaneVerdicts": [
         "movie=timeout",
-        "tv=no_streams/provider_waf_challenge"
+        "tv=timeout"
       ],
       "brainLabEligible": true,
       "productionExecutionAllowed": false,
@@ -1034,10 +1034,10 @@
       "asset": "provider-disabled/moiflix--nuvio--bed9c432710edaa4.js",
       "assetSha256": "bed9c432710edaa48cd693b993bf4440a77135699883cd4936a8f0f5b748cbc8",
       "lastCensusStatus": "DISABLED",
-      "lastDominantIssue": "provider_network_http_error, provider_waf_challenge",
+      "lastDominantIssue": "provider_waf_challenge, provider_network_http_error",
       "lastLaneVerdicts": [
-        "movie=no_streams/provider_network_http_error",
-        "tv=no_streams/provider_waf_challenge"
+        "movie=no_streams/provider_waf_challenge",
+        "tv=no_streams/provider_network_http_error"
       ],
       "brainLabEligible": true,
       "productionExecutionAllowed": false,
@@ -1118,9 +1118,9 @@
       "asset": "provider-disabled/moviesmod--nuvio--5f6249d3d8efc0ea.js",
       "assetSha256": "5f6249d3d8efc0eaa90000e2b8ead601fdfccda1a2b1a495f89c35e4f2df3e09",
       "lastCensusStatus": "DISABLED",
-      "lastDominantIssue": "provider_network_zero_result, provider_waf_challenge",
+      "lastDominantIssue": "provider_waf_challenge×2",
       "lastLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result",
+        "movie=no_streams/provider_waf_challenge",
         "tv=no_streams/provider_waf_challenge"
       ],
       "brainLabEligible": true,
@@ -1139,10 +1139,10 @@
       "asset": "provider-disabled/movish--nuvio--72cbab534af04ad7.js",
       "assetSha256": "72cbab534af04ad754e50b8b685f46a2ca9f33338c5d20529ff67c4e6dc659ac",
       "lastCensusStatus": "DISABLED",
-      "lastDominantIssue": "provider_waf_challenge×2, provider_network_zero_result",
+      "lastDominantIssue": "provider_waf_challenge, timeout, provider_network_zero_result",
       "lastLaneVerdicts": [
         "anime=no_streams/provider_waf_challenge",
-        "movie=no_streams/provider_waf_challenge",
+        "movie=timeout",
         "tv=no_streams/provider_network_zero_result"
       ],
       "brainLabEligible": true,
@@ -1205,9 +1205,9 @@
       "asset": "provider-disabled/nakios--nuvio--99fdad8a8f976136.js",
       "assetSha256": "99fdad8a8f976136410e6641f685e33841a8649b245cb6c66c8844e2e18cbcb5",
       "lastCensusStatus": "DISABLED",
-      "lastDominantIssue": "provider_network_zero_result",
+      "lastDominantIssue": "timeout, provider_network_zero_result",
       "lastLaneVerdicts": [
-        "movie=OK",
+        "movie=timeout",
         "tv=no_streams/provider_network_zero_result"
       ],
       "brainLabEligible": true,
@@ -1461,9 +1461,9 @@
       "asset": "provider-disabled/sadisflix--nuvio--ba176a88535a4a71.js",
       "assetSha256": "ba176a88535a4a71e3120dd43f9325a8bb2859d3d77ec5c6d1812f882123277c",
       "lastCensusStatus": "DISABLED",
-      "lastDominantIssue": "timeout",
+      "lastDominantIssue": "timeout×2",
       "lastLaneVerdicts": [
-        "movie=OK",
+        "movie=timeout",
         "tv=timeout"
       ],
       "brainLabEligible": true,
@@ -1568,9 +1568,9 @@
       "asset": "provider-disabled/topcartoons--nuvio--f4ba40f7af0011b5.js",
       "assetSha256": "f4ba40f7af0011b517fecf548b6cb1a21f843e4e7195e70383e7cb4653ae2a0d",
       "lastCensusStatus": "DISABLED",
-      "lastDominantIssue": "provider_returned_wrong_content",
+      "lastDominantIssue": "none",
       "lastLaneVerdicts": [
-        "movie=wrong_content/provider_returned_wrong_content",
+        "movie=OK",
         "tv=OK"
       ],
       "brainLabEligible": true,
