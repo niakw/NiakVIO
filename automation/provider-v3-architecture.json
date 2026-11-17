@@ -1,5 +1,5 @@
 {
-  "schema_version": 22,
+  "schema_version": 23,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -260,7 +260,11 @@
     ],
     "public_telegram_contract": "only public /s/<channel> previews are automatic address sources",
     "interactive_telegram_bot_contract": "manual evidence only; no automatic terminal publication",
-    "link_aggregator_contract": "public Linktree/bio-link/status pages are ordinary HTML hubs; outbound terminals still require validation"
+    "link_aggregator_contract": "public Linktree/bio-link/status pages are ordinary HTML hubs; outbound terminals still require validation",
+    "direct_failure_search_fallback": "bounded automatic discovery only after every curated direct probe fails",
+    "search_fallback_publication_contract": "runtime-valid same-brand terminal repeated on at least two consecutive runs",
+    "reachable_direct_prevents_search_fallback": true,
+    "operator_pin_prevents_search_fallback": true
   },
   "routine_workflow": {
     "path": ".github/workflows/sync.yml",
