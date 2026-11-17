@@ -174,12 +174,13 @@
       "DesktopMACOS",
       "DesktopWindows"
     ],
-    "multi_audio_witness_rule": "each exact-final-SHA platform must observe at least one transport-proven media resource with >=2 audio tracks and >=2 selectable production-player tracks",
+    "multi_audio_witness_rule": "each exact-final-SHA platform must observe at least one transport-proven media resource with >=2 audio tracks and >=2 distinct advertised audio languages, while the production player exposes >=2 selectable tracks whose language identities cover the master languages",
     "multi_audio_witness_gates": [
       "scripts/gate_native_multi_audio_coverage.cjs",
       "scripts/gate_native_ios_multi_audio.py"
     ],
-    "ordinary_native_diagnostics_may_have_zero_multi_audio_witness": true
+    "ordinary_native_diagnostics_may_have_zero_multi_audio_witness": true,
+    "requires_multi_audio_language_witness_per_native_platform": true
   },
   "limitations": [
     "A CI IP can be blocked while a residential IP works.",
@@ -207,9 +208,10 @@
     "explicit_quality_requires_media_evidence": true,
     "hls_multi_audio_requires_master_preservation": true,
     "indirect_media_resolution_prefers_richer_hls_master": true,
-    "native_multi_audio_expected_source": "post-player HLS master EXT-X-MEDIA TYPE=AUDIO cardinality",
+    "native_multi_audio_expected_source": "post-player HLS master EXT-X-MEDIA TYPE=AUDIO cardinality plus distinct LANGUAGE identities",
     "native_multi_audio_player_parity_required_when_master_has_multiple_audio": true,
-    "native_multi_audio_probe_order": "production player first, transport evidence second"
+    "native_multi_audio_probe_order": "production player first, transport evidence second",
+    "native_multi_audio_language_parity_required_when_master_has_multiple_languages": true
   },
   "special_episodes": {
     "season_zero_valid": true,
@@ -284,7 +286,7 @@
     "tmdb_namespace_must_not_rewrite_provider_transport": true,
     "plugin_result_audio_tracks_field": false,
     "multi_audio_playback_authority": "terminal media resource",
-    "multi_audio_native_acceptance_gate": "proven master audio tracks >=2 requires production player audio tracks >=2",
+    "multi_audio_native_acceptance_gate": "proven master audio tracks >=2 requires production player audio tracks >=2; when the master exposes >=2 distinct LANGUAGE identities, the production player must expose matching distinct language identities",
     "multi_audio_native_evidence_owner": "NiakVIO test harness over official production player APIs/UI",
     "multi_audio_collapse_failure_owner": "client_runtime",
     "multi_audio_probe_player_first": true,
@@ -311,7 +313,8 @@
       }
     },
     "multi_audio_indirect_candidate_probe_cap": 16,
-    "multi_audio_candidate_policy": "prefer proven HLS master; stop early only after multi-audio master rank"
+    "multi_audio_candidate_policy": "prefer proven HLS master; stop early only after multi-audio master rank",
+    "multi_audio_language_collapse_failure_owner": "client_runtime"
   },
   "terminal_media_pipeline": {
     "order": [
@@ -366,5 +369,6 @@
       "MacBridge HTTP/DNS seed",
       "GitHub-hosted HTTP seed"
     ]
-  }
+  },
+  "schemaVersion": 84
 }
