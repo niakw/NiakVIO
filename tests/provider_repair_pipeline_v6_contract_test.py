@@ -85,6 +85,7 @@ assert "reason=current-bytes-only" in pipeline_current
 assert "else:\n        for migration in migrations:" in pipeline_current
 sanitizer_migration = (ROOT / "scripts" / "upgrade_stream_sanitizer_v7_selection.py").read_text(encoding="utf-8")
 assert "stream_output_sanitizer_v10.py" in sanitizer_migration
+assert "stream_output_sanitizer_v11.py" in sanitizer_migration
 assert "NEWER_SANITIZERS" in sanitizer_migration
 assert "_newer_current" in sanitizer_migration
 
