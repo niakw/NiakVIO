@@ -65,7 +65,7 @@ Critical provider identity, quality, language, request-header and subtitle facts
 | macOS | `NuvioMedia/NuvioDesktop` / `Dev` | `c0eb7bfa7c74820bd189a63a48ae364af8bb3058` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
 | Windows | `NuvioMedia/NuvioDesktop` / `Dev` | `c0eb7bfa7c74820bd189a63a48ae364af8bb3058` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
 | Linux | `NuvioMedia/NuvioDesktop` / `Dev` | `c0eb7bfa7c74820bd189a63a48ae364af8bb3058` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
-| Android TV | `NuvioMedia/NuvioTV` / `dev` | `5b371fcd0d7ee080bb1de8de4d438882f67e8bfd` | **audited** | `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt` |
+| Android TV | `NuvioMedia/NuvioTV` / `dev` | `3ff5e2b41a9dba282c57e7602e401df09dabe703` | **audited** | `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt` |
 
 ## Lecture des états
 
