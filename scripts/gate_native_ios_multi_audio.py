@@ -13,6 +13,11 @@ MARKER = "FIELD_NATIVE_IOS_PLAYER "
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--log", type=Path, required=True)
+    parser.add_argument(
+        "--require-witness",
+        action="store_true",
+        help="Fail when the corpus contains no transport-proven multi-audio master.",
+    )
     args = parser.parse_args()
 
     expected = 0
@@ -51,6 +56,13 @@ def main() -> int:
             f"details={';'.join(collapsed[:12])}"
         )
         return 2
+
+    if args.require_witness and expected < 1:
+        print(
+            "FIELD_NATIVE_IOS_MULTI_AUDIO_GATE "
+            "status=unproven expected=0 verified=0 collapsed=0 require_witness=true"
+        )
+        return 3
 
     print(
         "FIELD_NATIVE_IOS_MULTI_AUDIO_GATE "
