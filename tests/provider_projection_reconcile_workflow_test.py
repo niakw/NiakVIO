@@ -15,6 +15,9 @@ assert "require_current_projection_head" in wf
 assert "processed % 4" in wf
 assert "processed=$((processed + 1))" in wf
 assert "git fetch --no-tags origin main" in wf
+assert "FIELD_PROVIDER_PROJECTION_SAFE_DRIFT_DURING_REBUILD" in wf
+assert "projection-rebuild-main-drift.paths" in wf
+assert 'python scripts/domain_refresh_publication_drift_gate.py --drift-file "$RUNNER_TEMP/projection-rebuild-main-drift.paths"' in wf
 for required in (
     "detect_provider_projection_drift.py",
     "materialize_provider_v3_one.py",
@@ -77,6 +80,11 @@ assert prove.index("detect_provider_projection_drift.py") < prove.index("audit_p
 assert "python tests/provider_publication_fingerprint_union_test.py" in prove
 
 publisher=wf.split("- name: Publish exact reconciled projection", 1)[1].split("- name: Report no-op", 1)[0]
+rebuild=wf.split("require_current_projection_head() {",1)[1].split("require_current_projection_head",1)[0]
+assert rebuild.index("git merge-base --is-ancestor") < rebuild.index("domain_refresh_publication_drift_gate.py")
+assert rebuild.index("domain_refresh_publication_drift_gate.py") < rebuild.index("FIELD_PROVIDER_PROJECTION_SAFE_DRIFT_DURING_REBUILD")
+assert "reason=executable_main_drift" in rebuild
+
 assert publisher.index("git merge-base --is-ancestor") < publisher.index("domain_refresh_publication_drift_gate.py")
 assert publisher.index("domain_refresh_publication_drift_gate.py") < publisher.index("git merge --no-ff --no-edit")
 assert publisher.index("git merge --no-ff --no-edit") < publisher.index("git push origin HEAD:main")
