@@ -7,6 +7,8 @@ on:
       - ".github/workflows/**"
       - ".github/triggers/**"
       - "README.md"
+      - "ARCHITECTURE.md"
+      - "tests/provider_v3_documentation_contract_test.py"
       - "README.fr.md"
       - "automation/platform-runtime-contracts.json"
       - "automation/nuvio-client-compatibility-matrix.json"
@@ -88,6 +90,8 @@ on:
       - ".github/workflows/**"
       - ".github/triggers/**"
       - "README.md"
+      - "ARCHITECTURE.md"
+      - "tests/provider_v3_documentation_contract_test.py"
       - "README.fr.md"
       - "automation/platform-runtime-contracts.json"
       - "automation/nuvio-client-compatibility-matrix.json"
@@ -242,6 +246,7 @@ jobs:
           python3 tests/release_version_baseline_test.py
           python3 tests/release_hash_scope_test.py
           python3 tests/provider_validation_syntax_diagnostics_test.py
+          python3 tests/provider_v3_documentation_contract_test.py
           python3 tests/provider_hub_registry_test.py
           python3 tests/provider_hub_multi_source_fallback_test.py
           python3 tests/provider_onboarding_multi_hub_contract_test.py
