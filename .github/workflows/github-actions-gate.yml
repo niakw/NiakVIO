@@ -11,6 +11,9 @@ on:
       - "tests/provider_v3_documentation_contract_test.py"
       - "README.fr.md"
       - "automation/platform-runtime-contracts.json"
+      - "scripts/add_provider.py"
+      - "scripts/provider_patches/ticketed_encrypted_api_runtime_v1.py"
+      - "tests/provider_ticketed_encrypted_api_runtime_test.py"
       - "automation/nuvio-client-compatibility-matrix.json"
       - "automation/nuvio-client-upstreams.json"
       - "automation/nuvio-tv-runtime-contract.json"
@@ -94,6 +97,9 @@ on:
       - "tests/provider_v3_documentation_contract_test.py"
       - "README.fr.md"
       - "automation/platform-runtime-contracts.json"
+      - "scripts/add_provider.py"
+      - "scripts/provider_patches/ticketed_encrypted_api_runtime_v1.py"
+      - "tests/provider_ticketed_encrypted_api_runtime_test.py"
       - "automation/nuvio-client-compatibility-matrix.json"
       - "automation/nuvio-client-upstreams.json"
       - "automation/nuvio-tv-runtime-contract.json"
@@ -386,6 +392,7 @@ jobs:
           python3 tests/provider_coverage_preservation_test.py
           python3 tests/add_provider_workflow_test.py
           python3 tests/provider_bulk_onboarding_test.py
+           python3 tests/provider_ticketed_encrypted_api_runtime_test.py
           python3 tests/provider_onboarding_publish_drift_test.py
           python3 tests/provider_disabled_recovery_stage_test.py
           python3 tests/disabled_recovery_disposition_contract_test.py
