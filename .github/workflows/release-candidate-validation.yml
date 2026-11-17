@@ -212,7 +212,8 @@ jobs:
           dispatch core-stream-metadata-contract.yml
           dispatch canonical-media-types.yml
           dispatch provider-overrides-gate.yml
-          dispatch codeql.yml
+          dispatch codeql.yml -f "inputs[expected_sha]=${TARGET_SHA}"
+          dispatch security-final-gate.yml -f "inputs[expected_sha]=${TARGET_SHA}"
           dispatch external-code-audit.yml -f "inputs[ref]=${TARGET_REF}" -F 'inputs[publish]=false'
           dispatch native-mobile-android-reader.yml -F 'inputs[certify_multi_audio]=true'
           dispatch native-mobile-ios-reader.yml -f 'inputs[mode]=full' -F 'inputs[certify_multi_audio]=true'
@@ -236,6 +237,7 @@ jobs:
               'canonical-media-types.yml',
               'provider-overrides-gate.yml',
               'codeql.yml',
+              'security-final-gate.yml',
               'external-code-audit.yml',
               'native-mobile-android-reader.yml',
               'native-mobile-ios-reader.yml',
@@ -297,5 +299,5 @@ jobs:
               for workflow, run_id, conclusion in failures:
                   print(f'RUN_FAILED workflow={workflow} id={run_id} conclusion={conclusion}')
               raise SystemExit(1)
-          print('RELEASE_CANDIDATE_VALIDATION_GREEN providers=dynamic-projection-union historical=50 platforms=5 verify=quick security=codeql+external')
+          print('RELEASE_CANDIDATE_VALIDATION_GREEN providers=dynamic-projection-union historical=50 platforms=5 verify=quick security=codeql+final-gate+external')
           PY
