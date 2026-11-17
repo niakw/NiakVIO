@@ -59,7 +59,7 @@ Sources principales :
 - `provider_catalog.json` ;
 - `provider-bases/` ;
 - `provider-overrides.json` ;
-- `provider-type-policy.json` ;
+- `provider-type-policy.json` comme contrainte sémantique humaine **sparse et validation-only** pour des identités déjà présentes dans le catalogue courant ; il ne possède ni scope, ni activation, ni alias de transport, ni publication ;
 - `automation/provider-v3-static-knowledge.json` ;
 - `scripts/provider_patches/**` ;
 - `scripts/provider_v3_minimizer.py`.
