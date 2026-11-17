@@ -16,6 +16,11 @@ on:
         required: false
         default: ""
         type: string
+      certify_multi_audio:
+        description: Require a transport-proven multi-audio stream to remain selectable in the production player
+        required: false
+        default: false
+        type: boolean
   schedule:
     - cron: "15 18 * * 6"
   push:
@@ -180,6 +185,14 @@ jobs:
             --manifest niakvio/native-hub46/manifest.json \
             --corpus niakvio/.github/triggers/nuvio-client-lab.json \
             "$GITHUB_WORKSPACE/mobile-ios-native-corpus.log"
+      - name: Require iOS multi-audio release witness
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.certify_multi_audio && inputs.mode != 'only' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 niakvio/scripts/gate_native_ios_multi_audio.py \
+            --log "$GITHUB_WORKSPACE/mobile-ios-native-corpus.log" \
+            --require-witness
       - name: Build sanitized iOS reader diagnoses
         if: ${{ always() && (github.event_name == 'schedule' || inputs.mode != 'only') }}
         shell: bash
