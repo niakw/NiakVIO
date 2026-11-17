@@ -129,7 +129,7 @@ assert "material_ids==active_ids" in manual
 assert "==46" not in manual and "46/46" not in manual
 
 
-assert machine["schema_version"] >= 15
+assert machine["schema_version"] >= 16
 source = machine["provider_source_of_truth"]
 assert source["canonical_provider_base_marker"] == "NIAKVIO_PROVIDER_BASE_OWNED_V3"
 assert source["legacy_provider_js_seed_allowed"] is False
@@ -139,6 +139,7 @@ assert source["canonical_provider_base_materializer"] == "scripts/materialize_pr
 assert source["structured_data_sanitization_may_converge_before_materialization"] is True
 assert source["common_source_migrations_validation_only"] is True
 assert source["common_source_migration_fixed_point_guard"] == "scripts/materialize_provider_base_v3_store.py:SOURCE_MIGRATION_PATHS"
+assert "provider-type-policy.json" not in source["reconstruction_inputs"]
 
 media = machine["media_types"]
 assert media["semantic_field"] == "canonicalSupportedTypes"
@@ -154,6 +155,12 @@ assert media["tmdb_namespace_must_not_rewrite_provider_transport"] is True
 assert media["series_published_supported_type"] is False
 assert media["transport_aliases_do_not_expand_semantic_capability"] is True
 assert media["capability_gate_before_provider_network"] is True
+assert media["curated_semantic_policy"] == "provider-type-policy.json"
+assert media["curated_semantic_policy_role"] == "sparse-current-catalog-validation-only"
+assert media["curated_semantic_policy_owns_scope"] is False
+assert media["curated_semantic_policy_owns_activation"] is False
+assert media["curated_semantic_policy_owns_transport_aliases"] is False
+assert "provider_catalog.json" in media["current_semantic_publication_authority"]
 
 scopes = machine["provider_scopes"]
 assert scopes["global_catalogue_visible"] == "scripts/current_provider_scope.py:visible_provider_ids"
