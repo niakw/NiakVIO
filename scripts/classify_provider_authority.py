@@ -514,6 +514,30 @@ def classify(
     }
 
 
+def with_current_byte_proof_debt(
+    result: dict[str, Any],
+    *,
+    proof_authority: str,
+    current_status: str,
+) -> dict[str, Any]:
+    """Record absent positive proof without fabricating a negative verdict.
+
+    Byte rotation, incomplete census and network/origin ambiguity are not
+    independent evidence that a provider is nonfunctional. The separate
+    production-freshness gate still refuses to certify such bytes.
+    """
+    return {
+        **result,
+        "productionFreshnessAuthorized": False,
+        "productionProofAuthority": proof_authority,
+        "reasons": list(result.get("reasons") or []) + [
+            "current_bytes_lack_production_freshness_authority",
+            "production_proof:" + proof_authority,
+            "current_status:" + (current_status or "unknown"),
+        ],
+    }
+
+
 CURRENT_NONFUNCTIONAL_STATUSES = {
     "REGRESSION PROVIDER",
     "PARTIAL OK",
@@ -662,24 +686,12 @@ def main() -> int:
                 projection,
             )
         if manifest_row.get("enabled") is not False and not production_authorized:
-            # An absent exact-byte positive result is a proof debt, not negative
-            # provider or network evidence. Core/ProviderBase rematerialization
-            # invalidates old FULL proofs without demonstrating that a provider
-            # became nonfunctional. Keep the independently classified action;
-            # only separately proven shutdown/manual/source/domain authority may
-            # authorize disabled retention. Publication freshness still fails
-            # closed in its dedicated gate.
             current_status = str((census_row or {}).get("status") or "")
-            result = {
-                **result,
-                "productionFreshnessAuthorized": False,
-                "productionProofAuthority": production_proof_authority,
-                "reasons": list(result.get("reasons") or []) + [
-                    "current_bytes_lack_production_freshness_authority",
-                    "production_proof:" + production_proof_authority,
-                    "current_status:" + (current_status or "unknown"),
-                ],
-            }
+            result = with_current_byte_proof_debt(
+                result,
+                proof_authority=production_proof_authority,
+                current_status=current_status,
+            )
         if args.apply_safe_disables and result["action"] in {
             "DISABLE_SOURCE_REMOVED", "DISABLE_UPSTREAM_SHUTDOWN", "DISABLE_AUTHORITY_EXHAUSTED", "DISABLE_MANUAL_POLICY", "DISABLE_ARCHITECTURE_NONFUNCTIONAL"
         } and manifest_row.get("enabled") is not False:
