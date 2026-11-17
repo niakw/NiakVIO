@@ -162,6 +162,8 @@ sandbox.module.exports.getStreams({tmdbId:'1',mediaType:'movie'}).then(rows=>con
     assert master_rows[0]["url"] == "https://cdn.example/master.m3u8", master_rows
     assert master_rows[0]["playerHost"] == "player.example", master_rows
     assert master_rows[0]["terminalHost"] == "cdn.example", master_rows
+    assert "__nuvioHlsMasterV1" not in master_rows[0], master_rows
+    assert "__nuvioHlsMasterAudioCountV1" not in master_rows[0], master_rows
 
     print("stream output sanitizer multi-variant test passed")
     return 0
