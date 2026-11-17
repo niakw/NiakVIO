@@ -9,7 +9,19 @@ const { spawnSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const GATE = path.join(ROOT, 'scripts', 'gate_native_multi_audio_coverage.cjs');
+const ANDROID = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'native-mobile-android-reader.yml'), 'utf8');
+const DESKTOP = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'native-desktop-reader-acceptance.yml'), 'utf8');
+const RELEASE = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'release-candidate-validation.yml'), 'utf8');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'niakvio-multi-audio-gate-'));
+
+for (const [name, workflow] of [['android', ANDROID], ['desktop', DESKTOP]]) {
+  assert.match(workflow, /certify_multi_audio:/, `${name} workflow must expose release certification input`);
+  assert.match(workflow, /gate_native_multi_audio_coverage\.cjs/, `${name} workflow must execute strict multi-audio gate`);
+  assert.match(workflow, /inputs\.certify_multi_audio/, `${name} gate must remain opt-in outside release certification`);
+}
+assert.match(RELEASE, /native-mobile-android-reader\.yml -F 'inputs\[certify_multi_audio\]=true'/);
+assert.match(RELEASE, /native-mobile-ios-reader\.yml -f 'inputs\[mode\]=full' -F 'inputs\[certify_multi_audio\]=true'/);
+assert.match(RELEASE, /native-desktop-reader-acceptance\.yml -F 'inputs\[certify_multi_audio\]=true'/);
 
 function run(name, playerCount, transportCount) {
   const file = path.join(tmp, `${name}.log`);
