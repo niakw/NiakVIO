@@ -136,11 +136,11 @@ export function normalizeStreamCandidate(raw = {}, context = {}) {
     network: textOrNull(raw.network),
     folderSize: scalarOrNull(raw.folderSize ?? raw.folder_size),
     seeders: numberOrNull(raw.seeders ?? raw.seeds),
-    provider: textOrNull(raw.provider) ?? context.providerId ?? null,
+    provider: textOrNull(context.providerId) ?? textOrNull(raw.provider) ?? null,
     type: textOrNull(raw.type),
     headers,
     subtitles,
-    provenance: { providerId: context.providerId ?? null, source: context.source ?? null },
+    provenance: { providerId: textOrNull(context.providerId) ?? textOrNull(raw.provider) ?? null, sourceProvider: textOrNull(raw.provider), source: context.source ?? null },
   };
 }
 
