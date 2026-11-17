@@ -80,3 +80,6 @@ assert "proof_source_artifact_digest" in script
 assert "pending_proof_source_byte_drift" in script
 assert "pending ProviderBase hash mismatch" in script
 print("Bulk activation exact-source proof -> full-cohort revalidation contract passed")
+
+assert "canonical_catalog_scraper" in script
+assert 'catalog_entry["scraper"]=dict(manifest_row)' not in script
