@@ -132,6 +132,9 @@ assert '"series"' not in reapply_transport_body
 
 reconciler = (ROOT / "scripts/reconcile_provider_catalog_media_types.py").read_text(encoding="utf-8")
 assert 'provider_catalog.json must remain sourceOfTruth' in reconciler
+migration = (ROOT / "scripts/enforce_provider_v3_semantic_transport_contract_v5.py").read_text(encoding="utf-8")
+assert "canonicalSupportedTypes is manifest-only transport metadata" in migration
+assert 'canonical = normalized_types(scraper.get("supportedTypes"))' in migration
 assert 'ROOT / "vf" / "manifest.json": ("vf", False)' in reconciler
 assert 'ROOT / "vf-no-anime" / "manifest.json": ("vf", True)' in reconciler
 assert 'visible_provider_count' not in reconciler
