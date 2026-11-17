@@ -36,10 +36,13 @@ provider_ids=[base_store.canonical_id(str(row["id"])) for row in entries]
 assert set(provider_ids)==active_ids, (len(provider_ids),len(active_ids))
 assert len(set(provider_ids))==len(provider_ids)
 
-assert base_store.INITIAL_RECONSTRUCTION_SCOPE==96
+assert not hasattr(base_store,"INITIAL_RECONSTRUCTION_SCOPE")
+assert base_store.HISTORICAL_INITIAL_RECONSTRUCTION_SCOPE==96
 assert base_store.CLEAN_RECONSTRUCTION_AUTHORING_VERSION>=3
 assert base_store.CLEAN_RECONSTRUCTION_SOURCE=="niakvio-clean-reconstruction-v3"
 assert store.get("provider_count")==projection_active_provider_count()
+assert store.get("initial_reconstruction_scope")==projection_active_provider_count()
+assert int(store.get("historical_initial_reconstruction_scope") or 0)>0
 assert store.get("clean_reconstructed")==projection_active_provider_count()
 assert store.get("reconstruction_required")==0
 assert store.get("published_legacy_code_may_seed_new_base") is False
