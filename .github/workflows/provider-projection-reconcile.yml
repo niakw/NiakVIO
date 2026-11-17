@@ -25,10 +25,10 @@ permissions:
   actions: write
 
 concurrency:
-  # Shared with Domain Refresh and Release Finalizer: serialize all publication
-  # mutations but never cancel an unrelated in-flight accepted release. The
-  # exact-head and drift guards below reject superseded work after queueing.
-  group: niakvio-core-release-mutation-main
+  # Keep latest-wins queueing inside Projection only. GitHub keeps a single
+  # pending run per concurrency group, so sharing this group with Domain/Release
+  # could silently cancel a different mutation lane before it started.
+  group: niakvio-provider-projection-main
   cancel-in-progress: false
 
 jobs:
@@ -78,12 +78,16 @@ jobs:
       - name: Reject superseded push before expensive reconciliation
         if: github.event_name == 'push'
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           git fetch --no-tags origin main
           remote_sha="$(git rev-parse origin/main)"
           if [ "$remote_sha" != "$GITHUB_SHA" ]; then
             echo "FIELD_PROVIDER_PROJECTION_SUPERSEDED source=$GITHUB_SHA current=$remote_sha" >&2
+            gh workflow run provider-projection-reconcile.yml --repo "$GITHUB_REPOSITORY" --ref main -f expected_sha="$remote_sha" || true
+            echo "FIELD_PROVIDER_PROJECTION_REQUEUED current=$remote_sha" >&2
             exit 1
           fi
 
@@ -144,6 +148,7 @@ jobs:
         shell: bash
         env:
           TARGETS: ${{ steps.drift.outputs.providers }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           cp manifest.json "$RUNNER_TEMP/manifest.before.json"
@@ -156,6 +161,8 @@ jobs:
             remote_sha="$(git rev-parse origin/main)"
             if [ "$remote_sha" != "$GITHUB_SHA" ]; then
               echo "FIELD_PROVIDER_PROJECTION_SUPERSEDED_DURING_REBUILD source=$GITHUB_SHA current=$remote_sha processed=$processed" >&2
+              gh workflow run provider-projection-reconcile.yml --repo "$GITHUB_REPOSITORY" --ref main -f expected_sha="$remote_sha" || true
+              echo "FIELD_PROVIDER_PROJECTION_REQUEUED current=$remote_sha processed=$processed" >&2
               exit 1
             fi
           }
@@ -286,6 +293,8 @@ jobs:
               git diff-tree -r --no-renames --name-only "$GITHUB_SHA" "$CURRENT_SHA" > "$RUNNER_TEMP/projection-main-drift.paths"
               python scripts/domain_refresh_publication_drift_gate.py --drift-file "$RUNNER_TEMP/projection-main-drift.paths" || {
                 echo "FIELD_PROVIDER_PROJECTION_PUBLISH_BLOCKED reason=executable_main_drift" >&2
+                gh workflow run provider-projection-reconcile.yml --repo "$GITHUB_REPOSITORY" --ref main -f expected_sha="$CURRENT_SHA" || true
+                echo "FIELD_PROVIDER_PROJECTION_REQUEUED current=$CURRENT_SHA reason=executable_main_drift" >&2
                 exit 1
               }
               # A merge preserves the exact earlier provider SHA pinned in native-hub46.
