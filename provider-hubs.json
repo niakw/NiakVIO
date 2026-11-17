@@ -6497,7 +6497,17 @@
     "failure_policy": "If no new route validates, retain the last-known-good domain and existing override.",
     "multi_source_policy": "Evaluate every configured address source independently. Per-source resolver/priority/role override provider defaults. Primary/supplementary usable sources outrank fallback sources.",
     "linked_source_learning": "A trusted hub may contribute a bounded official Telegram address-feed link. Persist it as fallback knowledge only; it cannot authorize a terminal until a later refresh run.",
-    "runtime_separation": "hub/telegram/redirect discovery sources are never ProviderBase executable origins"
+    "runtime_separation": "hub/telegram/redirect discovery sources are never ProviderBase executable origins",
+    "html_extraction_modes": [
+      "anchor_href",
+      "absolute_url_text",
+      "common_js_url_assignment",
+      "window_location",
+      "meta_refresh"
+    ],
+    "public_telegram_mode": "public /s/<channel> preview only; chronology/description resolvers",
+    "interactive_telegram_bot_policy": "manual evidence only; never automatic publication authority",
+    "link_aggregator_policy": "Linktree/bio-link/status pages use ordinary bounded HTML hub extraction when publicly readable"
   },
   "curated_baseline_commit": "892e41f3c017f77b0dae60aa16c285cfb56595fb",
   "curated_baseline_policy": "Actionable user-curated provider IDs are append-only unless explicitly retired with a reason."
