@@ -1,5 +1,5 @@
 {
-  "requestVersion": 51,
+  "requestVersion": 52,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "activationPolicy": "staged_pending_only",
   "allowReplaceExisting": true,
@@ -39,7 +39,7 @@
       "replace_existing": false,
       "inventory_rank": 19,
       "inventory_score": 88,
-      "routeDiscoveryLastReason": "ticketed_encrypted_api_bloc_pending_terminal_proof",
+      "routeDiscoveryLastReason": "ticketed_encrypted_api_generic_owned_restage",
       "routes": [
         "/play/movie/{tmdbId}",
         "/play/tv/{tmdbId}/{season}/{episode}",
@@ -113,7 +113,8 @@
             ],
             "maxPow": 500000,
             "maxStreams": 8,
-            "maxSubtitles": 48
+            "maxSubtitles": 48,
+            "provider": "meowtv"
           }
         }
       ]
@@ -1625,5 +1626,5 @@
     "routeDiscoveryMonotonicFix": "f1251cf8cdfcb87155c13c595551763655648e64",
     "providerBaseContract": "V35"
   },
-  "notes": " Post-activation replay: Watchott and AnimeJL were already published and are removed from the pending onboarding transaction; their current bytes are handled by normal provider materialization/publication. Webflix and Zone-Téléchargement are existing France-only disabled identities; replacement is explicit and must preserve a single canonical ID. Webflix upgraded from search-only discovery to Mac-proven TMDB FastFlux movie/episode/discovery APIs. Retry after generic publish race fix 53880a5 and projection-only static-history decoupling fe10b17/7f11b50. 2026-11-15: switched to stage-only publication after dynamic-cardinality audit; candidates remain disabled until exact-byte terminal proof. Unproven inventory routes are candidate knowledge only. 2026-11-17: representative validation wave runs MeowTV first; FlickyStream/DPStream remain deferred because their route evidence is retained/request-existing rather than observed identity-aware live discovery. 2026-11-17: retry MeowTV after safe same-pending restage fix; no active-provider replacement authority added. 2026-11-17: restore exact stronger MeowTV residential route observation from 937a840 after monotone-evidence fix; V35 representative restage only; FlickyStream/DPStream stay deferred. 2026-11-17: route witness is now origin-bound; requestVersion 50 intentionally supersedes any in-flight v49 discovery merge without changing the MeowTV-only representative scope. Ticketed encrypted API Bloc is structured onboarding DATA; MeowTV remains the sole disabled/pending representative until terminal media, identity, languages and subtitles are freshly proven."
+  "notes": " Post-activation replay: Watchott and AnimeJL were already published and are removed from the pending onboarding transaction; their current bytes are handled by normal provider materialization/publication. Webflix and Zone-Téléchargement are existing France-only disabled identities; replacement is explicit and must preserve a single canonical ID. Webflix upgraded from search-only discovery to Mac-proven TMDB FastFlux movie/episode/discovery APIs. Retry after generic publish race fix 53880a5 and projection-only static-history decoupling fe10b17/7f11b50. 2026-11-15: switched to stage-only publication after dynamic-cardinality audit; candidates remain disabled until exact-byte terminal proof. Unproven inventory routes are candidate knowledge only. 2026-11-17: representative validation wave runs MeowTV first; FlickyStream/DPStream remain deferred because their route evidence is retained/request-existing rather than observed identity-aware live discovery. 2026-11-17: retry MeowTV after safe same-pending restage fix; no active-provider replacement authority added. 2026-11-17: restore exact stronger MeowTV residential route observation from 937a840 after monotone-evidence fix; V35 representative restage only; FlickyStream/DPStream stay deferred. 2026-11-17: route witness is now origin-bound; requestVersion 50 intentionally supersedes any in-flight v49 discovery merge without changing the MeowTV-only representative scope. Ticketed encrypted API Bloc is structured onboarding DATA; MeowTV remains the sole disabled/pending representative until terminal media, identity, languages and subtitles are freshly proven. requestVersion 52 binds generic Bloc option provider=meowtv as required by Provider v3 generic ownership."
 }
