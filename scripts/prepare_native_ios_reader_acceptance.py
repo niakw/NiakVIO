@@ -101,6 +101,16 @@ private data class PlayerObservation(
     val durationSeconds: Double,
     val host: String,
     val errorClass: String,
+    val audioTrackCount: Int = -1,
+    val audioTrackLanguages: String = "",
+)
+
+private data class ProductionPlayerProbe(
+    val state: String,
+    val durationSeconds: Double,
+    val host: String,
+    val audioTrackCount: Int,
+    val audioTrackLanguages: String,
 )
 
 private val fixtures = __FIXTURES__
@@ -139,10 +149,10 @@ private fun codeUrl(manifestUrl: String, filename: String): String {
 
 private fun hostOnly(url: String): String = NSURL.URLWithString(url)?.host.orEmpty()
 
-private suspend fun probeProductionPlayer(row: PluginRuntimeResult, playerTimeoutMs: Long): Triple<String, Double, String> =
+private suspend fun probeProductionPlayer(row: PluginRuntimeResult, playerTimeoutMs: Long): ProductionPlayerProbe =
     withContext(Dispatchers.Main) {
         val bridge = NuvioPlayerBridgeFactory.create()
-            ?: return@withContext Triple("bridge_unavailable", 0.0, "")
+            ?: return@withContext ProductionPlayerProbe("bridge_unavailable", 0.0, "", -1, "")
         val host = hostOnly(row.url)
         val root = UIApplication.sharedApplication.keyWindow?.rootViewController
         val controller = bridge.createPlayerViewController()
@@ -177,7 +187,15 @@ private suspend fun probeProductionPlayer(row: PluginRuntimeResult, playerTimeou
                     break
                 }
             }
-            Triple(state, duration, host)
+            if (state == "ready" || state == "ended") delay(150L)
+            val audioCount = runCatching { bridge.getAudioTrackCount() }.getOrDefault(-1)
+            val audioLanguages = if (audioCount > 0) {
+                (0 until audioCount).mapNotNull { index ->
+                    runCatching { bridge.getAudioTrackLang(index).trim() }.getOrNull()
+                        ?.takeIf { it.isNotBlank() && !it.equals("und", ignoreCase = true) }
+                }.distinct().joinToString(",")
+            } else ""
+            ProductionPlayerProbe(state, duration, host, audioCount, audioLanguages)
         } finally {
             bridge.destroy()
             if (root?.presentedViewController === controller) {
@@ -310,18 +328,20 @@ private suspend fun runLab(manifestUrl: String) {
                 }
                 val playerRows = if (learning) rows.take(1) else rows.take(40)
                 playerRows.forEach { row ->
-                    val (playerState, durationSeconds, host) = probeProductionPlayer(row, playerTimeoutMs)
+                    val player = probeProductionPlayer(row, playerTimeoutMs)
                     emit(
                         "FIELD_NATIVE_IOS_PLAYER",
                         PlayerObservation(
                             fixture = fixture.slug,
                             provider = info.id,
                             mediaType = fixture.mediaType,
-                            state = playerState,
+                            state = player.state,
                             engine = "nuvio-mobile-ios-production",
-                            durationSeconds = durationSeconds,
-                            host = host,
-                            errorClass = if (playerState == "error") "player_error" else "",
+                            durationSeconds = player.durationSeconds,
+                            host = player.host,
+                            errorClass = if (player.state == "error") "player_error" else "",
+                            audioTrackCount = player.audioTrackCount,
+                            audioTrackLanguages = player.audioTrackLanguages,
                         ),
                     )
                 }
