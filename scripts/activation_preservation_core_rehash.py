@@ -217,87 +217,15 @@ def _baseline_bundle_is_restorable(row: dict[str, Any]) -> tuple[bool, str, byte
 
 
 def restore_inconclusive_previous_state() -> list[str]:
-    """Restore exact published proof when this Deep could not make a decision.
+    """Retired compatibility hook; current validation must never restore activation.
 
-    This is deliberately generic: provider IDs come only from the activation LKG
-    and the current promotion report. No provider-specific exception exists.
+    Historical activation LKG is evidence only. Current activation is owned by
+    provider folders and Global+France projection authority, so a Deep/rehash
+    validator may observe or rebind deterministic Core proof but may not rewrite
+    manifest rows, provider overrides, provenance, or provider bytes.
     """
-    baseline_path_raw = os.environ.get(_BASELINE_ENV, "").strip()
-    if not baseline_path_raw:
-        return []
-    baseline_path = Path(baseline_path_raw)
-    if not baseline_path.is_file():
-        raise RuntimeError(f"{_BASELINE_ENV} does not point to a file: {baseline_path}")
-    if not _baseline_matches_checked_out_head(baseline_path):
-        print(
-            "FIELD_ACTIVATION_PRESERVATION_BASELINE_STALE "
-            "action=validate_current_head_without_restore"
-        )
-        return []
-
-    baseline_main = _load_json(baseline_path)
-    current_main = _load_json(legacy.MAIN)
-    current_vf = _load_json(legacy.VF)
-    baseline_vf = _git_json("vf/manifest.json")
-    report = _load_json(legacy.REPORT)
-    policy = _load_json(legacy.POLICY)
-    current_overrides = _load_json(legacy.OVERRIDES) if legacy.OVERRIDES.is_file() else {}
-    baseline_overrides = _git_json("provider-overrides.json")
-    current_provenance = _load_json(legacy.PROVENANCE) if legacy.PROVENANCE.is_file() else {}
-    baseline_provenance = _git_json("PROVENANCE.json")
-
-    baseline_rows = _rows(baseline_main)
-    current_rows = _rows(current_main)
-    report_by_id = legacy.report_rows(report)
-    expected = {
-        str(value).casefold()
-        for value in policy.get("active_ids") or []
-        if str(value).strip()
-    }
-
-    restored: list[str] = []
-    for provider_id in sorted(expected):
-        record = report_by_id.get(provider_id)
-        if not isinstance(record, dict):
-            continue
-        if not _record_requires_baseline_restore(record):
-            continue
-        current_row = current_rows.get(provider_id)
-        if isinstance(current_row, dict) and current_row.get("enabled") is True:
-            continue
-        baseline_row = baseline_rows.get(provider_id)
-        if not isinstance(baseline_row, dict):
-            continue
-
-        restorable, reason, bundle = _baseline_bundle_is_restorable(baseline_row)
-        if not restorable or bundle is None:
-            continue
-        filename = str(baseline_row.get("filename") or "")
-        destination = legacy.ROOT / filename
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.write_bytes(bundle)
-
-        _replace_manifest_row(current_main, baseline_main, provider_id)
-        _replace_manifest_row(current_vf, baseline_vf, provider_id)
-        _restore_casefold_mapping_entry(
-            current_overrides, baseline_overrides, "provider_patches", provider_id
-        )
-        _restore_casefold_mapping_entry(
-            current_provenance, baseline_provenance, "providers", provider_id
-        )
-        restored.append(f"{provider_id}:{reason}:{hashlib.sha256(bundle).hexdigest()[:16]}")
-        current_rows = _rows(current_main)
-
-    if restored:
-        _write_json(legacy.MAIN, current_main)
-        _write_json(legacy.VF, current_vf)
-        _sync_derived_projection(legacy.ROOT / "no-anime" / "manifest.json", current_main)
-        _sync_derived_projection(legacy.ROOT / "vf-no-anime" / "manifest.json", current_vf)
-        _write_json(legacy.OVERRIDES, current_overrides)
-        _write_json(legacy.PROVENANCE, current_provenance)
-        print("FIELD_ACTIVATION_INCONCLUSIVE_STATE_RESTORED count=" + str(len(restored)) + " values=" + ",".join(restored))
-        _rematerialize_current_core_after_restore()
-    return restored
+    print("FIELD_ACTIVATION_LKG_RESTORE_RETIRED mutation=false authority=current-projection")
+    return []
 
 
 def _configured_safety_quarantine_with_core_rehash(
@@ -361,7 +289,6 @@ def configured_safety_quarantine(
 
 
 def validate() -> list[str]:
-    restore_inconclusive_previous_state()
     original = legacy.configured_safety_quarantine
     legacy.configured_safety_quarantine = configured_safety_quarantine
     try:
