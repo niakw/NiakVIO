@@ -103,10 +103,15 @@ rebuild_batch = workflow.index("--sharded-census /tmp/provider-census-sharded.js
 fallback_batch = workflow.index("--fallback-sharded-census automation/provider-census-sharded-latest.json", rebuild_batch)
 restore_authority = workflow.index("cp /tmp/provider-authority-status.json automation/provider-authority-status.json", fallback_batch)
 persist_base = workflow.index('persist_base="$(git rev-parse HEAD)"', reset)
-stale_guard = workflow.index("FIELD_SHARDED_CENSUS_STALE", persist_base)
-push = workflow.index("git push origin HEAD:main", stale_guard)
+byte_stale_guard = workflow.index("reason=active-provider-byte-drift", persist_base)
+remote_stale_guard = workflow.index("action=requeue-current-main", byte_stale_guard)
+push = workflow.index("git push origin HEAD:main", remote_stale_guard)
 requeue = workflow.index("Requeue census on current main after concurrent advance", push)
-assert copy_status < guard < reset < persist_base < rebuild_batch < fallback_batch < restore_authority < stale_guard < push < requeue
+assert (
+    copy_status < guard < reset < persist_base < byte_stale_guard
+    < rebuild_batch < fallback_batch < restore_authority
+    < remote_stale_guard < push < requeue
+)
 assert "cp /tmp/provider-repair-batch-plan.json automation/provider-repair-batch-plan-latest.json" not in workflow
 
 merge_start = workflow.index("  merge:")
