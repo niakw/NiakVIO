@@ -1,11 +1,10 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44034896187",
-  "sourceTriggerSha": "c32fb2a236421cc22ecb208e854b3556e0f777ca",
-  "unresolvedProviderCount": 66,
-  "dynamicVariantProviderCount": 5,
+  "sourceRunId": "44036261412",
+  "sourceTriggerSha": "851601a28ba1203add12cb7f7f40109babe0f3a4",
+  "unresolvedProviderCount": 64,
+  "dynamicVariantProviderCount": 4,
   "dynamicVariantProviders": [
-    "movish",
     "movix-fr",
     "nakios",
     "papadustream",
@@ -37,7 +36,6 @@
     "anisama",
     "arrowtv",
     "boredflix",
-    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -57,7 +55,6 @@
     "franime",
     "frembed",
     "french-anime",
-    "french-manga",
     "frenchstream",
     "fsharetv",
     "fullanime",
@@ -65,7 +62,6 @@
     "hianime",
     "hindmoviez",
     "ihavenotv",
-    "internet-archive",
     "kehflix",
     "kidraz",
     "kurage",
@@ -79,29 +75,23 @@
     "movish",
     "movix-fr",
     "movy",
-    "mugiwarastream",
     "nakios",
-    "neko-sama",
     "neobam",
     "neonflix",
     "overlook",
-    "papadustream",
     "persianstremio",
     "playimdb",
     "primewire",
     "pstream",
-    "purstream",
     "rarefilmm",
     "reanime-to",
     "rivestream-app",
     "rivestream-ru",
-    "sadisflix",
     "sekai",
     "showbox",
     "shuttletv",
     "skstream",
     "stigstream",
-    "streamzo",
     "topcartoons",
     "uhdmovies",
     "videasy",
@@ -118,7 +108,6 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
-    "webflix",
     "wookafr",
     "yflix",
     "youtitou",
@@ -126,7 +115,7 @@
     "zone-telechargement"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 5,
+  "groupCount": 6,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -162,7 +151,7 @@
         "residential-exit-inconclusive"
       ],
       "transportSignature": "not-applicable",
-      "providerCount": 47,
+      "providerCount": 45,
       "providers": [
         "1jour1film0626",
         "67movies",
@@ -173,7 +162,6 @@
         "boredflix",
         "cinegram",
         "cinemabz",
-        "cinematheque-de-bretagne",
         "cinetimes",
         "corsflix",
         "dulourd",
@@ -194,7 +182,6 @@
         "moiflix",
         "moviebite",
         "movish",
-        "movix-fr",
         "nakios",
         "neobam",
         "neonflix",
@@ -217,8 +204,6 @@
         "provider-census-status.json:brainCheckRequired"
       ],
       "dynamicVariantProviders": [
-        "movish",
-        "movix-fr",
         "nakios"
       ],
       "executionPolicy": "batch-first",
@@ -249,7 +234,7 @@
         "no-transport-evidence"
       ],
       "transportSignature": "not-applicable",
-      "providerCount": 16,
+      "providerCount": 15,
       "providers": [
         "anidb",
         "aniflix-uno",
@@ -263,7 +248,6 @@
         "rivestream-app",
         "rivestream-ru",
         "stigstream",
-        "topcartoons",
         "videasy",
         "vidlink",
         "watchott"
@@ -362,6 +346,36 @@
       ],
       "dynamicVariantProviders": [
         "papadustream"
+      ],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "variant-coverage|mixed_embed_resolver|runtime:mixed_embed_resolver",
+      "repairScope": "variant-coverage",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "mixed_embed_resolver",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "movix-fr"
+      ],
+      "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
+      "selectionAuthorities": [
+        "provider-census-sharded-latest.json:dynamic-variant-debt"
+      ],
+      "dynamicVariantProviders": [
+        "movix-fr"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
