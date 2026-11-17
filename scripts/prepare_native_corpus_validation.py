@@ -115,6 +115,7 @@ TRANSPORT_HELPERS = r'''
         val durationSeconds: Double?,
         val host: String,
         val mediaHint: String,
+        val audioTrackCount: Int = 0,
     )
 
     data class LogoProbe(
@@ -215,6 +216,17 @@ TRANSPORT_HELPERS = r'''
         return ""
     }
 
+    private fun hlsAudioTrackCount(body: String): Int =
+        body.lineSequence()
+            .map { it.trim() }
+            .filter { line ->
+                line.startsWith("#EXT-X-MEDIA", ignoreCase = true) &&
+                    Regex("(?:^|,)\\s*TYPE\\s*=\\s*AUDIO(?:,|$)", RegexOption.IGNORE_CASE)
+                        .containsMatchIn(line.substringAfter(':', line))
+            }
+            .distinct()
+            .count()
+
     private fun hlsDuration(body: String): Double? {
         var total = 0.0
         var count = 0
@@ -249,7 +261,10 @@ TRANSPORT_HELPERS = r'''
                             if (childStatus in 200..299 && childBody.trimStart().startsWith("#EXTM3U", ignoreCase = true)) duration = hlsDuration(childBody)
                         }
                     }
-                    TransportProbe("ok", "hls", status, contentType, true, duration, host, hint)
+                    TransportProbe(
+                        "ok", "hls", status, contentType, true, duration, host, hint,
+                        audioTrackCount = hlsAudioTrackCount(body),
+                    )
                 }
             } else if (contentType.contains("text/html", ignoreCase = true) || body.trimStart().startsWith("<!doctype html", ignoreCase = true) || body.trimStart().startsWith("<html", ignoreCase = true)) {
                 TransportProbe("dead", "html", status, contentType, false, null, host, hint)
@@ -329,7 +344,7 @@ class NiakvioNativeCorpusDesktopTest {{
                 }}
                 rows.firstOrNull()?.let {{ row ->
                     val probe = probeTransport(row.url, row.headers)
-                    emit("FIELD_NATIVE_TRANSPORT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")
+                    emit("FIELD_NATIVE_TRANSPORT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} audio_track_count=${{probe.audioTrackCount}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")
                 }}
             }} catch (error: Throwable) {{
                 errors += provider.id + ":" + (error.message ?: error::class.simpleName.orEmpty())
@@ -457,7 +472,7 @@ class {klass} {{
                 }}
                 rows.firstOrNull()?.let {{ row ->
                     val probe = probeTransport(row.url, row.headers)
-                    emit("FIELD_NATIVE_TRANSPORT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")
+                    emit("FIELD_NATIVE_TRANSPORT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} audio_track_count=${{probe.audioTrackCount}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")
                 }}
             }} catch (error: Throwable) {{
                 errors += provider.id + ":" + (error.message ?: error::class.simpleName.orEmpty())
