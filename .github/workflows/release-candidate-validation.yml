@@ -214,7 +214,7 @@ jobs:
             echo "dispatched ${workflow} ref=${TARGET_REF} sha=${TARGET_SHA}"
           }
           dispatch github-actions-gate.yml -f "inputs[expected_sha]=${TARGET_SHA}"
-          dispatch sync.yml -f 'inputs[mode]=quick'
+          dispatch sync.yml -f 'inputs[mode]=quick' -f "inputs[expected_sha]=${TARGET_SHA}"
           dispatch provider-non-regression.yml
           dispatch core-stream-metadata-contract.yml
           dispatch canonical-media-types.yml
