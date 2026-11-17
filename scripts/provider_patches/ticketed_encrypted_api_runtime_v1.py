@@ -110,7 +110,7 @@ async function one(q,srv,subs){
   var url=S(d.url||d.file||d.src);if(!/^https?:\/\//i.test(url))return null;
   var ph=H(d.headers&&typeof d.headers==="object"?d.headers:{});delete ph[c.ticketHeader];
   var language=lang(d.language||d.lang,srv.language),quality=ql(d.quality||d.resolution||url),label=S(srv.label||srv.id||language);
-  return{name:c.providerName,title:c.providerName+" | "+label+" | "+language+" | "+quality,url:url,quality:quality,language:language,provider:c.providerId,sourceName:label,isDirect:/\.(?:m3u8|mp4|webm)(?:[?#]|$)/i.test(url),headers:ph,subtitles:subs}
+  return{name:c.providerName,title:c.providerName+" | "+label+" | "+language+" | "+quality,url:url,quality:quality,language:language,provider:c.providerId,sourceName:label,niakvioIdentityAuthority:"tmdb-direct-route-v1",niakvioIdentityTmdbId:q.id,niakvioIdentityMediaType:q.semanticType,niakvioIdentitySeason:q.season||0,niakvioIdentityEpisode:q.episode||0,niakvioPresentationOnly:true,isDirect:/\.(?:m3u8|mp4|webm)(?:[?#]|$)/i.test(url),headers:ph,subtitles:subs}
 }
 async function resolve(args){
   var q=Q(args);if(!q)return null;

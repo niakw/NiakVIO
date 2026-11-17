@@ -201,6 +201,23 @@ function streamIdentity(stream, fixture) {
   const wantedSeason = Number(fixture?.season || 0);
   const wantedEpisode = Number(fixture?.episode || 0);
   const wantedYear = Number(fixture?.year || 0);
+  const canonicalMediaType = (value) => {
+    const raw = String(value || '').trim().toLowerCase();
+    return raw === 'series' ? 'tv' : raw;
+  };
+  const routeIdentityAuthority = String(stream?.niakvioIdentityAuthority || '') === 'tmdb-direct-route-v1';
+  const routeIdentityMediaType = canonicalMediaType(stream?.niakvioIdentityMediaType);
+  const routeIdentityTmdbId = String(stream?.niakvioIdentityTmdbId || '').replace(/^tmdb:/i, '');
+  const fixtureTmdbId = String(fixture?.tmdbId || fixture?.tmdb_id || '').replace(/^tmdb:/i, '');
+  const routeIdentitySeason = Number(stream?.niakvioIdentitySeason || 0);
+  const routeIdentityEpisode = Number(stream?.niakvioIdentityEpisode || 0);
+  const routeIdentityExact = routeIdentityAuthority
+    && !!fixtureTmdbId
+    && routeIdentityTmdbId === fixtureTmdbId
+    && routeIdentityMediaType === canonicalMediaType(mediaType)
+    && (!wantedSeason || routeIdentitySeason === wantedSeason)
+    && (!wantedEpisode || routeIdentityEpisode === wantedEpisode);
+  const presentationOnlySource = routeIdentityAuthority && stream?.niakvioPresentationOnly === true;
 
   // CORE.STREAM_FACTS preserves provider-owned values under source* before
   // presentation rewrites title/name/description from the TMDB request. Identity
@@ -209,12 +226,16 @@ function streamIdentity(stream, fixture) {
   const preserved = [stream?.sourceTitle, stream?.sourceDescription, stream?.sourceLabel, stream?.sourceName]
     .some((value) => String(value || '').trim());
   const primaryTitle = String(
-    preserved
-      ? (stream?.sourceTitle || stream?.sourceLabel || stream?.sourceName || '')
-      : (stream?.title || '')
+    presentationOnlySource
+      ? ''
+      : (preserved
+        ? (stream?.sourceTitle || stream?.sourceLabel || stream?.sourceName || '')
+        : (stream?.title || ''))
   ).trim();
   const sourceDescription = String(
-    preserved ? (stream?.sourceDescription || '') : (stream?.description || '')
+    presentationOnlySource
+      ? ''
+      : (preserved ? (stream?.sourceDescription || '') : (stream?.description || ''))
   ).trim();
   const mediaFilename = humanMediaFilename(stream?.url);
   const filename = String(stream?.filename || '').trim();
@@ -276,6 +297,10 @@ function streamIdentity(stream, fixture) {
     return { status: 'contradiction', reason: 'forbidden_title_alias' };
   }
 
+  if (routeIdentityAuthority && !routeIdentityExact) {
+    return { status: 'contradiction', reason: 'provider_tmdb_route_mismatch' };
+  }
+
   // A human-readable media filename is source evidence, unlike the UI label.
   // Require substantial title overlap; one shared word ("Last", "Return", etc.)
   // cannot suppress an otherwise obvious wrong-file contradiction.
@@ -321,6 +346,9 @@ function streamIdentity(stream, fixture) {
     return { status: 'match', reason: 'expected_title_alias' };
   }
 
+  if (routeIdentityExact) {
+    return { status: 'match', reason: 'provider_tmdb_direct_route' };
+  }
   const primaryStrong = primaryTokens.length >= 2;
   if (primaryStrong && expectedGroups.length && !primaryMatches) {
     return { status: 'contradiction', reason: 'strong_title_mismatch' };

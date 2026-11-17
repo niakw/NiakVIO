@@ -159,6 +159,41 @@ assert.deepEqual(streamIdentity({ name: 'Purstream 1080p Dual Audio - Inconnue',
 assert.deepEqual(streamIdentity({ title: 'Purstream 1080p Dual Audio - Inconnue', description: 'Revenant S01E01', url: 'https://cdn.example/hls2/03/00026/master.m3u8' }, { title: 'Revenant', mediaType: 'tv', season: 1, episode: 1 }), { status: 'match', reason: 'season_episode_match' });
 assert.deepEqual(streamIdentity({ title: 'Ben 10 Ultimate Alien', description: 'Breaking Bad S01E01', url: 'https://cdn.example/generic/master.m3u8' }, { title: 'Breaking Bad', mediaType: 'tv', season: 1, episode: 1 }), { status: 'contradiction', reason: 'strong_title_mismatch' });
 assert.deepEqual(streamIdentity({ name: 'MovieBlast', title: 'MovieBlast - 720P (Telugu)', url: 'https://cdn.example/fp44sc004rev' }, { title: 'Interstellar', mediaType: 'movie' }), { status: 'unknown', reason: 'insufficient_identity_metadata' });
+assert.deepEqual(streamIdentity({
+  provider: 'meowtv',
+  title: 'MeowTV | Tik | Auto | Auto',
+  sourceTitle: 'MeowTV | Tik | Auto | Auto',
+  sourceName: 'Tik',
+  niakvioIdentityAuthority: 'tmdb-direct-route-v1',
+  niakvioIdentityTmdbId: '19995',
+  niakvioIdentityMediaType: 'movie',
+  niakvioIdentitySeason: 0,
+  niakvioIdentityEpisode: 0,
+  niakvioPresentationOnly: true,
+  url: 'https://cdn.example/opaque/master.m3u8',
+}, { tmdbId: '19995', title: 'Avatar', year: 2009, mediaType: 'movie' }), { status: 'match', reason: 'provider_tmdb_direct_route' });
+assert.deepEqual(streamIdentity({
+  provider: 'meowtv',
+  title: 'MeowTV | Tik | Auto',
+  sourceTitle: 'MeowTV | Tik | Auto',
+  niakvioIdentityAuthority: 'tmdb-direct-route-v1',
+  niakvioIdentityTmdbId: '105214',
+  niakvioIdentityMediaType: 'tv',
+  niakvioIdentitySeason: 1,
+  niakvioIdentityEpisode: 1,
+  niakvioPresentationOnly: true,
+  url: 'https://cdn.example/opaque/master.m3u8',
+}, { tmdbId: '105214', title: 'Dark Desire', mediaType: 'tv', season: 1, episode: 2 }), { status: 'contradiction', reason: 'provider_tmdb_route_mismatch' });
+assert.deepEqual(streamIdentity({
+  provider: 'meowtv',
+  title: 'MeowTV | Tik | Auto',
+  sourceTitle: 'MeowTV | Tik | Auto',
+  niakvioIdentityAuthority: 'tmdb-direct-route-v1',
+  niakvioIdentityTmdbId: '19995',
+  niakvioIdentityMediaType: 'movie',
+  niakvioPresentationOnly: true,
+  url: 'https://cdn.example/Wrong-Movie-Title.mp4',
+}, { tmdbId: '19995', title: 'Avatar', year: 2009, mediaType: 'movie' }), { status: 'contradiction', reason: 'media_filename_title_mismatch' });
 assert.deepEqual(streamIdentity({ title: 'S02E04 1080p' }, { title: 'Revenant', mediaType: 'tv', season: 1, episode: 1 }), { status: 'contradiction', reason: 'wrong_season_episode' });
 assert.deepEqual(streamIdentity({ title: 'Player - Ep 1 - VF [1080p]', name: 'Anime-Sama (VF)' }, { title: 'Jujutsu Kaisen', mediaType: 'tv', season: 1, episode: 1 }), { status: 'unknown', reason: 'insufficient_identity_metadata' });
 assert.deepEqual(streamIdentity({ title: 'S1E1 - Ryomen Sukuna', name: 'ToFlix' }, { title: 'Jujutsu Kaisen', mediaType: 'tv', season: 1, episode: 1 }), { status: 'unknown', reason: 'insufficient_identity_metadata' });

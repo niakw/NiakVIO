@@ -58,9 +58,11 @@ globalThis.fetch=async function(url,opt){
  if(movie.length!==3)throw new Error("movie streams "+JSON.stringify(movie));
  if(movie[0].url!==movie[1].url||movie[0].language===movie[1].language)throw new Error("language/header multiplicity collapsed");
  if(movie.some(x=>x.headers["X-Stream-Ticket"]))throw new Error("ticket leaked");
+ if(!movie.every(x=>x.niakvioIdentityAuthority==="tmdb-direct-route-v1"&&x.niakvioIdentityTmdbId==="19995"&&x.niakvioIdentityMediaType==="movie"&&x.niakvioIdentitySeason===0&&x.niakvioIdentityEpisode===0&&x.niakvioPresentationOnly===true))throw new Error("movie identity provenance missing "+JSON.stringify(movie));
  if(!movie.every(x=>x.subtitles.length===1&&x.subtitles[0].language==="fr"))throw new Error("subtitles lost");
  const mark=calls.length,anime=await h.resolve([{tmdbId:"120089",canonicalMediaType:"anime",mediaType:"anime",season:1,episode:1}]);
  if(anime.length!==2)throw new Error("movieOnly leaked");
+ if(!anime.every(x=>x.niakvioIdentityAuthority==="tmdb-direct-route-v1"&&x.niakvioIdentityTmdbId==="120089"&&x.niakvioIdentityMediaType==="anime"&&x.niakvioIdentitySeason===1&&x.niakvioIdentityEpisode===1&&x.niakvioPresentationOnly===true))throw new Error("anime identity provenance missing "+JSON.stringify(anime));
  const ac=calls.slice(mark).map(x=>x.url);if(!ac.some(u=>u.includes("/streams/tv/120089/1/1"))||ac.some(u=>u.includes("/streams/movie/120089")))throw new Error("anime route mismatch");
  const sc=calls.filter(x=>x.url.includes("/streams/movie/")||x.url.includes("/streams/tv/")),tickets=sc.map(x=>x.headers["X-Stream-Ticket"]);
  if(new Set(tickets).size!==tickets.length)throw new Error("ticket reused");
