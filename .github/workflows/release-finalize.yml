@@ -18,6 +18,8 @@ on:
       - '.github/workflows/release-finalize.yml'
       - '.github/triggers/release-finalize.json'
       - 'tests/release_finalizer_projection_transaction_test.py'
+      - 'scripts/domain_refresh_publication_drift_gate.py'
+      - 'tests/domain_refresh_publication_drift_gate_test.py'
       # Core/ProviderBase edits must reach published bundles, not stop at source tests.
       - 'scripts/provider_patches/**'
       - 'scripts/provider_base_store.py'
