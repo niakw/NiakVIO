@@ -20,7 +20,8 @@ portable_gate = workflow.index("python3 tests/nuvio_portable_stream_result_contr
 clean_base = workflow.index("python3 tests/provider_clean_reconstruction_contract_test.py", portable_gate)
 metier_docs = workflow.index("python3 tests/provider_v3_documentation_contract_test.py", clean_base)
 metier_plans = workflow.index("python3 tests/provider_v3_strategy_plan_contract_test.py", metier_docs)
-cardinality = workflow.index("python3 tests/provider_cardinality_source_of_truth_test.py", metier_plans)
+core_metadata = workflow.index("python3 tests/provider_v3_core_metadata_route_sanitizer_test.py", metier_plans)
+cardinality = workflow.index("python3 tests/provider_cardinality_source_of_truth_test.py", core_metadata)
 census_proof = workflow.index("python3 tests/provider_census_status_markdown_test.py", cardinality)
 semantic_transport = workflow.index("python3 tests/provider_anime_semantic_transport_contract_test.py", census_proof)
 multiplicity = workflow.index("python3 tests/provider_stream_multiplicity_contract_test.py", semantic_transport)
@@ -135,6 +136,7 @@ for required in (
     "'scripts/materialize_provider_v3_one.py'",
     "'scripts/reconcile_provider_static_authority.py'",
     "'scripts/sanitize_provider_v3_core_metadata_routes.py'",
+    "'tests/provider_v3_core_metadata_route_sanitizer_test.py'",
     "'.github/workflows/provider-projection-reconcile.yml'",
     "'tests/provider_projection_reconcile_workflow_test.py'",
     "'tests/provider_static_authority_france_only_test.py'",
