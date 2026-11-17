@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "authority": "provider-authority-arbiter-v1",
-  "censusStatusSource": "/home/runner/work/NiakVIO/NiakVIO/automation/provider-census-status.json",
-  "productionFreshnessStatusSource": "persisted-all-scope",
+  "censusStatusSource": "/tmp/provider-census-preauthority.json",
+  "productionFreshnessStatusSource": "/tmp/provider-census-current-freshness.json",
   "policy": {
     "searchRole": "historical-supplement-only",
     "futureHubSearchDefault": false,
@@ -29,6 +29,7 @@
     "french-anime",
     "french-manga",
     "frenchstream",
+    "meowtv",
     "moiflix",
     "movy",
     "mugiwarastream",
@@ -111,7 +112,6 @@
     "kurage",
     "latestmovies",
     "mallumv",
-    "meowtv",
     "moviebite",
     "moviebox",
     "movieshunt",
@@ -616,7 +616,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER JS BROKEN"
+        "current_status:CHAIN REACHED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -721,7 +721,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
+        "current_status:NO PROOF"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -1204,13 +1204,16 @@
     },
     {
       "provider": "meowtv",
-      "action": "ONBOARDING_PENDING",
-      "repairEligible": false,
-      "confidence": "onboarding-pending",
-      "authorityClass": "onboarding-pending",
+      "action": "KEEP_BACKEND",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "api-or-backend",
       "failureCount": 0,
+      "backendUrls": [
+        "https://api.meowtv.ru"
+      ],
       "reasons": [
-        "bulk_onboarding_pending"
+        "structured_backend_authority"
       ]
     },
     {
@@ -1308,7 +1311,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER JS BROKEN"
+        "current_status:CHAIN REACHED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -1381,7 +1384,7 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER JS BROKEN"
+        "current_status:CHAIN REACHED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
