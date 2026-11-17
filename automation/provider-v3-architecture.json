@@ -1,5 +1,5 @@
 {
-  "schema_version": 23,
+  "schema_version": 24,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -510,5 +510,33 @@
     "terminal_resolution_before_presentation": true,
     "recovered_url_identity_revalidated": true,
     "terminal_audio_tracks_presented": true
+  },
+  "network_oracle": {
+    "github_ci_role": "deterministic orchestration, code, materialization and reproducibility",
+    "macbridge_role": "required residential contradiction oracle for network-origin ambiguity",
+    "macbridge_repository": "niakw/NiakGH-MacBridge",
+    "require_non_github_replay_for_network_failures": true,
+    "triggers": [
+      "dns",
+      "timeout",
+      "tls",
+      "route",
+      "401",
+      "403",
+      "429",
+      "challenge",
+      "empty_after_provider_owned_network_request"
+    ],
+    "provider_mutation_requires_cross_environment_evidence_when_network_ambiguous": true,
+    "provider_disable_requires_cross_environment_evidence_when_network_ambiguous": true,
+    "domain_mutation_requires_cross_environment_evidence_when_network_ambiguous": true,
+    "deterministic_tests_do_not_require_macbridge": true,
+    "evidence_precedence": [
+      "exact-byte native playback",
+      "full provider replay residential",
+      "macbridge browser/provider replay",
+      "macbridge http/dns seed",
+      "github-hosted http seed"
+    ]
   }
 }
