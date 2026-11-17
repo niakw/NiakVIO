@@ -190,6 +190,28 @@ assert.deepEqual(
 );
 assert.deepEqual(
   streamIdentity({
+    name: 'HindMoviez | 480p',
+    title: 'The.Colony.AKA.Tides.2021.480p.BluRay.Hindi.English.Esubs.mkv',
+    filename: 'The.Colony.AKA.Tides.2021.480p.BluRay.Hindi.English.Esubs.mkv',
+    sourceName: 'The.Colony.AKA.Tides.2021.480p.BluRay.Hindi.English.Esubs.mkv',
+    provider: 'hindmoviez',
+    url: 'https://opaque.example.workers.dev/?file=opaque',
+  }, { title: 'The Colony', aliases: ['The Colony', 'Colony', 'Tides'], year: 2021, mediaType: 'movie' }),
+  { status: 'match', reason: 'expected_title_alias' },
+);
+assert.deepEqual(
+  streamIdentity({
+    name: 'HindMoviez | 1080p',
+    title: 'Breaking.Bad.S01E01.1080p.WEB-DL.mkv',
+    filename: 'Breaking.Bad.S01E01.1080p.WEB-DL.mkv',
+    sourceName: 'Breaking.Bad.S01E01.1080p.WEB-DL.mkv',
+    provider: 'hindmoviez',
+    url: 'https://opaque.example.workers.dev/?file=opaque',
+  }, { title: 'Breaking Bad', mediaType: 'tv', season: 1, episode: 1 }),
+  { status: 'match', reason: 'season_episode_match' },
+);
+assert.deepEqual(
+  streamIdentity({
     sourceTitle: 'TopCartoons',
     sourceName: 'TopCartoons',
     description: 'Superman',
