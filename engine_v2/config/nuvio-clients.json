@@ -41,9 +41,9 @@
     "mobile": {
       "repository": "NuvioMedia/NuvioMobile",
       "branch": "cmp-rewrite",
-      "audited_ref": "fc05fe8e516a5bd749c8a4e7b1c05143acd3f031",
-      "accepted_ref": "fc05fe8e516a5bd749c8a4e7b1c05143acd3f031",
-      "observed_head": "fc05fe8e516a5bd749c8a4e7b1c05143acd3f031",
+      "audited_ref": "dd0e84704df5e4d746e28b9d6556305332ff3483",
+      "accepted_ref": "dd0e84704df5e4d746e28b9d6556305332ff3483",
+      "observed_head": "dd0e84704df5e4d746e28b9d6556305332ff3483",
       "platforms": [
         "android",
         "ios"
@@ -83,7 +83,7 @@
         "composeApp/build.gradle.kts",
         "gradle/libs.versions.toml"
       ],
-      "audit_note": "2026-11-16: exact current-source audit at cmp-rewrite fc05fe8e516a. PluginModels, StreamFetchSupport and all provider/runtime bridge paths remain unchanged from the prior audit; the only new Mobile diff is Android MPV player integration/dependency code, so positional getStreams, full result mapping and the runtime TMDB_API_KEY bridge remain unchanged."
+      "audit_note": "2026-11-17: current-source re-audit at cmp-rewrite dd0e84704df5. Provider/plugin/streams paths are unchanged; the only semantic-review-path delta is a Watch Party privacy guard for signed media-server streams. Normal getStreams/result/header/subtitle/TMDB bridge behavior is unchanged; Android/iOS reader proof remains independent."
     },
     "desktop": {
       "repository": "NuvioMedia/NuvioDesktop",
@@ -122,9 +122,9 @@
     "tv": {
       "repository": "NuvioMedia/NuvioTV",
       "branch": "dev",
-      "audited_ref": "2c853c1786743822c5ec7932e855529e0c731221",
-      "accepted_ref": "2c853c1786743822c5ec7932e855529e0c731221",
-      "observed_head": "2c853c1786743822c5ec7932e855529e0c731221",
+      "audited_ref": "fc5c10c3d2d5def54bb21e452291cb7b281b07b3",
+      "accepted_ref": "fc5c10c3d2d5def54bb21e452291cb7b281b07b3",
+      "observed_head": "fc5c10c3d2d5def54bb21e452291cb7b281b07b3",
       "platforms": [
         "android-tv"
       ],
@@ -160,7 +160,7 @@
         "app/build.gradle.kts",
         "gradle/libs.versions.toml"
       ],
-      "audit_note": "2026-11-16: exact current-source audit at dev 2c853c178674 / 1.2.0-beta.2. Positional getStreams, TMDB runtime key and URL/header/subtitle projection remain unchanged. Since the prior audit, TV changed only episode-ratings alignment plus the app version to 1.2.0-beta.2; provider/plugin/runtime transport paths did not change."
+      "audit_note": "2026-11-17: current-source audit at dev fc5c10c3d2d5. New Plex/Silo media-server work does not touch configured provider/plugin/stream or player semantic paths; positional getStreams, headers, subtitles and TMDB runtime injection are unchanged. Android-TV native proof remains independent."
     }
   },
   "semantic_tokens": [
