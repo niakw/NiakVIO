@@ -51,8 +51,10 @@ permissions:
   contents: read
 
 concurrency:
-  group: provider-non-regression-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  # Release-candidate workflow_dispatch runs are exact-SHA proof and must not be
+  # cancelled by a later push/PR run. Automated runs remain latest-wins.
+  group: provider-non-regression-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
   four-version-proof:
