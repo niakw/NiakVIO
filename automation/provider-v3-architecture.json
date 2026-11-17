@@ -1,5 +1,5 @@
 {
-  "schema_version": 16,
+  "schema_version": 17,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -340,7 +340,13 @@
     "native_acceptance": "scripts/current_provider_scope.py:projection_active_provider_ids",
     "native_acceptance_includes_france_only": true,
     "availability_active": "scripts/current_provider_scope.py:projection_active_provider_ids",
-    "availability_report_visible": "scripts/current_provider_scope.py:projection_visible_provider_ids"
+    "availability_report_visible": "scripts/current_provider_scope.py:projection_visible_provider_ids",
+    "current_activation_authority": "provider folders + Global/France projection authority",
+    "historical_activation_lkg": "provider-activation-lkg.json",
+    "historical_activation_lkg_role": "anti-deletion-evidence-only",
+    "historical_activation_lkg_owns_current_activation": false,
+    "historical_activation_lkg_owns_scope": false,
+    "historical_activation_lkg_owns_cardinality": false
   },
   "stream_multiplicity_contract": {
     "provider_runtime_output_cap": 40,
