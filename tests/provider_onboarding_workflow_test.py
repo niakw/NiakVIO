@@ -84,6 +84,9 @@ assert "probe_provider_runtime_parity.py" in SITE_WORKFLOW
 assert "provider-runtime-parity.json" in SITE_WORKFLOW
 assert "capture_output=True" in RUNTIME_PARITY
 assert '"network_observations": observations[:80]' in RUNTIME_PARITY
+assert '"provider-disabled" / "provider-bases"' in RUNTIME_PARITY
+assert '"provider-bases", "provider-disabled/provider-bases"' in RUNTIME_PARITY
+assert "no staged or pending ProviderBase found" in RUNTIME_PARITY
 assert '"onboarding_tv"' in RUNTIME_PARITY
 assert '"onboarding_compose"' in RUNTIME_PARITY
 assert "def committed_base_path" in RUNTIME_PARITY
