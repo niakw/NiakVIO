@@ -403,6 +403,25 @@ def _rebind_materialization_row(
     return out
 
 
+def _materialization_generation(rows: list[dict[str, Any]]) -> str:
+    """Hash the exact executable ledger using the canonical materializer contract."""
+    aggregate = hashlib.sha256()
+    for row in rows:
+        provider_id = canonical_id(row.get("provider"))
+        digest = str(row.get("sha256") or "").strip().casefold()
+        if not provider_id or len(digest) != 64:
+            raise ValueError(f"{provider_id}: invalid materialization digest during authority reconcile")
+        try:
+            digest_bytes = bytes.fromhex(digest)
+        except ValueError as exc:
+            raise ValueError(
+                f"{provider_id}: invalid materialization digest during authority reconcile"
+            ) from exc
+        aggregate.update(provider_id.encode("utf-8"))
+        aggregate.update(digest_bytes)
+    return aggregate.hexdigest()
+
+
 def reconcile_materialization_from_active_bundles(*, apply: bool) -> dict[str, Any]:
     """Rebind executable materialization to the exact active Global+France union.
 
@@ -467,6 +486,11 @@ def reconcile_materialization_from_active_bundles(*, apply: bool) -> dict[str, A
     doc["expectedProviderCount"] = len(current_ids)
     doc["activeProviderIdentityCount"] = len(current_ids)
     doc["staticKnowledgeProviderCount"] = len(runtime_visible)
+    # Rebinding content-addressed rows changes the executable generation even
+    # when provider identities are unchanged. Keep the ledger aggregate in sync
+    # with the exact rows or reverse byte-identical rebuild will compare current
+    # bytes against a stale pre-rebind generation hash.
+    doc["generation"] = _materialization_generation(rows)
     doc["targetedPublicationReconciledProviders"] = sorted(set(
         [str(x) for x in doc.get("targetedPublicationReconciledProviders") or []]
         + recovered
