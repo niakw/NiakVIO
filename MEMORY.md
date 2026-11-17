@@ -1,3 +1,9 @@
+## 2026-11-17 — Branding regressions follow current V13 source provenance authority
+
+- Workflow Gate run `44114356353` on `e61d9e13575f0531673deaa3426df52cd126417e` passed the repaired causal-focus cohort, native evidence contracts and iOS multi-audio gate, then failed only because `tests/global_provider_branding_test.py` still asserted the superseded `provider-owner-terminal-source-label-v12` revision.
+- Current Core authority is Branding V13, which keeps logical NiakVIO provider ownership while exposing terminal/player/source-provider provenance in the visible stream label. Both `global_provider_branding_test.py` and the cross-device audit regression now assert V13. No runtime/provider bytes or label semantics were changed by this test correction.
+- Fresh exact-head Workflow Gate remains required; the earlier e61d run is retained as evidence that proof-debt and causal-focus fixes progressed past their previous blockers.
+
 ## 2026-11-17 — Runtime repair focus now follows the same causal precedence as Brain planning
 
 - Workflow Gate run `44113431275` on `b2a3cfad010c6ec961ecdb0e2d7288dfb8543f8a` passed the new proof-debt boundary and then failed later on current provider `sekai`: declarative planning correctly classified its retained `chain_reached` evidence as `chain_terminal_gap`, while adaptive runtime reclassified the same row as `transport-first` only because its latest dominant issue was `provider_network_http_error`.
