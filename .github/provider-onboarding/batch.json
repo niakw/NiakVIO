@@ -1,5 +1,5 @@
 {
-  "requestVersion": 47,
+  "requestVersion": 48,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "activationPolicy": "staged_pending_only",
   "allowReplaceExisting": true,
@@ -18,6 +18,40 @@
   },
   "policy": "Stage exact Provider-v3 candidates from the strict Global/France inventory as disabled/pending. No provider becomes active from static or WAF-limited evidence; activation requires subsequent exact-byte terminal proof through the provider lifecycle/Brain pipeline.",
   "providers": [
+    {
+      "id": "flickystream",
+      "name": "FlickyStream",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://flickystream.mov",
+      "replace_existing": false,
+      "inventory_rank": 15,
+      "inventory_score": 88,
+      "routeDiscoveryLastReason": "validation_wave_hold_nonlive_route_authority",
+      "routes": [
+        "),c(`/anime/{tmdbId}`,{state:{backgroundLocation:u}})},className:",
+        "/genre/movie/{tmdbId}",
+        "/anime/{tmdbId}",
+        ",children:(u=s.data)==null?void%200%3Au.genres.map%28g=%3Ef.jsx%28yr%2C{to%3A%60%2Fgenre%2Fmovie%2F{tmdbId}%60%2Cchildren%3Af.jsx%28tt%2C{variant%3A"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "request-existing",
+        "reason": "existing_identity_executable_route_plan",
+        "routeCount": 4
+      }
+    },
     {
       "id": "meowtv",
       "name": "MeowTV",
@@ -46,9 +80,42 @@
         "/anime/{tmdbId}"
       ],
       "routeDiscoveryEvidence": {
-        "transport": "residential-exit",
-        "reason": "observed_identity_executable_routes",
+        "transport": "request-existing",
+        "reason": "existing_identity_executable_route_plan",
         "routeCount": 3
+      }
+    },
+    {
+      "id": "dpstream",
+      "name": "DPStream",
+      "scope": "france",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "languages": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://dpstream.fyi/",
+      "replace_existing": false,
+      "inventory_rank": 50,
+      "inventory_score": 64,
+      "routeDiscoveryLastReason": "validation_wave_hold_nonlive_route_authority",
+      "routes": [
+        "?oe=%60https%3A%2F%2Fwww.vidking.net%2Fembed%2Ftv%2F{tmdbId}%2F{season}%2F{episode}%60%3AY.id%3D%3D%3D",
+        "?oe=%60https%3A%2F%2Fvidsrc.io%2Fembed%2Ftv%3Ftmdb%3D{tmdbId}&season={season}&episode={episode}",
+        "?oe=%60https%3A%2F%2Fplayer.vidplus.to%2Fembed%2Ftv%2F{tmdbId}%2F{season}%2F{episode}%3Fautoplay%3Dtrue&autonext=true&nextbutton=true&poster=true&title={query}&watchparty=false&primarycolor=6C63FF&secondarycolor=9F9BFF&iconcolor=FFFFFF%60%3AY.id%3D%3D%3D",
+        "?oe=%60https%3A%2F%2Fwww.vidking.net%2Fembed%2Fmovie%2F{tmdbId}%60%3AY.id%3D%3D%3D"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "request-existing",
+        "reason": "existing_identity_executable_route_plan",
+        "routeCount": 4
       }
     }
   ],
@@ -1109,7 +1176,7 @@
       "replace_existing": false,
       "inventory_rank": 81,
       "inventory_score": 52,
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "network_or_site_unreached"
     },
     {
       "id": "cinestream",
@@ -1340,7 +1407,7 @@
       "inventory_score": 78,
       "grade": "B+",
       "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "network_or_site_unreached"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "anizone",
@@ -1399,7 +1466,7 @@
       "inventory_score": 73,
       "grade": "B",
       "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "anilight",
@@ -1436,89 +1503,21 @@
       "retainedKnowledge": "provider-old/animoflix--base--9eef980cbac68086.js",
       "sourceNote": "Pinned Gowaru manifest declares French movie/TV; retained NiakVIO ProviderBase records knownSite animoflix.to and historical route/origin knowledge. Candidate remains non-active until normal route/onboarding proof.",
       "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
-    },
-    {
-      "id": "flickystream",
-      "name": "FlickyStream",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://flickystream.mov",
-      "replace_existing": false,
-      "inventory_rank": 15,
-      "inventory_score": 88,
-      "routeDiscoveryLastReason": "validation_wave_hold_nonlive_route_authority",
-      "routes": [
-        "),c(`/anime/{tmdbId}`,{state:{backgroundLocation:u}})},className:",
-        "/genre/movie/{tmdbId}",
-        "/anime/{tmdbId}",
-        ",children:(u=s.data)==null?void%200%3Au.genres.map%28g=%3Ef.jsx%28yr%2C{to%3A%60%2Fgenre%2Fmovie%2F{tmdbId}%60%2Cchildren%3Af.jsx%28tt%2C{variant%3A"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "request-existing",
-        "reason": "existing_identity_executable_route_plan",
-        "routeCount": 4
-      }
-    },
-    {
-      "id": "dpstream",
-      "name": "DPStream",
-      "scope": "france",
-      "types": [
-        "movie",
-        "tv"
-      ],
-      "languages": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://dpstream.fyi/",
-      "replace_existing": false,
-      "inventory_rank": 50,
-      "inventory_score": 64,
-      "routeDiscoveryLastReason": "validation_wave_hold_nonlive_route_authority",
-      "routes": [
-        "?oe=%60https%3A%2F%2Fwww.vidking.net%2Fembed%2Ftv%2F{tmdbId}%2F{season}%2F{episode}%60%3AY.id%3D%3D%3D",
-        "?oe=%60https%3A%2F%2Fvidsrc.io%2Fembed%2Ftv%3Ftmdb%3D{tmdbId}&season={season}&episode={episode}",
-        "?oe=%60https%3A%2F%2Fplayer.vidplus.to%2Fembed%2Ftv%2F{tmdbId}%2F{season}%2F{episode}%3Fautoplay%3Dtrue&autonext=true&nextbutton=true&poster=true&title={query}&watchparty=false&primarycolor=6C63FF&secondarycolor=9F9BFF&iconcolor=FFFFFF%60%3AY.id%3D%3D%3D",
-        "?oe=%60https%3A%2F%2Fwww.vidking.net%2Fembed%2Fmovie%2F{tmdbId}%60%3AY.id%3D%3D%3D"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "request-existing",
-        "reason": "existing_identity_executable_route_plan",
-        "routeCount": 4
-      }
     }
   ],
   "routeDiscoveryWave": {
-    "sourceRequestVersion": 45,
+    "sourceRequestVersion": 47,
     "qualified": 3,
-    "selected": 1,
-    "standbyQualified": 2,
-    "deferred": 64,
+    "selected": 3,
+    "standbyQualified": 0,
+    "deferred": 62,
     "transports": [
       "residential-exit"
     ],
     "shardArtifactCount": 16,
     "expectedShardCount": 16,
     "completeShardSet": true,
-    "activationRequiresExecutablePlan": true,
-    "validationWave": "meowtv-first-observed-identity-routes"
+    "activationRequiresExecutablePlan": true
   },
   "handoff": {
     "reason": "replay_after_brain_sandbox_and_residential_oidc_stabilization",
