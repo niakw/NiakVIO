@@ -84,7 +84,7 @@ CLEAN_RECONSTRUCTION_AUTHORING_VERSION = 3
 PROVIDER_BASE_OWNED_MARKER = "NIAKVIO_PROVIDER_BASE_OWNED_V3"
 CURRENT_PROVIDER_MODEL_AUTHORING = "niakvio-owned-v3"
 PROVIDER_BASE_AUTHORING_MARKER = f"NIAKVIO_PROVIDER_BASE_AUTHORING:{CURRENT_PROVIDER_MODEL_AUTHORING}"
-INITIAL_RECONSTRUCTION_SCOPE = 96
+HISTORICAL_INITIAL_RECONSTRUCTION_SCOPE = 96
 
 
 def is_clean_reconstructed(provenance_row: dict[str, Any] | None) -> bool:
@@ -4981,15 +4981,19 @@ def provider_base_store_metadata(
 ) -> dict[str, Any]:
     """Canonical ProviderBase-store metadata shared by every publisher."""
     previous = previous_store if isinstance(previous_store, dict) else {}
-    initial_scope = int(previous.get("initial_reconstruction_scope") or INITIAL_RECONSTRUCTION_SCOPE)
-    if provider_count > 0:
-        initial_scope = min(max(1, initial_scope), provider_count)
+    historical_initial_scope = int(
+        previous.get("historical_initial_reconstruction_scope")
+        or previous.get("initial_reconstruction_scope")
+        or HISTORICAL_INITIAL_RECONSTRUCTION_SCOPE
+    )
+    current_scope = int(provider_count)
     return {
-        "schema_version": max(4, int(previous.get("schema_version") or 0)),
-        "provider_count": int(provider_count),
+        "schema_version": max(5, int(previous.get("schema_version") or 0)),
+        "provider_count": current_scope,
         "unique_base_count": int(unique_base_count),
         "scope_authority": "scripts/current_provider_scope.py:projection_active_provider_ids",
-        "initial_reconstruction_scope": initial_scope,
+        "initial_reconstruction_scope": current_scope,
+        "historical_initial_reconstruction_scope": historical_initial_scope,
         "migration_scope": "all-current-providers",
         "owner": "provider_pipeline",
         "future_source": "provider_pipeline_only",
