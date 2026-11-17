@@ -64,7 +64,9 @@ assert "providerSha256" in script
 assert "pending_artifact_hash_mismatch" in script
 assert "onboarding-pending-status" in script
 assert "automation/provider-onboarding-pending-status-latest.json" in sharded
-print("Bulk activation is byte-bound to isolated pending census proof")
+assert "projection_visible_provider_rows" in sharded
+assert 'Path("manifest.json").read_text' not in sharded.split('if [ "$ALLOW_PENDING_TARGETS" = "true" ]; then',1)[1].split('else',1)[0]
+print("Bulk activation is byte-bound to isolated Global+France pending census proof")
 
 assert "workflow_run:" in activation
 assert "Provider Census - Sharded" in activation
