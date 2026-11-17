@@ -41,7 +41,9 @@ permissions:
   actions: write
 
 concurrency:
-  group: niakvio-core-release-mutation-main
+  # Latest-wins only inside the Domain lane. Cross-workflow sharing loses
+  # pending runs because GitHub retains only one pending member per group.
+  group: niakvio-domain-refresh-main
   cancel-in-progress: false
 
 jobs:
@@ -356,6 +358,12 @@ jobs:
           if [ ! -f "$RUNNER_TEMP/domain-transaction-changed" ] || [ "$(cat "$RUNNER_TEMP/domain-transaction-changed")" != "true" ]; then
             echo 'No authoritative hub domain publication change.'
             echo 'FIELD_DOMAIN_REFRESH_IDEMPOTENT true'
+            if [ "$GITHUB_EVENT_NAME" != "schedule" ]; then
+              git fetch origin main
+              CURRENT_SHA="$(git rev-parse origin/main)"
+              gh workflow run release-finalize.yml --repo "$GITHUB_REPOSITORY" --ref main                 -f expected_sha="$CURRENT_SHA" -F post_census=true                 || echo "FIELD_DOMAIN_POST_NOOP_DISPATCH_WARN workflow=release-finalize"
+              echo "FIELD_DOMAIN_RELEASE_HANDOFF sha=$CURRENT_SHA mode=noop"
+            fi
             exit 0
           fi
 
@@ -408,13 +416,22 @@ jobs:
           fi
 
           AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
-          git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:main
+          if ! git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:main; then
+            git fetch origin main
+            CURRENT_SHA="$(git rev-parse origin/main)"
+            gh workflow run domain-refresh.yml --repo "$GITHUB_REPOSITORY" --ref main -f mode=quick || true
+            echo "FIELD_DOMAIN_PUBLICATION_REQUEUED current=$CURRENT_SHA reason=push_race" >&2
+            exit 1
+          fi
+          FINAL_SHA="$(git rev-parse HEAD)"
           echo "FIELD_DOMAIN_PUBLICATION_OK base=$BASE_SHA provider=$(cat "$RUNNER_TEMP/domain-provider-sha") final=$FINAL_SHA"
           # Publication is already durable at this point. Auxiliary workflow
           # dispatches must not retroactively turn an atomic successful publish red
           # when the GitHub API is temporarily rate-limited.
           gh workflow run sync.yml --ref main -f mode=quick || echo "FIELD_DOMAIN_POST_PUBLISH_DISPATCH_WARN workflow=sync"
           gh workflow run provider-disabled-lifecycle.yml --ref main || echo "FIELD_DOMAIN_POST_PUBLISH_DISPATCH_WARN workflow=provider-disabled-lifecycle"
+          gh workflow run release-finalize.yml --repo "$GITHUB_REPOSITORY" --ref main             -f expected_sha="$FINAL_SHA" -F post_census=true             || echo "FIELD_DOMAIN_POST_PUBLISH_DISPATCH_WARN workflow=release-finalize"
+          echo "FIELD_DOMAIN_RELEASE_HANDOFF sha=$FINAL_SHA mode=published"
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
