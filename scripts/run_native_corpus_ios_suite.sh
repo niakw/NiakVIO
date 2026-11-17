@@ -283,4 +283,15 @@ if [[ "$DONE" -ne 1 ]]; then
   echo "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error reason=no_terminal_marker mode=$MODE target=$TARGET_PROVIDER" | tee -a "$LOG" >&2
   STATUS=2
 fi
+
+if [[ "$STATUS" -eq 0 ]]; then
+  set +e
+  python3 "$NIAKVIO_ROOT/scripts/gate_native_ios_multi_audio.py" --log "$LOG" | tee -a "$LOG"
+  MULTI_AUDIO_STATUS=${PIPESTATUS[0]}
+  set -e
+  if [[ "$MULTI_AUDIO_STATUS" -ne 0 ]]; then
+    STATUS="$MULTI_AUDIO_STATUS"
+  fi
+fi
+
 exit "$STATUS"
