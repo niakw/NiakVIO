@@ -22,7 +22,7 @@ def reg(**kw):
     return base
 
 def patch(**kw):
-    base={"capability":"html_scraper","manifest_overrides":{"enabled":True}}
+    base={"capability":"html_scraper","manifest_overrides":{}}
     base.update(kw)
     return base
 
