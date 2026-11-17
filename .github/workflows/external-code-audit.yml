@@ -27,8 +27,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: external-code-audit
-  cancel-in-progress: true
+  group: external-code-audit-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
   collect:
