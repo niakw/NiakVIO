@@ -67,6 +67,13 @@ assert 'ci_inconclusive_is_not_disablement_proof' in validator_source
 assert 'removed-disallowed-p2p' in validator_source
 assert 'configured_safety_quarantine' in validator_source
 assert 'NIAKVIO_PROVIDER_FOLDER_ACTIVATION_AUTHORITY_V1' in validator_source
+activation_lkg = json.loads((ROOT / 'provider-activation-lkg.json').read_text(encoding='utf-8'))
+assert int(activation_lkg.get('schema_version') or 0) >= 4
+assert activation_lkg.get('role') == 'historical-anti-deletion-evidence'
+assert activation_lkg.get('current_activation_authority') is False
+assert activation_lkg.get('current_scope_authority') is False
+assert activation_lkg.get('current_cardinality_authority') is False
+assert 'provider-activation-lkg.json' not in validator_source
 assert 'declared-hub activation mismatch' not in validator_source
 assert '["git", "show", "HEAD:manifest.json"]' in validator_source
 assert 'NUVIO_PUBLISHED_MANIFEST_BASELINE' in validator_source
