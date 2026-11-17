@@ -15,6 +15,8 @@ safe=[
     "M\t.github/triggers/domain-refresh",
     "M\tMEMORY.md",
     "M\tPROVIDER_CENSUS_STATUS.md",
+    "M\tavailability-history.json",
+    "M\tavailability-report.json",
     "M\tautomation/provider-census-all-status-latest.json",
     "M\tautomation/provider-census-sharded-latest-summary.json",
     "M\tautomation/brain-llm-force-memory.json",

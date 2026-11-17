@@ -20,7 +20,7 @@ SAFE_FILES = {
     ".github/triggers/domain-refresh",
     "MEMORY.md",
     "PROVIDER_CENSUS_STATUS.md",
-    "automation/brain-repair-memory.json",
+    # Availability outputs are CI observations only. They are intentionally\n    # excluded from release hashes and cannot mutate provider/Core/manifest\n    # authority by themselves; consumers must publish a separate executable\n    # mutation, which remains blocked by this gate.\n    "availability-history.json",\n    "availability-report.json",\n    "automation/brain-repair-memory.json",
     "automation/brain-llm-force-memory.json",
     "automation/brain-repair-experience.json",
     "automation/provider-census-status.json",
