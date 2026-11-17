@@ -1,3 +1,12 @@
+## 2026-11-17 — Pre-Brain execution phase is now an explicit fail-closed control plane
+
+- While NiakVIO métier certification was still incomplete, stable lifecycle/census convergence automatically dispatched Provider Brain Autopilot. Fast Brain run `44161788709` completed technically but produced **0 candidate / 0 compiled / 0 validated / 0 published** for `corsflix,nakios,primewire,shuttletv`; it only persisted bounded evidence on main at `321cb736`. No provider/Core/runtime bytes or manifest membership were changed by that run.
+- That automatic Brain execution was nevertheless wrong for the current project phase and could keep advancing `main` while exact-SHA release/native proof is being assembled. New machine authority `automation/execution-phase.json` sets `phase=niakvio_metier_certification`, `automatic_brain_repair=false`, `automatic_brain_learning=false`, and requires an explicit checkpoint before Brain.
+- Provider Brain Autopilot now reads that authority immediately before dispatch. When the gate is closed it clears only `FAST_REPAIR` and `BRAIN_LEARNING` cohorts and removes FORCE authority; Domain Refresh, REMAT diagnostics and Core/client transport evidence remain available. This preserves NiakVIO-first convergence without deleting Brain infrastructure or memory.
+- `provider_brain_autopilot_workflow_test.py` locks the fail-closed phase semantics, and Workflow Gate now owns `automation/execution-phase.json` so a control-plane change cannot bypass exact-SHA CI validation.
+- Relevant commits: `e410be6d` phase authority, `9d388ee9` Autopilot phase gate, `5813610f` regression, `979827df` Workflow Gate ownership, `abb763b5` ownership regression.
+- Brain-LLM work remains intentionally blocked. Next: fresh exact-current-head NiakVIO Workflow Gate/Finalizer -> reverse byte-identical + release integrity -> exact-final-SHA security/native five-platform audio-language + provenance proof -> final census/security/hygiene read-back -> user checkpoint. Only after that checkpoint may this phase authority be changed.
+
 ## 2026-11-17 — 60/60 portfolio semantics are now certification-owned
 
 - Follow-up ownership audit found that the corrected 60 Global / 60 France portfolio policy was not part of the exact Workflow Gate execution set: `provider_portfolio_ranking_test.py` and `provider_coverage_preservation_test.py` were not invoked, and the Finalizer did not watch the policy/ranker/protector inputs. That meant portfolio métier semantics could drift without invalidating an old release certificate.
