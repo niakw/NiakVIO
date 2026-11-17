@@ -9,6 +9,7 @@ fast = (ROOT / ".github/workflows/provider-fast-repair.yml").read_text(encoding=
 remat = (ROOT / ".github/workflows/provider-remat-test.yml").read_text(encoding="utf-8")
 learn = (ROOT / ".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
 census = (ROOT / ".github/workflows/provider-census-sharded.yml").read_text(encoding="utf-8")
+workflow_gate = (ROOT / ".github/workflows/github-actions-gate.yml").read_text(encoding="utf-8")
 phase = json.loads((ROOT / "automation/execution-phase.json").read_text(encoding="utf-8"))
 
 for required in (
@@ -69,6 +70,7 @@ assert 'FAST=""' in autopilot
 assert 'LEARNING=""' in autopilot
 assert 'automatic_brain_repair' in autopilot
 assert 'automatic_brain_learning' in autopilot
+assert '      - "automation/execution-phase.json"' in workflow_gate
 
 # It may still refresh WAF/native transport evidence for harness debt.
 harness_start = autopilot.index('if [ -n "$HARNESS" ]; then')
