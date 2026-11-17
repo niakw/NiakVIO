@@ -21,6 +21,11 @@ on:
         required: false
         default: false
         type: boolean
+      certify_provenance:
+        description: Require logical provider ownership plus a visible external-source provenance witness
+        required: false
+        default: false
+        type: boolean
   schedule:
     - cron: "15 18 * * 6"
   push:
@@ -193,6 +198,12 @@ jobs:
           python3 niakvio/scripts/gate_native_ios_multi_audio.py \
             --log "$GITHUB_WORKSPACE/mobile-ios-native-corpus.log" \
             --require-witness
+      - name: Require iOS provider/source provenance release witness
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.certify_provenance && inputs.mode != 'only' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node niakvio/scripts/gate_native_provider_provenance.cjs --client ios "$GITHUB_WORKSPACE/mobile-ios-native-corpus.log"
       - name: Build sanitized iOS reader diagnoses
         if: ${{ always() && (github.event_name == 'schedule' || inputs.mode != 'only') }}
         shell: bash
