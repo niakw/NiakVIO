@@ -81,7 +81,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "providerId": provider_id,
         "providerName": row["name"],
         "providerEmoji": row["emoji"],
-        "implementationRevision": "post-safety-terminal-source-label-v11",
+        "implementationRevision": "provider-owner-terminal-source-label-v12",
     }
     serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode('utf-8')).hexdigest()[:12]}"
@@ -102,7 +102,7 @@ function sourceParts(r){var out=[];addUnique(out,r&&r.playerHost);addUnique(out,
 function terminalSource(r){var values=[r&&r.playerHost,r&&r.hoster,r&&r.player],provider=norm(c.providerName||c.providerId);for(var i=0;i<values.length;i++){var value=cleanSource(values[i]),n=norm(value);if(!n||n===provider||provider.indexOf(n)>=0||n.indexOf(provider)>=0)continue;if(/^(?:stream|source|player|server|reader)\d*$/i.test(value))continue;return value}return""}
 function containsQuality(parts,q){q=qualityToken(q);if(!q)return false;var aliases=q==="4K"?["4k","2160p","uhd"]:[q.toLowerCase()];var all=(parts||[]).join(" ").toLowerCase();for(var i=0;i<aliases.length;i++)if(all.indexOf(aliases[i])>=0)return true;return false}
 function visibleTitle(r,v,old){var q=qualityToken(r&&r.quality)||oldQuality(old);return q?v+" - "+q:v}
-function brand(r){if(!r||typeof r!=="object")return r;var o=Object.assign({},r),v=label();if(!v)return o;if(placeholder(o.quality))delete o.quality;var terminal=terminalSource(o),owner=terminal?v+" · "+terminal:v,display=visibleTitle(o,owner,o.title);o.title=display;o.name=display;return o}
+function brand(r){if(!r||typeof r!=="object")return r;var o=Object.assign({},r),v=label();if(!v)return o;var rawProvider=s(o.provider),logicalProvider=s(c.providerId);if(rawProvider&&logicalProvider&&norm(rawProvider)!==norm(logicalProvider)&&!s(o.sourceProvider))o.sourceProvider=rawProvider;if(logicalProvider)o.provider=logicalProvider;if(placeholder(o.quality))delete o.quality;var terminal=terminalSource(o),owner=terminal?v+" · "+terminal:v,display=visibleTitle(o,owner,o.title);o.title=display;o.name=display;return o}
 function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalProviderBrandingV1)return false;var native=o[k];var wrap=async function(){var v=await native.apply(this,arguments),x=slot(v);if(!x||!x.list.length)return v;return rebuild(v,x,x.list.map(brand))};wrap.__nuvioGlobalProviderBrandingV1=true;o[k]=wrap;return true}
 var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(module.exports,"getStreams")||install(module.exports,"streams")}}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
