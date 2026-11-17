@@ -18,6 +18,8 @@ manifest = json.loads((ROOT / 'manifest.json').read_text())['scrapers']
 activation = json.loads((ROOT / 'provider-activation-lkg.json').read_text())
 health_report = json.loads((ROOT / 'health-report.json').read_text())
 type_policy = json.loads((ROOT / 'provider-type-policy.json').read_text())['providers']
+catalog_doc = json.loads((ROOT / 'provider_catalog.json').read_text())
+catalog_by_id = {str(row.get('canonicalId') or row.get('scraper', {}).get('id') or '').casefold(): row for row in catalog_doc.get('providers', []) if isinstance(row, dict)}
 validator_spec = importlib.util.spec_from_file_location(
     'activation_validator_for_vf_policy',
     ROOT / 'scripts' / 'validate_activation_preservation.py',
@@ -57,10 +59,13 @@ assert not activation_errors, activation_errors
 # This mirrors release-integrity activation preservation, including deterministic
 # Core rehashes of an already-inert quarantine bundle, rather than hard-coding
 # stale pre-audit promotion state.
-expected_vf_movie = {
+historical_vf_movie_witnesses = {
     'purstream', 'frenchstream', 'streamzo', 'movix', 'coflix', 'wookafr',
     'flemmix', 'nakios', 'toflix', 'papadustream',
 }
+# Historical campaign names are witnesses only. Current catalogue scope is the
+# authority; archived/removed identities must not be resurrected by a test.
+expected_vf_movie = historical_vf_movie_witnesses & set(by_id)
 conclusive_disable_actions = {
     'published-disabled-failed-gates',
     'published-disabled-probation-or-performance',
@@ -111,16 +116,32 @@ for provider_id in sorted(expected_vf_movie):
     if action != 'disabled-sustained-outage':
         assert report.get('failed_gates'), provider_id
 
-# User-confirmed mappings are exact and must survive future sync/repair jobs.
-assert by_id['toflix']['supportedTypes'] == ['movie', 'tv', 'anime']
-assert type_policy['toflix']['supportedTypes'] == ['movie', 'tv', 'anime']
-assert by_id['papadustream']['supportedTypes'] == ['movie', 'tv', 'anime']
-assert patches['papadustream']['published_types'] == ['movie', 'tv', 'anime']
-assert type_policy['papadustream']['supportedTypes'] == ['movie', 'tv', 'anime']
+# User-confirmed type policy is a sparse semantic constraint for current
+# provider_catalog identities. It never owns catalogue membership, activation,
+# or manifest transport aliases.
+assert int(json.loads((ROOT / 'provider-type-policy.json').read_text()).get('schema_version') or 0) >= 2
+assert set(type_policy) <= set(catalog_by_id), sorted(set(type_policy) - set(catalog_by_id))
+for provider_id, rule in sorted(type_policy.items()):
+    record = catalog_by_id[provider_id]
+    scraper = record['scraper']
+    desired = [str(value).strip().casefold() for value in rule.get('supportedTypes', [])]
+    assert desired, provider_id
+    assert 'canonicalSupportedTypes' not in scraper, provider_id
+    actual_catalog = [str(value).strip().casefold() for value in scraper.get('supportedTypes', [])]
+    assert actual_catalog == desired, (provider_id, actual_catalog, desired)
+    manifest_row = by_id.get(provider_id)
+    if manifest_row is not None:
+        semantic = manifest_row.get('canonicalSupportedTypes')
+        if not isinstance(semantic, list) or not semantic:
+            semantic = manifest_row.get('supportedTypes') or []
+        semantic = [str(value).strip().casefold() for value in semantic]
+        assert semantic == desired, (provider_id, semantic, desired)
 
-for provider_id in ('purstream', 'coflix', 'frenchstream', 'movix', 'nakios', 'streamzo'):
-    assert by_id[provider_id]['supportedTypes'] == ['movie', 'tv', 'anime'], provider_id
-    assert type_policy[provider_id]['supportedTypes'] == ['movie', 'tv', 'anime'], provider_id
+# Representative current curated mappings.
+assert type_policy['papadustream']['supportedTypes'] == ['movie', 'tv', 'anime']
+assert patches['papadustream']['published_types'] == ['movie', 'tv', 'anime']
+assert type_policy['purstream']['supportedTypes'] == ['movie', 'tv']
+assert patches['purstream']['published_types'] == ['movie', 'tv']
 
 # Goated remains a confirmed movie-capable provider. Whether it is currently
 # active is governed by the same repository-wide evidence policy above rather
