@@ -140,7 +140,7 @@ for dependency in (
     "provider-v3-materialization.json",
     "automation/provider-v3-static-knowledge.json",
 ):
-    assert workflow.count(f"- '{dependency}'") >= 2, dependency
+    assert nonreg.count(f"- '{dependency}'") >= 2, dependency
 assert '"automation/provider-type-policy.json"' not in gate
 
 assert "semantic.length===1)type=semantic[0]" not in media_patch
