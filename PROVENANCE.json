@@ -72473,22 +72473,33 @@
     },
     "meowtv": {
       "id": "meowtv",
-      "published_filename": "provider-disabled/meowtv--nuvio--80023fa1176c86a0.js",
-      "sha256": "80023fa1176c86a0c3fba71a9e7984fa08988d9aba1c87bf263ddbb1d8dbf96f",
-      "patched_sha256": "80023fa1176c86a0c3fba71a9e7984fa08988d9aba1c87bf263ddbb1d8dbf96f",
+      "published_filename": "provider-disabled/meowtv--nuvio--823fdd96d0a245fa.js",
+      "sha256": "823fdd96d0a245fa167b6b8c51f9929c0820979169fde1fce9e432ca9750b856",
+      "patched_sha256": "823fdd96d0a245fa167b6b8c51f9929c0820979169fde1fce9e432ca9750b856",
       "base_filename": "provider-bases/meowtv--base--0cd547c0e052272d.js",
       "base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-17T21:48:11.087834+00:00",
+      "clean_reconstruction_verified_at": "2026-11-17T22:11:07.293778+00:00",
       "local_patches": [
         {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "type": "provider_lego",
+          "path": "scripts/provider_patches/ticketed_encrypted_api_runtime_v1.py",
           "phase": "discovery",
-          "scope": "global_catalogue_resolution"
+          "scope": "PROVIDER.GENERIC.TICKETED_ENCRYPTED.API.V1"
+        },
+        {
+          "type": "provider_stream_output_cap",
+          "path": "scripts/provider_patches/ticketed_encrypted_api_runtime_v1.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.GENERIC.TICKETED_ENCRYPTED.API.V1",
+          "cap": 40,
+          "optionKeys": [
+            "maxStreams"
+          ],
+          "renderedConfigRewrites": 0
         },
         {
           "type": "patch_script",
@@ -72513,6 +72524,12 @@
           "path": "scripts/provider_patches/global_runtime_compat_v1.py",
           "phase": "discovery",
           "scope": "global_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_runtime_dispatch_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_runtime_dispatch"
         },
         {
           "type": "patch_script",
@@ -72576,7 +72593,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "meowtv",
       "upstream_filename": null,
-      "checked_at": "2026-11-17T21:48:11.087855+00:00",
+      "checked_at": "2026-11-17T22:11:07.293798+00:00",
       "check_mode": "bulk_onboarding_pending",
       "check_status": "pending",
       "health_score": 0,
@@ -72591,9 +72608,9 @@
       "pending_minimizer": {
         "schemaVersion": 1,
         "fixedPoint": true,
-        "sha256": "80023fa1176c86a0c3fba71a9e7984fa08988d9aba1c87bf263ddbb1d8dbf96f",
-        "savedBytes": 37863,
-        "transformedLines": 6559
+        "sha256": "823fdd96d0a245fa167b6b8c51f9929c0820979169fde1fce9e432ca9750b856",
+        "savedBytes": 38178,
+        "transformedLines": 6660
       }
     },
     "willow": {

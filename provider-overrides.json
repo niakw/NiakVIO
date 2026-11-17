@@ -13421,13 +13421,14 @@
     "meowtv": {
       "notes": [
         "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
-        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group."
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
+        "Structured repository-owned Provider Blocs survive pending restage; they provide execution capability only and never grant playback/FULL/activation proof."
       ],
       "replacements": {},
       "runtime_domain_replacements": {},
       "route_replacements": {},
       "profiles": [],
-      "capability": "mixed_embed_resolver",
+      "capability": "api_stream_resolver",
       "official_hub": null,
       "official_site": "https://meowtv.ru",
       "published_types": [
@@ -13443,6 +13444,64 @@
           "m3u8"
         ]
       },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/ticketed_encrypted_api_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/ticketed_encrypted_api_runtime_v1.py": {
+          "providerId": "meowtv",
+          "providerName": "MeowTV",
+          "apiBase": "https://api.meowtv.ru",
+          "siteBase": "https://meowtv.ru",
+          "challengePath": "/altcha/challenge",
+          "challengeBodyField": "altcha",
+          "ticketPath": "/streams/ticket",
+          "ticketMethod": "POST",
+          "ticketField": "ticket",
+          "ticketHeader": "X-Stream-Ticket",
+          "moviePath": "/streams/movie/{id}",
+          "tvPath": "/streams/tv/{id}/{season}/{episode}",
+          "subtitleMoviePath": "/subs/movie/{id}",
+          "subtitleTvPath": "/subs/tv/{id}/{season}/{episode}",
+          "serverQueryKey": "s",
+          "decryptUrl": "https://enc-dec.app/api/dec-meowtv",
+          "decryptBodyField": "data",
+          "servers": [
+            {
+              "id": "dcloud",
+              "label": "DCloud"
+            },
+            {
+              "id": "acme",
+              "label": "Acme"
+            },
+            {
+              "id": "tik",
+              "label": "Tik"
+            },
+            {
+              "id": "ipcloud",
+              "label": "IPCloud"
+            },
+            {
+              "id": "turkce",
+              "label": "Turkish",
+              "language": "Turkish",
+              "movieOnly": true
+            },
+            {
+              "id": "hindiv3",
+              "label": "HindiV3",
+              "language": "Hindi"
+            }
+          ],
+          "maxPow": 500000,
+          "maxStreams": 8,
+          "maxSubtitles": 48,
+          "provider": "meowtv"
+        }
+      },
+      "official_api": "https://api.meowtv.ru",
       "candidate_learned_routes": [
         "/play/movie/{tmdbId}",
         "/play/tv/{tmdbId}/{season}/{episode}",
@@ -16047,12 +16106,13 @@
       ]
     },
     "meowtv": {
-      "strategy": "mixed_embed_resolver",
+      "strategy": "api_stream_resolver",
       "validation": "bulk_onboarding_pending",
-      "allow_html_url": true,
-      "requires_direct_media": false,
+      "allow_html_url": false,
+      "requires_direct_media": true,
       "observed_origins": [
-        "https://meowtv.ru"
+        "https://meowtv.ru",
+        "https://api.meowtv.ru"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
