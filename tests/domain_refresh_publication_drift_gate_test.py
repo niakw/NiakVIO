@@ -11,6 +11,8 @@ assert spec and spec.loader
 gate=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(gate)
 safe=[
+    "M\t.github/triggers/release-finalize.json",
+    "M\t.github/triggers/domain-refresh",
     "M\tMEMORY.md",
     "M\tPROVIDER_CENSUS_STATUS.md",
     "M\tautomation/brain-llm-force-memory.json",
