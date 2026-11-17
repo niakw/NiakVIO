@@ -269,13 +269,16 @@ jobs:
           import json, os, sys
           from pathlib import Path
           sys.path.insert(0, str(Path("scripts").resolve()))
-          from current_provider_scope import pending_provider_ids
+          from current_provider_scope import pending_provider_ids, projection_visible_provider_rows
           targets={x.strip().casefold().replace("_","-") for x in os.environ["TARGET_PROVIDERS"].split(",") if x.strip()}
           pending=pending_provider_ids()
           if not targets or not targets <= pending:
               raise SystemExit(f"pending census target mismatch targets={sorted(targets)} pending={sorted(pending)}")
-          manifest=json.loads(Path("manifest.json").read_text(encoding="utf-8"))
-          rows={str(r.get("id") or "").strip().casefold().replace("_","-"):r for r in manifest.get("scrapers") or [] if isinstance(r,dict)}
+          rows={
+              str(r.get("id") or "").strip().casefold().replace("_","-"):r
+              for r in projection_visible_provider_rows()
+              if isinstance(r,dict)
+          }
           for pid in sorted(targets):
               row=rows.get(pid) or {}
               filename=str(row.get("filename") or "")
