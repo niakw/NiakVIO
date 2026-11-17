@@ -1,3 +1,11 @@
+## 2026-11-17 — Stale CodeQL hygiene assertion no longer blocks exact-SHA certification
+
+- Fresh Workflow Gate run `44167797855` on `f2da6ead` passed workflow-security policy, paid-model disablement and Python syntax (1457 files), then failed in `tests/repository_hygiene_contract_test.py` because that test still required the retired CodeQL concurrency string `niakvio-codeql-${{ github.ref }}`.
+- Current CodeQL authority is intentionally stronger: explicit release `workflow_dispatch` uses a `github.run_id`-isolated lane while routine events remain per-ref, with `cancel-in-progress:false` and exact `expected_sha` validation. `tests/workflow_security_policy_test.py` already required this behavior; the hygiene test was stale.
+- `c2facc1b` aligns the hygiene assertion with the exact-SHA CodeQL contract and requires the expected-SHA marker. No CodeQL runtime behavior, provider/Core bytes, manifests or security scope changed.
+- `e309b5b7` makes Release Finalizer own both `tests/workflow_security_policy_test.py` and `tests/repository_hygiene_contract_test.py`; `54978c4b` locks that ownership in the release-finalizer regression. A future proof-contract change therefore invalidates old release certification automatically.
+- The `f2da6ead` campaign is superseded. Fresh descendant Workflow Gate/Finalizer execution is required; Brain remains phase-gated until the user checkpoint.
+
 ## 2026-11-17 — Pre-Brain phase gate YAML regression corrected before certification
 
 - The first implementation of the new execution-phase gate at `9d388ee9` embedded Python heredocs whose bodies were not indented inside the YAML literal block. GitHub therefore treated the workflow definition as invalid; this was an orchestration syntax defect, not a provider/Core/Nuvio failure.
