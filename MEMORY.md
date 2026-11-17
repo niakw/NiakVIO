@@ -1,3 +1,10 @@
+## 2026-11-17 — Proof-gap rollback is bounded to the faulty 17 November wave
+
+- Lifecycle run `44103313498` on `ef8040f5` proved the canonical materialization-ledger recovery works: the transaction advanced past the previous missing-ledger failure and reached `PROVIDER_LIFECYCLE_OK active=95 disabled=13 pending=32` in its workspace. It then failed closed in static audit on historical Chillflix DATA drift and committed nothing.
+- The 95-active intermediate state exposed that the initial rollback predicate was too broad. Current retained lifecycle state has 86 `auto_off_current_architecture_nonfunctional` rows: 19 dated 2026-11-14, Chillflix dated 2026-11-16, and **66 dated 2026-11-17**. The exact parent immediately before the mass-disable commit (`bbbc3d05`) had 45 Global / 38 France / **75 unique active identities**; after the mass-disable commit only 10 unique remained. Nine current identities survived active, so the 66 rows dated 17 November are exactly the faulty proof-absence wave needed to restore the former 75-identity active scope.
+- Commit `17761b1e` therefore bounds the one-time automatic rollback to `disabledReason=auto_off_current_architecture_nonfunctional` **and** `disabledAt=2026-11-17`. Older auto-off cohorts remain disabled/recoverable and require their own current proof/recovery path. Commit `e5a523ef` locks that older cohorts are not silently re-enabled.
+- This is state-transition repair, not health promotion. Restored rows must still pass current source-first identity, MP4-duration parity, census, release and native proof before being counted FULL.
+
 ## 2026-11-17 — Lifecycle rollback reached reactivation but failed before ledger rebuild
 
 - Provider Disabled Lifecycle run `44102398776` on `05c52d512836855ea3542feabd57ec39bbaf5280` correctly reached the deprecated proof-absence reclassification, but failed before commit in `manage_provider_lifecycle.py`: 86 restored identities had already become active in the in-memory catalogue/filesystem while `provider-v3-materialization.json` still contained only the previously active executable rows.
