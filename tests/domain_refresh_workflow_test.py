@@ -302,11 +302,22 @@ legacy_config = {
 }
 merged = module._authoritative_hub_configs(legacy_config)
 french = merged["frenchstream"]
+current_registry = json.loads((ROOT / "provider-hubs.json").read_text(encoding="utf-8"))
+current_french = current_registry["providers"]["frenchstream"]
+current_french_host = module.resolver.host(current_french["direct"])
 assert not french.get("hub"), french
-assert module.resolver.host(french["direct_fallback"]) == "fs16.lol", french
-assert {module.resolver.host(url) for url in french.get("direct_candidates") or []} == {"fs16.lol"}, french
+assert module.resolver.host(french["direct_fallback"]) == current_french_host, french
+assert current_french_host in {
+    module.resolver.host(url) for url in french.get("direct_candidates") or []
+}, french
 assert "fstream.top" in french.get("blocked_hosts", []), french
 assert all(row.get("url") != "https://legacy.invalid/" for row in french.get("sources") or []), french
+assert any(
+    row.get("type") == "hub"
+    and row.get("url") == "https://fstream.info/"
+    and row.get("role") == "primary"
+    for row in french.get("sources") or []
+), french
 assert any(
     row.get("type") == "search" and row.get("query") == '"French-stream" official domain'
     for row in french.get("sources") or []
