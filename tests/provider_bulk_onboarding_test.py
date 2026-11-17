@@ -9,7 +9,7 @@ ROOT=Path(__file__).resolve().parents[1]
 script=ROOT/"scripts/stage_provider_batch.py"
 sys.path.insert(0,str(ROOT/"scripts"))
 import add_provider as add_provider_module
-from add_provider import staged_existing_entry, normalized_scope, relocate_pending_artifacts, relocate_bulk_pending_artifacts, pending_validation_routes
+from add_provider import staged_existing_entry, normalized_scope, relocate_pending_artifacts, relocate_bulk_pending_artifacts, pending_validation_routes, pending_runtime_family
 from stage_provider_batch import safe_pending_restage_ids, preflight
 
 with tempfile.TemporaryDirectory() as td:
@@ -68,6 +68,18 @@ assert pending_validation_routes({
         "routeCount": 3,
     }
 }, ["/embed/sw.js", "/search", "/movie/157336-interstellar"]) == []
+
+
+# Executable TMDB-bound routes establish a deterministic direct runtime family;
+# provider-local/search/slug plans remain catalogue families. Candidate-only
+# routes never participate because staging passes only validation_routes here.
+assert pending_runtime_family("mixed_embed_resolver", [
+    "/play/movie/{tmdbId}",
+    "/play/tv/{tmdbId}/{season}/{episode}",
+    "/anime/{tmdbId}",
+]) == "tmdb-direct-api"
+assert pending_runtime_family("mixed_embed_resolver", ["/watch/{slug}", "/embed/{id}"]) == "catalogue-html-embed"
+assert pending_runtime_family("mixed_embed_resolver", []) == "unknown"
 
 # Global and France-only identities are distinct authorities and collisions fail closed.
 with tempfile.TemporaryDirectory(prefix="niakvio-onboard-scope-") as td:
