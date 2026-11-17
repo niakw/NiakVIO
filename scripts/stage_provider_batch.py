@@ -83,7 +83,14 @@ def preflight(rows:list[dict[str,Any]], allow_replace_existing:bool)->dict[str,A
     scope_counts=Counter()
     for row in rows:
         pid=str(row["id"])
-        replace=add_provider.bool_value(row.get("replace_existing"),False)
+        requested_replace=add_provider.bool_value(row.get("replace_existing"),False)
+        # Re-staging the exact same disabled onboarding identity is not an
+        # arbitrary provider replacement. It is the bounded path used to
+        # rematerialize new validation-only execution DATA while preserving
+        # pending/disabled authority. Active or lifecycle-disabled providers
+        # still require an explicit replacement request.
+        safe_restage = pid in safe_pending_restage
+        replace = requested_replace or safe_restage
         scope=add_provider.normalized_scope(row.get("scope") or row.get("manifest_scope") or "global")
         scope_counts[scope]+=1
         target_existing=existing if scope=="global" else france_only
@@ -91,7 +98,7 @@ def preflight(rows:list[dict[str,Any]], allow_replace_existing:bool)->dict[str,A
             raise ValueError(f"{pid}: Global provider cannot be duplicated as France-only")
         if scope=="global" and pid in france_only:
             raise ValueError(f"{pid}: France-only provider cannot be duplicated in Global")
-        if replace and not allow_replace_existing and pid not in safe_pending_restage:
+        if requested_replace and not allow_replace_existing and not safe_restage:
             raise ValueError(f"{pid}: replace_existing requires --allow-replace-existing unless replacing the same disabled pending onboarding identity")
         if pid in target_existing and not replace:
             raise ValueError(f"{pid}: provider already exists in {scope} scope; bulk import refuses silent overwrite")
@@ -221,9 +228,13 @@ def main()->int:
     staged=[]
     with tempfile.TemporaryDirectory(prefix="niakvio-provider-bulk-") as td:
         temp=Path(td)
+        safe_restage=set(summary.get("safePendingRestageProviders") or [])
         for index,row in enumerate(rows):
-            request=temp/f"{index:04d}-{row['id']}.json"
-            request.write_text(json.dumps(row,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+            effective=dict(row)
+            if effective["id"] in safe_restage:
+                effective["replace_existing"]=True
+            request=temp/f"{index:04d}-{effective['id']}.json"
+            request.write_text(json.dumps(effective,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
             normalized=add_provider.stage(request,bulk=True)
             fixed=finalize_staged_pending_bundle(normalized["id"],normalized["scope"])
             staged.append({
