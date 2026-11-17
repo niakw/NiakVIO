@@ -1,3 +1,10 @@
+## 2026-11-17 — NuvioTV provider isolation audited alongside Mobile/Desktop
+
+- Exact NuvioTV source at `fc5c10c3d2d5def54bb21e452291cb7b281b07b3` creates a fresh QuickJS instance for each `executePluginInternal(..., scraperId, ...)` execution. NuvioTV's own `StreamRepositoryPluginIsolationTest` proves distinct scrapers retain distinct `pluginSourceName` / grouping identity even with identical stream titles.
+- TV player source fallback is explicitly auto-selection-only: `tryFallbackToNextSourceAfterError` refuses a user-picked source. Switching calls `switchToSourceStream` / `applySelectedStreamState`, which updates `currentAddonName` and UI `currentStreamAddonName` together with URL/headers. Expired-link refresh filters candidates to the same expected `addonName`.
+- These guarantees are now encoded in the current Nuvio compatibility matrix, runtime contract gate, machine validation/architecture, documentation and regressions. They do not prove that every observed cross-host URL belongs to the logical provider; Core branding V13 remains responsible for making external player/source provenance visible without changing provider ownership.
+- Because these contract files changed after the prior projection trigger, that run is superseded for final certification. The next trigger must bind the complete V12 + V13 + three-client isolation HEAD.
+
 ## 2026-11-17 — V12 authority wiring complete; exact-byte rematerialization is the next proof boundary
 
 - Sanitizer V12 is now the selected terminal Core authority everywhere that can affect publication: provider overrides, Core composer, policy normalizer, monotonic migration, release hash scope, NuvioTV media-safety contract, Core ownership/presentation/playback regressions, workflow path triggers and machine documentation.
