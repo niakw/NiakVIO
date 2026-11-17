@@ -9,6 +9,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import resolve_provider_hubs as resolver
 import refresh_authoritative_hub_domains as authoritative
+import domain_refresh_transaction_v2 as transaction
 
 PRIMARY = "https://primary-hub.example/"
 SECONDARY = "https://secondary-hub.example/"
@@ -189,5 +190,46 @@ redirect_rows = authoritative._redirect_candidates_from_source_observations(
 )
 assert redirect_rows and redirect_rows[0]["source_fallback"] is True, redirect_rows
 assert redirect_rows[0]["source_priority"] == 90, redirect_rows
+
+# A trusted HTML hub may publish its official Telegram address feed inside a
+# normal link/card. Discover it as fallback registry knowledge, never as same-run
+# terminal publication authority.
+linked = resolver._linked_telegram_address_sources(
+    "demo",
+    {"aliases": ["demo"]},
+    '<div>Official Telegram address channel <a href="https://t.me/s/demoofficial">Telegram officiel demo</a></div>',
+    PRIMARY,
+)
+assert linked and linked[0]["url"] == "https://t.me/s/demoofficial", linked
+assert linked[0]["role"] == "fallback", linked
+assert linked[0]["resolver"] == "latest_telegram_domain", linked
+
+registry = {
+    "providers": {
+        "demo": {
+            "id": "demo",
+            "sources": [
+                {"type": "hub", "url": PRIMARY, "priority": 100, "role": "primary"},
+            ],
+        }
+    }
+}
+observations = [{
+    "source_type": "telegram_public",
+    "source_role": "fallback",
+    "source_priority": 90,
+    "resolver": "latest_telegram_domain",
+    "url": "https://t.me/s/demoofficial",
+    "status": 0,
+    "final_url": "https://t.me/s/demoofficial",
+    "discovered_address_source": True,
+    "discovered_from": PRIMARY,
+    "purpose": "Official address fallback discovered from authoritative hub link",
+}]
+assert transaction.sync_registry_discovered_sources(registry, "demo", observations) is True, registry
+persisted = registry["providers"]["demo"]["sources"][-1]
+assert persisted["type"] == "telegram_public" and persisted["role"] == "fallback", persisted
+assert persisted["discovery"] == "authoritative_hub_link", persisted
+assert transaction.sync_registry_discovered_sources(registry, "demo", observations) is False, registry
 
 print("provider hub heterogeneous multi-source fallback contract passed")
