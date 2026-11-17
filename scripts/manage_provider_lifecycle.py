@@ -363,6 +363,16 @@ def reconcile_materialization_report(
     raw_rows = [row for row in doc.get("providers") or [] if isinstance(row, dict)]
     by_id = {cid(row.get("provider")): row for row in raw_rows if cid(row.get("provider"))}
     missing = sorted(active_ids - set(by_id))
+    if missing and apply:
+        # A lifecycle reactivation restores exact retained provider bytes before
+        # executable materialization authority is rebuilt. Reuse the canonical
+        # Global+France reconciler instead of inventing partial ledger rows here.
+        from reconcile_provider_static_authority import reconcile_materialization_from_active_bundles
+        reconcile_materialization_from_active_bundles(apply=True)
+        doc = load_json(MATERIALIZATION_PATH)
+        raw_rows = [row for row in doc.get("providers") or [] if isinstance(row, dict)]
+        by_id = {cid(row.get("provider")): row for row in raw_rows if cid(row.get("provider"))}
+        missing = sorted(active_ids - set(by_id))
     if missing:
         raise RuntimeError("active providers missing from materialization ledger: " + ",".join(missing))
 
