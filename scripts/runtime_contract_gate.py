@@ -203,6 +203,17 @@ def validate_contract_files() -> dict:
         status = str(contract.get("identity_hydration_status") or "")
         if status not in {"equivalent-runtime-tmdb-key-bridge", "canonical-host-bridge"}:
             raise ValueError(f"{key}: invalid current identity hydration status {status!r}")
+        if key in {"nuvio-mobile", "nuvio-desktop"}:
+            required_isolation = {
+                "fresh_js_runtime_per_plugin_execution": True,
+                "scraper_code_execution_bound_to_scraper_id": True,
+                "reuse_last_link_cache_preserves_addon_identity": True,
+                "manual_stream_selection_bypasses_reuse_last_link_cache": True,
+                "auto_source_fallback_updates_active_provider_identity": True,
+            }
+            for field, expected in required_isolation.items():
+                if contract.get(field) is not expected:
+                    raise ValueError(f"{key}: provider isolation contract drifted: {field}")
         capabilities = {str(value).strip() for value in client.get("brain_capabilities") or [] if str(value).strip()}
         if "series" not in capabilities:
             raise ValueError(f"{key}: series transport capability missing")
