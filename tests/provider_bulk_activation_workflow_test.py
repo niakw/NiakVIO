@@ -49,12 +49,12 @@ for token in (
 assert "provider-disabled" in activation
 assert "provider-disabled" in onboard
 assert "automation/provider-bulk-activation-latest.json" in sharded
-assert "'provider_catalog.json'" in sharded
-assert "provider: bulk activate " in sharded
+assert 'from current_provider_scope import projection_runtime_visible_provider_count' in sharded
+assert '[ "$source_workflow" = "PROVIDER - Bulk Activation" ]' in sharded
 assert 'args+=(--provider "$providers")' in sharded
-assert '"$count" -gt 120' in sharded
+assert 'elif [ "$census_scope" = "all" ]; then' in sharded and "shard_count=8" in sharded
 assert 'head_message="$(git log -1 --pretty=%s)"' in sharded
-assert '[[ "$head_message" == provider:\\ bulk\\ activate\\ * ]]' in sharded
+assert r'[[ "$HEAD_MESSAGE" == provider:\ bulk\ activate\ * ]]' in sharded
 assert '"$count" -gt 120' in mono
 for workflow in (targeted,domains):
     assert "provider: bulk activate " in workflow
