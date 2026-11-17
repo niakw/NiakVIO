@@ -148,27 +148,9 @@ jobs:
           set -euo pipefail
 
           phase_file=automation/execution-phase.json
-          brain_auto="$(python - <<'PY'
-import json
-from pathlib import Path
-d=json.loads(Path("automation/execution-phase.json").read_text(encoding="utf-8"))
-print("true" if d.get("automatic_brain_repair") is True else "false")
-PY
-)"
-          learning_auto="$(python - <<'PY'
-import json
-from pathlib import Path
-d=json.loads(Path("automation/execution-phase.json").read_text(encoding="utf-8"))
-print("true" if d.get("automatic_brain_learning") is True else "false")
-PY
-)"
-          phase_name="$(python - <<'PY'
-import json
-from pathlib import Path
-d=json.loads(Path("automation/execution-phase.json").read_text(encoding="utf-8"))
-print(str(d.get("phase") or "unknown"))
-PY
-)"
+          brain_auto="$(python -c 'import json; d=json.load(open("automation/execution-phase.json", encoding="utf-8")); print("true" if d.get("automatic_brain_repair") is True else "false")')"
+          learning_auto="$(python -c 'import json; d=json.load(open("automation/execution-phase.json", encoding="utf-8")); print("true" if d.get("automatic_brain_learning") is True else "false")')"
+          phase_name="$(python -c 'import json; d=json.load(open("automation/execution-phase.json", encoding="utf-8")); print(str(d.get("phase") or "unknown"))')"
           if [ "$brain_auto" != "true" ]; then
             FAST=""
             FORCE_MODE=false
