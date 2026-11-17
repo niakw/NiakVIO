@@ -38,6 +38,10 @@ assert "projection_runtime_visible_provider_count" in workflow
 assert "[ \"$count\" -gt 120 ]" not in workflow, "causal push must not self-cancel on historical Global-only cardinality"
 assert "authority=projection-runtime-visible" in workflow
 assert "'.github/workflows/provider-census-sharded.yml'" in workflow
+assert "provider-census-${{ github.event_name == 'workflow_run'" in workflow
+assert "'routine' || 'proof' }}-main" in workflow
+assert "github.event.workflow_run.name != 'PROVIDER - Bulk Onboarding'" in workflow
+assert "github.event.workflow_run.name != 'PROVIDER - Bulk Activation'" in workflow
 
 for required_trigger_guard in (
     "changed_paths=",

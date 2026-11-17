@@ -1,14 +1,14 @@
 {
   "schemaVersion": 2,
   "scope": "all",
-  "reason": "Fresh source-bound v2 all-scope census after fixing canonical freshness: execute exact published Global+France provider artifacts without rematerialization, bind verdicts to source hashes, and verify identical hashes at persistence before representative MeowTV activation.",
-  "requestedAt": "2026-11-17T23:45:00+01:00",
-  "validation": "source-bound-v2-exact-published-bytes-production-freshness",
-  "source": "niakvio-metier-source-bound-freshness-v2",
+  "reason": "Source-bound v2 exact-published-byte all-scope proof in dedicated certification concurrency lane; routine workflow_run events may not evict this pending proof.",
+  "requestedAt": "2026-11-17T23:50:00+01:00",
+  "validation": "source-bound-v2-exact-published-bytes-dedicated-proof-lane",
+  "source": "niakvio-metier-source-bound-freshness-v2-proof-lane",
   "targetProviders": [],
   "allowPendingTargets": false,
-  "requiredEvidence": "Execute current published provider artifacts verbatim; source-stamp artifactHashSchemaVersion=2; verify-existing hashes after persistence reset; requeue on any active byte drift; no rematerialization inside census.",
-  "retryRevision": 17,
-  "fullRefreshRevision": 17,
-  "requestedSourceParent": "8ec29835891e610a745d127ef2d7834a0141c1b6"
+  "requiredEvidence": "Execute published active Global+France bytes verbatim, source-stamp v2 hashes, verify identical hashes at persistence, requeue on byte drift; proof concurrency cannot be replaced by routine workflow_run.",
+  "retryRevision": 18,
+  "fullRefreshRevision": 18,
+  "requestedSourceParent": "f2d2bdcb6c3ffb636affd6a588fc6c0a8ee3ed0a"
 }

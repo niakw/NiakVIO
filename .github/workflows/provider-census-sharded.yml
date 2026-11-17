@@ -54,8 +54,11 @@ permissions:
   actions: write
 
 concurrency:
-  group: provider-census-waf-main
-  # Keep an exact bulk-import proof running even if another repair lands.
+  # GitHub keeps at most one pending run per concurrency group. Keep explicit
+  # byte-proof campaigns (and onboarding/activation proof handoffs) separate
+  # from routine workflow_run refreshes so a secondary event cannot evict the
+  # pending certification run.
+  group: provider-census-${{ github.event_name == 'workflow_run' && github.event.workflow_run.name != 'PROVIDER - Bulk Onboarding' && github.event.workflow_run.name != 'PROVIDER - Bulk Activation' && 'routine' || 'proof' }}-main
   cancel-in-progress: false
 
 jobs:
