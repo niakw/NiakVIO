@@ -30,7 +30,6 @@ from current_provider_scope import active_provider_ids, projection_active_provid
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-POLICY = ROOT / "provider-activation-lkg.json"
 MAIN = ROOT / "manifest.json"
 VF = ROOT / "vf" / "manifest.json"
 REPORT = ROOT / "health-report.json"
