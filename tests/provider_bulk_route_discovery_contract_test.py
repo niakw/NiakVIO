@@ -137,6 +137,66 @@ assert apply_mod.defer_missing_probe_result(
     {"already-active"},
 ) is None
 
+
+strong_row={
+    "id":"meowtv",
+    "routes":[
+        "/play/movie/{tmdbId}",
+        "/play/tv/{tmdbId}/{season}/{episode}",
+        "/anime/{tmdbId}",
+    ],
+    "routeDiscoveryEvidence":{
+        "transport":"residential-exit",
+        "reason":"observed_identity_executable_routes",
+        "routeCount":3,
+    },
+}
+same_plan_result={
+    "transport":"request-existing",
+    "reason":"existing_identity_executable_route_plan",
+}
+preserved,replay=apply_mod.merge_route_discovery_evidence(
+    strong_row,same_plan_result,strong_row["routes"]
+)
+assert preserved==strong_row["routeDiscoveryEvidence"],(preserved,replay)
+assert replay=={
+    "transport":"request-existing",
+    "reason":"existing_identity_executable_route_plan",
+    "routeCount":3,
+    "authorityPreserved":True,
+    "preservedReason":"same_route_plan_stronger_prior_observation",
+},replay
+
+changed_plan=["/play/movie/{tmdbId}","/play/tv/{tmdbId}/{season}/{episode}"]
+current,replay=apply_mod.merge_route_discovery_evidence(
+    strong_row,same_plan_result,changed_plan
+)
+assert current["reason"]=="existing_identity_executable_route_plan",current
+assert current["routeCount"]==2,current
+assert replay is None
+
+weak_row={
+    "id":"demo",
+    "routes":["/movie/{tmdbId}"],
+    "routeDiscoveryEvidence":{
+        "transport":"request-existing",
+        "reason":"existing_identity_executable_route_plan",
+        "routeCount":1,
+    },
+}
+observed,replay=apply_mod.merge_route_discovery_evidence(
+    weak_row,
+    {"transport":"residential-exit","reason":"observed_identity_executable_routes"},
+    ["/movie/{tmdbId}"],
+)
+assert observed=={
+    "transport":"residential-exit",
+    "reason":"observed_identity_executable_routes",
+    "routeCount":1,
+},observed
+assert replay is None
+print("Bulk route discovery evidence is monotone for an unchanged provider-owned plan")
+
 # Reserve intake is a non-active extension of the route-discovery pool; it must
 # be deduplicated against the live batch rather than bypassing normal probing.
 reserve_path=ROOT/"automation/provider-intake-reserve-contract-test.json"
