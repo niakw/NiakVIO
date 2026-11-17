@@ -596,6 +596,18 @@ def apply_disable(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, default=OUTPUT)
+    parser.add_argument(
+        "--census-status",
+        type=Path,
+        default=CENSUS_STATUS,
+        help="Current candidate census status used for tested/current architecture semantics.",
+    )
+    parser.add_argument(
+        "--production-freshness-status",
+        type=Path,
+        default=None,
+        help="Optional exact-byte all-scope freshness ledger from the same transaction.",
+    )
     parser.add_argument("--apply-safe-disables", action="store_true")
     args = parser.parse_args()
 
@@ -604,12 +616,18 @@ def main() -> int:
     manifest = load(MANIFEST, {"scrapers": []})
     catalog = load(CATALOG, {"sourceOfTruth": True, "providers": []})
     history = load(HISTORY, {"providers": {}})
-    census = load(CENSUS_STATUS, {"providers": []})
+    census = load(args.census_status, {"providers": []})
     registries = hubs.setdefault("providers", {})
     patches = overrides.setdefault("provider_patches", {})
     histories = history.get("providers") if isinstance(history.get("providers"), dict) else {}
     pending = pending_provider_ids()
-    production_freshness = ProductionFreshnessAuthority(ROOT)
+    freshness_status = args.production_freshness_status
+    if freshness_status is not None and not freshness_status.is_absolute():
+        freshness_status = ROOT / freshness_status
+    production_freshness = ProductionFreshnessAuthority(
+        ROOT,
+        all_scope_status=freshness_status,
+    )
     production_freshness_authoritative = (
         int(production_freshness.all_scope_state.get("artifactHashSchemaVersion") or 0) >= 1
     )
@@ -670,6 +688,12 @@ def main() -> int:
     report = {
         "schemaVersion": 1,
         "authority": "provider-authority-arbiter-v1",
+        "censusStatusSource": str(args.census_status),
+        "productionFreshnessStatusSource": (
+            str(args.production_freshness_status)
+            if args.production_freshness_status is not None
+            else "persisted-all-scope"
+        ),
         "policy": {
             "searchRole": "historical-supplement-only",
             "futureHubSearchDefault": False,
