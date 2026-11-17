@@ -61,12 +61,28 @@ import subprocess
 import tempfile
 import threading
 
+def _minimal_mp4(duration_seconds: int) -> bytes:
+    ftyp = (24).to_bytes(4, 'big') + b'ftyp' + b'isom' + b'\\x00\\x00\\x00\\x00' + b'isomiso2'
+    mvhd = (
+        (32).to_bytes(4, 'big') + b'mvhd' + b'\\x00\\x00\\x00\\x00'
+        + (0).to_bytes(4, 'big') + (0).to_bytes(4, 'big')
+        + (1000).to_bytes(4, 'big') + (duration_seconds * 1000).to_bytes(4, 'big')
+        + b'\\x00\\x01\\x00\\x00'
+    )
+    return ftyp + mvhd
+
+
 class _ProbeHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         duration = 420 if self.path.startswith('/wrong') else 3480
-        body = f"#EXTM3U\n#EXT-X-VERSION:3\n#EXTINF:{duration},\nsegment.ts\n#EXT-X-ENDLIST\n".encode()
+        if self.path.endswith('.mp4'):
+            body = _minimal_mp4(duration)
+            content_type = 'video/mp4'
+        else:
+            body = f"#EXTM3U\n#EXT-X-VERSION:3\n#EXTINF:{duration},\nsegment.ts\n#EXT-X-ENDLIST\n".encode()
+            content_type = 'application/vnd.apple.mpegurl'
         self.send_response(200)
-        self.send_header('Content-Type', 'application/vnd.apple.mpegurl')
+        self.send_header('Content-Type', content_type)
         self.send_header('Content-Length', str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -137,6 +153,29 @@ try:
         assert isinstance(duration_only['streams'][0].get('identity'), dict), duration_only
         assert duration_only['streams'][0]['identity'].get('reason') is not None, duration_only
         assert duration_only['streams'][0]['identity']['reason'] == 'fixture_duration_match', duration_only
+
+
+        mp4_bad_proc, mp4_bad = run_provider('wrong_mp4_duration', {
+            'url': base + '/wrong.mp4',
+            'sourceTitle': 'Breaking Bad S01E01',
+            'sourceName': 'Example Provider',
+        })
+        assert mp4_bad_proc.returncode != 0, mp4_bad
+        assert mp4_bad['content_verified_count'] == 0, mp4_bad
+        assert mp4_bad['identity_contradiction_count'] == 1, mp4_bad
+        assert mp4_bad['streams'][0]['media']['media_duration_seconds'] == 420, mp4_bad
+        assert mp4_bad['streams'][0]['duration_identity']['reason'] == 'fixture_duration_mismatch', mp4_bad
+
+        mp4_good_proc, mp4_good = run_provider('good_mp4_duration', {
+            'url': base + '/good.mp4',
+            'sourceTitle': 'Breaking Bad S01E01',
+            'sourceName': 'Example Provider',
+        })
+        assert mp4_good_proc.returncode == 0, (mp4_good, mp4_good_proc.stderr)
+        assert mp4_good['content_verified_count'] == 1, mp4_good
+        assert mp4_good['identity_contradiction_count'] == 0, mp4_good
+        assert mp4_good['streams'][0]['media']['media_duration_seconds'] == 3480, mp4_good
+        assert mp4_good['streams'][0]['duration_identity']['reason'] == 'fixture_duration_match', mp4_good
 finally:
     server.shutdown()
     server.server_close()
@@ -146,6 +185,9 @@ probe_source = (ROOT / 'scripts' / 'nuvio_tv_probe_v2.cjs').read_text(encoding='
 assert "require('./nuvio_client_lab.cjs')" in probe_source
 assert 'content_verified_count' in probe_source
 assert 'fixture_duration_mismatch' in probe_source
+assert 'function parseMp4MovieDurationSeconds(body)' in probe_source
+assert "response.headers.get('content-range')" in probe_source
+assert "result.media_duration_seconds = parseMp4MovieDurationSeconds(buffer)" in probe_source
 for publisher in (
     'scripts/promote_global_nuvio_tv_candidates.py',
     'scripts/promote_target_media_v3.py',
