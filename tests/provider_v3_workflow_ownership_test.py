@@ -174,10 +174,12 @@ for required in (
 ):
     assert required in transaction, f"Domain Refresh current-provider scope missing: {required}"
 assert "requires 96/96 state" not in transaction
-assert "group: niakvio-core-release-mutation-main" in domain
+assert "group: niakvio-domain-refresh-main" in domain
 assert "cancel-in-progress: false" in domain
-assert "group: niakvio-core-release-mutation-main" in finalizer
+assert "group: niakvio-release-finalizer-main" in finalizer
 assert "cancel-in-progress: false" in finalizer
+assert "FIELD_DOMAIN_RELEASE_HANDOFF" in domain
+assert "FIELD_RELEASE_REQUEUED" in finalizer
 assert "python3 scripts/reconcile_provider_static_authority.py --apply" in finalizer
 assert finalizer.index("python3 scripts/reconcile_provider_static_authority.py --apply") < finalizer.index("python3 scripts/materialize_provider_v3_all.py")
 # Release jobs can queue behind read-only evidence; pin executable input at
