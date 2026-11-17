@@ -81,9 +81,11 @@ def catalog_semantic_types() -> dict[str, list[str]]:
         provider_id = str(scraper.get("id") or provider.get("canonicalId") or "").strip().casefold()
         if not provider_id:
             continue
-        canonical = normalized_types(
-            scraper.get("canonicalSupportedTypes") or scraper.get("supportedTypes")
-        )
+        if "canonicalSupportedTypes" in scraper:
+            raise AssertionError(
+                f"provider_catalog.json:{provider_id}: canonicalSupportedTypes is manifest-only transport metadata"
+            )
+        canonical = normalized_types(scraper.get("supportedTypes"))
         if not canonical:
             raise AssertionError(f"provider_catalog.json:{provider_id}: missing canonical media types")
         result[provider_id] = canonical
