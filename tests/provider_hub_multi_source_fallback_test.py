@@ -271,4 +271,17 @@ assert guard_scope == set(projection_active_provider_ids(ROOT)), (
 )
 assert strict_fr & guard_scope, "active France-only scope must reach Domain publication guard"
 
+missing = authoritative._no_address_authority_items(
+    {"demo", "castle", "missing-row"},
+    {
+        "demo": cfg,
+        "castle": {"sources": [{"type": "search", "query": '"Castle" official domain'}]},
+    },
+    {"demo"},
+)
+assert missing["castle"]["status"] == "no_address_authority", missing
+assert missing["castle"]["reason"] == "no_configured_authoritative_address_source", missing
+assert missing["missing-row"]["reason"] == "provider_missing_from_current_hub_registry", missing
+assert missing["castle"]["publication_authority"] is False, missing
+
 print("provider hub heterogeneous multi-source fallback contract passed")
