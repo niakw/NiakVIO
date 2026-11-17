@@ -314,6 +314,9 @@ assert validation_machine["final_certification"]["multi_audio_witness_platforms"
 assert ">=2 selectable tracks" in validation_machine["final_certification"]["multi_audio_witness_rule"]
 assert ">=2 distinct advertised audio languages" in validation_machine["final_certification"]["multi_audio_witness_rule"]
 assert validation_machine["final_certification"]["ordinary_native_diagnostics_may_have_zero_multi_audio_witness"] is True
+assert validation_machine["final_certification"]["requires_provider_source_provenance_witness_per_native_platform"] is True
+assert "logical provider ownership" in validation_machine["final_certification"]["provider_source_provenance_rule"]
+assert validation_machine["final_certification"]["provider_source_provenance_gate"] == "scripts/gate_native_provider_provenance.cjs"
 runtime_contract = validation_machine["nuvio_runtime_contract"]
 assert runtime_contract["current_audited_refs_must_match"] is True
 assert runtime_contract["official_head_freshness_required_before_release"] is True
@@ -357,6 +360,9 @@ assert "HLS master" in runtime_contract["multi_audio_candidate_policy"]
 assert runtime_contract["logical_stream_owner"] == "NiakVIO provider/scraper"
 assert runtime_contract["terminal_player_provenance_must_not_replace_owner"] is True
 assert runtime_contract["source_provider_provenance_may_augment_visible_label"] is True
+assert runtime_contract["native_provider_source_provenance_gate"] == "scripts/gate_native_provider_provenance.cjs"
+assert runtime_contract["native_provider_ownership_mismatch_failure_owner"] == "client_runtime_or_core_projection"
+assert runtime_contract["final_native_external_source_provenance_witness_required_per_platform"] is True
 validation_isolation = runtime_contract["provider_execution_isolation"]
 assert validation_isolation["scope"] == ["NuvioMobile", "NuvioDesktop"]
 assert validation_isolation["fresh_js_runtime_per_plugin_execution"] is True
@@ -405,6 +411,10 @@ assert "scripts/gate_native_ios_multi_audio.py" in machine_runtime["final_native
 assert machine_runtime["logical_stream_owner"] == "NiakVIO provider/scraper"
 assert machine_runtime["terminal_player_provenance_must_not_replace_owner"] is True
 assert machine_runtime["source_provider_provenance_may_augment_visible_label"] is True
+assert machine_runtime["native_provider_source_provenance_gate"] == "scripts/gate_native_provider_provenance.cjs"
+assert machine_runtime["final_native_provider_source_provenance_witness_required_per_platform"] is True
+assert "row.provider" in machine_runtime["final_native_provider_source_provenance_rule"]
+assert machine_runtime["provider_ownership_mismatch_failure_owner"] == "client_runtime_or_core_projection"
 machine_isolation = machine_runtime["provider_execution_isolation"]
 assert machine_isolation == validation_isolation
 tv_isolation = validation_isolation["tv"]
