@@ -130,7 +130,7 @@ assert "material_ids==active_ids" in manual
 assert "==46" not in manual and "46/46" not in manual
 
 
-assert machine["schema_version"] >= 19
+assert machine["schema_version"] >= 21
 source = machine["provider_source_of_truth"]
 assert source["canonical_provider_base_marker"] == "NIAKVIO_PROVIDER_BASE_OWNED_V3"
 assert source["legacy_provider_js_seed_allowed"] is False
@@ -279,11 +279,17 @@ assert machine["provider_scopes"]["availability_report_visible"] == "scripts/cur
 
 assert platform_runtime_machine["schema_version"] == 3
 assert 'data.get("schema_version") != 3' in renderer_source
-assert validation_machine["schema_version"] >= 78
+assert validation_machine["schema_version"] >= 79
 assert validation_machine["checks"]["clean_provider_base_matches_current_common_source"] is True
 assert validation_machine["checks"]["common_provider_source_migrations_validation_only"] is True
 assert validation_machine["final_certification"]["requires_clean_provider_base_current_source"] is True
 assert validation_machine["final_certification"]["requires_common_source_migration_fixed_point"] is True
+assert validation_machine["final_certification"]["requires_multi_audio_witness_per_native_platform"] is True
+assert validation_machine["final_certification"]["multi_audio_witness_platforms"] == [
+    "TVAndroid", "MobileAndroid", "MobileIOS", "DesktopMACOS", "DesktopWindows"
+]
+assert ">=2 selectable production-player tracks" in validation_machine["final_certification"]["multi_audio_witness_rule"]
+assert validation_machine["final_certification"]["ordinary_native_diagnostics_may_have_zero_multi_audio_witness"] is True
 runtime_contract = validation_machine["nuvio_runtime_contract"]
 assert runtime_contract["current_audited_refs_must_match"] is True
 assert runtime_contract["official_head_freshness_required_before_release"] is True
@@ -354,6 +360,13 @@ assert machine_runtime["multi_audio_native_evidence_owner"] == (
 )
 assert machine_runtime["multi_audio_collapse_failure_owner"] == "client_runtime"
 assert machine_runtime["multi_audio_probe_player_first"] is True
+assert machine_runtime["final_native_multi_audio_witness_required_per_platform"] is True
+assert machine_runtime["final_native_multi_audio_witness_platforms"] == [
+    "TVAndroid", "MobileAndroid", "MobileIOS", "DesktopMACOS", "DesktopWindows"
+]
+assert machine_runtime["ordinary_native_diagnostics_may_have_zero_multi_audio_witness"] is True
+assert "gate_native_multi_audio_coverage.cjs" in machine_runtime["final_native_multi_audio_witness_gates"]
+assert "gate_native_ios_multi_audio.py" in machine_runtime["final_native_multi_audio_witness_gates"]
 assert machine_runtime["logical_stream_owner"] == "NiakVIO provider/scraper"
 assert machine_runtime["terminal_player_provenance_must_not_replace_owner"] is True
 assert machine_runtime["source_provider_provenance_may_augment_visible_label"] is True
