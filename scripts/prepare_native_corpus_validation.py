@@ -116,6 +116,7 @@ TRANSPORT_HELPERS = r'''
         val host: String,
         val mediaHint: String,
         val audioTrackCount: Int = 0,
+        val audioTrackLanguages: String = "",
     )
 
     data class LogoProbe(
@@ -216,7 +217,7 @@ TRANSPORT_HELPERS = r'''
         return ""
     }
 
-    private fun hlsAudioTrackCount(body: String): Int =
+    private fun hlsAudioRows(body: String): List<String> =
         body.lineSequence()
             .map { it.trim() }
             .filter { line ->
@@ -225,7 +226,25 @@ TRANSPORT_HELPERS = r'''
                         .containsMatchIn(line.substringAfter(':', line))
             }
             .distinct()
-            .count()
+            .toList()
+
+    private fun hlsAudioTrackCount(body: String): Int = hlsAudioRows(body).size
+
+    private fun hlsAudioTrackLanguages(body: String): String =
+        hlsAudioRows(body)
+            .mapNotNull { line ->
+                val attrs = line.substringAfter(':', line)
+                Regex("""(?:^|,)\\s*LANGUAGE\\s*=\\s*"?([^",]+)"?""", RegexOption.IGNORE_CASE)
+                    .find(attrs)
+                    ?.groupValues
+                    ?.getOrNull(1)
+                    ?.trim()
+                    ?.replace('_', '-')
+                    ?.lowercase()
+                    ?.takeIf { it.isNotBlank() && it != "und" }
+            }
+            .distinct()
+            .joinToString(",")
 
     private fun hlsDuration(body: String): Double? {
         var total = 0.0
@@ -264,6 +283,7 @@ TRANSPORT_HELPERS = r'''
                     TransportProbe(
                         "ok", "hls", status, contentType, true, duration, host, hint,
                         audioTrackCount = hlsAudioTrackCount(body),
+                        audioTrackLanguages = hlsAudioTrackLanguages(body),
                     )
                 }
             } else if (contentType.contains("text/html", ignoreCase = true) || body.trimStart().startsWith("<!doctype html", ignoreCase = true) || body.trimStart().startsWith("<html", ignoreCase = true)) {
