@@ -903,6 +903,8 @@ Large onboarding waves are **proof-partitioned**, not all-or-nothing. Each candi
 
 Portfolio publication targets are **exactly 60 active Global and 60 active France providers**. Route-qualified continuation waves are capacity-bounded per projection: they first fill any movie/tv/anime coverage below 20 providers, then use workbook score/rank to fill the remaining slots to 60. Qualified overflow stays non-active standby knowledge instead of pushing a manifest above 60. France-only identities remain first-class catalog rows (`general=false, vf=true`) and must never leak into Global.
 
+Proof-driven activation enforces the same boundary at the **mutation step**, not only during route-wave selection. `activate_bulk_proven_providers.py` may activate a staged identity only when the current pending census reports fresh `FULL OK`, `testedThisRun=true`, every declared lane is currently verified, no Brain check remains, and the exact `provider-disabled/` bytes match the census source SHA. It then consumes only a structured current onboarding rank/score and refuses any addition that would move Global or France above its target. A fully proven candidate with no structured current priority remains pending as `portfolio_priority_missing`; a proven candidate beyond projection capacity remains pending as `portfolio_projection_capacity_reached`. Neither state is provider failure authority, and neither causes automatic retirement of an already-active provider. This closes the path where a proof-valid bulk wave could otherwise bypass the 60/60 portfolio ceiling during publication.
+
 
 ### Invariant de publication : versions cache Global / VF
 
