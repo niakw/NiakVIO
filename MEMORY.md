@@ -1,3 +1,10 @@
+## 2026-11-17 — Projection Reconcile now aborts stale rebuild waves instead of monopolizing the release writer
+
+- The V12/V13 rematerialization exposed an orchestration inefficiency: Projection Reconcile verifies exact main before expensive reconciliation, but a run can become superseded after that guard while rebuilding many Global+France providers. Because the shared release mutation concurrency is intentionally `cancel-in-progress:false`, the stale run can otherwise occupy the writer until its later publication drift guard even though its result can no longer be published.
+- `.github/workflows/provider-projection-reconcile.yml` now keeps the safe serialized writer but re-fetches `origin/main` before the rebuild loop, every four rebuilt providers, and once after the loop. Any source drift emits `FIELD_PROVIDER_PROJECTION_SUPERSEDED_DURING_REBUILD` with the processed count and exits before more materialization work.
+- This does not cancel unrelated accepted release/finalizer work, does not weaken fixed-point or publication guards, and changes no provider bytes. It only shortens stale work after main advances. Regression `tests/provider_projection_reconcile_workflow_test.py` requires the periodic guard while preserving `cancel-in-progress:false`.
+- Commits: `e9e332ad` workflow, `a4a18846` regression. A fresh exact-head V12/V13 trigger is required because the prior queued reconcile predates this orchestration correction.
+
 ## 2026-11-17 — NuvioTV provider isolation audited alongside Mobile/Desktop
 
 - Exact NuvioTV source at `fc5c10c3d2d5def54bb21e452291cb7b281b07b3` creates a fresh QuickJS instance for each `executePluginInternal(..., scraperId, ...)` execution. NuvioTV's own `StreamRepositoryPluginIsolationTest` proves distinct scrapers retain distinct `pluginSourceName` / grouping identity even with identical stream titles.
