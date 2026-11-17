@@ -11,6 +11,14 @@ on:
     branches: [main]
     paths:
       - '.github/triggers/provider-projection-reconcile.json'
+      # Durable provider-byte composition inputs must never advance on main
+      # without scheduling the transaction that rematerializes their output.
+      - 'provider-overrides.json'
+      - 'scripts/apply_provider_overrides.py'
+      - 'scripts/normalize_core_media_policy.py'
+      - 'scripts/provider_base_store.py'
+      - 'scripts/provider_patches/**'
+      - '.github/workflows/provider-projection-reconcile.yml'
 
 permissions:
   contents: write
