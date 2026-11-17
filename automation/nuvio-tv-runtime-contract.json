@@ -6,7 +6,7 @@
   "runtime_contract": "getStreams(tmdbId, mediaType, season, episode) plus global SCRAPER_ID, SCRAPER_SETTINGS and runtime TMDB_API_KEY",
   "source_repository": "NuvioMedia/NuvioTV",
   "source_branch": "dev",
-  "source_ref": "03705cdd1dcff3eeffe57593a85839b2602e4bc8",
+  "source_ref": "5b371fcd0d7ee080bb1de8de4d438882f67e8bfd",
   "runtime_source": "app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt",
   "settings_source": "app/src/main/java/com/nuvio/tv/data/local/PluginDataStore.kt",
   "stream_repository_source": "app/src/main/java/com/nuvio/tv/data/repository/StreamRepositoryImpl.kt",
@@ -51,22 +51,22 @@
   },
   "audit": {
     "date": "2026-11-17",
-    "previous_ref": "fc5c10c3d2d5def54bb21e452291cb7b281b07b3",
-    "audited_ref": "03705cdd1dcff3eeffe57593a85839b2602e4bc8",
+    "previous_ref": "03705cdd1dcff3eeffe57593a85839b2602e4bc8",
+    "audited_ref": "5b371fcd0d7ee080bb1de8de4d438882f67e8bfd",
     "hard_contract_paths_changed": false,
     "plugin_runtime_positional_getstreams_unchanged": true,
     "provider_stream_repository_contract_unchanged": true,
     "provider_url_header_ingestion_unchanged": true,
     "semantic_changes_reviewed": [
-      "No configured provider/plugin/stream contract path changed between fc5c10c3d2d5 and 03705cdd1dcf",
-      "No configured core/player or ui/screens/player semantic-review path changed in this delta",
-      "Fourteen commits change activity/media-server sync/UI/translations outside the provider plugin ABI",
-      "PluginRuntime still uses positional getStreams(tmdbId, mediaType, season, episode), TMDB_API_KEY and independent stream/subtitle header projection"
+      "No configured provider/plugin/stream contract path changed between 03705cdd1dcf and 5b371fcd0d7e",
+      "Ratings/tracking changes are outside the provider plugin ABI and playback transport contract",
+      "PlayerSubtitleUtils/SubtitleSelectionOverlay/LanguageUtils changes only cache subtitle language lookups and reuse the initial subtitle options list",
+      "No audio-track enumeration/selection, provider grouping, fallback identity, stream URL/header or QuickJS behavior changed"
     ],
     "runtime_reproof_required": true,
-    "runtime_reproof_reason": "Source ABI audit is current at 03705cdd1dcf; a fresh Android-TV Native Lab is still required to certify real current-client execution and playback.",
+    "runtime_reproof_reason": "Source ABI audit is current at 5b371fcd0d7e; a fresh Android-TV Native Lab is still required to certify real current-client execution, audio-language parity and provider/source provenance.",
     "audited_at": "2026-11-17",
-    "note": "2026-11-17: exact safe-head audit at dev 03705cdd1dcf. Since fc5c10c3d2d5, 14 commits change activity/media-server sync/UI/translations only; no configured provider/plugin/stream or player semantic-review path changed. Positional getStreams, QuickJS transport, TMDB runtime key and URL/header/subtitle projection remain unchanged. Exact Android-TV Native Lab proof remains required."
+    "note": "2026-11-17: exact current-source re-audit at dev 5b371fcd0d7e. Since 03705cdd1dcf, eight commits add ratings/tracking outside the provider ABI and optimize subtitle-language lookups/menu option reuse. The only configured player semantic-path delta is subtitle-only (PlayerSubtitleUtils/SubtitleSelectionOverlay/LanguageUtils): no getStreams, QuickJS transport, stream URL/header projection, audio-track enumeration/selection, provider grouping or fallback identity changed. Exact Android-TV Native Lab proof remains required."
   },
   "notes": [
     "NuvioTV source contract re-audited on 2026-11-16 at 2c853c1786743822c5ec7932e855529e0c731221.",
@@ -82,7 +82,8 @@
     "NuvioTV does not expose TextEncoder/TextDecoder or WebAssembly from PluginRuntime.",
     "The canonical Node TV probe may use non-authoritative fallback invocation only for diagnostics; release/playback authority requires the exact four-positional-argument NuvioTV call path.",
     "2026-11-17 upstream audit: dev fc5c10c3d2d5 adds media-server functionality outside provider/plugin/player contract paths; no provider ABI promotion is inferred and exact TV Native Lab remains mandatory.",
-    "2026-11-17 safe-head audit: dev 03705cdd1dcf changes only activity/media-server sync/UI/translations; provider/plugin/player contract paths remain unchanged and exact TV Native proof remains mandatory."
+    "2026-11-17 safe-head audit: dev 03705cdd1dcf changes only activity/media-server sync/UI/translations; provider/plugin/player contract paths remain unchanged and exact TV Native proof remains mandatory.",
+    "2026-11-17 current-head audit: dev 5b371fcd0d7e changes ratings/tracking plus subtitle-menu language lookup caching only; provider/plugin transport, audio selection and provider ownership contracts are unchanged; exact TV Native proof remains mandatory."
   ],
   "media_safety_authority": "scripts/provider_patches/stream_output_sanitizer_v12.py",
   "historical_direct_media_promotion": {
