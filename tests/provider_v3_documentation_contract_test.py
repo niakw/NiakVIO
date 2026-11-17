@@ -31,10 +31,10 @@ engine = (ROOT / "engine_v2/README.md").read_text(encoding="utf-8")
 sync = (ROOT / ".github/workflows/sync.yml").read_text(encoding="utf-8")
 manual = (ROOT / ".github/workflows/provider-v3-reconstruct-all.yml").read_text(encoding="utf-8")
 machine = json.loads((ROOT / "automation/provider-v3-architecture.json").read_text(encoding="utf-8"))
-assert machine["schema_version"] >= 26
+assert machine["schema_version"] >= 27
 assert "schemaVersion" not in machine
 validation_machine = json.loads((ROOT / "VALIDATION.json").read_text(encoding="utf-8"))
-assert validation_machine["schema_version"] >= 84
+assert validation_machine["schema_version"] >= 85
 assert "schemaVersion" not in validation_machine
 sources_machine = json.loads((ROOT / "sources.json").read_text(encoding="utf-8"))
 platform_runtime_machine = json.loads((ROOT / "automation/platform-runtime-contracts.json").read_text(encoding="utf-8"))
@@ -303,6 +303,9 @@ assert validation_machine["domain_refresh"]["search_fallback_requires_runtime_te
 assert validation_machine["domain_refresh"]["search_fallback_requires_consecutive_confirmation"] is True
 assert validation_machine["domain_refresh"]["search_fallback_minimum_confirmation_runs"] == 2
 assert validation_machine["domain_refresh"]["operator_pin_never_superseded_by_search"] is True
+assert validation_machine["final_certification"]["requires_exact_sha_security_final_gate"] is True
+assert validation_machine["final_certification"]["requires_exact_sha_external_audit"] is True
+assert validation_machine["final_certification"]["release_candidate_waits_for_security_final_gate"] is True
 assert validation_machine["final_certification"]["requires_multi_audio_witness_per_native_platform"] is True
 assert validation_machine["final_certification"]["requires_multi_audio_language_witness_per_native_platform"] is True
 assert validation_machine["final_certification"]["multi_audio_witness_platforms"] == [
@@ -370,6 +373,10 @@ assert machine_runtime["release_requires_current_official_heads"] is True
 assert machine_runtime["network_verification_inconclusive_blocks_release"] is True
 assert machine_runtime["subtitle_specific_headers_preserved"] is True
 assert machine_runtime["post_finalization_certification_workflow"] == ".github/workflows/release-candidate-validation.yml"
+assert machine_runtime["final_security_gate_required"] is True
+assert machine_runtime["final_security_gate_exact_sha_required"] is True
+assert machine_runtime["external_audit_exact_sha_required"] is True
+assert "CodeQL" in machine_runtime["final_security_chain"] and "SEC Final Gate" in machine_runtime["final_security_chain"]
 assert machine_runtime["final_native_certification_requires_exact_release_sha"] is True
 assert machine_runtime["final_native_certification_transitive_between_clients"] is False
 assert machine_runtime["native_proof_transitive_between_clients"] is False
