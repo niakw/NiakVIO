@@ -1,5 +1,5 @@
 {
-  "requestVersion": 55,
+  "requestVersion": 56,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "activationPolicy": "staged_pending_only",
   "allowReplaceExisting": true,
@@ -18,6 +18,39 @@
   },
   "policy": "Stage exact Provider-v3 candidates from the strict Global/France inventory as disabled/pending. No provider becomes active from static or WAF-limited evidence; activation requires subsequent exact-byte terminal proof through the provider lifecycle/Brain pipeline.",
   "providers": [
+    {
+      "id": "flickystream",
+      "name": "FlickyStream",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://flickystream.mov",
+      "replace_existing": false,
+      "inventory_rank": 15,
+      "inventory_score": 88,
+      "routeDiscoveryLastReason": "representative_hold_until_meowtv_identity_terminal_proof_v55",
+      "routes": [
+        "/genre/movie/{tmdbId}",
+        "/anime/{tmdbId}"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "request-existing",
+        "reason": "existing_identity_executable_route_plan",
+        "routeCount": 2,
+        "origin": "https://flickystream.mov"
+      }
+    },
     {
       "id": "meowtv",
       "name": "MeowTV",
@@ -57,9 +90,7 @@
         "routeCount": 3,
         "origin": "https://meowtv.ru",
         "authorityPreserved": true,
-        "preservedReason": "same-origin-same-route-plan-stronger-prior-observation",
-        "identityValidationRevision": "provider-presentation-separated-from-tmdb-route-v1",
-        "identityProofAuthority": "exact-request-route-plus-terminal-contradiction-guards"
+        "preservedReason": "same-origin-same-route-plan-stronger-prior-observation"
       },
       "api": "https://api.meowtv.ru",
       "providerBlocks": [
@@ -119,11 +150,7 @@
           }
         }
       ]
-    }
-  ],
-  "domainEvidenceFile": "automation/provider-domain-refresh-2026-11-14.json",
-  "activationPipelineFix": "latest_main_apply_retry_53880a5_plus_new_provider_projection_fe10b17",
-  "deferredProviders": [
+    },
     {
       "id": "dpstream",
       "name": "DPStream",
@@ -156,41 +183,20 @@
         "reason": "observed_identity_executable_routes",
         "routeCount": 4,
         "origin": "https://dpstream.fyi"
-      }
-    },
-    {
-      "id": "flickystream",
-      "name": "FlickyStream",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://flickystream.mov",
-      "replace_existing": false,
-      "inventory_rank": 15,
-      "inventory_score": 88,
-      "routeDiscoveryLastReason": "representative_hold_until_meowtv_identity_terminal_proof_v55",
-      "routes": [
-        "/genre/movie/{tmdbId}",
-        "/anime/{tmdbId}"
-      ],
-      "routeDiscoveryEvidence": {
+      },
+      "routeDiscoveryReplay": {
         "transport": "request-existing",
         "reason": "existing_identity_executable_route_plan",
-        "routeCount": 2,
-        "origin": "https://flickystream.mov"
+        "routeCount": 4,
+        "origin": "https://dpstream.fyi",
+        "authorityPreserved": true,
+        "preservedReason": "same-origin-same-route-plan-stronger-prior-observation"
       }
-    },
+    }
+  ],
+  "domainEvidenceFile": "automation/provider-domain-refresh-2026-11-14.json",
+  "activationPipelineFix": "latest_main_apply_retry_53880a5_plus_new_provider_projection_fe10b17",
+  "deferredProviders": [
     {
       "id": "flikhub",
       "name": "FlikHub",
@@ -817,7 +823,7 @@
       "replace_existing": false,
       "inventory_rank": 39,
       "inventory_score": 83,
-      "routeDiscoveryLastReason": "network_or_site_unreached"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "coreflix",
@@ -1268,7 +1274,7 @@
       "replace_existing": true,
       "inventory_rank": 2,
       "inventory_score": 99,
-      "routeDiscoveryLastReason": "network_or_site_unreached"
+      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
     },
     {
       "id": "yablom",
@@ -1476,7 +1482,7 @@
       "inventory_score": 78,
       "grade": "B+",
       "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "network_or_site_unreached"
     },
     {
       "id": "anizone",
@@ -1490,7 +1496,7 @@
       "inventory_score": 77,
       "grade": "B+",
       "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
     },
     {
       "id": "streamflix",
@@ -1535,7 +1541,7 @@
       "inventory_score": 73,
       "grade": "B",
       "workbookSheet": "Global",
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+      "routeDiscoveryLastReason": "reachable_no_identity_route_observed"
     },
     {
       "id": "anilight",
@@ -1575,7 +1581,7 @@
     }
   ],
   "routeDiscoveryWave": {
-    "sourceRequestVersion": 54,
+    "sourceRequestVersion": 55,
     "qualified": 3,
     "selected": 3,
     "standbyQualified": 0,
@@ -1586,10 +1592,7 @@
     "shardArtifactCount": 16,
     "expectedShardCount": 16,
     "completeShardSet": true,
-    "activationRequiresExecutablePlan": true,
-    "representativeProvider": "meowtv",
-    "representativeHold": true,
-    "expansionBlockedUntil": "meowtv exact staged bytes -> movie/tv/anime terminal playable + identity proof"
+    "activationRequiresExecutablePlan": true
   },
   "handoff": {
     "reason": "replay_after_brain_sandbox_and_residential_oidc_stabilization",
