@@ -26,9 +26,19 @@ function normalizeAudioLanguage(value) {
   const raw = String(value || '').trim().toLowerCase().replace(/_/g, '-');
   if (!raw || raw === 'und') return '';
   const aliases = {
-    eng: 'en', fra: 'fr', fre: 'fr', deu: 'de', ger: 'de', spa: 'es',
-    por: 'pt', ita: 'it', jpn: 'ja', kor: 'ko', zho: 'zh', chi: 'zh',
+    eng: 'en', english: 'en', anglais: 'en',
+    fra: 'fr', fre: 'fr', french: 'fr', francais: 'fr', 'français': 'fr',
+    deu: 'de', ger: 'de', german: 'de', deutsch: 'de',
+    spa: 'es', spanish: 'es', espanol: 'es', 'español': 'es',
+    por: 'pt', portuguese: 'pt', portugues: 'pt', 'português': 'pt',
+    ita: 'it', italian: 'it', italiano: 'it',
+    jpn: 'ja', japanese: 'ja', japonais: 'ja',
+    kor: 'ko', korean: 'ko', coreen: 'ko', 'coréen': 'ko',
+    zho: 'zh', chi: 'zh', chinese: 'zh', chinois: 'zh',
   };
+  if (aliases[raw]) return aliases[raw];
+  const firstWord = raw.split(/[ (]/, 1)[0];
+  if (aliases[firstWord]) return aliases[firstWord];
   const parts = raw.split('-').filter(Boolean);
   if (!parts.length) return '';
   parts[0] = aliases[parts[0]] || parts[0];
