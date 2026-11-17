@@ -1257,6 +1257,19 @@ def gather_candidates(provider_id: str, cfg: dict[str, Any], history_row: dict[s
         url = str(source.get("url") or "").strip()
         if not is_http_url(url):
             continue
+        if source_type == "telegram_public":
+            parsed_source = urllib.parse.urlparse(url)
+            telegram_host = (parsed_source.hostname or "").casefold()
+            public_preview = parsed_source.path.startswith("/s/")
+            if telegram_host in {"t.me", "telegram.me", "www.telegram.me"} and not public_preview:
+                observations.append({
+                    "source_type": source_type,
+                    "url": url,
+                    "skipped": True,
+                    "reason": "interactive_or_nonpublic_telegram_source",
+                    "publication_authority": False,
+                })
+                continue
 
         # A provider may expose several address authorities with different
         # extraction semantics (HTML hub, Telegram chronology/description,
