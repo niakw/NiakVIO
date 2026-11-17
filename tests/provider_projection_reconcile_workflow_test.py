@@ -122,6 +122,15 @@ known_evidence = [
     "automation/provider-waf-browser-session-latest.json",
 ]
 assert classify_drift(known_evidence) == (True, []), "census evidence cannot starve provider publication"
+for required_trigger in (
+    "provider-overrides.json",
+    "scripts/apply_provider_overrides.py",
+    "scripts/normalize_core_media_policy.py",
+    "scripts/provider_base_store.py",
+    "scripts/provider_patches/**",
+):
+    assert required_trigger in wf, f"projection reconcile must auto-follow byte input {required_trigger}"
+
 for source in ("provider-overrides.json", "manifest.json", "scripts/provider_base_store.py",
                "automation/provider-v3-static-knowledge.json", ".github/workflows/provider-projection-reconcile.yml"):
     assert classify_drift([*known_evidence, source]) == (False, [source]), source
