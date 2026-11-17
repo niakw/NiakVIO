@@ -24,8 +24,10 @@ branding = load(ROOT / "scripts/provider_patches/global_provider_branding_v1.py"
 assert presentation.REVISION == "all-providers-client-projection-evidence-language-v24"
 
 apply_source = (ROOT / "scripts/apply_provider_overrides.py").read_text(encoding="utf-8")
-assert apply_source.index("CORE.STREAM_PRESENTATION.V1") < apply_source.index("CORE.STREAM_SANITIZER.V6")
-assert apply_source.index("CORE.STREAM_SANITIZER.V6") < apply_source.index("CORE.RUNTIME_MEDIA_SAFETY.V4")
+assert apply_source.index("CORE.STREAM_FACTS.V1") < apply_source.index("CORE.STREAM_SANITIZER.V6")
+assert apply_source.index("CORE.STREAM_SANITIZER.V6") < apply_source.index("CORE.STREAM_IDENTITY.V1")
+assert apply_source.index("CORE.STREAM_IDENTITY.V1") < apply_source.index("CORE.STREAM_PRESENTATION.V1")
+assert apply_source.index("CORE.STREAM_PRESENTATION.V1") < apply_source.index("CORE.RUNTIME_MEDIA_SAFETY.V4")
 assert apply_source.index("CORE.RUNTIME_MEDIA_SAFETY.V4") < apply_source.index("CORE.PROVIDER_BRANDING.V1")
 assert apply_source.index('"scope": "global_runtime_media_safety"') < apply_source.index('"scope": "global_provider_branding"')
 
