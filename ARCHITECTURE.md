@@ -13,6 +13,38 @@ proved these **offline** properties. It did not prove an upstream playable media
 response, independently correct subtitles or a Brain-generated autonomous repair.
 See `MEMORY.md` for the terminal proof backlog and publication SHA status.
 
+## 2026-11-17 — Positive production freshness is not negative lifecycle proof
+
+A new content-addressed Core/ProviderBase generation invalidates the previous
+`FULL OK` evidence until the *same published bytes* pass fresh exact-lane
+playback and content identity checks. That is a **production proof debt**, not
+proof that the provider or source stopped functioning. The production freshness
+gate still rejects unverified bytes and prohibits a false `FULL OK` promotion.
+
+The authority arbiter must keep the independently classified action
+(`KEEP_BACKEND`, `REDISCOVER_SEARCH`, etc.) when a positive exact-byte
+proof is absent, attach explicit `productionFreshnessAuthorized=false`, and
+never synthesize `DISABLE_ARCHITECTURE_NONFUNCTIONAL` from absence alone.
+Negative authority requires separate reliable evidence: an explicit manual or
+operator shutdown, validated source withdrawal, or corroborated execution/domain
+failure with the appropriate residential/MacBridge/native network oracle.
+
+Historical automatic `auto_off_current_architecture_nonfunctional` and
+`auto_off_current_architecture_regression` states remain **disabled, not
+promoted**, but their seven-day purge deadline alone must not move the
+reversible bytes into `provider-old/` while their independent negative
+evidence is unresolved. Other proven/explicit lifecycle reasons retain
+ordinary seven-day archival. Recovery requires provider-local, same-byte,
+terminal playback + correct content identity and independent client proof,
+followed by a canonical Global+France fixed-point release transaction.
+
+This policy protects against a 75-to-9 active-union collapse observed in
+manifest `5.21.152`; it does not claim the disabled cohort has been
+recovered or that the five Native Labs passed. The canonical executable
+owners are `classify_provider_authority.py`,
+`provider_production_freshness.py`, `manage_provider_lifecycle.py`, and
+their authority/lifecycle regression tests.
+
 # Architecture NiakVIO — Provider v3
 
 > [!IMPORTANT]
