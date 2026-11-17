@@ -27,7 +27,8 @@ module.exports={
     {title:"Purstream - FR",name:"legacy"},
     {title:"Purstream - VOSTFR",name:"legacy"},
     {title:"Purstream",name:"legacy"},
-    {name:"legacy"}
+    {name:"legacy"},
+    {title:"Purstream - 720p",name:"legacy",quality:"720p",sourceProvider:"vidmoly.me"}
   ]}
 };
 '''.lstrip()
@@ -71,6 +72,8 @@ expected = [
 ]
 assert labels == expected, (labels, expected)
 assert all(row["name"] == row["title"] for row in rows)
+assert rows[-1]["provider"] == "purstream", rows[-1]
+assert rows[-1]["sourceProvider"] == "vidmoly.me", rows[-1]
 assert not any("Inconnu" in value or "Unknown" in value for value in labels)
 
 print("global provider branding v13 final-label contract passed")

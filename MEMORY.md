@@ -1,3 +1,9 @@
+## 2026-11-17 — Branding V13 test now proves logical owner plus terminal source provenance
+
+- Workflow Gate run `44115080261` on `543eeb535a1db2604f235b4ee0c9528b6202b4c9` reached the current Branding V13 regression but the fixture supplied only nine provider-owned streams while the expected output included a tenth external-source label. The failure was therefore a broken fixture, not a Branding runtime failure.
+- The fixture now includes an explicit terminal-source witness with `sourceProvider=vidmoly.me` and `quality=720p`. The regression requires the visible label `💧 Purstream · vidmoly.me - 720p`, requires logical `provider` to remain `purstream`, and requires `sourceProvider` to remain preserved. This directly locks the user-visible ownership distinction: NiakVIO scraper owner is not replaced by the terminal host/provider, but external provenance is visible.
+- No production provider bytes or Core implementation changed. Fresh exact-head Workflow Gate is required.
+
 ## 2026-11-17 — Branding regressions follow current V13 source provenance authority
 
 - Workflow Gate run `44114356353` on `e61d9e13575f0531673deaa3426df52cd126417e` passed the repaired causal-focus cohort, native evidence contracts and iOS multi-audio gate, then failed only because `tests/global_provider_branding_test.py` still asserted the superseded `provider-owner-terminal-source-label-v12` revision.
