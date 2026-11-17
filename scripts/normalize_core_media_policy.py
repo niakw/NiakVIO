@@ -66,10 +66,10 @@ def _normalize_global_tail(value: dict[str, Any], changed: list[str]) -> None:
     terminal = playback.get("terminal_stream_sanitizer")
     if not isinstance(terminal, dict):
         raise ValueError("playback_integrity_policy.terminal_stream_sanitizer must be an object")
-    expected_patch = "scripts/provider_patches/stream_output_sanitizer_v11.py"
+    expected_patch = "scripts/provider_patches/stream_output_sanitizer_v12.py"
     if terminal.get("patch") != expected_patch:
         terminal["patch"] = expected_patch
-        changed.append("playback_integrity_policy.terminal_stream_sanitizer.patch:v11")
+        changed.append("playback_integrity_policy.terminal_stream_sanitizer.patch:v12")
     options = terminal.get("options")
     if not isinstance(options, dict):
         options = {}
