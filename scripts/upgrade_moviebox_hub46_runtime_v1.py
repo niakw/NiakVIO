@@ -36,7 +36,12 @@ def main() -> int:
             "maxStreams": 8,
         }
     }
-    p.setdefault("manifest_overrides", {})["enabled"] = True
+    manifest_overrides = p.get("manifest_overrides") if isinstance(p.get("manifest_overrides"), dict) else {}
+    manifest_overrides.pop("enabled", None)
+    if manifest_overrides:
+        p["manifest_overrides"] = manifest_overrides
+    else:
+        p.pop("manifest_overrides", None)
     p.pop("quarantine_reason", None)
     p["route_data_state"] = "repair"
 
