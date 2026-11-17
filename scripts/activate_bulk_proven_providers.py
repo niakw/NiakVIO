@@ -37,6 +37,16 @@ def norm(value:Any)->str:
     return re.sub(r"[^a-z0-9._-]+","-",str(value or "").strip().casefold()).strip("-")
 
 
+def canonical_catalog_scraper(row:dict[str,Any])->dict[str,Any]:
+    """Store semantic capability in provider_catalog, never manifest transport aliases."""
+    scraper=dict(row)
+    scraper["disabledPlatforms"]=[]
+    semantic=scraper.pop("canonicalSupportedTypes",None)
+    if isinstance(semantic,list) and semantic:
+        scraper["supportedTypes"]=list(semantic)
+    return scraper
+
+
 def _semver(value:Any)->tuple[int,int,int] | None:
     match=re.fullmatch(r"(\d+)\.(\d+)\.(\d+)",str(value or "").strip())
     return tuple(int(part) for part in match.groups()) if match else None
@@ -284,7 +294,7 @@ def main()->int:
         # provider_catalog.json is the projection authority. Global activation
         # must advance its scraper copy before render-manifests-from-catalog.
         if isinstance(catalog_entry,dict):
-            catalog_entry["scraper"]=dict(manifest_row)
+            catalog_entry["scraper"]=canonical_catalog_scraper(manifest_row)
         patch.setdefault("manifest_overrides",{})["enabled"]=True
         capability=capabilities.get(pid)
         if isinstance(capability,dict):
