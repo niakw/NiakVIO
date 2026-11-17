@@ -152,6 +152,22 @@ assert any(track.get("code") == "en" for track in player_language_row["languageT
 assert not any(track.get("code") == "fr" for track in player_language_row["languageTracks"]), player_language_row
 assert "English" in player_language_row["description"], player_language_row
 assert "French" not in player_language_row["description"], player_language_row
+
+# A terminal multi-audio master outranks any stale/coarse scalar language inherited
+# from the player/provider row. Nuvio chooses native audio tracks from the loaded
+# media, so the portable scalar must stay neutral while all proven tracks remain.
+multi_audio_source = """module.exports={getStreams:async()=>[{name:'Reader',url:'https://media.example/master.m3u8',language:'fr',audioTracks:[{language:'fr',name:'Français'},{language:'en',name:'English'}]}]};\n"""
+multi_audio_row = run(
+    multi_audio_source,
+    "fixture",
+    "p.getStreams({mediaType:'movie',title:'Multi Audio Fixture',year:2026}).then(v=>console.log(JSON.stringify(v[0])))",
+)
+assert multi_audio_row["language"] is None, multi_audio_row
+multi_audio_codes = {track.get("code") for track in multi_audio_row["languageTracks"]}
+assert {"fr", "en"}.issubset(multi_audio_codes), multi_audio_row
+assert "French" in multi_audio_row["description"], multi_audio_row
+assert "English" in multi_audio_row["description"], multi_audio_row
+
 for badge in {"1080p-full-hd", "hls", "avc", "video-bitrate", "aac", "2.0", "48khz", "lang-ko"}:
     assert badge in set(player_row["badgeIds"]), (badge, player_row)
 assert not any(str(x).startswith("sub-") for x in player_row["badgeIds"]), player_row
