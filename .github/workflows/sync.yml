@@ -107,8 +107,10 @@ permissions:
   contents: write
 
 concurrency:
-  group: provider-v3-core-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  # Exact release-candidate Quick verification is immutable proof and must not
+  # be cancelled by routine push/PR/scheduled verification.
+  group: provider-v3-core-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
   verify-and-publish:
