@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 GATE = ROOT / "scripts/gate_native_ios_multi_audio.py"
 PREPARE = (ROOT / "scripts/prepare_native_ios_reader_acceptance.py").read_text(encoding="utf-8")
 SUITE = (ROOT / "scripts/run_native_corpus_ios_suite.sh").read_text(encoding="utf-8")
+ANALYZER = (ROOT / "scripts/analyze_native_ios_results.py").read_text(encoding="utf-8")
 
 assert "httpGetTextWithHeaders(row.url, row.headers.orEmpty())" in PREPARE
 assert "masterAudioTrackCount" in PREPARE
@@ -19,6 +20,9 @@ assert PREPARE.index("val player = probeProductionPlayer(row, playerTimeoutMs)")
 )
 assert "gate_native_ios_multi_audio.py" in SUITE
 assert 'MULTI_AUDIO_STATUS=${PIPESTATUS[0]}' in SUITE
+assert '"multi_audio_player_collapsed"' in ANALYZER
+assert '"client_runtime" if multi_audio_collapsed else ""' in ANALYZER
+assert '"blocking": multi_audio_collapsed' in ANALYZER
 
 def run(rows: list[dict]) -> subprocess.CompletedProcess[str]:
     with tempfile.TemporaryDirectory() as tmp:
