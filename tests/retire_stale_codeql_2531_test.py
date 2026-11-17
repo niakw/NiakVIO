@@ -30,6 +30,14 @@ initial["files"].append({
 with patch.object(mod,"api",return_value=initial):
     assert mod.evidence_only_drift(src,head)
     assert mod.evidence_only_drift(src,src)
+with patch.object(mod,"api",return_value=response([
+    ".github/triggers/domain-refresh",
+    ".github/triggers/release-finalize.json",
+    "automation/brain-repair-memory.json",
+    "automation/brain-llm-force-memory.json",
+    "MEMORY.md",
+])):
+    assert mod.evidence_only_drift(src,head)
 with patch.object(mod,"api",return_value={
     **initial,
     "files":[{"filename":"automation/provider-census-status-42308514242.json",
