@@ -8,6 +8,11 @@ on:
         required: false
         default: false
         type: boolean
+      certify_provenance:
+        description: Require logical provider ownership plus a visible external-source provenance witness
+        required: false
+        default: false
+        type: boolean
   schedule:
     - cron: "20 18 * * 6"
   push:
@@ -229,6 +234,13 @@ jobs:
         run: |
           set -euo pipefail
           node niakvio/scripts/gate_native_multi_audio_coverage.cjs --client desktop "$GITHUB_WORKSPACE"/desktop-native-corpus-${{ matrix.os_name }}-*.log
+
+      - name: Require Desktop provider/source provenance release witness
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.certify_provenance }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node niakvio/scripts/gate_native_provider_provenance.cjs --client desktop "$GITHUB_WORKSPACE"/desktop-native-corpus-${{ matrix.os_name }}-*.log
 
       - name: Build Desktop Brain diagnoses from captured evidence
         if: always()
