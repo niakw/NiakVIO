@@ -159,12 +159,24 @@ jobs:
           require_current_projection_head() {
             git fetch --no-tags origin main >/dev/null 2>&1
             remote_sha="$(git rev-parse origin/main)"
-            if [ "$remote_sha" != "$GITHUB_SHA" ]; then
-              echo "FIELD_PROVIDER_PROJECTION_SUPERSEDED_DURING_REBUILD source=$GITHUB_SHA current=$remote_sha processed=$processed" >&2
-              gh workflow run provider-projection-reconcile.yml --repo "$GITHUB_REPOSITORY" --ref main -f expected_sha="$remote_sha" || true
-              echo "FIELD_PROVIDER_PROJECTION_REQUEUED current=$remote_sha processed=$processed" >&2
-              exit 1
+            if [ "$remote_sha" = "$GITHUB_SHA" ]; then
+              return 0
             fi
+            git merge-base --is-ancestor "$GITHUB_SHA" "$remote_sha" || {
+              echo "FIELD_PROVIDER_PROJECTION_SUPERSEDED_DURING_REBUILD source=$GITHUB_SHA current=$remote_sha processed=$processed reason=non_ancestor" >&2
+              gh workflow run provider-projection-reconcile.yml --repo "$GITHUB_REPOSITORY" --ref main -f expected_sha="$remote_sha" || true
+              echo "FIELD_PROVIDER_PROJECTION_REQUEUED current=$remote_sha processed=$processed reason=non_ancestor" >&2
+              exit 1
+            }
+            git diff-tree -r --no-renames --name-only "$GITHUB_SHA" "$remote_sha" > "$RUNNER_TEMP/projection-rebuild-main-drift.paths"
+            if python scripts/domain_refresh_publication_drift_gate.py --drift-file "$RUNNER_TEMP/projection-rebuild-main-drift.paths"; then
+              echo "FIELD_PROVIDER_PROJECTION_SAFE_DRIFT_DURING_REBUILD source=$GITHUB_SHA current=$remote_sha processed=$processed"
+              return 0
+            fi
+            echo "FIELD_PROVIDER_PROJECTION_SUPERSEDED_DURING_REBUILD source=$GITHUB_SHA current=$remote_sha processed=$processed reason=executable_main_drift" >&2
+            gh workflow run provider-projection-reconcile.yml --repo "$GITHUB_REPOSITORY" --ref main -f expected_sha="$remote_sha" || true
+            echo "FIELD_PROVIDER_PROJECTION_REQUEUED current=$remote_sha processed=$processed reason=executable_main_drift" >&2
+            exit 1
           }
           require_current_projection_head
           for provider in "${providers[@]}"; do
