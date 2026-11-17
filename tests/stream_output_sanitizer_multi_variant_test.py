@@ -139,8 +139,8 @@ module.exports={getStreams:async function(){return [{
     master_runner = r"""
 const vm=require('vm');const source=process.argv[2];const enc=t=>new Uint8Array(Buffer.from(t,'utf8'));
 function response(url,type,text){let used=false,b=enc(text);return {ok:true,status:200,url,headers:{get:k=>String(k).toLowerCase()==='content-type'?type:''},body:{getReader:()=>({read:async()=>used?{done:true}:{done:false,value:(used=true,b)},cancel:async()=>{}})}}}
-const child='#EXTM3U\\n#EXT-X-TARGETDURATION:120\\n#EXTINF:120,\\nseg.ts\\n#EXT-X-ENDLIST\\n';
-const master='#EXTM3U\\n#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="aud",LANGUAGE="fr",NAME="Français",DEFAULT=YES,URI="fr.m3u8"\\n#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="aud",LANGUAGE="en",NAME="English",AUTOSELECT=YES,URI="en.m3u8"\\n#EXT-X-STREAM-INF:BANDWIDTH=3000000,AUDIO="aud"\\nvideo.m3u8\\n';
+const child='#EXTM3U\n#EXT-X-TARGETDURATION:120\n#EXTINF:120,\nseg.ts\n#EXT-X-ENDLIST\n';
+const master='#EXTM3U\n#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="aud",LANGUAGE="fr",NAME="Français",DEFAULT=YES,URI="fr.m3u8"\n#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="aud",LANGUAGE="en",NAME="English",AUTOSELECT=YES,URI="en.m3u8"\n#EXT-X-STREAM-INF:BANDWIDTH=3000000,AUDIO="aud"\nvideo.m3u8\n';
 const html='<video><source src="https://cdn.example/child.m3u8"><source src="https://cdn.example/master.m3u8"></video>';
 const sandbox={module:{exports:{}},exports:{},URL,AbortController,setTimeout,clearTimeout,Uint8Array,encodeURIComponent,
  fetch:async(url)=>{let u=String(url);if(u.includes('/embed/'))return response(u,'text/html',html);if(u.endsWith('/child.m3u8'))return response(u,'application/vnd.apple.mpegurl',child);if(u.endsWith('/master.m3u8'))return response(u,'application/vnd.apple.mpegurl',master);throw new Error('unexpected '+u)}};
