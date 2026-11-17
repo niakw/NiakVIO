@@ -29,6 +29,7 @@ validation = (ROOT / "VALIDATION.md").read_text(encoding="utf-8")
 upstreams = (ROOT / "UPSTREAMS.md").read_text(encoding="utf-8")
 engine = (ROOT / "engine_v2/README.md").read_text(encoding="utf-8")
 sync = (ROOT / ".github/workflows/sync.yml").read_text(encoding="utf-8")
+workflow_gate = (ROOT / ".github/workflows/github-actions-gate.yml").read_text(encoding="utf-8")
 manual = (ROOT / ".github/workflows/provider-v3-reconstruct-all.yml").read_text(encoding="utf-8")
 machine = json.loads((ROOT / "automation/provider-v3-architecture.json").read_text(encoding="utf-8"))
 assert machine["schema_version"] >= 27
@@ -60,6 +61,9 @@ for required in (
     "StreamBadge public actuel est **v10**",
     "runtime_visible_provider_ids()",
     "bulk_onboarding_pending",
+    "activate_bulk_proven_providers.py",
+    "portfolio_priority_missing",
+    "portfolio_projection_capacity_reached",
 ):
     assert required in architecture, required
 
@@ -597,5 +601,8 @@ for path in (ROOT / ".github/workflows").glob("*.yml"):
     assert "run_adaptive_quick_repair.py" not in executable_yaml, path.name
     assert "run_adaptive_deep_repair.py" not in executable_yaml, path.name
 
+assert '      - "ARCHITECTURE.md"' in workflow_gate
+assert '      - "tests/provider_v3_documentation_contract_test.py"' in workflow_gate
+assert "python3 tests/provider_v3_documentation_contract_test.py" in workflow_gate
 assert "46 providers" not in validation and "46 Provider Objects" not in validation
 print(f"Provider v3 documentation and workflow ownership contract passed: visible={VISIBLE_EXPECTED} runtime={RUNTIME_VISIBLE_EXPECTED} active={ACTIVE_EXPECTED} pending={len(PENDING_IDS)} historical={HISTORICAL_PROVIDER_COUNT}")
