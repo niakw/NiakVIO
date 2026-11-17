@@ -7,8 +7,8 @@ hardening pass, provider-agnostic movie/episode identity guards, the live manual
 V34 common fixes, and the durable Mugiwara episodic fail-closed migration. This
 ordering guarantees that all current active generated bundles use the same repaired
 DATA/runtime contract and that provider-specific repaired runtime Lego cannot
-silently regress. Historical knowledge may remain stored for the 50 archived
-providers, but it is never materialized into the current release.
+silently regress. Historical provider knowledge may remain archived, but its
+cardinality is never policy and it is never materialized into the current release.
 '''
 from __future__ import annotations
 
