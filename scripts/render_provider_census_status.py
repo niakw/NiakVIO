@@ -832,10 +832,28 @@ def build_status_rows(
             else {"classification": "not-applicable", "evidence": [], "lanes": []}
         )
         authority = _authority_fields(authority_status, provider)
+        # An intentionally non-executable onboarding seed cannot make a provider
+        # HTTP request: gate_runtime_plan_missing is a staging/proof prerequisite,
+        # not evidence that the provider's actual JavaScript is broken.
+        # Never extend this exception to active providers or mixed execution
+        # failures, where the normal provider/runtime diagnosis still applies.
+        pending_unproven_plan = (
+            authority.get("authorityAction") == "ONBOARDING_PENDING"
+            and not verified
+            and bool(ordered)
+            and all(
+                str(row.get("debug_stage") or "") == "gate_runtime_plan_missing"
+                for row in ordered
+            )
+        )
+        if pending_unproven_plan:
+            status = "NO PROOF"
         underlying_status = status
         if _lifecycle_disabled(authority):
             status = "DISABLED"
-        status_repair_eligible = is_repair_eligible_status(status)
+        status_repair_eligible = (
+            False if pending_unproven_plan else is_repair_eligible_status(status)
+        )
         out.append({
             "provider": provider,
             "status": status,
@@ -853,8 +871,20 @@ def build_status_rows(
             "harnessTransportClass": harness_diag["classification"],
             "harnessTransportEvidence": harness_diag["evidence"],
             **authority,
-            "action": _authority_action(status, harness_diag["classification"], authority),
-            "brainCheckRequired": is_symptomatic_status(status),
+            "onboardingRuntimePlanState": (
+                "missing_executable_plan" if pending_unproven_plan else ""
+            ),
+            "action": (
+                "pending clean Provider v3 seed has no executable route/API plan; "
+                "qualify provider-owned live HTTP and media identity evidence, "
+                "materialize a proven runtime plan, then retest pending bytes; "
+                "no activation or Brain Repair"
+                if pending_unproven_plan
+                else _authority_action(status, harness_diag["classification"], authority)
+            ),
+            "brainCheckRequired": (
+                False if pending_unproven_plan else is_symptomatic_status(status)
+            ),
             "statusRepairEligible": status_repair_eligible,
             "repairEligible": status_repair_eligible and authority["authorityRepairEligible"],
             "testedThisRun": True,
