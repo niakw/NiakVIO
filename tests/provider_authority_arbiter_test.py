@@ -249,6 +249,7 @@ for original in (
     {"action": "REDISCOVER_SEARCH", "repairEligible": False, "reasons": ["search"]},
     {"action": "DISABLE_UPSTREAM_SHUTDOWN", "repairEligible": False, "reasons": ["operator_notice"]},
 ):
+    original_reasons = list(original["reasons"])
     annotated = module.with_current_byte_proof_debt(
         original, proof_authority="no-current-byte-production-proof", current_status="NO PROOF"
     )
@@ -257,7 +258,8 @@ for original in (
     assert annotated["productionFreshnessAuthorized"] is False, annotated
     assert annotated["productionProofAuthority"] == "no-current-byte-production-proof", annotated
     assert "current_bytes_lack_production_freshness_authority" in annotated["reasons"], annotated
-    assert original["reasons"] == [original["reasons"][0]], original
+    assert original["reasons"] == original_reasons, original
+    assert annotated["reasons"][:len(original_reasons)] == original_reasons, annotated
 
 # The owner must never replace a diagnosis with a synthetic nonfunctional
 # verdict just because the current exact-byte proof is absent.
