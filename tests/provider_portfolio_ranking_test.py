@@ -12,6 +12,7 @@ CONFIG = json.loads((ROOT / ".github/triggers/nuvio-client-lab.json").read_text(
 SCRIPT = ROOT / "scripts/rank_provider_portfolio.cjs"
 SCRIPT_SOURCE = SCRIPT.read_text(encoding="utf-8")
 POLICY = json.loads((ROOT / ".github/provider-portfolio-policy.json").read_text(encoding="utf-8"))
+WORKFLOW_GATE = (ROOT / ".github/workflows/github-actions-gate.yml").read_text(encoding="utf-8")
 
 
 def b64(value: str) -> str:
@@ -123,5 +124,14 @@ with tempfile.TemporaryDirectory() as tmp:
     assert retirement["require_no_unique_fixture_coverage"] is True
     assert retirement["require_no_unique_vf_fixture_coverage"] is True
     assert retirement["runtime_or_transport_failure_means_repair_not_unsafe"] is True
+
+for required in (
+    '".github/provider-portfolio-policy.json"',
+    '"tests/provider_portfolio_ranking_test.py"',
+    '"tests/provider_coverage_preservation_test.py"',
+    "python3 tests/provider_portfolio_ranking_test.py",
+    "python3 tests/provider_coverage_preservation_test.py",
+):
+    assert required in WORKFLOW_GATE, required
 
 print("provider portfolio quality-first ranking tests passed")
