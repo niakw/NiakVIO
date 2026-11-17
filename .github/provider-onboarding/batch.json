@@ -1,5 +1,5 @@
 {
-  "requestVersion": 45,
+  "requestVersion": 46,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "activationPolicy": "staged_pending_only",
   "allowReplaceExisting": true,
@@ -18,40 +18,6 @@
   },
   "policy": "Stage exact Provider-v3 candidates from the strict Global/France inventory as disabled/pending. No provider becomes active from static or WAF-limited evidence; activation requires subsequent exact-byte terminal proof through the provider lifecycle/Brain pipeline.",
   "providers": [
-    {
-      "id": "flickystream",
-      "name": "FlickyStream",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://flickystream.mov",
-      "replace_existing": false,
-      "inventory_rank": 15,
-      "inventory_score": 88,
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted",
-      "routes": [
-        "),c(`/anime/{tmdbId}`,{state:{backgroundLocation:u}})},className:",
-        "/genre/movie/{tmdbId}",
-        "/anime/{tmdbId}",
-        ",children:(u=s.data)==null?void%200%3Au.genres.map%28g=%3Ef.jsx%28yr%2C{to%3A%60%2Fgenre%2Fmovie%2F{tmdbId}%60%2Cchildren%3Af.jsx%28tt%2C{variant%3A"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "request-existing",
-        "reason": "existing_identity_executable_route_plan",
-        "routeCount": 4
-      }
-    },
     {
       "id": "meowtv",
       "name": "MeowTV",
@@ -83,39 +49,6 @@
         "transport": "residential-exit",
         "reason": "observed_identity_executable_routes",
         "routeCount": 3
-      }
-    },
-    {
-      "id": "dpstream",
-      "name": "DPStream",
-      "scope": "france",
-      "types": [
-        "movie",
-        "tv"
-      ],
-      "languages": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://dpstream.fyi/",
-      "replace_existing": false,
-      "inventory_rank": 50,
-      "inventory_score": 64,
-      "routeDiscoveryLastReason": "provider_probe_budget_exhausted",
-      "routes": [
-        "?oe=%60https%3A%2F%2Fwww.vidking.net%2Fembed%2Ftv%2F{tmdbId}%2F{season}%2F{episode}%60%3AY.id%3D%3D%3D",
-        "?oe=%60https%3A%2F%2Fvidsrc.io%2Fembed%2Ftv%3Ftmdb%3D{tmdbId}&season={season}&episode={episode}",
-        "?oe=%60https%3A%2F%2Fplayer.vidplus.to%2Fembed%2Ftv%2F{tmdbId}%2F{season}%2F{episode}%3Fautoplay%3Dtrue&autonext=true&nextbutton=true&poster=true&title={query}&watchparty=false&primarycolor=6C63FF&secondarycolor=9F9BFF&iconcolor=FFFFFF%60%3AY.id%3D%3D%3D",
-        "?oe=%60https%3A%2F%2Fwww.vidking.net%2Fembed%2Fmovie%2F{tmdbId}%60%3AY.id%3D%3D%3D"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "request-existing",
-        "reason": "existing_identity_executable_route_plan",
-        "routeCount": 4
       }
     }
   ],
@@ -1503,21 +1436,89 @@
       "retainedKnowledge": "provider-old/animoflix--base--9eef980cbac68086.js",
       "sourceNote": "Pinned Gowaru manifest declares French movie/TV; retained NiakVIO ProviderBase records knownSite animoflix.to and historical route/origin knowledge. Candidate remains non-active until normal route/onboarding proof.",
       "routeDiscoveryLastReason": "provider_probe_budget_exhausted"
+    },
+    {
+      "id": "flickystream",
+      "name": "FlickyStream",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://flickystream.mov",
+      "replace_existing": false,
+      "inventory_rank": 15,
+      "inventory_score": 88,
+      "routeDiscoveryLastReason": "validation_wave_hold_nonlive_route_authority",
+      "routes": [
+        "),c(`/anime/{tmdbId}`,{state:{backgroundLocation:u}})},className:",
+        "/genre/movie/{tmdbId}",
+        "/anime/{tmdbId}",
+        ",children:(u=s.data)==null?void%200%3Au.genres.map%28g=%3Ef.jsx%28yr%2C{to%3A%60%2Fgenre%2Fmovie%2F{tmdbId}%60%2Cchildren%3Af.jsx%28tt%2C{variant%3A"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "request-existing",
+        "reason": "existing_identity_executable_route_plan",
+        "routeCount": 4
+      }
+    },
+    {
+      "id": "dpstream",
+      "name": "DPStream",
+      "scope": "france",
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "languages": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://dpstream.fyi/",
+      "replace_existing": false,
+      "inventory_rank": 50,
+      "inventory_score": 64,
+      "routeDiscoveryLastReason": "validation_wave_hold_nonlive_route_authority",
+      "routes": [
+        "?oe=%60https%3A%2F%2Fwww.vidking.net%2Fembed%2Ftv%2F{tmdbId}%2F{season}%2F{episode}%60%3AY.id%3D%3D%3D",
+        "?oe=%60https%3A%2F%2Fvidsrc.io%2Fembed%2Ftv%3Ftmdb%3D{tmdbId}&season={season}&episode={episode}",
+        "?oe=%60https%3A%2F%2Fplayer.vidplus.to%2Fembed%2Ftv%2F{tmdbId}%2F{season}%2F{episode}%3Fautoplay%3Dtrue&autonext=true&nextbutton=true&poster=true&title={query}&watchparty=false&primarycolor=6C63FF&secondarycolor=9F9BFF&iconcolor=FFFFFF%60%3AY.id%3D%3D%3D",
+        "?oe=%60https%3A%2F%2Fwww.vidking.net%2Fembed%2Fmovie%2F{tmdbId}%60%3AY.id%3D%3D%3D"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "request-existing",
+        "reason": "existing_identity_executable_route_plan",
+        "routeCount": 4
+      }
     }
   ],
   "routeDiscoveryWave": {
-    "sourceRequestVersion": 44,
+    "sourceRequestVersion": 45,
     "qualified": 3,
-    "selected": 3,
-    "standbyQualified": 0,
-    "deferred": 62,
+    "selected": 1,
+    "standbyQualified": 2,
+    "deferred": 64,
     "transports": [
       "residential-exit"
     ],
     "shardArtifactCount": 16,
     "expectedShardCount": 16,
     "completeShardSet": true,
-    "activationRequiresExecutablePlan": true
+    "activationRequiresExecutablePlan": true,
+    "validationWave": "meowtv-first-observed-identity-routes"
   },
   "handoff": {
     "reason": "replay_after_brain_sandbox_and_residential_oidc_stabilization",
@@ -1547,7 +1548,9 @@
     "catalogCanonicalizationFix": "e7bb2fbdb0de90a42879ea20649932d873d07c74",
     "catalogCanonicalizationContract": "cc5bc8d23cd64ef86520a5cf128592f303ed52f1",
     "exact60CeilingFix": "c0c08f6933a3e5d8bf0f88d16ef3030ad0720080",
-    "exact60CeilingContract": "e455b81216c6537e4447eae2fbe80f57d39e06ca"
+    "exact60CeilingContract": "e455b81216c6537e4447eae2fbe80f57d39e06ca",
+    "pendingValidationExecutionFix": "97ddc50ec1ea8e66803947d0ba96485e6b3f3239",
+    "representativeValidationProvider": "meowtv"
   },
-  "notes": " Post-activation replay: Watchott and AnimeJL were already published and are removed from the pending onboarding transaction; their current bytes are handled by normal provider materialization/publication. Webflix and Zone-Téléchargement are existing France-only disabled identities; replacement is explicit and must preserve a single canonical ID. Webflix upgraded from search-only discovery to Mac-proven TMDB FastFlux movie/episode/discovery APIs. Retry after generic publish race fix 53880a5 and projection-only static-history decoupling fe10b17/7f11b50. 2026-11-15: switched to stage-only publication after dynamic-cardinality audit; candidates remain disabled until exact-byte terminal proof. Unproven inventory routes are candidate knowledge only."
+  "notes": " Post-activation replay: Watchott and AnimeJL were already published and are removed from the pending onboarding transaction; their current bytes are handled by normal provider materialization/publication. Webflix and Zone-Téléchargement are existing France-only disabled identities; replacement is explicit and must preserve a single canonical ID. Webflix upgraded from search-only discovery to Mac-proven TMDB FastFlux movie/episode/discovery APIs. Retry after generic publish race fix 53880a5 and projection-only static-history decoupling fe10b17/7f11b50. 2026-11-15: switched to stage-only publication after dynamic-cardinality audit; candidates remain disabled until exact-byte terminal proof. Unproven inventory routes are candidate knowledge only. 2026-11-17: representative validation wave runs MeowTV first; FlickyStream/DPStream remain deferred because their route evidence is retained/request-existing rather than observed identity-aware live discovery."
 }
