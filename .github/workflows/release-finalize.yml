@@ -97,7 +97,17 @@ on:
       - 'automation/nuvio-tv-runtime-contract.json'
       - 'automation/platform-runtime-matrix.json'
       - 'automation/platform-runtime-policy.json'
+      - 'engine_v2/config/nuvio-clients.json'
       - 'sources.json'
+      # Native harness semantics are part of exact-final-SHA certification.
+      - 'scripts/prebuild_native_android_reader_suite.sh'
+      - 'scripts/run_native_corpus_mobile_suite.sh'
+      - 'scripts/run_native_corpus_tv_suite.sh'
+      - 'scripts/run_native_corpus_desktop_suite.sh'
+      - 'scripts/run_native_corpus_ios_suite.sh'
+      - 'scripts/apply_hub46_native_lab_scope.py'
+      - 'tests/native_hub46_transport_manifest_test.py'
+      - 'tests/native_corpus_device_lab_test.py'
       - 'scripts/check_nuvio_client_upstreams.py'
       - 'scripts/runtime_contract_gate.py'
       - 'scripts/nuvio_runtime_compatibility.py'
@@ -211,6 +221,8 @@ jobs:
           python3 tests/special_season_zero_identity_test.py
           python3 tests/native_five_lab_coverage_test.py
           python3 tests/native_hub46_scope_contract_test.py
+          python3 tests/native_hub46_transport_manifest_test.py
+          python3 tests/native_corpus_device_lab_test.py
           python3 tests/global_stream_presentation_test.py
           python3 tests/global_stream_metadata_preservation_contract_test.py
           python3 tests/global_stream_presentation_pipeline_test.py
