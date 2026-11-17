@@ -214,7 +214,7 @@ jobs:
           dispatch provider-overrides-gate.yml
           dispatch codeql.yml -f "inputs[expected_sha]=${TARGET_SHA}"
           dispatch security-final-gate.yml -f "inputs[expected_sha]=${TARGET_SHA}"
-          dispatch external-code-audit.yml -f "inputs[ref]=${TARGET_REF}" -F 'inputs[publish]=false'
+          dispatch external-code-audit.yml -f "inputs[ref]=${TARGET_SHA}" -F 'inputs[publish]=false'
           dispatch native-mobile-android-reader.yml -F 'inputs[certify_multi_audio]=true'
           dispatch native-mobile-ios-reader.yml -f 'inputs[mode]=full' -F 'inputs[certify_multi_audio]=true'
           dispatch native-desktop-reader-acceptance.yml -F 'inputs[certify_multi_audio]=true'
