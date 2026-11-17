@@ -75,7 +75,10 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         "UiDevice.getInstance(instrumentation)",
         'By.clazz("android.widget.RadioButton")',
         "audio_track_count=${reader.audioTrackCount}",
+        "audio_track_languages64=${b64(reader.audioTrackLanguages)}",
         "audio_track_count=${transport.audioTrackCount}",
+        "audio_track_languages64=${b64(transport.audioTrackLanguages)}",
+        "audio_track_languages64=${b64(transport.audioTrackLanguages)}",
     ):
         assert required in tv_out, required
     assert tv_out.count("FIELD_NATIVE_PLAYER_ENTRY client=tv") == 1
@@ -186,6 +189,7 @@ with tempfile.TemporaryDirectory() as tmp_raw:
                 "audio_track_count=${reader.audioTrackCount}",
                 "audio_track_languages64=${b64(reader.audioTrackLanguages)}",
                 "audio_track_count=${transport.audioTrackCount}",
+                "audio_track_languages64=${b64(transport.audioTrackLanguages)}",
             ):
                 assert required in desktop_out, f"{platform}:{required}"
             assert "NativePlayerController(" not in desktop_out
