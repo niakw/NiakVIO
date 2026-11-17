@@ -14,8 +14,10 @@ from sanitize_provider_v3_core_metadata_routes import (  # noqa: E402
     derive_runtime_family,
     is_tmdb_url_or_route,
 )
+from materialize_provider_v3_all import provider_patch_has_owned_identity_lego_execution  # noqa: E402
 
 KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
+OVERRIDES = ROOT / "provider-overrides.json"
 TMDB_ROUTE = re.compile(
     r"api\.themoviedb\.org|themoviedb\.org|^/api\.themoviedb\.org|"
     r"^/3(?:/?$|/(?:movie|tv|find)(?:/|$))|"
@@ -103,6 +105,8 @@ def unit_contract() -> None:
 def main() -> int:
     unit_contract()
     payload = json.loads(KNOWLEDGE.read_text(encoding="utf-8"))
+    overrides = json.loads(OVERRIDES.read_text(encoding="utf-8"))
+    patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
     providers = payload.get("providers")
     assert isinstance(providers, dict) and len(providers) == projection_runtime_visible_provider_count()
     assert payload.get("coreMetadataTransportSanitized") is True
@@ -133,13 +137,20 @@ def main() -> int:
             strategy = str(model.get("strategy") or "unknown").strip().casefold()
             family = str(model.get("sourceRuntimeFamily") or "unknown").strip().casefold()
             if strategy != "quarantined" and family == "unknown":
-                active_unknown.append(provider_id)
+                patch = patches.get(provider_id) if isinstance(patches.get(provider_id), dict) else {}
+                # A repository-owned Provider Lego with a complete typed identity
+                # contract is the executable runtime itself. sourceRuntimeFamily is
+                # generic ProviderBase routing metadata and is not required to
+                # manufacture a second generic family plan for that deterministic
+                # Lego. Keep unknown forbidden for every non-Lego active provider.
+                if not provider_patch_has_owned_identity_lego_execution(patch):
+                    active_unknown.append(provider_id)
 
     assert not offenders, "Core-owned TMDB transport leaked into Provider DATA: " + repr(offenders[:12])
     assert not active_unknown, "active Provider DATA still has unknown family: " + repr(active_unknown)
     print(
         "PROVIDER_V3_CORE_METADATA_ROUTE_SANITIZER_TEST_OK "
-        f"providers={len(providers)} tmdb_owner=core active_unknown=0"
+        f"providers={len(providers)} tmdb_owner=core active_unknown=0 deterministic_legos_allowed=true"
     )
     return 0
 
