@@ -1,5 +1,5 @@
 {
-  "requestVersion": 54,
+  "requestVersion": 55,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "activationPolicy": "staged_pending_only",
   "allowReplaceExisting": true,
@@ -18,39 +18,6 @@
   },
   "policy": "Stage exact Provider-v3 candidates from the strict Global/France inventory as disabled/pending. No provider becomes active from static or WAF-limited evidence; activation requires subsequent exact-byte terminal proof through the provider lifecycle/Brain pipeline.",
   "providers": [
-    {
-      "id": "flickystream",
-      "name": "FlickyStream",
-      "scope": "global",
-      "types": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "languages": [
-        "en"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
-      ],
-      "strategy": "mixed_embed_resolver",
-      "direct": "https://flickystream.mov",
-      "replace_existing": false,
-      "inventory_rank": 15,
-      "inventory_score": 88,
-      "routeDiscoveryLastReason": "validation_wave_hold_after_v35",
-      "routes": [
-        "/genre/movie/{tmdbId}",
-        "/anime/{tmdbId}"
-      ],
-      "routeDiscoveryEvidence": {
-        "transport": "request-existing",
-        "reason": "existing_identity_executable_route_plan",
-        "routeCount": 2,
-        "origin": "https://flickystream.mov"
-      }
-    },
     {
       "id": "meowtv",
       "name": "MeowTV",
@@ -72,7 +39,7 @@
       "replace_existing": false,
       "inventory_rank": 19,
       "inventory_score": 88,
-      "routeDiscoveryLastReason": "ticketed_encrypted_api_v53_after_pending_site_probe_fix",
+      "routeDiscoveryLastReason": "tmdb_route_identity_v55_representative_restage",
       "routes": [
         "/play/movie/{tmdbId}",
         "/play/tv/{tmdbId}/{season}/{episode}",
@@ -90,7 +57,9 @@
         "routeCount": 3,
         "origin": "https://meowtv.ru",
         "authorityPreserved": true,
-        "preservedReason": "same-origin-same-route-plan-stronger-prior-observation"
+        "preservedReason": "same-origin-same-route-plan-stronger-prior-observation",
+        "identityValidationRevision": "provider-presentation-separated-from-tmdb-route-v1",
+        "identityProofAuthority": "exact-request-route-plus-terminal-contradiction-guards"
       },
       "api": "https://api.meowtv.ru",
       "providerBlocks": [
@@ -150,7 +119,11 @@
           }
         }
       ]
-    },
+    }
+  ],
+  "domainEvidenceFile": "automation/provider-domain-refresh-2026-11-14.json",
+  "activationPipelineFix": "latest_main_apply_retry_53880a5_plus_new_provider_projection_fe10b17",
+  "deferredProviders": [
     {
       "id": "dpstream",
       "name": "DPStream",
@@ -171,7 +144,7 @@
       "replace_existing": false,
       "inventory_rank": 50,
       "inventory_score": 64,
-      "routeDiscoveryLastReason": "validation_wave_hold_after_v35",
+      "routeDiscoveryLastReason": "representative_hold_until_meowtv_identity_terminal_proof_v55",
       "routes": [
         "/download/movie/{tmdbId}",
         "/movie/{tmdbId}",
@@ -184,11 +157,40 @@
         "routeCount": 4,
         "origin": "https://dpstream.fyi"
       }
-    }
-  ],
-  "domainEvidenceFile": "automation/provider-domain-refresh-2026-11-14.json",
-  "activationPipelineFix": "latest_main_apply_retry_53880a5_plus_new_provider_projection_fe10b17",
-  "deferredProviders": [
+    },
+    {
+      "id": "flickystream",
+      "name": "FlickyStream",
+      "scope": "global",
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "languages": [
+        "en"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "strategy": "mixed_embed_resolver",
+      "direct": "https://flickystream.mov",
+      "replace_existing": false,
+      "inventory_rank": 15,
+      "inventory_score": 88,
+      "routeDiscoveryLastReason": "representative_hold_until_meowtv_identity_terminal_proof_v55",
+      "routes": [
+        "/genre/movie/{tmdbId}",
+        "/anime/{tmdbId}"
+      ],
+      "routeDiscoveryEvidence": {
+        "transport": "request-existing",
+        "reason": "existing_identity_executable_route_plan",
+        "routeCount": 2,
+        "origin": "https://flickystream.mov"
+      }
+    },
     {
       "id": "flikhub",
       "name": "FlikHub",
@@ -1573,7 +1575,7 @@
     }
   ],
   "routeDiscoveryWave": {
-    "sourceRequestVersion": 53,
+    "sourceRequestVersion": 54,
     "qualified": 3,
     "selected": 3,
     "standbyQualified": 0,
@@ -1584,7 +1586,10 @@
     "shardArtifactCount": 16,
     "expectedShardCount": 16,
     "completeShardSet": true,
-    "activationRequiresExecutablePlan": true
+    "activationRequiresExecutablePlan": true,
+    "representativeProvider": "meowtv",
+    "representativeHold": true,
+    "expansionBlockedUntil": "meowtv exact staged bytes -> movie/tv/anime terminal playable + identity proof"
   },
   "handoff": {
     "reason": "replay_after_brain_sandbox_and_residential_oidc_stabilization",
@@ -1622,5 +1627,5 @@
     "routeDiscoveryMonotonicFix": "f1251cf8cdfcb87155c13c595551763655648e64",
     "providerBaseContract": "V35"
   },
-  "notes": " Post-activation replay: Watchott and AnimeJL were already published and are removed from the pending onboarding transaction; their current bytes are handled by normal provider materialization/publication. Webflix and Zone-Téléchargement are existing France-only disabled identities; replacement is explicit and must preserve a single canonical ID. Webflix upgraded from search-only discovery to Mac-proven TMDB FastFlux movie/episode/discovery APIs. Retry after generic publish race fix 53880a5 and projection-only static-history decoupling fe10b17/7f11b50. 2026-11-15: switched to stage-only publication after dynamic-cardinality audit; candidates remain disabled until exact-byte terminal proof. Unproven inventory routes are candidate knowledge only. 2026-11-17: representative validation wave runs MeowTV first; FlickyStream/DPStream remain deferred because their route evidence is retained/request-existing rather than observed identity-aware live discovery. 2026-11-17: retry MeowTV after safe same-pending restage fix; no active-provider replacement authority added. 2026-11-17: restore exact stronger MeowTV residential route observation from 937a840 after monotone-evidence fix; V35 representative restage only; FlickyStream/DPStream stay deferred. 2026-11-17: route witness is now origin-bound; requestVersion 50 intentionally supersedes any in-flight v49 discovery merge without changing the MeowTV-only representative scope. Ticketed encrypted API Bloc is structured onboarding DATA; MeowTV remains the sole disabled/pending representative until terminal media, identity, languages and subtitles are freshly proven. requestVersion 52 binds generic Bloc option provider=meowtv as required by Provider v3 generic ownership. v53 replays identical MeowTV Bloc DATA after generic ownership, disabled-stage relocation and pending ProviderBase parity fixes."
+  "notes": " Post-activation replay: Watchott and AnimeJL were already published and are removed from the pending onboarding transaction; their current bytes are handled by normal provider materialization/publication. Webflix and Zone-Téléchargement are existing France-only disabled identities; replacement is explicit and must preserve a single canonical ID. Webflix upgraded from search-only discovery to Mac-proven TMDB FastFlux movie/episode/discovery APIs. Retry after generic publish race fix 53880a5 and projection-only static-history decoupling fe10b17/7f11b50. 2026-11-15: switched to stage-only publication after dynamic-cardinality audit; candidates remain disabled until exact-byte terminal proof. Unproven inventory routes are candidate knowledge only. 2026-11-17: representative validation wave runs MeowTV first; FlickyStream/DPStream remain deferred because their route evidence is retained/request-existing rather than observed identity-aware live discovery. 2026-11-17: retry MeowTV after safe same-pending restage fix; no active-provider replacement authority added. 2026-11-17: restore exact stronger MeowTV residential route observation from 937a840 after monotone-evidence fix; V35 representative restage only; FlickyStream/DPStream stay deferred. 2026-11-17: route witness is now origin-bound; requestVersion 50 intentionally supersedes any in-flight v49 discovery merge without changing the MeowTV-only representative scope. Ticketed encrypted API Bloc is structured onboarding DATA; MeowTV remains the sole disabled/pending representative until terminal media, identity, languages and subtitles are freshly proven. requestVersion 52 binds generic Bloc option provider=meowtv as required by Provider v3 generic ownership. v53 replays identical MeowTV Bloc DATA after generic ownership, disabled-stage relocation and pending ProviderBase parity fixes. 2026-11-17: v55 restores representative-only validation after stale v49 discovery widened v54; FlickyStream/DPStream remain deferred until MeowTV exact new bytes prove all three lanes. TMDB direct request identity is separated from provider presentation labels; contradictions still win."
 }
