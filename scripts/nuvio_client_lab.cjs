@@ -319,7 +319,7 @@ function streamIdentity(stream, fixture) {
   }
 
   const primaryStrong = primaryTokens.length >= 2;
-  if (mediaType === 'movie' && primaryStrong && expectedGroups.length && !primaryMatches) {
+  if (primaryStrong && expectedGroups.length && !primaryMatches) {
     return { status: 'contradiction', reason: 'strong_title_mismatch' };
   }
   return { status: 'unknown', reason: 'insufficient_identity_metadata' };
