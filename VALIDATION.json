@@ -183,7 +183,10 @@
       "scripts/gate_native_ios_multi_audio.py"
     ],
     "ordinary_native_diagnostics_may_have_zero_multi_audio_witness": true,
-    "requires_multi_audio_language_witness_per_native_platform": true
+    "requires_multi_audio_language_witness_per_native_platform": true,
+    "requires_provider_source_provenance_witness_per_native_platform": true,
+    "provider_source_provenance_rule": "every sampled native stream row must retain logical provider ownership equal to the scraper that produced it, and each exact-final-SHA platform must observe at least one visible V13 external-source provenance label without reassigning provider ownership",
+    "provider_source_provenance_gate": "scripts/gate_native_provider_provenance.cjs"
   },
   "limitations": [
     "A CI IP can be blocked while a residential IP works.",
@@ -317,7 +320,10 @@
     },
     "multi_audio_indirect_candidate_probe_cap": 16,
     "multi_audio_candidate_policy": "prefer proven HLS master; stop early only after multi-audio master rank",
-    "multi_audio_language_collapse_failure_owner": "client_runtime"
+    "multi_audio_language_collapse_failure_owner": "client_runtime",
+    "native_provider_source_provenance_gate": "scripts/gate_native_provider_provenance.cjs",
+    "native_provider_ownership_mismatch_failure_owner": "client_runtime_or_core_projection",
+    "final_native_external_source_provenance_witness_required_per_platform": true
   },
   "terminal_media_pipeline": {
     "order": [
@@ -372,5 +378,6 @@
       "MacBridge HTTP/DNS seed",
       "GitHub-hosted HTTP seed"
     ]
-  }
+  },
+  "schemaVersion": 85
 }
