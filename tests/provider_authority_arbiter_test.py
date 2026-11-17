@@ -241,6 +241,34 @@ regression = {
 assert module.current_architecture_nonfunctional(regression) is True
 assert module.current_architecture_nonfunctional({**regression,"testedThisRun":False}) is False
 
+# Missing current-byte positive proof is a freshness/validation debt, not
+# evidence that the provider stopped functioning. This guards against mass
+# disablement immediately after a shared Core/ProviderBase byte rotation.
+for original in (
+    {"action": "KEEP_BACKEND", "repairEligible": True, "reasons": ["backend"]},
+    {"action": "REDISCOVER_SEARCH", "repairEligible": False, "reasons": ["search"]},
+    {"action": "DISABLE_UPSTREAM_SHUTDOWN", "repairEligible": False, "reasons": ["operator_notice"]},
+):
+    annotated = module.with_current_byte_proof_debt(
+        original, proof_authority="no-current-byte-production-proof", current_status="NO PROOF"
+    )
+    assert annotated["action"] == original["action"], annotated
+    assert annotated["repairEligible"] == original["repairEligible"], annotated
+    assert annotated["productionFreshnessAuthorized"] is False, annotated
+    assert annotated["productionProofAuthority"] == "no-current-byte-production-proof", annotated
+    assert "current_bytes_lack_production_freshness_authority" in annotated["reasons"], annotated
+    assert original["reasons"] == [original["reasons"][0]], original
+
+# The owner must never replace a diagnosis with a synthetic nonfunctional
+# verdict just because the current exact-byte proof is absent.
+classifier_source = SCRIPT.read_text(encoding="utf-8")
+main_classification = classifier_source.split(
+    'if manifest_row.get("enabled") is not False and not production_authorized:', 1
+)[1].split('if args.apply_safe_disables and result["action"] in {', 1)[0]
+assert "with_current_byte_proof_debt(" in main_classification
+assert '"action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL"' not in main_classification
+assert '"currentByteUnprovenEntersDisabledRetention": False' in classifier_source
+
 # Bulk onboarding pending is non-active but distinct from disabled retention.
 r=module.classify("demo",row(False),reg(),patch(),{},pending_onboarding=True)
 assert r["action"]=="ONBOARDING_PENDING",r
