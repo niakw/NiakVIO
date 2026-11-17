@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-11-17T13:08:31Z",
+  "role": "residential-network-contradiction-oracle",
+  "sourceRepository": "niakw/NiakGH-MacBridge",
+  "testedNiakVIOSha": "82777d29a1e806558c43eb85d31c714ad538bcbf",
+  "runs": {
+    "httpBatch": {
+      "runId": "44089265990",
+      "requestCommit": "e17a3715b827b7122eee84cd305a13f02ed598bb",
+      "requestId": "niakvio-network-oracle-20261117-001"
+    },
+    "domainDryRun": {
+      "runId": "44089727323",
+      "requestCommit": "a8c6822ee4eec0cda5f2feb9183c0a1e5005b7b7",
+      "resultCommit": "aaf1b3e84168453f7814d6d8fc6b44f570847afa",
+      "requestId": "niakvio-domain-residential-20261117-003"
+    }
+  },
+  "observations": {
+    "purstream": {
+      "direct": "https://purstream.tech/",
+      "directResidential": "dns-failure",
+      "hub": "https://purstream.wiki/",
+      "hubResidentialStatus": 200,
+      "domainDryRunStatus": "hub_unresolved",
+      "note": "Provider current-byte census remains FULL OK via structured backend; dead public direct does not imply provider logic failure."
+    },
+    "hianime": {
+      "direct": "https://hianime.at/",
+      "residentialRedirect": "https://hianime.fm/",
+      "domainDryRunStatus": "site_authoritative",
+      "selectedSourceType": "source_redirect"
+    },
+    "frenchstream": {
+      "direct": "https://fs16.lol/",
+      "directResidential": "dns-failure",
+      "domainDryRunStatus": "hub_unresolved",
+      "fallbackSearch": "Yandex challenged; DuckDuckGo 202 without safe candidate"
+    },
+    "streamzo": {
+      "direct": "https://streamzo.fr/",
+      "directResidential": "dns-failure",
+      "domainDryRunStatus": "hub_unresolved",
+      "fallbackSearch": "Yandex challenged; DuckDuckGo 202 without safe candidate"
+    },
+    "movix-fr": {
+      "direct": "https://movix.zip/",
+      "directResidential": "dns-failure",
+      "domainDryRunStatus": "hub_unresolved",
+      "fallbackSearch": "Yandex challenged; DuckDuckGo 202 without safe candidate"
+    }
+  },
+  "policy": {
+    "githubOnlyNetworkFailureMayNotDisableProvider": true,
+    "networkAmbiguityRequiresResidentialReplay": true,
+    "deterministicTestsRemainOnCI": true,
+    "macbridgeFailureAloneDoesNotProveProviderLogicFailure": true
+  }
+}
