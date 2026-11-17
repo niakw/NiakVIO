@@ -546,6 +546,7 @@ def enable_tv_tests(repo: Path) -> None:
         '\n\ndependencies {\n'
         '    androidTestImplementation("androidx.test.ext:junit:1.3.0")\n'
         '    androidTestImplementation("androidx.test:runner:1.7.0")\n'
+        '    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")\n'
         '}\n'
     )
     build.write_text(text, encoding="utf-8")
