@@ -199,9 +199,13 @@ jobs:
             exit 1
           }
       - name: Dispatch permanent gates, Verify & Publish, security and native labs on exact candidate ref
+        id: dispatch
         shell: bash
         run: |
           set -euo pipefail
+          dispatch_started_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "started_at=$dispatch_started_at" >> "$GITHUB_OUTPUT"
+          echo "FIELD_RELEASE_CHILD_DISPATCH_STARTED_AT value=$dispatch_started_at"
           dispatch() {
             local workflow="$1"
             shift || true
@@ -224,15 +228,21 @@ jobs:
 
       - name: Wait for exact candidate workflow conclusions
         shell: bash
+        env:
+          DISPATCH_STARTED_AT: ${{ steps.dispatch.outputs.started_at }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import json, os, time, urllib.parse, urllib.request
+          import datetime, json, os, time, urllib.parse, urllib.request
 
           repo=os.environ['REPO']
           ref=os.environ['TARGET_REF']
           sha=os.environ['TARGET_SHA']
           token=os.environ['GH_TOKEN']
+          dispatch_started_at=os.environ['DISPATCH_STARTED_AT']
+          dispatch_epoch=datetime.datetime.fromisoformat(
+              dispatch_started_at.replace('Z','+00:00')
+          ).timestamp()
           workflows=[
               'github-actions-gate.yml',
               'sync.yml',
@@ -263,7 +273,21 @@ jobs:
               q=urllib.parse.urlencode({'branch': ref, 'event': 'workflow_dispatch', 'per_page': 20})
               url=f'https://api.github.com/repos/{repo}/actions/workflows/{workflow}/runs?{q}'
               rows=get(url).get('workflow_runs') or []
-              return [r for r in rows if r.get('head_sha') == sha]
+              fresh=[]
+              for row in rows:
+                  if row.get('head_sha') != sha:
+                      continue
+                  created=str(row.get('created_at') or '')
+                  try:
+                      created_epoch=datetime.datetime.fromisoformat(
+                          created.replace('Z','+00:00')
+                      ).timestamp()
+                  except ValueError:
+                      continue
+                  if created_epoch + 2 < dispatch_epoch:
+                      continue
+                  fresh.append(row)
+              return fresh
 
           selected={}
           deadline=time.time()+60*15
