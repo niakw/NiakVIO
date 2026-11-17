@@ -59,24 +59,23 @@ assert module.apply(
     context={"provider_id": "future-provider-never-seen-before"},
 ) == future_source
 
-# V10 safety-uniform visible-label contract: STREAM_FACTS preserves provider/player
-# metadata under source* fields, while final branding keeps the user-facing label
-# deterministic as provider + strongest proven quality. Source metadata must not
-# be lost, but it is no longer re-injected into the visible title.
+# V11 terminal-source visible-label contract: provider ownership remains stable,
+# while a proven terminal player host may be exposed in title/name. Rich source
+# metadata remains preserved and quality stays deterministic.
 source = (
     'globalThis.getStreams=async function(){return [{'
     'url:"https://example.com/video.m3u8",'
     'name:"Peachify - 1080p",title:"Peachify - 1080p",quality:"1080p",'
-    'sourceName:"StreamWish",'
+    'sourceName:"StreamWish",playerHost:"streamwish.to",terminalHost:"cdn.streamwish.to",'
     'sourceTitle:"StreamWish Server 2 VFF WEB-DL HEVC"'
     '}]};\n'
 )
 output = module.apply(source, context={"provider_id": "peachify"})
 assert "NUVIO_GLOBAL_PROVIDER_BRANDING_V1" in output
-assert "post-safety-uniform-final-label-v10" in output
+assert "post-safety-terminal-source-label-v11" in output
 assert "🍑" in output and "Peachify" in output
 assert module.apply(output, context={"provider_id": "peachify"}) == output
-expected = "🍑 Peachify - 1080p"
+expected = "🍑 Peachify · streamwish.to - 1080p"
 
 with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as handle:
     handle.write(output)
@@ -129,6 +128,6 @@ for raw_quality, expected_suffix in [("1080i", "1080i"), ("4320p", "8K"), ("Inco
         artifact.unlink(missing_ok=True)
 
 print(
-    f"provider branding V10 contract passed: providers={len(rows)} "
+    f"provider branding V11 contract passed: providers={len(rows)} "
     "client_visible_name_title_quality=1 source_player_metadata_visible=1"
 )
