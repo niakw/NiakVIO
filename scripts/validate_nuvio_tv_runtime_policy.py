@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import importlib.util
 import json
 import re
 from pathlib import Path
@@ -32,6 +33,37 @@ def load(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError(f"{path}: expected JSON object")
     return value
+
+
+def effective_media_safety_source(path: Path) -> str:
+    """Compose the configured terminal sanitizer before validating inherited layers.
+
+    V11 is intentionally a thin delta over V10/V8. Requiring inherited markers to
+    be copied into each newer source file would duplicate implementation text and
+    make the validator disagree with the bytes actually emitted by Core.
+    """
+    spec = importlib.util.spec_from_file_location("nuvio_tv_media_safety_authority", path)
+    if spec is None or spec.loader is None:
+        raise ValueError(f"{path}: cannot load media-safety authority")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    apply = getattr(module, "apply", None)
+    if not callable(apply):
+        raise ValueError(f"{path}: media-safety authority has no apply()")
+    source = "module.exports={getStreams:async function(){return []}};\n"
+    rendered = apply(
+        source,
+        options={
+            "probe_direct_media": True,
+            "probe_all_urls": True,
+            "max_probes": 40,
+            "probe_timeout_ms": 2000,
+            "min_vod_duration_seconds": 60,
+        },
+    )
+    if not isinstance(rendered, str) or not rendered.strip():
+        raise ValueError(f"{path}: media-safety authority rendered no source")
+    return rendered
 
 
 def rows(document: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -160,14 +192,19 @@ def main() -> int:
                 errors.append(f"NuvioTV probe missing marker: {marker}")
 
     if paths.get("media_safety") and paths["media_safety"].is_file():
-        text = paths["media_safety"].read_text(encoding="utf-8", errors="replace")
+        try:
+            text = effective_media_safety_source(paths["media_safety"])
+        except Exception as error:
+            errors.append(f"NuvioTV shared media-safety authority could not compose: {error}")
+            text = ""
         for marker in (
+            "NUVIO_STREAM_OUTPUT_HLS_MASTER_PREFERENCE_V11",
             "NUVIO_STREAM_OUTPUT_NETWORK_EVIDENCE_V10",
             "NUVIO_STREAM_OUTPUT_STRICT_PROBE_V8",
             "clearPrivateProofs",
         ):
             if marker not in text:
-                errors.append(f"NuvioTV shared media-safety authority missing marker: {marker}")
+                errors.append(f"NuvioTV effective shared media-safety authority missing marker: {marker}")
 
     main_doc = load(MAIN_PATH)
     vf_doc = load(VF_PATH)
