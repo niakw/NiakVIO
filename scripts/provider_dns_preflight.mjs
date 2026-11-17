@@ -297,13 +297,23 @@ export function createGlobalpingDependencies(preflightConfig, injected = {}) {
         try {
           const dnsResult = await resolveFn(host, resolverConfig, options);
           if (!dnsResult.location_magic) return { status: 'unreachable', http_status: null, final_host: normalizeHost(host), redirects: [], body_excerpt: '', attempts: [], error: 'GLOBALPING_DNS_LOCATION_MISSING', transport: 'globalping' };
+          const resolver = String((resolverConfig.servers || [])[0] || '');
+          const measurementOptions = {
+            request: { method: 'GET', path: '/' },
+            protocol: 'HTTPS',
+            ipVersion: 4,
+          };
+          // Keep the HTTP observation on the same resolver authority as the
+          // preceding French-ISP DNS probe. Globalping HTTP measurements take
+          // the destination host in target; scheme/path belong to protocol and
+          // measurementOptions.request.
+          if (resolver) measurementOptions.resolver = resolver;
           const measurement = await runMeasurement({
             type: 'http',
-            target: `https://${normalizeHost(host)}/`,
+            target: normalizeHost(host),
             locations: [{ magic: dnsResult.location_magic }],
             limit: 1,
-            // Globalping HTTP request options live under measurementOptions.request.
-            measurementOptions: { request: { method: 'GET' }, ipVersion: 4 },
+            measurementOptions,
           }, remoteConfig);
           return parseGlobalpingHttp(measurement, host);
         } catch (error) {
