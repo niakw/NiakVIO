@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "authority": "provider-authority-arbiter-v1",
-  "censusStatusSource": "/tmp/provider-census-preauthority.json",
-  "productionFreshnessStatusSource": "/tmp/provider-census-current-freshness.json",
+  "censusStatusSource": "/home/runner/work/NiakVIO/NiakVIO/automation/provider-census-status.json",
+  "productionFreshnessStatusSource": "persisted-all-scope",
   "policy": {
     "searchRole": "historical-supplement-only",
     "futureHubSearchDefault": false,
@@ -162,21 +162,19 @@
     "zone-streaming",
     "zone-telechargement"
   ],
-  "disabledNow": [],
+  "disabledNow": [
+    "sadisflix"
+  ],
   "providers": [
     {
       "provider": "1jour1film0626",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "already_disabled"
       ]
     },
     {
@@ -192,17 +190,13 @@
     },
     {
       "provider": "67movies",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "already_disabled"
       ]
     },
     {
@@ -262,46 +256,35 @@
     },
     {
       "provider": "anidb",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "already_disabled"
       ]
     },
     {
       "provider": "aniflix-uno",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "already_disabled"
       ]
     },
     {
       "provider": "anikototv",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:REGRESSION PROVIDER"
+        "already_disabled"
       ]
     },
     {
@@ -328,17 +311,13 @@
     },
     {
       "provider": "animejlprovider",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "already_disabled"
       ]
     },
     {
@@ -365,17 +344,13 @@
     },
     {
       "provider": "animeonsen",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "already_disabled"
       ]
     },
     {
@@ -435,32 +410,24 @@
     },
     {
       "provider": "anisama",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
+        "already_disabled"
       ]
     },
     {
       "provider": "arrowtv",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "already_disabled"
       ]
     },
     {
@@ -487,17 +454,13 @@
     },
     {
       "provider": "boredflix",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "already_disabled"
       ]
     },
     {
@@ -538,17 +501,13 @@
     },
     {
       "provider": "cinegram",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "already_disabled"
       ]
     },
     {
@@ -564,32 +523,24 @@
     },
     {
       "provider": "cinemabz",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "already_disabled"
       ]
     },
     {
       "provider": "cinematheque-de-bretagne",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "already_disabled"
       ]
     },
     {
@@ -605,17 +556,13 @@
     },
     {
       "provider": "cinetimes",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "already_disabled"
       ]
     },
     {
@@ -631,17 +578,13 @@
     },
     {
       "provider": "corsflix",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "already_disabled"
       ]
     },
     {
@@ -679,17 +622,13 @@
     },
     {
       "provider": "documentary-area",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
+        "already_disabled"
       ]
     },
     {
@@ -716,77 +655,57 @@
     },
     {
       "provider": "dulourd",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "already_disabled"
       ]
     },
     {
       "provider": "emnexmovies",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
+        "already_disabled"
       ]
     },
     {
       "provider": "fawesome",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "already_disabled"
       ]
     },
     {
       "provider": "fexini",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "already_disabled"
       ]
     },
     {
       "provider": "film-a-revoir",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS MISMATCH"
+        "already_disabled"
       ]
     },
     {
@@ -824,76 +743,57 @@
     },
     {
       "provider": "flixer",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "already_disabled"
       ]
     },
     {
       "provider": "flixhq",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "already_disabled"
       ]
     },
     {
       "provider": "franime",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "already_disabled"
       ]
     },
     {
       "provider": "frembed",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "already_disabled"
       ]
     },
     {
       "provider": "french-anime",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "already_disabled"
       ]
     },
     {
@@ -910,77 +810,57 @@
     },
     {
       "provider": "frenchstream",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "already_disabled"
       ]
     },
     {
       "provider": "fsharetv",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "already_disabled"
       ]
     },
     {
       "provider": "fullanime",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "already_disabled"
       ]
     },
     {
       "provider": "hexa",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "already_disabled"
       ]
     },
     {
       "provider": "hianime",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "already_disabled"
       ]
     },
     {
@@ -996,17 +876,13 @@
     },
     {
       "provider": "ihavenotv",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "already_disabled"
       ]
     },
     {
@@ -1056,17 +932,13 @@
     },
     {
       "provider": "kidraz",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "already_disabled"
       ]
     },
     {
@@ -1104,17 +976,13 @@
     },
     {
       "provider": "latestmovies",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "already_disabled"
       ]
     },
     {
@@ -1141,32 +1009,24 @@
     },
     {
       "provider": "moiflix",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "already_disabled"
       ]
     },
     {
       "provider": "moviebite",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "already_disabled"
       ]
     },
     {
@@ -1204,49 +1064,35 @@
     },
     {
       "provider": "movish",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "already_disabled"
       ]
     },
     {
       "provider": "movix-fr",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:PARTIAL OK"
+        "already_disabled"
       ]
     },
     {
       "provider": "movy",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
-      "backendUrls": [
-        "https://api.wecollege.net"
-      ],
       "reasons": [
-        "structured_backend_authority",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS MISMATCH"
+        "already_disabled"
       ]
     },
     {
@@ -1284,17 +1130,13 @@
     },
     {
       "provider": "nakios",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:PARTIAL OK"
+        "already_disabled"
       ]
     },
     {
@@ -1311,32 +1153,24 @@
     },
     {
       "provider": "neobam",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "already_disabled"
       ]
     },
     {
       "provider": "neonflix",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
+        "already_disabled"
       ]
     },
     {
@@ -1363,17 +1197,13 @@
     },
     {
       "provider": "overlook",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "already_disabled"
       ]
     },
     {
@@ -1411,32 +1241,24 @@
     },
     {
       "provider": "primewire",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "already_disabled"
       ]
     },
     {
       "provider": "pstream",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "already_disabled"
       ]
     },
     {
@@ -1455,32 +1277,24 @@
     },
     {
       "provider": "rarefilmm",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "already_disabled"
       ]
     },
     {
       "provider": "reanime-to",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "already_disabled"
       ]
     },
     {
@@ -1496,32 +1310,24 @@
     },
     {
       "provider": "rivestream-app",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
+        "already_disabled"
       ]
     },
     {
       "provider": "rivestream-ru",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
+        "already_disabled"
       ]
     },
     {
@@ -1537,21 +1343,18 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:PARTIAL OK"
-      ]
+      ],
+      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
     },
     {
       "provider": "sekai",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "curated_direct",
-        "existing_positive_route_prior",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:REGRESSION PROVIDER"
+        "already_disabled"
       ]
     },
     {
@@ -1567,62 +1370,46 @@
     },
     {
       "provider": "showbox",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "already_disabled"
       ]
     },
     {
       "provider": "shuttletv",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "already_disabled"
       ]
     },
     {
       "provider": "skstream",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS MISMATCH"
+        "already_disabled"
       ]
     },
     {
       "provider": "stigstream",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "already_disabled"
       ]
     },
     {
@@ -1650,17 +1437,13 @@
     },
     {
       "provider": "topcartoons",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:PARTIAL OK"
+        "already_disabled"
       ]
     },
     {
@@ -1676,17 +1459,13 @@
     },
     {
       "provider": "videasy",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:REGRESSION PROVIDER"
+        "already_disabled"
       ]
     },
     {
@@ -1702,17 +1481,13 @@
     },
     {
       "provider": "vidlink",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "already_disabled"
       ]
     },
     {
@@ -1783,17 +1558,13 @@
     },
     {
       "provider": "voirserie",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS MISMATCH"
+        "already_disabled"
       ]
     },
     {
@@ -1809,62 +1580,46 @@
     },
     {
       "provider": "vuflix",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "already_disabled"
       ]
     },
     {
       "provider": "watch-cartoon-online",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "already_disabled"
       ]
     },
     {
       "provider": "watchott",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
+        "already_disabled"
       ]
     },
     {
       "provider": "waveanime",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "already_disabled"
       ]
     },
     {
@@ -1936,47 +1691,35 @@
     },
     {
       "provider": "youtitou",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "already_disabled"
       ]
     },
     {
       "provider": "zone-streaming",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "already_disabled"
       ]
     },
     {
       "provider": "zone-telechargement",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "already_disabled"
       ]
     }
   ]
