@@ -508,6 +508,7 @@ def reconcile_materialization_from_active_bundles(*, apply: bool) -> dict[str, A
         "retired": retired,
         "activeProviderIdentityCount": len(current_ids),
         "staticKnowledgeProviderCount": len(runtime_visible),
+        "generation": doc["generation"],
     }
 
 def reconcile_active_global(*, apply: bool) -> dict[str, Any]:
