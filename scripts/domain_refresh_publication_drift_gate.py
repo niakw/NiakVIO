@@ -13,6 +13,11 @@ import re
 from pathlib import Path
 
 SAFE_FILES = {
+    # Pure control-plane replay requests do not change provider/Core/DATA bytes.
+    # Release Finalizer and Domain Refresh share one serialized writer, so their
+    # trigger commits must not invalidate one another after checkout.
+    ".github/triggers/release-finalize.json",
+    ".github/triggers/domain-refresh",
     "MEMORY.md",
     "PROVIDER_CENSUS_STATUS.md",
     "automation/brain-repair-memory.json",
