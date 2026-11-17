@@ -1,3 +1,11 @@
+## 2026-11-17 — NuvioTV current head 3ff5e2b4 audited before final pre-Brain certification
+
+- The official NuvioTV `dev` branch advanced again after the prior `5b371fcd0d7e` audit, to `3ff5e2b41a9dba282c57e7602e401df09dabe703`. Mobile remains at `b2e3d67ba4a1...` and Desktop remains at `c0eb7bfa7c74...`.
+- Exact compare `5b371fcd0d7e -> 3ff5e2b41a9d` contains two commits and only two paths: `TmdbMetadataService.kt` plus `TmdbMetadataServiceTest.kt`. The runtime change filters talk-show guest appearances from person filmography using TMDB genre/character metadata; the rest is regression coverage.
+- No configured provider/plugin/stream/player semantic path changed. Positional `getStreams`, QuickJS transport, stream URL/header projection, audio-track enumeration/selection, provider grouping, automatic source-fallback identity and expired-link same-addon refresh are unchanged. This is therefore accepted as a source-audited metadata-only head advance; exact Android-TV Native execution is still mandatory.
+- Current machine authorities now agree exactly on `3ff5e2b41a9dba282c57e7602e401df09dabe703`: upstream registry, compatibility matrix, platform runtime contract, TV runtime contract, engine client config and `sources.json`; rendered platform docs were updated too.
+- This audit does not prove TV playback, multi-audio language parity or provider/source provenance. The next authority remains one exact-current-head Finalizer -> reverse byte-identical/integrity -> exact-SHA CodeQL + SEC Final Gate + external audit -> five strict Native platforms -> final census/security/hygiene read-back. Do not start Brain before the user checkpoint.
+
 ## 2026-11-17 — Provenance regressions repaired; current NuvioTV head re-audited before final certification
 
 - The first provenance-aware exact-head campaign exposed two local CI regressions before publication: `tests/native_player_diagnostics_codegen_test.py` contained a literal `\\n` inside Python source, and provenance machine-authority commits had reintroduced duplicate top-level `schemaVersion` keys beside canonical `schema_version`. Workflow Gate failed syntax and Verify failed the duplicate-schema assertion; no provider bytes were published by those failed runs.
