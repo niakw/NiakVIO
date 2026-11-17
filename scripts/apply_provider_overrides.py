@@ -52,6 +52,7 @@ CORE_MANAGED_SANITIZER_SCRIPTS = {
     "scripts/provider_patches/stream_output_sanitizer_v8.py",
     "scripts/provider_patches/stream_output_sanitizer_v9.py",
     "scripts/provider_patches/stream_output_sanitizer_v10.py",
+    "scripts/provider_patches/stream_output_sanitizer_v11.py",
 }
 GLOBAL_MEDIA_TYPE_RESOLUTION = "scripts/provider_patches/global_media_type_resolution_v1.py"
 # Managed Core bricks are composed only at whole START/END boundaries; provider rows may supply data/options, never brick ownership.
@@ -67,10 +68,10 @@ CANONICAL_CORE_MANAGED_ORDER = (
     "CORE.RUNTIME_COMPAT.V1",
     "CORE.PROVIDER_RUNTIME_DISPATCH.V1",
     "CORE.STREAM_FACTS.V1",
+    "CORE.STREAM_SANITIZER.V6",
     "CORE.STREAM_IDENTITY.V1",
     "CORE.MEDIA_TYPE_RESOLUTION.V1",
     "CORE.STREAM_PRESENTATION.V1",
-    "CORE.STREAM_SANITIZER.V6",
     "CORE.RUNTIME_MEDIA_SAFETY.V4",
     "CORE.PROVIDER_BRANDING.V1",
     "CORE.STREAM_SCORE.V1",
@@ -1856,71 +1857,25 @@ def apply_overrides(
                     "scope": "global_provider_runtime_dispatch",
                 })
 
-        # Facts and identity are independent owned Core Lego. Apply each one
-        # explicitly so the v3 ownership guard can prove that a patch only mutates
-        # the block it declares.
-        for patch_script, scope in (
-            (GLOBAL_STREAM_FACTS, "global_stream_facts"),
-            (GLOBAL_STREAM_IDENTITY, "global_stream_identity"),
-        ):
-            before = text
-            text = _apply_patch_script(text, provider_id, patch_script, {}, None)
-            if text != before:
-                applied.append({
-                    "type": "patch_script",
-                    "path": patch_script,
-                    "phase": phase,
-                    "scope": scope,
-                })
-
-        # Media-type resolution is the outermost request-side wrapper. Provider/core
-        # request logic below receives canonical movie|tv|anime identity, while
-        # output-only presentation/branding/sanitization remain outside it so
-        # deferred positive-result TMDB verification is visible to finalization.
+        # Stream facts preserve provider/player metadata before terminal resolution.
+        # The terminal sanitizer MUST run before identity/presentation: it may replace
+        # an opaque player page with the actual media URL, and all downstream identity,
+        # episode, language and presentation checks must see that final resource.
         before = text
-        semantic_types = _provider_semantic_types(provider_id, specific)
-        media_type_options = {
-            "semantic_types": semantic_types,
-            "request_type_aliases": {
-                str(key).strip().casefold(): str(value).strip().casefold()
-                for key, value in (provider_capability.get("request_type_aliases") or {}).items()
-                if str(key).strip() and str(value).strip()
-            },
-        }
-        text = _apply_patch_script(
-            text,
-            provider_id,
-            GLOBAL_MEDIA_TYPE_RESOLUTION,
-            media_type_options,
-            None,
-        )
+        text = _apply_patch_script(text, provider_id, GLOBAL_STREAM_FACTS, {}, None)
         if text != before:
             applied.append({
                 "type": "patch_script",
-                "path": GLOBAL_MEDIA_TYPE_RESOLUTION,
+                "path": GLOBAL_STREAM_FACTS,
                 "phase": phase,
-                "scope": "global_media_type_resolution",
-            })
-
-        # Presentation is a Core-wide finalization layer, not a provider capability.
-        # Apply it after catalogue/media/playback recovery to every reconstructed
-        # provider bundle. It only normalizes structured facts and optionally enriches
-        # non-empty rows with TMDB metadata; it never changes playback URL/headers.
-        before = text
-        text = _apply_patch_script(text, provider_id, GLOBAL_STREAM_PRESENTATION, {}, None)
-        if text != before:
-            applied.append({
-                "type": "patch_script",
-                "path": GLOBAL_STREAM_PRESENTATION,
-                "phase": phase,
-                "scope": "global_stream_presentation",
+                "scope": "global_stream_facts",
             })
 
         # Terminal stream validation is a Core-wide publication boundary.
         # Every returned URL within the bounded probe budget is checked with the
         # exact stream headers. Conclusive invalidity (403/404/410, blocked host,
         # HTML/error payload or malformed media) is dropped. Ordinary probe
-        # uncertainty is fail-closed under the current V8/V10 publication policy;
+        # uncertainty is fail-closed under the current V8/V10/V11 publication policy;
         # only exact proof-correlated player fallbacks have their separate bounded
         # exception. Unprobed overflow rows are therefore also not publishable.
         terminal_policy = playback_policy.get("terminal_stream_sanitizer") or {}
@@ -1961,6 +1916,63 @@ def apply_overrides(
                     "phase": phase,
                     "scope": "global_terminal_stream_sanitizer",
                 })
+
+
+        # Identity is deliberately outside terminal resolution. A recovered media URL
+        # can carry season/episode/content coordinates that were absent from the player
+        # page; reject contradictions against the actual terminal resource.
+        before = text
+        text = _apply_patch_script(text, provider_id, GLOBAL_STREAM_IDENTITY, {}, None)
+        if text != before:
+            applied.append({
+                "type": "patch_script",
+                "path": GLOBAL_STREAM_IDENTITY,
+                "phase": phase,
+                "scope": "global_stream_identity",
+            })
+
+        # Media-type resolution is the outermost request-side wrapper. Provider/core
+        # request logic below receives canonical movie|tv|anime identity, while
+        # terminal resolution/identity/presentation/branding remain outside it so
+        # deferred positive-result TMDB verification is visible to finalization.
+        before = text
+        semantic_types = _provider_semantic_types(provider_id, specific)
+        media_type_options = {
+            "semantic_types": semantic_types,
+            "request_type_aliases": {
+                str(key).strip().casefold(): str(value).strip().casefold()
+                for key, value in (provider_capability.get("request_type_aliases") or {}).items()
+                if str(key).strip() and str(value).strip()
+            },
+        }
+        text = _apply_patch_script(
+            text,
+            provider_id,
+            GLOBAL_MEDIA_TYPE_RESOLUTION,
+            media_type_options,
+            None,
+        )
+        if text != before:
+            applied.append({
+                "type": "patch_script",
+                "path": GLOBAL_MEDIA_TYPE_RESOLUTION,
+                "phase": phase,
+                "scope": "global_media_type_resolution",
+            })
+
+        # Presentation is a Core-wide finalization layer, not a provider capability.
+        # It runs only after terminal resolution and identity validation, so language,
+        # quality and technical facts describe the actual media delivered to Nuvio.
+        # It never changes playback URL/headers.
+        before = text
+        text = _apply_patch_script(text, provider_id, GLOBAL_STREAM_PRESENTATION, {}, None)
+        if text != before:
+            applied.append({
+                "type": "patch_script",
+                "path": GLOBAL_STREAM_PRESENTATION,
+                "phase": phase,
+                "scope": "global_stream_presentation",
+            })
 
         # CORE_RUNTIME_MEDIA_SAFETY_OUTERMOST_V1
         # Safety is the final Core stream guard. Applying it after enrichment,
