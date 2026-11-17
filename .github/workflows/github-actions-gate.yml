@@ -61,6 +61,10 @@ on:
       - "tests/native_android_avd_cache_contract_test.py"
       - "scripts/tv_hls_duration_identity.py"
       - "scripts/rank_provider_portfolio.cjs"
+      - "scripts/protect_provider_coverage.cjs"
+      - ".github/provider-portfolio-policy.json"
+      - "tests/provider_portfolio_ranking_test.py"
+      - "tests/provider_coverage_preservation_test.py"
       - "scripts/watch_native_device_frontend.sh"
       - "scripts/resolve_provider_hubs.py"
       - "tests/provider_hub_registry_test.py"
@@ -350,6 +354,8 @@ jobs:
           python3 tests/provider_v3_live_route_validation_test.py
           python3 tests/provider_bulk_offline_rematerialization_contract_test.py
           python3 tests/provider_bulk_offline_capacity_test.py
+          python3 tests/provider_portfolio_ranking_test.py
+          python3 tests/provider_coverage_preservation_test.py
           python3 tests/add_provider_workflow_test.py
           python3 tests/provider_bulk_onboarding_test.py
           python3 tests/provider_onboarding_publish_drift_test.py
