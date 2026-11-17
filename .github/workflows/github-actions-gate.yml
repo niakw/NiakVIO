@@ -127,8 +127,10 @@ permissions:
   contents: read
 
 concurrency:
-  group: github-actions-gate-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  # Exact release-certification dispatches are immutable proof runs and must not
+  # be cancelled by later push/PR activity on the same ref.
+  group: github-actions-gate-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
   validate:
