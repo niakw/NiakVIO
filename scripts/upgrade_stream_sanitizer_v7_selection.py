@@ -18,11 +18,13 @@ V8 = "scripts/provider_patches/stream_output_sanitizer_v8.py"
 V9 = "scripts/provider_patches/stream_output_sanitizer_v9.py"
 V10 = "scripts/provider_patches/stream_output_sanitizer_v10.py"
 V11 = "scripts/provider_patches/stream_output_sanitizer_v11.py"
+V12 = "scripts/provider_patches/stream_output_sanitizer_v12.py"
 NEWER_SANITIZERS = {
     8: V8,
     9: V9,
     10: V10,
     11: V11,
+    12: V12,
 }
 SELECTION_RE = re.compile(
     r'GLOBAL_STREAM_SANITIZER = "'
