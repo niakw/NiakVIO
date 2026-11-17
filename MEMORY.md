@@ -1,3 +1,12 @@
+## 2026-11-17 — Proof-driven Bulk Activation now enforces the 60 Global / 60 France projection targets
+
+- Pre-census audit found 32 current `ONBOARDING_PENDING` identities (17 Global / 15 France), all disabled and backed by `provider-disabled/` bytes. With production currently 45 Global / 38 France, blindly activating every fresh FULL pending provider could have produced 62 Global rows.
+- The defect was in `activate_bulk_proven_providers.py`: it correctly required fresh `FULL OK`, `testedThisRun=true`, all declared lanes currently verified, no Brain check and exact proof-source bytes, but then activated every eligible provider without consulting the current 60/60 portfolio contract or onboarding ranking.
+- `ece6e7e1` makes activation projection-aware. It loads `.github/provider-portfolio-policy.json`, counts the current catalog projections, orders pending candidates deterministically by the current onboarding inventory rank/score, and refuses any additional candidate that would exceed either target. A fully proven over-cap candidate stays pending with `portfolio_projection_capacity_reached`; it is not disabled, deleted, or relabeled unhealthy. Existing active providers are never automatically retired.
+- `9768c9f7` locks a synthetic 1-Global/1-France portfolio: two fresh Global FULL candidates compete for one slot, only the higher-ranked first candidate is activated, the second remains pending due capacity, and an independently stale FULL proof remains blocked for freshness.
+- `3ac224b1` makes Workflow Gate own the Bulk Activation workflow/script/tests and execute the activation, workflow and catalog-projection regressions. `c339dd63` makes Release Finalizer own the same mutation contract; `ced226a9` locks that ownership.
+- This is a métier/infrastructure correction, not provider health proof. Next: exact descendant Gate/Verify/Finalizer validation, then census all current pending exact bytes with `allowPendingTargets=true`; activation may fill each projection only up to 60, preserving any surplus FULL candidates as pending. Brain remains phase-gated until the user checkpoint.
+
 ## 2026-11-17 — CodeQL stale-category cleanup now shares the same evidence-only lifecycle boundary
 
 - Exact maintained CodeQL scan `44168327266` on `dd43c0ab` completed SUCCESS. Its follow-up stale-category cleanup run `44169599910` failed closed only because main had advanced through census/lifecycle evidence to `35c86ca6`; source and response-structure regressions passed before the drift guard.
