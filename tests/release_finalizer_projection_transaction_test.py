@@ -21,7 +21,8 @@ clean_base = workflow.index("python3 tests/provider_clean_reconstruction_contrac
 metier_docs = workflow.index("python3 tests/provider_v3_documentation_contract_test.py", clean_base)
 metier_plans = workflow.index("python3 tests/provider_v3_strategy_plan_contract_test.py", metier_docs)
 cardinality = workflow.index("python3 tests/provider_cardinality_source_of_truth_test.py", metier_plans)
-semantic_transport = workflow.index("python3 tests/provider_anime_semantic_transport_contract_test.py", cardinality)
+census_proof = workflow.index("python3 tests/provider_census_status_markdown_test.py", cardinality)
+semantic_transport = workflow.index("python3 tests/provider_anime_semantic_transport_contract_test.py", census_proof)
 multiplicity = workflow.index("python3 tests/provider_stream_multiplicity_contract_test.py", semantic_transport)
 season_zero = workflow.index("python3 tests/special_season_zero_identity_test.py", multiplicity)
 five_labs = workflow.index("python3 tests/native_five_lab_coverage_test.py", season_zero)
@@ -149,6 +150,8 @@ for required in (
     "'tests/provider_v3_documentation_contract_test.py'",
     "'tests/provider_v3_strategy_plan_contract_test.py'",
     "'tests/provider_cardinality_source_of_truth_test.py'",
+    "\'scripts/render_provider_census_status.py\'",
+    "\'tests/provider_census_status_markdown_test.py\'",
     "'tests/provider_anime_semantic_transport_contract_test.py'",
     "'tests/native_five_lab_coverage_test.py'",
     "'tests/native_hub46_scope_contract_test.py'",
