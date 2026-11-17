@@ -395,7 +395,36 @@ jobs:
             --run-id "${GITHUB_RUN_ID}" \
             --sha "$SOURCE_SHA"
 
-          python scripts/classify_provider_authority.py
+          # Break the census -> production-freshness -> authority cycle explicitly.
+          # First render current lane/playback state without an authority overlay.
+          # An all-scope run then stamps those exact candidate rows with current
+          # provider hashes and the authority arbiter consumes that same-transaction
+          # ledger. Targeted/partial runs keep the durable last all-scope ledger.
+          rm -f /tmp/provider-authority-unclassified.json
+          python scripts/render_provider_census_status.py automation/provider-census-sharded-merged.json \
+            --output /tmp/PROVIDER-CENSUS-PREAUTHORITY.md \
+            --json-output /tmp/provider-census-preauthority.json \
+            --history automation/provider-census-proof-history.json \
+            --baseline-status automation/provider-census-status.json \
+            --authority-status /tmp/provider-authority-unclassified.json \
+            --run-id "${GITHUB_RUN_ID}" \
+            --sha "$SOURCE_SHA"
+
+          authority_args=(python scripts/classify_provider_authority.py \
+            --census-status /tmp/provider-census-preauthority.json)
+          if [ "${{ needs.prepare.outputs.census_scope }}" = "all" ] && \
+             [ "${{ needs.prepare.outputs.allow_pending_targets }}" != "true" ]; then
+            python scripts/stamp_provider_census_artifact_hashes.py \
+              --status /tmp/provider-census-preauthority.json \
+              --manifest manifest.json \
+              --vf-manifest vf/manifest.json \
+              --output /tmp/provider-census-current-freshness.json
+            authority_args+=(--production-freshness-status /tmp/provider-census-current-freshness.json)
+            echo "FIELD_SHARDED_AUTHORITY_FRESHNESS source=current-candidate-all-scope run=${GITHUB_RUN_ID}"
+          else
+            echo "FIELD_SHARDED_AUTHORITY_FRESHNESS source=persisted-all-scope run=${GITHUB_RUN_ID}"
+          fi
+          "${authority_args[@]}"
 
           # Provisional status supplies current lane/runtime classifications to
           # the bounded WAF diagnostic. Final status is rendered afterwards.
