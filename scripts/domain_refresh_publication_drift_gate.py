@@ -32,6 +32,8 @@ SAFE_FILES = {
     "automation/provider-fast-repair-summary.json",
     "automation/provider-repair-learn-handoff-v1.json",
     "automation/provider-census-sharded-latest.json",
+    "automation/provider-census-sharded-latest-summary.json",
+    "automation/provider-census-all-status-latest.json",
     "automation/provider-learning-handoff.json",
     # Census publications are generated evidence, never provider source DATA.
     "automation/provider-census-proof-history.json",
