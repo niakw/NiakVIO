@@ -182,7 +182,7 @@ global.fetch=async function(url){
   if(url.includes('cdn.example/show/S03E01/master.m3u8')){
     const hls='#EXTM3U\\n#EXT-X-TARGETDURATION:120\\n#EXTINF:120,\\nseg.ts\\n#EXT-X-ENDLIST\\n';
     return {ok:true,status:200,url:url,headers:{get:k=>'application/vnd.apple.mpegurl'},text:async()=>hls,
-      body:{getReader:()=>({read:(()=>{let used=false;return async()=>used?{done:true}:{done:false,value:new Uint8Array(Buffer.from(hls)), ...(used=true,{})}})(),cancel:async()=>{}})}};
+      body:{getReader:()=>{let used=false;return {read:async()=>{if(used)return {done:true};used=true;return {done:false,value:new Uint8Array(Buffer.from(hls))}},cancel:async()=>{}}}}};
   }
   if(url.includes('api.themoviedb.org')) return {ok:false,status:404,url:url,headers:{get:()=> 'application/json'},json:async()=>({}),text:async()=>''};
   throw new Error('unexpected fetch '+url);
