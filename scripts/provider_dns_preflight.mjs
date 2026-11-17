@@ -199,7 +199,13 @@ function parseGlobalpingHttp(measurement, originalHost) {
   const entry = firstGlobalpingResult(measurement.payload);
   if (!entry) return { status: 'unreachable', http_status: null, final_host: normalizeHost(originalHost), redirects: [], body_excerpt: '', attempts: [], error: 'GLOBALPING_NO_PROBE_RESULT', transport: 'globalping', measurement_id: measurement.id };
   const result = entry.result || {};
-  const raw = String(result.rawOutput || '');
+  const rawOutput = String(result.rawOutput || '');
+  const rawHeaders = String(result.rawHeaders || '');
+  const rawBody = String(result.rawBody || '');
+  // Current Globalping HTTP results expose response headers/body separately.
+  // Keep rawOutput as a compatibility input, but block/redirect diagnostics must
+  // also see the actual HTTP headers and bounded body returned by the probe.
+  const raw = [rawOutput, rawHeaders, rawBody].filter(Boolean).join('\n');
   const headers = headersToObject(result.headers);
   const status = Number(result.statusCode || result.status || (raw.match(/HTTP\/\S+\s+(\d{3})/i) || [])[1]) || null;
   const location = String(headers.location || (raw.match(/^location:\s*(\S+)/im) || [])[1] || '');
@@ -220,7 +226,7 @@ function parseGlobalpingHttp(measurement, originalHost) {
     http_status: status,
     final_host: finalHost,
     redirects,
-    body_excerpt: raw.replace(/\s+/g, ' ').slice(0, 700),
+    body_excerpt: (rawBody || rawOutput).replace(/\s+/g, ' ').slice(0, 700),
     block_signal: blockPattern?.source || (status === 451 ? 'http_451' : null),
     attempts: [{ host: normalizeHost(originalHost), status, ok: reachable, transport: 'globalping' }],
     transport: 'globalping',
