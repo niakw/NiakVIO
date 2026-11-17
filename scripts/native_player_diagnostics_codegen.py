@@ -25,7 +25,11 @@ import java.util.concurrent.atomic.AtomicReference
 # from emitting the same Kotlin imports into the final native corpus source.
 TV_IMPORTS = """import androidx.activity.compose.setContent
 import androidx.navigation.compose.rememberNavController
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.Until
 import com.nuvio.tv.MainActivity
+import com.nuvio.tv.R
 import com.nuvio.tv.core.player.LastPlaybackDiagnostics
 import com.nuvio.tv.data.local.PlayerSettingsDataStore
 import com.nuvio.tv.ui.navigation.NuvioNavHost
@@ -78,6 +82,26 @@ TV_HELPERS = PROBE_MODEL + r'''
         fun playerSettingsDataStore(): PlayerSettingsDataStore
     }
 
+    private fun probeTvAudioTrackCount(
+        instrumentation: android.app.Instrumentation,
+        context: android.content.Context,
+    ): Int {
+        return try {
+            val device = UiDevice.getInstance(instrumentation)
+            device.pressDPadCenter()
+            val label = context.getString(R.string.cd_audio_tracks)
+            val button = device.wait(Until.findObject(By.desc(label)), 2500L) ?: return -1
+            button.click()
+            device.waitForIdle()
+            Thread.sleep(300L)
+            val count = device.findObjects(By.clazz("android.widget.RadioButton")).size
+            device.pressBack()
+            count
+        } catch (_: Throwable) {
+            -1
+        }
+    }
+
     private fun probeNativePlayer(
         url: String,
         headers: Map<String, String>?,
@@ -125,7 +149,7 @@ TV_HELPERS = PROBE_MODEL + r'''
             val shortMedia = durationSeconds != null && (
                 durationSeconds < 60.0 || (expected != null && durationSeconds / expected < 0.55)
             )
-            when {
+            val result = when {
                 shortMedia -> NativePlayerProbe("short_media", "nuvio-tv-production", "", "", 0, "duration_identity", diagnostics.host.ifBlank { host }, durationSeconds)
                 diagnostics.result.startsWith("Played", ignoreCase = true) || diagnostics.firstFrameMs >= 0L ->
                     NativePlayerProbe("ready", "nuvio-tv-production", "", "", 0, "none", diagnostics.host.ifBlank { host }, durationSeconds)
@@ -133,6 +157,9 @@ TV_HELPERS = PROBE_MODEL + r'''
                     NativePlayerProbe("error", "nuvio-tv-production", "PlayerRuntimeController", sanitizeDiag(diagnostics.result), 0, "player", diagnostics.host.ifBlank { host }, durationSeconds)
                 else -> NativePlayerProbe("error", "nuvio-tv-production", "PlayerRuntimeController", sanitizeDiag(diagnostics.result), 0, "player", diagnostics.host.ifBlank { host }, durationSeconds)
             }
+            if (result.state == "ready" || result.state == "short_media") {
+                result.copy(audioTrackCount = probeTvAudioTrackCount(instrumentation, context))
+            } else result
         } catch (error: kotlinx.coroutines.TimeoutCancellationException) {
             NativePlayerProbe("timeout", "nuvio-tv-production", error::class.qualifiedName.orEmpty(), "READER_TIMEOUT", 0, "timeout", host, null)
         } catch (error: Throwable) {
