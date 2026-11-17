@@ -124,9 +124,15 @@ from sys import path as _pythonpath
 _pythonpath.insert(0, str(ROOT / "scripts"))
 from domain_refresh_publication_drift_gate import classify_drift
 known_evidence = [
+    "PROVIDER_CENSUS_STATUS.md",
+    "automation/provider-authority-status.json",
+    "automation/provider-census-all-status-latest.json",
+    "automation/provider-census-status.json",
     "automation/provider-census-proof-history.json",
     "automation/provider-repair-batch-plan-latest.json",
     "automation/provider-census-sharded-42301845438.json",
+    "automation/provider-census-sharded-latest.json",
+    "automation/provider-census-sharded-latest-summary.json",
     "automation/provider-waf-browser-session-42301845438.json",
     "automation/provider-waf-browser-session-latest.json",
 ]
