@@ -42,6 +42,16 @@ for path in sorted([*WORKFLOWS.glob('*.yml'), *WORKFLOWS.glob('*.yaml')]):
         if not SHA.fullmatch(ref):
             errors.append(f'{rel}: external action must use full commit SHA: {value}')
 
+release_candidate = (WORKFLOWS / 'release-candidate-validation.yml').read_text(encoding='utf-8')
+for marker in (
+    'dispatch codeql.yml -f "inputs[expected_sha]=${TARGET_SHA}"',
+    'dispatch security-final-gate.yml -f "inputs[expected_sha]=${TARGET_SHA}"',
+    "'security-final-gate.yml',",
+    'security=codeql+final-gate+external',
+):
+    if marker not in release_candidate:
+        errors.append(f'release-candidate-validation.yml: exact-SHA final security certification missing {marker}')
+
 security_gate = (WORKFLOWS / 'security-final-gate.yml').read_text(encoding='utf-8')
 if 'exact 92-provider scan' in security_gate or 'expected=92' in security_gate or 'len(rows) != 92' in security_gate:
     errors.append('security-final-gate.yml: published provider count must be derived from current projection authority, never hard-coded')
