@@ -1,5 +1,5 @@
 {
-  "schema_version": 15,
+  "schema_version": 16,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -7,7 +7,6 @@
       "manifest.json",
       "provider-overrides.json",
       "provider_catalog.json",
-      "provider-type-policy.json",
       "automation/provider-v3-static-knowledge.json",
       "scripts/provider_base_store.py",
       "scripts/provider_patches/**",
@@ -62,7 +61,13 @@
       "movie",
       "tv"
     ],
-    "tmdb_namespace_must_not_rewrite_provider_transport": true
+    "tmdb_namespace_must_not_rewrite_provider_transport": true,
+    "curated_semantic_policy": "provider-type-policy.json",
+    "curated_semantic_policy_role": "sparse-current-catalog-validation-only",
+    "curated_semantic_policy_owns_scope": false,
+    "curated_semantic_policy_owns_activation": false,
+    "curated_semantic_policy_owns_transport_aliases": false,
+    "current_semantic_publication_authority": "provider_catalog.json scraper.supportedTypes + provider-overrides published_types/provider_capabilities.catalogue_types"
   },
   "route_recognition": {
     "canonical_route_data": "provider.model.routeData",
