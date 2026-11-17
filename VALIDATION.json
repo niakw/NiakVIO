@@ -265,7 +265,15 @@
       "scraper_identity_bound_to_execution": true,
       "reuse_last_link_cache_preserves_addon_identity": true,
       "manual_selection_bypasses_reuse_cache": true,
-      "automatic_fallback_updates_provider_identity": true
+      "automatic_fallback_updates_provider_identity": true,
+      "tv": {
+        "fresh_js_runtime_per_plugin_execution": true,
+        "scraper_identity_bound_to_execution": true,
+        "repository_grouping_preserves_plugin_source_name": true,
+        "user_selected_source_never_uses_auto_source_fallback": true,
+        "automatic_fallback_updates_provider_identity": true,
+        "expired_link_refresh_restricts_to_same_addon": true
+      }
     },
     "multi_audio_indirect_candidate_probe_cap": 16,
     "multi_audio_candidate_policy": "prefer proven HLS master; stop early only after multi-audio master rank"
