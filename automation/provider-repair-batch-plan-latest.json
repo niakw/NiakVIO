@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44150633125",
-  "sourceTriggerSha": "4846abd9dae74bc8092dbf7bf97c6c771cad44de",
+  "sourceRunId": "44152321903",
+  "sourceTriggerSha": "67a67832c5081f394d59dbcec8ca8532a2e45fa3",
   "unresolvedProviderCount": 66,
-  "dynamicVariantProviderCount": 4,
+  "dynamicVariantProviderCount": 5,
   "dynamicVariantProviders": [
+    "movish",
     "movix-fr",
     "nakios",
     "papadustream",
     "stigstream"
   ],
   "lifecycleSuppressedDynamicProviders": [
-    "animevostfr",
     "hindmoviez"
   ],
   "dynamicVariantCurrentObservedProviders": [
@@ -115,7 +115,7 @@
     "zone-telechargement"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 8,
+  "groupCount": 9,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -139,7 +139,6 @@
       "dominantIssues": [
         "network_http_error",
         "network_zero_result",
-        "provider_returned_streams",
         "timeout",
         "waf_challenge"
       ],
@@ -153,7 +152,7 @@
         "residential-exit-native-reachable"
       ],
       "transportSignature": "not-applicable",
-      "providerCount": 41,
+      "providerCount": 40,
       "providers": [
         "1jour1film0626",
         "anikototv",
@@ -178,7 +177,6 @@
         "hianime",
         "kidraz",
         "latestmovies",
-        "moiflix",
         "moviebite",
         "movish",
         "movix-fr",
@@ -202,6 +200,7 @@
         "provider-census-status.json:brainCheckRequired"
       ],
       "dynamicVariantProviders": [
+        "movish",
         "movix-fr"
       ],
       "executionPolicy": "batch-first",
@@ -222,6 +221,7 @@
       ],
       "dominantIssues": [
         "network_exception",
+        "network_http_error",
         "network_zero_result",
         "timeout",
         "waf_challenge"
@@ -345,6 +345,36 @@
       "providerCount": 1,
       "providers": [
         "french-anime"
+      ],
+      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-inconclusive",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "not-applicable",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-inconclusive"
+      ],
+      "transportSignature": "residential-exit-inconclusive",
+      "providerCount": 1,
+      "providers": [
+        "moiflix"
       ],
       "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
