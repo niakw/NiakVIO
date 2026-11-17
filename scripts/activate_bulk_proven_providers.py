@@ -295,7 +295,12 @@ def main()->int:
         # must advance its scraper copy before render-manifests-from-catalog.
         if isinstance(catalog_entry,dict):
             catalog_entry["scraper"]=canonical_catalog_scraper(manifest_row)
-        patch.setdefault("manifest_overrides",{})["enabled"]=True
+        manifest_overrides=patch.get("manifest_overrides") if isinstance(patch.get("manifest_overrides"),dict) else {}
+        manifest_overrides.pop("enabled",None)
+        if manifest_overrides:
+            patch["manifest_overrides"]=manifest_overrides
+        else:
+            patch.pop("manifest_overrides",None)
         capability=capabilities.get(pid)
         if isinstance(capability,dict):
             capability["validation"]="bulk_census_full_ok"
