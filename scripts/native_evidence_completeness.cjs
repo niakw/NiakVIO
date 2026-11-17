@@ -22,6 +22,45 @@ function providerName(f) {
   return (decode(f.provider64) || String(f.provider || '')).trim().toLowerCase();
 }
 
+function normalizeAudioLanguage(value) {
+  const raw = String(value || '').trim().toLowerCase().replace(/_/g, '-');
+  if (!raw || raw === 'und') return '';
+  const aliases = {
+    eng: 'en', fra: 'fr', fre: 'fr', deu: 'de', ger: 'de', spa: 'es',
+    por: 'pt', ita: 'it', jpn: 'ja', kor: 'ko', zho: 'zh', chi: 'zh',
+  };
+  const parts = raw.split('-').filter(Boolean);
+  if (!parts.length) return '';
+  parts[0] = aliases[parts[0]] || parts[0];
+  return parts.join('-');
+}
+
+function audioLanguages(value64) {
+  return [...new Set(
+    decode(value64)
+      .split(',')
+      .map(normalizeAudioLanguage)
+      .filter(Boolean)
+  )];
+}
+
+function languageEquivalent(expected, observed) {
+  if (expected === observed) return true;
+  return expected.split('-', 1)[0] === observed.split('-', 1)[0];
+}
+
+function languageCoverage(expected, observed) {
+  const used = new Set();
+  for (const language of expected) {
+    const match = observed.findIndex((candidate, index) =>
+      !used.has(index) && languageEquivalent(language, candidate)
+    );
+    if (match < 0) return false;
+    used.add(match);
+  }
+  return true;
+}
+
 function requestType(f) {
   return String(f.request_type || '').trim().toLowerCase();
 }
@@ -96,7 +135,9 @@ function assessNativeEvidence(logPaths) {
   const playersBegun = new Map();
   const playersTerminal = new Map();
   const playerAudioTracks = new Map();
+  const playerAudioLanguages = new Map();
   const transportAudioTracks = new Map();
+  const transportAudioLanguages = new Map();
   const httpRequests = new Map();
   const httpTerminal = new Map();
   const repositoryHttpRequests = new Map();
@@ -231,6 +272,12 @@ function assessNativeEvidence(logPaths) {
             Number(f.audio_track_count),
           );
         }
+        if (Object.prototype.hasOwnProperty.call(f, 'audio_track_languages64')) {
+          playerAudioLanguages.set(
+            mediaProbeKey(client, fixture, provider, f.index),
+            audioLanguages(f.audio_track_languages64),
+          );
+        }
         const scope = ensureScope(scopes, client, fixture);
         scope.playerResults += 1;
         fileScopeKeys.add(scopeKey(client, fixture));
@@ -240,6 +287,12 @@ function assessNativeEvidence(logPaths) {
           transportAudioTracks.set(
             mediaProbeKey(client, fixture, provider, f.index),
             Number(f.audio_track_count),
+          );
+        }
+        if (Object.prototype.hasOwnProperty.call(f, 'audio_track_languages64')) {
+          transportAudioLanguages.set(
+            mediaProbeKey(client, fixture, provider, f.index),
+            audioLanguages(f.audio_track_languages64),
           );
         }
         fileScopeKeys.add(scopeKey(client, fixture));
@@ -348,6 +401,8 @@ function assessNativeEvidence(logPaths) {
   }
   let multiAudioExpected = 0;
   let multiAudioVerified = 0;
+  let multiAudioLanguageExpected = 0;
+  let multiAudioLanguageVerified = 0;
   for (const [key, expected] of transportAudioTracks) {
     if (!Number.isFinite(expected) || expected < 2) continue;
     multiAudioExpected += 1;
@@ -359,6 +414,22 @@ function assessNativeEvidence(logPaths) {
       problems.push(`multi_audio_player_collapsed:${label}:master=${expected}:player=${observed}`);
     } else {
       multiAudioVerified += 1;
+    }
+
+    const expectedLanguages = transportAudioLanguages.get(key) || [];
+    if (expectedLanguages.length < 2) continue;
+    multiAudioLanguageExpected += 1;
+    const observedLanguages = playerAudioLanguages.get(key) || [];
+    if (observedLanguages.length < 2) {
+      problems.push(
+        `multi_audio_language_observation_missing:${label}:master=${expectedLanguages.join(',')}:player=${observedLanguages.join(',') || 'none'}`
+      );
+    } else if (!languageCoverage(expectedLanguages, observedLanguages)) {
+      problems.push(
+        `multi_audio_language_collapsed:${label}:master=${expectedLanguages.join(',')}:player=${observedLanguages.join(',')}`
+      );
+    } else {
+      multiAudioLanguageVerified += 1;
     }
   }
 
@@ -400,6 +471,8 @@ function assessNativeEvidence(logPaths) {
       playerProbes: playersTerminal.size,
       multiAudioExpected,
       multiAudioVerified,
+      multiAudioLanguageExpected,
+      multiAudioLanguageVerified,
       httpRequests: [...httpRequests.values()].reduce((a, b) => a + b, 0),
       frontendErrors,
     },
