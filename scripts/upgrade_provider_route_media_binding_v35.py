@@ -78,6 +78,20 @@ def replace_function(text: str, name: str, replacement: str) -> str:
 
 
 ROUTE_HELPER = r'''
+function _spv35RoutePathMedia(route) {
+  let path = _text(route).split(/[?#]/, 1)[0];
+  try {
+    if (/^https?:\/\//i.test(_text(route))) path = new URL(_text(route)).pathname || "";
+    path = decodeURIComponent(path);
+  } catch (_) {}
+  const observed = new Set();
+  for (const segment of _text(path).toLowerCase().split("/").filter(Boolean)) {
+    if (/^animes?$/.test(segment)) observed.add("anime");
+    else if (/^movies?$/.test(segment)) observed.add("movie");
+    else if (segment === "tv") observed.add("tv");
+  }
+  return observed.size === 1 ? Array.from(observed)[0] : "";
+}
 function _spv34RouteMediaCompatible(route, mediaType) {
   /* NIAKVIO_PROVIDER_ROUTE_MEDIA_BINDING_V35 */
   const desired = _mediaNamespace(mediaType);
@@ -89,19 +103,15 @@ function _spv34RouteMediaCompatible(route, mediaType) {
     return actual === desired;
   }
 
-  let path = source.split(/[?#]/, 1)[0];
-  try {
-    if (/^https?:\/\//i.test(source)) path = new URL(source).pathname || "";
-    path = decodeURIComponent(path);
-  } catch (_) {}
-  const observed = new Set();
-  for (const segment of _text(path).toLowerCase().split("/").filter(Boolean)) {
-    if (/^animes?$/.test(segment)) observed.add("anime");
-    else if (/^(?:movie|movies|film|films)$/.test(segment)) observed.add("movie");
-    else if (/^(?:tv|series|show|shows)$/.test(segment)) observed.add("tv");
-  }
-  if (!observed.size) return true;
-  return observed.size === 1 && observed.has(desired);
+  const actual = _spv35RoutePathMedia(route);
+  if (!actual) return true;
+  const planTypes = new Set(
+    (NIAKVIO_PROVIDER_MODEL.routes || [])
+      .map(_spv35RoutePathMedia)
+      .filter(Boolean)
+  );
+  if (planTypes.size < 2) return true;
+  return actual === desired;
 }
 '''
 
@@ -183,9 +193,11 @@ def validate(text: str | None = None) -> None:
     if 'if (!_spv34RouteMediaCompatible(route, mediaType)) continue;' not in source:
         raise AssertionError("V35 media gate must apply to every learned route kind")
     for token in (
+        'function _spv35RoutePathMedia(route) {',
         '/^animes?$/',
-        '/^(?:movie|movies|film|films)$/',
-        '/^(?:tv|series|show|shows)$/',
+        '/^movies?$/',
+        'segment === "tv"',
+        'if (planTypes.size < 2) return true;',
         'const out = _learnedUrls(',
         '"player",',
         'const known = _directPlayerUrls(tmdbId, mediaType, season, episode).slice(0, 2);',
