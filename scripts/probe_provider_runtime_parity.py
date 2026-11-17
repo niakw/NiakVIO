@@ -62,9 +62,17 @@ def committed_base_path(provider_id: str) -> str:
 
 
 def staged_base_path(provider_id: str) -> Path:
+    """Find a staged Base in active or disabled/pending authority."""
     prefix = f"{provider_id.casefold()}--base--"
+    roots = [
+        ROOT / "provider-bases",
+        ROOT / "provider-disabled" / "provider-bases",
+    ]
     proc = subprocess.run(
-        ["git", "status", "--porcelain=v1", "--untracked-files=all", "--", "provider-bases"],
+        [
+            "git", "status", "--porcelain=v1", "--untracked-files=all", "--",
+            "provider-bases", "provider-disabled/provider-bases",
+        ],
         cwd=ROOT,
         text=True,
         capture_output=True,
@@ -81,13 +89,14 @@ def staged_base_path(provider_id: str) -> Path:
     if changed:
         return max(changed, key=lambda path: path.stat().st_mtime_ns)
     candidates = [
-        path for path in (ROOT / "provider-bases").glob(f"{provider_id}--base--*.js")
+        path
+        for root in roots
+        for path in root.glob(f"{provider_id}--base--*.js")
         if path.is_file()
     ]
     if not candidates:
-        raise SystemExit(f"no ProviderBase found for {provider_id}")
+        raise SystemExit(f"no staged or pending ProviderBase found for {provider_id}")
     return max(candidates, key=lambda path: path.stat().st_mtime_ns)
-
 
 def materialize_committed(path: str, output: Path) -> Path:
     if not path:
