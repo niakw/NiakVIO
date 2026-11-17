@@ -60,3 +60,8 @@ validation: freshness debt is certification-only; preserve independent manual/re
 requested_head: c599a7594e853847a61bea3c4f7746392cbf76d3
 reason: materialize deprecated proof-absence rollback after source-first identity and Quick/Deep MP4 parity are frozen
 validation: do not trust pre-change census OK/FULL; restore only invalid proof-absence auto-off, then reclassify from independent current authority
+
+2026-11-17 ledger-recovery rollback replay:
+requested_head: 0432a50081cae89ea62290543dc5bdddab1668e6
+reason: re-run deprecated proof-absence rollback after canonical materialization recovery fix
+validation: exact retained bytes -> updated Global+France authority -> canonical materialization rebuild -> strict lifecycle checks; no health promotion
