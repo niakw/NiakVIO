@@ -24,7 +24,7 @@ with tempfile.TemporaryDirectory() as tmp:
         "scrapers": [{"id": "anime-sama", "enabled": True}]
     }), encoding="utf-8")
     overrides.write_text(json.dumps({
-        "provider_patches": {"anime-sama": {"manifest_overrides": {"enabled": True}}}
+        "provider_patches": {"anime-sama": {"manifest_overrides": {"supportsExternalPlayer": True}}}
     }), encoding="utf-8")
     health.write_text(json.dumps({"providers": []}), encoding="utf-8")
 
@@ -44,7 +44,9 @@ with tempfile.TemporaryDirectory() as tmp:
     assert "targeted=1 processed=1 proven=1" in proc.stdout, proc.stdout
     assert "provider_specific_rules=0" in proc.stdout, proc.stdout
     assert json.loads(manifest.read_text(encoding="utf-8"))["scrapers"][0]["enabled"] is True
-    assert json.loads(overrides.read_text(encoding="utf-8"))["provider_patches"]["anime-sama"]["manifest_overrides"]["enabled"] is True
+    manifest_overrides = json.loads(overrides.read_text(encoding="utf-8"))["provider_patches"]["anime-sama"]["manifest_overrides"]
+    assert "enabled" not in manifest_overrides
+    assert manifest_overrides["supportsExternalPlayer"] is True
     health_row = json.loads(health.read_text(encoding="utf-8"))["providers"][0]
     assert health_row["id"] == "anime-sama"
     assert health_row["enabled"] is True
