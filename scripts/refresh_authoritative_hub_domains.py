@@ -407,7 +407,11 @@ def resolve_authoritative_hub_domain(
         move_candidates,
         current_url,
     )
-    fresh_authoritative_move = bool(latest_telegram_move) or any(
+    confirmed_search_move = any(
+        str(row.get("source_type") or "").strip().casefold() == "search_confirmed"
+        for row in move_candidates
+    )
+    fresh_authoritative_move = bool(latest_telegram_move) or confirmed_search_move or any(
         _fresh_authoritative_move_candidate(provider_id, authority_cfg, row, current_url)
         for row in move_candidates
     )
@@ -447,6 +451,8 @@ def resolve_authoritative_hub_domain(
     item["sources"] = observations
     item["site_candidates"] = ordered
     item["site_validations"] = []
+    if search_confirmation is not None:
+        item["search_fallback_confirmation"] = search_confirmation
     item["telegram_recency_superseded_registry"] = bool(
         explicit_current
         and latest_telegram_move
