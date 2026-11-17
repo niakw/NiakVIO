@@ -31,6 +31,8 @@ on:
       - "scripts/resolve_nuvio_lab_heads.py"
       - "scripts/scope_native_reader_learning_runtime.py"
       - "scripts/prepare_native_corpus_validation.py"
+      - "scripts/prepare_native_ios_reader_acceptance.py"
+      - "scripts/gate_native_ios_multi_audio.py"
       - "scripts/native_player_diagnostics_codegen.py"
       - "scripts/augment_native_corpus_request_contract.py"
       - "scripts/augment_native_provider_loading.py"
@@ -52,6 +54,7 @@ on:
       - "scripts/complete_native_desktop_frontend_phases.py"
       - "scripts/run_native_corpus_tv_suite.sh"
       - "scripts/run_native_corpus_mobile_suite.sh"
+      - "scripts/run_native_corpus_ios_suite.sh"
       - "scripts/run_native_corpus_desktop_suite.sh"
       - "scripts/merge_native_reader_repair_learning.py"
       - "scripts/merge_native_reader_backlog.py"
@@ -83,6 +86,7 @@ on:
       - "tests/native_evidence_contract_test.py"
       - "tests/native_evidence_completeness_test.cjs"
       - "tests/native_evidence_codegen_pipeline_test.py"
+      - "tests/native_ios_multi_audio_gate_test.py"
       - "tests/native_player_diagnostics_codegen_test.py"
       - "tests/native_lab_observational_purity_test.py"
       - "tests/native_human_ux_policy_lock_test.py"
@@ -168,6 +172,8 @@ jobs:
         run: python3 tests/native_player_diagnostics_codegen_test.py
       - name: Execute native evidence Kotlin codegen pipeline
         run: python3 tests/native_evidence_codegen_pipeline_test.py
+      - name: Validate iOS multi-audio player preservation gate
+        run: python3 tests/native_ios_multi_audio_gate_test.py
       - name: Audit observational purity of native labs
         run: python3 tests/native_lab_observational_purity_test.py
       - name: Enforce locked human UX harness policy
