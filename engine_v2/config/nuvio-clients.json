@@ -122,9 +122,9 @@
     "tv": {
       "repository": "NuvioMedia/NuvioTV",
       "branch": "dev",
-      "audited_ref": "5b371fcd0d7ee080bb1de8de4d438882f67e8bfd",
-      "accepted_ref": "5b371fcd0d7ee080bb1de8de4d438882f67e8bfd",
-      "observed_head": "5b371fcd0d7ee080bb1de8de4d438882f67e8bfd",
+      "audited_ref": "3ff5e2b41a9dba282c57e7602e401df09dabe703",
+      "accepted_ref": "3ff5e2b41a9dba282c57e7602e401df09dabe703",
+      "observed_head": "3ff5e2b41a9dba282c57e7602e401df09dabe703",
       "platforms": [
         "android-tv"
       ],
@@ -160,7 +160,7 @@
         "app/build.gradle.kts",
         "gradle/libs.versions.toml"
       ],
-      "audit_note": "2026-11-17: exact current-source re-audit at dev 5b371fcd0d7e. Since 03705cdd1dcf, eight commits add ratings/tracking outside the provider ABI and optimize subtitle-language lookups/menu option reuse. The only configured player semantic-path delta is subtitle-only (PlayerSubtitleUtils/SubtitleSelectionOverlay/LanguageUtils): no getStreams, QuickJS transport, stream URL/header projection, audio-track enumeration/selection, provider grouping or fallback identity changed. Exact Android-TV Native Lab proof remains required."
+      "audit_note": "2026-11-17: exact current-source re-audit at dev 3ff5e2b41a9d. Since 5b371fcd0d7e, two commits change only TmdbMetadataService person-filmography filtering for talk-show guest appearances plus tests; no configured provider/plugin/stream/player semantic path changed. getStreams, QuickJS transport, stream URL/header projection, audio-track enumeration/selection, provider grouping/fallback identity and expired-link same-addon refresh remain unchanged. Exact Android-TV Native Lab proof remains required."
     }
   },
   "semantic_tokens": [
