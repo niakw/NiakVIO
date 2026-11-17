@@ -14,13 +14,13 @@
     "nuvio-mobile": {
       "repository": "NuvioMedia/NuvioMobile",
       "branch": "cmp-rewrite",
-      "verified_ref": "fc05fe8e516a5bd749c8a4e7b1c05143acd3f031",
+      "verified_ref": "dd0e84704df5e4d746e28b9d6556305332ff3483",
       "platforms": [
         "android",
         "ios"
       ],
       "contract": "automation/platform-runtime-contracts.json",
-      "audit_note": "2026-11-16: exact current-source audit at cmp-rewrite fc05fe8e516a. PluginModels, StreamFetchSupport and all provider/runtime bridge paths remain unchanged from the prior audit; the only new Mobile diff is Android MPV player integration/dependency code, so positional getStreams, full result mapping and the runtime TMDB_API_KEY bridge remain unchanged.",
+      "audit_note": "2026-11-17: exact current-source re-audit at cmp-rewrite dd0e84704df5. No provider/plugin/streams contract path changed. The only configured semantic-review-path delta is a two-line Watch Party guard that refuses to share signed media-server streams with non-empty headers; ordinary provider getStreams, result mapping, playback headers/subtitles and the runtime TMDB_API_KEY bridge are unchanged. Exact Android/iOS Native Labs remain required.",
       "contract_paths": [
         "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/",
@@ -202,12 +202,12 @@
     "nuvio-tv": {
       "repository": "NuvioMedia/NuvioTV",
       "branch": "dev",
-      "verified_ref": "2c853c1786743822c5ec7932e855529e0c731221",
+      "verified_ref": "fc5c10c3d2d5def54bb21e452291cb7b281b07b3",
       "platforms": [
         "android-tv"
       ],
       "contract": "automation/nuvio-tv-runtime-contract.json",
-      "audit_note": "2026-11-16: exact current-source audit at dev 2c853c178674 / 1.2.0-beta.2. Positional getStreams, TMDB runtime key and URL/header/subtitle projection remain unchanged. Since the prior audit, TV changed only episode-ratings alignment plus the app version to 1.2.0-beta.2; provider/plugin/runtime transport paths did not change.",
+      "audit_note": "2026-11-17: exact current-source audit at dev fc5c10c3d2d5. Thirteen commits add Plex/Silo media-server integration and related settings/artwork/sync code; no configured provider/plugin/stream contract path or player semantic-review path changed. Positional getStreams, TMDB runtime key and URL/header/subtitle projection remain unchanged. Exact Android-TV Native Lab proof remains required.",
       "contract_paths": [
         "app/src/full/java/com/nuvio/tv/core/plugin/",
         "app/src/main/java/com/nuvio/tv/core/network/IPv4FirstDns.kt",
