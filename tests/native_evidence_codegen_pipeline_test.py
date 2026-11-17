@@ -72,6 +72,10 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         "NuvioNavHost",
         "LastPlaybackDiagnostics",
         "nuvio-tv-production",
+        "UiDevice.getInstance(instrumentation)",
+        'By.clazz("android.widget.RadioButton")',
+        "audio_track_count=${reader.audioTrackCount}",
+        "audio_track_count=${transport.audioTrackCount}",
     ):
         assert required in tv_out, required
     assert tv_out.count("FIELD_NATIVE_PLAYER_ENTRY client=tv") == 1
@@ -119,7 +123,7 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     mobile_out = mobile_path.read_text(encoding="utf-8")
     for required in (
         "if (logicalFixtureMediaType !in declared) return emptyList<ProviderRequestRoute>()",
-        'val runtimeMediaType = if (logicalFixtureMediaType == "anime") "tv" else logicalFixtureMediaType',
+        "val runtimeMediaType = logicalFixtureMediaType",
         "return listOf<ProviderRequestRoute>(ProviderRequestRoute(runtimeMediaType))",
         "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=mobile",
         "PluginRepository.executeScraper(loadedScraper",
@@ -131,6 +135,11 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         'Intent().setClassName(',
         '"com.nuviodebug.com"',
         'MainActivity::class.java.name',
+        "PlayerEngineController",
+        "getAudioTracks()",
+        "audio_track_count=${reader.audioTrackCount}",
+        "audio_track_languages64=${b64(reader.audioTrackLanguages)}",
+        "audio_track_count=${transport.audioTrackCount}",
     ):
         assert required in mobile_out, required
     assert mobile_out.count("FIELD_NATIVE_PLAYER_ENTRY client=mobile") == 1
@@ -142,6 +151,7 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     assert "synchronized(niakvioPlayerProbeLock)" in mobile_out
     assert 'getLaunchIntentForPackage("com.nuviodebug.com")' not in mobile_out
     assert 'listOf("anime", "tv").map' not in mobile_out
+    assert 'if (logicalFixtureMediaType == "anime") "tv"' not in mobile_out
     assert '"capability_probe"' not in mobile_out
     assert "ExoPlayer.Builder" not in mobile_out
     assert "PluginRepository.clearLocalState()" not in mobile_out
@@ -171,6 +181,11 @@ with tempfile.TemporaryDirectory() as tmp_raw:
                 "sourceHeaders = headers.orEmpty()",
                 'captureDesktopPhase("player-start"',
                 'captureDesktopPhase("player-result"',
+                "PlayerEngineController",
+                "getAudioTracks()",
+                "audio_track_count=${reader.audioTrackCount}",
+                "audio_track_languages64=${b64(reader.audioTrackLanguages)}",
+                "audio_track_count=${transport.audioTrackCount}",
             ):
                 assert required in desktop_out, f"{platform}:{required}"
             assert "NativePlayerController(" not in desktop_out
