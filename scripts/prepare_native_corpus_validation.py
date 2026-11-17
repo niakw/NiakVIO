@@ -364,7 +364,7 @@ class NiakvioNativeCorpusDesktopTest {{
                 }}
                 rows.firstOrNull()?.let {{ row ->
                     val probe = probeTransport(row.url, row.headers)
-                    emit("FIELD_NATIVE_TRANSPORT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} audio_track_count=${{probe.audioTrackCount}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")
+                    emit("FIELD_NATIVE_TRANSPORT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} audio_track_count=${{probe.audioTrackCount}} audio_track_languages64=${{b64(probe.audioTrackLanguages)}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")
                 }}
             }} catch (error: Throwable) {{
                 errors += provider.id + ":" + (error.message ?: error::class.simpleName.orEmpty())
@@ -492,7 +492,7 @@ class {klass} {{
                 }}
                 rows.firstOrNull()?.let {{ row ->
                     val probe = probeTransport(row.url, row.headers)
-                    emit("FIELD_NATIVE_TRANSPORT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} audio_track_count=${{probe.audioTrackCount}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")
+                    emit("FIELD_NATIVE_TRANSPORT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} audio_track_count=${{probe.audioTrackCount}} audio_track_languages64=${{b64(probe.audioTrackLanguages)}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")
                 }}
             }} catch (error: Throwable) {{
                 errors += provider.id + ":" + (error.message ?: error::class.simpleName.orEmpty())
