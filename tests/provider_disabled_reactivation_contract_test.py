@@ -123,3 +123,8 @@ with tempfile.TemporaryDirectory() as td:
         raise AssertionError("byte drift was accepted")
 
 print("disabled recovery proof-bound reactivation contract passed")
+
+source = SCRIPT.read_text(encoding="utf-8")
+assert 'manifest_overrides.pop("enabled", None)' in source
+assert 'manifest_overrides["enabled"] = True' not in source
+assert "Lifecycle/folder state is the activation authority" in source
