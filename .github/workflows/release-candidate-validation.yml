@@ -169,6 +169,8 @@ jobs:
           python tests/global_media_type_resolution_test.py
           python tests/episodic_year_identity_regression_test.py
           python tests/global_playback_integrity_policy_test.py
+          node tests/native_multi_audio_coverage_gate_test.cjs
+          python tests/native_ios_multi_audio_gate_test.py
       - name: Verify presentation fixed point
         run: python scripts/normalize_stream_presentation_v12.py --check
       - name: Verify workflow security policy
