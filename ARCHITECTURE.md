@@ -249,9 +249,10 @@ Le chemin HLS commun est volontairement séparé en Blocs :
 2. sur runtime natif, son probe borné peut lire le master/variant via le bridge officiel sans dépendre d'un fetch navigateur ;
 3. un VOD fini ou un faux media playlist statique dont la durée est anormalement courte est rejeté avant exposition au player — le contrat couvre explicitement le cas d'un placeholder d'environ **4,5 s** ;
 4. un master HLS exploitable enrichit le stream avec les faits prouvés : `RESOLUTION`, `AVERAGE-BANDWIDTH/BANDWIDTH`, `CODECS`, `FRAME-RATE`, `VIDEO-RANGE`, audio `LANGUAGE/CHANNELS` et sous-titres ;
-5. **Stream Presentation** transforme ensuite ces faits en qualité/titre, description technique et `badgeIds` ;
-6. le **sanitizer terminal v10** conserve une preuve réseau bornée issue du probe réellement exécuté ; pour HLS, la preuve de débit provient d'échantillons de vrais segments média (jusqu'à deux) et non du manifeste ;
-7. **Stream Score**, Bloc Core externe final, combine les faits média et cette preuve réseau, supprime les données privées de probe puis préfixe au besoin un unique badge `S+`…`E` en tête de `badgeIds`.
+5. le **sanitizer terminal v11** résout d'abord la ressource réellement remise au lecteur, préfère un master HLS prouvé à une rendition enfant lorsque le master conserve davantage de pistes audio, projette les `EXT-X-MEDIA:TYPE=AUDIO` terminales et conserve une preuve réseau bornée ; pour HLS, la preuve de débit provient d'échantillons de vrais segments média (jusqu'à deux) et non du manifeste ;
+6. **Stream Identity** valide ensuite l'identité sur cette URL terminale : une page player opaque ne peut donc plus être validée avant d'être remplacée par un média qui contredit saison/épisode ;
+7. **Stream Presentation** transforme les faits du média terminal en qualité/titre, langues, description technique et `badgeIds` ; plusieurs langues audio prouvées gardent le scalaire portable `language=null` au lieu de fabriquer une langue unique ;
+8. **Stream Score**, Bloc Core externe final, combine les faits média et cette preuve réseau, supprime les données privées de probe puis préfixe au besoin un unique badge `S+`…`E` en tête de `badgeIds`.
 
 Exemple contractuel : `RESOLUTION=1440x720` doit produire **720p**, et un placeholder `Inconnue/Unknown/N/A/Auto` ne doit jamais devenir un suffixe visible. Un flux HLS sans résolution prouvée garde le nom du provider et peut afficher seulement les faits certains, par exemple `HLS`.
 
@@ -267,6 +268,7 @@ Une œuvre peut légitimement produire plusieurs flux indépendants. NiakVIO tra
 - le runtime ProviderBase et le Core terminal partagent un plafond borné de **40 identités de playback** ; la couverture précède ce cap, elle ne le remplace pas par un ancien plafond intermédiaire 8/12/16 ;
 - le sanitizer Core valide les identités retenues de façon fail-closed ; une variante non testée n'est jamais une preuve positive ;
 - pour HLS, les faits mesurés (résolution/variant effectivement sélectionné) priment sur une qualité annoncée par l'UI du site.
+- lorsqu’un player expose une rendition enfant et un master multi-audio, le master terminal est conservé afin que les lecteurs Nuvio puissent énumérer eux-mêmes toutes les pistes natives ; `audioTracks` enrichi côté NiakVIO reste un fait de présentation/diagnostic, pas un substitut au média terminal.
 
 Le contrat de non-régression est `tests/provider_stream_multiplicity_contract_test.py` et son test d'exécution Core est `tests/stream_output_sanitizer_multi_variant_test.py`.
 
