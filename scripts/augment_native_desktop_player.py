@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposePanel
 import com.nuvio.app.core.ui.NuvioTheme
 import com.nuvio.app.features.player.PlatformPlayerSurface
+import com.nuvio.app.features.player.PlayerEngineController
 import com.nuvio.app.features.player.PlayerControlsState
 import com.nuvio.app.features.player.PlayerPlaybackSnapshot
 import com.nuvio.app.features.player.PlayerResizeMode
@@ -49,6 +50,8 @@ HELPERS = r'''
         val durationSeconds: Double?,
         val positionSeconds: Double?,
         val exceptionChain: String = "",
+        val audioTrackCount: Int = -1,
+        val audioTrackLanguages: String = "",
     )
 
     private fun desktopThrowableChain(error: Throwable): Pair<Throwable, String> {
@@ -97,6 +100,7 @@ HELPERS = r'''
     ): DesktopNativePlayerProbe {
         val frameRef = AtomicReference<JFrame?>(null)
         val latestSnapshot = AtomicReference<PlayerPlaybackSnapshot?>(null)
+        val controllerRef = AtomicReference<PlayerEngineController?>(null)
         val errorRef = AtomicReference<String?>(null)
         val terminal = CountDownLatch(1)
         try {
@@ -130,7 +134,7 @@ HELPERS = r'''
                             resizeMode = PlayerResizeMode.Fit,
                             useNativeController = true,
                             playerControlsState = PlayerControlsState(),
-                            onControllerReady = { _ -> },
+                            onControllerReady = { controller -> controllerRef.set(controller) },
                             onSnapshot = { snapshot ->
                                 latestSnapshot.set(snapshot)
                                 if (snapshot.isEnded || (!snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L))) {
@@ -152,6 +156,19 @@ HELPERS = r'''
             terminal.await(__READER_TIMEOUT_MS__L, TimeUnit.MILLISECONDS)
             val error = errorRef.get()
             val snapshot = latestSnapshot.get()
+            var audioTracks = runCatching { controllerRef.get()?.getAudioTracks().orEmpty() }
+                .getOrDefault(emptyList())
+            if (error.isNullOrBlank() && audioTracks.isEmpty()) {
+                repeat(8) {
+                    if (audioTracks.isNotEmpty()) return@repeat
+                    Thread.sleep(125L)
+                    audioTracks = runCatching { controllerRef.get()?.getAudioTracks().orEmpty() }
+                        .getOrDefault(emptyList())
+                }
+            }
+            val audioLanguages = audioTracks.mapNotNull { track ->
+                track.language?.trim()?.takeIf { it.isNotBlank() && !it.equals("und", ignoreCase = true) }
+            }.distinct().joinToString(",")
             if (!error.isNullOrBlank()) {
                 return DesktopNativePlayerProbe(
                     "error", "NuvioDesktopProductionPlayer",
@@ -166,15 +183,27 @@ HELPERS = r'''
                 durationSeconds < 60.0 || (expected != null && durationSeconds / expected < 0.55)
             )
             if (shortMedia) {
-                return DesktopNativePlayerProbe("short_media", "", "", 0, "duration_identity", durationSeconds, positionSeconds)
+                return DesktopNativePlayerProbe(
+                    "short_media", "", "", 0, "duration_identity", durationSeconds, positionSeconds,
+                    audioTrackCount = audioTracks.size, audioTrackLanguages = audioLanguages,
+                )
             }
             if (snapshot?.isEnded == true) {
-                return DesktopNativePlayerProbe("ended", "", "", 0, "none", durationSeconds, positionSeconds)
+                return DesktopNativePlayerProbe(
+                    "ended", "", "", 0, "none", durationSeconds, positionSeconds,
+                    audioTrackCount = audioTracks.size, audioTrackLanguages = audioLanguages,
+                )
             }
             if (snapshot != null && !snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L)) {
-                return DesktopNativePlayerProbe("ready", "", "", 0, "none", durationSeconds, positionSeconds)
+                return DesktopNativePlayerProbe(
+                    "ready", "", "", 0, "none", durationSeconds, positionSeconds,
+                    audioTrackCount = audioTracks.size, audioTrackLanguages = audioLanguages,
+                )
             }
-            return DesktopNativePlayerProbe("timeout", "NuvioDesktopProductionPlayer", "READER_TIMEOUT", 0, "timeout", durationSeconds, positionSeconds)
+            return DesktopNativePlayerProbe(
+                "timeout", "NuvioDesktopProductionPlayer", "READER_TIMEOUT", 0, "timeout", durationSeconds, positionSeconds,
+                audioTrackCount = audioTracks.size, audioTrackLanguages = audioLanguages,
+            )
         } catch (error: Throwable) {
             val (root, chain) = desktopThrowableChain(error)
             val rootMessage = root.message.orEmpty().ifBlank { "PLAYER_SETUP" }
@@ -232,12 +261,12 @@ def augment(path: Path, expected_minutes: int, stream_scope: str) -> None:
                         emit("FIELD_NATIVE_PLAYER_BEGIN client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index entry=PlatformPlayerSurface")
                         captureDesktopPhase("player-start", fixtureSlug)
                         val reader = probeDesktopProductionPlayer(row.url, row.headers, row.type, {expected_minutes})
-                        emit("FIELD_NATIVE_PLAYER client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index state=${{reader.state}} engine=nuvio-desktop-production http_status=${{reader.httpStatus}} failure_stage=${{reader.failureStage}} duration_seconds=${{reader.durationSeconds ?: 0.0}} host64=${{b64(hostOnly(row.url))}} error_class64=${{b64(reader.errorClass)}} error_code64=${{b64(reader.errorCode)}} exception_chain64=${{b64(reader.exceptionChain)}} response_header_names64=${{b64("")}} load_bytes=0 load_duration_ms=0 media_data_type=-1 track_type=-1")
+                        emit("FIELD_NATIVE_PLAYER client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index state=${{reader.state}} engine=nuvio-desktop-production http_status=${{reader.httpStatus}} failure_stage=${{reader.failureStage}} duration_seconds=${{reader.durationSeconds ?: 0.0}} host64=${{b64(hostOnly(row.url))}} error_class64=${{b64(reader.errorClass)}} error_code64=${{b64(reader.errorCode)}} exception_chain64=${{b64(reader.exceptionChain)}} response_header_names64=${{b64("")}} load_bytes=0 load_duration_ms=0 media_data_type=-1 track_type=-1 audio_track_count=${{reader.audioTrackCount}} audio_track_languages64=${{b64(reader.audioTrackLanguages)}}")
                         captureDesktopPhase("player-result", fixtureSlug)
                         // Independent transport diagnostics run only after the production
                         // player has reached a terminal observation for this source.
                         val transport = probeTransport(row.url, row.headers)
-                        emit("FIELD_NATIVE_TRANSPORT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index state=${{transport.state}} kind=${{transport.kind}} status=${{transport.status}} content_type64=${{b64(transport.contentType)}} extm3u=${{transport.extm3u}} duration_seconds=${{transport.durationSeconds ?: 0.0}} host64=${{b64(transport.host)}} media_hint64=${{b64(transport.mediaHint)}}")
+                        emit("FIELD_NATIVE_TRANSPORT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index state=${{transport.state}} kind=${{transport.kind}} status=${{transport.status}} content_type64=${{b64(transport.contentType)}} extm3u=${{transport.extm3u}} audio_track_count=${{transport.audioTrackCount}} duration_seconds=${{transport.durationSeconds ?: 0.0}} host64=${{b64(transport.host)}} media_hint64=${{b64(transport.mediaHint)}}")
                     }}
                 }}
 '''
