@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44010910574",
-  "sourceTriggerSha": "75f7985d94e5230ef173a8d5f98832da92ff8d04",
-  "unresolvedProviderCount": 61,
+  "sourceRunId": "44031563549",
+  "sourceTriggerSha": "a12592ad53d383aaa086af250aa6d9e09bb28025",
+  "unresolvedProviderCount": 66,
   "dynamicVariantProviderCount": 4,
   "dynamicVariantProviders": [
-    "cinemabz",
     "movix-fr",
     "nakios",
-    "papadustream"
+    "papadustream",
+    "stigstream"
   ],
   "lifecycleSuppressedDynamicProviders": [
     "animevostfr",
@@ -124,7 +124,7 @@
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": false,
+  "dynamicVariantFallbackUsed": true,
   "groupCount": 5,
   "executionModel": {
     "default": "family/signature batch",
@@ -154,14 +154,21 @@
       ],
       "harnessTransportClasses": [
         "github-all-transports-challenged",
-        "no-transport-evidence"
+        "native-policy-reachable",
+        "no-transport-evidence",
+        "residential-exit-all-challenged",
+        "residential-exit-browser-reachable",
+        "residential-exit-inconclusive",
+        "residential-exit-native-reachable"
       ],
       "transportSignature": "not-applicable",
-      "providerCount": 42,
+      "providerCount": 48,
       "providers": [
         "1jour1film0626",
         "67movies",
+        "anikototv",
         "animeonsen",
+        "anisama",
         "arrowtv",
         "boredflix",
         "cinegram",
@@ -187,11 +194,14 @@
         "moiflix",
         "moviebite",
         "movish",
+        "movix-fr",
+        "nakios",
         "neobam",
         "neonflix",
         "overlook",
         "primewire",
         "pstream",
+        "sadisflix",
         "showbox",
         "shuttletv",
         "skstream",
@@ -200,6 +210,7 @@
         "watch-cartoon-online",
         "waveanime",
         "youtitou",
+        "zone-streaming",
         "zone-telechargement"
       ],
       "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
@@ -207,7 +218,8 @@
         "provider-census-status.json:brainCheckRequired"
       ],
       "dynamicVariantProviders": [
-        "cinemabz"
+        "movix-fr",
+        "nakios"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
@@ -259,38 +271,8 @@
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "variant-coverage|mixed_embed_resolver|runtime:mixed_embed_resolver",
-      "repairScope": "variant-coverage",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_zero_result"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 2,
-      "providers": [
-        "movix-fr",
-        "nakios"
-      ],
-      "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
-      "selectionAuthorities": [
-        "provider-census-sharded-latest.json:dynamic-variant-debt"
-      ],
       "dynamicVariantProviders": [
-        "movix-fr",
-        "nakios"
+        "stigstream"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
@@ -310,12 +292,40 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "no-transport-evidence"
+        "native-policy-reachable"
       ],
       "transportSignature": "not-applicable",
       "providerCount": 1,
       "providers": [
         "movy"
+      ],
+      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "transport|html_scraper|runtime:sitemap-script-family",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "sitemap-script-family"
+      ],
+      "runtimeFamilySignature": "sitemap-script-family",
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_http_error"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "sekai"
       ],
       "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
       "selectionAuthorities": [
