@@ -1,3 +1,12 @@
+## 2026-11-17 — 60/60 portfolio semantics are now certification-owned
+
+- Follow-up ownership audit found that the corrected 60 Global / 60 France portfolio policy was not part of the exact Workflow Gate execution set: `provider_portfolio_ranking_test.py` and `provider_coverage_preservation_test.py` were not invoked, and the Finalizer did not watch the policy/ranker/protector inputs. That meant portfolio métier semantics could drift without invalidating an old release certificate.
+- `github-actions-gate.yml` now watches `.github/provider-portfolio-policy.json` plus the ranking/coverage tests and executes both portfolio regressions in the exact-SHA Gate.
+- Release Finalizer now owns the portfolio policy, ranker, coverage protector and both regressions as certification inputs. Any future change to 60/60 selection semantics retriggers finalization.
+- `provider_portfolio_ranking_test.py` locks Workflow Gate ownership, and `release_finalizer_projection_transaction_test.py` locks Finalizer ownership.
+- Relevant commits: `3f8f4e44` Workflow Gate portfolio certification, `7b17e049` Finalizer ownership, `87fcf13b` release regression and `b2b12e04` Gate ownership regression.
+- No provider/Core/runtime bytes or manifest membership changed. A fresh exact-current-head campaign remains required before the user checkpoint; Brain remains blocked.
+
 ## 2026-11-17 — Portfolio ranking now models 60 Global + 60 France instead of a false 120-unique target
 
 - Final métier audit found a September-era contradiction in the portfolio layer. Current publication/onboarding policy correctly targets **60 active Global and 60 active France**, but `.github/provider-portfolio-policy.json` had been changed to `target_unique_active=120` while `rank_provider_portfolio.cjs` still selected a single unique-provider target. This is mathematically wrong when a provider belongs to both projections: 60+60 is two projection capacities, not a requirement for 120 distinct identities. The ranking regression was also stale and still asserted the old compact `target<50 / max<=45` contract.
