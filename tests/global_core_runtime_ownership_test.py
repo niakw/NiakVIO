@@ -125,6 +125,8 @@ for row in rows:
     sanitizer_region = text[sanitizer_start:sanitizer_close]
     assert '"probeAllUrls":true' in sanitizer_region, (provider_id, "probeAllUrls")
     assert '"maxProbes":40' in sanitizer_region, (provider_id, "maxProbes", sanitizer_region[:500])
+    assert "NUVIO_STREAM_OUTPUT_MULTI_AUDIO_FRONTIER_V12" in sanitizer_region, (provider_id, "sanitizer-v12")
+    assert "probeLimit=Math.min(candidates.length,16)" in sanitizer_region, (provider_id, "multi-audio-frontier")
 
     positions = {}
     for fix_id in REQUIRED_GLOBAL_CORE_IDS:
@@ -159,4 +161,4 @@ for row in rows:
         [(key, positions[key]) for key in ordered],
     )
 
-print(f"GLOBAL_CORE_RUNTIME_OWNERSHIP_OK providers={len(rows)} scope=Global+France required_core={len(REQUIRED_GLOBAL_CORE_IDS)} timers=core 403=core facts=core identity=core hls=core presentation=core branding=core sanitizer_v11=master-audio+network-evidence stream_score=core telemetry=core provider_specific_runtime_hacks=forbidden")
+print(f"GLOBAL_CORE_RUNTIME_OWNERSHIP_OK providers={len(rows)} scope=Global+France required_core={len(REQUIRED_GLOBAL_CORE_IDS)} timers=core 403=core facts=core identity=core hls=core presentation=core branding=core sanitizer_v12=16-candidate-master-audio+network-evidence stream_score=core telemetry=core provider_specific_runtime_hacks=forbidden")
