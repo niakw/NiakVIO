@@ -92,11 +92,21 @@ if 'CodeQL · JS Legacy Category Reconciliation' in codeql or \
         'category: ".github/workflows/codeql.yml:analyze"' in codeql:
     errors.append('codeql.yml: obsolete monolithic JS category must not be recreated')
 retire = (WORKFLOWS / 'retire-stale-codeql-2531.yml').read_text(encoding='utf-8')
-if 'retire_stale_codeql_2531.py' not in retire:
-    errors.append('retire-stale-codeql-2531.yml: targeted stale-alert retirement script is required')
-if 'delete_stale_codeql_2531_configuration.py' in retire:
-    errors.append('retire-stale-codeql-2531.yml: unbounded stale-analysis deletion must not be automatic')
+if 'delete_stale_codeql_2531_configuration.py' not in retire:
+    errors.append('retire-stale-codeql-2531.yml: bounded stale-configuration cleanup is required')
+if 'retire_stale_codeql_2531.py' in retire:
+    errors.append('retire-stale-codeql-2531.yml: direct stale-alert PATCH retirement must not be automatic')
 cleanup = (ROOT / 'scripts' / 'retire_stale_codeql_2531.py').read_text(encoding='utf-8')
+stale_config_cleanup = (ROOT / 'scripts' / 'delete_stale_codeql_2531_configuration.py').read_text(encoding='utf-8')
+for marker in (
+    'legacy_js_categories',
+    'confirm_delete=true',
+    'Exact-main maintained JS Core CodeQL analysis not found',
+    'Unresolved current JS Core High/Critical alert remains',
+    'evidence_only_drift',
+):
+    if marker not in stale_config_cleanup:
+        errors.append(f'delete_stale_codeql_2531_configuration.py: missing bounded cleanup marker {marker}')
 for marker in (
     'verify_current_source()',
     'scan_source_sha()',
