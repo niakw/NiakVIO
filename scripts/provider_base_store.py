@@ -1493,13 +1493,29 @@ function _routeKind(route) {
   return "ignore";
 }
 function _spv34RouteMediaCompatible(route, mediaType) {
+  /* NIAKVIO_PROVIDER_ROUTE_MEDIA_BINDING_V35 */
   const desired = _mediaNamespace(mediaType);
   const source = _text(route);
-  const match = source.match(/(?:[?&](?:type|media|m)=)(movie|tv|series|anime)(?=&|#|$)/i);
-  if (!match) return true;
-  let actual = _text(match[1]).toLowerCase();
-  if (actual === "series") actual = "tv";
-  return actual === desired;
+  const queryMatch = source.match(/(?:[?&](?:type|media|m)=)(movie|tv|series|anime)(?=&|#|$)/i);
+  if (queryMatch) {
+    let actual = _text(queryMatch[1]).toLowerCase();
+    if (actual === "series") actual = "tv";
+    return actual === desired;
+  }
+
+  let path = source.split(/[?#]/, 1)[0];
+  try {
+    if (/^https?:\/\//i.test(source)) path = new URL(source).pathname || "";
+    path = decodeURIComponent(path);
+  } catch (_) {}
+  const observed = new Set();
+  for (const segment of _text(path).toLowerCase().split("/").filter(Boolean)) {
+    if (/^animes?$/.test(segment)) observed.add("anime");
+    else if (/^(?:movie|movies|film|films)$/.test(segment)) observed.add("movie");
+    else if (/^(?:tv|series|show|shows)$/.test(segment)) observed.add("tv");
+  }
+  if (!observed.size) return true;
+  return observed.size === 1 && observed.has(desired);
 }
 function _learnedUrls(kind, meta, mediaType, season, episode) {
   const out = [];
@@ -1507,7 +1523,7 @@ function _learnedUrls(kind, meta, mediaType, season, episode) {
   for (const route of NIAKVIO_PROVIDER_MODEL.routes || []) {
     if (_routeKind(route) !== kind) continue;
     /* NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34 */
-    if (kind === "api" && !_spv34RouteMediaCompatible(route, mediaType)) continue;
+    if (!_spv34RouteMediaCompatible(route, mediaType)) continue;
     out.push(..._expandLearnedRoute(route, meta, mediaType, season, episode, bases));
   }
   return _uniq(out);
@@ -1689,23 +1705,34 @@ function _apiUrls(tmdbId, mediaType, season, episode) {
   }
   return _uniq(out);
 }
-function _directPlayerUrls(tmdbId, mediaType) {
+function _directPlayerUrls(tmdbId, mediaType, season, episode) {
   if (!tmdbId || !_identityUsesTmdbId()) return [];
-  const hasPlayerRoute = (NIAKVIO_PROVIDER_MODEL.routes || []).some(route =>
+  const out = _learnedUrls(
+    "player",
+    { tmdbId: _text(tmdbId), title: "" },
+    mediaType,
+    season,
+    episode
+  );
+
+  // Preserve the historical /player?m=...&id=... convention only when the
+  // provider explicitly declares the bare /player route. Typed discovered
+  // /play/... or /embed/... patterns above are consumed exactly as DATA.
+  const hasBarePlayerRoute = (NIAKVIO_PROVIDER_MODEL.routes || []).some(route =>
     /^\/player(?:[?#]|$)/i.test(_text(route))
   );
-  if (!hasPlayerRoute) return [];
-  const transportType = _mediaNamespace(mediaType);
-  const out = [];
-  for (const base of _searchBases()) {
-    try {
-      const parsed = new URL("/player", base);
-      out.push(
-        parsed.origin + parsed.pathname
-        + "?m=" + encodeURIComponent(transportType)
-        + "&id=" + encodeURIComponent(_text(tmdbId))
-      );
-    } catch (_) {}
+  if (hasBarePlayerRoute) {
+    const transportType = _mediaNamespace(mediaType);
+    for (const base of _searchBases()) {
+      try {
+        const parsed = new URL("/player", base);
+        out.push(
+          parsed.origin + parsed.pathname
+          + "?m=" + encodeURIComponent(transportType)
+          + "&id=" + encodeURIComponent(_text(tmdbId))
+        );
+      } catch (_) {}
+    }
   }
   return _uniq(out);
 }
@@ -2382,7 +2409,7 @@ async function _resolveRuntimeApi(playerUrls, mediaType, tmdbId, season, episode
   return _dedupeStreamRows(streams).slice(0, 40);
 }
 async function _resolveKnownPlayer(tmdbId, mediaType, season, episode) {
-  const known = _directPlayerUrls(tmdbId, mediaType).slice(0, 2);
+  const known = _directPlayerUrls(tmdbId, mediaType, season, episode).slice(0, 2);
   const streams = [];
   for (const playerUrl of known) {
     try {
@@ -2657,7 +2684,7 @@ async function _resolveHtml(meta, mediaType, season, episode) {
         if (discoveredNested.length) {
           const runtimeCandidates = _uniq([
             ...discoveredNested,
-            ..._directPlayerUrls(meta.tmdbId, mediaType)
+            ..._directPlayerUrls(meta.tmdbId, mediaType, season, episode)
           ]);
           // A signed player URL can carry short-lived keys required by a
           // learned runtime API. Consume that exact route before recursively
