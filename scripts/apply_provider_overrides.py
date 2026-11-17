@@ -1876,7 +1876,7 @@ def apply_overrides(
         # Every returned URL within the bounded probe budget is checked with the
         # exact stream headers. Conclusive invalidity (403/404/410, blocked host,
         # HTML/error payload or malformed media) is dropped. Ordinary probe
-        # uncertainty is fail-closed under the current V8/V10/V11 publication policy;
+        # uncertainty is fail-closed under the current V8/V10/V11/V12 publication policy;
         # only exact proof-correlated player fallbacks have their separate bounded
         # exception. Unprobed overflow rows are therefore also not publishable.
         terminal_policy = playback_policy.get("terminal_stream_sanitizer") or {}
