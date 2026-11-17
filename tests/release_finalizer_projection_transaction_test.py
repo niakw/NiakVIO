@@ -26,7 +26,9 @@ multiplicity = workflow.index("python3 tests/provider_stream_multiplicity_contra
 season_zero = workflow.index("python3 tests/special_season_zero_identity_test.py", multiplicity)
 five_labs = workflow.index("python3 tests/native_five_lab_coverage_test.py", season_zero)
 native_scope = workflow.index("python3 tests/native_hub46_scope_contract_test.py", five_labs)
-presentation = workflow.index("python3 tests/global_stream_presentation_test.py", native_scope)
+native_transport = workflow.index("python3 tests/native_hub46_transport_manifest_test.py", native_scope)
+native_corpus = workflow.index("python3 tests/native_corpus_device_lab_test.py", native_transport)
+presentation = workflow.index("python3 tests/global_stream_presentation_test.py", native_corpus)
 metadata = workflow.index("python3 tests/global_stream_metadata_preservation_contract_test.py", presentation)
 score = workflow.index("python3 tests/stream_score_contract_test.py", metadata)
 hls_facts = workflow.index("python3 tests/hls_master_facts_short_test.py", score)
@@ -63,7 +65,7 @@ final_reconcile = workflow.index("python3 scripts/reconcile_active_provider_publ
 assert reapply < sync < sync_check < reconcile < materialize < sync2 < sync2_check < second_reconcile < validate
 assert runtime_step < upstream_guard < runtime_render < runtime_gate < runtime_matrix < runtime_policy < portable_gate < clean_base
 assert portable_gate < metier_docs < metier_plans < cardinality < semantic_transport < multiplicity < season_zero < five_labs < native_scope
-assert native_scope < presentation < metadata < score < hls_facts < hls_integrity < hls_presentation < multi_variant < telemetry < core_ownership < step
+assert native_scope < native_transport < native_corpus < presentation < metadata < score < hls_facts < hls_integrity < hls_presentation < multi_variant < telemetry < core_ownership < step
 assert release_types < reapply2 < minimize2 < minimize2_check < sync3 < sync3_check < final_reconcile
 reverse_rebuild = workflow.index("python3 scripts/verify_provider_v3_reverse_rebuild.py", final_reconcile)
 finalize_versions = workflow.index("- name: Finalize synchronized release and provider cache versions", reverse_rebuild)
@@ -76,6 +78,15 @@ assert workflow.count("--vf-source vf/manifest.json") >= 2
 for required in (
     "'automation/nuvio-client-compatibility-matrix.json'",
     "'automation/platform-runtime-contracts.json'",
+    "'engine_v2/config/nuvio-clients.json'",
+    "'scripts/prebuild_native_android_reader_suite.sh'",
+    "'scripts/run_native_corpus_mobile_suite.sh'",
+    "'scripts/run_native_corpus_tv_suite.sh'",
+    "'scripts/run_native_corpus_desktop_suite.sh'",
+    "'scripts/run_native_corpus_ios_suite.sh'",
+    "'scripts/apply_hub46_native_lab_scope.py'",
+    "'tests/native_hub46_transport_manifest_test.py'",
+    "'tests/native_corpus_device_lab_test.py'",
     "'scripts/check_nuvio_client_upstreams.py'",
     "'scripts/runtime_contract_gate.py'",
     "'scripts/materialize_provider_base_v3_store.py'",
