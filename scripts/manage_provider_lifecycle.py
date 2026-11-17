@@ -7,10 +7,11 @@ State contract:
 * provider-disabled/  : disabled providers still visible in manifest.json
 * provider-old/       : terminal archive, absent from current manifests
 
-A disabled provider is retained for 7 days. If it is still disabled at the end
-of that window, its published/provider-base bytes are moved under provider-old/
-and it is removed from current manifests. Re-enabling it during the retention
-window restores its bytes to providers/ and clears the disabled lifecycle state.
+A disabled provider is normally retained for 7 days before archival.
+A historical automatic architecture-nonfunctional/regression verdict without
+independently verified negative evidence is held in reversible disabled retention
+instead: absence of an exact-byte FULL proof is not a safe archival authority.
+Re-enabling a retained provider restores its bytes and clears lifecycle state.
 """
 from __future__ import annotations
 
@@ -37,6 +38,18 @@ STATE_PATH = ROOT / "automation/provider-disabled-lifecycle.json"
 STATIC_KNOWLEDGE_PATH = ROOT / "automation/provider-v3-static-knowledge.json"
 MATERIALIZATION_PATH = ROOT / "provider-v3-materialization.json"
 RETENTION_DAYS = 7
+
+# Historical auto-off decisions could have been inferred solely from missing
+# positive exact-byte freshness after Core rotation. They remain non-executable
+# while separately verified, but may not be irrevocably archived by a timer.
+PROOF_GAP_AUTO_OFF_REASONS = frozenset({
+    "auto_off_current_architecture_nonfunctional",
+    "auto_off_current_architecture_regression",
+})
+
+
+def hold_archival_for_unverified_auto_off(reason: str) -> bool:
+    return str(reason or "").strip() in PROOF_GAP_AUTO_OFF_REASONS
 
 ROOT_MANIFEST = ROOT / "manifest.json"
 PROJECTION_MANIFESTS = (
@@ -444,7 +457,7 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
         purge_day = disabled_day + timedelta(days=RETENTION_DAYS)
         reason = str(row.get("disabledReason") or (record or {}).get("reason") or "disabled").strip()
 
-        if day >= purge_day:
+        if day >= purge_day and not hold_archival_for_unverified_auto_off(reason):
             relocate_family(pid, DISABLED_DIR, ARCHIVE_PROVIDER_DIR, apply=apply)
             relocate_family(pid, ACTIVE_DIR, ARCHIVE_PROVIDER_DIR, apply=apply)
             relocate_bases(pid, DISABLED_BASE_DIR, ARCHIVE_BASE_DIR, apply=apply)
@@ -476,6 +489,11 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
             "reason": reason,
             "state": "disabled-retained",
             "manifestVisible": True,
+            **(
+                {"archiveHoldReason": "independent_negative_proof_pending"}
+                if hold_archival_for_unverified_auto_off(reason)
+                else {}
+            ),
         }
         if record is None:
             newly_disabled.add(pid)
