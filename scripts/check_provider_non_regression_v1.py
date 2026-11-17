@@ -280,6 +280,8 @@ GLOBAL_PREFIXES = (
     "runtime/",
     "provider-base/",
     "provider_base/",
+    "provider-bases/",
+    "scripts/provider_patches/",
     "scripts/core_",
     "scripts/build_provider_",
     "scripts/materialize_provider_",
@@ -287,7 +289,6 @@ GLOBAL_PREFIXES = (
     "scripts/resolve_",
     "scripts/run_provider_repair_pipeline",
     "automation/provider-v3-architecture.json",
-    "automation/provider-type-policy.json",
     ".github/workflows/",
 )
 GLOBAL_EXACT = {
@@ -296,6 +297,11 @@ GLOBAL_EXACT = {
     "no-anime/manifest.json",
     "vf-no-anime/manifest.json",
     "provider_catalog.json",
+    "provider-overrides.json",
+    "provider-type-policy.json",
+    "scripts/provider_base_store.py",
+    "scripts/apply_provider_overrides.py",
+    "scripts/current_provider_scope.py",
     "provider-v3-quick-yield.json",
     "package.json",
     "package-lock.json",
