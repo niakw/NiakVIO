@@ -1,3 +1,11 @@
+## 2026-11-17 — Bulk activation no longer assigns production slots to unranked pending providers
+
+- The 32 current `ONBOARDING_PENDING` rows split into 17 Global / 15 France. Four older Global pending identities (`asiaflix`, `rivestream`, `sflix`, `vidsrc2`) are not represented in the current structured onboarding batch ranking.
+- Using a lexical fallback for those rows would make production selection arbitrary when the Global projection has only 15 free slots. The catalog descriptions still contain historical scores, but free-text parsing is not acceptable mutation authority.
+- `5b9f7ade` therefore keeps a fresh FULL provider pending with `portfolio_priority_missing` unless it has a structured current entry in `.github/provider-onboarding/batch.json`. This check runs after proof/identity/freshness eligibility, so it never substitutes ranking for health authority.
+- `17c5d007` adds a synthetic fresh FULL, exact-byte provider with no ranking and requires it to remain in `provider-disabled/`; independent stale-proof and capacity-reached cases remain separately covered.
+- With current structured ranks, the theoretical all-FULL activation wave would fill Global only from 45 to 58 and France from 38 to 53; the remaining slots require a ranking refresh/new onboarding wave rather than arbitrary activation. Brain remains phase-gated.
+
 ## 2026-11-17 — Proof-driven Bulk Activation now enforces the 60 Global / 60 France projection targets
 
 - Pre-census audit found 32 current `ONBOARDING_PENDING` identities (17 Global / 15 France), all disabled and backed by `provider-disabled/` bytes. With production currently 45 Global / 38 France, blindly activating every fresh FULL pending provider could have produced 62 Global rows.
