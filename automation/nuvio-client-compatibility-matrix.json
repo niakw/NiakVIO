@@ -30,7 +30,8 @@
       "anime_provider_runtime_type": "anime",
       "series_capability_meaning": "client/input/family reasoning capability only; never a published supportedTypes value",
       "anime_tv_launch_alias_is_compatibility_only": true
-    }
+    },
+    "provider_execution_isolation": "Mobile/Desktop execute each plugin in a fresh QuickJS runtime; reuse-last-link cache carries addon identity; manual stream selection bypasses cache reuse; automatic fallback must replace active provider name/id together with the source."
   },
   "capability_universe": [
     "invocation",
@@ -126,7 +127,12 @@
         "user_tmdb_credential_required": false,
         "tmdb_secret_projection_required": false,
         "identity_hydration_status": "equivalent-runtime-tmdb-key-bridge",
-        "identity_hydration_note": "Current Mobile HostFunctions exposes __get_tmdb_api_key and JsBindings assigns globalThis.TMDB_API_KEY from TmdbSettingsRepository.effectiveApiKey(); that resolver falls back to the build TmdbConfig.API_KEY. NiakVIO Core can therefore hydrate its own TMDB/IMDb metadata cache without embedding a key in provider bytes. The client still does not supply __nuvioMediaContext or __nuvioCoreGetTmdbDataV1 directly."
+        "identity_hydration_note": "Current Mobile HostFunctions exposes __get_tmdb_api_key and JsBindings assigns globalThis.TMDB_API_KEY from TmdbSettingsRepository.effectiveApiKey(); that resolver falls back to the build TmdbConfig.API_KEY. NiakVIO Core can therefore hydrate its own TMDB/IMDb metadata cache without embedding a key in provider bytes. The client still does not supply __nuvioMediaContext or __nuvioCoreGetTmdbDataV1 directly.",
+        "fresh_js_runtime_per_plugin_execution": true,
+        "scraper_code_execution_bound_to_scraper_id": true,
+        "reuse_last_link_cache_preserves_addon_identity": true,
+        "manual_stream_selection_bypasses_reuse_last_link_cache": true,
+        "auto_source_fallback_updates_active_provider_identity": true
       },
       "brain_capabilities": [
         "invocation",
@@ -235,7 +241,12 @@
         "user_tmdb_credential_required": false,
         "tmdb_secret_projection_required": false,
         "identity_hydration_status": "equivalent-runtime-tmdb-key-bridge",
-        "identity_hydration_note": "Current Desktop HostFunctions exposes __get_tmdb_api_key and JsBindings assigns globalThis.TMDB_API_KEY from TmdbSettingsRepository.effectiveApiKey(); the resolver falls back to build TmdbConfig.API_KEY. NiakVIO Core can hydrate its own bounded TMDB/IMDb cache without embedding a key in provider bytes. No __nuvioMediaContext/__nuvioCoreGetTmdbDataV1 host object is supplied directly."
+        "identity_hydration_note": "Current Desktop HostFunctions exposes __get_tmdb_api_key and JsBindings assigns globalThis.TMDB_API_KEY from TmdbSettingsRepository.effectiveApiKey(); the resolver falls back to build TmdbConfig.API_KEY. NiakVIO Core can hydrate its own bounded TMDB/IMDb cache without embedding a key in provider bytes. No __nuvioMediaContext/__nuvioCoreGetTmdbDataV1 host object is supplied directly.",
+        "fresh_js_runtime_per_plugin_execution": true,
+        "scraper_code_execution_bound_to_scraper_id": true,
+        "reuse_last_link_cache_preserves_addon_identity": true,
+        "manual_stream_selection_bypasses_reuse_last_link_cache": true,
+        "auto_source_fallback_updates_active_provider_identity": true
       },
       "brain_capabilities": [
         "invocation",
