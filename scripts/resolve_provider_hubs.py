@@ -494,6 +494,58 @@ def links(document: str, base: str) -> list[tuple[str, str, int]]:
     return unique
 
 
+def _linked_telegram_address_sources(
+    provider_id: str,
+    cfg: dict[str, Any],
+    document: str,
+    base_url: str,
+) -> list[dict[str, Any]]:
+    """Discover bounded official Telegram address feeds linked by a trusted hub.
+
+    The link is discovery evidence only on this run. Domain Refresh may persist
+    it as a fallback source, but it cannot publish a terminal through that newly
+    discovered channel until a later run observes it as configured authority.
+    """
+    aliases = aliases_for(provider_id, cfg)
+    output: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for url, label, index in links(document, base_url):
+        hostname = host(url)
+        if not host_matches_suffixes(hostname, ("t.me", "telegram.me")):
+            continue
+        normalized = url.rstrip("/")
+        if normalized in seen:
+            continue
+        folded = compact(f"{url} {label}")
+        brand_signal = any(alias and alias in folded for alias in aliases)
+        address_signal = (
+            "telegram" in folded
+            and any(
+                token in folded
+                for token in (
+                    "officiel", "official", "adresse", "address",
+                    "canal", "channel", "domaine", "domain", "annonce",
+                )
+            )
+        )
+        if not brand_signal and not address_signal:
+            continue
+        seen.add(normalized)
+        output.append({
+            "type": "telegram_public",
+            "url": normalized,
+            "resolver": "latest_telegram_domain",
+            "role": "fallback",
+            "priority": 90,
+            "purpose": "Official address fallback discovered from authoritative hub link",
+            "document_index": index,
+            "label": label,
+        })
+        if len(output) >= 2:
+            break
+    return output
+
+
 def _default_source_type(url: str, resolver: str) -> str:
     hostname = host(url)
     if host_matches_suffixes(hostname, ("t.me", "telegram.me")) or resolver in {"latest_telegram_domain", "telegram_description"}:
@@ -1252,6 +1304,23 @@ def gather_candidates(provider_id: str, cfg: dict[str, Any], history_row: dict[s
             observations.append(observation)
             if not 200 <= status < 400:
                 continue
+
+            if source_type in {"hub", "redirect"}:
+                for discovered_source in _linked_telegram_address_sources(
+                    provider_id, source_cfg, document, final
+                ):
+                    observations.append({
+                        "source_type": "telegram_public",
+                        "source_role": "fallback",
+                        "source_priority": int(discovered_source.get("priority") or 90),
+                        "resolver": "latest_telegram_domain",
+                        "url": discovered_source["url"],
+                        "status": 0,
+                        "final_url": discovered_source["url"],
+                        "discovered_address_source": True,
+                        "discovered_from": url,
+                        "purpose": discovered_source["purpose"],
+                    })
             if source_type == "redirect" and host(final) != host(url):
                 candidates.append({
                     "url": final.rstrip("/"),
