@@ -49,6 +49,7 @@ for provider in ("purstream", "movix", "cineby", "animepahe", "goated"):
     assert "NUVIO_GLOBAL_TELEMETRY_V1" in output, provider
     assert "NUVIO_STREAM_OUTPUT_NETWORK_EVIDENCE_V10" in output, provider
     assert "NUVIO_STREAM_OUTPUT_HLS_MASTER_PREFERENCE_V11" in output, provider
+    assert "NUVIO_STREAM_OUTPUT_MULTI_AUDIO_FRONTIER_V12" in output, provider
     assert "/* STARTFIX:CORE.STREAM_SANITIZER.V6 */" in output, provider
     assert output.index("NUVIO_GLOBAL_STREAM_FACTS_V1") < output.index("/* STARTFIX:CORE.STREAM_SANITIZER.V6 */"), provider
     assert output.index("/* STARTFIX:CORE.STREAM_SANITIZER.V6 */") < output.index("NUVIO_GLOBAL_STREAM_IDENTITY_V1"), provider
