@@ -1,3 +1,9 @@
+## 2026-11-17 — Projection Reconcile rejects stale pushes before expensive materialization
+
+- Repeated exact-head métier corrections exposed an orchestration inefficiency: Projection Reconcile intentionally shares a non-cancelling publication mutex with Domain Refresh and Release Finalizer, so blindly switching `cancel-in-progress` on would risk cancelling an unrelated accepted publication. However a superseded Projection run could still consume most of its 35-minute slot before the later publish-drift guard rejected it.
+- The shared mutex remains non-cancelling. A push-triggered Projection Reconcile now fetches `origin/main` immediately after the exact-trigger check and fails fast with `FIELD_PROVIDER_PROJECTION_SUPERSEDED` when its event SHA is no longer current. The workflow contract pins this early guard.
+- This is queue/orchestration hardening only; no provider bytes, proof thresholds or publication authority change.
+
 ## 2026-11-17 — Release certification gates logical provider ownership
 
 - The logical provider ownership correction is now part of canonical release certification, not only Workflow/Core metadata CI. `release-finalize.yml` watches and executes `tests/provider_branding_contract_test.py`, which injects a foreign raw/player provider value and requires the final portable `provider` to remain the executing NiakVIO provider while the foreign value survives only as provenance.
