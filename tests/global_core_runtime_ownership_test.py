@@ -127,6 +127,8 @@ for row in rows:
     assert '"maxProbes":40' in sanitizer_region, (provider_id, "maxProbes", sanitizer_region[:500])
     assert "NUVIO_STREAM_OUTPUT_MULTI_AUDIO_FRONTIER_V12" in sanitizer_region, (provider_id, "sanitizer-v12")
     assert "probeLimit=Math.min(candidates.length,16)" in sanitizer_region, (provider_id, "multi-audio-frontier")
+    assert "provider-owner-terminal-source-label-v13" in text, (provider_id, "branding-v13")
+    assert "sourceProvider" in text, (provider_id, "source-provider-provenance")
 
     positions = {}
     for fix_id in REQUIRED_GLOBAL_CORE_IDS:
