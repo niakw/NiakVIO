@@ -1,5 +1,5 @@
 {
-  "schema_version": 24,
+  "schema_version": 25,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -509,7 +509,19 @@
     "terminal_resolution_before_identity": true,
     "terminal_resolution_before_presentation": true,
     "recovered_url_identity_revalidated": true,
-    "terminal_audio_tracks_presented": true
+    "terminal_audio_tracks_presented": true,
+    "identity_authority": "provider-owned pre-presentation source facts and terminal media facts",
+    "presentation_fields_may_prove_identity": false,
+    "season_episode_coordinates_require_title_or_terminal_identity": true,
+    "single_token_overlap_is_sufficient_identity": false,
+    "source_fact_precedence": [
+      "sourceTitle",
+      "sourceDescription",
+      "sourceLabel",
+      "sourceName",
+      "terminal filename",
+      "measured media facts"
+    ]
   },
   "network_oracle": {
     "github_ci_role": "deterministic orchestration, code, materialization and reproducibility",
