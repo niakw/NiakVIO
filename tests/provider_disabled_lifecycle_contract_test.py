@@ -91,6 +91,7 @@ lifecycle_source=(ROOT/"scripts/manage_provider_lifecycle.py").read_text(encodin
 assert "if day >= purge_day and not hold_archival_for_unverified_auto_off(reason):" in lifecycle_source
 assert '"archiveHoldReason": "independent_negative_proof_pending"' in lifecycle_source
 assert "active providers missing from materialization ledger" in lifecycle_source
+assert "reconcile_materialization_from_active_bundles(apply=True)" in lifecycle_source
 assert "visible providers missing from materialization ledger" not in lifecycle_source
 assert "materialization_ids == active_union" in workflow
 assert "materialization_ids == runtime_visible_ids" not in workflow
