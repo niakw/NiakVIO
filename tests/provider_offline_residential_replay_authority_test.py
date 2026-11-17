@@ -25,7 +25,7 @@ with tempfile.TemporaryDirectory() as td:
     }]}
     vf={"scrapers":[]}
     overrides={
-        "provider_patches":{"demo":{"manifest_overrides":{"enabled":True}}},
+        "provider_patches":{"demo":{"manifest_overrides":{}}},
         "provider_capabilities":{"demo":{
             "validation":"bulk_offline_contract_live_unverified",
         }},
