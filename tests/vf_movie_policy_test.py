@@ -8,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
+from current_provider_scope import projection_active_provider_ids
 from activation_preservation_core_rehash import (
     configured_safety_quarantine as configured_safety_quarantine_rehash,
     validate as validate_activation_preservation_rehash,
@@ -16,7 +17,6 @@ from activation_preservation_core_rehash import (
 overrides = json.loads((ROOT / 'provider-overrides.json').read_text())
 hubs = json.loads((ROOT / 'provider-hubs.json').read_text())['providers']
 manifest = json.loads((ROOT / 'manifest.json').read_text())['scrapers']
-activation = json.loads((ROOT / 'provider-activation-lkg.json').read_text())
 health_report = json.loads((ROOT / 'health-report.json').read_text())
 type_policy = json.loads((ROOT / 'provider-type-policy.json').read_text())['providers']
 catalog_doc = json.loads((ROOT / 'provider_catalog.json').read_text())
@@ -79,7 +79,7 @@ for provider_id in sorted(expected_vf_movie):
     row = by_id[provider_id]
     assert 'movie' in row['supportedTypes'], provider_id
     if row['enabled'] is True:
-        assert provider_id in activation['active_ids'], provider_id
+        assert provider_id in projection_active_provider_ids(), provider_id
         continue
     safety_accepted, _ = configured_safety_quarantine_rehash(
         provider_id,
