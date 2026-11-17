@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "authority": "provider-authority-arbiter-v1",
   "censusStatusSource": "/tmp/provider-census-preauthority.json",
-  "productionFreshnessStatusSource": "persisted-all-scope",
+  "productionFreshnessStatusSource": "/tmp/provider-census-current-freshness.json",
   "policy": {
     "searchRole": "historical-supplement-only",
     "futureHubSearchDefault": false,
@@ -445,7 +445,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
+        "current_status:CHAIN REACHED"
       ]
     },
     {
@@ -786,7 +786,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS MISMATCH"
+        "current_status:CHAIN REACHED"
       ]
     },
     {
@@ -1230,7 +1230,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "current_status:PROVIDER JS BROKEN"
       ]
     },
     {
@@ -1466,7 +1466,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "current_status:HARNESS/ENV BLOCKED"
       ]
     },
     {
@@ -1537,7 +1537,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "current_status:PARTIAL OK"
       ]
     },
     {
@@ -1661,7 +1661,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PARTIAL OK"
+        "current_status:PROVIDER JS BROKEN"
       ]
     },
     {
