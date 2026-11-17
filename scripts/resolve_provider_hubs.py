@@ -1087,11 +1087,26 @@ def _dedupe_ordered_candidates(candidates: list[dict[str, Any]]) -> list[dict[st
         if not identity or not is_provider_terminal_site_url(identity):
             continue
         previous = dedup.get(identity)
-        if previous is None or int(candidate.get("score") or 0) > int(previous.get("score") or 0):
+        candidate_fallback = bool(candidate.get("source_fallback"))
+        previous_fallback = bool(previous.get("source_fallback")) if previous else True
+        if (
+            previous is None
+            or (previous_fallback and not candidate_fallback)
+            or (
+                previous_fallback == candidate_fallback
+                and int(candidate.get("score") or 0) > int(previous.get("score") or 0)
+            )
+        ):
             dedup[identity] = candidate
     return sorted(
         dedup.values(),
-        key=lambda row: (-int(row.get("score") or 0), row.get("source_type") == "search", row["url"]),
+        key=lambda row: (
+            bool(row.get("source_fallback")),
+            -int(row.get("score") or 0),
+            -int(row.get("source_priority") or 0),
+            row.get("source_type") == "search",
+            row["url"],
+        ),
     )
 
 
@@ -1184,41 +1199,85 @@ def gather_candidates(provider_id: str, cfg: dict[str, Any], history_row: dict[s
                 "reason": "source_marked_removed",
             })
             continue
-        source_type = str(source.get("type") or "hub")
+        source_type = str(source.get("type") or "hub").strip().casefold()
         if source_type == "search":
             continue
         url = str(source.get("url") or "").strip()
         if not is_http_url(url):
             continue
+
+        # A provider may expose several address authorities with different
+        # extraction semantics (HTML hub, Telegram chronology/description,
+        # redirector, catalogue page, etc.). Keep the provider-level resolver
+        # as a default, but let each source describe its own parser/priority.
+        source_cfg = dict(cfg)
+        explicit_source_resolver = str(source.get("resolver") or "").strip()
+        if explicit_source_resolver:
+            source_cfg["resolver"] = explicit_source_resolver
+        elif source_type == "telegram_public":
+            configured_resolver = str(source_cfg.get("resolver") or "")
+            if configured_resolver not in {"latest_telegram_domain", "telegram_description"}:
+                source_cfg["resolver"] = "latest_telegram_domain"
+
+        for field in (
+            "official_link_labels",
+            "terminal_markers",
+            "allowed_terminal_hosts",
+            "allowed_terminal_host_patterns",
+            "blocked_hosts",
+        ):
+            source_values = source.get(field)
+            if not isinstance(source_values, list):
+                continue
+            merged_values = list(source_cfg.get(field) or [])
+            for value in source_values:
+                if value not in merged_values:
+                    merged_values.append(value)
+            source_cfg[field] = merged_values
+
+        source_role = str(source.get("role") or source.get("source_role") or "primary").strip().casefold()
+        source_fallback = source_role in {"fallback", "secondary", "backup"}
+        base_priority = int(source.get("priority") or 50)
         try:
             status, final, document, _headers = fetch(url, timeout)
-            observation = {"source_type": source_type, "url": url, "status": status, "final_url": final}
+            observation = {
+                "source_type": source_type,
+                "source_role": source_role,
+                "source_priority": base_priority,
+                "resolver": str(source_cfg.get("resolver") or "official_outbound"),
+                "url": url,
+                "status": status,
+                "final_url": final,
+            }
             observations.append(observation)
             if not 200 <= status < 400:
                 continue
             if source_type == "redirect" and host(final) != host(url):
                 candidates.append({
-                    "url": final.rstrip("/"), "label": "validated redirect destination",
-                    "score": 92, "source_type": source_type, "source": url,
+                    "url": final.rstrip("/"),
+                    "label": "validated redirect destination",
+                    "score": 92,
+                    "source_type": source_type,
+                    "source": url,
+                    "source_role": source_role,
+                    "source_priority": base_priority,
+                    "source_fallback": source_fallback,
                 })
-            source_cfg = dict(cfg)
             source_cfg["hub"] = final
             if has_authoritative_hub_source(cfg):
                 # The hub is the only route authority. Direct candidates remain
                 # useful as brand allow-list hints but must never be injected as
                 # fallback terminal URLs.
                 source_cfg.pop("direct_fallback", None)
-            if source_type == "telegram_public":
-                configured_resolver = str(source_cfg.get("resolver") or "")
-                if configured_resolver not in {"latest_telegram_domain", "telegram_description"}:
-                    source_cfg["resolver"] = "latest_telegram_domain"
             source_candidates, _preferred = choose_official(provider_id, source_cfg, final, document)
-            base_priority = int(source.get("priority") or 50)
             for row in source_candidates:
                 row = dict(row)
                 row["score"] = min(100, int(row.get("score") or 0) + max(0, min(15, (base_priority - 50) // 4)))
                 row["source_type"] = source_type
                 row["source"] = url
+                row["source_role"] = source_role
+                row["source_priority"] = base_priority
+                row["source_fallback"] = source_fallback
                 candidates.append(row)
         except Exception as exc:
             observations.append({"source_type": source_type, "url": url, "error": f"{type(exc).__name__}: {exc}"})
