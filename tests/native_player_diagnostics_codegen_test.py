@@ -25,7 +25,7 @@ PLAYER_REACH_GATE = ROOT / "scripts/gate_native_player_reached.cjs"
 
 
 def source(client: str) -> str:
-    return f'''package example\n\nimport android.util.Log\nimport androidx.test.platform.app.InstrumentationRegistry\nimport org.junit.Test\n\nclass Sample {{\n    private fun b64(v: Any?) = ""\n    private fun hostOnly(v: String) = ""\n    private fun probeTransport(url: String, headers: Map<String,String>?) = TODO()\n\n    @Test\n    fun run() {{\n        val fixtureSlug = "sinners"\n        val provider = object {{ val id = "MOVIESDRIVE" }}\n        val rows = emptyList<dynamic>()\n                rows.firstOrNull()?.let {{ row ->\n                    val probe = probeTransport(row.url, row.headers)\n                    emit("FIELD_NATIVE_TRANSPORT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} audio_track_count=${{probe.audioTrackCount}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")\n                }}\n    }}\n    private fun emit(v: String) {{}}\n}}\n'''
+    return f'''package example\n\nimport android.util.Log\nimport androidx.test.platform.app.InstrumentationRegistry\nimport org.junit.Test\n\nclass Sample {{\n    private fun b64(v: Any?) = ""\n    private fun hostOnly(v: String) = ""\n    private fun probeTransport(url: String, headers: Map<String,String>?) = TODO()\n\n    @Test\n    fun run() {{\n        val fixtureSlug = "sinners"\n        val provider = object {{ val id = "MOVIESDRIVE" }}\n        val rows = emptyList<dynamic>()\n                rows.firstOrNull()?.let {{ row ->\n                    val probe = probeTransport(row.url, row.headers)\n                    emit("FIELD_NATIVE_TRANSPORT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} audio_track_count=${{probe.audioTrackCount}} audio_track_languages64=${{b64(probe.audioTrackLanguages)}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")\n                }}\n    }}\n    private fun emit(v: String) {{}}\n}}\n'''
 
 
 tv_generated = mod.augment_android_test(source("tv"), client="tv", expected_duration_minutes=137, max_player_probes=3)
@@ -46,7 +46,7 @@ assert "entry=nuvio-production-player" in tv
 assert "UiDevice.getInstance(instrumentation)" in tv
 assert "R.string.cd_audio_tracks" in tv
 assert 'By.clazz("android.widget.RadioButton")' in tv
-assert "audioTrackCount = probeTvAudioTrackCount" in tv
+assert "val audioTracks = probeTvAudioTracks" in tv\nassert "track.contentDescription" in tv
 assert "audio_track_count=${reader.audioTrackCount}" in tv
 assert "audio_track_count=${transport.audioTrackCount}" in tv
 
@@ -88,6 +88,7 @@ assert "getAudioTracks()" in mobile
 assert "audio_track_count=${reader.audioTrackCount}" in mobile
 assert "audio_track_languages64=${b64(reader.audioTrackLanguages)}" in mobile
 assert "audio_track_count=${transport.audioTrackCount}" in mobile
+assert "audio_track_languages64=${b64(transport.audioTrackLanguages)}" in mobile
 assert "FIELD_NATIVE_PLAYER_ENTRY client=mobile" in mobile
 assert "FIELD_NATIVE_PLAYER_BEGIN client=mobile" not in mobile
 assert mobile.index("val reader = probeNativePlayer(row.url, row.headers, row.type, 137)") < mobile.index("val transport = probeTransport(row.url, row.headers)")
