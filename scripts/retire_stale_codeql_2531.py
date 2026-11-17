@@ -135,6 +135,8 @@ SAFE_EVIDENCE_FILES = frozenset({
     "automation/brain-llm-force-memory.json",
     "automation/provider-brain-repair-latest.json",
     "automation/provider-census-status.json",
+    "automation/provider-authority-status.json",
+    "automation/provider-disabled-recovery-queue.json",
     "automation/provider-fast-repair-summary.json",
     "automation/provider-repair-learn-handoff-v1.json",
     "automation/provider-repair-batch-plan-latest.json",
