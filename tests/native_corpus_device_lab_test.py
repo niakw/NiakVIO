@@ -251,6 +251,17 @@ assert reader_codegen.index("val reader = probeNativePlayer") < reader_codegen.i
 for marker in ("no_readable_log","missing_begin_marker","incomplete_provider_traversal:"):
     assert marker in collection_analyzer
 
+for suite_path in (
+    ROOT / "scripts/run_native_corpus_mobile_suite.sh",
+    ROOT / "scripts/run_native_corpus_tv_suite.sh",
+    ROOT / "scripts/run_native_corpus_desktop_suite.sh",
+):
+    suite_text = suite_path.read_text(encoding="utf-8")
+    assert 'TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-native-hub46/manifest.json}"' in suite_text, suite_path
+    assert 'TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"' not in suite_text, suite_path
+
+assert '( "$TARGET_MANIFEST" = "manifest.json" || "$TARGET_MANIFEST" = "native-hub46/manifest.json" )' in tv_suite
+
 for suite, client in ((mobile_suite,"MOBILE"),(tv_suite,"TV")):
     assert 'for fixture in "${FIXTURES[@]}"' in suite, client
     assert f"FIELD_NATIVE_CORPUS_{client}_SUITE_STATUS" in suite
