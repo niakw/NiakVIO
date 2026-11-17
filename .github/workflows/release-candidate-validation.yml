@@ -209,6 +209,7 @@ jobs:
               -f ref="${TARGET_REF}" "$@"
             echo "dispatched ${workflow} ref=${TARGET_REF} sha=${TARGET_SHA}"
           }
+          dispatch github-actions-gate.yml -f "inputs[expected_sha]=${TARGET_SHA}"
           dispatch sync.yml -f 'inputs[mode]=quick'
           dispatch provider-non-regression.yml
           dispatch core-stream-metadata-contract.yml
@@ -233,6 +234,7 @@ jobs:
           sha=os.environ['TARGET_SHA']
           token=os.environ['GH_TOKEN']
           workflows=[
+              'github-actions-gate.yml',
               'sync.yml',
               'provider-non-regression.yml',
               'core-stream-metadata-contract.yml',
@@ -301,5 +303,5 @@ jobs:
               for workflow, run_id, conclusion in failures:
                   print(f'RUN_FAILED workflow={workflow} id={run_id} conclusion={conclusion}')
               raise SystemExit(1)
-          print('RELEASE_CANDIDATE_VALIDATION_GREEN providers=dynamic-projection-union historical=50 platforms=5 verify=quick security=codeql+final-gate+external')
+          print('RELEASE_CANDIDATE_VALIDATION_GREEN providers=dynamic-projection-union historical=50 platforms=5 workflow_gate=exact verify=quick security=codeql+final-gate+external')
           PY
