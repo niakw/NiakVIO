@@ -1086,11 +1086,11 @@ def fast_fixed_point_check(
             if entry.get(key) != value:
                 return False, f"manifest-override-drift:{provider_id}"
 
-    # PROVENANCE intentionally retains the 50 archived provider rows beside
-    # the 46 current manifest providers. The loop above is authoritative for
-    # the current release: every current provider must exist in provenance and
+    # PROVENANCE may retain archived provider rows beside the current dynamic
+    # Global+France publication set. The loop above is authoritative for the
+    # current release: every current provider must exist in provenance and
     # satisfy its input/reference/fixed-point contracts. Historical rows are
-    # knowledge only and must not force the release manifest back to 96 rows.
+    # knowledge only and must never impose a frozen catalogue cardinality.
 
     for path in secondary_paths:
         payload = load_manifest(path)
