@@ -160,10 +160,43 @@ assert.deepEqual(streamIdentity({ title: 'Purstream 1080p Dual Audio - Inconnue'
 assert.deepEqual(streamIdentity({ title: 'Ben 10 Ultimate Alien', description: 'Breaking Bad S01E01', url: 'https://cdn.example/generic/master.m3u8' }, { title: 'Breaking Bad', mediaType: 'tv', season: 1, episode: 1 }), { status: 'contradiction', reason: 'strong_title_mismatch' });
 assert.deepEqual(streamIdentity({ name: 'MovieBlast', title: 'MovieBlast - 720P (Telugu)', url: 'https://cdn.example/fp44sc004rev' }, { title: 'Interstellar', mediaType: 'movie' }), { status: 'unknown', reason: 'insufficient_identity_metadata' });
 assert.deepEqual(streamIdentity({ title: 'S02E04 1080p' }, { title: 'Revenant', mediaType: 'tv', season: 1, episode: 1 }), { status: 'contradiction', reason: 'wrong_season_episode' });
-assert.deepEqual(streamIdentity({ title: 'Player - Ep 1 - VF [1080p]', name: 'Anime-Sama (VF)' }, { title: 'Jujutsu Kaisen', mediaType: 'tv', season: 1, episode: 1 }), { status: 'match', reason: 'episode_match' });
-assert.deepEqual(streamIdentity({ title: 'S1E1 - Ryomen Sukuna', name: 'ToFlix' }, { title: 'Jujutsu Kaisen', mediaType: 'tv', season: 1, episode: 1 }), { status: 'match', reason: 'season_episode_match' });
+assert.deepEqual(streamIdentity({ title: 'Player - Ep 1 - VF [1080p]', name: 'Anime-Sama (VF)' }, { title: 'Jujutsu Kaisen', mediaType: 'tv', season: 1, episode: 1 }), { status: 'unknown', reason: 'insufficient_identity_metadata' });
+assert.deepEqual(streamIdentity({ title: 'S1E1 - Ryomen Sukuna', name: 'ToFlix' }, { title: 'Jujutsu Kaisen', mediaType: 'tv', season: 1, episode: 1 }), { status: 'unknown', reason: 'insufficient_identity_metadata' });
 assert.deepEqual(streamIdentity({ title: 'Saison 1 - Vidmoly', name: 'Mugiwara (VOSTFR)' }, { title: 'Mushoku Tensei', mediaType: 'tv', season: 1, episode: 1 }), { status: 'unknown', reason: 'insufficient_identity_metadata' });
 assert.deepEqual(streamIdentity({ title: 'Enola Holmes 2 - 1080p' }, { title: 'Mon ninja et moi 3', forbiddenAliases: ['Enola Holmes 2'], mediaType: 'movie' }), { status: 'contradiction', reason: 'forbidden_title_alias' });
+
+// Core presentation is not identity authority. Provider-owned source* facts and
+// terminal filenames must win over request-derived UI labels/descriptions.
+assert.deepEqual(
+  streamIdentity({
+    name: '🧸 TopCartoons · FileMoon',
+    title: '🧸 TopCartoons · FileMoon',
+    description: 'The Last of Us S01E01',
+    sourceName: '🧸 TopCartoons',
+    sourceTitle: '🧸 TopCartoons',
+    sourceDescription: '',
+    url: 'https://ww.topcartoons.tv/video/Last-of-the-Starmakers.mp4',
+  }, { title: 'The Last of Us', mediaType: 'tv', season: 1, episode: 1 }),
+  { status: 'contradiction', reason: 'media_filename_title_mismatch' },
+);
+assert.deepEqual(
+  streamIdentity({
+    sourceTitle: 'The Last of Us S01E01',
+    sourceName: 'TopCartoons',
+    title: 'TopCartoons',
+    url: 'https://cdn.example/opaque/stream.mp4',
+  }, { title: 'The Last of Us', mediaType: 'tv', season: 1, episode: 1 }),
+  { status: 'match', reason: 'season_episode_match' },
+);
+assert.deepEqual(
+  streamIdentity({
+    sourceTitle: 'TopCartoons',
+    sourceName: 'TopCartoons',
+    description: 'Superman',
+    url: 'https://cdn.example/opaque/superman.mp4',
+  }, { title: 'Superman', year: 2025, mediaType: 'movie' }),
+  { status: 'unknown', reason: 'insufficient_identity_metadata' },
+);
 
 // Release/remake collision guard: resolution labels are not years; explicit wrong
 // release years are contradictions; same-title rows without a discriminator stay
