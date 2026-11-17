@@ -8,6 +8,11 @@ on:
         required: false
         default: false
         type: boolean
+      certify_provenance:
+        description: Require logical provider ownership plus a visible external-source provenance witness
+        required: false
+        default: false
+        type: boolean
   schedule:
     - cron: "5 18 * * 6"
   push:
@@ -213,6 +218,12 @@ jobs:
         run: |
           set -euo pipefail
           node niakvio/scripts/gate_native_multi_audio_coverage.cjs --client tv "$GITHUB_WORKSPACE"/tv-native-corpus-*.log
+      - name: Require TV provider/source provenance release witness
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.certify_provenance }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node niakvio/scripts/gate_native_provider_provenance.cjs --client tv "$GITHUB_WORKSPACE"/tv-native-corpus-*.log
       - name: Diagnose complete TV evidence
         if: always()
         shell: bash
@@ -337,6 +348,12 @@ jobs:
         run: |
           set -euo pipefail
           node niakvio/scripts/gate_native_multi_audio_coverage.cjs --client mobile "$GITHUB_WORKSPACE"/mobile-native-corpus-*.log
+      - name: Require Mobile Android provider/source provenance release witness
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.certify_provenance }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node niakvio/scripts/gate_native_provider_provenance.cjs --client mobile "$GITHUB_WORKSPACE"/mobile-native-corpus-*.log
       - name: Diagnose complete Mobile Android evidence
         if: always()
         shell: bash
