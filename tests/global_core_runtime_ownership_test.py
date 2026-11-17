@@ -16,6 +16,7 @@ RUNTIME = (ROOT / "scripts/provider_patches/global_runtime_compat_v1.py").read_t
 DESKTOP = (ROOT / "scripts/provider_patches/desktop_runtime_compat_v1.py").read_text(encoding="utf-8")
 SANITIZER_BASE = (ROOT / "scripts/provider_patches/stream_output_sanitizer.py").read_text(encoding="utf-8")
 SANITIZER_V10 = (ROOT / "scripts/provider_patches/stream_output_sanitizer_v10.py").read_text(encoding="utf-8")
+SANITIZER_V11 = (ROOT / "scripts/provider_patches/stream_output_sanitizer_v11.py").read_text(encoding="utf-8")
 STREAM_SCORE = (ROOT / "scripts/provider_patches/global_stream_score_v1.py").read_text(encoding="utf-8")
 TELEMETRY = (ROOT / "scripts/provider_patches/global_telemetry_v1.py").read_text(encoding="utf-8")
 MATERIALIZATION = json.loads((ROOT / "provider-v3-materialization.json").read_text(encoding="utf-8"))
@@ -38,7 +39,7 @@ REQUIRED_GLOBAL_CORE_IDS = (
 
 CORE_RUNTIME = "scripts/provider_patches/global_runtime_compat_v1.py"
 CORE_DESKTOP = "scripts/provider_patches/desktop_runtime_compat_v1.py"
-CORE_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v10.py"
+CORE_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v11.py"
 CORE_STREAM_SCORE = "scripts/provider_patches/global_stream_score_v1.py"
 CORE_TELEMETRY = "scripts/provider_patches/global_telemetry_v1.py"
 CORE_MEDIA_SAFETY = "scripts/provider_patches/runtime_capability_media_safety_v4.py"
@@ -47,7 +48,7 @@ CORE_MEDIA_SAFETY = "scripts/provider_patches/runtime_capability_media_safety_v4
 # data/options but may never own/materialize them in provider patch_scripts.
 assert 'GLOBAL_RUNTIME_COMPAT = "scripts/provider_patches/global_runtime_compat_v1.py"' in APPLY
 assert 'GLOBAL_DESKTOP_RUNTIME_COMPAT = "scripts/provider_patches/desktop_runtime_compat_v1.py"' in APPLY
-assert 'GLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v10.py"' in APPLY
+assert 'GLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v11.py"' in APPLY
 assert 'GLOBAL_STREAM_SCORE = "scripts/provider_patches/global_stream_score_v1.py"' in APPLY
 assert 'GLOBAL_PROVIDER_BRANDING = "scripts/provider_patches/global_provider_branding_v1.py"' in APPLY
 assert 'GLOBAL_TELEMETRY = "scripts/provider_patches/global_telemetry_v1.py"' in APPLY
@@ -77,6 +78,8 @@ assert 'status===403||status===404||status===410' in SANITIZER_BASE
 assert 'MANAGED_FIX_ID = "CORE.STREAM_SANITIZER.V6"' in SANITIZER_V10
 assert "NUVIO_STREAM_OUTPUT_NETWORK_EVIDENCE_V10" in SANITIZER_V10
 assert "__nuvioStreamNetworkEvidenceV1" in SANITIZER_V10
+assert "NUVIO_STREAM_OUTPUT_HLS_MASTER_PREFERENCE_V11" in SANITIZER_V11
+assert "__nuvioHlsMasterAudioCountV1" in SANITIZER_V11
 assert 'MANAGED_FIX_ID = "CORE.STREAM_SCORE.V1"' in STREAM_SCORE
 assert "NUVIO_GLOBAL_STREAM_SCORE_V1" in STREAM_SCORE
 assert 'MANAGED_FIX_ID = "CORE.TELEMETRY.V1"' in TELEMETRY
@@ -87,7 +90,7 @@ assert "rawMediaIdentifiers" in TELEMETRY
 assert '[id].concat(clean)' in STREAM_SCORE
 assert 'out.displayBadges=g?[g].concat(cleanDisplay):cleanDisplay' in STREAM_SCORE
 for forbidden in ("streamflix", "movix", "vidrock", "cineby", "coflix"):
-    assert forbidden not in SANITIZER_V10.casefold(), forbidden
+    assert forbidden not in SANITIZER_V11.casefold(), forbidden
 
 rows = projection_active_provider_rows()
 assert len(rows) == projection_active_provider_count()
