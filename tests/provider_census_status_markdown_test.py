@@ -89,6 +89,56 @@ assert rows["waf"]["status"] == "HARNESS MISMATCH"
 assert rows["network-blocked"]["status"] == "PROVIDER NETWORK BLOCKED"
 assert rows["broken"]["status"] == "PROVIDER JS BROKEN"
 
+# Exact 32-provider onboarding census: deliberately safe clean v3 seeds contain
+# no executable request plan. That is unproven onboarding, not a diagnosed JS
+# failure. No production activation, Brain queue or playable proof may result.
+pending_plan_report = {
+    "provider_count": 3,
+    "rows": [
+        {"provider_id": "pending-no-plan", "semantic_type": lane,
+         "status": "no_streams", "verified": 0, "contradictions": 0,
+         "debug_stage": "gate_runtime_plan_missing", "sample_count": 1}
+        for lane in ("movie", "tv")
+    ] + [
+        {"provider_id": "pending-mixed", "semantic_type": "movie",
+         "status": "no_streams", "verified": 0, "contradictions": 0,
+         "debug_stage": "gate_runtime_plan_missing", "sample_count": 1},
+        {"provider_id": "pending-mixed", "semantic_type": "tv",
+         "status": "no_streams", "verified": 0, "contradictions": 0,
+         "debug_stage": "provider_network_http_error", "sample_count": 1},
+        {"provider_id": "active-no-plan", "semantic_type": "movie",
+         "status": "no_streams", "verified": 0, "contradictions": 0,
+         "debug_stage": "gate_runtime_plan_missing", "sample_count": 1},
+    ],
+}
+pending_authority = {
+    "providers": [
+        {"provider": pid, "action": "ONBOARDING_PENDING",
+         "repairEligible": False, "authorityClass": "onboarding-pending",
+         "confidence": "pending", "reasons": ["bulk_onboarding_pending"]}
+        for pid in ("pending-no-plan", "pending-mixed")
+    ]
+}
+pending_rows = {
+    row["provider"]: row
+    for row in build_status_rows(
+        pending_plan_report, {}, authority_status=pending_authority
+    )
+}
+no_plan = pending_rows["pending-no-plan"]
+assert no_plan["status"] == "NO PROOF", no_plan
+assert no_plan["onboardingRuntimePlanState"] == "missing_executable_plan", no_plan
+assert no_plan["dominantIssue"] == "gate_runtime_plan_missing×2", no_plan
+assert no_plan["currentVerifiedLanes"] == [], no_plan
+assert no_plan["brainCheckRequired"] is False, no_plan
+assert no_plan["statusRepairEligible"] is False, no_plan
+assert no_plan["repairEligible"] is False, no_plan
+assert "qualify provider-owned live HTTP" in no_plan["action"], no_plan
+assert pending_rows["active-no-plan"]["status"] == "PROVIDER JS BROKEN"
+assert pending_rows["active-no-plan"]["onboardingRuntimePlanState"] == ""
+assert pending_rows["pending-mixed"]["status"] == "PROVIDER JS BROKEN"
+assert pending_rows["pending-mixed"]["onboardingRuntimePlanState"] == ""
+
 # A transient provider-network failure must not erase stronger retained route
 # authority. This is the MalluMV-class regression: live routes remain qualified
 # even when the latest current-byte probe reports a network exception.
