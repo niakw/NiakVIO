@@ -194,7 +194,13 @@ function dnsResult(name, status, addresses = []) {
         status: 'finished',
         results: [{
           probe: { country: 'FR', city: 'Paris', network: 'SFR', asn: 15557, tags: ['eyeball'] },
-          result: { statusCode: 200, headers: [], rawOutput: 'HTTP/2 200\ncontent-type: text/html' },
+          result: {
+            statusCode: 200,
+            headers: { 'content-type': 'text/html' },
+            rawHeaders: 'HTTP/2 200\ncontent-type: text/html',
+            rawBody: 'healthy response body',
+            rawOutput: '',
+          },
         }],
       },
     };
@@ -219,6 +225,7 @@ function dnsResult(name, status, addresses = []) {
   const http = await dependencies.probeFn('example.com', { name: 'sfr', kind: 'french_isp', servers: ['109.0.66.10'] }, config);
   assert.equal(http.status, 'reachable');
   assert.equal(http.transport, 'globalping');
+  assert.match(http.body_excerpt, /healthy response body/);
   assert.equal(calls[0].locations[0].magic, 'France+SFR+eyeball');
   assert.equal(calls[0].measurementOptions.resolver, '109.0.66.10');
   assert.equal(calls[1].locations[0].magic, 'France+SFR+eyeball');
@@ -230,6 +237,52 @@ function dnsResult(name, status, addresses = []) {
   assert.equal(calls[1].measurementOptions.resolver, '109.0.66.10');
   assert.equal(calls[1].measurementOptions.ipVersion, 4);
   assert.equal('method' in calls[1].measurementOptions, false);
+}
+
+{
+  const fakeRunMeasurement = async (body) => {
+    if (body.type === 'dns') {
+      return {
+        id: 'dns-measurement-blocked',
+        payload: {
+          status: 'finished',
+          results: [{
+            probe: { country: 'FR', network: 'SFR', tags: ['eyeball'] },
+            result: { statusCode: 'NOERROR', answers: [{ type: 'A', value: '93.184.216.34' }] },
+          }],
+        },
+      };
+    }
+    return {
+      id: 'http-measurement-blocked',
+      payload: {
+        status: 'finished',
+        results: [{
+          probe: { country: 'FR', network: 'SFR', tags: ['eyeball'] },
+          result: {
+            statusCode: 200,
+            headers: { 'content-type': 'text/html' },
+            rawHeaders: 'HTTP/2 200\ncontent-type: text/html',
+            rawBody: 'Access to this website has been blocked',
+            rawOutput: '',
+          },
+        }],
+      },
+    };
+  };
+  const config = {
+    ...baseConfig,
+    remote_probe: { enabled: true, location_magic: { sfr: ['France+SFR+eyeball'] } },
+    resolvers: { ...baseConfig.resolvers, sfr: { kind: 'french_isp', servers: ['109.0.66.10'] } },
+  };
+  const dependencies = createGlobalpingDependencies(config, { runMeasurement: fakeRunMeasurement });
+  const blocked = await dependencies.probeFn(
+    'example.com',
+    { name: 'sfr', kind: 'french_isp', servers: ['109.0.66.10'] },
+    config,
+  );
+  assert.equal(blocked.status, 'blocked');
+  assert.match(blocked.body_excerpt, /Access to this website has been blocked/);
 }
 
 
