@@ -2,6 +2,7 @@
 import json
 import importlib.util
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -142,6 +143,16 @@ assert type_policy['papadustream']['supportedTypes'] == ['movie', 'tv', 'anime']
 assert patches['papadustream']['published_types'] == ['movie', 'tv', 'anime']
 assert type_policy['purstream']['supportedTypes'] == ['movie', 'tv']
 assert patches['purstream']['published_types'] == ['movie', 'tv']
+
+policy_check = subprocess.run(
+    [sys.executable, str(ROOT / 'scripts' / 'restore_provider_type_policy.py')],
+    cwd=ROOT,
+    text=True,
+    capture_output=True,
+    check=False,
+)
+assert policy_check.returncode == 0, policy_check.stdout + policy_check.stderr
+assert 'mode=check' in policy_check.stdout
 
 # Goated remains a confirmed movie-capable provider. Whether it is currently
 # active is governed by the same repository-wide evidence policy above rather
