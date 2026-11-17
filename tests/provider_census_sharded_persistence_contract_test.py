@@ -165,4 +165,21 @@ assert "steps.persist.outputs.pending != 'true'" in workflow
 assert "FIELD_SHARDED_ALL_SCOPE_FRESHNESS_LEDGER" in workflow
 assert "stamp_provider_census_artifact_hashes.py" in workflow
 assert "provider-census-all-status-latest.json" in workflow
+
+# Authority must consume the same transaction's exact-byte FULL proof on all-scope
+# runs. Classifying against the previously persisted ledger creates a one-run lag
+# that can mark freshly FULL providers as architecture-nonfunctional.
+preauthority = workflow.index("--json-output /tmp/provider-census-preauthority.json")
+candidate_stamp = workflow.index("--output /tmp/provider-census-current-freshness.json", preauthority)
+candidate_classify = workflow.index('"${authority_args[@]}"', candidate_stamp)
+final_authority_render = workflow.index("--authority-status automation/provider-authority-status.json", candidate_classify)
+assert preauthority < candidate_stamp < candidate_classify < final_authority_render
+for marker in (
+    "--census-status /tmp/provider-census-preauthority.json",
+    "--production-freshness-status /tmp/provider-census-current-freshness.json",
+    "FIELD_SHARDED_AUTHORITY_FRESHNESS source=current-candidate-all-scope",
+    "FIELD_SHARDED_AUTHORITY_FRESHNESS source=persisted-all-scope",
+):
+    assert marker in workflow, f"missing same-transaction authority freshness contract: {marker}"
+
 print("pending onboarding proof remains isolated from canonical active freshness")
