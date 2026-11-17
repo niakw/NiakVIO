@@ -254,6 +254,8 @@ jobs:
           "${args[@]}"
           python tests/authoritative_hub_domain_refresh_test.py
           python tests/provider_hub_registry_test.py
+
+          python tests/provider_hub_multi_source_fallback_test.py
           python tests/provider_domain_authority_memory_test.py
           python tests/domain_refresh_workflow_test.py
           python tests/domain_refresh_transaction_guard_test.py
