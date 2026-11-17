@@ -62,9 +62,19 @@ assert "shard_count=8" in text
 assert "shard_count=4" in text
 assert 'args+=(--provider "$TARGET_PROVIDERS")' in text
 
-assert 'python scripts/materialize_provider_v3_one.py "$provider"' in text
-assert 'FIELD_SHARDED_TARGET_MATERIALIZATION providers=$TARGET_PROVIDERS mode=targeted' in text
-assert 'FIELD_SHARDED_TARGET_MATERIALIZATION providers=all mode=global' in text
+# Current-byte census must measure exactly what production serves. It may
+# validate publication/materialization authority, but must not rebuild provider
+# bytes immediately before probing and then stamp those candidate bytes as if
+# they were the already-published source.
+materialize_block = text.split("- name: Materialize exact current provider bytes", 1)[1].split(
+    "- name: Run deterministic provider shard", 1
+)[0]
+assert "python scripts/materialize_provider_v3_one.py" not in materialize_block
+assert "python scripts/validate_published_provider_config.py" in materialize_block
+assert "python scripts/validate_provider_materialization_authority.py" in materialize_block
+assert "mode=active-target-exact-published-bytes-no-rematerialization" in materialize_block
+assert "mode=active-all-exact-published-bytes-no-rematerialization" in materialize_block
+assert "mode=pending-exact-staged-bytes" in materialize_block
 
 # The persistence phase may merge newer Brain activity after the sharded status
 # was rendered. Never publish the pre-merge Markdown snapshot over canonical JSON.
