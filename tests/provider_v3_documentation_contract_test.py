@@ -129,7 +129,7 @@ assert "material_ids==active_ids" in manual
 assert "==46" not in manual and "46/46" not in manual
 
 
-assert machine["schema_version"] >= 16
+assert machine["schema_version"] >= 17
 source = machine["provider_source_of_truth"]
 assert source["canonical_provider_base_marker"] == "NIAKVIO_PROVIDER_BASE_OWNED_V3"
 assert source["legacy_provider_js_seed_allowed"] is False
@@ -171,6 +171,12 @@ assert scopes["pending_is_executable"] is False
 assert scopes["pending_is_lifecycle_retention"] is False
 assert scopes["france_only_must_not_leak_global"] is True
 assert machine["provider_source_of_truth"]["runtime_ledger_scope_authority"] == "scripts/current_provider_scope.py:projection_runtime_visible_provider_ids"
+assert scopes["current_activation_authority"] == "provider folders + Global/France projection authority"
+assert scopes["historical_activation_lkg"] == "provider-activation-lkg.json"
+assert scopes["historical_activation_lkg_role"] == "anti-deletion-evidence-only"
+assert scopes["historical_activation_lkg_owns_current_activation"] is False
+assert scopes["historical_activation_lkg_owns_scope"] is False
+assert scopes["historical_activation_lkg_owns_cardinality"] is False
 domain_refresh = machine["domain_refresh"]
 assert domain_refresh["provider_scope_authority"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
 assert domain_refresh["global_publication_authority"] == "manifest.json"
