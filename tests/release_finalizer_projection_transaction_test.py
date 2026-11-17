@@ -33,7 +33,8 @@ native_floor = workflow.index("node tests/native_evidence_completeness_test.cjs"
 native_codegen = workflow.index("python3 tests/native_player_diagnostics_codegen_test.py", native_floor)
 native_pipeline = workflow.index("python3 tests/native_evidence_codegen_pipeline_test.py", native_codegen)
 native_ios_audio = workflow.index("python3 tests/native_ios_multi_audio_gate_test.py", native_pipeline)
-presentation = workflow.index("python3 tests/global_stream_presentation_test.py", native_ios_audio)
+native_multi_audio = workflow.index("node tests/native_multi_audio_coverage_gate_test.cjs", native_ios_audio)
+presentation = workflow.index("python3 tests/global_stream_presentation_test.py", native_multi_audio)
 metadata = workflow.index("python3 tests/global_stream_metadata_preservation_contract_test.py", presentation)
 score = workflow.index("python3 tests/stream_score_contract_test.py", metadata)
 hls_facts = workflow.index("python3 tests/hls_master_facts_short_test.py", score)
@@ -70,7 +71,7 @@ final_reconcile = workflow.index("python3 scripts/reconcile_active_provider_publ
 assert reapply < sync < sync_check < reconcile < materialize < sync2 < sync2_check < second_reconcile < validate
 assert runtime_step < upstream_guard < runtime_render < runtime_gate < runtime_matrix < runtime_policy < portable_gate < clean_base
 assert portable_gate < metier_docs < metier_plans < cardinality < semantic_transport < multiplicity < season_zero < five_labs < native_scope
-assert native_scope < native_transport < native_corpus < native_evidence < native_floor < native_codegen < native_pipeline < native_ios_audio < presentation < metadata < score < hls_facts < hls_integrity < hls_presentation < multi_variant < telemetry < core_ownership < step
+assert native_scope < native_transport < native_corpus < native_evidence < native_floor < native_codegen < native_pipeline < native_ios_audio < native_multi_audio < presentation < metadata < score < hls_facts < hls_integrity < hls_presentation < multi_variant < telemetry < core_ownership < step
 assert release_types < reapply2 < minimize2 < minimize2_check < sync3 < sync3_check < final_reconcile
 reverse_rebuild = workflow.index("python3 scripts/verify_provider_v3_reverse_rebuild.py", final_reconcile)
 finalize_versions = workflow.index("- name: Finalize synchronized release and provider cache versions", reverse_rebuild)
@@ -89,6 +90,7 @@ for required in (
     "'scripts/augment_native_desktop_player.py'",
     "'scripts/prepare_native_ios_reader_acceptance.py'",
     "'scripts/gate_native_ios_multi_audio.py'",
+    "'scripts/gate_native_multi_audio_coverage.cjs'",
     "'scripts/native_evidence_completeness.cjs'",
     "'scripts/analyze_native_ios_results.py'",
     "'scripts/prebuild_native_android_reader_suite.sh'",
@@ -104,6 +106,11 @@ for required in (
     "'tests/native_player_diagnostics_codegen_test.py'",
     "'tests/native_evidence_codegen_pipeline_test.py'",
     "'tests/native_ios_multi_audio_gate_test.py'",
+    "'tests/native_multi_audio_coverage_gate_test.cjs'",
+    "'.github/workflows/native-mobile-android-reader.yml'",
+    "'.github/workflows/native-mobile-ios-reader.yml'",
+    "'.github/workflows/native-desktop-reader-acceptance.yml'",
+    "'.github/workflows/release-candidate-validation.yml'",
     "'scripts/check_nuvio_client_upstreams.py'",
     "'scripts/runtime_contract_gate.py'",
     "'scripts/materialize_provider_base_v3_store.py'",
