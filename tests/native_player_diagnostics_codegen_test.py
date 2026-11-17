@@ -43,6 +43,12 @@ assert "PlayerPlaybackNetworking.createDataSourceFactory" not in tv
 assert "FIELD_NATIVE_PLAYER_ENTRY client=tv" in tv
 assert "FIELD_NATIVE_PLAYER_BEGIN client=tv" not in tv
 assert "entry=nuvio-production-player" in tv
+assert "UiDevice.getInstance(instrumentation)" in tv
+assert "R.string.cd_audio_tracks" in tv
+assert 'By.clazz("android.widget.RadioButton")' in tv
+assert "audioTrackCount = probeTvAudioTrackCount" in tv
+assert "audio_track_count=${reader.audioTrackCount}" in tv
+assert "audio_track_count=${transport.audioTrackCount}" in tv
 
 # Production Nuvio receives the provider output. Any sanitation/normalization after
 # that belongs to Nuvio itself and is deliberately not reimplemented by the lab.
@@ -76,6 +82,12 @@ assert '"com.nuviodebug.com",\n                MainActivity::class.java.name' no
 assert "MainActivity::class.java.name" in mobile
 assert "Intent(context, MainActivity::class.java)" not in mobile
 assert "getLaunchIntentForPackage(context.packageName)" not in mobile
+assert "PlayerEngineController" in mobile
+assert "controllerRef.set(controller)" in mobile
+assert "getAudioTracks()" in mobile
+assert "audio_track_count=${reader.audioTrackCount}" in mobile
+assert "audio_track_languages64=${b64(reader.audioTrackLanguages)}" in mobile
+assert "audio_track_count=${transport.audioTrackCount}" in mobile
 assert "FIELD_NATIVE_PLAYER_ENTRY client=mobile" in mobile
 assert "FIELD_NATIVE_PLAYER_BEGIN client=mobile" not in mobile
 assert mobile.index("val reader = probeNativePlayer(row.url, row.headers, row.type, 137)") < mobile.index("val transport = probeTransport(row.url, row.headers)")
