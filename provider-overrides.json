@@ -5676,7 +5676,7 @@
     "mugiwarastream": {
       "capability": "mixed_embed_resolver",
       "official_hub": "https://streaminganime.fr/site/10/mugiwara-no-streaming",
-      "official_site": "https://www.mugiwara-no-streaming.com",
+      "official_site": "https://mugiwara-no-streaming.com",
       "learned_routes": [
         "/api/search?q={query}",
         "/catalogue/{slug}/films",
@@ -5904,7 +5904,7 @@
         "evidenceDestructive": false
       },
       "proof_search_bases": [
-        "https://www.mugiwara-no-streaming.com"
+        "https://mugiwara-no-streaming.com"
       ],
       "proof_protected_hosts": [
         "ansembed.net",
@@ -5981,7 +5981,7 @@
       ],
       "provider_lego_options": {
         "scripts/provider_patches/mugiwarastream_packed_runtime_v1.py": {
-          "base": "https://www.mugiwara-no-streaming.com",
+          "base": "https://mugiwara-no-streaming.com",
           "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         }
       },
@@ -5991,7 +5991,13 @@
       "notes": [
         "Semantic movie support removed: current repair evidence did not prove identity-safe movie output; TV/series remain transport aliases for anime only.",
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
-      ]
+      ],
+      "runtime_domain_replacements": {
+        "www.mugiwara-no-streaming.com": "mugiwara-no-streaming.com"
+      },
+      "domain_substitutions": {
+        "www.mugiwara-no-streaming.com": "mugiwara-no-streaming.com"
+      }
     },
     "neko-sama": {
       "capability": "mixed_embed_resolver",
@@ -11430,13 +11436,17 @@
         "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
         "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
       ],
-      "replacements": {},
-      "runtime_domain_replacements": {},
+      "replacements": {
+        "watch.corsflix.net": "corsflix.gd"
+      },
+      "runtime_domain_replacements": {
+        "watch.corsflix.net": "corsflix.gd"
+      },
       "route_replacements": {},
       "profiles": [],
       "capability": "mixed_embed_resolver",
       "official_hub": null,
-      "official_site": "https://watch.corsflix.net",
+      "official_site": "https://corsflix.gd",
       "published_types": [
         "movie",
         "tv",
@@ -11450,7 +11460,10 @@
         "/tv?s={query}",
         "/search?q={query}",
         "/tv/search?q={query}"
-      ]
+      ],
+      "domain_substitutions": {
+        "watch.corsflix.net": "corsflix.gd"
+      }
     },
     "emnexmovies": {
       "notes": [
@@ -11797,13 +11810,17 @@
         "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
         "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
       ],
-      "replacements": {},
-      "runtime_domain_replacements": {},
+      "replacements": {
+        "shuttletv.pk": "shuttletv.gd"
+      },
+      "runtime_domain_replacements": {
+        "shuttletv.pk": "shuttletv.gd"
+      },
       "route_replacements": {},
       "profiles": [],
       "capability": "mixed_embed_resolver",
       "official_hub": null,
-      "official_site": "https://shuttletv.pk",
+      "official_site": "https://shuttletv.gd",
       "published_types": [
         "movie",
         "tv",
@@ -11815,7 +11832,10 @@
       "learned_routes": [
         "/recherche?q={query}",
         "/recherche?query={query}"
-      ]
+      ],
+      "domain_substitutions": {
+        "shuttletv.pk": "shuttletv.gd"
+      }
     },
     "primewire": {
       "notes": [
@@ -11823,13 +11843,17 @@
         "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
         "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
       ],
-      "replacements": {},
-      "runtime_domain_replacements": {},
+      "replacements": {
+        "primewire.pw": "primewire.gd"
+      },
+      "runtime_domain_replacements": {
+        "primewire.pw": "primewire.gd"
+      },
       "route_replacements": {},
       "profiles": [],
       "capability": "mixed_embed_resolver",
       "official_hub": null,
-      "official_site": "https://primewire.pw",
+      "official_site": "https://primewire.gd",
       "published_types": [
         "movie",
         "tv"
@@ -11839,7 +11863,10 @@
       },
       "learned_routes": [
         "/movie/{tmdbId}"
-      ]
+      ],
+      "domain_substitutions": {
+        "primewire.pw": "primewire.gd"
+      }
     },
     "67movies": {
       "notes": [
@@ -11847,13 +11874,17 @@
         "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
         "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
       ],
-      "replacements": {},
-      "runtime_domain_replacements": {},
+      "replacements": {
+        "67movies.st": "67movies.gd"
+      },
+      "runtime_domain_replacements": {
+        "67movies.st": "67movies.gd"
+      },
       "route_replacements": {},
       "profiles": [],
       "capability": "mixed_embed_resolver",
       "official_hub": null,
-      "official_site": "https://67movies.st",
+      "official_site": "https://67movies.gd",
       "published_types": [
         "movie",
         "tv",
@@ -11864,7 +11895,10 @@
       },
       "learned_routes": [
         "/?s={query}"
-      ]
+      ],
+      "domain_substitutions": {
+        "67movies.st": "67movies.gd"
+      }
     },
     "watch-cartoon-online": {
       "notes": [
@@ -12359,13 +12393,17 @@
         "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
         "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
       ],
-      "replacements": {},
-      "runtime_domain_replacements": {},
+      "replacements": {
+        "hianime.at": "hianime.fm"
+      },
+      "runtime_domain_replacements": {
+        "hianime.at": "hianime.fm"
+      },
       "route_replacements": {},
       "profiles": [],
       "capability": "mixed_embed_resolver",
       "official_hub": null,
-      "official_site": "https://hianime.at/",
+      "official_site": "https://hianime.fm",
       "published_types": [
         "anime"
       ],
@@ -12375,7 +12413,10 @@
       "learned_routes": [
         "/?s={query}",
         "/search?q={query}"
-      ]
+      ],
+      "domain_substitutions": {
+        "hianime.at": "hianime.fm"
+      }
     },
     "rivestream-app": {
       "notes": [
@@ -12572,13 +12613,17 @@
         "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
         "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
       ],
-      "replacements": {},
-      "runtime_domain_replacements": {},
+      "replacements": {
+        "reanime.to": "reanime.cz"
+      },
+      "runtime_domain_replacements": {
+        "reanime.to": "reanime.cz"
+      },
       "route_replacements": {},
       "profiles": [],
       "capability": "html_scraper",
       "official_hub": null,
-      "official_site": "https://reanime.to",
+      "official_site": "https://reanime.cz",
       "published_types": [
         "anime"
       ],
@@ -12587,7 +12632,10 @@
       },
       "learned_routes": [
         "/search?q={query}"
-      ]
+      ],
+      "domain_substitutions": {
+        "reanime.to": "reanime.cz"
+      }
     },
     "flixhq": {
       "notes": [
@@ -12595,13 +12643,17 @@
         "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
         "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
       ],
-      "replacements": {},
-      "runtime_domain_replacements": {},
+      "replacements": {
+        "flixhq.vc": "flixhqz.net"
+      },
+      "runtime_domain_replacements": {
+        "flixhq.vc": "flixhqz.net"
+      },
       "route_replacements": {},
       "profiles": [],
       "capability": "html_scraper",
       "official_hub": null,
-      "official_site": "https://flixhq.vc/",
+      "official_site": "https://flixhqz.net",
       "published_types": [
         "movie",
         "tv"
@@ -12611,7 +12663,10 @@
       },
       "learned_routes": [
         "/search?keyword={query}"
-      ]
+      ],
+      "domain_substitutions": {
+        "flixhq.vc": "flixhqz.net"
+      }
     },
     "topcartoons": {
       "notes": [
@@ -12676,13 +12731,17 @@
         "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group.",
         "Activated from exact-byte offline Provider v3 contract proof because GitHub-hosted network/WAF checks are non-authoritative; live native validation remains pending."
       ],
-      "replacements": {},
-      "runtime_domain_replacements": {},
+      "replacements": {
+        "www.documentarymania.com": "www.documentaryarea.com"
+      },
+      "runtime_domain_replacements": {
+        "www.documentarymania.com": "www.documentaryarea.com"
+      },
       "route_replacements": {},
       "profiles": [],
       "capability": "html_scraper",
       "official_hub": null,
-      "official_site": "https://www.documentarymania.com",
+      "official_site": "https://www.documentaryarea.com",
       "published_types": [
         "movie"
       ],
@@ -12691,7 +12750,10 @@
       },
       "learned_routes": [
         "/results.php?search={query}"
-      ]
+      ],
+      "domain_substitutions": {
+        "www.documentarymania.com": "www.documentaryarea.com"
+      }
     },
     "fsharetv": {
       "notes": [
@@ -12855,7 +12917,7 @@
       "profiles": [],
       "capability": "mixed_embed_resolver",
       "official_hub": null,
-      "official_site": "https://french-anime.com",
+      "official_site": "http://french-anime.com",
       "published_types": [
         "anime"
       ],

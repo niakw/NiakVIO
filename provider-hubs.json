@@ -342,7 +342,7 @@
       "manifest_status": "Actif",
       "category": "Francophone / Anime",
       "hub": "https://streaminganime.fr/site/10/mugiwara-no-streaming",
-      "direct": "https://www.mugiwara-no-streaming.com/",
+      "direct": "https://mugiwara-no-streaming.com/",
       "source": "curated_user_registry",
       "aliases": [
         "mugiwara-no-streaming",
@@ -350,9 +350,11 @@
       ],
       "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
       "direct_candidates": [
+        "https://mugiwara-no-streaming.com/",
         "https://www.mugiwara-no-streaming.com/"
       ],
       "allowed_terminal_hosts": [
+        "mugiwara-no-streaming.com",
         "www.mugiwara-no-streaming.com"
       ],
       "search_queries": [
@@ -750,7 +752,7 @@
       "manifest_status": "Désactivé",
       "category": "International / Anime",
       "hub": "https://allanime.sa.com/",
-      "direct": "https://ww2.aniwatch.fit/",
+      "direct": null,
       "source": "curated_user_registry",
       "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
       "aliases": [
@@ -2254,7 +2256,7 @@
       "manifest_status": "Active",
       "category": "VF",
       "hub": null,
-      "direct": "https://hianime.at/",
+      "direct": "https://hianime.fm/",
       "telegram": null,
       "api": null,
       "source": "provider_onboarding_workflow",
@@ -2263,9 +2265,11 @@
         "hianime"
       ],
       "direct_candidates": [
+        "https://hianime.fm/",
         "https://hianime.at/"
       ],
       "allowed_terminal_hosts": [
+        "hianime.fm",
         "hianime.at"
       ],
       "search_queries": [
@@ -3020,6 +3024,16 @@
           "purpose": "Official announcement fallback when the wiki renders its current terminal dynamically",
           "role": "fallback",
           "resolver": "latest_telegram_domain"
+        },
+        {
+          "type": "telegram_public",
+          "url": "https://t.me/purstreamm",
+          "priority": 90,
+          "role": "fallback",
+          "resolver": "latest_telegram_domain",
+          "purpose": "Official address fallback discovered from authoritative hub link",
+          "discovery": "authoritative_hub_link",
+          "discovered_from": "https://purstream.wiki/"
         }
       ],
       "search_confirmation_runs": 2,
@@ -4205,7 +4219,7 @@
       "manifest_status": "Active",
       "category": "International",
       "hub": null,
-      "direct": "https://watch.corsflix.net",
+      "direct": "https://corsflix.gd/",
       "telegram": null,
       "api": null,
       "source": "provider_onboarding_workflow",
@@ -4214,9 +4228,11 @@
         "corsflix"
       ],
       "direct_candidates": [
+        "https://corsflix.gd/",
         "https://watch.corsflix.net"
       ],
       "allowed_terminal_hosts": [
+        "corsflix.gd",
         "watch.corsflix.net"
       ],
       "search_queries": [
@@ -4545,7 +4561,7 @@
       "manifest_status": "Active",
       "category": "International",
       "hub": null,
-      "direct": "https://shuttletv.pk",
+      "direct": "https://shuttletv.gd/",
       "telegram": null,
       "api": null,
       "source": "provider_onboarding_workflow",
@@ -4554,9 +4570,11 @@
         "shuttletv"
       ],
       "direct_candidates": [
+        "https://shuttletv.gd/",
         "https://shuttletv.pk"
       ],
       "allowed_terminal_hosts": [
+        "shuttletv.gd",
         "shuttletv.pk"
       ],
       "search_queries": [
@@ -4587,7 +4605,7 @@
       "manifest_status": "Active",
       "category": "International",
       "hub": null,
-      "direct": "https://primewire.pw",
+      "direct": "https://primewire.gd/",
       "telegram": null,
       "api": null,
       "source": "provider_onboarding_workflow",
@@ -4596,9 +4614,11 @@
         "primewire"
       ],
       "direct_candidates": [
+        "https://primewire.gd/",
         "https://primewire.pw"
       ],
       "allowed_terminal_hosts": [
+        "primewire.gd",
         "primewire.pw"
       ],
       "search_queries": [
@@ -4629,7 +4649,7 @@
       "manifest_status": "Active",
       "category": "International",
       "hub": null,
-      "direct": "https://67movies.st",
+      "direct": "https://67movies.gd/",
       "telegram": null,
       "api": null,
       "source": "provider_onboarding_workflow",
@@ -4638,9 +4658,11 @@
         "67movies"
       ],
       "direct_candidates": [
+        "https://67movies.gd/",
         "https://67movies.st"
       ],
       "allowed_terminal_hosts": [
+        "67movies.gd",
         "67movies.st"
       ],
       "search_queries": [
@@ -5463,7 +5485,7 @@
       "manifest_status": "Active",
       "category": "International",
       "hub": null,
-      "direct": "https://reanime.to",
+      "direct": "https://reanime.cz/",
       "telegram": null,
       "api": null,
       "source": "provider_onboarding_workflow",
@@ -5472,9 +5494,11 @@
         "reanime-to"
       ],
       "direct_candidates": [
+        "https://reanime.cz/",
         "https://reanime.to"
       ],
       "allowed_terminal_hosts": [
+        "reanime.cz",
         "reanime.to"
       ],
       "search_queries": [
@@ -5496,7 +5520,7 @@
       "manifest_status": "Active",
       "category": "International",
       "hub": null,
-      "direct": "https://flixhq.vc/",
+      "direct": "https://flixhqz.net/",
       "telegram": null,
       "api": null,
       "source": "provider_onboarding_workflow",
@@ -5505,9 +5529,11 @@
         "flixhq"
       ],
       "direct_candidates": [
+        "https://flixhqz.net/",
         "https://flixhq.vc/"
       ],
       "allowed_terminal_hosts": [
+        "flixhqz.net",
         "flixhq.vc"
       ],
       "search_queries": [
@@ -5529,7 +5555,7 @@
       "manifest_status": "Active",
       "category": "International",
       "hub": null,
-      "direct": "https://www.documentarymania.com",
+      "direct": "https://www.documentaryarea.com/",
       "telegram": null,
       "api": null,
       "source": "provider_onboarding_workflow",
@@ -5538,9 +5564,11 @@
         "documentary-area"
       ],
       "direct_candidates": [
+        "https://www.documentaryarea.com/",
         "https://www.documentarymania.com"
       ],
       "allowed_terminal_hosts": [
+        "www.documentaryarea.com",
         "www.documentarymania.com"
       ],
       "search_queries": [
@@ -5694,7 +5722,7 @@
       "manifest_status": "Active",
       "category": "VF",
       "hub": null,
-      "direct": "https://french-anime.com",
+      "direct": "http://french-anime.com/",
       "telegram": null,
       "api": null,
       "source": "provider_onboarding_workflow",
@@ -5703,6 +5731,7 @@
         "french-anime"
       ],
       "direct_candidates": [
+        "http://french-anime.com/",
         "https://french-anime.com"
       ],
       "allowed_terminal_hosts": [

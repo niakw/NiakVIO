@@ -1,8 +1,8 @@
 {
   "schemaVersion": 3,
-  "sourceSha": "c103be4474adffa91611f562b13263cf361a04dc",
-  "context": "main",
-  "generation": "845100f2a8c69654a96c5b7ef6927059ee3c2786ed78a207ea1bc6486eef73c0",
+  "sourceSha": "c9c1f139d9b98c871259f48b5525f21c92b71885",
+  "context": "workspace",
+  "generation": "6d21c1dd84c49f080bf7c533aed38778b9f736238a230eee209abfea64b91503",
   "providerCount": 75,
   "expectedProviderCount": 75,
   "providers": [
@@ -52,9 +52,10 @@
     },
     {
       "provider": "67movies",
-      "file": "providers/67movies--nuvio--3b80473c94a56f2f.js",
-      "sha256": "3b80473c94a56f2f0a0e020dbe14e4f2261126dd2551c15b2856686eefef8980",
-      "providerDataSha256": "86cd108a9b8ac72a6176f1b73c6ccfe0598b19ceabc30ec7d75f17797a0207b0",
+      "entryAuthority": "global-manifest",
+      "file": "providers/67movies--nuvio--95645b7864cb609e.js",
+      "sha256": "95645b7864cb609ea559d6093ec1e4969725c387b94c3be79a20c28de6bf5c81",
+      "providerDataSha256": "b0880637d29d05896e8ac2290084aca90ad302c0e67942f12505e6fc2974db29",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -74,7 +75,92 @@
         "PROVIDER.67MOVIES.CONFIG.V1"
       ],
       "coreCount": 14,
-      "applied": [],
+      "applied": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
+          "phase": "discovery",
+          "scope": "global_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_facts_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_facts"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_identity_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_identity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_presentation"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_score_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_score"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_telemetry_v1.py",
+          "phase": "discovery",
+          "scope": "global_telemetry"
+        }
+      ],
       "deviceSpecificJs": false,
       "devices": [
         "tv",
@@ -83,15 +169,30 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false,
-      "staticAuthorityReconciledProviders": [
-        "67movies"
-      ],
-      "materializationRecoveredFromExactPublishedBytes": true,
+      "securityHardening": {
+        "changed": false,
+        "alreadyHardened": false,
+        "literalDecodeChanges": 0,
+        "hostnameChanges": 0,
+        "percentDecodeChanges": 0,
+        "htmlEntityDecodeReorders": 0,
+        "consoleSinkChanges": 0,
+        "consoleShadow": false
+      },
+      "byteValidation": {
+        "tool": "raw-bytes",
+        "toolVersion": "raw-v1",
+        "phase": "provider-byte-stability-v1",
+        "sourceSha256": "9c9b8d475d6947dc42305a66726f635d61ac5bef92802858cd9e62b5ca642ddb",
+        "fixedPointVerified": true
+      },
+      "staticAuthorityReconciledProviders": [],
+      "domainSubstitutionReconciledProviders": [],
       "minimizer": {
-        "enabled": true,
+        "enabled": false,
         "savedBytes": 0,
         "transformedLines": 0,
-        "skippedReason": "published-byte-recovery"
+        "skippedReason": "final-stage-only"
       }
     },
     {
@@ -773,9 +874,10 @@
     },
     {
       "provider": "corsflix",
-      "file": "providers/corsflix--nuvio--1c5b1c886de43dcd.js",
-      "sha256": "1c5b1c886de43dcdb543d7c8ee2b1d09778d5398b0c4ae773a6b6ef46aeaf699",
-      "providerDataSha256": "c6aef786b55ec25994cc9fed35f0323e5096cb67d444eabc495e22eed22ebb3b",
+      "entryAuthority": "global-manifest",
+      "file": "providers/corsflix--nuvio--5c47c00f76190bec.js",
+      "sha256": "5c47c00f76190becfd65622f4b1c6e394ab043fba5dbc3fdda0582b914e2c0c3",
+      "providerDataSha256": "3b75f5b47fa673cef16e62b58b33f7ebddf45c6600fa8d2fa6e0a5a3a02a9be2",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -795,7 +897,92 @@
         "PROVIDER.CORSFLIX.CONFIG.V1"
       ],
       "coreCount": 14,
-      "applied": [],
+      "applied": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
+          "phase": "discovery",
+          "scope": "global_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_facts_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_facts"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_identity_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_identity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_presentation"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_score_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_score"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_telemetry_v1.py",
+          "phase": "discovery",
+          "scope": "global_telemetry"
+        }
+      ],
       "deviceSpecificJs": false,
       "devices": [
         "tv",
@@ -804,22 +991,38 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false,
-      "staticAuthorityReconciledProviders": [
-        "corsflix"
-      ],
-      "materializationRecoveredFromExactPublishedBytes": true,
+      "securityHardening": {
+        "changed": false,
+        "alreadyHardened": false,
+        "literalDecodeChanges": 0,
+        "hostnameChanges": 0,
+        "percentDecodeChanges": 0,
+        "htmlEntityDecodeReorders": 0,
+        "consoleSinkChanges": 0,
+        "consoleShadow": false
+      },
+      "byteValidation": {
+        "tool": "raw-bytes",
+        "toolVersion": "raw-v1",
+        "phase": "provider-byte-stability-v1",
+        "sourceSha256": "46e211b51a2266dfdea94919df37b9392e92080b70d3081b9f4be05c109bfc15",
+        "fixedPointVerified": true
+      },
+      "staticAuthorityReconciledProviders": [],
+      "domainSubstitutionReconciledProviders": [],
       "minimizer": {
-        "enabled": true,
+        "enabled": false,
         "savedBytes": 0,
         "transformedLines": 0,
-        "skippedReason": "published-byte-recovery"
+        "skippedReason": "final-stage-only"
       }
     },
     {
       "provider": "documentary-area",
-      "file": "providers/documentary-area--nuvio--785e7848bcac8c48.js",
-      "sha256": "785e7848bcac8c48dfe94fdca825ba39bd40b93bfdd0cc9cbd66de0b9c0b06cb",
-      "providerDataSha256": "7e83edc91e29d335353c13423cdac504ab816faa036a4075b00eb17dcff430b8",
+      "entryAuthority": "global-manifest",
+      "file": "providers/documentary-area--nuvio--76ab379c9551e61a.js",
+      "sha256": "76ab379c9551e61ae0e953cea6027aa7522b9be167df8fa0451c3618818726a1",
+      "providerDataSha256": "f16fc4ddb0e4962c8de7fa981dbb431d35a5ce5bfa91ff43da4c5db4710551a7",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -839,7 +1042,92 @@
         "PROVIDER.DOCUMENTARY-AREA.CONFIG.V1"
       ],
       "coreCount": 14,
-      "applied": [],
+      "applied": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
+          "phase": "discovery",
+          "scope": "global_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_facts_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_facts"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_identity_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_identity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_presentation"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_score_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_score"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_telemetry_v1.py",
+          "phase": "discovery",
+          "scope": "global_telemetry"
+        }
+      ],
       "deviceSpecificJs": false,
       "devices": [
         "tv",
@@ -848,15 +1136,30 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false,
-      "staticAuthorityReconciledProviders": [
-        "documentary-area"
-      ],
-      "materializationRecoveredFromExactPublishedBytes": true,
+      "securityHardening": {
+        "changed": false,
+        "alreadyHardened": false,
+        "literalDecodeChanges": 0,
+        "hostnameChanges": 0,
+        "percentDecodeChanges": 0,
+        "htmlEntityDecodeReorders": 0,
+        "consoleSinkChanges": 0,
+        "consoleShadow": false
+      },
+      "byteValidation": {
+        "tool": "raw-bytes",
+        "toolVersion": "raw-v1",
+        "phase": "provider-byte-stability-v1",
+        "sourceSha256": "a009b0804496c1990e404ffb14c2caa69779c9091c69ea7c17b332efc788ebb0",
+        "fixedPointVerified": true
+      },
+      "staticAuthorityReconciledProviders": [],
+      "domainSubstitutionReconciledProviders": [],
       "minimizer": {
-        "enabled": true,
+        "enabled": false,
         "savedBytes": 0,
         "transformedLines": 0,
-        "skippedReason": "published-byte-recovery"
+        "skippedReason": "final-stage-only"
       }
     },
     {
@@ -1125,9 +1428,10 @@
     },
     {
       "provider": "flixhq",
-      "file": "providers/flixhq--nuvio--07e425dff16ed0ad.js",
-      "sha256": "07e425dff16ed0addc1a4d405f5b4512f9570a0ae43247c65efc9acb3858ad8b",
-      "providerDataSha256": "4bef90a8564a8e7bd23c0a462ea157673723679b30995b58fb279bb0d5122301",
+      "entryAuthority": "global-manifest",
+      "file": "providers/flixhq--nuvio--40134a0001f5f8dc.js",
+      "sha256": "40134a0001f5f8dcc004efb44b9cf98c2eed2c90ba9d62116bf03e343ec7160a",
+      "providerDataSha256": "fc8df0bcc43afe84117930b3cc2643c0704c2a8a0b721abcf9377fb83f8f669b",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -1147,7 +1451,92 @@
         "PROVIDER.FLIXHQ.CONFIG.V1"
       ],
       "coreCount": 14,
-      "applied": [],
+      "applied": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
+          "phase": "discovery",
+          "scope": "global_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_facts_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_facts"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_identity_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_identity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_presentation"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_score_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_score"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_telemetry_v1.py",
+          "phase": "discovery",
+          "scope": "global_telemetry"
+        }
+      ],
       "deviceSpecificJs": false,
       "devices": [
         "tv",
@@ -1156,15 +1545,30 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false,
-      "staticAuthorityReconciledProviders": [
-        "flixhq"
-      ],
-      "materializationRecoveredFromExactPublishedBytes": true,
+      "securityHardening": {
+        "changed": false,
+        "alreadyHardened": false,
+        "literalDecodeChanges": 0,
+        "hostnameChanges": 0,
+        "percentDecodeChanges": 0,
+        "htmlEntityDecodeReorders": 0,
+        "consoleSinkChanges": 0,
+        "consoleShadow": false
+      },
+      "byteValidation": {
+        "tool": "raw-bytes",
+        "toolVersion": "raw-v1",
+        "phase": "provider-byte-stability-v1",
+        "sourceSha256": "f0a3be4fd7a55d845a93a826ca4d8f2bc840e0fad79ab03ad3c17409e54f3c9b",
+        "fixedPointVerified": true
+      },
+      "staticAuthorityReconciledProviders": [],
+      "domainSubstitutionReconciledProviders": [],
       "minimizer": {
-        "enabled": true,
+        "enabled": false,
         "savedBytes": 0,
         "transformedLines": 0,
-        "skippedReason": "published-byte-recovery"
+        "skippedReason": "final-stage-only"
       }
     },
     {
@@ -1257,9 +1661,10 @@
     },
     {
       "provider": "french-anime",
-      "file": "providers/french-anime--nuvio--96307b31332b98b4.js",
-      "sha256": "96307b31332b98b4d2767cd34e1051f3a373a30a553ac6672d137f447f65085f",
-      "providerDataSha256": "87087aa4236bada81a8104ae403ef07db16e42cf965660f5c2699ac3a34d28ee",
+      "entryAuthority": "france-only-catalog",
+      "file": "providers/french-anime--nuvio--e91aa1d20ed712bd.js",
+      "sha256": "e91aa1d20ed712bd793ec96e797891b345501e3f08041946cf29fcd67b1cedfb",
+      "providerDataSha256": "29165753cb3777d913589006e4b6fc24ec3e65ebdf776321546e13d1919b7cfe",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -1279,7 +1684,92 @@
         "PROVIDER.FRENCH-ANIME.CONFIG.V1"
       ],
       "coreCount": 14,
-      "applied": [],
+      "applied": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
+          "phase": "discovery",
+          "scope": "global_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_facts_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_facts"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_identity_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_identity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_presentation"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_score_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_score"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_telemetry_v1.py",
+          "phase": "discovery",
+          "scope": "global_telemetry"
+        }
+      ],
       "deviceSpecificJs": false,
       "devices": [
         "tv",
@@ -1288,15 +1778,30 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false,
-      "staticAuthorityReconciledProviders": [
-        "french-anime"
-      ],
-      "materializationRecoveredFromExactPublishedBytes": true,
+      "securityHardening": {
+        "changed": false,
+        "alreadyHardened": false,
+        "literalDecodeChanges": 0,
+        "hostnameChanges": 0,
+        "percentDecodeChanges": 0,
+        "htmlEntityDecodeReorders": 0,
+        "consoleSinkChanges": 0,
+        "consoleShadow": false
+      },
+      "byteValidation": {
+        "tool": "raw-bytes",
+        "toolVersion": "raw-v1",
+        "phase": "provider-byte-stability-v1",
+        "sourceSha256": "5f778a4d0954cb3ead045e8649771ba6310cddd8df705b52fd0fc947bf95399f",
+        "fixedPointVerified": true
+      },
+      "staticAuthorityReconciledProviders": [],
+      "domainSubstitutionReconciledProviders": [],
       "minimizer": {
-        "enabled": true,
+        "enabled": false,
         "savedBytes": 0,
         "transformedLines": 0,
-        "skippedReason": "published-byte-recovery"
+        "skippedReason": "final-stage-only"
       }
     },
     {
@@ -1647,9 +2152,10 @@
     },
     {
       "provider": "hianime",
-      "file": "providers/hianime--nuvio--872427a26b0fcba5.js",
-      "sha256": "872427a26b0fcba5a050c050d947049ef5ff39f2f28c435f890c5541e62373f4",
-      "providerDataSha256": "003102bcfbd786730a0ada6f7af11f0d78c25da6fed81fa908d87ccea2fb8521",
+      "entryAuthority": "france-only-catalog",
+      "file": "providers/hianime--nuvio--ac8cd593fed97410.js",
+      "sha256": "ac8cd593fed9741017f9afa4778af7cffb8a9eb30746ba2e452f746c15afef22",
+      "providerDataSha256": "eeadd09a5343e0c9355fbf78fec31e632f2b00c0e7c3671a0062ce9b105075f5",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -1669,7 +2175,92 @@
         "PROVIDER.HIANIME.CONFIG.V1"
       ],
       "coreCount": 14,
-      "applied": [],
+      "applied": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
+          "phase": "discovery",
+          "scope": "global_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_facts_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_facts"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_identity_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_identity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_presentation"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_score_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_score"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_telemetry_v1.py",
+          "phase": "discovery",
+          "scope": "global_telemetry"
+        }
+      ],
       "deviceSpecificJs": false,
       "devices": [
         "tv",
@@ -1678,15 +2269,30 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false,
-      "staticAuthorityReconciledProviders": [
-        "hianime"
-      ],
-      "materializationRecoveredFromExactPublishedBytes": true,
+      "securityHardening": {
+        "changed": false,
+        "alreadyHardened": false,
+        "literalDecodeChanges": 0,
+        "hostnameChanges": 0,
+        "percentDecodeChanges": 0,
+        "htmlEntityDecodeReorders": 0,
+        "consoleSinkChanges": 0,
+        "consoleShadow": false
+      },
+      "byteValidation": {
+        "tool": "raw-bytes",
+        "toolVersion": "raw-v1",
+        "phase": "provider-byte-stability-v1",
+        "sourceSha256": "7c1617c2475ff9117242cceb20ff4fef0fdd737daaac021bafd552337647db40",
+        "fixedPointVerified": true
+      },
+      "staticAuthorityReconciledProviders": [],
+      "domainSubstitutionReconciledProviders": [],
       "minimizer": {
-        "enabled": true,
+        "enabled": false,
         "savedBytes": 0,
         "transformedLines": 0,
-        "skippedReason": "published-byte-recovery"
+        "skippedReason": "final-stage-only"
       }
     },
     {
@@ -2200,9 +2806,9 @@
     {
       "provider": "mugiwarastream",
       "entryAuthority": "global-manifest",
-      "file": "providers/mugiwarastream--nuvio--cec0cec872f9e3fe.js",
-      "sha256": "cec0cec872f9e3fe79f756e34ac463f47a3e6ed4bfcfe3bd352caf1128038160",
-      "providerDataSha256": "7c38f7b713932b782dc722d685348415c3ef67c1ad921aa9fd6a18bdc0635852",
+      "file": "providers/mugiwarastream--nuvio--f274d35847e612f9.js",
+      "sha256": "f274d35847e612f9ca6718431ab6beacf3f4b58892a1926c37227a457660586d",
+      "providerDataSha256": "da5ef97475974b47f82061b999823d14383f0fc2d06cc574c13cc22c09f311d4",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -2344,16 +2950,16 @@
         "tool": "raw-bytes",
         "toolVersion": "raw-v1",
         "phase": "provider-byte-stability-v1",
-        "sourceSha256": "cec0cec872f9e3fe79f756e34ac463f47a3e6ed4bfcfe3bd352caf1128038160",
+        "sourceSha256": "3ae4883c9dc9b8788fe535eb590950b065916a99748507fae02f802cf289107b",
         "fixedPointVerified": true
       },
       "staticAuthorityReconciledProviders": [],
       "domainSubstitutionReconciledProviders": [],
       "minimizer": {
-        "enabled": true,
-        "savedBytes": 37551,
-        "transformedLines": 6603,
-        "skippedReason": ""
+        "enabled": false,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": "final-stage-only"
       }
     },
     {
@@ -2845,9 +3451,10 @@
     },
     {
       "provider": "primewire",
-      "file": "providers/primewire--nuvio--c21fe3cabc145c4f.js",
-      "sha256": "c21fe3cabc145c4fb18b9b0d7a90206e5f5564de0b5cbc09729842301b945c61",
-      "providerDataSha256": "4f5f6f87c0891a8057c5d537fd22f7782019eb250a58a0763b8a5a15b1673a6b",
+      "entryAuthority": "global-manifest",
+      "file": "providers/primewire--nuvio--9ba6ab05691e19ea.js",
+      "sha256": "9ba6ab05691e19eaf877e45d72fdba0d8e61b41677acf102df60f4df3a964d42",
+      "providerDataSha256": "840a8150530a22b61f645dfe773c456dcf9e698b07fec49fdfdb8f6d1ea4e08c",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -2867,7 +3474,92 @@
         "PROVIDER.PRIMEWIRE.CONFIG.V1"
       ],
       "coreCount": 14,
-      "applied": [],
+      "applied": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
+          "phase": "discovery",
+          "scope": "global_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_facts_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_facts"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_identity_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_identity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_presentation"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_score_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_score"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_telemetry_v1.py",
+          "phase": "discovery",
+          "scope": "global_telemetry"
+        }
+      ],
       "deviceSpecificJs": false,
       "devices": [
         "tv",
@@ -2876,15 +3568,30 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false,
-      "staticAuthorityReconciledProviders": [
-        "primewire"
-      ],
-      "materializationRecoveredFromExactPublishedBytes": true,
+      "securityHardening": {
+        "changed": false,
+        "alreadyHardened": false,
+        "literalDecodeChanges": 0,
+        "hostnameChanges": 0,
+        "percentDecodeChanges": 0,
+        "htmlEntityDecodeReorders": 0,
+        "consoleSinkChanges": 0,
+        "consoleShadow": false
+      },
+      "byteValidation": {
+        "tool": "raw-bytes",
+        "toolVersion": "raw-v1",
+        "phase": "provider-byte-stability-v1",
+        "sourceSha256": "45d745be9d5056bc5e5900db068ff8cbb5614a3fae57034fd844f4b2ad02ced2",
+        "fixedPointVerified": true
+      },
+      "staticAuthorityReconciledProviders": [],
+      "domainSubstitutionReconciledProviders": [],
       "minimizer": {
-        "enabled": true,
+        "enabled": false,
         "savedBytes": 0,
         "transformedLines": 0,
-        "skippedReason": "published-byte-recovery"
+        "skippedReason": "final-stage-only"
       }
     },
     {
@@ -3108,9 +3815,10 @@
     },
     {
       "provider": "reanime-to",
-      "file": "providers/reanime-to--nuvio--73ddfe323b068245.js",
-      "sha256": "73ddfe323b068245f7f833096e1edf15418008a8faf7ab54cee467f4aeb91ad2",
-      "providerDataSha256": "9c3d8f042dce64c5c01b24d5079fc65eec9d0c3e29c2a899aa75d396332868df",
+      "entryAuthority": "global-manifest",
+      "file": "providers/reanime-to--nuvio--62a9c895ed66eb7b.js",
+      "sha256": "62a9c895ed66eb7b387ba4088aa60b1e4c31532ca604ab855e5ed550c17f8769",
+      "providerDataSha256": "5857f39adfeffb09964b78a7543c4fd2daa43ed6cfb39275c378b8b79eb75021",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -3130,7 +3838,92 @@
         "PROVIDER.REANIME-TO.CONFIG.V1"
       ],
       "coreCount": 14,
-      "applied": [],
+      "applied": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
+          "phase": "discovery",
+          "scope": "global_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_facts_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_facts"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_identity_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_identity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_presentation"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_score_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_score"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_telemetry_v1.py",
+          "phase": "discovery",
+          "scope": "global_telemetry"
+        }
+      ],
       "deviceSpecificJs": false,
       "devices": [
         "tv",
@@ -3139,15 +3932,30 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false,
-      "staticAuthorityReconciledProviders": [
-        "reanime-to"
-      ],
-      "materializationRecoveredFromExactPublishedBytes": true,
+      "securityHardening": {
+        "changed": false,
+        "alreadyHardened": false,
+        "literalDecodeChanges": 0,
+        "hostnameChanges": 0,
+        "percentDecodeChanges": 0,
+        "htmlEntityDecodeReorders": 0,
+        "consoleSinkChanges": 0,
+        "consoleShadow": false
+      },
+      "byteValidation": {
+        "tool": "raw-bytes",
+        "toolVersion": "raw-v1",
+        "phase": "provider-byte-stability-v1",
+        "sourceSha256": "06eb8c536db9a0bddc5ab73e33548e29ba6a81a02c7c5d41ce49c743b50d0568",
+        "fixedPointVerified": true
+      },
+      "staticAuthorityReconciledProviders": [],
+      "domainSubstitutionReconciledProviders": [],
       "minimizer": {
-        "enabled": true,
+        "enabled": false,
         "savedBytes": 0,
         "transformedLines": 0,
-        "skippedReason": "published-byte-recovery"
+        "skippedReason": "final-stage-only"
       }
     },
     {
@@ -3374,9 +4182,10 @@
     },
     {
       "provider": "shuttletv",
-      "file": "providers/shuttletv--nuvio--2a9fcab3efcce3ce.js",
-      "sha256": "2a9fcab3efcce3ceb0520d2113a40f77b59c0cc212cd3eda448d99b6453d815f",
-      "providerDataSha256": "d8b1c6a957347ac30d7a52ed307d4a80b084210a1ad147a11c1579b950841ab1",
+      "entryAuthority": "global-manifest",
+      "file": "providers/shuttletv--nuvio--e693a2d5281d19dc.js",
+      "sha256": "e693a2d5281d19dced2f23ae9426feb809b8b109692854e39056bf0ff8361dba",
+      "providerDataSha256": "da4ad0a1e384585da0dc28c14e83398965e00e11506ba935de3e1abb213cb940",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -3396,7 +4205,92 @@
         "PROVIDER.SHUTTLETV.CONFIG.V1"
       ],
       "coreCount": 14,
-      "applied": [],
+      "applied": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
+          "phase": "discovery",
+          "scope": "global_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_facts_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_facts"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_identity_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_identity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_presentation"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_score_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_score"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_telemetry_v1.py",
+          "phase": "discovery",
+          "scope": "global_telemetry"
+        }
+      ],
       "deviceSpecificJs": false,
       "devices": [
         "tv",
@@ -3405,15 +4299,30 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false,
-      "staticAuthorityReconciledProviders": [
-        "shuttletv"
-      ],
-      "materializationRecoveredFromExactPublishedBytes": true,
+      "securityHardening": {
+        "changed": false,
+        "alreadyHardened": false,
+        "literalDecodeChanges": 0,
+        "hostnameChanges": 0,
+        "percentDecodeChanges": 0,
+        "htmlEntityDecodeReorders": 0,
+        "consoleSinkChanges": 0,
+        "consoleShadow": false
+      },
+      "byteValidation": {
+        "tool": "raw-bytes",
+        "toolVersion": "raw-v1",
+        "phase": "provider-byte-stability-v1",
+        "sourceSha256": "2912b0813382809e0f4a6847ea6573d6694c329b420acaa48dca625f1d966638",
+        "fixedPointVerified": true
+      },
+      "staticAuthorityReconciledProviders": [],
+      "domainSubstitutionReconciledProviders": [],
       "minimizer": {
-        "enabled": true,
+        "enabled": false,
         "savedBytes": 0,
         "transformedLines": 0,
-        "skippedReason": "published-byte-recovery"
+        "skippedReason": "final-stage-only"
       }
     },
     {
@@ -4310,16 +5219,24 @@
     "perDeviceProviderForkAllowed": false,
     "clientManifestProjectionAllowed": true
   },
-  "publication": true,
-  "mainTouched": true,
+  "publication": false,
+  "mainTouched": false,
   "legacyProviderJsExecuted": false,
   "upstreamJsExecuted": false,
   "staticKnowledgeFile": "automation/provider-v3-static-knowledge.json",
   "staticKnowledgeProviderCount": 108,
   "domainAuthorityOnlyUpdate": true,
   "domainAuthorityUpdatedProviders": [
-    "anime-sama",
-    "hindmoviez"
+    "67movies",
+    "corsflix",
+    "documentary-area",
+    "flixhq",
+    "french-anime",
+    "hianime",
+    "mugiwarastream",
+    "primewire",
+    "reanime-to",
+    "shuttletv"
   ],
   "targetedPublicationReconciledProviders": [
     "1jour1film0626",
@@ -4402,81 +5319,16 @@
     "zone-telechargement"
   ],
   "targetedPublicationFixedPointProviders": [
-    "1jour1film0626",
     "67movies",
-    "anidb",
-    "aniflix-uno",
-    "anikototv",
-    "animejlprovider",
-    "animeonsen",
-    "anisama",
-    "arrowtv",
-    "boredflix",
-    "castle",
-    "cinegram",
-    "cinemabz",
-    "cinematheque-de-bretagne",
-    "cinetimes",
     "corsflix",
     "documentary-area",
-    "dulourd",
-    "emnexmovies",
-    "fawesome",
-    "fexini",
-    "film-a-revoir",
-    "flixer",
     "flixhq",
-    "franime",
-    "frembed",
     "french-anime",
-    "french-manga",
-    "frenchstream",
-    "fsharetv",
-    "fullanime",
-    "hexa",
     "hianime",
-    "ihavenotv",
-    "internet-archive",
-    "kidraz",
-    "latestmovies",
-    "moiflix",
-    "moviebite",
-    "movish",
-    "movix-fr",
-    "movy",
     "mugiwarastream",
-    "nakios",
-    "neko-sama",
-    "neobam",
-    "neonflix",
-    "overlook",
-    "papadustream",
     "primewire",
-    "pstream",
-    "purstream",
-    "rarefilmm",
     "reanime-to",
-    "rivestream-app",
-    "rivestream-ru",
-    "sadisflix",
-    "sekai",
-    "showbox",
-    "shuttletv",
-    "skstream",
-    "stigstream",
-    "streamzo",
-    "topcartoons",
-    "videasy",
-    "vidlink",
-    "voirserie",
-    "vuflix",
-    "watch-cartoon-online",
-    "watchott",
-    "waveanime",
-    "webflix",
-    "youtitou",
-    "zone-streaming",
-    "zone-telechargement"
+    "shuttletv"
   ],
   "activeProviderIdentityCount": 75,
   "lifecycleScopeReconciled": true,
