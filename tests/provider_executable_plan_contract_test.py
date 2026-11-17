@@ -5,7 +5,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str((ROOT / "scripts").resolve()))
 
-from provider_base_store import provider_model_has_executable_plan, provider_model_has_identity_execution_plan, provider_model_route_kind, provider_route_has_fixed_content_identity, provider_route_is_identity_aware
+from provider_base_store import provider_model_has_executable_plan, provider_model_has_identity_execution_plan, provider_model_route_kind, provider_route_has_fixed_content_identity, provider_route_is_identity_aware, provider_route_is_validation_candidate
 
 direct_only = {
     "providerId": "direct-only",
@@ -49,6 +49,12 @@ assert provider_route_is_identity_aware("/tv/1399-breaking-bad?q={query}") is Fa
 assert provider_route_is_identity_aware("/api/session-handoff/issue") is False
 assert provider_route_is_identity_aware("/search?q={query}") is True
 assert provider_route_is_identity_aware("/index.php?do=search&subaction=search&story={query}") is True
+assert provider_route_is_validation_candidate("/play/movie/{tmdbId}") is True
+assert provider_route_is_validation_candidate("/anime/{tmdbId}") is True
+assert provider_route_is_validation_candidate("/search?q={query}") is True
+assert provider_route_is_validation_candidate("/movie/157336-interstellar") is False
+assert provider_route_is_validation_candidate("/embed/sw.js") is False
+assert provider_route_is_validation_candidate("/search") is False
 assert provider_model_has_executable_plan({**direct_only, "routes": ["/index.php?do=search&subaction=search&story={query}"]}) is True
 assert provider_model_has_identity_execution_plan({**direct_only, "routes": ["/index.php?do=search&subaction=search&story={query}"]}) is True
 
