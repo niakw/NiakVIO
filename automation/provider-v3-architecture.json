@@ -232,7 +232,25 @@
     "manifest_and_hash_projection_refresh": true,
     "provider_scope_authority": "scripts/current_provider_scope.py:projection_active_provider_ids",
     "global_publication_authority": "manifest.json",
-    "france_only_publication_authority": "provider_catalog.json projections general=false,vf=true"
+    "france_only_publication_authority": "provider_catalog.json projections general=false,vf=true",
+    "address_source_model": "ordered multi-source authority with per-source resolver/priority/role",
+    "source_roles": [
+      "primary",
+      "supplementary",
+      "fallback"
+    ],
+    "per_source_resolver_allowed": true,
+    "supported_source_resolvers": [
+      "official_outbound",
+      "service_catalogue",
+      "alias_outbound",
+      "redirect",
+      "latest_telegram_domain",
+      "telegram_description"
+    ],
+    "primary_precedes_fallback": true,
+    "hub_linked_telegram_learning": "bounded one-hop discovery; persisted as fallback; publication authority begins on a later run",
+    "discovery_sources_never_runtime_origins": true
   },
   "routine_workflow": {
     "path": ".github/workflows/sync.yml",
