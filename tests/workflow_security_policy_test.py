@@ -52,6 +52,10 @@ for marker in (
 ):
     if marker not in release_candidate:
         errors.append(f'release-candidate-validation.yml: exact-SHA final security certification missing {marker}')
+if "github.event_name == 'workflow_dispatch' && github.run_id" not in release_candidate:
+    errors.append('release-candidate-validation.yml: exact final certification dispatch must use an isolated run_id concurrency group')
+if "cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}" not in release_candidate:
+    errors.append('release-candidate-validation.yml: exact final certification dispatch must never be cancelled')
 
 # Every workflow_dispatch launched by release-candidate validation is exact-SHA
 # proof. It must not share a cancellable main/ref concurrency slot with routine
