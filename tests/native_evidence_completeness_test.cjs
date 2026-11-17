@@ -61,7 +61,49 @@ try {
   assert.equal(executedAssessment.stats.providerExecutions, 1);
   assert.equal(executedAssessment.stats.playerProbes, 0);
 
-  console.log('native evidence completeness execution-floor tests passed');
+  const collapsedMultiAudio = writeLog(tmp, 'multi-audio-collapsed.log', baseEvidence([
+    'FIELD_NATIVE_PROVIDER_BEGIN client=tv fixture=sinners-2025 provider=test request_type=movie',
+    'FIELD_NATIVE_RESULT client=tv fixture=sinners-2025 provider=test request_type=movie returned=1',
+    'FIELD_NATIVE_PLAYER_BEGIN client=tv fixture=sinners-2025 provider=test request_type=movie index=0',
+    'FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider=test request_type=movie index=0 state=ready audio_track_count=1',
+    'FIELD_NATIVE_TRANSPORT client=tv fixture=sinners-2025 provider=test request_type=movie index=0 state=ok kind=hls audio_track_count=2',
+  ], [
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=provider-loading',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=provider-result',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=player-start',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=player-result',
+  ]));
+  const collapsedAssessment = assessNativeEvidence([collapsedMultiAudio]);
+  assert.equal(collapsedAssessment.complete, false, 'multi-audio master collapsed to one player track must fail');
+  assert.ok(
+    collapsedAssessment.problems.some((row) => row.startsWith('multi_audio_player_collapsed:tv:sinners-2025:test:0:')),
+    `missing multi-audio collapse problem: ${JSON.stringify(collapsedAssessment.problems)}`,
+  );
+  assert.equal(collapsedAssessment.stats.multiAudioExpected, 1);
+  assert.equal(collapsedAssessment.stats.multiAudioVerified, 0);
+
+  const preservedMultiAudio = writeLog(tmp, 'multi-audio-preserved.log', baseEvidence([
+    'FIELD_NATIVE_PROVIDER_BEGIN client=tv fixture=sinners-2025 provider=test request_type=movie',
+    'FIELD_NATIVE_RESULT client=tv fixture=sinners-2025 provider=test request_type=movie returned=1',
+    'FIELD_NATIVE_PLAYER_BEGIN client=tv fixture=sinners-2025 provider=test request_type=movie index=0',
+    'FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider=test request_type=movie index=0 state=ready audio_track_count=2',
+    'FIELD_NATIVE_TRANSPORT client=tv fixture=sinners-2025 provider=test request_type=movie index=0 state=ok kind=hls audio_track_count=2',
+  ], [
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=provider-loading',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=provider-result',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=player-start',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=player-result',
+  ]));
+  const preservedAssessment = assessNativeEvidence([preservedMultiAudio]);
+  assert.equal(
+    preservedAssessment.complete,
+    true,
+    `two-track master must remain multi-audio in production player: ${JSON.stringify(preservedAssessment.problems)}`,
+  );
+  assert.equal(preservedAssessment.stats.multiAudioExpected, 1);
+  assert.equal(preservedAssessment.stats.multiAudioVerified, 1);
+
+  console.log('native evidence completeness execution-floor and multi-audio tests passed');
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });
 }
