@@ -55,3 +55,8 @@ validation: preserve only independent manual/regression/shutdown/source/domain d
 requested_head: 6bafdff8b3a4e662dd7d3924a31c01004c2a8377
 reason: reclassify deprecated auto_off_current_architecture_nonfunctional after source-first identity contract landed
 validation: freshness debt is certification-only; preserve independent manual/regression/shutdown/source/domain disables; do not infer health from old census OK
+
+2026-11-17 final architecture rollback replay:
+requested_head: c599a7594e853847a61bea3c4f7746392cbf76d3
+reason: materialize deprecated proof-absence rollback after source-first identity and Quick/Deep MP4 parity are frozen
+validation: do not trust pre-change census OK/FULL; restore only invalid proof-absence auto-off, then reclassify from independent current authority
