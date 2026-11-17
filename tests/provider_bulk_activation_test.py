@@ -23,6 +23,18 @@ with tempfile.TemporaryDirectory() as td:
         "STATUS":td/"status.json",
         "OUTPUT":td/"activation.json",
     }
+    (td/".github/provider-onboarding").mkdir(parents=True)
+    (td/".github/provider-portfolio-policy.json").write_text(json.dumps({
+        "portfolio":{"target_global_active":1,"target_france_active":1}
+    }),encoding="utf-8")
+    (td/".github/provider-onboarding/batch.json").write_text(json.dumps({
+        "providers":[
+            {"id":"a","inventory_rank":1,"inventory_score":100},
+            {"id":"b","inventory_rank":2,"inventory_score":99},
+            {"id":"d","inventory_rank":1,"inventory_score":100},
+        ],
+        "deferredProviders":[]
+    }),encoding="utf-8")
     paths["MANIFEST"].write_text(json.dumps({"scrapers":[
         {"id":"a","enabled":False,"filename":"provider-disabled/a.js"},{"id":"b","enabled":False,"filename":"provider-disabled/b.js"},{"id":"c","enabled":False,"filename":"provider-disabled/c.js"}
     ]}),encoding="utf-8")
@@ -55,7 +67,7 @@ with tempfile.TemporaryDirectory() as td:
     paths["STATUS"].write_text(json.dumps({
         "runId":77,"triggerSha":"deadbeef","providers":[
             {"provider":"a","status":"FULL OK","testedThisRun":True,"declaredLanes":["movie","tv"],"currentVerifiedLanes":["movie","tv"],"brainCheckRequired":False},
-            {"provider":"b","status":"PARTIAL OK","testedThisRun":True,"declaredLanes":["movie","tv"],"currentVerifiedLanes":["movie"],"brainCheckRequired":False},
+            {"provider":"b","status":"FULL OK","testedThisRun":True,"declaredLanes":["movie","tv"],"currentVerifiedLanes":["movie","tv"],"brainCheckRequired":False},
             {"provider":"c","status":"FULL OK","testedThisRun":False,"declaredLanes":["anime"],"currentVerifiedLanes":["anime"],"brainCheckRequired":False},
             {"provider":"d","status":"FULL OK","testedThisRun":True,"declaredLanes":["movie","tv"],"currentVerifiedLanes":["movie","tv"],"brainCheckRequired":False},
         ]
@@ -100,7 +112,15 @@ assert activation["activationCount"]==2
 assert activation["activationScopes"]=={"a":"global","d":"france"}
 assert {x["provider"] for x in activation["blockedProviders"]}=={"b","c"}
 blocked={x["provider"]:x for x in activation["blockedProviders"]}
+assert blocked["b"]["reason"]=="portfolio_projection_capacity_reached"
+assert blocked["b"]["projections"]==["global"]
 assert blocked["c"]["reason"]=="full_ok_not_fresh_this_run"
+assert activation["portfolio"]["targetGlobal"]==1
+assert activation["portfolio"]["targetFrance"]==1
+assert activation["portfolio"]["activeGlobalBefore"]==0
+assert activation["portfolio"]["activeFranceBefore"]==0
+assert activation["portfolio"]["activeGlobalAfter"]==1
+assert activation["portfolio"]["activeFranceAfter"]==1
 rows={x["id"]:x for x in manifest["scrapers"]}
 assert rows["a"]["enabled"] is True
 assert rows["a"]["filename"]=="providers/a.js"
