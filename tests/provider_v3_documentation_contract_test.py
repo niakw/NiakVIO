@@ -359,6 +359,13 @@ assert machine_runtime["terminal_player_provenance_must_not_replace_owner"] is T
 assert machine_runtime["source_provider_provenance_may_augment_visible_label"] is True
 machine_isolation = machine_runtime["provider_execution_isolation"]
 assert machine_isolation == validation_isolation
+tv_isolation = validation_isolation["tv"]
+assert tv_isolation["fresh_js_runtime_per_plugin_execution"] is True
+assert tv_isolation["scraper_identity_bound_to_execution"] is True
+assert tv_isolation["repository_grouping_preserves_plugin_source_name"] is True
+assert tv_isolation["user_selected_source_never_uses_auto_source_fallback"] is True
+assert tv_isolation["automatic_fallback_updates_provider_identity"] is True
+assert tv_isolation["expired_link_refresh_restricts_to_same_addon"] is True
 for client_id in ("nuvio-mobile", "nuvio-desktop"):
     client_contract = compatibility_matrix["clients"][client_id]["provider_contract"]
     assert client_contract["fresh_js_runtime_per_plugin_execution"] is True
@@ -366,6 +373,13 @@ for client_id in ("nuvio-mobile", "nuvio-desktop"):
     assert client_contract["reuse_last_link_cache_preserves_addon_identity"] is True
     assert client_contract["manual_stream_selection_bypasses_reuse_last_link_cache"] is True
     assert client_contract["auto_source_fallback_updates_active_provider_identity"] is True
+tv_contract = compatibility_matrix["clients"]["nuvio-tv"]["provider_contract"]
+assert tv_contract["fresh_js_runtime_per_plugin_execution"] is True
+assert tv_contract["scraper_code_execution_bound_to_scraper_id"] is True
+assert tv_contract["repository_grouping_preserves_plugin_source_name"] is True
+assert tv_contract["user_selected_source_never_uses_auto_source_fallback"] is True
+assert tv_contract["auto_source_fallback_updates_current_addon_identity"] is True
+assert tv_contract["expired_link_refresh_restricts_to_same_addon"] is True
 assert validation_machine["release_authority"] == "manifest.json:version"
 catalogue_contract = validation_machine["catalogue"]
 assert catalogue_contract["cardinality_policy"] == "derived-never-frozen"
