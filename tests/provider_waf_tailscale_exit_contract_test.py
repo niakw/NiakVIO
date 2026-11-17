@@ -34,6 +34,13 @@ assert "Oracle réseau résidentiel MacBridge" in arch_md
 assert "échec réseau GitHub-hosted seul" in arch_md
 assert "exact-byte native playback > full provider replay résidentiel > MacBridge browser/provider replay" in arch_md
 
+macbridge_evidence=json.loads((ROOT/"automation/macbridge-network-oracle-latest.json").read_text(encoding="utf-8"))
+assert macbridge_evidence["role"] == "residential-network-contradiction-oracle"
+assert macbridge_evidence["policy"]["githubOnlyNetworkFailureMayNotDisableProvider"] is True
+assert macbridge_evidence["policy"]["networkAmbiguityRequiresResidentialReplay"] is True
+assert macbridge_evidence["observations"]["hianime"]["residentialRedirect"] == "https://hianime.fm/"
+assert macbridge_evidence["observations"]["purstream"]["directResidential"] == "dns-failure"
+
 
 required=[
     "id-token: write",
