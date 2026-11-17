@@ -271,6 +271,29 @@ assert "with_current_byte_proof_debt(" in main_classification
 assert '"action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL"' not in main_classification
 assert '"currentByteUnprovenEntersDisabledRetention": False' in classifier_source
 
+# Deprecated proof-absence auto-off is rolled back to the underlying authority
+# classification instead of remaining terminal lifecycle state. Stronger disable
+# reasons are still evaluated after this rollback.
+legacy_row={
+    "id":"demo","enabled":False,
+    "disabledReason":"auto_off_current_architecture_nonfunctional",
+    "disabledAt":"2026-11-17","purgeAfter":"2026-11-24","lifecycleState":"disabled-retained",
+}
+legacy_registry=reg(manifest_status="Désactivé",activation_eligible=False,direct="https://demo.example/")
+legacy_patch=patch(manifest_overrides={"enabled":False},route_data_state="off",activation_eligible=False,
+                   route_proof={"provenRouteCount":1,"lastRepairProbe":{"positiveExecutionEvidence":True}})
+assert module.restore_deprecated_nonfunctional_auto_off(legacy_row,legacy_registry,legacy_patch) is True
+assert legacy_row["enabled"] is True and "disabledReason" not in legacy_row, legacy_row
+assert legacy_patch["manifest_overrides"].get("enabled") is None, legacy_patch
+assert "route_data_state" not in legacy_patch and "activation_eligible" not in legacy_patch, legacy_patch
+assert legacy_registry["manifest_status"]=="Active" and "activation_eligible" not in legacy_registry, legacy_registry
+r=module.classify("demo",legacy_row,legacy_registry,legacy_patch,{})
+assert r["action"]=="KEEP_DIRECT",r
+
+manual_disabled={"id":"demo","enabled":False,"disabledReason":"manual_off_test"}
+assert module.restore_deprecated_nonfunctional_auto_off(manual_disabled,reg(),patch()) is False
+assert manual_disabled["enabled"] is False
+
 # Bulk onboarding pending is non-active but distinct from disabled retention.
 r=module.classify("demo",row(False),reg(),patch(),{},pending_onboarding=True)
 assert r["action"]=="ONBOARDING_PENDING",r
@@ -287,9 +310,9 @@ assert module.ROOT.joinpath("scripts/manage_provider_lifecycle.py").read_text(en
 print("provider authority arbiter contract ok")
 
 
-# Current canonical census evidence controls production activation. Tested
-# published bytes without terminal verified playback must enter disabled
-# retention; historical/untested evidence does not trigger withdrawal.
+# Current canonical census evidence remains useful diagnostic state, but the
+# legacy helper no longer owns production lifecycle withdrawal merely because
+# terminal proof is absent. Production freshness/certification owns that gate.
 def census(status, *, tested=True, brain=True, repair=True):
     return {"status":status,"testedThisRun":tested,"brainCheckRequired":brain,"repairEligible":repair}
 
