@@ -502,7 +502,11 @@
     ],
     "ordinary_native_diagnostics_may_have_zero_multi_audio_witness": true,
     "multi_audio_language_collapse_failure_owner": "client_runtime",
-    "final_native_multi_audio_language_witness_required_per_platform": true
+    "final_native_multi_audio_language_witness_required_per_platform": true,
+    "native_provider_source_provenance_gate": "scripts/gate_native_provider_provenance.cjs",
+    "final_native_provider_source_provenance_witness_required_per_platform": true,
+    "final_native_provider_source_provenance_rule": "every sampled stream must keep row.provider bound to the executing scraper id, and each platform must preserve at least one visible V13 Provider · external-source label without changing logical ownership",
+    "provider_ownership_mismatch_failure_owner": "client_runtime_or_core_projection"
   },
   "terminal_media_pipeline": {
     "authority": "Core",
@@ -559,5 +563,6 @@
       "macbridge http/dns seed",
       "github-hosted http seed"
     ]
-  }
+  },
+  "schemaVersion": 27
 }
