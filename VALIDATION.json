@@ -1,5 +1,5 @@
 {
-  "schema_version": 76,
+  "schema_version": 77,
   "release": "dynamic",
   "release_authority": "manifest.json:version",
   "candidate_track": "main",
@@ -248,5 +248,16 @@
     "multi_audio_playback_authority": "terminal media resource",
     "logical_stream_owner": "NiakVIO provider/scraper",
     "terminal_player_provenance_must_not_replace_owner": true
+  },
+  "terminal_media_pipeline": {
+    "order": [
+      "STREAM_FACTS",
+      "STREAM_SANITIZER",
+      "STREAM_IDENTITY",
+      "MEDIA_TYPE_RESOLUTION",
+      "STREAM_PRESENTATION"
+    ],
+    "recovered_url_identity_revalidated": true,
+    "terminal_audio_tracks_presented": true
   }
 }
