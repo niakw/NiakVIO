@@ -538,6 +538,46 @@ def with_current_byte_proof_debt(
     }
 
 
+DEPRECATED_NONFUNCTIONAL_AUTO_OFF = "auto_off_current_architecture_nonfunctional"
+
+
+def restore_deprecated_nonfunctional_auto_off(
+    row: dict[str, Any],
+    registry: dict[str, Any],
+    patch: dict[str, Any],
+) -> bool:
+    """Undo only the lifecycle state created by the deprecated proof-absence rule.
+
+    The provider is then classified again from current address/backend authority.
+    Stronger independent disable reasons can still be applied in the same pass.
+    This is a rollback of an invalid state transition, not positive playback proof.
+    """
+    if row.get("enabled") is not False:
+        return False
+    if str(row.get("disabledReason") or "").strip() != DEPRECATED_NONFUNCTIONAL_AUTO_OFF:
+        return False
+
+    row["enabled"] = True
+    for key in ("disabledReason", "disabledAt", "purgeAfter", "lifecycleState"):
+        row.pop(key, None)
+
+    manifest_overrides = patch.get("manifest_overrides")
+    if isinstance(manifest_overrides, dict) and manifest_overrides.get("enabled") is False:
+        manifest_overrides.pop("enabled", None)
+    if patch.get("route_data_state") == "off":
+        patch.pop("route_data_state", None)
+    if patch.get("activation_eligible") is False:
+        patch.pop("activation_eligible", None)
+
+    if str(registry.get("manifest_status") or "").strip().casefold() in {
+        "désactivé", "desactive", "disabled", "inactif", "inactive"
+    }:
+        registry["manifest_status"] = "Active"
+    if registry.get("activation_eligible") is False:
+        registry.pop("activation_eligible", None)
+    return True
+
+
 CURRENT_NONFUNCTIONAL_STATUSES = {
     "REGRESSION PROVIDER",
     "PARTIAL OK",
@@ -664,11 +704,14 @@ def main() -> int:
     scoped_rows = publication_rows(manifest, catalog)
     results: list[dict[str, Any]] = []
     disabled_now: list[str] = []
+    restored_deprecated: list[str] = []
     for provider in sorted(scoped_rows):
         manifest_row, projection = scoped_rows[provider]
         registry = registries.get(provider) if isinstance(registries.get(provider), dict) else {}
         patch = patches.get(provider) if isinstance(patches.get(provider), dict) else {}
         hist = histories.get(provider) if isinstance(histories.get(provider), dict) else {}
+        if restore_deprecated_nonfunctional_auto_off(manifest_row, registry, patch):
+            restored_deprecated.append(provider)
         result = classify(
             provider, manifest_row, registry, patch, hist,
             pending_onboarding=provider in pending,
@@ -722,6 +765,7 @@ def main() -> int:
             "effectiveOperatorShutdownEntersDisabledRetentionImmediately": True,
             "currentByteUnprovenEntersDisabledRetention": False,
             "missingCurrentByteProofIsDiagnosticOnly": True,
+            "deprecatedNonfunctionalAutoOffIsReclassified": True,
             "terminalPlaybackRequiredForActiveCurrentBytes": True,
             "bulkOnboardingPendingGetsTargetedProofWithoutRuntimeAuthority": True,
         },
@@ -730,6 +774,7 @@ def main() -> int:
         "repairEligible": sorted(row["provider"] for row in results if row.get("repairEligible") is True),
         "repairBlocked": sorted(row["provider"] for row in results if row.get("repairEligible") is not True),
         "disabledNow": sorted(disabled_now),
+        "restoredDeprecatedNonfunctionalAutoOff": sorted(restored_deprecated),
         "providers": results,
     }
     output = args.output if args.output.is_absolute() else ROOT / args.output
