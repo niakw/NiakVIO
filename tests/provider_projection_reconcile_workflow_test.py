@@ -8,6 +8,8 @@ assert wf.startswith("name: PROVIDERS - Projection Reconcile")
 assert "group: niakvio-core-release-mutation-main" in wf
 assert "cancel-in-progress: false" in wf, "shared release mutation concurrency must never cancel finalization"
 assert "cancel-in-progress: true" not in wf, "projection must queue; exact-head/drift guard rejects stale after acquisition"
+assert "FIELD_PROVIDER_PROJECTION_SUPERSEDED" in wf
+assert "git fetch --no-tags origin main" in wf
 for required in (
     "detect_provider_projection_drift.py",
     "materialize_provider_v3_one.py",
