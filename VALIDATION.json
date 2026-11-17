@@ -1,5 +1,5 @@
 {
-  "schema_version": 78,
+  "schema_version": 79,
   "release": "dynamic",
   "release_authority": "manifest.json:version",
   "candidate_track": "main",
@@ -149,7 +149,21 @@
     "post_finalization_native_certification_workflow": ".github/workflows/release-candidate-validation.yml",
     "requires_final_native_hub46_manifest_regeneration": true,
     "requires_clean_provider_base_current_source": true,
-    "requires_common_source_migration_fixed_point": true
+    "requires_common_source_migration_fixed_point": true,
+    "requires_multi_audio_witness_per_native_platform": true,
+    "multi_audio_witness_platforms": [
+      "TVAndroid",
+      "MobileAndroid",
+      "MobileIOS",
+      "DesktopMACOS",
+      "DesktopWindows"
+    ],
+    "multi_audio_witness_rule": "each exact-final-SHA platform must observe at least one transport-proven media resource with >=2 audio tracks and >=2 selectable production-player tracks",
+    "multi_audio_witness_gates": [
+      "scripts/gate_native_multi_audio_coverage.cjs",
+      "scripts/gate_native_ios_multi_audio.py"
+    ],
+    "ordinary_native_diagnostics_may_have_zero_multi_audio_witness": true
   },
   "limitations": [
     "A CI IP can be blocked while a residential IP works.",
