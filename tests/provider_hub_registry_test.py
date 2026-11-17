@@ -817,3 +817,52 @@ assert merged_kehflix['direct_candidates'][0] == 'https://kehflix.com/', merged_
 assert 'kehflix.lol' not in merged_kehflix['allowed_terminal_hosts'], merged_kehflix
 assert merged_kehflix['direct_authority'] == 'explicit_current', merged_kehflix
 assert merged_kehflix['direct_authority_source'] == 'user-confirmed-official-hub-current-address', merged_kehflix
+
+
+# CURRENT_MULTI_HUB_FALLBACKS_20261117
+# Current sources revalidated from operator/network address surfaces. They remain
+# discovery-only; every terminal still passes same-brand + runtime validation.
+mugi_sources = hubs['mugiwarastream'].get('sources') or []
+assert any(
+    row.get('type') == 'hub'
+    and row.get('url') == 'https://status.mugiwara-no-streaming.com/'
+    and row.get('role') == 'primary'
+    and row.get('resolver') == 'official_outbound'
+    for row in mugi_sources
+), mugi_sources
+assert any(
+    row.get('url') == 'https://streaminganime.fr/site/10/mugiwara-no-streaming'
+    and row.get('role') == 'supplementary'
+    for row in mugi_sources
+), mugi_sources
+
+flixnetwork_html = '''
+<a href="https://67movies.gd/">67Movies</a>
+<a href="https://corsflix.gd/">CorsFlix</a>
+<a href="https://primewire.gd/">PrimeWire</a>
+<a href="https://shuttletv.gd/">ShuttleTV</a>
+<a href="https://unrelated.example/">Unrelated</a>
+'''
+for provider_id, expected_host in (
+    ('67movies', '67movies.gd'),
+    ('corsflix', 'corsflix.gd'),
+    ('primewire', 'primewire.gd'),
+    ('shuttletv', 'shuttletv.gd'),
+):
+    source_rows = hubs[provider_id].get('sources') or []
+    assert any(
+        row.get('type') == 'hub'
+        and row.get('url') == 'https://flixnetwork.is/'
+        and row.get('role') == 'fallback'
+        and row.get('resolver') == 'service_catalogue'
+        for row in source_rows
+    ), (provider_id, source_rows)
+    cfg = copy.deepcopy(hubs[provider_id])
+    cfg['resolver'] = 'service_catalogue'
+    candidates, preferred = resolver.choose_official(
+        provider_id, cfg, 'https://flixnetwork.is/', flixnetwork_html
+    )
+    assert preferred and resolver.host(preferred) == expected_host, (provider_id, preferred, candidates)
+    assert all(resolver.host(str(row.get('url') or '')) != 'unrelated.example' for row in candidates)
+
+print("current multi-hub fallback registry contract passed")
