@@ -264,8 +264,15 @@ def apply_reactivation(root: Path, proof: dict[str, Any], *, today: str | None =
     overrides = load(overrides_path)
     patches = overrides.setdefault("provider_patches", {})
     patch = patches.setdefault(provider, {})
-    manifest_overrides = patch.setdefault("manifest_overrides", {})
-    manifest_overrides["enabled"] = True
+    # Lifecycle/folder state is the activation authority. Reactivation records
+    # its exact-byte proof but must not leave a second enabled=true override
+    # that can outlive a later lifecycle decision.
+    manifest_overrides = patch.get("manifest_overrides") if isinstance(patch.get("manifest_overrides"), dict) else {}
+    manifest_overrides.pop("enabled", None)
+    if manifest_overrides:
+        patch["manifest_overrides"] = manifest_overrides
+    else:
+        patch.pop("manifest_overrides", None)
     patch["disabled_reactivation_proof"] = dict(proof)
     dump(overrides_path, overrides)
 
