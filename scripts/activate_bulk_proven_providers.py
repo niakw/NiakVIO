@@ -303,6 +303,13 @@ def main()->int:
         if proof.get("brainCheckRequired") is True:
             blocked.append({"provider":pid,"reason":"brain_check_still_required"})
             continue
+        if pid not in priority:
+            blocked.append({
+                "provider":pid,
+                "reason":"portfolio_priority_missing",
+                "priorityAuthority":".github/provider-onboarding/batch.json",
+            })
+            continue
         manifest_row=manifest_map.get(pid)
         catalog_entry=catalog_map.get(pid)
         scope="global"
@@ -435,7 +442,7 @@ def main()->int:
             "priorityAuthority":".github/provider-onboarding/batch.json inventory rank/score; health authority remains current FULL proof",
         },
         "versionFloorUpdates":version_floor_updates,
-        "policy":"fresh FULL OK + all declared lanes current + no Brain check + ranked projection capacity; over-cap FULL stays pending",
+        "policy":"fresh FULL OK + all declared lanes current + no Brain check + current structured onboarding priority + ranked projection capacity; unranked/over-cap FULL stays pending",
         "dryRun":bool(args.dry_run),
     }
     if not args.dry_run and activated:
