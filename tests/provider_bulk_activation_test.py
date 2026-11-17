@@ -106,7 +106,8 @@ assert rows["a"]["enabled"] is True
 assert rows["a"]["filename"]=="providers/a.js"
 assert rows["b"]["enabled"] is False
 assert rows["b"]["filename"]=="provider-disabled/b.js"
-assert overrides["provider_patches"]["a"]["manifest_overrides"]["enabled"] is True
+assert "enabled" not in (overrides["provider_patches"]["a"].get("manifest_overrides") or {})
+assert "enabled" not in (overrides["provider_patches"]["d"].get("manifest_overrides") or {})
 assert overrides["provider_capabilities"]["a"]["validation"]=="bulk_census_full_ok"
 assert provenance["providers"]["a"]["activation_mode"]=="bulk_census_full_ok"
 assert provenance["providers"]["a"]["bulk_activation_proof"]["runId"]==77
