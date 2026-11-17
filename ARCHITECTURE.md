@@ -329,6 +329,15 @@ Un échec appartenant au client Nuvio/OS ne doit jamais devenir une réparation 
 
 Le contrat est fail-closed sur rollback/cycle, terminal social/template, dérive d’activation et toute mutation hors CONFIG. Les preuves synthétiques A→B et d’ownership sont portées notamment par `tests/domain_refresh_workflow_test.py`, `tests/domain_refresh_transaction_guard_test.py` et `tests/provider_v3_workflow_ownership_test.py`.
 
+
+### Sources d'adresse hétérogènes et fallbacks
+
+Une identité provider peut déclarer plusieurs sources d'adresse ordonnées. Les hubs HTML publics utilisent un extracteur borné commun : liens `href`, URL absolues rendues dans le texte/une `div`, affectations JS usuelles (`url/currentUrl/target/destination`, `window.location`) et meta-refresh. Les agrégateurs publics de type Linktree/bio-link/status page entrent dans ce même modèle HTML ; leur lien sortant reste un candidat à valider, jamais une preuve de playback.
+
+Un canal Telegram n'est automatique que lorsqu'il expose une preview web publique `/s/<channel>`, avec résolution par chronologie ou description. Un bot Telegram interactif, un canal privé/authentifié ou une source nécessitant une action utilisateur reste **preuve manuelle uniquement** et ne peut jamais devenir autorité de publication Domain Refresh. Une source fallback n'est consultée comme autorité que lorsque les sources primary/supplementary n'ont produit aucun terminal exploitable.
+
+L'inventaire historique de septembre peut donc servir de **prior de découverte** pour des hubs secondaires, mais une ancienne URL n'est jamais recopiée comme autorité courante sans revalidation ou redécouverte par une source actuelle.
+
 ## 11. Cinq Native Labs
 
 Surface exacte :
