@@ -21,7 +21,7 @@ jobs:
         run: python3 tests/retire_stale_codeql_2531_test.py
       - name: Execute positive-origin security regression
         run: node tests/response_structure_test.cjs
-      - name: Verify source and retire only old category finding 2531
+      - name: Delete only the obsolete CodeQL configuration that owns finding 2531
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 scripts/retire_stale_codeql_2531.py
+        run: python3 scripts/delete_stale_codeql_2531_configuration.py
