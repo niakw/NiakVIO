@@ -30,6 +30,7 @@ safe=[
     "M\tautomation/provider-onboarding-pending-census-latest.json",
     "M\tautomation/provider-onboarding-pending-status-latest.json",
 ]
+assert {"availability-history.json","availability-report.json"} <= gate.SAFE_FILES
 assert gate.classify_drift(safe) == (True, [])
 assert gate.classify_drift(["automation/provider-census-status.json"]) == (True, [])
 for bad in (
