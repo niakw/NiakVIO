@@ -130,7 +130,7 @@ assert "material_ids==active_ids" in manual
 assert "==46" not in manual and "46/46" not in manual
 
 
-assert machine["schema_version"] >= 21
+assert machine["schema_version"] >= 22
 source = machine["provider_source_of_truth"]
 assert source["canonical_provider_base_marker"] == "NIAKVIO_PROVIDER_BASE_OWNED_V3"
 assert source["legacy_provider_js_seed_allowed"] is False
@@ -279,7 +279,7 @@ assert machine["provider_scopes"]["availability_report_visible"] == "scripts/cur
 
 assert platform_runtime_machine["schema_version"] == 3
 assert 'data.get("schema_version") != 3' in renderer_source
-assert validation_machine["schema_version"] >= 79
+assert validation_machine["schema_version"] >= 80
 assert validation_machine["checks"]["clean_provider_base_matches_current_common_source"] is True
 assert validation_machine["checks"]["common_provider_source_migrations_validation_only"] is True
 assert validation_machine["final_certification"]["requires_clean_provider_base_current_source"] is True
