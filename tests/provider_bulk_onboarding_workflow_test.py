@@ -75,9 +75,12 @@ assert "materialize_onboarding_bundle(" in single
 assert "compose_provider_bundle(" in single
 assert 'overrides["provider_patches"][provider_id]["candidate_learned_routes"] = routes[:24]' in single
 assert 'overrides["provider_patches"][provider_id]["learned_routes"] = routes[:24]' not in single
-assert '"routes": []' in single
+assert 'validation_routes = pending_validation_routes(request, routes) if bulk else []' in single
+assert '"routes": validation_routes' in single
 assert '"candidateRoutes": routes' in single
 assert '"staticCandidatesExecutable": False' in single
+assert '"observed_identity_executable_routes"' in single
+assert "provider_route_is_validation_candidate" in single
 assert "shutil.copy2" not in single
 
 # Bulk publication hands off to sharded evidence before any repair loop.
