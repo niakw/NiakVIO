@@ -79,6 +79,18 @@ La validation doit observer la multiplicité réelle du runtime, pas seulement l
 
 `tests/provider_stream_multiplicity_contract_test.py` verrouille la structure et `tests/stream_output_sanitizer_multi_variant_test.py` exécute un cas synthétique de 24 variantes ainsi qu’un même URL avec deux `Referer` distincts.
 
+### Audio multilingue et provenance provider/source
+
+La certification finale est plus stricte qu'un Lab diagnostic ordinaire :
+
+- sur chacune des cinq plateformes, au moins un média réel doit prouver **>=2 renditions audio** et **>=2 identités de langue distinctes** dans le master HLS, puis le player de production doit exposer >=2 pistes sélectionnables dont les langues couvrent celles du master ;
+- une perte du nombre de pistes ou des identités de langue est `client_runtime`, jamais une raison de Repair provider ;
+- chaque ligne native échantillonnée doit conserver `row.provider` égal au scraper effectivement exécuté ;
+- chaque plateforme doit également produire au moins un témoin V13 réel `Provider · source externe`, qui prouve que la provenance player/source visible survit au transport portable sans remplacer l'identité logique du provider ;
+- un host CDN terminal brut ne devient jamais un provider.
+
+Gates de release : `scripts/gate_native_multi_audio_coverage.cjs`, `scripts/gate_native_ios_multi_audio.py --require-witness` et `scripts/gate_native_provider_provenance.cjs`.
+
 ### Les Labs n’adaptent pas les repos Nuvio
 
 Les Labs doivent utiliser le comportement officiel observé. Ils peuvent ajouter du plumbing de test strictement nécessaire pour atteindre/exposer le chemin officiel, mais ils ne doivent pas patcher NuvioTV, NuvioMobile ou NuvioDesktop pour contourner :
