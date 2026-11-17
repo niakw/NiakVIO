@@ -53,6 +53,28 @@ for marker in (
     if marker not in release_candidate:
         errors.append(f'release-candidate-validation.yml: exact-SHA final security certification missing {marker}')
 
+# Every workflow_dispatch launched by release-candidate validation is exact-SHA
+# proof. It must not share a cancellable main/ref concurrency slot with routine
+# push/schedule/PR runs; otherwise a later automatic event can destroy the
+# authoritative certification while it is in flight.
+for filename in (
+    'provider-non-regression.yml',
+    'core-stream-metadata-contract.yml',
+    'canonical-media-types.yml',
+    'provider-overrides-gate.yml',
+    'codeql.yml',
+    'security-final-gate.yml',
+    'external-code-audit.yml',
+    'native-mobile-android-reader.yml',
+    'native-mobile-ios-reader.yml',
+    'native-desktop-reader-acceptance.yml',
+):
+    dispatched = (WORKFLOWS / filename).read_text(encoding='utf-8')
+    if "github.event_name == 'workflow_dispatch' && github.run_id" not in dispatched:
+        errors.append(f'{filename}: exact workflow_dispatch certification must use an isolated run_id concurrency group')
+    if filename != 'codeql.yml' and "cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}" not in dispatched:
+        errors.append(f'{filename}: exact workflow_dispatch certification must never be cancelled')
+
 security_gate = (WORKFLOWS / 'security-final-gate.yml').read_text(encoding='utf-8')
 if 'exact 92-provider scan' in security_gate or 'expected=92' in security_gate or 'len(rows) != 92' in security_gate:
     errors.append('security-final-gate.yml: published provider count must be derived from current projection authority, never hard-coded')
