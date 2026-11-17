@@ -250,6 +250,56 @@ def sync_registry_terminal(registry: dict[str, Any], provider_id: str, terminal:
     return before != json.dumps(row, ensure_ascii=False, sort_keys=True)
 
 
+def sync_registry_discovered_sources(
+    registry: dict[str, Any],
+    provider_id: str,
+    observations: list[dict[str, Any]],
+) -> bool:
+    """Persist bounded fallback address feeds discovered from trusted hubs.
+
+    Newly discovered sources are registry knowledge only on this transaction.
+    They cannot authorize a provider terminal until a later Domain Refresh sees
+    them in the pre-run registry, preserving the existing fail-closed authority
+    validation.
+    """
+    rows = _registry_rows(registry)
+    row = rows.get(canonical(provider_id))
+    if not isinstance(row, dict):
+        return False
+    before = json.dumps(row, ensure_ascii=False, sort_keys=True)
+    sources = [dict(source) for source in (row.get("sources") or []) if isinstance(source, dict)]
+    existing = {
+        (
+            canonical(source.get("type")),
+            str(source.get("url") or "").strip().rstrip("/").casefold(),
+        )
+        for source in sources
+    }
+    for observation in observations:
+        if not isinstance(observation, dict) or observation.get("discovered_address_source") is not True:
+            continue
+        source_type = canonical(observation.get("source_type"))
+        url = str(observation.get("url") or "").strip().rstrip("/")
+        if source_type != "telegram_public" or not resolver.is_http_url(url):
+            continue
+        key = (source_type, url.casefold())
+        if key in existing:
+            continue
+        sources.append({
+            "type": "telegram_public",
+            "url": url,
+            "priority": int(observation.get("source_priority") or 90),
+            "role": "fallback",
+            "resolver": "latest_telegram_domain",
+            "purpose": "Official address fallback discovered from authoritative hub link",
+            "discovery": "authoritative_hub_link",
+            "discovered_from": str(observation.get("discovered_from") or "").strip(),
+        })
+        existing.add(key)
+    row["sources"] = sources
+    return before != json.dumps(row, ensure_ascii=False, sort_keys=True)
+
+
 def _rewrite_connected_domain_map(
     mapping: dict[str, Any],
     before_host: str,
@@ -1007,6 +1057,16 @@ def main() -> int:
                     "terminal_probe_skipped": True,
                     "error": f"{type(exc).__name__}: {exc}",
                 }
+
+            if args.apply:
+                discovery_registry_changed = sync_registry_discovered_sources(
+                    registry,
+                    provider_id,
+                    list(item.get("sources") or []),
+                )
+                if discovery_registry_changed:
+                    registry_changed_ids.append(provider_id)
+                    item["discovered_sources_persisted"] = True
 
             if args.apply and item.get("status") == "site_authoritative":
                 patches = config.get("provider_patches") or {}
