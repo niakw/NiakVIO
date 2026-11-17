@@ -70,6 +70,9 @@ assert 'FAST=""' in autopilot
 assert 'LEARNING=""' in autopilot
 assert 'automatic_brain_repair' in autopilot
 assert 'automatic_brain_learning' in autopilot
+phase_block = autopilot[autopilot.index("phase_file=automation/execution-phase.json"):autopilot.index('git fetch --quiet origin main', autopilot.index("phase_file=automation/execution-phase.json"))]
+assert "python -c" in phase_block
+assert "python - <<'PY'" not in phase_block
 assert '      - "automation/execution-phase.json"' in workflow_gate
 
 # It may still refresh WAF/native transport evidence for harness debt.
