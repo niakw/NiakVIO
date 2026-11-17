@@ -253,7 +253,7 @@ def augment(path: Path, expected_minutes: int, stream_scope: str) -> None:
     transport_pattern = re.compile(
         r'''                rows\.firstOrNull\(\)\?\.let \{ row ->\n'''
         r'''                    val probe = probeTransport\(row\.url, row\.headers\)\n'''
-        r'''                    emit\("FIELD_NATIVE_TRANSPORT client=desktop fixture=\$fixtureSlug provider64=\$\{b64\(provider\.id\)\} request_type=\$requestMediaType route_mode=\$routeMode state=\$\{probe\.state\} kind=\$\{probe\.kind\} status=\$\{probe\.status\} content_type64=\$\{b64\(probe\.contentType\)\} extm3u=\$\{probe\.extm3u\} duration_seconds=\$\{probe\.durationSeconds \?: 0\.0\} host64=\$\{b64\(probe\.host\)\} media_hint64=\$\{b64\(probe\.mediaHint\)\}"\)\n'''
+        r'''                    emit\("FIELD_NATIVE_TRANSPORT client=desktop fixture=\$fixtureSlug provider64=\$\{b64\(provider\.id\)\} request_type=\$requestMediaType route_mode=\$routeMode state=\$\{probe\.state\} kind=\$\{probe\.kind\} status=\$\{probe\.status\} content_type64=\$\{b64\(probe\.contentType\)\} extm3u=\$\{probe\.extm3u\} audio_track_count=\$\{probe\.audioTrackCount\} duration_seconds=\$\{probe\.durationSeconds \?: 0\.0\} host64=\$\{b64\(probe\.host\)\} media_hint64=\$\{b64\(probe\.mediaHint\)\}"\)\n'''
         r'''                \}\n'''
     )
     replacement = f'''                {reader_iter} {{ index, row ->
