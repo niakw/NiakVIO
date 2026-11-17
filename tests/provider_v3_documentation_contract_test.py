@@ -129,7 +129,7 @@ assert "material_ids==active_ids" in manual
 assert "==46" not in manual and "46/46" not in manual
 
 
-assert machine["schema_version"] >= 17
+assert machine["schema_version"] >= 18
 source = machine["provider_source_of_truth"]
 assert source["canonical_provider_base_marker"] == "NIAKVIO_PROVIDER_BASE_OWNED_V3"
 assert source["legacy_provider_js_seed_allowed"] is False
@@ -278,7 +278,7 @@ assert machine["provider_scopes"]["availability_report_visible"] == "scripts/cur
 
 assert platform_runtime_machine["schema_version"] == 3
 assert 'data.get("schema_version") != 3' in renderer_source
-assert validation_machine["schema_version"] >= 75
+assert validation_machine["schema_version"] >= 76
 assert validation_machine["checks"]["clean_provider_base_matches_current_common_source"] is True
 assert validation_machine["checks"]["common_provider_source_migrations_validation_only"] is True
 assert validation_machine["final_certification"]["requires_clean_provider_base_current_source"] is True
@@ -308,6 +308,10 @@ assert runtime_contract["portable_provider_result_fields"] == [
     "title", "name", "url", "quality", "size", "language", "provider",
     "type", "seeders", "peers", "infoHash", "headers", "subtitles",
 ]
+assert runtime_contract["plugin_result_audio_tracks_field"] is False
+assert runtime_contract["multi_audio_playback_authority"] == "terminal media resource"
+assert runtime_contract["logical_stream_owner"] == "NiakVIO provider/scraper"
+assert runtime_contract["terminal_player_provenance_must_not_replace_owner"] is True
 machine_runtime = machine["nuvio_runtime_contract"]
 assert machine_runtime["provider_call_signature"] == "getStreams(tmdbId, mediaType, season, episode)"
 assert machine_runtime["historical_platform_matrix_authority"] is False
@@ -321,6 +325,10 @@ assert machine_runtime["final_native_certification_requires_exact_release_sha"] 
 assert machine_runtime["final_native_certification_transitive_between_clients"] is False
 assert machine_runtime["native_proof_transitive_between_clients"] is False
 assert machine_runtime["france_only_projection_authority"] == "provider_catalog.json projections general=false,vf=true"
+assert machine_runtime["plugin_result_audio_tracks_field"] is False
+assert "terminal media resource" in machine_runtime["multi_audio_playback_authority"]
+assert machine_runtime["logical_stream_owner"] == "NiakVIO provider/scraper"
+assert machine_runtime["terminal_player_provenance_must_not_replace_owner"] is True
 assert validation_machine["release_authority"] == "manifest.json:version"
 catalogue_contract = validation_machine["catalogue"]
 assert catalogue_contract["cardinality_policy"] == "derived-never-frozen"
@@ -331,7 +339,7 @@ assert catalogue_contract["availability_report_scope_authority"] == "scripts/cur
 assert catalogue_contract["france_only_first_class"] is True
 for stale_count in ("provider_objects", "active_provider_objects", "physical_native_lab_scope", "historical_recovery_census"):
     assert stale_count not in catalogue_contract
-assert validation_machine["core_contract"]["stream_sanitizer"] == "strict_v10"
+assert validation_machine["core_contract"]["stream_sanitizer"] == "strict_v11"
 assert validation_machine["native_transport"]["scope"] == "Global+France active projection union"
 stream_contract = machine["stream_multiplicity_contract"]
 assert stream_contract["provider_runtime_output_cap"] == 40
@@ -343,9 +351,14 @@ assert stream_contract["native_probe_batch"] == 4
 assert stream_contract["mandatory_regression_fixtures"] == ["spartacus-s00e01"]
 assert stream_contract["season_zero_is_valid"] is True
 assert stream_contract["season_zero_may_fallback_to_one"] is False
+assert stream_contract["hls_multi_audio_requires_master_preservation"] is True
+assert stream_contract["indirect_media_resolution_prefers_richer_hls_master"] is True
+assert stream_contract["terminal_source_provenance_may_augment_visible_label"] is True
 assert validation_machine["stream_multiplicity"]["runtime_output_cap"] == 40
 assert validation_machine["stream_multiplicity"]["terminal_validation_cap"] == 40
 assert validation_machine["stream_multiplicity"]["first_success_does_not_end_discovery"] is True
+assert validation_machine["stream_multiplicity"]["hls_multi_audio_requires_master_preservation"] is True
+assert validation_machine["stream_multiplicity"]["indirect_media_resolution_prefers_richer_hls_master"] is True
 assert validation_machine["special_episodes"]["season_zero_valid"] is True
 assert validation_machine["special_episodes"]["season_zero_fallback_to_one"] is False
 assert validation_machine["special_episodes"]["mandatory_native_fixture"] == "spartacus-s00e01"
