@@ -88,9 +88,9 @@
     "desktop": {
       "repository": "NuvioMedia/NuvioDesktop",
       "branch": "Dev",
-      "audited_ref": "65061186dde35fc0a0f90b05d380f2318133f227",
-      "accepted_ref": "65061186dde35fc0a0f90b05d380f2318133f227",
-      "observed_head": "65061186dde35fc0a0f90b05d380f2318133f227",
+      "audited_ref": "c0eb7bfa7c74820bd189a63a48ae364af8bb3058",
+      "accepted_ref": "c0eb7bfa7c74820bd189a63a48ae364af8bb3058",
+      "observed_head": "c0eb7bfa7c74820bd189a63a48ae364af8bb3058",
       "platforms": [
         "windows",
         "macos",
@@ -117,14 +117,14 @@
         "composeApp/build.gradle.kts",
         "gradle/libs.versions.toml"
       ],
-      "audit_note": "2026-11-17: exact current-source audit at Dev 65061186dde3. Since 3020193d8303, upstream changed only composeApp/src/desktopMain/kotlin/com/nuvio/app/features/discordrpc/DiscordIpcClient.kt (4 lines) to include the Discord IPC protocol version. No configured provider/plugin/streams contract path or player semantic-review path changed; positional getStreams, full result-list mapping, request/response headers, subtitles and the runtime TMDB_API_KEY bridge remain intact. macOS/Windows reader execution remains independently required."
+      "audit_note": "2026-11-17: exact current-source re-audit at Dev c0eb7bfa7c74. Since 65061186dde3, 22 commits merge current Mobile/controller/media-server UI into Desktop. The configured streams-file deltas are focus/touch presentation only; provider/plugin QuickJS runtime, positional getStreams, full result-list mapping, request/response headers, subtitles and runtime TMDB_API_KEY bridge are unchanged. Player deltas add controller volume/seek and RTX HDR plumbing without changing audio-track enumeration/selection semantics. Exact macOS/Windows Native Labs remain required."
     },
     "tv": {
       "repository": "NuvioMedia/NuvioTV",
       "branch": "dev",
-      "audited_ref": "fc5c10c3d2d5def54bb21e452291cb7b281b07b3",
-      "accepted_ref": "fc5c10c3d2d5def54bb21e452291cb7b281b07b3",
-      "observed_head": "fc5c10c3d2d5def54bb21e452291cb7b281b07b3",
+      "audited_ref": "03705cdd1dcff3eeffe57593a85839b2602e4bc8",
+      "accepted_ref": "03705cdd1dcff3eeffe57593a85839b2602e4bc8",
+      "observed_head": "03705cdd1dcff3eeffe57593a85839b2602e4bc8",
       "platforms": [
         "android-tv"
       ],
@@ -160,7 +160,7 @@
         "app/build.gradle.kts",
         "gradle/libs.versions.toml"
       ],
-      "audit_note": "2026-11-17: current-source audit at dev fc5c10c3d2d5. New Plex/Silo media-server work does not touch configured provider/plugin/stream or player semantic paths; positional getStreams, headers, subtitles and TMDB runtime injection are unchanged. Android-TV native proof remains independent."
+      "audit_note": "2026-11-17: exact safe-head audit at dev 03705cdd1dcf. Since fc5c10c3d2d5, 14 commits change activity/media-server sync/UI/translations only; no configured provider/plugin/stream or player semantic-review path changed. Positional getStreams, QuickJS transport, TMDB runtime key and URL/header/subtitle projection remain unchanged. Exact Android-TV Native Lab proof remains required."
     }
   },
   "semantic_tokens": [
