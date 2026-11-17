@@ -103,6 +103,13 @@ on:
       - 'engine_v2/config/nuvio-clients.json'
       - 'sources.json'
       # Native harness semantics are part of exact-final-SHA certification.
+      - 'scripts/prepare_native_corpus_validation.py'
+      - 'scripts/native_player_diagnostics_codegen.py'
+      - 'scripts/augment_native_desktop_player.py'
+      - 'scripts/prepare_native_ios_reader_acceptance.py'
+      - 'scripts/gate_native_ios_multi_audio.py'
+      - 'scripts/native_evidence_completeness.cjs'
+      - 'scripts/analyze_native_ios_results.py'
       - 'scripts/prebuild_native_android_reader_suite.sh'
       - 'scripts/run_native_corpus_mobile_suite.sh'
       - 'scripts/run_native_corpus_tv_suite.sh'
@@ -228,6 +235,11 @@ jobs:
           python3 tests/native_hub46_scope_contract_test.py
           python3 tests/native_hub46_transport_manifest_test.py
           python3 tests/native_corpus_device_lab_test.py
+          python3 tests/native_evidence_contract_test.py
+          node tests/native_evidence_completeness_test.cjs
+          python3 tests/native_player_diagnostics_codegen_test.py
+          python3 tests/native_evidence_codegen_pipeline_test.py
+          python3 tests/native_ios_multi_audio_gate_test.py
           python3 tests/global_stream_presentation_test.py
           python3 tests/global_stream_metadata_preservation_contract_test.py
           python3 tests/global_stream_presentation_pipeline_test.py
