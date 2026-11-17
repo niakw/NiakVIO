@@ -42,6 +42,76 @@ def defer_missing_probe_result(
     return deferred
 
 
+ROUTE_DISCOVERY_REASON_STRENGTH = {
+    "observed_identity_executable_routes": 30,
+    "retained_identity_route_plan_host_matched": 20,
+    "existing_identity_executable_route_plan": 10,
+}
+ROUTE_DISCOVERY_TRANSPORT_STRENGTH = {
+    "residential-exit": 30,
+    "github-hosted": 20,
+    "retained-v3-rag": 10,
+    "request-existing": 5,
+}
+
+
+def _normalized_routes(values: Any) -> list[str]:
+    out: list[str] = []
+    for value in values or []:
+        route = str(value or "").strip()
+        if route and route not in out:
+            out.append(route)
+    return out[:24]
+
+
+def merge_route_discovery_evidence(
+    row: dict[str, Any],
+    result: dict[str, Any],
+    patterns: list[str],
+) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    """Keep stronger same-plan discovery evidence while recording the latest replay.
+
+    A request-existing result proves only that the route plan was already present;
+    it must not erase an earlier causal residential observation of the exact same
+    provider-owned routes. This preserves experience, not health: neither result
+    grants playback proof or production activation.
+    """
+    current = {
+        "transport": result.get("transport"),
+        "reason": result.get("reason"),
+        "routeCount": len(patterns),
+    }
+    previous = row.get("routeDiscoveryEvidence")
+    if not isinstance(previous, dict):
+        return current, None
+    previous_routes = _normalized_routes(row.get("routes"))
+    if previous_routes != _normalized_routes(patterns):
+        return current, None
+    previous_reason = str(previous.get("reason") or "")
+    current_reason = str(current.get("reason") or "")
+    previous_rank = (
+        ROUTE_DISCOVERY_REASON_STRENGTH.get(previous_reason, 0),
+        ROUTE_DISCOVERY_TRANSPORT_STRENGTH.get(str(previous.get("transport") or ""), 0),
+    )
+    current_rank = (
+        ROUTE_DISCOVERY_REASON_STRENGTH.get(current_reason, 0),
+        ROUTE_DISCOVERY_TRANSPORT_STRENGTH.get(str(current.get("transport") or ""), 0),
+    )
+    if previous_rank > current_rank:
+        preserved = {
+            "transport": previous.get("transport"),
+            "reason": previous.get("reason"),
+            "routeCount": int(previous.get("routeCount") or len(previous_routes)),
+        }
+        replay = {
+            **current,
+            "authorityPreserved": True,
+            "preservedReason": "same_route_plan_stronger_prior_observation",
+        }
+        return preserved, replay
+    return current, None
+
+
 def current_active_ids() -> set[str]:
     ids: set[str] = set()
     for path in (ROOT / "manifest.json", ROOT / "vf" / "manifest.json"):
@@ -228,11 +298,12 @@ def main() -> int:
         if result.get("qualified") is True and patterns:
             updated = dict(row)
             updated["routes"] = patterns
-            updated["routeDiscoveryEvidence"] = {
-                "transport": result.get("transport"),
-                "reason": result.get("reason"),
-                "routeCount": len(patterns),
-            }
+            evidence, replay = merge_route_discovery_evidence(updated, result, patterns)
+            updated["routeDiscoveryEvidence"] = evidence
+            if replay is not None:
+                updated["routeDiscoveryReplay"] = replay
+            else:
+                updated.pop("routeDiscoveryReplay", None)
             qualified.append(updated)
         else:
             deferred_row = dict(row)
