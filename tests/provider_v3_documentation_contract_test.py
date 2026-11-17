@@ -319,6 +319,8 @@ assert runtime_contract["multi_audio_native_evidence_owner"] == (
 )
 assert runtime_contract["multi_audio_collapse_failure_owner"] == "client_runtime"
 assert runtime_contract["multi_audio_probe_player_first"] is True
+assert runtime_contract["multi_audio_indirect_candidate_probe_cap"] == 16
+assert "HLS master" in runtime_contract["multi_audio_candidate_policy"]
 assert runtime_contract["logical_stream_owner"] == "NiakVIO provider/scraper"
 assert runtime_contract["terminal_player_provenance_must_not_replace_owner"] is True
 assert runtime_contract["source_provider_provenance_may_augment_visible_label"] is True
@@ -393,6 +395,9 @@ assert stream_contract["native_multi_audio_expected_source"] == (
 )
 assert stream_contract["native_multi_audio_player_parity_required_when_master_has_multiple_audio"] is True
 assert stream_contract["native_multi_audio_probe_order"] == "production player first, transport evidence second"
+assert stream_contract["indirect_hls_candidate_probe_cap"] == 16
+assert stream_contract["stream_sanitizer_authority"] == "strict_v12"
+assert "HLS master" in stream_contract["multi_audio_candidate_policy"]
 assert stream_contract["terminal_source_provenance_may_augment_visible_label"] is True
 assert validation_machine["stream_multiplicity"]["runtime_output_cap"] == 40
 assert validation_machine["stream_multiplicity"]["terminal_validation_cap"] == 40
