@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from provider_v3_minimizer import minimize_text, validate_transform
-from reconcile_provider_static_authority import decode_exact_model, persist_static_from_bundle, refresh_static_counts
+from reconcile_provider_static_authority import exact_provider_lego_identity_contract, persist_static_from_bundle, refresh_static_counts
 
 ROOT=Path(__file__).resolve().parents[1]
 MANIFEST=ROOT/"manifest.json"
@@ -121,72 +121,6 @@ def pending_artifact_digest(path:Path)->str:
     if result.text != text:
         raise RuntimeError("pending artifact is not provider-v3 minimizer fixed-point")
     return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def exact_provider_lego_identity_contract(
-    provider_id:str,
-    bundle_path:Path,
-    patch:dict[str,Any],
-)->dict[str,Any] | None:
-    """Return exact proven identity DATA needed to rematerialize a Provider Lego.
-
-    Candidate route hints are deliberately not execution authority.  When the
-    exact staged bytes that just earned FULL OK execute through a repository-owned
-    Provider Lego, however, their CONFIG already contains the identity contract
-    consumed by that Lego.  Persist only that exact contract so a later canonical
-    rebuild can execute the same Lego without inventing/promoting routes.
-    """
-    scripts=[
-        str(value).strip()
-        for value in (patch.get("provider_lego_scripts") or [])
-        if str(value).strip()
-    ]
-    if not scripts:
-        return None
-    if any(not value.startswith("scripts/provider_patches/") for value in scripts):
-        raise RuntimeError(f"{provider_id}: provider Lego path is outside repository-owned patch surface")
-    model=decode_exact_model(provider_id,bundle_path)
-    identity=model.get("identityInput")
-    if not isinstance(identity,dict):
-        raise RuntimeError(f"{provider_id}: FULL exact-byte Provider Lego has no identityInput")
-    mode=str(identity.get("mode") or "").strip().casefold()
-    requires=identity.get("requiresTmdbBeforeRun")
-    fields=[
-        str(value).strip()
-        for value in (identity.get("requiredFields") or [])
-        if str(value).strip()
-    ]
-    expected={
-        "tmdb_direct":({"tmdbId","mediaType"},False),
-        "catalog_search":({"title","mediaType"},True),
-        "external_id":({"tmdbId","mediaType"},True),
-    }.get(mode)
-    if expected is None or not isinstance(requires,bool) or not expected[0] <= set(fields) or requires is not expected[1]:
-        raise RuntimeError(
-            f"{provider_id}: FULL exact-byte Provider Lego identity contract is unsupported/incomplete"
-        )
-    normalized={
-        "mode":mode,
-        "requires_tmdb_before_run":requires,
-        "required_fields":fields,
-    }
-    current=patch.get("identity_input")
-    if isinstance(current,dict):
-        current_normalized={
-            "mode":str(current.get("mode") or "").strip().casefold(),
-            "requires_tmdb_before_run":current.get("requires_tmdb_before_run"),
-            "required_fields":[
-                str(value).strip()
-                for value in (current.get("required_fields") or [])
-                if str(value).strip()
-            ],
-        }
-        if current_normalized != normalized:
-            raise RuntimeError(
-                f"{provider_id}: exact FULL identityInput contradicts durable provider identity_input"
-            )
-        return None
-    return normalized
 
 
 def _move_exact(source:Path,target:Path,*,dry_run:bool=False)->None:
@@ -432,7 +366,7 @@ def main()->int:
             continue
         try:
             lego_identity=exact_provider_lego_identity_contract(pid,pending_path,patch)
-        except RuntimeError as exc:
+        except (RuntimeError,ValueError) as exc:
             blocked.append({"provider":pid,"reason":"pending_provider_lego_identity_invalid","detail":str(exc)})
             continue
         try:
