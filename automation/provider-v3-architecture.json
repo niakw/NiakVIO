@@ -1,5 +1,5 @@
 {
-  "schema_version": 20,
+  "schema_version": 21,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -467,7 +467,21 @@
         "automatic_fallback_updates_provider_identity": true,
         "expired_link_refresh_restricts_to_same_addon": true
       }
-    }
+    },
+    "final_native_multi_audio_witness_required_per_platform": true,
+    "final_native_multi_audio_witness_platforms": [
+      "TVAndroid",
+      "MobileAndroid",
+      "MobileIOS",
+      "DesktopMACOS",
+      "DesktopWindows"
+    ],
+    "final_native_multi_audio_witness_rule": "transport audio tracks >=2 and production player selectable audio tracks >=2 on at least one real stream per platform",
+    "final_native_multi_audio_witness_gates": [
+      "scripts/gate_native_multi_audio_coverage.cjs",
+      "scripts/gate_native_ios_multi_audio.py"
+    ],
+    "ordinary_native_diagnostics_may_have_zero_multi_audio_witness": true
   },
   "terminal_media_pipeline": {
     "authority": "Core",
