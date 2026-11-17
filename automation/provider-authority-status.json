@@ -1335,8 +1335,13 @@
       "authorityClass": "hub-or-redirect",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source"
-      ]
+        "authoritative_route_source",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "myfluneo",
