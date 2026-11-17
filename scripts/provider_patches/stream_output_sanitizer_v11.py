@@ -70,7 +70,9 @@ NEW_CANDIDATES = r'''        if(depth<2&&candidates.length){
             var candidateStream=Object.assign({},stream);
             if(stream&&stream.headers&&typeof stream.headers==="object")candidateStream.headers=Object.assign({},stream.headers);
             if(stream&&stream.behaviorHints&&typeof stream.behaviorHints==="object")candidateStream.behaviorHints=Object.assign({},stream.behaviorHints);
+            try{candidateStream.playerHost=hostOf(finalUrl)}catch(_e){}
             if(await probeResolved(candidateStream,candidates[candidateIndex],depth+1,finalUrl)){
+              try{candidateStream.terminalHost=hostOf(candidateStream.url)}catch(_e){}
               var candidateRank=Number(candidateStream.__nuvioHlsMasterAudioCountV1||0)>1?3:(candidateStream.__nuvioHlsMasterV1?2:1);
               if(candidateRank>bestRank){bestPlayable=candidateStream;bestRank=candidateRank}
               if(candidateRank>=3)break;
