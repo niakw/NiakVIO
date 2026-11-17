@@ -48,12 +48,13 @@ for provider in ("purstream", "movix", "cineby", "animepahe", "goated"):
     assert "NUVIO_GLOBAL_STREAM_SCORE_V1" in output, provider
     assert "NUVIO_GLOBAL_TELEMETRY_V1" in output, provider
     assert "NUVIO_STREAM_OUTPUT_NETWORK_EVIDENCE_V10" in output, provider
+    assert "NUVIO_STREAM_OUTPUT_HLS_MASTER_PREFERENCE_V11" in output, provider
     assert "/* STARTFIX:CORE.STREAM_SANITIZER.V6 */" in output, provider
-    assert output.index("NUVIO_GLOBAL_STREAM_FACTS_V1") < output.index("NUVIO_GLOBAL_STREAM_IDENTITY_V1"), provider
+    assert output.index("NUVIO_GLOBAL_STREAM_FACTS_V1") < output.index("/* STARTFIX:CORE.STREAM_SANITIZER.V6 */"), provider
+    assert output.index("/* STARTFIX:CORE.STREAM_SANITIZER.V6 */") < output.index("NUVIO_GLOBAL_STREAM_IDENTITY_V1"), provider
     assert output.index("NUVIO_GLOBAL_STREAM_IDENTITY_V1") < output.index("NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1"), provider
     assert output.index("NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1") < output.index("NUVIO_GLOBAL_STREAM_PRESENTATION_V1"), provider
-    assert output.index("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") < output.index("/* STARTFIX:CORE.STREAM_SANITIZER.V6 */"), provider
-    assert output.index("/* STARTFIX:CORE.STREAM_SANITIZER.V6 */") < output.index("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1"), provider
+    assert output.index("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") < output.index("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1"), provider
     assert output.index("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1") < output.index("NUVIO_GLOBAL_PROVIDER_BRANDING_V1"), provider
     assert output.index("NUVIO_GLOBAL_PROVIDER_BRANDING_V1") < output.index("NUVIO_GLOBAL_STREAM_SCORE_V1"), provider
     assert output.index("NUVIO_GLOBAL_STREAM_SCORE_V1") < output.index("NUVIO_GLOBAL_TELEMETRY_V1"), provider
@@ -157,6 +158,58 @@ p.getStreams('157336','movie',undefined,undefined).then(function(rows){
     assert {"1080p-full-hd", "webdl", "hevc", "dolby-digital-plus", "5.1"}.issubset(
         set(native["row"]["badgeIds"])
     ), native
+
+# Terminal identity must validate the media recovered by the sanitizer, not the
+# opaque player page returned by the provider. Same player endpoint, two requested
+# episodes: S01E01 must reject terminal S03E01; S03E01 may retain it.
+terminal_source, _ = apply(
+    "purstream",
+    "module.exports={getStreams:async()=>[{name:'Reader',url:'https://player.example/embed/opaque',headers:{Referer:'https://provider.example/title'}}]};\n",
+)
+with tempfile.TemporaryDirectory(prefix="niakvio-terminal-identity-") as raw:
+    root = Path(raw)
+    provider = root / "provider.cjs"
+    runner = root / "runner.cjs"
+    provider.write_text(terminal_source, encoding="utf-8")
+    runner.write_text(
+        """
+global.fetch=async function(url){
+  url=String(url);
+  if(url.includes('player.example/embed/opaque')){
+    const html='<video><source src="https://cdn.example/show/S03E01/master.m3u8"></video>';
+    return {ok:true,status:200,url:url,headers:{get:k=>'text/html'},text:async()=>html};
+  }
+  if(url.includes('cdn.example/show/S03E01/master.m3u8')){
+    const hls='#EXTM3U\\n#EXT-X-TARGETDURATION:120\\n#EXTINF:120,\\nseg.ts\\n#EXT-X-ENDLIST\\n';
+    return {ok:true,status:200,url:url,headers:{get:k=>'application/vnd.apple.mpegurl'},text:async()=>hls,
+      body:{getReader:()=>({read:(()=>{let used=false;return async()=>used?{done:true}:{done:false,value:new Uint8Array(Buffer.from(hls)), ...(used=true,{})}})(),cancel:async()=>{}})}};
+  }
+  if(url.includes('api.themoviedb.org')) return {ok:false,status:404,url:url,headers:{get:()=> 'application/json'},json:async()=>({}),text:async()=>''};
+  throw new Error('unexpected fetch '+url);
+};
+const p=require(""" + json.dumps(str(provider)) + """);
+Promise.all([
+  p.getStreams('46296','tv',1,1),
+  p.getStreams('46296','tv',3,1)
+]).then(function(rows){
+  console.log(JSON.stringify({wrong:rows[0],matching:rows[1]}));
+}).catch(function(error){console.error(error&&error.stack||error);process.exit(1);});
+""",
+        encoding="utf-8",
+    )
+    completed = subprocess.run(
+        ["node", str(runner)],
+        text=True,
+        encoding="utf-8",
+        capture_output=True,
+        timeout=30,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    terminal_identity = json.loads(completed.stdout.strip())
+    assert terminal_identity["wrong"] == [], terminal_identity
+    assert terminal_identity["matching"], terminal_identity
+    assert terminal_identity["matching"][0]["url"] == "https://cdn.example/show/S03E01/master.m3u8", terminal_identity
 
 # Reapplication is idempotent: global Core wrappers are replaced/reused, never stacked.
 first, _ = apply("cineby", "module.exports={getStreams:async()=>[]};\n")
