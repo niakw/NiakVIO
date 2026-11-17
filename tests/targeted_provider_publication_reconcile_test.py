@@ -59,6 +59,7 @@ with tempfile.TemporaryDirectory() as tmp_name:
                 "version": "1.0.6",
                 "enabled": True,
                 "supportedTypes": ["movie"],
+                "canonicalSupportedTypes": ["movie"],
                 "disabledPlatforms": ["android"],
             },
             "projections": {"general": True, "vf": False},
