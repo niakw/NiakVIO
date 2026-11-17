@@ -35,7 +35,7 @@ presentation_source = (ROOT / "scripts/provider_patches/global_stream_presentati
 assert 'return s(c.languageFallback)||(vfMode?"VF":"VO")' not in presentation_source
 assert 'r&&r.name,r&&r.title,r&&r.label,r&&r.sourceLabel' not in presentation_source.split('function language(r)',1)[1].split('function detailedLanguage',1)[0]
 branding_source = (ROOT / "scripts/provider_patches/global_provider_branding_v1.py").read_text(encoding="utf-8")
-assert "post-safety-terminal-source-label-v11" in branding_source
+assert "provider-owner-terminal-source-label-v12" in branding_source
 assert 'return q?v+" - "+q:v' in branding_source
 assert 'if(placeholder(o.quality))delete o.quality' in branding_source
 
