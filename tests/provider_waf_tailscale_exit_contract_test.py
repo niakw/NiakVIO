@@ -3,6 +3,37 @@ from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
 wf=(ROOT/".github/workflows/provider-waf-browser-session.yml").read_text(encoding="utf-8")
+import json
+
+architecture=(ROOT/"automation/provider-v3-architecture.json")
+validation=(ROOT/"VALIDATION.json")
+arch_md=(ROOT/"ARCHITECTURE.md").read_text(encoding="utf-8")
+machine=json.loads(architecture.read_text(encoding="utf-8"))
+validation_machine=json.loads(validation.read_text(encoding="utf-8"))
+
+assert machine["schema_version"] >= 24
+oracle=machine["network_oracle"]
+assert oracle["macbridge_repository"] == "niakw/NiakGH-MacBridge"
+assert oracle["require_non_github_replay_for_network_failures"] is True
+assert oracle["provider_mutation_requires_cross_environment_evidence_when_network_ambiguous"] is True
+assert oracle["provider_disable_requires_cross_environment_evidence_when_network_ambiguous"] is True
+assert oracle["domain_mutation_requires_cross_environment_evidence_when_network_ambiguous"] is True
+assert oracle["deterministic_tests_do_not_require_macbridge"] is True
+assert "403" in oracle["triggers"] and "dns" in oracle["triggers"]
+
+assert validation_machine["schema_version"] >= 82
+net=validation_machine["network_origin_validation"]
+assert net["github_only_network_failure_is_provider_failure"] is False
+assert net["residential_crosscheck_required_before_provider_or_domain_failure"] is True
+assert "NiakGH-MacBridge" in net["residential_oracles"]
+assert "github_dns_failure" in net["macbridge_required_when"]
+assert "provider_disable_or_domain_mutation_would_otherwise_rely_on_github_only_network_evidence" in net["macbridge_required_when"]
+assert "deterministic_code_contracts" in net["macbridge_not_required_for"]
+
+assert "Oracle réseau résidentiel MacBridge" in arch_md
+assert "échec réseau GitHub-hosted seul" in arch_md
+assert "exact-byte native playback > full provider replay résidentiel > MacBridge browser/provider replay" in arch_md
+
 
 required=[
     "id-token: write",
