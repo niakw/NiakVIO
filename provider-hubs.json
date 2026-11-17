@@ -932,10 +932,20 @@
       ],
       "sources": [
         {
+          "type": "telegram_public",
+          "url": "https://t.me/s/netmirror_web",
+          "priority": 130,
+          "role": "primary",
+          "resolver": "latest_telegram_domain",
+          "purpose": "Official current-domain address announcements verified 2026-11-17",
+          "evidence": "current-public-channel"
+        },
+        {
           "type": "hub",
           "url": "https://netmiror.com/",
-          "priority": 100,
-          "purpose": "Authoritative address reference"
+          "priority": 90,
+          "purpose": "Authoritative address reference",
+          "role": "fallback"
         },
         {
           "type": "search",
@@ -1357,10 +1367,20 @@
       ],
       "sources": [
         {
+          "type": "telegram_public",
+          "url": "https://t.me/s/cinebyofficial",
+          "priority": 130,
+          "role": "primary",
+          "resolver": "telegram_description",
+          "purpose": "Official current-domain address channel verified 2026-11-17",
+          "evidence": "current-public-channel"
+        },
+        {
           "type": "hub",
           "url": "https://warflix.cv/",
-          "priority": 100,
-          "purpose": "Authoritative address reference"
+          "priority": 80,
+          "purpose": "Authoritative address reference",
+          "role": "fallback"
         },
         {
           "type": "search",
@@ -2788,6 +2808,15 @@
       ],
       "sources": [
         {
+          "type": "telegram_public",
+          "url": "https://t.me/s/kisskhasiaofficial",
+          "priority": 130,
+          "role": "primary",
+          "resolver": "latest_telegram_domain",
+          "purpose": "Official current-domain address announcements verified 2026-11-17",
+          "evidence": "current-public-channel"
+        },
+        {
           "type": "search",
           "query": "\"KissKH\" official domain",
           "priority": 35,
@@ -2953,13 +2982,16 @@
           "type": "hub",
           "url": "https://purstream.wiki/",
           "priority": 110,
-          "purpose": "Official current-address hub"
+          "purpose": "Official current-address hub",
+          "role": "primary"
         },
         {
           "type": "telegram_public",
           "url": "https://t.me/s/purstreamm",
           "priority": 105,
-          "purpose": "Official announcement fallback when the wiki renders its current terminal dynamically"
+          "purpose": "Official announcement fallback when the wiki renders its current terminal dynamically",
+          "role": "fallback",
+          "resolver": "latest_telegram_domain"
         }
       ],
       "search_confirmation_runs": 2,
@@ -3048,10 +3080,20 @@
       ],
       "sources": [
         {
+          "type": "telegram_public",
+          "url": "https://t.me/s/coflix3",
+          "priority": 100,
+          "role": "fallback",
+          "resolver": "latest_telegram_domain",
+          "purpose": "Official address-announcement fallback verified 2026-11-17",
+          "evidence": "current-public-channel"
+        },
+        {
           "type": "hub",
           "url": "https://coflix.domains/",
           "priority": 110,
-          "purpose": "Official current-address registry"
+          "purpose": "Official current-address registry",
+          "role": "primary"
         }
       ],
       "search_confirmation_runs": 2,
@@ -5597,6 +5639,15 @@
         "\"French Anime\" official domain"
       ],
       "sources": [
+        {
+          "type": "hub",
+          "url": "https://ww1.wiflix-adresses.fun/",
+          "priority": 120,
+          "role": "primary",
+          "resolver": "service_catalogue",
+          "purpose": "Official parent address catalogue listing French-Anime current terminal verified 2026-11-17",
+          "evidence": "current-official-address-list"
+        },
         {
           "type": "search",
           "query": "\"French Anime\" official domain",
