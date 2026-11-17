@@ -324,7 +324,7 @@
         "version_code": 1045
       },
       "current_audited": {
-        "ref": "03705cdd1dcff3eeffe57593a85839b2602e4bc8",
+        "ref": "5b371fcd0d7ee080bb1de8de4d438882f67e8bfd",
         "version_name": "1.2.0-beta.2",
         "version_code": 1079
       },
@@ -350,7 +350,7 @@
           "app/src/main/java/com/nuvio/tv/domain/model/Subtitle.kt",
           "app/src/main/java/com/nuvio/tv/data/remote/dto/SubtitleResponseDto.kt"
         ],
-        "audited_change": "2026-11-17: exact safe-head audit at dev 03705cdd1dcf. Since fc5c10c3d2d5, 14 commits change activity/media-server sync/UI/translations only; no configured provider/plugin/stream or player semantic-review path changed. Positional getStreams, QuickJS transport, TMDB runtime key and URL/header/subtitle projection remain unchanged. Exact Android-TV Native Lab proof remains required.",
+        "audited_change": "2026-11-17: exact current-source re-audit at dev 5b371fcd0d7e. Since 03705cdd1dcf, eight commits add ratings/tracking outside the provider ABI and optimize subtitle-language lookups/menu option reuse. The only configured player semantic-path delta is subtitle-only (PlayerSubtitleUtils/SubtitleSelectionOverlay/LanguageUtils): no getStreams, QuickJS transport, stream URL/header projection, audio-track enumeration/selection, provider grouping or fallback identity changed. Exact Android-TV Native Lab proof remains required.",
         "runtime_validation": "execute NuvioTV's own Android-TV QuickJS/host implementation; Desktop/Mobile success is never TV proof",
         "runtime_family_equivalent_to_sibling_clients": false,
         "official_getStreams_error_behavior": "application runtime catches JavaScript getStreams errors and captures []",
