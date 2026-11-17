@@ -27,6 +27,7 @@ import provider_base_store as base_store  # noqa: E402
 from apply_provider_overrides import apply_overrides  # noqa: E402
 from provider_byte_stability import verify_bytes  # noqa: E402
 from generate_language_manifests import france_only_catalog_rows  # noqa: E402
+from sanitize_provider_v3_core_metadata_routes import derive_runtime_family  # noqa: E402
 
 
 def load_json(path: Path, default: Any) -> Any:
@@ -82,6 +83,16 @@ def pending_validation_routes(request: dict[str, Any], routes: list[str]) -> lis
         ):
             out.append(route)
     return out[: min(24, route_count)]
+
+
+def pending_runtime_family(strategy: str, routes: list[str]) -> str:
+    """Classify only the executable pending plan, never unproven candidate routes."""
+    model = {
+        "strategy": str(strategy or "unknown").strip().casefold(),
+        "sourceRuntimeFamily": "unknown",
+        "routes": [str(value or "").strip() for value in routes if str(value or "").strip()],
+    }
+    return derive_runtime_family(model, respect_current=False)
 
 
 def historical_formats(provider_id: str) -> list[str]:
@@ -894,6 +905,7 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
         "routes": validation_routes,
         "candidateRoutes": routes,
         "staticCandidatesExecutable": False,
+        "sourceRuntimeFamily": pending_runtime_family(strategy, validation_routes),
     }
     base_relative, base_sha, _stripped = base_store.persist_clean_provider_seed(
         provider_id,
