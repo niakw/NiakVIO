@@ -1,3 +1,12 @@
+## 2026-11-17 — Quick Verify & Publish is now exact-SHA and non-cancellable in release certification
+
+- Final release-child audit confirmed `sync.yml` Quick is verify-only: only Deep mode may commit/publish. However its concurrency block still shared a cancellable per-ref group, so a release-candidate `workflow_dispatch` could be cancelled by a routine verification run.
+- `sync.yml` now isolates explicit `workflow_dispatch` runs by `github.run_id` and disables cancellation for those exact proof runs while preserving latest-wins behavior for routine events.
+- `sync.yml` already exposed an `expected_sha` input and checked `GITHUB_SHA`, but Release Candidate Validation previously dispatched only `mode=quick`. It now passes `inputs[expected_sha]=TARGET_SHA` as well, so Verify & Publish fails immediately if the dispatch is not bound to the candidate.
+- The central workflow-security regression now includes `sync.yml` in the exact-dispatch isolation cohort and requires the expected-SHA argument in the release orchestrator.
+- Relevant commits: `accc5ba7` sync isolation, `2da0aa09` exact-SHA dispatch, `b8bb0109` regression. No provider/Core/runtime bytes or manifest membership changed.
+- Fresh exact-current-head certification remains the only pre-Brain execution boundary.
+
 ## 2026-11-17 — Release certification no longer reuses an old success from the same SHA
 
 - Audit of `release-candidate-validation.yml` found that exact child selection filtered only by workflow, `event=workflow_dispatch` and `head_sha == TARGET_SHA`. That is insufficient for a no-op/replayed Finalizer: a prior workflow_dispatch on the same immutable SHA could be selected as the maximum run id before the newly dispatched run became visible, allowing a fresh certification campaign to reuse stale proof.
