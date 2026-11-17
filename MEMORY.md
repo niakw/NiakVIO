@@ -1,3 +1,10 @@
+## 2026-11-17 — Logical provider ownership is separate from terminal player provenance
+
+- User testing reported that a selected NiakVIO provider could appear to play media associated with another provider/player while the displayed provider name stayed unchanged. The Core V11 player-provenance work exposed the underlying contract gap: final branding changed `title/name` but did not force the portable `provider` field, and Engine v2 normalization preferred `raw.provider` over the executing provider context.
+- `global_provider_branding_v1.py` now binds client-visible `provider` to the current NiakVIO provider id. A conflicting upstream/player-supplied provider value is retained only as `sourceProvider` provenance. Intermediary `playerHost` may still augment the visible title (`Provider · playerHost`); a terminal CDN host never replaces logical ownership.
+- `engine_v2/src/contracts.mjs` now gives `context.providerId` precedence over `raw.provider` and records the raw value only as source provenance. Core and Engine regressions inject a deliberately foreign provider id and require the logical NiakVIO owner to survive.
+- This is a shared métier correction, not provider-specific Repair. Because the Core branding bytes changed after the prior V11 projection publication, the Global+France 75-provider projection must be rematerialized again, then exact-byte identity/census/release/native proof must run before the user-visible issue is called validated.
+
 ## 2026-11-17 — Multi-audio terminal authority and player provenance corrected in Core V11
 
 - User testing exposed two Core-level symptoms: a Nuvio player often offered only one audio language even when the upstream reader had multiple tracks, and the visible provider label could hide that the terminal media was resolved through a different player/host.
