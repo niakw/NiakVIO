@@ -1,0 +1,1758 @@
+{
+  "schema_version": 6,
+  "requested_scope": "sharded",
+  "resolved_scope": "merged-shards",
+  "selected_providers": [
+    "meowtv"
+  ],
+  "environment": "node-adaptive-provider-targeted-first-real-stream-census-with-tmdb-runtime-context",
+  "fixture_selection_policy": "retained-proof-first-then-provider-targeted-then-representative-then-three-corpus-rotated",
+  "provider_count": 1,
+  "task_count": 3,
+  "probe_count": 24,
+  "rotated_task_count": 3,
+  "max_samples_per_lane": 8,
+  "raw_provider_count": 0,
+  "playable_provider_count": 0,
+  "accepted_playable_provider_count": 0,
+  "verified_provider_count": 0,
+  "wrong_content_provider_count": 0,
+  "raw_providers": [],
+  "playable_providers": [],
+  "accepted_playable_providers": [],
+  "verified_providers": [],
+  "wrong_content_providers": [],
+  "type_summary": {
+    "movie": {
+      "tasks": 1,
+      "raw": 0,
+      "playable": 0,
+      "accepted_playable": 0,
+      "verified": 0,
+      "wrong_content": 0
+    },
+    "tv": {
+      "tasks": 1,
+      "raw": 0,
+      "playable": 0,
+      "accepted_playable": 0,
+      "verified": 0,
+      "wrong_content": 0
+    },
+    "anime": {
+      "tasks": 1,
+      "raw": 0,
+      "playable": 0,
+      "accepted_playable": 0,
+      "verified": 0,
+      "wrong_content": 0
+    }
+  },
+  "status_counts": {
+    "no_streams": 3
+  },
+  "debug_stage_counts": {
+    "provider_network_zero_result": 3
+  },
+  "debug_stage_providers": {
+    "provider_network_zero_result": [
+      "meowtv"
+    ]
+  },
+  "shards": [
+    {
+      "file": "provider-census-shard-0.json",
+      "shardCount": 1,
+      "shardIndex": 0,
+      "providerCount": 1
+    }
+  ],
+  "rows": [
+    {
+      "provider_id": "meowtv",
+      "provider_name": "📺 MeowTV",
+      "semantic_type": "anime",
+      "fixture_title": "SPY x FAMILY",
+      "fixture": {
+        "slug": "spy-x-family-2022-s01e01",
+        "tmdbId": "120089",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "SPY x FAMILY",
+        "year": 2022,
+        "season": 1,
+        "episode": 1
+      },
+      "streams_returned": 0,
+      "announced_player_candidates": 0,
+      "announced_variant_candidates": 0,
+      "announced_player_hosts": [],
+      "announced_quality_heights": [],
+      "explored_player_requests": 0,
+      "explored_player_hosts": [],
+      "variant_fanout_state": "not-observed",
+      "status": "no_streams",
+      "debug_stage": "provider_network_zero_result",
+      "debug_model": {
+        "strategy": "mixed_embed_resolver",
+        "source_runtime_family": "unknown",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "supported_types": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "route_count": 3,
+        "route_kinds": [
+          "player",
+          "detail"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://meowtv.ru",
+        "official_hub": null,
+        "official_api": null
+      },
+      "debug_fetch_count": 4,
+      "debug_provider_fetch_count": 3,
+      "debug_progress_stage": "lookup_only",
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/tv/120089?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/120089?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "adult",
+              "backdrop_path",
+              "created_by",
+              "episode_run_time",
+              "first_air_date",
+              "genres",
+              "homepage",
+              "id",
+              "in_production",
+              "languages",
+              "last_air_date",
+              "last_episode_to_air",
+              "name",
+              "next_episode_to_air",
+              "networks",
+              "number_of_episodes"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 112
+        },
+        {
+          "url": "https://meowtv.ru/anime/120089",
+          "response_url": "https://meowtv.ru/anime/120089",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 4900,
+            "forms": 0,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 7,
+            "anchors": 0,
+            "classTokens": [
+              "bg-background",
+              "dark",
+              "text-foreground"
+            ],
+            "idTokens": [
+              "root"
+            ],
+            "classFacts": [
+              {
+                "token": "bg-background",
+                "count": 1,
+                "tags": [
+                  "body"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "dark",
+                "count": 1,
+                "tags": [
+                  "html"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": [
+                  "movie"
+                ]
+              },
+              {
+                "token": "text-foreground",
+                "count": 1,
+                "tags": [
+                  "body"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              }
+            ],
+            "markers": [
+              "json-ld",
+              "player"
+            ]
+          },
+          "declared_player_candidate_count": 3,
+          "declared_url_player_candidate_count": 3,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "meowtv.ru",
+            "rm.panterlorius.com",
+            "static.cloudflareinsights.com"
+          ],
+          "declared_quality_heights": [],
+          "duration_ms": 174
+        },
+        {
+          "url": "https://meowtv.ru/",
+          "response_url": "https://meowtv.ru/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 4900,
+            "forms": 0,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 7,
+            "anchors": 0,
+            "classTokens": [
+              "bg-background",
+              "dark",
+              "text-foreground"
+            ],
+            "idTokens": [
+              "root"
+            ],
+            "classFacts": [
+              {
+                "token": "bg-background",
+                "count": 1,
+                "tags": [
+                  "body"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "dark",
+                "count": 1,
+                "tags": [
+                  "html"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": [
+                  "movie"
+                ]
+              },
+              {
+                "token": "text-foreground",
+                "count": 1,
+                "tags": [
+                  "body"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              }
+            ],
+            "markers": [
+              "json-ld",
+              "player"
+            ]
+          },
+          "declared_player_candidate_count": 3,
+          "declared_url_player_candidate_count": 3,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "meowtv.ru",
+            "rm.panterlorius.com",
+            "static.cloudflareinsights.com"
+          ],
+          "declared_quality_heights": [],
+          "duration_ms": 122
+        },
+        {
+          "url": "https://meowtv.ru/?tmdbId=120089&type=anime&season=1&episode=1",
+          "response_url": "https://meowtv.ru/?tmdbId=120089&type=anime&season=1&episode=1",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 4900,
+            "forms": 0,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 7,
+            "anchors": 0,
+            "classTokens": [
+              "bg-background",
+              "dark",
+              "text-foreground"
+            ],
+            "idTokens": [
+              "root"
+            ],
+            "classFacts": [
+              {
+                "token": "bg-background",
+                "count": 1,
+                "tags": [
+                  "body"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "dark",
+                "count": 1,
+                "tags": [
+                  "html"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": [
+                  "movie"
+                ]
+              },
+              {
+                "token": "text-foreground",
+                "count": 1,
+                "tags": [
+                  "body"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              }
+            ],
+            "markers": [
+              "json-ld",
+              "player"
+            ]
+          },
+          "declared_player_candidate_count": 3,
+          "declared_url_player_candidate_count": 3,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "meowtv.ru",
+            "rm.panterlorius.com",
+            "static.cloudflareinsights.com"
+          ],
+          "declared_quality_heights": [],
+          "duration_ms": 120
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "debug_provider_runtime_dispatch_error_v1": null,
+      "debug_identity_reasons": [],
+      "stderr_tail": "FIELD_TMDB_PROBE_CONTEXT state=core_ready credential_visible=false metadata_hydrated=false dynamic=true core_capability=true\n",
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 6038,
+      "sample_count": 8,
+      "fanout_fixture_title": "Jujutsu Kaisen",
+      "sample_titles": [
+        "Jujutsu Kaisen",
+        "Fullmetal Alchemist: Brotherhood",
+        "Steins;Gate",
+        "Dr. STONE",
+        "The Seven Deadly Sins",
+        "Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing",
+        "MASHLE: MAGIC AND MUSCLES",
+        "SPY x FAMILY"
+      ],
+      "adaptive_rotated": true,
+      "samples": [
+        {
+          "fixture_title": "Jujutsu Kaisen",
+          "fixture": {
+            "tmdbId": "95479",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Jujutsu Kaisen",
+            "year": 2020,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 958,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Fullmetal Alchemist: Brotherhood",
+          "fixture": {
+            "slug": "health-anime-31911-s1e1",
+            "tmdbId": "31911",
+            "mediaType": "anime",
+            "title": "Fullmetal Alchemist: Brotherhood",
+            "year": 2009,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 594,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Steins;Gate",
+          "fixture": {
+            "slug": "steins-gate-2011-s01e01",
+            "tmdbId": "42509",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Steins;Gate",
+            "year": 2011,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 693,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Dr. STONE",
+          "fixture": {
+            "slug": "dr-stone-2019-s01e01",
+            "tmdbId": "86031",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Dr. STONE",
+            "year": 2019,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 489,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "The Seven Deadly Sins",
+          "fixture": {
+            "slug": "the-seven-deadly-sins-2014-s01e01",
+            "tmdbId": "62104",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "The Seven Deadly Sins",
+            "year": 2014,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 673,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing",
+          "fixture": {
+            "slug": "hell-mode-s01e01",
+            "tmdbId": "280049",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing",
+            "year": 2026,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 571,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "MASHLE: MAGIC AND MUSCLES",
+          "fixture": {
+            "slug": "mashle-magic-and-muscles-2023-s01e01",
+            "tmdbId": "204832",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "MASHLE: MAGIC AND MUSCLES",
+            "year": 2023,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 1005,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "SPY x FAMILY",
+          "fixture": {
+            "slug": "spy-x-family-2022-s01e01",
+            "tmdbId": "120089",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "SPY x FAMILY",
+            "year": 2022,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 545,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        }
+      ],
+      "provider_budget_seconds": 90,
+      "provider_budget_exhausted": false
+    },
+    {
+      "provider_id": "meowtv",
+      "provider_name": "📺 MeowTV",
+      "semantic_type": "movie",
+      "fixture_title": "Avatar",
+      "fixture": {
+        "slug": "health-movie-19995",
+        "tmdbId": "19995",
+        "mediaType": "movie",
+        "title": "Avatar",
+        "year": 2009
+      },
+      "streams_returned": 0,
+      "announced_player_candidates": 0,
+      "announced_variant_candidates": 0,
+      "announced_player_hosts": [],
+      "announced_quality_heights": [],
+      "explored_player_requests": 0,
+      "explored_player_hosts": [],
+      "variant_fanout_state": "not-observed",
+      "status": "no_streams",
+      "debug_stage": "provider_network_zero_result",
+      "debug_model": {
+        "strategy": "mixed_embed_resolver",
+        "source_runtime_family": "unknown",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "supported_types": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "route_count": 3,
+        "route_kinds": [
+          "player",
+          "detail"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://meowtv.ru",
+        "official_hub": null,
+        "official_api": null
+      },
+      "debug_fetch_count": 4,
+      "debug_provider_fetch_count": 3,
+      "debug_progress_stage": "chain_reached",
+      "debug_fetches": [
+        {
+          "url": "https://meowtv.ru/play/movie/19995",
+          "response_url": "https://meowtv.ru/play/movie/19995",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 4900,
+            "forms": 0,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 7,
+            "anchors": 0,
+            "classTokens": [
+              "bg-background",
+              "dark",
+              "text-foreground"
+            ],
+            "idTokens": [
+              "root"
+            ],
+            "classFacts": [
+              {
+                "token": "bg-background",
+                "count": 1,
+                "tags": [
+                  "body"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "dark",
+                "count": 1,
+                "tags": [
+                  "html"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": [
+                  "movie"
+                ]
+              },
+              {
+                "token": "text-foreground",
+                "count": 1,
+                "tags": [
+                  "body"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              }
+            ],
+            "markers": [
+              "json-ld",
+              "player"
+            ]
+          },
+          "declared_player_candidate_count": 3,
+          "declared_url_player_candidate_count": 3,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "meowtv.ru",
+            "rm.panterlorius.com",
+            "static.cloudflareinsights.com"
+          ],
+          "declared_quality_heights": [],
+          "duration_ms": 378
+        },
+        {
+          "url": "https://api.themoviedb.org/3/movie/19995?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/movie/19995?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "adult",
+              "backdrop_path",
+              "belongs_to_collection",
+              "budget",
+              "genres",
+              "homepage",
+              "id",
+              "imdb_id",
+              "origin_country",
+              "original_language",
+              "original_title",
+              "overview",
+              "popularity",
+              "poster_path",
+              "production_companies",
+              "production_countries"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 46
+        },
+        {
+          "url": "https://meowtv.ru/",
+          "response_url": "https://meowtv.ru/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 4900,
+            "forms": 0,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 7,
+            "anchors": 0,
+            "classTokens": [
+              "bg-background",
+              "dark",
+              "text-foreground"
+            ],
+            "idTokens": [
+              "root"
+            ],
+            "classFacts": [
+              {
+                "token": "bg-background",
+                "count": 1,
+                "tags": [
+                  "body"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "dark",
+                "count": 1,
+                "tags": [
+                  "html"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": [
+                  "movie"
+                ]
+              },
+              {
+                "token": "text-foreground",
+                "count": 1,
+                "tags": [
+                  "body"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              }
+            ],
+            "markers": [
+              "json-ld",
+              "player"
+            ]
+          },
+          "declared_player_candidate_count": 3,
+          "declared_url_player_candidate_count": 3,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "meowtv.ru",
+            "rm.panterlorius.com",
+            "static.cloudflareinsights.com"
+          ],
+          "declared_quality_heights": [],
+          "duration_ms": 129
+        },
+        {
+          "url": "https://meowtv.ru/?tmdbId=19995&type=movie",
+          "response_url": "https://meowtv.ru/?tmdbId=19995&type=movie",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 4900,
+            "forms": 0,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 7,
+            "anchors": 0,
+            "classTokens": [
+              "bg-background",
+              "dark",
+              "text-foreground"
+            ],
+            "idTokens": [
+              "root"
+            ],
+            "classFacts": [
+              {
+                "token": "bg-background",
+                "count": 1,
+                "tags": [
+                  "body"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "dark",
+                "count": 1,
+                "tags": [
+                  "html"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": [
+                  "movie"
+                ]
+              },
+              {
+                "token": "text-foreground",
+                "count": 1,
+                "tags": [
+                  "body"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              }
+            ],
+            "markers": [
+              "json-ld",
+              "player"
+            ]
+          },
+          "declared_player_candidate_count": 3,
+          "declared_url_player_candidate_count": 3,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "meowtv.ru",
+            "rm.panterlorius.com",
+            "static.cloudflareinsights.com"
+          ],
+          "declared_quality_heights": [],
+          "duration_ms": 114
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "debug_provider_runtime_dispatch_error_v1": null,
+      "debug_identity_reasons": [],
+      "stderr_tail": "FIELD_TMDB_PROBE_CONTEXT state=core_ready credential_visible=false metadata_hydrated=false dynamic=true core_capability=true\n",
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 6669,
+      "sample_count": 8,
+      "fanout_fixture_title": "Interstellar",
+      "sample_titles": [
+        "Interstellar",
+        "The Wolf of Wall Street",
+        "Avengers: Age of Ultron",
+        "Mad Max: Fury Road",
+        "Avengers: Endgame",
+        "Superman",
+        "Sinners",
+        "Avatar"
+      ],
+      "adaptive_rotated": true,
+      "samples": [
+        {
+          "fixture_title": "Interstellar",
+          "fixture": {
+            "tmdbId": "157336",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Interstellar",
+            "year": 2014
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "chain_reached",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 860,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "The Wolf of Wall Street",
+          "fixture": {
+            "slug": "the-wolf-of-wall-street-2013",
+            "tmdbId": "106646",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "The Wolf of Wall Street",
+            "year": 2013
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "chain_reached",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 692,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Avengers: Age of Ultron",
+          "fixture": {
+            "slug": "avengers-age-of-ultron-2015",
+            "tmdbId": "99861",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Avengers: Age of Ultron",
+            "year": 2015
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "chain_reached",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 1181,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Mad Max: Fury Road",
+          "fixture": {
+            "slug": "mad-max-fury-road-2015",
+            "tmdbId": "76341",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Mad Max: Fury Road",
+            "year": 2015
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "chain_reached",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 660,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Avengers: Endgame",
+          "fixture": {
+            "slug": "avengers-endgame-2019",
+            "tmdbId": "299534",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Avengers: Endgame",
+            "year": 2019
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "chain_reached",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 745,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Superman",
+          "fixture": {
+            "slug": "superman-2025",
+            "tmdbId": "1061474",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Superman",
+            "year": 2025
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "chain_reached",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 680,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Sinners",
+          "fixture": {
+            "slug": "sinners-2025",
+            "tmdbId": "1233413",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Sinners",
+            "year": 2025
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "chain_reached",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 693,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Avatar",
+          "fixture": {
+            "slug": "health-movie-19995",
+            "tmdbId": "19995",
+            "mediaType": "movie",
+            "title": "Avatar",
+            "year": 2009
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "chain_reached",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 683,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        }
+      ],
+      "provider_budget_seconds": 90,
+      "provider_budget_exhausted": false
+    },
+    {
+      "provider_id": "meowtv",
+      "provider_name": "📺 MeowTV",
+      "semantic_type": "tv",
+      "fixture_title": "Dark Desire",
+      "fixture": {
+        "slug": "dark-desire-2020-s01e01",
+        "tmdbId": "105214",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Dark Desire",
+        "year": 2020,
+        "season": 1,
+        "episode": 1
+      },
+      "streams_returned": 0,
+      "announced_player_candidates": 0,
+      "announced_variant_candidates": 0,
+      "announced_player_hosts": [],
+      "announced_quality_heights": [],
+      "explored_player_requests": 0,
+      "explored_player_hosts": [],
+      "variant_fanout_state": "not-observed",
+      "status": "no_streams",
+      "debug_stage": "provider_network_zero_result",
+      "debug_model": {
+        "strategy": "mixed_embed_resolver",
+        "source_runtime_family": "unknown",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "supported_types": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "route_count": 3,
+        "route_kinds": [
+          "player",
+          "detail"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://meowtv.ru",
+        "official_hub": null,
+        "official_api": null
+      },
+      "debug_fetch_count": 4,
+      "debug_provider_fetch_count": 3,
+      "debug_progress_stage": "chain_reached",
+      "debug_fetches": [
+        {
+          "url": "https://meowtv.ru/play/tv/105214/1/1",
+          "response_url": "https://meowtv.ru/play/tv/105214/1/1",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 4900,
+            "forms": 0,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 7,
+            "anchors": 0,
+            "classTokens": [
+              "bg-background",
+              "dark",
+              "text-foreground"
+            ],
+            "idTokens": [
+              "root"
+            ],
+            "classFacts": [
+              {
+                "token": "bg-background",
+                "count": 1,
+                "tags": [
+                  "body"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "dark",
+                "count": 1,
+                "tags": [
+                  "html"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": [
+                  "movie"
+                ]
+              },
+              {
+                "token": "text-foreground",
+                "count": 1,
+                "tags": [
+                  "body"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              }
+            ],
+            "markers": [
+              "json-ld",
+              "player"
+            ]
+          },
+          "declared_player_candidate_count": 3,
+          "declared_url_player_candidate_count": 3,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "meowtv.ru",
+            "rm.panterlorius.com",
+            "static.cloudflareinsights.com"
+          ],
+          "declared_quality_heights": [],
+          "duration_ms": 360
+        },
+        {
+          "url": "https://api.themoviedb.org/3/tv/105214?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/105214?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "adult",
+              "backdrop_path",
+              "created_by",
+              "episode_run_time",
+              "first_air_date",
+              "genres",
+              "homepage",
+              "id",
+              "in_production",
+              "languages",
+              "last_air_date",
+              "last_episode_to_air",
+              "name",
+              "next_episode_to_air",
+              "networks",
+              "number_of_episodes"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 44
+        },
+        {
+          "url": "https://meowtv.ru/",
+          "response_url": "https://meowtv.ru/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 4900,
+            "forms": 0,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 7,
+            "anchors": 0,
+            "classTokens": [
+              "bg-background",
+              "dark",
+              "text-foreground"
+            ],
+            "idTokens": [
+              "root"
+            ],
+            "classFacts": [
+              {
+                "token": "bg-background",
+                "count": 1,
+                "tags": [
+                  "body"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "dark",
+                "count": 1,
+                "tags": [
+                  "html"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": [
+                  "movie"
+                ]
+              },
+              {
+                "token": "text-foreground",
+                "count": 1,
+                "tags": [
+                  "body"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              }
+            ],
+            "markers": [
+              "json-ld",
+              "player"
+            ]
+          },
+          "declared_player_candidate_count": 3,
+          "declared_url_player_candidate_count": 3,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "meowtv.ru",
+            "rm.panterlorius.com",
+            "static.cloudflareinsights.com"
+          ],
+          "declared_quality_heights": [],
+          "duration_ms": 159
+        },
+        {
+          "url": "https://meowtv.ru/?tmdbId=105214&type=tv&season=1&episode=1",
+          "response_url": "https://meowtv.ru/?tmdbId=105214&type=tv&season=1&episode=1",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 4900,
+            "forms": 0,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 7,
+            "anchors": 0,
+            "classTokens": [
+              "bg-background",
+              "dark",
+              "text-foreground"
+            ],
+            "idTokens": [
+              "root"
+            ],
+            "classFacts": [
+              {
+                "token": "bg-background",
+                "count": 1,
+                "tags": [
+                  "body"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "dark",
+                "count": 1,
+                "tags": [
+                  "html"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": [
+                  "movie"
+                ]
+              },
+              {
+                "token": "text-foreground",
+                "count": 1,
+                "tags": [
+                  "body"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              }
+            ],
+            "markers": [
+              "json-ld",
+              "player"
+            ]
+          },
+          "declared_player_candidate_count": 3,
+          "declared_url_player_candidate_count": 3,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "meowtv.ru",
+            "rm.panterlorius.com",
+            "static.cloudflareinsights.com"
+          ],
+          "declared_quality_heights": [],
+          "duration_ms": 144
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "debug_provider_runtime_dispatch_error_v1": null,
+      "debug_identity_reasons": [],
+      "stderr_tail": "FIELD_TMDB_PROBE_CONTEXT state=core_ready credential_visible=false metadata_hydrated=false dynamic=true core_capability=true\n",
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 7273,
+      "sample_count": 8,
+      "fanout_fixture_title": "Breaking Bad",
+      "sample_titles": [
+        "Breaking Bad",
+        "Peaky Blinders",
+        "WandaVision",
+        "The Walking Dead",
+        "Spartacus",
+        "The Last of Us",
+        "The 100",
+        "Dark Desire"
+      ],
+      "adaptive_rotated": true,
+      "samples": [
+        {
+          "fixture_title": "Breaking Bad",
+          "fixture": {
+            "tmdbId": "1396",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "Breaking Bad",
+            "year": 2008,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "chain_reached",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 923,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Peaky Blinders",
+          "fixture": {
+            "slug": "peaky-blinders-2013-s01e01",
+            "tmdbId": "60574",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "Peaky Blinders",
+            "year": 2013,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "chain_reached",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 1071,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "WandaVision",
+          "fixture": {
+            "slug": "wandavision-2021-s01e01",
+            "tmdbId": "85271",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "WandaVision",
+            "year": 2021,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "chain_reached",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 558,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "The Walking Dead",
+          "fixture": {
+            "slug": "the-walking-dead-2010-s01e01",
+            "tmdbId": "1402",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "The Walking Dead",
+            "year": 2010,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "chain_reached",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 669,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Spartacus",
+          "fixture": {
+            "slug": "spartacus-s00e01",
+            "tmdbId": "46296",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "Spartacus",
+            "year": 2010,
+            "season": 0,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "chain_reached",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 1713,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "The Last of Us",
+          "fixture": {
+            "slug": "the-last-of-us-2023-s01e01",
+            "tmdbId": "100088",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "The Last of Us",
+            "year": 2023,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "chain_reached",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 506,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "The 100",
+          "fixture": {
+            "slug": "the-100-2014-s01e01",
+            "tmdbId": "48866",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "The 100",
+            "year": 2014,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "chain_reached",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 621,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Dark Desire",
+          "fixture": {
+            "slug": "dark-desire-2020-s01e01",
+            "tmdbId": "105214",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "Dark Desire",
+            "year": 2020,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "chain_reached",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 721,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        }
+      ],
+      "provider_budget_seconds": 90,
+      "provider_budget_exhausted": false
+    }
+  ]
+}

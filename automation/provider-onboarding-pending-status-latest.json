@@ -1,13 +1,13 @@
 {
   "schemaVersion": 3,
-  "runId": "44178471308",
-  "triggerSha": "04856eca8ef956d1213f4a026f1737bd6ab3a082",
+  "runId": "44183750302",
+  "triggerSha": "2a6f41b54a3a507b302fd1816cc308398e6d95fa",
   "providers": [
     {
       "provider": "meowtv",
-      "status": "NO PROOF",
+      "status": "CHAIN REACHED",
       "underlyingStatus": "",
-      "color": "🔵",
+      "color": "🟣",
       "declaredLanes": [
         "anime",
         "movie",
@@ -24,14 +24,14 @@
       ],
       "dominantIssue": "provider_network_zero_result×3",
       "searchProgress": [
-        "anime: 8 works tested / 8 retained misses",
-        "movie: 8 works tested / 8 retained misses",
-        "tv: 8 works tested / 8 retained misses"
+        "anime: 8 works tested / 15 retained misses",
+        "movie: 8 works tested / 7 retained misses / 8 retained chain hits",
+        "tv: 8 works tested / 7 retained misses / 8 retained chain hits"
       ],
       "evidenceDepth": [
         "anime=lookup_only",
-        "movie=lookup_only",
-        "tv=lookup_only"
+        "movie=chain_reached",
+        "tv=chain_reached"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -4679,7 +4679,10 @@
       "authorityClass": "api-or-backend",
       "authorityConfidence": "high",
       "authorityReasons": [
-        "structured_backend_authority"
+        "structured_backend_authority",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
       ],
       "authorityKnown": true,
       "action": "protect + replay retained proof",
@@ -4726,7 +4729,10 @@
       "authorityConfidence": "medium",
       "authorityReasons": [
         "curated_direct",
-        "existing_positive_route_prior"
+        "existing_positive_route_prior",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
       ],
       "authorityKnown": true,
       "action": "protect + replay retained proof",
@@ -4769,7 +4775,10 @@
       "authorityConfidence": "low",
       "authorityReasons": [
         "direct_candidate_unproven",
-        "search_supplement_only"
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
       ],
       "authorityKnown": true,
       "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
@@ -4861,7 +4870,10 @@
       "authorityConfidence": "medium",
       "authorityReasons": [
         "structured_official_site",
-        "existing_positive_route_prior"
+        "existing_positive_route_prior",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
       ],
       "authorityKnown": true,
       "action": "protect + replay retained proof",
@@ -4917,7 +4929,10 @@
       "authorityClass": "hub-or-redirect",
       "authorityConfidence": "high",
       "authorityReasons": [
-        "authoritative_route_source"
+        "authoritative_route_source",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
       ],
       "authorityKnown": true,
       "action": "protect + replay retained proof",
@@ -4967,7 +4982,10 @@
       "authorityClass": "api-or-backend",
       "authorityConfidence": "high",
       "authorityReasons": [
-        "structured_backend_authority"
+        "structured_backend_authority",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
       ],
       "authorityKnown": true,
       "action": "protect + replay retained proof",
@@ -5024,7 +5042,10 @@
       "authorityConfidence": "medium",
       "authorityReasons": [
         "curated_direct",
-        "existing_positive_route_prior"
+        "existing_positive_route_prior",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
       ],
       "authorityKnown": true,
       "action": "protect + replay retained proof",
@@ -5064,7 +5085,10 @@
       "authorityClass": "hub-or-redirect",
       "authorityConfidence": "high",
       "authorityReasons": [
-        "authoritative_route_source"
+        "authoritative_route_source",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
       ],
       "authorityKnown": true,
       "action": "protect + replay retained proof",
@@ -5160,12 +5184,12 @@
     }
   ],
   "counts": {
-    "CHAIN REACHED": 24,
+    "CHAIN REACHED": 25,
     "DISABLED": 35,
     "FULL OK": 9,
     "HARNESS MISMATCH": 3,
     "HARNESS/ENV BLOCKED": 15,
-    "NO PROOF": 16,
+    "NO PROOF": 15,
     "PARTIAL OK": 1,
     "PROVIDER NETWORK BLOCKED": 5,
     "REGRESSION PROVIDER": 2,
@@ -5530,8 +5554,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "44178471308-sharded-waf",
-  "harnessEvidenceSha": "04856eca8ef956d1213f4a026f1737bd6ab3a082",
+  "harnessEvidenceRunId": "44183750302-sharded-waf",
+  "harnessEvidenceSha": "2a6f41b54a3a507b302fd1816cc308398e6d95fa",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
