@@ -1,3 +1,13 @@
+## 2026-11-17 — Exact pre-Brain release now requires Workflow Gate on the same SHA
+
+- Audit of the final pre-Brain certification chain found one remaining proof-ownership gap: `release-finalize.yml` and `release-candidate-validation.yml` described Workflow Gate as required, but the release orchestrator did not explicitly dispatch or wait for `github-actions-gate.yml` on the exact candidate SHA. A release could therefore have completed its release/security/native cohort without a machine-bound Workflow Gate result for those exact bytes.
+- `github-actions-gate.yml` now isolates explicit `workflow_dispatch` proof runs by `github.run_id`, with `cancel-in-progress=false` for that dispatch while routine push/PR runs remain latest-wins.
+- `release-candidate-validation.yml` now dispatches `github-actions-gate.yml` with `inputs[expected_sha]=TARGET_SHA`, includes it in the exact-`head_sha` run-selection/wait cohort, and only prints its green marker after that Gate plus the existing verify/security/native children complete.
+- Release Finalizer now owns the Workflow Gate workflow definition as a trigger input; changing Gate semantics invalidates prior certification and retriggers finalization.
+- Regressions in `tests/workflow_security_policy_test.py` and `tests/release_finalizer_projection_transaction_test.py` require exact Gate dispatch/isolation and Finalizer ownership.
+- Relevant commits: `ecd57aa2` Gate dispatch isolation, `03f1f5f1` exact-SHA Gate orchestration, `2d56dc28` Finalizer Gate ownership, `5c97c551` security-policy regression and `c9a37d6d` release-ownership regression.
+- This changes certification orchestration only; no provider/Core/runtime bytes or manifest membership changed. A fresh exact-current-head campaign is required before the requested user checkpoint; Brain remains blocked until that campaign and final read-back complete.
+
 ## 2026-11-17 — Exact-SHA release child workflows can no longer cancel authoritative certification
 
 - Pre-Brain release audit found a generic orchestration defect before the next certification campaign: the last observed `SEC - Final Gate` runs `44137740198`, `44150879585` and `44150985605` were all **cancelled**, not failed. `security-final-gate.yml` used one static concurrency group with `cancel-in-progress:true`, so an exact-SHA `workflow_dispatch` launched by Release Candidate Validation could be destroyed by another routine Final Gate on `main`.
