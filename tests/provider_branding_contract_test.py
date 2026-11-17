@@ -72,7 +72,7 @@ source = (
 )
 output = module.apply(source, context={"provider_id": "peachify"})
 assert "NUVIO_GLOBAL_PROVIDER_BRANDING_V1" in output
-assert "provider-owner-terminal-source-label-v12" in output
+assert "provider-owner-terminal-source-label-v13" in output
 assert "🍑" in output and "Peachify" in output
 assert module.apply(output, context={"provider_id": "peachify"}) == output
 expected = "🍑 Peachify · streamwish.to - 1080p"
@@ -100,6 +100,44 @@ try:
     assert expected in result.stdout
 finally:
     artifact.unlink(missing_ok=True)
+
+# If an upstream result names a distinct source provider but no player host is
+# available, expose that provenance in the visible title without changing the
+# logical NiakVIO provider ownership.
+source_without_host = (
+    'globalThis.getStreams=async function(){return [{'
+    'url:"https://cdn.example/video.m3u8",'
+    'name:"Peachify - 720p",title:"Peachify - 720p",quality:"720p",'
+    'provider:"streamwish"'
+    '}]}\n'
+)
+fallback_output = module.apply(source_without_host, context={"provider_id": "peachify"})
+fallback_expected = "🍑 Peachify · streamwish - 720p"
+with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as handle:
+    handle.write(fallback_output)
+    handle.write(
+        '\nPromise.resolve(globalThis.getStreams()).then(function(rows){'
+        'if(!Array.isArray(rows)||rows.length!==1||rows[0].name!==' + json.dumps(fallback_expected) +
+        '||rows[0].title!==' + json.dumps(fallback_expected) +
+        '||rows[0].provider!=="peachify"||rows[0].sourceProvider!=="streamwish")'
+        '{console.error(JSON.stringify(rows));process.exit(2)}'
+        'console.log(rows[0].name)'
+        '}).catch(function(error){console.error(error);process.exit(3)});\n'
+    )
+    fallback_artifact = Path(handle.name)
+try:
+    fallback_result = subprocess.run(
+        ["node", str(fallback_artifact)],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        timeout=30,
+        check=False,
+    )
+    assert fallback_result.returncode == 0, fallback_result.stdout + fallback_result.stderr
+    assert fallback_expected in fallback_result.stdout
+finally:
+    fallback_artifact.unlink(missing_ok=True)
 
 for raw_quality, expected_suffix in [("1080i", "1080i"), ("4320p", "8K"), ("Inconnue", None), ("Unknown", None), ("N/A", None)]:
     source = (
