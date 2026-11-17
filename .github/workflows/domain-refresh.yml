@@ -267,6 +267,7 @@ jobs:
       - name: Validate domain-only Provider v3 mutation
         run: |
           set -euo pipefail
+          node tests/dns_preflight.test.mjs
           args=(python scripts/sanitize_provider_hub_registry.py --registry provider-hubs.json --check)
           if [ -n "$TARGET_PROVIDERS" ]; then
             IFS=',' read -r -a target_rows <<< "$TARGET_PROVIDERS"
