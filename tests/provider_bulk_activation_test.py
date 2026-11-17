@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import base64
 import hashlib
 import importlib.util
 import json
@@ -11,6 +12,24 @@ sys.path.insert(0,str((ROOT/"scripts").resolve()))
 module_path=ROOT/"scripts/activate_bulk_proven_providers.py"
 spec=importlib.util.spec_from_file_location("activate_bulk_proven_providers_test",module_path)
 mod=importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+
+def provider_bundle(pid:str)->bytes:
+    fix_id=f"PROVIDER.{pid.upper()}.CONFIG.V1"
+    model={"providerId":pid,"strategy":"direct_media","officialSite":f"https://{pid}.example","origins":[f"https://{pid}.example"]}
+    payload=json.dumps(model,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()
+    encoded=base64.urlsafe_b64encode(payload).decode("ascii")
+    return (
+        "/* BEGIN NIAKVIO_PROVIDER */\n"
+        f"/* NIAKVIO_PROVIDER_ID:{pid} */\n"
+        "/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */\n"
+        f"/* STARTFIX:{fix_id} */\n"
+        f"/* FIXDATA:{fix_id}:{encoded} */\n"
+        "void 0;\n"
+        f"/* CLOSEFIX:{fix_id} */\n"
+        "async function getStreams(){return [];}\n"
+        "/* END NIAKVIO_PROVIDER */\n"
+    ).encode()
+
 
 with tempfile.TemporaryDirectory() as td:
     td=Path(td)
@@ -65,7 +84,7 @@ with tempfile.TemporaryDirectory() as td:
     paths["HUBS"].write_text(json.dumps({"providers":{"a":{},"b":{},"c":{},"d":{},"e":{}}}),encoding="utf-8")
     (td/"provider-disabled/provider-bases").mkdir(parents=True)
     for pid in ("a","b","c","d","e"):
-        (td/f"provider-disabled/{pid}.js").write_bytes(("provider-"+pid).encode())
+        (td/f"provider-disabled/{pid}.js").write_bytes(provider_bundle(pid))
         (td/f"provider-disabled/provider-bases/{pid}--base.js").write_bytes(("base-"+pid).encode())
     paths["STATUS"].write_text(json.dumps({
         "runId":77,"triggerSha":"deadbeef","providers":[
@@ -138,7 +157,7 @@ assert overrides["provider_capabilities"]["a"]["validation"]=="bulk_census_full_
 assert provenance["providers"]["a"]["activation_mode"]=="bulk_census_full_ok"
 assert provenance["providers"]["a"]["bulk_activation_proof"]["runId"]==77
 assert provenance["providers"]["a"]["bulk_activation_proof"]["proofSource"]=="onboarding-pending-status"
-assert provenance["providers"]["a"]["bulk_activation_proof"]["providerSha256"]==hashlib.sha256(b"provider-a").hexdigest()
+assert provenance["providers"]["a"]["bulk_activation_proof"]["providerSha256"]==hashlib.sha256(provider_bundle("a")).hexdigest()
 assert provenance["providers"]["d"]["bulk_activation_proof"]["scope"]=="france"
 assert provenance["providers"]["a"]["published_filename"]=="providers/a.js"
 assert provenance["providers"]["d"]["published_filename"]=="providers/d.js"
