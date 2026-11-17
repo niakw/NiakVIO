@@ -1,5 +1,5 @@
 {
-  "schema_version": 26,
+  "schema_version": 27,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -453,6 +453,10 @@
     "network_verification_inconclusive_blocks_release": true,
     "subtitle_specific_headers_preserved": true,
     "post_finalization_certification_workflow": ".github/workflows/release-candidate-validation.yml",
+    "final_security_chain": "exact candidate SHA -> CodeQL -> SEC Final Gate + external audit -> native five-platform verdict",
+    "final_security_gate_required": true,
+    "final_security_gate_exact_sha_required": true,
+    "external_audit_exact_sha_required": true,
     "final_native_certification_requires_exact_release_sha": true,
     "final_native_certification_transitive_between_clients": false,
     "plugin_result_audio_tracks_field": false,
