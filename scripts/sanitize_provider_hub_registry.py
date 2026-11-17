@@ -7,7 +7,7 @@ already-curated concrete direct candidate, otherwise it becomes null. Invalid
 history entries are removed; the newest concrete historical entry may replace an
 invalid current entry so stale JS/template constructors cannot remain LKG state.
 
-The CLI is scoped by the current manifest. Historical provider identities may
+The production CLI is scoped by the current Global+France projection union. Historical provider identities may
 remain archived in provider-hubs/history, but Domain Refresh must never mutate
 those rows or turn them back into publication candidates.
 """
@@ -19,6 +19,9 @@ import urllib.parse
 from pathlib import Path
 from typing import Any
 
+from current_provider_scope import projection_visible_provider_rows
+
+ROOT = Path(__file__).resolve().parents[1]
 PLACEHOLDER_TOKENS = ("${", "{{", "}}", "<%", "%>", "{", "}")
 
 
@@ -45,10 +48,20 @@ def canonical(value: object) -> str:
 
 
 def current_provider_rows(manifest_path: Path) -> dict[str, dict[str, Any]]:
-    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-    rows = payload.get("scrapers") if isinstance(payload, dict) else None
+    # The production Domain Refresh scope is the Global+France projection union.
+    # Keep explicit non-root fixture manifests usable by isolated tests, but never
+    # let the default root manifest silently erase strict France-only identities.
+    try:
+        use_projection_union = manifest_path.resolve() == (ROOT / "manifest.json").resolve()
+    except OSError:
+        use_projection_union = False
+    if use_projection_union:
+        rows = projection_visible_provider_rows(ROOT)
+    else:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        rows = payload.get("scrapers") if isinstance(payload, dict) else None
     if not isinstance(rows, list) or not rows:
-        raise AssertionError(f"{manifest_path}: non-empty scrapers list required")
+        raise AssertionError(f"{manifest_path}: non-empty provider rows required")
     output = {
         canonical(row.get("id")): row
         for row in rows
