@@ -30,7 +30,7 @@ with tempfile.TemporaryDirectory() as td:
         {"canonicalId":"a","scraper":{"id":"a","enabled":False,"filename":"provider-disabled/a.js"},"projections":{"general":True,"vf":False}},
         {"canonicalId":"b","scraper":{"id":"b","enabled":False,"filename":"provider-disabled/b.js"},"projections":{"general":True,"vf":False}},
         {"canonicalId":"c","scraper":{"id":"c","enabled":False,"filename":"provider-disabled/c.js"},"projections":{"general":True,"vf":False}},
-        {"canonicalId":"d","scraper":{"id":"d","enabled":False,"filename":"provider-disabled/d.js"},"projections":{"general":False,"vf":True}},
+        {"canonicalId":"d","scraper":{"id":"d","enabled":False,"filename":"provider-disabled/d.js","supportedTypes":["anime","tv"],"canonicalSupportedTypes":["anime"]},"projections":{"general":False,"vf":True}},
     ]}),encoding="utf-8")
     paths["OVERRIDES"].write_text(json.dumps({
         "provider_patches":{
@@ -121,5 +121,7 @@ assert filesystem_postconditions["b_pending"] and filesystem_postconditions["c_p
 cat={x["canonicalId"]:x for x in catalog["providers"]}
 assert cat["d"]["scraper"]["enabled"] is True
 assert cat["d"]["scraper"]["filename"]=="providers/d.js"
+assert cat["d"]["scraper"]["supportedTypes"]==["anime"]
+assert "canonicalSupportedTypes" not in cat["d"]["scraper"]
 assert "d" not in rows
 print("Bulk FULL OK activation gate passed")
