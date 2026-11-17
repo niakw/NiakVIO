@@ -1,5 +1,5 @@
 {
-  "requestVersion": 46,
+  "requestVersion": 47,
   "source": "NiakVIO-GLOBAL-FINAL-STRICT-TOP20-2026-09-11(5).xlsx",
   "activationPolicy": "staged_pending_only",
   "allowReplaceExisting": true,
@@ -1550,7 +1550,9 @@
     "exact60CeilingFix": "c0c08f6933a3e5d8bf0f88d16ef3030ad0720080",
     "exact60CeilingContract": "e455b81216c6537e4447eae2fbe80f57d39e06ca",
     "pendingValidationExecutionFix": "97ddc50ec1ea8e66803947d0ba96485e6b3f3239",
-    "representativeValidationProvider": "meowtv"
+    "representativeValidationProvider": "meowtv",
+    "safePendingRestageFix": "6c5007779897a9f0028e438e9559eb33d820a8d7",
+    "representativeRetry": "meowtv"
   },
-  "notes": " Post-activation replay: Watchott and AnimeJL were already published and are removed from the pending onboarding transaction; their current bytes are handled by normal provider materialization/publication. Webflix and Zone-Téléchargement are existing France-only disabled identities; replacement is explicit and must preserve a single canonical ID. Webflix upgraded from search-only discovery to Mac-proven TMDB FastFlux movie/episode/discovery APIs. Retry after generic publish race fix 53880a5 and projection-only static-history decoupling fe10b17/7f11b50. 2026-11-15: switched to stage-only publication after dynamic-cardinality audit; candidates remain disabled until exact-byte terminal proof. Unproven inventory routes are candidate knowledge only. 2026-11-17: representative validation wave runs MeowTV first; FlickyStream/DPStream remain deferred because their route evidence is retained/request-existing rather than observed identity-aware live discovery."
+  "notes": " Post-activation replay: Watchott and AnimeJL were already published and are removed from the pending onboarding transaction; their current bytes are handled by normal provider materialization/publication. Webflix and Zone-Téléchargement are existing France-only disabled identities; replacement is explicit and must preserve a single canonical ID. Webflix upgraded from search-only discovery to Mac-proven TMDB FastFlux movie/episode/discovery APIs. Retry after generic publish race fix 53880a5 and projection-only static-history decoupling fe10b17/7f11b50. 2026-11-15: switched to stage-only publication after dynamic-cardinality audit; candidates remain disabled until exact-byte terminal proof. Unproven inventory routes are candidate knowledge only. 2026-11-17: representative validation wave runs MeowTV first; FlickyStream/DPStream remain deferred because their route evidence is retained/request-existing rather than observed identity-aware live discovery. 2026-11-17: retry MeowTV after safe same-pending restage fix; no active-provider replacement authority added."
 }
