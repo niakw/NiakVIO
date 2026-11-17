@@ -50,6 +50,11 @@ DIRECT_ROUTE_RE = re.compile(
     r"\{(?:tmdbid|tmdb_id|media|type)\}|(?:[?&])tmdb=|/(?:stream|streams|source|sources)(?:[/?#.-]|$)",
     re.I,
 )
+# Explicit provider routes that bind the requested TMDB identity are stronger
+# than the provider's broad strategy label. They are not Core TMDB HTTP
+# transport: the provider endpoint itself owns the route and merely receives
+# the already-resolved identity value.
+TMDB_IDENTITY_PLACEHOLDER_RE = re.compile(r"\{tmdb(?:_?id)?\}", re.I)
 FORM_ROUTE_RE = re.compile(r"/template-php/[^?#]*fetch\.php(?:[?#]|$)", re.I)
 
 
@@ -158,6 +163,7 @@ def derive_runtime_family(
     has_player = bool(PLAYER_ROUTE_RE.search(joined))
     has_api = bool(API_ROUTE_RE.search(joined))
     has_direct = bool(DIRECT_ROUTE_RE.search(joined))
+    has_explicit_tmdb_identity = bool(TMDB_IDENTITY_PLACEHOLDER_RE.search(joined))
     has_form = bool(FORM_ROUTE_RE.search(joined))
 
     if has_form:
@@ -169,6 +175,13 @@ def derive_runtime_family(
             return "catalogue-html-embed"
         return "catalogue-html"
     if recipe:
+        return "tmdb-direct-api"
+    # A provider-owned executable route can be TMDB-direct even when the
+    # high-level strategy is mixed_embed_resolver. This is the MeowTV class:
+    # /play/movie/{tmdbId}, /play/tv/{tmdbId}/{season}/{episode}. Do not infer
+    # direct identity when a search/query route is present; that still requires
+    # provider-observed catalogue correlation.
+    if has_explicit_tmdb_identity and not has_search:
         return "tmdb-direct-api"
     # Some known API resolvers (Cineby/VidEasy) use endpoint names such as
     # /seed and /cdn/sources-with-title rather than a literal /api prefix.
