@@ -1,3 +1,11 @@
+## 2026-11-17 — CodeQL stale-category cleanup now shares the same evidence-only lifecycle boundary
+
+- Exact maintained CodeQL scan `44168327266` on `dd43c0ab` completed SUCCESS. Its follow-up stale-category cleanup run `44169599910` failed closed only because main had advanced through census/lifecycle evidence to `35c86ca6`; source and response-structure regressions passed before the drift guard.
+- Comparing the clean scan SHA to current main showed no provider/Core/manifest/workflow mutation. The only previously unallowlisted paths were `automation/provider-authority-status.json` and `automation/provider-disabled-recovery-queue.json`. Both are diagnostic/queue state; the recovery queue explicitly carries `proofAuthority=false`, `executionAuthority=false`, `publicationAuthority=false`. The executable lifecycle ledger `automation/provider-disabled-lifecycle.json` remains unsafe.
+- `af6da097` aligns the stale-CodeQL cleanup drift classifier with this already-established Domain publication boundary; `4c7116b0` locks the two evidence files as safe and the lifecycle ledger as blocked.
+- `96a4e219` makes exact Workflow Gate watch the cleanup scripts/tests and execute `retire_stale_codeql_2531_test.py`, its policy test and the bounded configuration-deletion test. `3d911d64` makes Release Finalizer own the cleanup workflow/scripts/tests; `e17044ee` locks that release-proof ownership.
+- This does not dismiss or suppress CodeQL findings. The stale historical category may be removed only after an exact successful maintained scan and the existing fail-closed alert/configuration checks. Final exact-SHA CodeQL + SEC Final Gate remain mandatory before the user checkpoint.
+
 ## 2026-11-17 — Stale CodeQL hygiene assertion no longer blocks exact-SHA certification
 
 - Fresh Workflow Gate run `44167797855` on `f2da6ead` passed workflow-security policy, paid-model disablement and Python syntax (1457 files), then failed in `tests/repository_hygiene_contract_test.py` because that test still required the retired CodeQL concurrency string `niakvio-codeql-${{ github.ref }}`.
