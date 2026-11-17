@@ -1,5 +1,5 @@
 {
-  "schema_version": 79,
+  "schema_version": 80,
   "release": "dynamic",
   "release_authority": "manifest.json:version",
   "candidate_track": "main",
@@ -101,7 +101,17 @@
     "per_source_resolver_and_role_required": true,
     "primary_source_precedes_fallback": true,
     "learned_hub_linked_telegram_requires_later_run_before_publication": true,
-    "discovery_hubs_and_channels_forbidden_as_provider_runtime_origins": true
+    "discovery_hubs_and_channels_forbidden_as_provider_runtime_origins": true,
+    "html_hub_extraction_modes": [
+      "anchor_href",
+      "absolute_url_text",
+      "common_js_url_assignment",
+      "window_location",
+      "meta_refresh"
+    ],
+    "public_telegram_requires_web_preview": true,
+    "interactive_telegram_bot_is_automatic_authority": false,
+    "link_aggregators_use_generic_html_hub_parser": true
   },
   "repair": {
     "certain_regression_definition": "upstream positive for the same work/lane while NiakVIO is non-positive",
