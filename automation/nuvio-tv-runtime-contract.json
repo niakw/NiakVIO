@@ -50,22 +50,21 @@
     "consequence": "Do not rely on manifest platform fields to hide an unsafe provider from NuvioTV; the provider output itself must be strict-media safe or globally disabled."
   },
   "audit": {
-    "date": "2026-11-16",
-    "previous_ref": "23d1fe478e380860dae3eb41c8770533361a0cc5",
+    "date": "2026-11-17",
+    "previous_ref": "2c853c1786743822c5ec7932e855529e0c731221",
     "audited_ref": "fc5c10c3d2d5def54bb21e452291cb7b281b07b3",
-    "hard_contract_paths_changed": true,
+    "hard_contract_paths_changed": false,
     "plugin_runtime_positional_getstreams_unchanged": true,
-    "provider_stream_repository_contract_unchanged": false,
+    "provider_stream_repository_contract_unchanged": true,
     "provider_url_header_ingestion_unchanged": true,
     "semantic_changes_reviewed": [
-      "PluginRuntime still calls positional getStreams(tmdbId, mediaType, season, episode), injects SCRAPER_ID/SCRAPER_SETTINGS/TMDB_API_KEY and preserves Proxy.NO_PROXY + IPv4FirstDns transport semantics",
-      "Native fetch now preserves an explicit request body kind and redirect policy; this is additive host transport behavior rather than a provider call-signature change",
-      "LocalScraperResult now carries audioDelayMs/audioDelayLanguage in addition to the existing stream fields",
-      "Main stream headers and subtitle-specific headers remain projected independently",
-      "TextEncoder/TextDecoder and WebAssembly remain absent from the current TV PluginRuntime"
+      "No configured provider/plugin/stream contract path changed between 2c853c178674 and fc5c10c3d2d5",
+      "No configured core/player or ui/screens/player semantic-review path changed in this delta",
+      "New commits add Plex/Silo media-server, artwork, sign-in, settings and sync support outside the provider plugin ABI",
+      "PluginRuntime still uses positional getStreams(tmdbId, mediaType, season, episode), TMDB_API_KEY and independent stream/subtitle header projection"
     ],
     "runtime_reproof_required": true,
-    "runtime_reproof_reason": "Source ABI audit is current at 2c853c178674; a fresh Android-TV Native Lab is still required to certify real current-client execution and playback.",
+    "runtime_reproof_reason": "Source ABI audit is current at fc5c10c3d2d5; a fresh Android-TV Native Lab is still required to certify real current-client execution and playback.",
     "audited_at": "2026-11-17",
     "note": "Current-source audit at fc5c10c3d2d5: Plex/Silo media-server integration only; provider/plugin/stream and player semantic-review paths unchanged. QuickJS provider ABI, TMDB runtime key, headers and subtitle projection unchanged; native TV execution still required."
   },
