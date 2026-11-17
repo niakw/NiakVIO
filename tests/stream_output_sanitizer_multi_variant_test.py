@@ -125,7 +125,7 @@ def main() -> int:
 module.exports={getStreams:async function(){return [{
   name:"reader",url:"https://player.example/embed/abc",
   headers:{Referer:"https://provider.example/title"}
-}]}};\n"""
+}]}};"""
     master_patched = module.apply(
         master_source,
         options={
