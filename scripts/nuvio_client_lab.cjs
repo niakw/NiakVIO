@@ -210,7 +210,7 @@ function streamIdentity(stream, fixture) {
     .some((value) => String(value || '').trim());
   const primaryTitle = String(
     preserved
-      ? (stream?.sourceTitle || stream?.sourceLabel || '')
+      ? (stream?.sourceTitle || stream?.sourceLabel || stream?.sourceName || '')
       : (stream?.title || '')
   ).trim();
   const sourceDescription = String(
@@ -220,7 +220,10 @@ function streamIdentity(stream, fixture) {
   const filename = String(stream?.filename || '').trim();
 
   const providerTokens = new Set(
-    [stream?.provider, stream?.sourceProvider, stream?.name, stream?.sourceName]
+    // Only explicit logical provider ownership is provider-name noise.
+    // sourceName/name are provider-owned presentation facts and may legitimately
+    // carry the media filename/title (HindMoviez is the canonical example).
+    [stream?.provider, stream?.sourceProvider]
       .flatMap(identityTokens)
   );
   const genericIdentityTokens = new Set([
