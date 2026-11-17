@@ -41,8 +41,13 @@ with tempfile.TemporaryDirectory() as td:
         "HUBS":td/"provider-hubs.json",
         "STATUS":td/"status.json",
         "OUTPUT":td/"activation.json",
+        "STATIC_KNOWLEDGE":td/"automation/provider-v3-static-knowledge.json",
+        "VERSION_FLOORS":td/"provider-version-floors.json",
     }
     (td/".github/provider-onboarding").mkdir(parents=True)
+    (td/"automation").mkdir(parents=True)
+    paths["STATIC_KNOWLEDGE"].write_text(json.dumps({"schemaVersion":1,"providers":{}}),encoding="utf-8")
+    paths["VERSION_FLOORS"].write_text(json.dumps({"schema_version":1,"providers":{}}),encoding="utf-8")
     (td/".github/provider-portfolio-policy.json").write_text(json.dumps({
         "portfolio":{"target_global_active":1,"target_france_active":1}
     }),encoding="utf-8")
@@ -55,13 +60,13 @@ with tempfile.TemporaryDirectory() as td:
         "deferredProviders":[]
     }),encoding="utf-8")
     paths["MANIFEST"].write_text(json.dumps({"scrapers":[
-        {"id":"a","enabled":False,"filename":"provider-disabled/a.js"},{"id":"b","enabled":False,"filename":"provider-disabled/b.js"},{"id":"c","enabled":False,"filename":"provider-disabled/c.js"},{"id":"e","enabled":False,"filename":"provider-disabled/e.js"}
+        {"id":"a","enabled":False,"filename":"provider-disabled/a.js","version":"1.0.0"},{"id":"b","enabled":False,"filename":"provider-disabled/b.js","version":"1.0.0"},{"id":"c","enabled":False,"filename":"provider-disabled/c.js","version":"1.0.0"},{"id":"e","enabled":False,"filename":"provider-disabled/e.js","version":"1.0.0"}
     ]}),encoding="utf-8")
     paths["CATALOG"].write_text(json.dumps({"providers":[
         {"canonicalId":"a","scraper":{"id":"a","enabled":False,"filename":"provider-disabled/a.js"},"projections":{"general":True,"vf":False}},
         {"canonicalId":"b","scraper":{"id":"b","enabled":False,"filename":"provider-disabled/b.js"},"projections":{"general":True,"vf":False}},
         {"canonicalId":"c","scraper":{"id":"c","enabled":False,"filename":"provider-disabled/c.js"},"projections":{"general":True,"vf":False}},
-        {"canonicalId":"d","scraper":{"id":"d","enabled":False,"filename":"provider-disabled/d.js","supportedTypes":["anime","tv"],"canonicalSupportedTypes":["anime"]},"projections":{"general":False,"vf":True}},
+        {"canonicalId":"d","scraper":{"id":"d","enabled":False,"filename":"provider-disabled/d.js","version":"1.0.0","supportedTypes":["anime","tv"],"canonicalSupportedTypes":["anime"]},"projections":{"general":False,"vf":True}},
         {"canonicalId":"e","scraper":{"id":"e","enabled":False,"filename":"provider-disabled/e.js"},"projections":{"general":True,"vf":False}},
     ]}),encoding="utf-8")
     paths["OVERRIDES"].write_text(json.dumps({
@@ -95,7 +100,7 @@ with tempfile.TemporaryDirectory() as td:
             {"provider":"e","status":"FULL OK","testedThisRun":True,"declaredLanes":["movie"],"currentVerifiedLanes":["movie"],"brainCheckRequired":False},
         ]
     }),encoding="utf-8")
-    old={name:getattr(mod,name) for name in ("MANIFEST","CATALOG","OVERRIDES","PROVENANCE","HUBS","STATUS","OUTPUT")}
+    old={name:getattr(mod,name) for name in ("MANIFEST","CATALOG","OVERRIDES","PROVENANCE","HUBS","STATUS","OUTPUT","STATIC_KNOWLEDGE","VERSION_FLOORS")}
     old_root=mod.ROOT
     old_digest=mod.pending_artifact_digest
     old_proof_digest=mod.proof_source_artifact_digest
