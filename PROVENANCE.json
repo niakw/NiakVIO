@@ -71402,16 +71402,16 @@
     },
     "flickystream": {
       "id": "flickystream",
-      "published_filename": "provider-disabled/flickystream--nuvio--40c3bcf95223fc45.js",
-      "sha256": "40c3bcf95223fc45784a295fddba79f2d94565cc44c82d2f461977cccdc808b9",
-      "patched_sha256": "40c3bcf95223fc45784a295fddba79f2d94565cc44c82d2f461977cccdc808b9",
-      "base_filename": "provider-bases/flickystream--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "published_filename": "provider-disabled/flickystream--nuvio--f28eae3a3924e7fd.js",
+      "sha256": "f28eae3a3924e7fda137fef59f0fb082d32f3eb9409d51d066644f472a093c70",
+      "patched_sha256": "f28eae3a3924e7fda137fef59f0fb082d32f3eb9409d51d066644f472a093c70",
+      "base_filename": "provider-bases/flickystream--base--0cd547c0e052272d.js",
+      "base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-15T01:28:58.347879+00:00",
+      "clean_reconstruction_verified_at": "2026-11-17T22:18:39.322889+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -71451,6 +71451,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_identity_v1.py",
           "phase": "discovery",
           "scope": "global_stream_identity"
@@ -71469,15 +71475,15 @@
         },
         {
           "type": "patch_script",
-          "path": "scripts/provider_patches/stream_output_sanitizer_v10.py",
-          "phase": "discovery",
-          "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
           "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
           "phase": "discovery",
           "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         },
         {
           "type": "patch_script",
@@ -71499,7 +71505,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "flickystream",
       "upstream_filename": null,
-      "checked_at": "2026-11-15T01:28:58.347902+00:00",
+      "checked_at": "2026-11-17T22:18:39.322910+00:00",
       "check_mode": "bulk_onboarding_pending",
       "check_status": "pending",
       "health_score": 0,
@@ -71510,27 +71516,27 @@
       "activation_blockers": [
         "bulk_census_full_ok_required"
       ],
-      "onboarding_rebuild": false,
+      "onboarding_rebuild": true,
       "pending_minimizer": {
         "schemaVersion": 1,
         "fixedPoint": true,
-        "sha256": "40c3bcf95223fc45784a295fddba79f2d94565cc44c82d2f461977cccdc808b9",
-        "savedBytes": 35390,
-        "transformedLines": 6257
+        "sha256": "f28eae3a3924e7fda137fef59f0fb082d32f3eb9409d51d066644f472a093c70",
+        "savedBytes": 37863,
+        "transformedLines": 6559
       }
     },
     "dpstream": {
       "id": "dpstream",
-      "published_filename": "provider-disabled/dpstream--nuvio--4f2a9172f48a2a7e.js",
-      "sha256": "4f2a9172f48a2a7e33690d3e1122d33e4f558a6d28bfb8857e53657b25b2519a",
-      "patched_sha256": "4f2a9172f48a2a7e33690d3e1122d33e4f558a6d28bfb8857e53657b25b2519a",
-      "base_filename": "provider-bases/dpstream--base--7c925f6a07ae3d37.js",
-      "base_sha256": "7c925f6a07ae3d37a833b9a636972b8a42338718224962ef7172c0f80686afa3",
+      "published_filename": "provider-disabled/dpstream--nuvio--e5e1c3b834afd449.js",
+      "sha256": "e5e1c3b834afd4493552869d7b47fc3d0da66aeae7de5b5f1b9693b6229f3fdb",
+      "patched_sha256": "e5e1c3b834afd4493552869d7b47fc3d0da66aeae7de5b5f1b9693b6229f3fdb",
+      "base_filename": "provider-bases/dpstream--base--0cd547c0e052272d.js",
+      "base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
       "base_source": "niakvio-clean-reconstruction-v3",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-15T01:29:03.630004+00:00",
+      "clean_reconstruction_verified_at": "2026-11-17T22:18:53.073385+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -71570,6 +71576,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_identity_v1.py",
           "phase": "discovery",
           "scope": "global_stream_identity"
@@ -71588,15 +71600,15 @@
         },
         {
           "type": "patch_script",
-          "path": "scripts/provider_patches/stream_output_sanitizer_v10.py",
-          "phase": "discovery",
-          "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
           "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
           "phase": "discovery",
           "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         },
         {
           "type": "patch_script",
@@ -71618,7 +71630,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "dpstream",
       "upstream_filename": null,
-      "checked_at": "2026-11-15T01:29:03.630022+00:00",
+      "checked_at": "2026-11-17T22:18:53.073401+00:00",
       "check_mode": "bulk_onboarding_pending",
       "check_status": "pending",
       "health_score": 0,
@@ -71629,13 +71641,13 @@
       "activation_blockers": [
         "bulk_census_full_ok_required"
       ],
-      "onboarding_rebuild": false,
+      "onboarding_rebuild": true,
       "pending_minimizer": {
         "schemaVersion": 1,
         "fixedPoint": true,
-        "sha256": "4f2a9172f48a2a7e33690d3e1122d33e4f558a6d28bfb8857e53657b25b2519a",
-        "savedBytes": 35390,
-        "transformedLines": 6257
+        "sha256": "e5e1c3b834afd4493552869d7b47fc3d0da66aeae7de5b5f1b9693b6229f3fdb",
+        "savedBytes": 37863,
+        "transformedLines": 6559
       }
     },
     "flikhub": {
@@ -72482,7 +72494,7 @@
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 3,
-      "clean_reconstruction_verified_at": "2026-11-17T22:11:07.293778+00:00",
+      "clean_reconstruction_verified_at": "2026-11-17T22:18:46.162159+00:00",
       "local_patches": [
         {
           "type": "provider_lego",
@@ -72593,7 +72605,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "meowtv",
       "upstream_filename": null,
-      "checked_at": "2026-11-17T22:11:07.293798+00:00",
+      "checked_at": "2026-11-17T22:18:46.162180+00:00",
       "check_mode": "bulk_onboarding_pending",
       "check_status": "pending",
       "health_score": 0,
