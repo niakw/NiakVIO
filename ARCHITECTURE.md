@@ -314,6 +314,9 @@ Un échec appartenant au client Nuvio/OS ne doit jamais devenir une réparation 
 `.github/workflows/domain-refresh.yml` est une exception de maintenance d’adresse très bornée. Son autorité transactionnelle est `scripts/domain_refresh_transaction_v2.py` :
 
 - les hubs/channels/redirects officiels servent à découvrir le terminal courant ; un hub reste une source d’adresse et ne devient jamais un backend d’exécution provider ;
+- un provider peut posséder **plusieurs sources d’adresse ordonnées** : chaque source garde son propre type, resolver, priorité et rôle (`primary` / `supplementary` / `fallback`) ; un fallback ne supplante jamais une source primaire encore exploitable uniquement parce que son score est supérieur ;
+- les resolvers supportés couvrent notamment hub HTML/dynamique, catalogue d’adresses, redirect déterministe, Telegram chronologique et Telegram description ; les URLs présentes dans des ancres, du texte/HTML dynamique, des attributs/JS ou un meta-refresh restent des indices de découverte et passent les mêmes contrôles de marque/terminal ;
+- un hub autoritatif peut apprendre de manière bornée un canal Telegram officiel qu’il référence : cette source est persistée comme **fallback pour le run suivant**, jamais promue en autorité de publication le jour même ; Telegram/hubs restent exclus des origines runtime ProviderBase ;
 - `direct_authority=explicit_current` est un LKG fort mais **refreshable** lorsqu’une source officielle annonce explicitement un nouveau domaine principal/current/actif ou redirige déterministiquement vers lui ; seul `direct_authority=operator_pin` interdit une rotation automatique ;
 - `official_site`, le registre `provider-hubs.json` et l’historique de domaines sont synchronisés avec la nouvelle autorité ;
 - seules les substitutions/remplacements de domaine connectés à l’ancien terminal peuvent suivre la rotation ; une route/API métier indépendante reste inchangée ;
