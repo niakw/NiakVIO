@@ -105,6 +105,7 @@ def sync_provider_catalog_projection_rows(manifest_path: pathlib.Path) -> None:
         if not isinstance(semantic, list) or not semantic:
             semantic = source.get("supportedTypes") or []
         scraper["supportedTypes"] = list(semantic)
+        scraper.pop("canonicalSupportedTypes", None)
 
         filename = str(source.get("filename") or "").strip().replace("\\", "/")
         while filename.startswith("../"):
