@@ -76,7 +76,12 @@ def main() -> int:
             if str(row.get("fixture") or "") != fixture:
                 continue
             state = str(row.get("state") or "unknown")
-            healthy = state in {"ready", "ended"}
+            master_audio_tracks = int(row.get("masterAudioTrackCount") or 0)
+            player_audio_tracks = int(
+                row.get("audioTrackCount") if row.get("audioTrackCount") is not None else -1
+            )
+            multi_audio_collapsed = master_audio_tracks >= 2 and player_audio_tracks < 2
+            healthy = state in {"ready", "ended"} and not multi_audio_collapsed
             observations.append(
                 {
                     "client": "mobile-ios",
@@ -88,6 +93,8 @@ def main() -> int:
                     "failureClass": (
                         "healthy"
                         if healthy
+                        else "multi_audio_player_collapsed"
+                        if multi_audio_collapsed
                         else "reader_timeout"
                         if state == "timeout"
                         else "player_error"
@@ -96,7 +103,10 @@ def main() -> int:
                     "engine": str(row.get("engine") or "nuvio-mobile-ios-production"),
                     "durationSeconds": float(row.get("durationSeconds") or 0.0),
                     "host": str(row.get("host") or ""),
-                    "blocking": False,
+                    "masterAudioTrackCount": master_audio_tracks,
+                    "playerAudioTrackCount": player_audio_tracks,
+                    "failureOwner": "client_runtime" if multi_audio_collapsed else "",
+                    "blocking": multi_audio_collapsed,
                 }
             )
         payload = {
