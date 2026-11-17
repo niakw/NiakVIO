@@ -31,7 +31,8 @@
       "series_capability_meaning": "client/input/family reasoning capability only; never a published supportedTypes value",
       "anime_tv_launch_alias_is_compatibility_only": true
     },
-    "provider_execution_isolation": "Mobile/Desktop execute each plugin in a fresh QuickJS runtime; reuse-last-link cache carries addon identity; manual stream selection bypasses cache reuse; automatic fallback must replace active provider name/id together with the source."
+    "provider_execution_isolation": "Mobile/Desktop execute each plugin in a fresh QuickJS runtime; reuse-last-link cache carries addon identity; manual stream selection bypasses cache reuse; automatic fallback must replace active provider name/id together with the source.",
+    "tv_provider_execution_isolation": "NuvioTV creates a fresh QuickJS runtime per scraper execution, preserves plugin source identity through repository grouping, never auto-falls back a user-picked source, updates current addon identity when switching sources, and refreshes expired links only within the same addon."
   },
   "capability_universe": [
     "invocation",
@@ -365,7 +366,13 @@
         "user_tmdb_credential_required": false,
         "tmdb_secret_projection_required": false,
         "identity_hydration_status": "equivalent-runtime-tmdb-key-bridge",
-        "identity_hydration_note": "TV continues to expose BuildConfig.TMDB_API_KEY to the plugin runtime. NiakVIO Core can hydrate its bounded TMDB/IMDb metadata cache from that runtime capability; the client does not directly expose __nuvioMediaContext/__nuvioCoreGetTmdbDataV1."
+        "identity_hydration_note": "TV continues to expose BuildConfig.TMDB_API_KEY to the plugin runtime. NiakVIO Core can hydrate its bounded TMDB/IMDb metadata cache from that runtime capability; the client does not directly expose __nuvioMediaContext/__nuvioCoreGetTmdbDataV1.",
+        "fresh_js_runtime_per_plugin_execution": true,
+        "scraper_code_execution_bound_to_scraper_id": true,
+        "repository_grouping_preserves_plugin_source_name": true,
+        "user_selected_source_never_uses_auto_source_fallback": true,
+        "auto_source_fallback_updates_current_addon_identity": true,
+        "expired_link_refresh_restricts_to_same_addon": true
       },
       "brain_capabilities": [
         "invocation",
