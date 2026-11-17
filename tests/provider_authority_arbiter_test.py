@@ -294,6 +294,14 @@ manual_disabled={"id":"demo","enabled":False,"disabledReason":"manual_off_test"}
 assert module.restore_deprecated_nonfunctional_auto_off(manual_disabled,reg(),patch()) is False
 assert manual_disabled["enabled"] is False
 
+older_auto_off={
+    "id":"demo","enabled":False,
+    "disabledReason":"auto_off_current_architecture_nonfunctional",
+    "disabledAt":"2026-11-14","purgeAfter":"2026-11-21","lifecycleState":"disabled-retained",
+}
+assert module.restore_deprecated_nonfunctional_auto_off(older_auto_off,reg(),patch()) is False
+assert older_auto_off["enabled"] is False
+
 # Bulk onboarding pending is non-active but distinct from disabled retention.
 r=module.classify("demo",row(False),reg(),patch(),{},pending_onboarding=True)
 assert r["action"]=="ONBOARDING_PENDING",r
