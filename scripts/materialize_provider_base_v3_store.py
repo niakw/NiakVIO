@@ -79,6 +79,7 @@ def prepare_runtime() -> None:
         ROOT / "scripts" / "upgrade_provider_episode_identity_guard_v22_1.py",
         ROOT / "scripts" / "upgrade_mugiwara_episode_failclosed_v2.py",
         ROOT / "scripts" / "upgrade_manual_tv_live_regressions_v34.py",
+        ROOT / "scripts" / "upgrade_provider_route_media_binding_v35.py",
     )
     for script in source_migrations:
         subprocess.run([sys.executable, str(script)], cwd=ROOT, check=True)
