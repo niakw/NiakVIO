@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import importlib.util
+import base64
 import hashlib
 import json
 import sys
@@ -74,6 +75,69 @@ except ValueError as exc:
     assert "collides" in str(exc)
 else:
     raise AssertionError("France-only/Global collision was accepted")
+
+# A previously activated FULL provider that executes through a repository-owned
+# Provider Lego may recover only the exact identity contract already present in
+# the byte-bound activation proof. Candidate routes are never promoted here.
+with tempfile.TemporaryDirectory(prefix="niakvio-full-lego-identity-") as tmp_name:
+    temp_root=Path(tmp_name)
+    (temp_root/"providers").mkdir(parents=True)
+    provider_id="lego-a"
+    fix_id="PROVIDER.LEGO-A.CONFIG.V1"
+    model={
+        "providerId":provider_id,
+        "identityInput":{
+            "mode":"tmdb_direct",
+            "requiresTmdbBeforeRun":False,
+            "requiredFields":["tmdbId","mediaType"],
+        },
+    }
+    encoded=base64.urlsafe_b64encode(
+        json.dumps(model,sort_keys=True,separators=(",",":")).encode()
+    ).decode("ascii")
+    bundle=temp_root/"providers/lego-a.js"
+    bundle.write_text(
+        "/* BEGIN NIAKVIO_PROVIDER */\n"
+        "/* NIAKVIO_PROVIDER_ID:lego-a */\n"
+        "/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */\n"
+        f"/* STARTFIX:{fix_id} */\n"
+        f"/* FIXDATA:{fix_id}:{encoded} */\n"
+        "void 0;\n"
+        f"/* CLOSEFIX:{fix_id} */\n"
+        "/* END NIAKVIO_PROVIDER */\n",
+        encoding="utf-8",
+    )
+    digest=hashlib.sha256(bundle.read_bytes()).hexdigest()
+    overrides={"provider_patches":{"lego-a":{
+        "provider_lego_scripts":["scripts/provider_patches/example_runtime_v1.py"],
+        "candidate_learned_routes":["/play/movie/{tmdbId}"],
+    }}}
+    provenance={"providers":{"lego-a":{
+        "activation_mode":"bulk_census_full_ok",
+        "bulk_activation_proof":{"providerSha256":digest},
+    }}}
+    mod.ROOT=temp_root
+    changed=mod.reconcile_proven_provider_lego_identities(
+        overrides,provenance,[{"id":"lego-a","filename":"providers/lego-a.js","enabled":True}]
+    )
+    assert changed==["lego-a"],changed
+    assert overrides["provider_patches"]["lego-a"]["identity_input"]=={
+        "mode":"tmdb_direct",
+        "requires_tmdb_before_run":False,
+        "required_fields":["tmdbId","mediaType"],
+    }
+    assert "learned_routes" not in overrides["provider_patches"]["lego-a"]
+
+    # Exact-byte binding is mandatory: once the active bytes drift from the
+    # activation proof, reconciliation must refuse to manufacture authority.
+    overrides["provider_patches"]["lego-a"].pop("identity_input")
+    bundle.write_text(bundle.read_text(encoding="utf-8")+"/* drift */\n",encoding="utf-8")
+    changed=mod.reconcile_proven_provider_lego_identities(
+        overrides,provenance,[{"id":"lego-a","filename":"providers/lego-a.js","enabled":True}]
+    )
+    assert changed==[],changed
+    assert "identity_input" not in overrides["provider_patches"]["lego-a"]
+    mod.ROOT=ROOT
 
 with tempfile.TemporaryDirectory(prefix="niakvio-static-authority-") as tmp_name:
     temp_root = Path(tmp_name)
