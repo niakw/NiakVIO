@@ -41,6 +41,8 @@ for required in (
     "git push origin HEAD:main",
     "temp-current-bytes-full-provider-census.yml",
     'gh workflow run github-actions-gate.yml --repo "$GITHUB_REPOSITORY" --ref main',
+    'gh workflow run release-finalize.yml --repo "$GITHUB_REPOSITORY" --ref main',
+    'FIELD_PROVIDER_PROJECTION_RELEASE_HANDOFF sha=$FINAL_SHA',
     "--preserve-structured-data",
     "Projection reconcile mutated accepted provider-overrides.json.",
 ):
@@ -121,6 +123,10 @@ for source in ("provider-overrides.json", "manifest.json", "scripts/provider_bas
 assert wf.count("- name: Build atomic provider publication") == 1
 assert wf.count("- name: Publish exact reconciled projection") == 1
 assert wf.count("- name: Finalize integrity and dispatch exact-head validation") == 1
+final_handoff=wf.split("- name: Finalize integrity and dispatch exact-head validation",1)[1]
+assert 'gh workflow run release-finalize.yml --repo "$GITHUB_REPOSITORY" --ref main' in final_handoff
+assert '-f expected_sha="$FINAL_SHA" -F post_census=true' in final_handoff
+assert final_handoff.index('gh workflow run security-final-gate.yml') < final_handoff.index('gh workflow run release-finalize.yml')
 assert wf.count("- name: Prepare canonical durable static authority") == 1
 assert wf.count("- name: Reconcile durable static authority at projection fixed point") == 1
 assert wf.count("- name: Report projection byte no-op") == 1
