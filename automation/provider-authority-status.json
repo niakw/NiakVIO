@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "authority": "provider-authority-arbiter-v1",
-  "censusStatusSource": "/home/runner/work/NiakVIO/NiakVIO/automation/provider-census-status.json",
-  "productionFreshnessStatusSource": "persisted-all-scope",
+  "censusStatusSource": "/tmp/provider-census-preauthority.json",
+  "productionFreshnessStatusSource": "/tmp/provider-census-current-freshness.json",
   "policy": {
     "searchRole": "historical-supplement-only",
     "futureHubSearchDefault": false,
@@ -162,73 +162,7 @@
     "zone-streaming",
     "zone-telechargement"
   ],
-  "disabledNow": [
-    "1jour1film0626",
-    "67movies",
-    "anidb",
-    "aniflix-uno",
-    "anikototv",
-    "animejlprovider",
-    "animeonsen",
-    "anisama",
-    "arrowtv",
-    "boredflix",
-    "cinegram",
-    "cinemabz",
-    "cinematheque-de-bretagne",
-    "cinetimes",
-    "corsflix",
-    "documentary-area",
-    "dulourd",
-    "emnexmovies",
-    "fawesome",
-    "fexini",
-    "film-a-revoir",
-    "flixer",
-    "flixhq",
-    "franime",
-    "frembed",
-    "french-anime",
-    "frenchstream",
-    "fsharetv",
-    "fullanime",
-    "hexa",
-    "hianime",
-    "ihavenotv",
-    "kidraz",
-    "latestmovies",
-    "moiflix",
-    "moviebite",
-    "movish",
-    "movix-fr",
-    "movy",
-    "nakios",
-    "neobam",
-    "neonflix",
-    "overlook",
-    "primewire",
-    "pstream",
-    "rarefilmm",
-    "reanime-to",
-    "rivestream-app",
-    "rivestream-ru",
-    "sekai",
-    "showbox",
-    "shuttletv",
-    "skstream",
-    "stigstream",
-    "topcartoons",
-    "videasy",
-    "vidlink",
-    "voirserie",
-    "vuflix",
-    "watch-cartoon-online",
-    "watchott",
-    "waveanime",
-    "youtitou",
-    "zone-streaming",
-    "zone-telechargement"
-  ],
+  "disabledNow": [],
   "providers": [
     {
       "provider": "1jour1film0626",
@@ -243,8 +177,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:HARNESS/ENV BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "4khdhub",
@@ -270,8 +203,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:NO PROOF"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "7movies",
@@ -341,8 +273,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:CHAIN REACHED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "aniflix-uno",
@@ -357,8 +288,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:NO PROOF"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "anikototv",
@@ -372,8 +302,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:REGRESSION PROVIDER"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "anime-sama",
@@ -410,8 +339,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:HARNESS/ENV BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "animekai",
@@ -448,8 +376,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:HARNESS/ENV BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "animesalt",
@@ -519,8 +446,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:PROVIDER NETWORK BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "arrowtv",
@@ -535,8 +461,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:HARNESS/ENV BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "asiaflix",
@@ -573,8 +498,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:CHAIN REACHED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "castle",
@@ -625,8 +549,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:HARNESS/ENV BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "cinejoy",
@@ -652,8 +575,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:CHAIN REACHED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "cinematheque-de-bretagne",
@@ -668,8 +590,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:CHAIN REACHED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "cinestream",
@@ -695,8 +616,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:HARNESS/ENV BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "coflix",
@@ -722,8 +642,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:CHAIN REACHED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "cpasmal",
@@ -771,8 +690,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:PROVIDER NETWORK BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "dotriv",
@@ -809,8 +727,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:HARNESS/ENV BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "emnexmovies",
@@ -825,8 +742,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:PROVIDER NETWORK BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "fawesome",
@@ -841,8 +757,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:NO PROOF"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "fexini",
@@ -857,8 +772,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:HARNESS/ENV BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "film-a-revoir",
@@ -873,8 +787,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:HARNESS MISMATCH"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "flemmix",
@@ -922,8 +835,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:NO PROOF"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "flixhq",
@@ -938,8 +850,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:CHAIN REACHED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "franime",
@@ -954,8 +865,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:HARNESS/ENV BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "frembed",
@@ -970,8 +880,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:NO PROOF"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "french-anime",
@@ -985,8 +894,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:HARNESS/ENV BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "french-manga",
@@ -1013,8 +921,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:NO PROOF"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "fsharetv",
@@ -1029,8 +936,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:CHAIN REACHED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "fullanime",
@@ -1045,8 +951,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:HARNESS/ENV BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "hexa",
@@ -1061,8 +966,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:NO PROOF"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "hianime",
@@ -1077,8 +981,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:CHAIN REACHED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "hindmoviez",
@@ -1104,8 +1007,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:HARNESS/ENV BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "ilmiv",
@@ -1164,9 +1066,8 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+        "current_status:NO PROOF"
+      ]
     },
     {
       "provider": "kisskh",
@@ -1214,8 +1115,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:CHAIN REACHED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "mallumv",
@@ -1252,8 +1152,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:HARNESS/ENV BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "moviebite",
@@ -1268,8 +1167,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:NO PROOF"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "moviebox",
@@ -1317,8 +1215,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:CHAIN REACHED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "movix-fr",
@@ -1332,9 +1229,8 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+        "current_status:PARTIAL OK"
+      ]
     },
     {
       "provider": "movy",
@@ -1351,8 +1247,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:HARNESS MISMATCH"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "mugiwarastream",
@@ -1400,8 +1295,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:PARTIAL OK"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "neko-sama",
@@ -1428,8 +1322,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:NO PROOF"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "neonflix",
@@ -1444,8 +1337,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:PROVIDER NETWORK BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "nomorflix",
@@ -1482,8 +1374,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:NO PROOF"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "papadustream",
@@ -1531,8 +1422,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:CHAIN REACHED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "pstream",
@@ -1547,8 +1437,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:NO PROOF"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "purstream",
@@ -1577,8 +1466,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:CHAIN REACHED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "reanime-to",
@@ -1593,8 +1481,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:HARNESS/ENV BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "rivestream",
@@ -1620,8 +1507,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:PROVIDER NETWORK BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "rivestream-ru",
@@ -1636,19 +1522,21 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:PROVIDER NETWORK BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "sadisflix",
-      "action": "REDISCOVER_SEARCH",
+      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
       "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
+      "confidence": "current-byte-production-proof",
+      "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "reasons": [
         "direct_candidate_unproven",
-        "search_supplement_only"
+        "search_supplement_only",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:PARTIAL OK"
       ]
     },
     {
@@ -1664,8 +1552,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:REGRESSION PROVIDER"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "sflix",
@@ -1691,8 +1578,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:CHAIN REACHED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "shuttletv",
@@ -1707,8 +1593,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:NO PROOF"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "skstream",
@@ -1723,8 +1608,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:HARNESS MISMATCH"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "stigstream",
@@ -1739,8 +1623,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:CHAIN REACHED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "streamzo",
@@ -1778,8 +1661,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:PARTIAL OK"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "uhdmovies",
@@ -1805,8 +1687,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:REGRESSION PROVIDER"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "vidfast",
@@ -1832,8 +1713,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:CHAIN REACHED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "vidlove",
@@ -1914,8 +1794,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:HARNESS MISMATCH"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "vostfree",
@@ -1941,8 +1820,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:CHAIN REACHED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "watch-cartoon-online",
@@ -1957,8 +1835,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:HARNESS/ENV BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "watchott",
@@ -1973,8 +1850,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:PROVIDER NETWORK BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "waveanime",
@@ -1989,8 +1865,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:HARNESS/ENV BLOCKED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "webflix",
@@ -2072,8 +1947,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:NO PROOF"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "zone-streaming",
@@ -2088,8 +1962,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:CHAIN REACHED"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     },
     {
       "provider": "zone-telechargement",
@@ -2104,8 +1977,7 @@
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:NO PROOF"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+      ]
     }
   ]
 }
