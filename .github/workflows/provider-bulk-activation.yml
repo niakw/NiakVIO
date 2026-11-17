@@ -92,11 +92,16 @@ jobs:
           ACTIVATION_COUNT: ${{ steps.activation.outputs.count }}
         run: |
           set -euo pipefail
-          git add             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             provider_catalog.json PROVENANCE.json provider-overrides.json provider-hubs.json             automation/provider-v3-static-knowledge.json provider-v3-materialization.json             provider-bases providers provider-disabled automation/provider-bulk-activation-latest.json
+          git add             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             provider_catalog.json PROVENANCE.json provider-overrides.json provider-hubs.json provider-version-floors.json             automation/provider-v3-static-knowledge.json provider-v3-materialization.json             provider-bases providers provider-disabled automation/provider-bulk-activation-latest.json
           git diff --cached --quiet && exit 0
           git config user.name "niakvio-provider-bulk-activation"
           git config user.email "actions@users.noreply.github.com"
           git commit -m "provider: bulk activate $ACTIVATION_COUNT full-ok"
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Activation transaction left uncommitted generated state:" >&2
+            git status --short >&2
+            exit 1
+          fi
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
