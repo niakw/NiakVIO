@@ -18,6 +18,7 @@ def load_module(name,path):
 
 resolver=load_module("resolver",ROOT/"scripts/resolve_provider_hubs.py")
 refresh=load_module("refresh",ROOT/"scripts/refresh_authoritative_hub_domains.py")
+from current_provider_scope import projection_active_provider_ids
 
 history={}
 resolver.update_history_row(history,{"status":"direct_unresolved","reason":"no terminal"})
@@ -63,11 +64,21 @@ providers=registry["providers"]
 # deep/supplementary fallback without opting into the historical quick-refresh
 # compatibility flag. The old assertions made lifecycle validation depend on
 # stale registry shape rather than current authority semantics.
-assert providers["fullanime"].get("legacy_search_refresh") is not True
-assert providers["fullanime"]["manifest_status"]=="Active"
+active_projection_ids = projection_active_provider_ids(ROOT)
+for provider_id in ("fullanime", "showbox"):
+    expected_status = "Active" if provider_id in active_projection_ids else "Désactivé"
+    assert providers[provider_id]["manifest_status"] == expected_status, (
+        provider_id,
+        providers[provider_id]["manifest_status"],
+        expected_status,
+    )
+    assert providers[provider_id].get("legacy_search_refresh") is not True
+
+# Lifecycle may withdraw a provider without erasing its bounded address memory:
+# disabled rows remain recoverable during retention and must preserve the direct
+# seed used by Domain/recovery evidence.
 assert providers["fullanime"]["direct"]=="https://www.fullanime.fr"
-assert providers["showbox"].get("legacy_search_refresh") is not True
-assert providers["showbox"]["manifest_status"]=="Active"
+assert providers["showbox"]["direct"]=="https://showbox.media/"
 assert providers["animetsu"]["hub_status"]=="removed"
 assert providers["animetsu"]["activation_eligible"] is False
 assert providers["persianstremio"]["direct_authority"]=="structured_runtime_seed"
