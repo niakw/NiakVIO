@@ -62,10 +62,10 @@ Critical provider identity, quality, language, request-header and subtitle facts
 | --- | --- | --- | --- | --- |
 | Android | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `dd0e84704df5e4d746e28b9d6556305332ff3483` | **audited** | `composeApp/src/androidMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.android.kt` |
 | iOS | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `dd0e84704df5e4d746e28b9d6556305332ff3483` | **audited** | `composeApp/src/iosMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.ios.kt` |
-| macOS | `NuvioMedia/NuvioDesktop` / `Dev` | `65061186dde35fc0a0f90b05d380f2318133f227` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
-| Windows | `NuvioMedia/NuvioDesktop` / `Dev` | `65061186dde35fc0a0f90b05d380f2318133f227` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
-| Linux | `NuvioMedia/NuvioDesktop` / `Dev` | `65061186dde35fc0a0f90b05d380f2318133f227` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
-| Android TV | `NuvioMedia/NuvioTV` / `dev` | `fc5c10c3d2d5def54bb21e452291cb7b281b07b3` | **audited** | `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt` |
+| macOS | `NuvioMedia/NuvioDesktop` / `Dev` | `c0eb7bfa7c74820bd189a63a48ae364af8bb3058` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
+| Windows | `NuvioMedia/NuvioDesktop` / `Dev` | `c0eb7bfa7c74820bd189a63a48ae364af8bb3058` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
+| Linux | `NuvioMedia/NuvioDesktop` / `Dev` | `c0eb7bfa7c74820bd189a63a48ae364af8bb3058` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
+| Android TV | `NuvioMedia/NuvioTV` / `dev` | `03705cdd1dcff3eeffe57593a85839b2602e4bc8` | **audited** | `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt` |
 
 ## Lecture des états
 
