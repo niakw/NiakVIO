@@ -1,13 +1,13 @@
 {
   "schemaVersion": 3,
-  "runId": "44183750302",
-  "triggerSha": "2a6f41b54a3a507b302fd1816cc308398e6d95fa",
+  "runId": "44187654255",
+  "triggerSha": "3081c345aba7a3628f2b86d319e04f680d8b69a0",
   "providers": [
     {
       "provider": "meowtv",
-      "status": "CHAIN REACHED",
+      "status": "PROVIDER JS BROKEN",
       "underlyingStatus": "",
-      "color": "🟣",
+      "color": "🟠",
       "declaredLanes": [
         "anime",
         "movie",
@@ -18,18 +18,18 @@
       "candidateProof": [],
       "routeProof": [],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_zero_result",
-        "movie=no_streams/provider_network_zero_result",
-        "tv=no_streams/provider_network_zero_result"
+        "anime=wrong_content/provider_returned_wrong_content",
+        "movie=wrong_content/provider_returned_wrong_content",
+        "tv=wrong_content/provider_returned_wrong_content"
       ],
-      "dominantIssue": "provider_network_zero_result×3",
+      "dominantIssue": "provider_returned_wrong_content×3",
       "searchProgress": [
-        "anime: 8 works tested / 15 retained misses",
-        "movie: 8 works tested / 7 retained misses / 8 retained chain hits",
-        "tv: 8 works tested / 7 retained misses / 8 retained chain hits"
+        "anime: 1 works tested / 15 retained misses",
+        "movie: 1 works tested / 7 retained misses / 8 retained chain hits",
+        "tv: 1 works tested / 7 retained misses / 8 retained chain hits"
       ],
       "evidenceDepth": [
-        "anime=lookup_only",
+        "anime=chain_reached",
         "movie=chain_reached",
         "tv=chain_reached"
       ],
@@ -5184,13 +5184,14 @@
     }
   ],
   "counts": {
-    "CHAIN REACHED": 25,
+    "CHAIN REACHED": 24,
     "DISABLED": 35,
     "FULL OK": 9,
     "HARNESS MISMATCH": 3,
     "HARNESS/ENV BLOCKED": 15,
     "NO PROOF": 15,
     "PARTIAL OK": 1,
+    "PROVIDER JS BROKEN": 1,
     "PROVIDER NETWORK BLOCKED": 5,
     "REGRESSION PROVIDER": 2,
     "ROUTE PROVEN": 1
@@ -5554,8 +5555,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "44183750302-sharded-waf",
-  "harnessEvidenceSha": "2a6f41b54a3a507b302fd1816cc308398e6d95fa",
+  "harnessEvidenceRunId": "44187654255-sharded-waf",
+  "harnessEvidenceSha": "3081c345aba7a3628f2b86d319e04f680d8b69a0",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
