@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -231,5 +232,19 @@ persisted = registry["providers"]["demo"]["sources"][-1]
 assert persisted["type"] == "telegram_public" and persisted["role"] == "fallback", persisted
 assert persisted["discovery"] == "authoritative_hub_link", persisted
 assert transaction.sync_registry_discovered_sources(registry, "demo", observations) is False, registry
+
+architecture = json.loads((ROOT / "automation/provider-v3-architecture.json").read_text(encoding="utf-8"))
+validation = json.loads((ROOT / "VALIDATION.json").read_text(encoding="utf-8"))
+registry_policy = json.loads((ROOT / "provider-hubs.json").read_text(encoding="utf-8"))["resolution_policy"]
+arch_md = (ROOT / "ARCHITECTURE.md").read_text(encoding="utf-8")
+
+domain_arch = architecture["domain_refresh"]
+assert domain_arch["per_source_resolver_allowed"] is True, domain_arch
+assert domain_arch["primary_precedes_fallback"] is True, domain_arch
+assert domain_arch["discovery_sources_never_runtime_origins"] is True, domain_arch
+assert validation["domain_refresh"]["multi_source_address_authority"] is True, validation["domain_refresh"]
+assert validation["domain_refresh"]["learned_hub_linked_telegram_requires_later_run_before_publication"] is True
+assert "multi_source_policy" in registry_policy and "linked_source_learning" in registry_policy, registry_policy
+assert "plusieurs sources d’adresse ordonnées" in arch_md, "Domain Refresh multi-source documentation missing"
 
 print("provider hub heterogeneous multi-source fallback contract passed")
