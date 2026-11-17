@@ -123,6 +123,13 @@ for token in (
     '"runtime/"',
     '"scripts/build_provider_"',
     '"scripts/materialize_provider_"',
+    '"scripts/provider_patches/"',
+    '"provider-bases/"',
+    '"provider-type-policy.json"',
+    '"provider-overrides.json"',
+    '"scripts/provider_base_store.py"',
+    '"scripts/apply_provider_overrides.py"',
+    '"scripts/current_provider_scope.py"',
     '".github/workflows/"',
 ):
     assert token in gate, f"global non-regression scope lost shared path {token}"
