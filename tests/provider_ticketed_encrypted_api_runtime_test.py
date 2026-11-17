@@ -14,6 +14,8 @@ assert "WebAssembly" not in mod.WRAPPER
 assert "TextEncoder" not in mod.WRAPPER
 assert "TextDecoder" not in mod.WRAPPER
 assert "NIAKVIO_TICKETED_ENCRYPTED_API_RUNTIME_V1" in mod.WRAPPER
+assert mod.MANAGED_FIX_ID == "PROVIDER.GENERIC.TICKETED.ENCRYPTED.API.V1"
+assert mod.GENERIC_REUSABLE is True
 
 cfg={
  "providerId":"demo-ticketed","providerName":"Demo Ticketed",
@@ -78,6 +80,7 @@ blocks=meow.get("providerBlocks") or []
 assert len(blocks)==1,blocks
 assert blocks[0]["script"]=="scripts/provider_patches/ticketed_encrypted_api_runtime_v1.py"
 opts=blocks[0]["options"]
+assert opts["provider"]=="meowtv"
 assert opts["apiBase"]=="https://api.meowtv.ru"
 assert opts["challengePath"]=="/altcha/challenge"
 assert opts["ticketHeader"]=="X-Stream-Ticket"
