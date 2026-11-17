@@ -105,8 +105,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: canonical-media-types-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: canonical-media-types-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
   canonical-media-types:
