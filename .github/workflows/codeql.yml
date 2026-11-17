@@ -52,7 +52,7 @@ concurrency:
   # leaves the Final Gate with no complete analysis. Keep one scan running;
   # GitHub's concurrency queue coalesces pending runs to the newest SHA.
   # Keep PR isolation through the per-ref group.
-  group: niakvio-codeql-${{ github.ref }}
+  group: niakvio-codeql-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.ref }}
   cancel-in-progress: false
 
 permissions:
