@@ -1,5 +1,5 @@
 {
-  "schema_version": 81,
+  "schema_version": 82,
   "release": "dynamic",
   "release_authority": "manifest.json:version",
   "candidate_track": "main",
@@ -323,5 +323,34 @@
     ],
     "recovered_url_identity_revalidated": true,
     "terminal_audio_tracks_presented": true
+  },
+  "network_origin_validation": {
+    "github_only_network_failure_is_provider_failure": false,
+    "residential_crosscheck_required_before_provider_or_domain_failure": true,
+    "residential_oracles": [
+      "tailscale-residential-exit",
+      "NiakGH-MacBridge"
+    ],
+    "macbridge_required_when": [
+      "github_dns_failure",
+      "github_timeout_tls_or_route_anomaly",
+      "github_401_403_429_or_challenge",
+      "tailscale_residential_unavailable_or_inconclusive",
+      "provider_disable_or_domain_mutation_would_otherwise_rely_on_github_only_network_evidence"
+    ],
+    "macbridge_not_required_for": [
+      "deterministic_code_contracts",
+      "syntax_or_compilation",
+      "provider_materialization_fixed_point",
+      "pure_metadata_or_documentation_checks"
+    ],
+    "evidence_rule": "MacBridge/residential success contradicts GitHub-only transport failure and routes diagnosis to WAF/DNS/ASN/client transport; MacBridge failure corroborates but does not alone prove provider logic failure",
+    "stronger_evidence_precedence": [
+      "exact-byte native playback",
+      "full provider replay residential",
+      "MacBridge browser/provider replay",
+      "MacBridge HTTP/DNS seed",
+      "GitHub-hosted HTTP seed"
+    ]
   }
 }
