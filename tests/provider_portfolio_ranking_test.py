@@ -10,6 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = json.loads((ROOT / ".github/triggers/nuvio-client-lab.json").read_text(encoding="utf-8"))
 SCRIPT = ROOT / "scripts/rank_provider_portfolio.cjs"
+SCRIPT_SOURCE = SCRIPT.read_text(encoding="utf-8")
 POLICY = json.loads((ROOT / ".github/provider-portfolio-policy.json").read_text(encoding="utf-8"))
 
 
@@ -88,15 +89,26 @@ with tempfile.TemporaryDirectory() as tmp:
     assert flaky["recommendation"] == "repair_runtime_or_transport", flaky
     assert "runtime-flaky" not in data["selected"], data["selected"]
 
-    # 36/45 remains the normal compact portfolio target. The larger emergency
-    # ceiling is only available to the coverage-preservation layer when a safe
-    # provider carries catalogue/VF value the normal core cannot replace.
-    target = int(POLICY["portfolio"]["target_unique_active"])
-    normal_max = int(POLICY["portfolio"]["normal_max_unique_active"])
-    hard_max = int(POLICY["portfolio"]["hard_max_unique_active"])
-    assert target < 50
-    assert normal_max <= 45
-    assert hard_max >= normal_max
+    # Portfolio capacity is projection-based: 60 Global + 60 France.
+    # Overlap satisfies both projections once; there is no 120-unique target.
+    portfolio_policy = POLICY["portfolio"]
+    assert "target_unique_active" not in portfolio_policy
+    assert "minimum_vf_unique" not in portfolio_policy
+    assert portfolio_policy["unique_active_semantics"] == "derived_union_of_global_and_france_targets"
+    assert int(portfolio_policy["target_global_active"]) == 60
+    assert int(portfolio_policy["target_france_active"]) == 60
+    normal_max = int(portfolio_policy["normal_max_unique_active"])
+    hard_max = int(portfolio_policy["hard_max_unique_active"])
+    assert normal_max == 120
+    assert hard_max == 120
+    assert "target_unique_active" not in SCRIPT_SOURCE
+    assert "ensure((r) => manifestMap.has(r.provider), targetGlobal)" in SCRIPT_SOURCE
+    assert "ensure((r) => r.vf, targetFrance)" in SCRIPT_SOURCE
+    assert data["targetGlobal"] == 60
+    assert data["targetFrance"] == 60
+    assert data["recommendedActive"] <= hard_max
+    assert data["recommendedGlobal"] <= 60
+    assert data["recommendedFrance"] <= 60
     assert POLICY["coverage_preservation"]["allow_active_above_normal_max_when_needed"] is True
     assert POLICY["coverage_preservation"]["never_delete_for_redundancy_without_coverage_evidence"] is True
     assert POLICY["coverage_preservation"]["repair_before_retire_when_unique_or_vf"] is True
