@@ -790,6 +790,21 @@ def provider_route_is_identity_aware(route: Any) -> bool:
     return bool(re.search(r"[?&]s=\{query\}(?:&|#|$)", text, re.I))
 
 
+def provider_route_is_validation_candidate(route: Any) -> bool:
+    """Allow a discovered route to execute only as pending validation authority.
+
+    This is deliberately weaker than route proof. It rejects malformed/static
+    asset/fixed-content paths and requires a reusable requested-media identity.
+    A caller may use this route to gather live evidence, but must keep
+    routeProofVersion=0 until causal HTTP + media identity validation succeeds.
+    """
+    return (
+        _provider_data_route_is_executable(route)
+        and provider_model_route_kind(route) in {"search", "detail", "player", "api"}
+        and provider_route_is_identity_aware(route)
+    )
+
+
 def provider_model_has_executable_plan(model: Any) -> bool:
     """Match the clean ProviderBase _runtimePlanAvailable() contract.
 
