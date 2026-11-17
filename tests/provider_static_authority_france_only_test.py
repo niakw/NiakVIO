@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import importlib.util
+import hashlib
 import json
 import sys
 import tempfile
@@ -101,10 +102,11 @@ with tempfile.TemporaryDirectory(prefix="niakvio-static-authority-") as tmp_name
     mod.projection_active_provider_ids = lambda: {"fr-a"}
     mod.projection_runtime_visible_provider_ids = lambda: {"fr-a"}
     mod.decode_exact_model = lambda provider_id, bundle: {"providerId": provider_id}
+    current_sha = hashlib.sha256(current_bundle.read_bytes()).hexdigest()
     mod._materialization_row_from_bundle = lambda provider_id, bundle, model: {
         "provider": provider_id,
         "file": "providers/fr-a--current.js",
-        "sha256": "current",
+        "sha256": current_sha,
         "providerDataSha256": "current-data",
         "applied": [],
         "fixIds": [],
@@ -123,9 +125,15 @@ with tempfile.TemporaryDirectory(prefix="niakvio-static-authority-") as tmp_name
     assert rebound["rebound"] == ["fr-a"], rebound
     stored = json.loads(materialization.read_text(encoding="utf-8"))["providers"][0]
     assert stored["file"] == "providers/fr-a--current.js", stored
-    assert stored["sha256"] == "current", stored
+    assert stored["sha256"] == current_sha, stored
     assert stored["providerDataSha256"] == "current-data", stored
     assert stored["applied"] == ["historic-diagnostic"], stored
     assert stored["materializationReboundFromExactPublishedBytes"] is True, stored
+    expected_generation = hashlib.sha256(
+        b"fr-a" + bytes.fromhex(current_sha)
+    ).hexdigest()
+    stored_doc = json.loads(materialization.read_text(encoding="utf-8"))
+    assert stored_doc["generation"] == expected_generation, stored_doc
+    assert rebound["generation"] == expected_generation, rebound
 
 print("provider static authority covers Global + France-only current catalogue and stale-byte rebound")
