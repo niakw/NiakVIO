@@ -9,6 +9,7 @@ fast = (ROOT / ".github/workflows/provider-fast-repair.yml").read_text(encoding=
 remat = (ROOT / ".github/workflows/provider-remat-test.yml").read_text(encoding="utf-8")
 learn = (ROOT / ".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
 census = (ROOT / ".github/workflows/provider-census-sharded.yml").read_text(encoding="utf-8")
+phase = json.loads((ROOT / "automation/execution-phase.json").read_text(encoding="utf-8"))
 
 for required in (
     "scripts/build_provider_execution_plan.py",
@@ -57,6 +58,17 @@ assert "force-is-explicit-event-scoped" in autopilot
 assert "contents: write" not in autopilot
 assert "git add " not in autopilot
 assert "git push origin HEAD:main" not in autopilot
+
+assert phase.get("phase") == "niakvio_metier_certification", phase
+assert phase.get("automatic_brain_repair") is False, phase
+assert phase.get("automatic_brain_learning") is False, phase
+assert phase.get("checkpoint_required_before_brain") is True, phase
+assert "automation/execution-phase.json" in autopilot
+assert "FIELD_PROVIDER_AUTOPILOT_PHASE_GATE" in autopilot
+assert 'FAST=""' in autopilot
+assert 'LEARNING=""' in autopilot
+assert 'automatic_brain_repair' in autopilot
+assert 'automatic_brain_learning' in autopilot
 
 # It may still refresh WAF/native transport evidence for harness debt.
 harness_start = autopilot.index('if [ -n "$HARNESS" ]; then')
