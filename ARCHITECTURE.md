@@ -570,6 +570,16 @@ Provider ownership and terminal playback provenance are separate. Nuvio groups a
 Stream Score numeric 0-100 remains an internal scoring primitive. Runtime/client projection exposes the score state and grade letter/badge only; it must not expose `x/100` as user-facing metadata.
 
 
+### Oracle réseau résidentiel MacBridge
+
+NiakVIO ne doit jamais conclure qu'un provider, un domaine ou une route est cassé à partir d'un **échec réseau GitHub-hosted seul** lorsque l'origine réseau peut être causale. Les cas concernés incluent au minimum : DNS, timeout, TLS/route, `401/403/429`, challenge/anti-bot et résultat vide après une requête provider réellement émise.
+
+Dans ces cas, `niakw/NiakGH-MacBridge` est l'oracle résidentiel de contradiction obligatoire avant mutation/disable provider ou décision Domain basée sur cet échec. La lane Tailscale résidentielle reste une autre preuve utile ; MacBridge devient obligatoire lorsqu'elle est absente/inconclusive ou lorsqu'il faut reproduire le comportement depuis le Mac/réseau utilisateur réel. Un succès MacBridge contredit un échec GitHub et renvoie la cause vers WAF/DNS/ASN/client transport. Un échec MacBridge corrobore l'observation mais ne prouve pas, à lui seul, un défaut de logique provider.
+
+Hiérarchie de preuve : exact-byte native playback > full provider replay résidentiel > MacBridge browser/provider replay > MacBridge HTTP/DNS seed > GitHub-hosted HTTP seed.
+
+Les tests déterministes (syntaxe, compilation, matérialisation, fixed point, contrats purs) restent sur CI et **ne nécessitent pas** MacBridge.
+
 ### WAF / client transport : ordre causal de preuve
 
 La qualification WAF est automatique via la lane dédiée, avec profils browser/Nuvio-like,
