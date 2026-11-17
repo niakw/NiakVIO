@@ -38,6 +38,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OVERRIDES = ROOT / "provider-overrides.json"
 STATIC = ROOT / "automation/provider-v3-static-knowledge.json"
 MATERIALIZATION = ROOT / "provider-v3-materialization.json"
+PROVENANCE = ROOT / "PROVENANCE.json"
 
 OPEN_ARCHIVE_PROVIDER = "internet-archive"
 OPEN_ARCHIVE_STRATEGY = "open_archive_public_domain"
@@ -144,6 +145,116 @@ def load(path: Path, default: Any) -> Any:
 def write(path: Path, value: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def exact_provider_lego_identity_contract(
+    provider_id: str,
+    bundle: Path,
+    patch: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Normalize identity DATA already proven inside an exact Provider-Lego bundle."""
+    scripts = [
+        str(value).strip()
+        for value in (patch.get("provider_lego_scripts") or [])
+        if str(value).strip()
+    ]
+    if not scripts:
+        return None
+    if any(not value.startswith("scripts/provider_patches/") for value in scripts):
+        raise ValueError(
+            f"{provider_id}: provider Lego path is outside repository-owned patch surface"
+        )
+    model = decode_exact_model(provider_id, bundle)
+    identity = model.get("identityInput")
+    if not isinstance(identity, dict):
+        raise ValueError(f"{provider_id}: exact Provider Lego bundle has no identityInput")
+    mode = str(identity.get("mode") or "").strip().casefold()
+    requires = identity.get("requiresTmdbBeforeRun")
+    fields = [
+        str(value).strip()
+        for value in (identity.get("requiredFields") or [])
+        if str(value).strip()
+    ]
+    expected = {
+        "tmdb_direct": ({"tmdbId", "mediaType"}, False),
+        "catalog_search": ({"title", "mediaType"}, True),
+        "external_id": ({"tmdbId", "mediaType"}, True),
+    }.get(mode)
+    if (
+        expected is None
+        or not isinstance(requires, bool)
+        or not expected[0] <= set(fields)
+        or requires is not expected[1]
+    ):
+        raise ValueError(
+            f"{provider_id}: exact Provider Lego identity contract is unsupported/incomplete"
+        )
+    normalized = {
+        "mode": mode,
+        "requires_tmdb_before_run": requires,
+        "required_fields": fields,
+    }
+    current = patch.get("identity_input")
+    if isinstance(current, dict):
+        current_normalized = {
+            "mode": str(current.get("mode") or "").strip().casefold(),
+            "requires_tmdb_before_run": current.get("requires_tmdb_before_run"),
+            "required_fields": [
+                str(value).strip()
+                for value in (current.get("required_fields") or [])
+                if str(value).strip()
+            ],
+        }
+        if current_normalized != normalized:
+            raise ValueError(
+                f"{provider_id}: exact bundle identityInput contradicts durable identity_input"
+            )
+        return None
+    return normalized
+
+
+def reconcile_proven_provider_lego_identities(
+    overrides: dict[str, Any],
+    provenance: dict[str, Any],
+    rows: list[dict[str, Any]],
+) -> list[str]:
+    """Recover only missing Lego identity DATA still bound to exact FULL proof bytes."""
+    patches = overrides.get("provider_patches")
+    prov_map = provenance.get("providers")
+    if not isinstance(patches, dict) or not isinstance(prov_map, dict):
+        raise ValueError("provider patch/provenance maps required")
+    changed: list[str] = []
+    for row in rows:
+        pid = canonical_id(row.get("id"))
+        patch = patches.get(pid)
+        prov = prov_map.get(pid)
+        if not pid or not isinstance(patch, dict) or not isinstance(prov, dict):
+            continue
+        if isinstance(patch.get("identity_input"), dict):
+            continue
+        if not any(str(value).strip() for value in (patch.get("provider_lego_scripts") or [])):
+            continue
+        if str(prov.get("activation_mode") or "") != "bulk_census_full_ok":
+            continue
+        proof = prov.get("bulk_activation_proof")
+        if not isinstance(proof, dict):
+            continue
+        expected_sha = str(proof.get("providerSha256") or "").strip().casefold()
+        if len(expected_sha) != 64:
+            continue
+        bundle = (ROOT / str(row.get("filename") or "")).resolve()
+        if not bundle.is_file():
+            raise ValueError(f"{pid}: active provider bundle missing during identity reconcile")
+        if hashlib.sha256(bundle.read_bytes()).hexdigest() != expected_sha:
+            # The activation proof no longer binds the current bytes.  A later
+            # proof/reconstruction owner must establish identity authority.
+            continue
+        identity = exact_provider_lego_identity_contract(pid, bundle, patch)
+        if identity is None:
+            continue
+        patch["identity_input"] = identity
+        changed.append(pid)
+    return sorted(set(changed))
 
 
 def _fix_id(provider_id: str) -> str:
@@ -514,6 +625,7 @@ def reconcile_materialization_from_active_bundles(*, apply: bool) -> dict[str, A
 def reconcile_active_global(*, apply: bool) -> dict[str, Any]:
     overrides = load(OVERRIDES, {"provider_patches": {}, "provider_capabilities": {}})
     static = load(STATIC, {"schemaVersion": 1, "providers": {}})
+    provenance = load(PROVENANCE, {"providers": {}})
     patches = overrides.setdefault("provider_patches", {})
     capabilities = overrides.setdefault("provider_capabilities", {})
     static_rows = static.setdefault("providers", {})
@@ -523,6 +635,9 @@ def reconcile_active_global(*, apply: bool) -> dict[str, Any]:
     current_rows = active_current_rows()
     runtime_rows = runtime_visible_current_rows()
     activation_reconciled = normalize_active_activation_overrides(overrides, current_rows)
+    lego_identity_reconciled = reconcile_proven_provider_lego_identities(
+        overrides, provenance, current_rows
+    )
 
     recovered: list[dict[str, str]] = []
 
@@ -597,7 +712,9 @@ def reconcile_active_global(*, apply: bool) -> dict[str, Any]:
             "provider-v3-static-knowledge/runtime-visible identity mismatch "
             f"missing={missing_runtime_static} extra={extra_runtime_static}"
         )
-    if apply and (recovered or retired_static or activation_reconciled):
+    if apply and (
+        recovered or retired_static or activation_reconciled or lego_identity_reconciled
+    ):
         write(OVERRIDES, overrides)
         write(STATIC, static)
     materialization = reconcile_materialization_from_active_bundles(apply=apply)
@@ -606,6 +723,8 @@ def reconcile_active_global(*, apply: bool) -> dict[str, Any]:
         "recovered": recovered,
         "activationReconciledCount": len(activation_reconciled),
         "activationReconciled": activation_reconciled,
+        "legoIdentityReconciledCount": len(lego_identity_reconciled),
+        "legoIdentityReconciled": lego_identity_reconciled,
         "materializationRecoveredCount": materialization["recoveredCount"],
         "materializationRecovered": materialization["recovered"],
         "materializationReboundCount": materialization["reboundCount"],
@@ -632,6 +751,7 @@ def main() -> int:
         "PROVIDER_STATIC_AUTHORITY_RECONCILE_OK "
         f"active_global={result['activeGlobal']} active_current={result['activeCurrent']} recovered={result['recoveredCount']} "
         f"activation_reconciled={result['activationReconciledCount']} "
+        f"lego_identity_reconciled={result['legoIdentityReconciledCount']} "
         f"materialization_recovered={result['materializationRecoveredCount']} "
         f"materialization_rebound={result['materializationReboundCount']} "
         f"mode={'apply' if args.apply else 'check'}"
@@ -640,6 +760,11 @@ def main() -> int:
         print(f"FIELD_PROVIDER_STATIC_AUTHORITY_RECOVERED provider={row['provider']} authority={row['authority']}")
     for provider in result["activationReconciled"]:
         print(f"FIELD_PROVIDER_ACTIVATION_OVERRIDE_RECONCILED provider={provider} authority=provider-folder-lifecycle")
+    for provider in result["legoIdentityReconciled"]:
+        print(
+            f"FIELD_PROVIDER_FULL_LEGO_IDENTITY_RECONCILED provider={provider} "
+            "authority=exact-full-activation-bytes"
+        )
     for provider in result["materializationRecovered"]:
         print(f"FIELD_PROVIDER_MATERIALIZATION_RECOVERED provider={provider} source=exact-published-bytes")
     for provider in result["materializationRebound"]:
