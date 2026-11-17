@@ -12,9 +12,15 @@ FIXTURE_END = "FIELD_NATIVE_IOS_FIXTURE_END "
 EXPECTED = {"interstellar", "breaking-bad-s01e01", "jujutsu-kaisen-s01e01"}
 
 LANGUAGE_ALIASES = {
-    "eng": "en", "fra": "fr", "fre": "fr", "deu": "de", "ger": "de",
-    "spa": "es", "por": "pt", "ita": "it", "jpn": "ja", "kor": "ko",
-    "zho": "zh", "chi": "zh",
+    "eng": "en", "english": "en", "anglais": "en",
+    "fra": "fr", "fre": "fr", "french": "fr", "francais": "fr", "français": "fr",
+    "deu": "de", "ger": "de", "german": "de", "deutsch": "de",
+    "spa": "es", "spanish": "es", "espanol": "es", "español": "es",
+    "por": "pt", "portuguese": "pt", "portugues": "pt", "português": "pt",
+    "ita": "it", "italian": "it", "italiano": "it",
+    "jpn": "ja", "japanese": "ja", "japonais": "ja",
+    "kor": "ko", "korean": "ko", "coreen": "ko", "coréen": "ko",
+    "zho": "zh", "chi": "zh", "chinese": "zh", "chinois": "zh",
 }
 
 
@@ -23,6 +29,18 @@ def normalize_languages(raw: object) -> list[str]:
     for value in str(raw or "").split(","):
         token = value.strip().casefold().replace("_", "-")
         if not token or token == "und":
+            continue
+        direct = LANGUAGE_ALIASES.get(token)
+        if direct:
+            normalized = direct
+            if normalized not in output:
+                output.append(normalized)
+            continue
+        first_word = token.split(" ", 1)[0].split("(", 1)[0]
+        if first_word in LANGUAGE_ALIASES:
+            normalized = LANGUAGE_ALIASES[first_word]
+            if normalized not in output:
+                output.append(normalized)
             continue
         parts = [part for part in token.split("-") if part]
         if not parts:
