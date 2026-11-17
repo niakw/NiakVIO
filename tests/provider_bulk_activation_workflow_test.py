@@ -49,6 +49,9 @@ for token in (
 assert "provider-disabled" in activation
 assert "'.github/workflows/provider-bulk-activation.yml'" in activation
 assert "production_active_provider_freshness_test.py --allow-proof-debt" in activation
+assert "provider-version-floors.json" in activation
+assert 'git status --porcelain' in activation
+assert 'Activation transaction left uncommitted generated state' in activation
 # Proof debt applies only to the pre-existing production cohort. New activation
 # remains fail-closed on fresh exact pending FULL proof and source-byte equality.
 for strict_new_provider_token in (
