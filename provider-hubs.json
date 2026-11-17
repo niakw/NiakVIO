@@ -363,7 +363,17 @@
           "type": "hub",
           "url": "https://streaminganime.fr/site/10/mugiwara-no-streaming",
           "priority": 100,
-          "purpose": "Authoritative address reference"
+          "purpose": "Independent curated address reference retained as supplementary discovery",
+          "role": "supplementary"
+        },
+        {
+          "type": "hub",
+          "url": "https://status.mugiwara-no-streaming.com/",
+          "priority": 125,
+          "role": "primary",
+          "resolver": "official_outbound",
+          "purpose": "Official service-status/current-site discovery source revalidated 2026-11-17",
+          "evidence": "current-official-status-page"
         },
         {
           "type": "search",
@@ -4214,6 +4224,15 @@
       ],
       "sources": [
         {
+          "type": "hub",
+          "url": "https://flixnetwork.is/",
+          "priority": 90,
+          "role": "fallback",
+          "resolver": "service_catalogue",
+          "purpose": "Current FlixNetwork address catalogue fallback for CorsFlix; terminal must be brand-matched and runtime-validated",
+          "evidence": "current-network-address-catalogue-2026-11-17"
+        },
+        {
           "type": "search",
           "query": "\"CorsFlix\" official domain",
           "priority": 35,
@@ -4545,6 +4564,15 @@
       ],
       "sources": [
         {
+          "type": "hub",
+          "url": "https://flixnetwork.is/",
+          "priority": 90,
+          "role": "fallback",
+          "resolver": "service_catalogue",
+          "purpose": "Current FlixNetwork address catalogue fallback for ShuttleTV; terminal must be brand-matched and runtime-validated",
+          "evidence": "current-network-address-catalogue-2026-11-17"
+        },
+        {
           "type": "search",
           "query": "\"ShuttleTV\" official domain",
           "priority": 35,
@@ -4578,6 +4606,15 @@
       ],
       "sources": [
         {
+          "type": "hub",
+          "url": "https://flixnetwork.is/",
+          "priority": 90,
+          "role": "fallback",
+          "resolver": "service_catalogue",
+          "purpose": "Current FlixNetwork address catalogue fallback for PrimeWire; terminal must be brand-matched and runtime-validated",
+          "evidence": "current-network-address-catalogue-2026-11-17"
+        },
+        {
           "type": "search",
           "query": "\"PrimeWire\" official domain",
           "priority": 35,
@@ -4610,6 +4647,15 @@
         "\"67Movies\" official domain"
       ],
       "sources": [
+        {
+          "type": "hub",
+          "url": "https://flixnetwork.is/",
+          "priority": 90,
+          "role": "fallback",
+          "resolver": "service_catalogue",
+          "purpose": "Current FlixNetwork address catalogue fallback for 67Movies; terminal must be brand-matched and runtime-validated",
+          "evidence": "current-network-address-catalogue-2026-11-17"
+        },
         {
           "type": "search",
           "query": "\"67Movies\" official domain",
