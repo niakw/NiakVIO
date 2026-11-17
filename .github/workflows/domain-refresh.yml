@@ -19,6 +19,19 @@ on:
     branches: [main]
     paths:
       - '.github/triggers/domain-refresh'
+      - '.github/workflows/domain-refresh.yml'
+      - 'provider-hubs.json'
+      - 'scripts/resolve_provider_hubs.py'
+      - 'scripts/refresh_authoritative_hub_domains.py'
+      - 'scripts/domain_refresh_priority_wrapper.py'
+      - 'scripts/domain_refresh_transaction_v2.py'
+      - 'scripts/sanitize_provider_hub_registry.py'
+      - 'scripts/validate_domain_refresh_transaction.py'
+      - 'scripts/reconcile_provider_domain_metadata.py'
+      - 'tests/provider_hub_registry_test.py'
+      - 'tests/provider_hub_multi_source_fallback_test.py'
+      - 'tests/authoritative_hub_domain_refresh_test.py'
+      - 'tests/domain_refresh_workflow_test.py'
   schedule:
     - cron: '23 3 * * *'
 
