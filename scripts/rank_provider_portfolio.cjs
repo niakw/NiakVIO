@@ -218,9 +218,11 @@ for (const [id, values] of byProvider) {
 }
 
 rows.sort((a, b) => b.score - a.score || b.catalogueCoverageRate - a.catalogueCoverageRate || a.averageDurationMs - b.averageDurationMs || a.provider.localeCompare(b.provider));
-const target = Number(policy.portfolio?.target_unique_active || 36);
-const hardMax = Number(policy.portfolio?.hard_max_unique_active || 45);
-const minVf = Number(policy.portfolio?.minimum_vf_unique || 10);
+const targetGlobal = Number(policy.portfolio?.target_global_active || 60);
+const targetFrance = Number(policy.portfolio?.target_france_active || 60);
+// 60 Global + 60 France is a projection contract, not a demand for 120 unique
+// identities. The unique ceiling is only the disjoint-projection worst case.
+const hardMax = Number(policy.portfolio?.hard_max_unique_active || (targetGlobal + targetFrance));
 const minAnime = Number(policy.portfolio?.minimum_anime_specialists || 5);
 const minMovieTv = Number(policy.portfolio?.minimum_movie_tv_core || 10);
 const eligible = rows.filter((r) => r.qualityEligible);
@@ -230,7 +232,6 @@ function add(row) {
   if (!row || selectedIds.has(row.provider) || selected.length >= hardMax) return false;
   selectedIds.add(row.provider); selected.push(row); return true;
 }
-for (const row of eligible.slice(0, target)) add(row);
 function ensure(predicate, minimum) {
   let have = selected.filter((row) => predicate(row)).length;
   if (have >= minimum) return;
@@ -239,7 +240,10 @@ function ensure(predicate, minimum) {
     if (predicate(row) && add(row)) have++;
   }
 }
-ensure((r) => r.vf, minVf);
+// Fill each production projection independently. Overlapping providers satisfy
+// both targets once and therefore reduce, rather than inflate, unique count.
+ensure((r) => manifestMap.has(r.provider), targetGlobal);
+ensure((r) => r.vf, targetFrance);
 ensure((r) => r.animeSpecialist, minAnime);
 ensure((r) => r.movieTvCore, minMovieTv);
 
@@ -259,6 +263,10 @@ const output = {
   observedProviders: rows.length,
   currentlyActiveObserved: currentActive,
   recommendedActive: selected.length,
+  recommendedGlobal: selected.filter((r) => manifestMap.has(r.provider)).length,
+  recommendedFrance: selected.filter((r) => r.vf).length,
+  targetGlobal,
+  targetFrance,
   recommendedReductionObserved: Math.max(0, currentActive - selected.length),
   recommendedVf: selected.filter((r) => r.vf).length,
   recommendedAnimeSpecialists: selected.filter((r) => r.animeSpecialist).length,
@@ -268,5 +276,5 @@ const output = {
 };
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 fs.writeFileSync(outputPath, JSON.stringify(output, null, 2) + '\n');
-console.log(`FIELD_PROVIDER_PORTFOLIO ${JSON.stringify({ observedProviders: output.observedProviders, currentlyActiveObserved: output.currentlyActiveObserved, recommendedActive: output.recommendedActive, recommendedReductionObserved: output.recommendedReductionObserved, recommendedVf: output.recommendedVf, recommendedAnimeSpecialists: output.recommendedAnimeSpecialists })}`);
+console.log(`FIELD_PROVIDER_PORTFOLIO ${JSON.stringify({ observedProviders: output.observedProviders, currentlyActiveObserved: output.currentlyActiveObserved, recommendedActive: output.recommendedActive, recommendedGlobal: output.recommendedGlobal, recommendedFrance: output.recommendedFrance, targetGlobal: output.targetGlobal, targetFrance: output.targetFrance, recommendedReductionObserved: output.recommendedReductionObserved, recommendedVf: output.recommendedVf, recommendedAnimeSpecialists: output.recommendedAnimeSpecialists })}`);
 for (const row of rows.slice(0, 60)) console.log(`FIELD_PROVIDER_PORTFOLIO_ROW ${JSON.stringify(row)}`);
