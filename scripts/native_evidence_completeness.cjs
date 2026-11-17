@@ -42,6 +42,10 @@ function playerKey(client, fixture, provider, requestedType, index) {
   return `${routeKey(client, fixture, provider, requestedType)}\u0000${Number(index || 0)}`;
 }
 
+function mediaProbeKey(client, fixture, provider, index) {
+  return `${client}\u0000${fixture}\u0000${provider}\u0000${Number(index || 0)}`;
+}
+
 function httpKey(client, provider, requestedType, method, endpoint) {
   return `${client}\u0000${provider}\u0000${String(requestedType || 'unknown').toLowerCase()}\u0000${String(method || 'GET').toUpperCase()}\u0000${String(endpoint || '')}`;
 }
@@ -91,6 +95,8 @@ function assessNativeEvidence(logPaths) {
   const routesTerminal = new Map();
   const playersBegun = new Map();
   const playersTerminal = new Map();
+  const playerAudioTracks = new Map();
+  const transportAudioTracks = new Map();
   const httpRequests = new Map();
   const httpTerminal = new Map();
   const repositoryHttpRequests = new Map();
@@ -219,8 +225,23 @@ function assessNativeEvidence(logPaths) {
         const provider = providerName(f);
         requireRoute('player_result', f, client, fixture, provider);
         increment(playersTerminal, playerKey(client, fixture, provider, f.request_type, f.index));
+        if (Object.prototype.hasOwnProperty.call(f, 'audio_track_count')) {
+          playerAudioTracks.set(
+            mediaProbeKey(client, fixture, provider, f.index),
+            Number(f.audio_track_count),
+          );
+        }
         const scope = ensureScope(scopes, client, fixture);
         scope.playerResults += 1;
+        fileScopeKeys.add(scopeKey(client, fixture));
+      } else if (line.startsWith('FIELD_NATIVE_TRANSPORT ')) {
+        const provider = providerName(f);
+        if (Object.prototype.hasOwnProperty.call(f, 'audio_track_count')) {
+          transportAudioTracks.set(
+            mediaProbeKey(client, fixture, provider, f.index),
+            Number(f.audio_track_count),
+          );
+        }
         fileScopeKeys.add(scopeKey(client, fixture));
       } else if (line.startsWith('FIELD_NATIVE_HTTP_REQUEST ')) {
         const provider = providerName(f);
@@ -325,6 +346,22 @@ function assessNativeEvidence(logPaths) {
     const begun = Number(playersBegun.get(key) || 0);
     if (terminal > begun) problems.push(`player_missing_begin:${key.replace(/\u0000/g, ':')}:${terminal}/${begun}`);
   }
+  let multiAudioExpected = 0;
+  let multiAudioVerified = 0;
+  for (const [key, expected] of transportAudioTracks) {
+    if (!Number.isFinite(expected) || expected < 2) continue;
+    multiAudioExpected += 1;
+    const observed = playerAudioTracks.get(key);
+    const label = key.replace(/\u0000/g, ':');
+    if (!Number.isFinite(observed) || observed < 0) {
+      problems.push(`multi_audio_player_observation_missing:${label}:master=${expected}`);
+    } else if (observed < 2) {
+      problems.push(`multi_audio_player_collapsed:${label}:master=${expected}:player=${observed}`);
+    } else {
+      multiAudioVerified += 1;
+    }
+  }
+
   for (const [key, requested] of httpRequests) {
     const terminal = Number(httpTerminal.get(key) || 0);
     if (terminal !== requested) problems.push(`http_terminal:${key.replace(/\u0000/g, ':')}:${terminal}/${requested}`);
@@ -361,6 +398,8 @@ function assessNativeEvidence(logPaths) {
       repositoryCacheHits: [...scopes.values()].reduce((sum, scope) => sum + scope.repositoryCacheHits, 0),
       repositoryHttpRequests: [...repositoryHttpRequests.values()].reduce((a, b) => a + b, 0),
       playerProbes: playersTerminal.size,
+      multiAudioExpected,
+      multiAudioVerified,
       httpRequests: [...httpRequests.values()].reduce((a, b) => a + b, 0),
       frontendErrors,
     },
