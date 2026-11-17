@@ -302,10 +302,21 @@ domain_arch = architecture["domain_refresh"]
 assert domain_arch["per_source_resolver_allowed"] is True, domain_arch
 assert domain_arch["primary_precedes_fallback"] is True, domain_arch
 assert domain_arch["discovery_sources_never_runtime_origins"] is True, domain_arch
+assert "meta_refresh" in domain_arch["html_extraction_modes"], domain_arch
+assert "/s/<channel>" in domain_arch["public_telegram_contract"], domain_arch
+assert "manual evidence only" in domain_arch["interactive_telegram_bot_contract"], domain_arch
 assert validation["domain_refresh"]["multi_source_address_authority"] is True, validation["domain_refresh"]
 assert validation["domain_refresh"]["learned_hub_linked_telegram_requires_later_run_before_publication"] is True
+assert validation["domain_refresh"]["public_telegram_requires_web_preview"] is True
+assert validation["domain_refresh"]["interactive_telegram_bot_is_automatic_authority"] is False
+assert validation["domain_refresh"]["link_aggregators_use_generic_html_hub_parser"] is True
+assert "window_location" in validation["domain_refresh"]["html_hub_extraction_modes"]
 assert "multi_source_policy" in registry_policy and "linked_source_learning" in registry_policy, registry_policy
+assert "meta_refresh" in registry_policy["html_extraction_modes"], registry_policy
+assert "manual evidence only" in registry_policy["interactive_telegram_bot_policy"], registry_policy
 assert "plusieurs sources d’adresse ordonnées" in arch_md, "Domain Refresh multi-source documentation missing"
+assert "Sources d'adresse hétérogènes et fallbacks" in arch_md
+assert "preuve manuelle uniquement" in arch_md
 
 # The Domain preflight sanitizer must accept the exact current Global+France
 # visible union; using root manifest.json alone previously rejected France-only
