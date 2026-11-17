@@ -300,10 +300,12 @@ assert validation_machine["domain_refresh"]["search_fallback_requires_consecutiv
 assert validation_machine["domain_refresh"]["search_fallback_minimum_confirmation_runs"] == 2
 assert validation_machine["domain_refresh"]["operator_pin_never_superseded_by_search"] is True
 assert validation_machine["final_certification"]["requires_multi_audio_witness_per_native_platform"] is True
+assert validation_machine["final_certification"]["requires_multi_audio_language_witness_per_native_platform"] is True
 assert validation_machine["final_certification"]["multi_audio_witness_platforms"] == [
     "TVAndroid", "MobileAndroid", "MobileIOS", "DesktopMACOS", "DesktopWindows"
 ]
-assert ">=2 selectable production-player tracks" in validation_machine["final_certification"]["multi_audio_witness_rule"]
+assert ">=2 selectable tracks" in validation_machine["final_certification"]["multi_audio_witness_rule"]
+assert ">=2 distinct advertised audio languages" in validation_machine["final_certification"]["multi_audio_witness_rule"]
 assert validation_machine["final_certification"]["ordinary_native_diagnostics_may_have_zero_multi_audio_witness"] is True
 runtime_contract = validation_machine["nuvio_runtime_contract"]
 assert runtime_contract["current_audited_refs_must_match"] is True
@@ -333,12 +335,15 @@ assert runtime_contract["portable_provider_result_fields"] == [
 assert runtime_contract["plugin_result_audio_tracks_field"] is False
 assert runtime_contract["multi_audio_playback_authority"] == "terminal media resource"
 assert runtime_contract["multi_audio_native_acceptance_gate"] == (
-    "proven master audio tracks >=2 requires production player audio tracks >=2"
+    "proven master audio tracks >=2 requires production player audio tracks >=2; "
+    "when the master exposes >=2 distinct LANGUAGE identities, the production player "
+    "must expose matching distinct language identities"
 )
 assert runtime_contract["multi_audio_native_evidence_owner"] == (
     "NiakVIO test harness over official production player APIs/UI"
 )
 assert runtime_contract["multi_audio_collapse_failure_owner"] == "client_runtime"
+assert runtime_contract["multi_audio_language_collapse_failure_owner"] == "client_runtime"
 assert runtime_contract["multi_audio_probe_player_first"] is True
 assert runtime_contract["multi_audio_indirect_candidate_probe_cap"] == 16
 assert "HLS master" in runtime_contract["multi_audio_candidate_policy"]
@@ -368,14 +373,18 @@ assert machine_runtime["france_only_projection_authority"] == "provider_catalog.
 assert machine_runtime["plugin_result_audio_tracks_field"] is False
 assert "terminal media resource" in machine_runtime["multi_audio_playback_authority"]
 assert machine_runtime["multi_audio_native_acceptance_gate"] == (
-    "proven master audio tracks >=2 requires production player audio tracks >=2"
+    "proven master audio tracks >=2 requires production player audio tracks >=2; "
+    "when the master exposes >=2 distinct LANGUAGE identities, the production player "
+    "must expose matching distinct language identities"
 )
 assert machine_runtime["multi_audio_native_evidence_owner"] == (
     "NiakVIO test harness over official production player APIs/UI"
 )
 assert machine_runtime["multi_audio_collapse_failure_owner"] == "client_runtime"
+assert machine_runtime["multi_audio_language_collapse_failure_owner"] == "client_runtime"
 assert machine_runtime["multi_audio_probe_player_first"] is True
 assert machine_runtime["final_native_multi_audio_witness_required_per_platform"] is True
+assert machine_runtime["final_native_multi_audio_language_witness_required_per_platform"] is True
 assert machine_runtime["final_native_multi_audio_witness_platforms"] == [
     "TVAndroid", "MobileAndroid", "MobileIOS", "DesktopMACOS", "DesktopWindows"
 ]
@@ -433,9 +442,10 @@ assert stream_contract["season_zero_may_fallback_to_one"] is False
 assert stream_contract["hls_multi_audio_requires_master_preservation"] is True
 assert stream_contract["indirect_media_resolution_prefers_richer_hls_master"] is True
 assert stream_contract["native_multi_audio_expected_source"] == (
-    "post-player HLS master EXT-X-MEDIA TYPE=AUDIO cardinality"
+    "post-player HLS master EXT-X-MEDIA TYPE=AUDIO cardinality plus distinct LANGUAGE identities"
 )
 assert stream_contract["native_multi_audio_player_parity_required_when_master_has_multiple_audio"] is True
+assert stream_contract["native_multi_audio_language_parity_required_when_master_has_multiple_languages"] is True
 assert stream_contract["native_multi_audio_probe_order"] == "production player first, transport evidence second"
 assert stream_contract["indirect_hls_candidate_probe_cap"] == 16
 assert stream_contract["stream_sanitizer_authority"] == "strict_v12"
@@ -447,9 +457,10 @@ assert validation_machine["stream_multiplicity"]["first_success_does_not_end_dis
 assert validation_machine["stream_multiplicity"]["hls_multi_audio_requires_master_preservation"] is True
 assert validation_machine["stream_multiplicity"]["indirect_media_resolution_prefers_richer_hls_master"] is True
 assert validation_machine["stream_multiplicity"]["native_multi_audio_expected_source"] == (
-    "post-player HLS master EXT-X-MEDIA TYPE=AUDIO cardinality"
+    "post-player HLS master EXT-X-MEDIA TYPE=AUDIO cardinality plus distinct LANGUAGE identities"
 )
 assert validation_machine["stream_multiplicity"]["native_multi_audio_player_parity_required_when_master_has_multiple_audio"] is True
+assert validation_machine["stream_multiplicity"]["native_multi_audio_language_parity_required_when_master_has_multiple_languages"] is True
 assert validation_machine["stream_multiplicity"]["native_multi_audio_probe_order"] == "production player first, transport evidence second"
 
 terminal_pipeline = machine["terminal_media_pipeline"]
