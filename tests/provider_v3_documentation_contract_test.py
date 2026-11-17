@@ -130,7 +130,7 @@ assert "material_ids==active_ids" in manual
 assert "==46" not in manual and "46/46" not in manual
 
 
-assert machine["schema_version"] >= 23
+assert machine["schema_version"] >= 25
 source = machine["provider_source_of_truth"]
 assert source["canonical_provider_base_marker"] == "NIAKVIO_PROVIDER_BASE_OWNED_V3"
 assert source["legacy_provider_js_seed_allowed"] is False
@@ -286,7 +286,7 @@ assert machine["provider_scopes"]["availability_report_visible"] == "scripts/cur
 
 assert platform_runtime_machine["schema_version"] == 3
 assert 'data.get("schema_version") != 3' in renderer_source
-assert validation_machine["schema_version"] >= 81
+assert validation_machine["schema_version"] >= 83
 assert validation_machine["checks"]["clean_provider_base_matches_current_common_source"] is True
 assert validation_machine["checks"]["common_provider_source_migrations_validation_only"] is True
 assert validation_machine["final_certification"]["requires_clean_provider_base_current_source"] is True
@@ -461,9 +461,19 @@ assert terminal_pipeline["terminal_resolution_before_identity"] is True
 assert terminal_pipeline["terminal_resolution_before_presentation"] is True
 assert terminal_pipeline["recovered_url_identity_revalidated"] is True
 assert terminal_pipeline["terminal_audio_tracks_presented"] is True
+assert terminal_pipeline["presentation_fields_may_prove_identity"] is False
+assert terminal_pipeline["season_episode_coordinates_require_title_or_terminal_identity"] is True
+assert terminal_pipeline["single_token_overlap_is_sufficient_identity"] is False
+assert terminal_pipeline["source_fact_precedence"][:4] == [
+    "sourceTitle", "sourceDescription", "sourceLabel", "sourceName",
+]
 assert validation_machine["terminal_media_pipeline"]["order"] == terminal_pipeline["order"]
 assert validation_machine["terminal_media_pipeline"]["recovered_url_identity_revalidated"] is True
 assert validation_machine["terminal_media_pipeline"]["terminal_audio_tracks_presented"] is True
+assert validation_machine["terminal_media_pipeline"]["presentation_fields_may_prove_identity"] is False
+assert validation_machine["terminal_media_pipeline"]["season_episode_coordinates_require_title_or_terminal_identity"] is True
+assert validation_machine["terminal_media_pipeline"]["single_token_overlap_is_sufficient_identity"] is False
+assert validation_machine["terminal_media_pipeline"]["source_fact_precedence"] == terminal_pipeline["source_fact_precedence"]
 assert validation_machine["special_episodes"]["season_zero_valid"] is True
 assert validation_machine["special_episodes"]["season_zero_fallback_to_one"] is False
 assert validation_machine["special_episodes"]["mandatory_native_fixture"] == "spartacus-s00e01"
