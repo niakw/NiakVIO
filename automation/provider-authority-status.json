@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "authority": "provider-authority-arbiter-v1",
   "censusStatusSource": "/tmp/provider-census-preauthority.json",
-  "productionFreshnessStatusSource": "persisted-all-scope",
+  "productionFreshnessStatusSource": "/tmp/provider-census-current-freshness.json",
   "policy": {
     "searchRole": "historical-supplement-only",
     "futureHubSearchDefault": false,
@@ -445,7 +445,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "current_status:PROVIDER NETWORK BLOCKED"
       ]
     },
     {
@@ -589,7 +589,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:FULL OK"
+        "current_status:CHAIN REACHED"
       ]
     },
     {
@@ -689,7 +689,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "current_status:PROVIDER NETWORK BLOCKED"
       ]
     },
     {
@@ -890,8 +890,7 @@
       "authorityClass": "current-architecture-nonfunctional",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
+        "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
         "current_status:HARNESS/ENV BLOCKED"
@@ -1067,7 +1066,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "current_status:PROVIDER NETWORK BLOCKED"
       ]
     },
     {
@@ -1152,7 +1151,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
+        "current_status:HARNESS/ENV BLOCKED"
       ]
     },
     {
@@ -1230,7 +1229,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PARTIAL OK"
+        "current_status:CHAIN REACHED"
       ]
     },
     {
@@ -1337,7 +1336,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "current_status:PROVIDER NETWORK BLOCKED"
       ]
     },
     {
@@ -1527,17 +1526,14 @@
     },
     {
       "provider": "sadisflix",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
         "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:PARTIAL OK"
+        "search_supplement_only"
       ]
     },
     {
@@ -1661,7 +1657,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:FULL OK"
+        "current_status:PARTIAL OK"
       ]
     },
     {
