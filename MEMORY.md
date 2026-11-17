@@ -1,3 +1,8 @@
+## 2026-11-17 — Release certification gates logical provider ownership
+
+- The logical provider ownership correction is now part of canonical release certification, not only Workflow/Core metadata CI. `release-finalize.yml` watches and executes `tests/provider_branding_contract_test.py`, which injects a foreign raw/player provider value and requires the final portable `provider` to remain the executing NiakVIO provider while the foreign value survives only as provenance.
+- This closes a certification gap: Core block presence/order alone could not prove the portable ownership semantics. No playback or provider health status is upgraded by this gate.
+
 ## 2026-11-17 — Active fleet scan excludes byte-level cross-provider dispatch contamination
 
 - After the logical-owner correction, the exact current 75-provider Global+France transport was audited provider by provider. The active materialization ledger has no duplicate final provider SHA-256 and no duplicate structured Provider DATA SHA-256. The 75 currently referenced provider bundles were also scanned for literal portable `provider` assignments; none contains a foreign provider id relative to its manifest identity.
