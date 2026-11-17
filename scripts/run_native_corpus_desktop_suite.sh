@@ -31,7 +31,7 @@ done < <(python3 "${NIAKVIO}/scripts/rotating_corpus.py" select --lane all --cou
 [[ ${#DEFAULT_FIXTURES[@]} -eq 3 ]] || { echo "rotating corpus must select movie/tv/anime" >&2; exit 2; }
 TARGET_FIXTURE="${NIAKVIO_TARGET_FIXTURE:-}"
 TARGET_PROVIDER="${NIAKVIO_TARGET_PROVIDER:-declared-type}"
-TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"
+TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-native-hub46/manifest.json}"
 if [[ -n "${NIAKVIO_PROVIDER_SCOPE_MATRIX:-}" && -f "${NIAKVIO}/native-hub46/manifest.json" ]]; then
   TARGET_MANIFEST="native-hub46/manifest.json"
   echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=$TARGET_MANIFEST providers=current-active authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"
