@@ -278,7 +278,7 @@ assert machine["provider_scopes"]["availability_report_visible"] == "scripts/cur
 
 assert platform_runtime_machine["schema_version"] == 3
 assert 'data.get("schema_version") != 3' in renderer_source
-assert validation_machine["schema_version"] >= 77
+assert validation_machine["schema_version"] >= 78
 assert validation_machine["checks"]["clean_provider_base_matches_current_common_source"] is True
 assert validation_machine["checks"]["common_provider_source_migrations_validation_only"] is True
 assert validation_machine["final_certification"]["requires_clean_provider_base_current_source"] is True
@@ -310,6 +310,14 @@ assert runtime_contract["portable_provider_result_fields"] == [
 ]
 assert runtime_contract["plugin_result_audio_tracks_field"] is False
 assert runtime_contract["multi_audio_playback_authority"] == "terminal media resource"
+assert runtime_contract["multi_audio_native_acceptance_gate"] == (
+    "proven master audio tracks >=2 requires production player audio tracks >=2"
+)
+assert runtime_contract["multi_audio_native_evidence_owner"] == (
+    "NiakVIO test harness over official production player APIs/UI"
+)
+assert runtime_contract["multi_audio_collapse_failure_owner"] == "client_runtime"
+assert runtime_contract["multi_audio_probe_player_first"] is True
 assert runtime_contract["logical_stream_owner"] == "NiakVIO provider/scraper"
 assert runtime_contract["terminal_player_provenance_must_not_replace_owner"] is True
 machine_runtime = machine["nuvio_runtime_contract"]
@@ -327,6 +335,14 @@ assert machine_runtime["native_proof_transitive_between_clients"] is False
 assert machine_runtime["france_only_projection_authority"] == "provider_catalog.json projections general=false,vf=true"
 assert machine_runtime["plugin_result_audio_tracks_field"] is False
 assert "terminal media resource" in machine_runtime["multi_audio_playback_authority"]
+assert machine_runtime["multi_audio_native_acceptance_gate"] == (
+    "proven master audio tracks >=2 requires production player audio tracks >=2"
+)
+assert machine_runtime["multi_audio_native_evidence_owner"] == (
+    "NiakVIO test harness over official production player APIs/UI"
+)
+assert machine_runtime["multi_audio_collapse_failure_owner"] == "client_runtime"
+assert machine_runtime["multi_audio_probe_player_first"] is True
 assert machine_runtime["logical_stream_owner"] == "NiakVIO provider/scraper"
 assert machine_runtime["terminal_player_provenance_must_not_replace_owner"] is True
 assert validation_machine["release_authority"] == "manifest.json:version"
@@ -353,12 +369,22 @@ assert stream_contract["season_zero_is_valid"] is True
 assert stream_contract["season_zero_may_fallback_to_one"] is False
 assert stream_contract["hls_multi_audio_requires_master_preservation"] is True
 assert stream_contract["indirect_media_resolution_prefers_richer_hls_master"] is True
+assert stream_contract["native_multi_audio_expected_source"] == (
+    "post-player HLS master EXT-X-MEDIA TYPE=AUDIO cardinality"
+)
+assert stream_contract["native_multi_audio_player_parity_required_when_master_has_multiple_audio"] is True
+assert stream_contract["native_multi_audio_probe_order"] == "production player first, transport evidence second"
 assert stream_contract["terminal_source_provenance_may_augment_visible_label"] is True
 assert validation_machine["stream_multiplicity"]["runtime_output_cap"] == 40
 assert validation_machine["stream_multiplicity"]["terminal_validation_cap"] == 40
 assert validation_machine["stream_multiplicity"]["first_success_does_not_end_discovery"] is True
 assert validation_machine["stream_multiplicity"]["hls_multi_audio_requires_master_preservation"] is True
 assert validation_machine["stream_multiplicity"]["indirect_media_resolution_prefers_richer_hls_master"] is True
+assert validation_machine["stream_multiplicity"]["native_multi_audio_expected_source"] == (
+    "post-player HLS master EXT-X-MEDIA TYPE=AUDIO cardinality"
+)
+assert validation_machine["stream_multiplicity"]["native_multi_audio_player_parity_required_when_master_has_multiple_audio"] is True
+assert validation_machine["stream_multiplicity"]["native_multi_audio_probe_order"] == "production player first, transport evidence second"
 
 terminal_pipeline = machine["terminal_media_pipeline"]
 assert terminal_pipeline["order"] == [
