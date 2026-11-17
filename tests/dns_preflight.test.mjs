@@ -222,7 +222,12 @@ function dnsResult(name, status, addresses = []) {
   assert.equal(calls[0].locations[0].magic, 'France+SFR+eyeball');
   assert.equal(calls[0].measurementOptions.resolver, '109.0.66.10');
   assert.equal(calls[1].locations[0].magic, 'France+SFR+eyeball');
+  assert.equal(calls[1].target, 'example.com');
+  assert.equal(calls[1].target.startsWith('http'), false);
   assert.equal(calls[1].measurementOptions.request.method, 'GET');
+  assert.equal(calls[1].measurementOptions.request.path, '/');
+  assert.equal(calls[1].measurementOptions.protocol, 'HTTPS');
+  assert.equal(calls[1].measurementOptions.resolver, '109.0.66.10');
   assert.equal(calls[1].measurementOptions.ipVersion, 4);
   assert.equal('method' in calls[1].measurementOptions, false);
 }
