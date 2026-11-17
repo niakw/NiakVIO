@@ -37,6 +37,7 @@ import kotlinx.coroutines.withTimeout
 MOBILE_IMPORTS = """import androidx.activity.compose.setContent
 import com.nuvio.app.MainActivity
 import com.nuvio.app.features.player.PlatformPlayerSurface
+import com.nuvio.app.features.player.PlayerEngineController
 import com.nuvio.app.features.player.PlayerPlaybackSnapshot
 import com.nuvio.app.features.player.PlayerResizeMode
 """
@@ -57,6 +58,8 @@ PROBE_MODEL = r'''
         val loadDurationMs: Long = 0L,
         val mediaDataType: Int = -1,
         val trackType: Int = -1,
+        val audioTrackCount: Int = -1,
+        val audioTrackLanguages: String = "",
     )
 
     private val niakvioPlayerProbeLock = Any()
@@ -152,6 +155,7 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
         val host = hostOnly(url)
         val terminal = CountDownLatch(1)
         val snapshotRef = AtomicReference<PlayerPlaybackSnapshot?>(null)
+        val controllerRef = AtomicReference<PlayerEngineController?>(null)
         val errorRef = AtomicReference<String?>(null)
         val terminalStateRef = AtomicReference<String?>(null)
         var activity: MainActivity? = null
@@ -192,7 +196,7 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
                         resizeMode = PlayerResizeMode.Fit,
                         useNativeController = true,
                         onInitialPositionHandled = { _, _ -> },
-                        onControllerReady = { _ -> },
+                        onControllerReady = { controller -> controllerRef.set(controller) },
                         onSnapshot = { snapshot ->
                             snapshotRef.set(snapshot)
                             if ((snapshot.isEnded || (!snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L))) &&
@@ -217,6 +221,19 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
             val terminalState = terminalStateRef.get()
             val error = errorRef.get()
             val snapshot = snapshotRef.get()
+            var audioTracks = runCatching { controllerRef.get()?.getAudioTracks().orEmpty() }
+                .getOrDefault(emptyList())
+            if (terminalState == "success" && audioTracks.isEmpty()) {
+                repeat(8) {
+                    if (audioTracks.isNotEmpty()) return@repeat
+                    Thread.sleep(125L)
+                    audioTracks = runCatching { controllerRef.get()?.getAudioTracks().orEmpty() }
+                        .getOrDefault(emptyList())
+                }
+            }
+            val audioLanguages = audioTracks.mapNotNull { track ->
+                track.language?.trim()?.takeIf { it.isNotBlank() && !it.equals("und", ignoreCase = true) }
+            }.distinct().joinToString(",")
             if (terminalState == "error" && !error.isNullOrBlank()) {
                 return NativePlayerProbe("error", "nuvio-mobile-production", "PlatformPlayerSurface", sanitizeDiag(error), 0, "player", host, null)
             }
@@ -225,13 +242,17 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
             val shortMedia = durationSeconds != null && (
                 durationSeconds < 60.0 || (expected != null && durationSeconds / expected < 0.55)
             )
-            when {
+            val result = when {
                 terminalState == "success" && shortMedia -> NativePlayerProbe("short_media", "nuvio-mobile-production", "", "", 0, "duration_identity", host, durationSeconds)
                 terminalState == "success" && snapshot?.isEnded == true -> NativePlayerProbe("ended", "nuvio-mobile-production", "", "", 0, "none", host, durationSeconds)
                 terminalState == "success" && snapshot != null && !snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L) ->
                     NativePlayerProbe("ready", "nuvio-mobile-production", "", "", 0, "none", host, durationSeconds)
                 else -> NativePlayerProbe("timeout", "nuvio-mobile-production", "PlatformPlayerSurface", "READER_TIMEOUT", 0, "timeout", host, durationSeconds)
             }
+            result.copy(
+                audioTrackCount = audioTracks.size,
+                audioTrackLanguages = audioLanguages,
+            )
         } catch (error: Throwable) {
             val chain = generateSequence(error) { it.cause }
                 .take(6)
@@ -267,9 +288,9 @@ NEW_ANDROID_PROBE_BLOCK = '''                rows.take(__MAX_PROBES__).forEachIn
                     // signed/one-shot URL and manufacture a false failure.
                     emit("FIELD_NATIVE_PLAYER_BEGIN client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index entry=nuvio-production-player")
                     val reader = probeNativePlayer(row.url, row.headers, row.type, __EXPECTED_MINUTES__)
-                    emit("FIELD_NATIVE_PLAYER client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index state=${reader.state} engine=${reader.engine} http_status=${reader.httpStatus} failure_stage=${reader.failureStage} duration_seconds=${reader.durationSeconds ?: 0.0} host64=${b64(reader.host)} error_class64=${b64(reader.errorClass)} error_code64=${b64(reader.errorCode)} exception_chain64=${b64(reader.exceptionChain)} response_header_names64=${b64(reader.responseHeaderNames)} load_bytes=${reader.loadBytes} load_duration_ms=${reader.loadDurationMs} media_data_type=${reader.mediaDataType} track_type=${reader.trackType}")
+                    emit("FIELD_NATIVE_PLAYER client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index state=${reader.state} engine=${reader.engine} http_status=${reader.httpStatus} failure_stage=${reader.failureStage} duration_seconds=${reader.durationSeconds ?: 0.0} host64=${b64(reader.host)} error_class64=${b64(reader.errorClass)} error_code64=${b64(reader.errorCode)} exception_chain64=${b64(reader.exceptionChain)} response_header_names64=${b64(reader.responseHeaderNames)} load_bytes=${reader.loadBytes} load_duration_ms=${reader.loadDurationMs} media_data_type=${reader.mediaDataType} track_type=${reader.trackType} audio_track_count=${reader.audioTrackCount} audio_track_languages64=${b64(reader.audioTrackLanguages)}")
                     val transport = probeTransport(row.url, row.headers)
-                    emit("FIELD_NATIVE_TRANSPORT client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index state=${transport.state} kind=${transport.kind} status=${transport.status} content_type64=${b64(transport.contentType)} extm3u=${transport.extm3u} duration_seconds=${transport.durationSeconds ?: 0.0} host64=${b64(transport.host)} media_hint64=${b64(transport.mediaHint)}")
+                    emit("FIELD_NATIVE_TRANSPORT client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index state=${transport.state} kind=${transport.kind} status=${transport.status} content_type64=${b64(transport.contentType)} extm3u=${transport.extm3u} audio_track_count=${transport.audioTrackCount} duration_seconds=${transport.durationSeconds ?: 0.0} host64=${b64(transport.host)} media_hint64=${b64(transport.mediaHint)}")
                 }
 '''
 
