@@ -285,12 +285,13 @@ codeql = (ROOT / ".github/workflows/codeql.yml").read_text(encoding="utf-8")
 assert "javascript-typescript" in codeql
 assert "python" in codeql
 assert "security-extended" in codeql
-assert "group: niakvio-codeql-${{ github.ref }}" in codeql
-# Recurring census/Brain evidence commits must not starve security analysis.
-# GitHub coalesces pending runs; existing exact-SHA scans should finish even
-# when main advances. CodeQL is never allowed to be treated as green on skip.
+# Routine CodeQL remains per-ref and non-cancelling, while an explicit
+# release-certification dispatch receives its own run-id lane. This prevents
+# ordinary main activity from cancelling an exact-SHA security proof.
+assert "group: niakvio-codeql-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.ref }}" in codeql
 assert "cancel-in-progress: false" in codeql
-assert "group: niakvio-codeql-${{ github.ref }}" in codeql
+assert "expected_sha:" in codeql
+assert "FIELD_CODEQL_EXPECTED_SHA_OK" in codeql
 assert "\n  push:\n    branches: [main]" in codeql, (
     "CodeQL must analyze every main push for the exact-SHA Final Gate"
 )
