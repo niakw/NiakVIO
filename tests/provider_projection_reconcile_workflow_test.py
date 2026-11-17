@@ -83,6 +83,8 @@ assert "materialize_provider_v3_all.py" not in wf
 assert 'steps.drift.outputs.count != \'0\'' in wf
 assert "Projection reconcile staged a forbidden path." in wf
 assert "PROVENANCE.json provider-overrides.json provider-v3-materialization.json" in wf
+assert "provider-version-floors.json" in wf
+assert "provider-version-floors\\.json" in wf
 assert "automation/provider-v3-static-knowledge.json provider-bases/" in wf
 assert "provider-bases/[^/]+" in wf
 assert '"git","diff","--name-only","--","PROVENANCE.json","provider-bases/"' in wf

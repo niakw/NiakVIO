@@ -1,3 +1,10 @@
+## 2026-11-17 — Projection fingerprint transaction persists provider version floors atomically
+
+- Exact current-byte census immediately after projection publication `f7a70943` detected all 75 active providers as publication drift even though the newly published bundles were byte-audited V11/V12 and the projection fixed-point had been green inside the workflow.
+- Root cause is transactional, not provider-specific: `sync_release_versions.py` may update `provider-version-floors.json` before publication fingerprints are reindexed. That file is an explicit `PUBLICATION_CONTRACT_FILES` input, but Projection Reconcile did not stage it in the atomic publication commit. The workflow could therefore fingerprint a transient floor file, publish without it, and self-invalidate every provider on the next checkout.
+- Projection Reconcile now stages `provider-version-floors.json` and permits it in the exact publication-path allowlist. The workflow regression locks both the staged path and allowlist representation. No proof threshold, provider route, activation or playback result is changed.
+- The current V11/V12 bytes remain published, but a descendant Projection/census fixed-point must prove `providerCount=0` after checkout before the self-invalidation loop is considered closed.
+
 ## 2026-11-17 — Projection Reconcile rejects stale pushes before expensive materialization
 
 - Repeated exact-head métier corrections exposed an orchestration inefficiency: Projection Reconcile intentionally shares a non-cancelling publication mutex with Domain Refresh and Release Finalizer, so blindly switching `cancel-in-progress` on would risk cancelling an unrelated accepted publication. However a superseded Projection run could still consume most of its 35-minute slot before the later publish-drift guard rejected it.

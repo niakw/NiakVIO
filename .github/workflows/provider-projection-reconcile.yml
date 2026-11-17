@@ -205,14 +205,14 @@ jobs:
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 
           git add \
-            PROVENANCE.json provider-overrides.json provider-v3-materialization.json \
+            PROVENANCE.json provider-overrides.json provider-v3-materialization.json provider-version-floors.json \
             automation/provider-v3-static-knowledge.json provider-bases/ \
             manifest.json manifest-hub46.json \
             vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
             providers/ package.json package-lock.json sources.json provider_catalog.json nuvio-client-id-state.json
           changed="$(git diff --cached --name-only)"
           printf '%s\n' "$changed"
-          if printf '%s\n' "$changed" | grep -Ev '^(PROVENANCE\.json|provider-overrides\.json|provider-v3-materialization\.json|automation/provider-v3-static-knowledge\.json|provider-bases/[^/]+|manifest\.json|manifest-hub46\.json|vf/manifest\.json|no-anime/manifest\.json|vf-no-anime/manifest\.json|providers/[^/]+|package\.json|package-lock\.json|sources\.json|provider_catalog\.json|nuvio-client-id-state\.json)$'; then
+          if printf '%s\n' "$changed" | grep -Ev '^(PROVENANCE\.json|provider-overrides\.json|provider-v3-materialization\.json|provider-version-floors\.json|automation/provider-v3-static-knowledge\.json|provider-bases/[^/]+|manifest\.json|manifest-hub46\.json|vf/manifest\.json|no-anime/manifest\.json|vf-no-anime/manifest\.json|providers/[^/]+|package\.json|package-lock\.json|sources\.json|provider_catalog\.json|nuvio-client-id-state\.json)$'; then
             echo "Projection reconcile staged a forbidden path." >&2
             exit 1
           fi
