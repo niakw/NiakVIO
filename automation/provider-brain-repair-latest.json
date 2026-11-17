@@ -4,21 +4,22 @@
   "acceptedRepairCount": 0,
   "acceptedRepairs": [],
   "advisorDynamicWaveCeiling": 6,
-  "advisorHypothesisWaveBudget": 3,
+  "advisorHypothesisWaveBudget": 1,
   "batchSize": 48,
   "deferredLearningProviders": [
-    "hianime",
-    "stigstream"
+    "corsflix",
+    "nakios",
+    "primewire"
   ],
-  "effectiveWaves": 3,
-  "elapsedSeconds": 1154.395,
+  "effectiveWaves": 1,
+  "elapsedSeconds": 172.502,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
-    "operationalProviderCount": 17,
+    "operationalProviderCount": 10,
     "providerCount": 142,
     "schemaVersion": 2,
-    "sourceRunId": "43855893372",
-    "sourceSha": "75f010ed8be65cbfd0ae6815ae46d532a27e8aed",
+    "sourceRunId": "44110423782",
+    "sourceSha": "21de026cfcfbc562603db08e46b25b42887d5bff",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -27,14 +28,14 @@
   "healthConcurrency": 0,
   "healthConcurrencyMode": "auto-per-batch",
   "initialStatuses": {
-    "frenchstream": "NO PROOF",
-    "hianime": "CHAIN REACHED",
-    "stigstream": "CHAIN REACHED"
+    "corsflix": "CHAIN REACHED",
+    "nakios": "CHAIN REACHED",
+    "primewire": "CHAIN REACHED"
   },
   "labOnlyWithoutCompiledRepairProviders": [],
   "maxRoundsPerBatch": 3,
-  "maxWaves": 3,
-  "noProgressReason": "time_budget_exhausted_during_batch",
+  "maxWaves": 1,
+  "noProgressReason": "experiment_variants_exhausted",
   "positiveProgramRecovery": {
     "durableProviders": [],
     "durableRecordCount": 0,
@@ -43,18 +44,16 @@
   },
   "processedProviderCount": 3,
   "processedProviders": [
-    "frenchstream",
-    "hianime",
-    "stigstream"
+    "corsflix",
+    "nakios",
+    "primewire"
   ],
   "providerSpecificRules": false,
   "rawLabAcceptedCount": 0,
   "rawLabAcceptedRepairs": [],
-  "remainingProviders": [
-    "frenchstream"
-  ],
-  "requestedWaves": 2,
-  "resumeRecommended": true,
+  "remainingProviders": [],
+  "requestedWaves": 1,
+  "resumeRecommended": false,
   "safety": {
     "acceptedMutationRequiresStrictImprovement": true,
     "crossWaveExplorationCarryoverRole": "same-run-sandbox-only-retested-no-publication-authority",
@@ -70,16 +69,16 @@
   "schemaVersion": 1,
   "selectedProviderCount": 3,
   "selectedProviders": [
-    "frenchstream",
-    "hianime",
-    "stigstream"
+    "corsflix",
+    "nakios",
+    "primewire"
   ],
   "selectionSource": "automation/provider-census-status.json:repairQueue",
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "43855893372",
-  "timeBudgetExhausted": true,
+  "sourceCensusRunId": "44110423782",
+  "timeBudgetExhausted": false,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
   "waves": [
@@ -87,49 +86,43 @@
       "acceptedCount": 0,
       "acceptedProgramCompileFailures": {},
       "acceptedProgramCompiledProviders": [],
-      "advisorRotationPending": [
-        "frenchstream"
-      ],
+      "advisorRotationPending": [],
       "batches": [
         {
           "accepted": [],
           "acceptedCount": 0,
-          "advisorRemainingFingerprintCounts": {
-            "frenchstream": 2
-          },
-          "advisorRotationPending": [
-            "frenchstream"
-          ],
+          "advisorRemainingFingerprintCounts": {},
+          "advisorRotationPending": [],
           "batch": 1,
           "brain": {
             "attemptDiagnostics": [
               {
-                "parentSha256": "1c415541fa19de347dc05374ea2c652dfe9e44e3e4ebc93e52d421dcd8df37e0",
+                "parentSha256": "5c47c00f76190becfd65622f4b1c6e394ab043fba5dbc3fdda0582b914e2c0c3",
                 "phase": "attempts",
                 "profile": "adaptive_runtime_recovery",
-                "provider": "frenchstream",
+                "provider": "corsflix",
                 "reasonCode": "",
-                "repairSha256": "8f7a2d5bd54485a415078d158bbccc256edce8acc462067bbf3e2f2375bf15f6",
+                "repairSha256": "b33f1e7142da0dac769f63ae876aceb598f3dd1a99c0c4504c5488f00e5f9c84",
                 "round": 1,
                 "status": "generated"
               },
               {
-                "parentSha256": "3c8184082d62241f773c5dd5af9627a4d0299477bb99c2faf664f2416222ab8e",
+                "parentSha256": "99fdad8a8f976136410e6641f685e33841a8649b245cb6c66c8844e2e18cbcb5",
                 "phase": "attempts",
                 "profile": "adaptive_runtime_recovery",
-                "provider": "hianime",
+                "provider": "nakios",
                 "reasonCode": "",
-                "repairSha256": "34d0d31249d23f96ad6f29e8c9019ce372cc878aa1fb95aca0f151ec46cbaa07",
+                "repairSha256": "93346b795173f761222bfb2db0166a9dbaace3441ee6c5c0769230f4a7ee724c",
                 "round": 1,
                 "status": "generated"
               },
               {
-                "parentSha256": "5705ac9ca7db4c33af662593920f6705b3cbcbc4883a1665347efa7a39182201",
+                "parentSha256": "9ba6ab05691e19eaf877e45d72fdba0d8e61b41677acf102df60f4df3a964d42",
                 "phase": "attempts",
                 "profile": "adaptive_runtime_recovery",
-                "provider": "stigstream",
+                "provider": "primewire",
                 "reasonCode": "",
-                "repairSha256": "df4573cf94e2defcfd41711f2d340d139bef9a8edbdfcb764212cd6982e568da",
+                "repairSha256": "ce3104572a9304cb43e7b366949a2f4faab24aa45c615a26c11d9a1e62e53a72",
                 "round": 1,
                 "status": "generated"
               },
@@ -137,7 +130,17 @@
                 "parentSha256": "",
                 "phase": "rejected",
                 "profile": "adaptive_runtime_recovery",
-                "provider": "hianime",
+                "provider": "corsflix",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 1,
+                "status": "blocked"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "nakios",
                 "reasonCode": "required_category_playable_proof",
                 "repairSha256": "",
                 "round": 1,
@@ -147,210 +150,17 @@
                 "parentSha256": "",
                 "phase": "rejected",
                 "profile": "adaptive_runtime_recovery",
-                "provider": "stigstream",
+                "provider": "primewire",
                 "reasonCode": "required_category_playable_proof",
                 "repairSha256": "",
                 "round": 1,
-                "status": "no_streams"
-              },
-              {
-                "parentSha256": "",
-                "phase": "exploration_progress",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "frenchstream",
-                "reasonCode": "sandbox_diagnostic_progress",
-                "repairSha256": "8f7a2d5bd54485a415078d158bbccc256edce8acc462067bbf3e2f2375bf15f6",
-                "round": 1,
-                "status": ""
-              },
-              {
-                "parentSha256": "8f7a2d5bd54485a415078d158bbccc256edce8acc462067bbf3e2f2375bf15f6",
-                "phase": "attempts",
-                "profile": "player_media_extractor_v1",
-                "provider": "frenchstream",
-                "reasonCode": "",
-                "repairSha256": "649aa9106eb3bc566226178057fe3a25d200e585a8113de94a7804787e7e52fa",
-                "round": 2,
-                "status": "generated"
-              },
-              {
-                "parentSha256": "3c8184082d62241f773c5dd5af9627a4d0299477bb99c2faf664f2416222ab8e",
-                "phase": "attempts",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "hianime",
-                "reasonCode": "identical_repair_already_retested",
-                "repairSha256": "34d0d31249d23f96ad6f29e8c9019ce372cc878aa1fb95aca0f151ec46cbaa07",
-                "round": 2,
-                "status": "skipped"
-              },
-              {
-                "parentSha256": "5705ac9ca7db4c33af662593920f6705b3cbcbc4883a1665347efa7a39182201",
-                "phase": "attempts",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "stigstream",
-                "reasonCode": "identical_repair_already_retested",
-                "repairSha256": "df4573cf94e2defcfd41711f2d340d139bef9a8edbdfcb764212cd6982e568da",
-                "round": 2,
-                "status": "skipped"
-              },
-              {
-                "parentSha256": "",
-                "phase": "rejected",
-                "profile": "player_media_extractor_v1",
-                "provider": "frenchstream",
-                "reasonCode": "required_category_playable_proof",
-                "repairSha256": "",
-                "round": 2,
-                "status": "no_streams"
-              },
-              {
-                "parentSha256": "8f7a2d5bd54485a415078d158bbccc256edce8acc462067bbf3e2f2375bf15f6",
-                "phase": "attempts",
-                "profile": "player_protocol_family_replay_v1",
-                "provider": "frenchstream",
-                "reasonCode": "",
-                "repairSha256": "00e84bfb176fdeeb3fcde07fd5df0aaf358cc7113f28009bdc31b9c03304d09e",
-                "round": 3,
-                "status": "generated"
-              },
-              {
-                "parentSha256": "3c8184082d62241f773c5dd5af9627a4d0299477bb99c2faf664f2416222ab8e",
-                "phase": "attempts",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "hianime",
-                "reasonCode": "brain_repair_loop_detected",
-                "repairSha256": "",
-                "round": 3,
-                "status": "not_generated"
-              },
-              {
-                "parentSha256": "5705ac9ca7db4c33af662593920f6705b3cbcbc4883a1665347efa7a39182201",
-                "phase": "attempts",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "stigstream",
-                "reasonCode": "brain_repair_loop_detected",
-                "repairSha256": "",
-                "round": 3,
-                "status": "not_generated"
-              },
-              {
-                "parentSha256": "",
-                "phase": "rejected",
-                "profile": "player_protocol_family_replay_v1",
-                "provider": "frenchstream",
-                "reasonCode": "required_category_playable_proof",
-                "repairSha256": "",
-                "round": 3,
-                "status": "no_streams"
+                "status": "blocked"
               }
             ],
             "harnessDifferentialProviders": [],
             "learnedEvents": 0,
             "plans": {
-              "published:frenchstream": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "player_protocol_family_replay_v1"
-                ],
-                "baseExperimentExhausted": true,
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "explorationChainEnabled": true,
-                "explorationModeEnabled": true,
-                "failureClass": "media_extraction_gap",
-                "forcePreferredRequested": "",
-                "forcePreferredSelected": false,
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "capture-media-network",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "inspect-player-javascript",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "execute_bounded_evolved_strategy",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.96,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": false,
-                  "documentRequestMining": true,
-                  "maxDepth": 5,
-                  "maxEmbeds": 34,
-                  "maxPages": 18,
-                  "maxRecipePasses": 6,
-                  "recipePolicy": "current_plus_provider_peer",
-                  "responseSalvage": true,
-                  "roleOrder": [
-                    "player",
-                    "source",
-                    "api",
-                    "episode",
-                    "detail",
-                    "search",
-                    "other"
-                  ],
-                  "routePolicy": "owned_only",
-                  "sessionBootstrap": false,
-                  "terminalOnly": true
-                },
-                "llmAdvisorExperimentFingerprint": "918abf85ded0655b80a4be5ec8247b476140e55ce6bc6fc0d469e8b7e341cff6",
-                "llmAdvisorExplorationRescue": false,
-                "llmAdvisorFailureCompatibility": "exact",
-                "llmAdvisorGuidanceKind": "external-brain-llm",
-                "llmAdvisorProfile": "player_media_extractor_v1",
-                "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "media_extraction_gap",
-                "llmAdvisorStrategy": "proven_request_program_and_terminal_extraction",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 5,
-                "positiveProgramFingerprint": "",
-                "postExhaustionCandidateProfiles": [
-                  "player_protocol_family_replay_v1",
-                  "media_response_shape_inference_v1",
-                  "runtime_response_salvage_v1",
-                  "document_request_contract_mining_v1",
-                  "terminal_transition_graph_v1",
-                  "terminal_transition_graph_v2",
-                  "terminal_transition_graph_v3",
-                  "terminal_transition_graph_v4",
-                  "terminal_transition_graph_v5",
-                  "terminal_transition_graph_v6",
-                  "terminal_transition_graph_v7",
-                  "terminal_transition_graph_v8",
-                  "terminal_transition_graph_v9",
-                  "terminal_transition_graph_v10",
-                  "terminal_transition_graph_v11",
-                  "terminal_transition_graph_v12",
-                  "terminal_transition_graph_v13",
-                  "terminal_transition_graph_v14",
-                  "terminal_request_program_inference_v1"
-                ],
-                "postExhaustionSourceFailureClass": "media_extraction_gap",
-                "postExhaustionStrategyMethod": "player-protocol-family-replay",
-                "postExhaustionStrategyProfile": "player_protocol_family_replay_v1",
-                "providerId": "frenchstream",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "learning",
-                "repairType": "evolved_strategy",
-                "signature": "c92d106e5a46a2b33459e485",
-                "strategyEscalated": true,
-                "targetCategories": []
-              },
-              "published:hianime": {
+              "published:corsflix": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
                   "adaptive_runtime_recovery"
@@ -359,17 +169,17 @@
                 "exitReason": null,
                 "experimentExhausted": false,
                 "experimentGeneration": 1,
-                "experimentVariant": 2,
+                "experimentVariant": 1,
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
-                "failureClass": "media_extraction_gap",
+                "failureClass": "transport_blocked",
                 "forcePreferredRequested": "",
                 "forcePreferredSelected": false,
                 "hypotheses": [
                   {
                     "confidence": 0,
-                    "id": "capture-media-network",
+                    "id": "bootstrap-session",
                     "learned": false,
                     "maturity": null,
                     "profile": null,
@@ -377,7 +187,7 @@
                   },
                   {
                     "confidence": 0,
-                    "id": "inspect-player-javascript",
+                    "id": "alternate-official-route",
                     "learned": false,
                     "maturity": null,
                     "profile": null,
@@ -397,42 +207,47 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 4,
+                "negativeMemoryMatches": 1,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
-                  "player_protocol_family_replay_v1",
-                  "media_response_shape_inference_v1",
+                  "transport_request_differential_v1",
+                  "provider_session_bootstrap_replay_v1",
                   "runtime_response_salvage_v1",
-                  "document_request_contract_mining_v1",
-                  "terminal_transition_graph_v1",
-                  "terminal_transition_graph_v2",
-                  "terminal_transition_graph_v3",
-                  "terminal_transition_graph_v4",
-                  "terminal_transition_graph_v5",
-                  "terminal_transition_graph_v6",
-                  "terminal_transition_graph_v7",
-                  "terminal_transition_graph_v8",
-                  "terminal_transition_graph_v9",
-                  "terminal_transition_graph_v10",
-                  "terminal_transition_graph_v11",
-                  "terminal_transition_graph_v12",
-                  "terminal_transition_graph_v13",
-                  "terminal_transition_graph_v14",
-                  "terminal_request_program_inference_v1"
+                  "route_transition_graph_v2",
+                  "route_transition_graph_v3",
+                  "route_transition_graph_v4",
+                  "route_transition_graph_v5",
+                  "route_transition_graph_v6",
+                  "route_transition_graph_v7",
+                  "route_transition_graph_v8",
+                  "route_transition_graph_v9",
+                  "route_transition_graph_v10",
+                  "route_transition_graph_v11",
+                  "route_transition_graph_v12",
+                  "route_transition_graph_v13",
+                  "route_transition_graph_v14",
+                  "route_transition_graph_v15",
+                  "route_transition_graph_v16",
+                  "route_transition_graph_v17",
+                  "route_transition_graph_v18",
+                  "route_transition_graph_v19",
+                  "route_transition_graph_v20",
+                  "route_transition_graph_v21",
+                  "route_transition_graph_v22"
                 ],
                 "postExhaustionSourceFailureClass": "",
                 "postExhaustionStrategyMethod": "",
                 "postExhaustionStrategyProfile": "",
-                "providerId": "hianime",
+                "providerId": "corsflix",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
                 "repairScope": "capability",
-                "repairType": "terminal_media_resolution",
-                "signature": "a785dfba11870ff6a60308c5",
+                "repairType": "session_transport",
+                "signature": "9408dea970ee2148302affa4",
                 "strategyEscalated": false,
                 "targetCategories": []
               },
-              "published:stigstream": {
+              "published:nakios": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
                   "adaptive_runtime_recovery"
@@ -441,17 +256,17 @@
                 "exitReason": null,
                 "experimentExhausted": false,
                 "experimentGeneration": 1,
-                "experimentVariant": 2,
+                "experimentVariant": 1,
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
-                "failureClass": "media_extraction_gap",
+                "failureClass": "variant_coverage_gap",
                 "forcePreferredRequested": "",
                 "forcePreferredSelected": false,
                 "hypotheses": [
                   {
                     "confidence": 0,
-                    "id": "capture-media-network",
+                    "id": "enumerate-announced-player-variants",
                     "learned": false,
                     "maturity": null,
                     "profile": null,
@@ -459,7 +274,7 @@
                   },
                   {
                     "confidence": 0,
-                    "id": "inspect-player-javascript",
+                    "id": "remove-premature-variant-short-circuit",
                     "learned": false,
                     "maturity": null,
                     "profile": null,
@@ -479,7 +294,7 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 4,
+                "negativeMemoryMatches": 1,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "player_protocol_family_replay_v1",
@@ -505,80 +320,147 @@
                 "postExhaustionSourceFailureClass": "",
                 "postExhaustionStrategyMethod": "",
                 "postExhaustionStrategyProfile": "",
-                "providerId": "stigstream",
+                "providerId": "nakios",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "capability",
+                "repairType": "variant_enumeration",
+                "signature": "9c5dc8cd7f63b9fd3ee69aad",
+                "strategyEscalated": false,
+                "targetCategories": []
+              },
+              "published:primewire": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "adaptive_runtime_recovery"
+                ],
+                "baseExperimentExhausted": false,
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 1,
+                "experimentVariant": 0,
+                "experimentVariantCount": 5,
+                "explorationChainEnabled": true,
+                "explorationModeEnabled": true,
+                "failureClass": "chain_terminal_gap",
+                "forcePreferredRequested": "",
+                "forcePreferredSelected": false,
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "finish-reached-terminal-chain",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "resolve-terminal-wrapper",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorExperiment": {},
+                "llmAdvisorExperimentFingerprint": "",
+                "llmAdvisorExplorationRescue": false,
+                "llmAdvisorFailureCompatibility": "",
+                "llmAdvisorGuidanceKind": "",
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "",
+                "llmAdvisorStrategy": "",
+                "metaGapEscalated": false,
+                "negativeMemoryMatches": 0,
+                "positiveProgramFingerprint": "",
+                "postExhaustionCandidateProfiles": [
+                  "terminal_transition_graph_v1",
+                  "terminal_transition_graph_v2",
+                  "terminal_transition_graph_v3",
+                  "terminal_transition_graph_v4",
+                  "terminal_transition_graph_v5",
+                  "terminal_transition_graph_v6",
+                  "terminal_transition_graph_v7",
+                  "terminal_transition_graph_v8",
+                  "terminal_transition_graph_v9",
+                  "terminal_transition_graph_v10",
+                  "terminal_transition_graph_v11",
+                  "terminal_transition_graph_v12",
+                  "terminal_transition_graph_v13",
+                  "terminal_transition_graph_v14",
+                  "terminal_request_program_inference_v1",
+                  "runtime_response_salvage_v1",
+                  "document_request_contract_mining_v1",
+                  "player_protocol_family_replay_v1",
+                  "media_response_shape_inference_v1"
+                ],
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "primewire",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
                 "repairScope": "capability",
                 "repairType": "terminal_media_resolution",
-                "signature": "c92d106e5a46a2b33459e485",
+                "signature": "4e8d92b8a8961450d87b63b2",
                 "strategyEscalated": false,
                 "targetCategories": []
               }
             },
-            "queuedForLearning": [
-              "frenchstream"
-            ],
+            "queuedForLearning": [],
             "validatedRepairLearningExecuted": true
           },
-          "capabilityStrategy": "mixed",
+          "capabilityStrategy": "mixed_embed_resolver",
           "crossWaveExplorationCarryoverApplied": [],
-          "crossWaveExplorationCarryoverCaptured": [
-            "frenchstream"
-          ],
+          "crossWaveExplorationCarryoverCaptured": [],
           "deferredToLearning": [
-            "hianime",
-            "stigstream"
+            "corsflix",
+            "nakios",
+            "primewire"
           ],
           "familyGroups": [
-            {
-              "capabilityStrategy": "html_scraper",
-              "groupId": "terminal-extraction|html_scraper|runtime:html_scraper",
-              "providers": [
-                "stigstream"
-              ],
-              "repairScope": "terminal-extraction"
-            },
             {
               "capabilityStrategy": "mixed_embed_resolver",
               "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
               "providers": [
-                "hianime"
+                "corsflix",
+                "nakios",
+                "primewire"
               ],
               "repairScope": "terminal-extraction"
-            },
-            {
-              "capabilityStrategy": "mixed_embed_resolver",
-              "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
-              "providers": [
-                "frenchstream"
-              ],
-              "repairScope": "learning"
             }
           ],
           "fixedInLab": [],
           "genericLearningHandoff": [
-            "hianime",
-            "stigstream"
+            "corsflix",
+            "nakios",
+            "primewire"
           ],
-          "groupId": "packed",
+          "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
           "harnessDifferentialProviders": [],
           "healthConcurrency": 3,
           "providerCount": 3,
           "providers": [
-            "stigstream",
-            "hianime",
-            "frenchstream"
+            "corsflix",
+            "nakios",
+            "primewire"
           ],
-          "repairScope": "mixed",
+          "repairScope": "terminal-extraction",
           "unexecutableLlmHandoff": []
         }
       ],
       "compileRejectedToLearning": [],
       "deferredToLearning": [
-        "hianime",
-        "stigstream"
+        "corsflix",
+        "nakios",
+        "primewire"
       ],
-      "deferredToLearningCount": 2,
+      "deferredToLearningCount": 3,
       "durableMaterializeTargets": [],
       "experimentMemoryAdvanced": true,
       "fixedInLab": [],
@@ -587,242 +469,9 @@
       "labOnlyWithoutCompiledRepair": [],
       "rawFixedInLab": [],
       "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 1,
+      "remainingProviderCount": 0,
       "timeBudgetExhausted": false,
       "wave": 1
-    },
-    {
-      "acceptedCount": 0,
-      "acceptedProgramCompileFailures": {},
-      "acceptedProgramCompiledProviders": [],
-      "advisorRotationPending": [
-        "frenchstream"
-      ],
-      "batches": [
-        {
-          "accepted": [],
-          "acceptedCount": 0,
-          "advisorRemainingFingerprintCounts": {
-            "frenchstream": 2
-          },
-          "advisorRotationPending": [
-            "frenchstream"
-          ],
-          "batch": 1,
-          "brain": {
-            "attemptDiagnostics": [
-              {
-                "parentSha256": "8f7a2d5bd54485a415078d158bbccc256edce8acc462067bbf3e2f2375bf15f6",
-                "phase": "attempts",
-                "profile": "media_response_shape_inference_v1",
-                "provider": "frenchstream",
-                "reasonCode": "",
-                "repairSha256": "f6bf79f100bb16e6481f7734a944c88d84caee82f58d43172bb654dd0abde9b0",
-                "round": 1,
-                "status": "generated"
-              },
-              {
-                "parentSha256": "",
-                "phase": "rejected",
-                "profile": "media_response_shape_inference_v1",
-                "provider": "frenchstream",
-                "reasonCode": "required_category_playable_proof",
-                "repairSha256": "",
-                "round": 1,
-                "status": "no_streams"
-              },
-              {
-                "parentSha256": "8f7a2d5bd54485a415078d158bbccc256edce8acc462067bbf3e2f2375bf15f6",
-                "phase": "attempts",
-                "profile": "runtime_response_salvage_v1",
-                "provider": "frenchstream",
-                "reasonCode": "",
-                "repairSha256": "5934f9e18276356a7e1c1189e20162671eb1bd684cfbf9bd829ade1c299fb245",
-                "round": 2,
-                "status": "generated"
-              },
-              {
-                "parentSha256": "",
-                "phase": "rejected",
-                "profile": "runtime_response_salvage_v1",
-                "provider": "frenchstream",
-                "reasonCode": "required_category_playable_proof",
-                "repairSha256": "",
-                "round": 2,
-                "status": "no_streams"
-              },
-              {
-                "parentSha256": "8f7a2d5bd54485a415078d158bbccc256edce8acc462067bbf3e2f2375bf15f6",
-                "phase": "attempts",
-                "profile": "document_request_contract_mining_v1",
-                "provider": "frenchstream",
-                "reasonCode": "brain_repair_loop_detected",
-                "repairSha256": "",
-                "round": 3,
-                "status": "not_generated"
-              }
-            ],
-            "harnessDifferentialProviders": [],
-            "learnedEvents": 0,
-            "plans": {
-              "published:frenchstream": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "document_request_contract_mining_v1"
-                ],
-                "baseExperimentExhausted": true,
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "explorationChainEnabled": true,
-                "explorationModeEnabled": true,
-                "failureClass": "media_extraction_gap",
-                "forcePreferredRequested": "",
-                "forcePreferredSelected": false,
-                "hypotheses": [],
-                "learningDisposition": "execute_bounded_evolved_strategy",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.96,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": false,
-                  "documentRequestMining": true,
-                  "maxDepth": 5,
-                  "maxEmbeds": 34,
-                  "maxPages": 18,
-                  "maxRecipePasses": 6,
-                  "recipePolicy": "current_plus_provider_peer",
-                  "responseSalvage": true,
-                  "roleOrder": [
-                    "player",
-                    "source",
-                    "api",
-                    "episode",
-                    "detail",
-                    "search",
-                    "other"
-                  ],
-                  "routePolicy": "owned_only",
-                  "sessionBootstrap": false,
-                  "terminalOnly": true
-                },
-                "llmAdvisorExperimentFingerprint": "918abf85ded0655b80a4be5ec8247b476140e55ce6bc6fc0d469e8b7e341cff6",
-                "llmAdvisorExplorationRescue": false,
-                "llmAdvisorFailureCompatibility": "exact",
-                "llmAdvisorGuidanceKind": "external-brain-llm",
-                "llmAdvisorProfile": "player_media_extractor_v1",
-                "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "media_extraction_gap",
-                "llmAdvisorStrategy": "proven_request_program_and_terminal_extraction",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 10,
-                "positiveProgramFingerprint": "",
-                "postExhaustionCandidateProfiles": [
-                  "player_protocol_family_replay_v1",
-                  "media_response_shape_inference_v1",
-                  "runtime_response_salvage_v1",
-                  "document_request_contract_mining_v1",
-                  "terminal_transition_graph_v1",
-                  "terminal_transition_graph_v2",
-                  "terminal_transition_graph_v3",
-                  "terminal_transition_graph_v4",
-                  "terminal_transition_graph_v5",
-                  "terminal_transition_graph_v6",
-                  "terminal_transition_graph_v7",
-                  "terminal_transition_graph_v8",
-                  "terminal_transition_graph_v9",
-                  "terminal_transition_graph_v10",
-                  "terminal_transition_graph_v11",
-                  "terminal_transition_graph_v12",
-                  "terminal_transition_graph_v13",
-                  "terminal_transition_graph_v14",
-                  "terminal_request_program_inference_v1"
-                ],
-                "postExhaustionSourceFailureClass": "media_extraction_gap",
-                "postExhaustionStrategyMethod": "provider-document-request-contract-mining",
-                "postExhaustionStrategyProfile": "document_request_contract_mining_v1",
-                "providerId": "frenchstream",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "learning",
-                "repairType": "evolved_strategy",
-                "signature": "c92d106e5a46a2b33459e485",
-                "strategyEscalated": true,
-                "targetCategories": []
-              }
-            },
-            "queuedForLearning": [
-              "frenchstream"
-            ],
-            "validatedRepairLearningExecuted": true
-          },
-          "capabilityStrategy": "mixed_embed_resolver",
-          "crossWaveExplorationCarryoverApplied": [
-            "frenchstream"
-          ],
-          "crossWaveExplorationCarryoverCaptured": [
-            "frenchstream"
-          ],
-          "deferredToLearning": [],
-          "familyGroups": [
-            {
-              "capabilityStrategy": "mixed_embed_resolver",
-              "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
-              "providers": [
-                "frenchstream"
-              ],
-              "repairScope": "learning"
-            }
-          ],
-          "fixedInLab": [],
-          "genericLearningHandoff": [],
-          "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
-          "harnessDifferentialProviders": [],
-          "healthConcurrency": 1,
-          "providerCount": 1,
-          "providers": [
-            "frenchstream"
-          ],
-          "repairScope": "learning",
-          "unexecutableLlmHandoff": []
-        }
-      ],
-      "compileRejectedToLearning": [],
-      "deferredToLearning": [],
-      "deferredToLearningCount": 0,
-      "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": true,
-      "fixedInLab": [],
-      "fixedInLabCount": 0,
-      "inputProviderCount": 1,
-      "labOnlyWithoutCompiledRepair": [],
-      "rawFixedInLab": [],
-      "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 1,
-      "timeBudgetExhausted": false,
-      "wave": 2
-    },
-    {
-      "acceptedCount": 0,
-      "acceptedProgramCompileFailures": {},
-      "acceptedProgramCompiledProviders": [],
-      "advisorRotationPending": [],
-      "batches": [],
-      "compileRejectedToLearning": [],
-      "deferredToLearning": [],
-      "deferredToLearningCount": 0,
-      "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": false,
-      "fixedInLab": [],
-      "fixedInLabCount": 0,
-      "inputProviderCount": 0,
-      "labOnlyWithoutCompiledRepair": [],
-      "rawFixedInLab": [],
-      "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 1,
-      "timeBudgetExhausted": true,
-      "wave": 3
     }
   ]
 }
