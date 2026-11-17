@@ -1,3 +1,12 @@
+## 2026-11-17 — Current published 75-provider fleet independently verifies V12/V13 bytes and generation ledger
+
+- Direct read-back of the current `provider-v3-materialization.json` on main confirms **75/75** active Global+France identities and a canonical generation `6d21c1dd84c49f080bf7c533aed38778b9f736238a230eee209abfea64b91503`.
+- The generation was independently recomputed from the exact current ledger using the canonical contract `SHA256(provider_id || provider_sha256_bytes)` over all 75 rows. The recomputed digest is exactly `6d21c1dd84c49f080bf7c533aed38778b9f736238a230eee209abfea64b91503`, closing the stale-generation defect that blocked Finalizer run 44129993452 at the current published-byte state.
+- Every one of the **75 exact provider files referenced by the current ledger** was read back from main. All 75 contain `NUVIO_STREAM_OUTPUT_MULTI_AUDIO_FRONTIER_V12` and all 75 contain branding revision `provider-owner-terminal-source-label-v13`. There are zero missing V12 and zero missing V13 bundles in the active materialized union.
+- Current published cardinality remains 45 Global / 38 France / 75 unique active identities at manifest version 5.21.153. This byte-level proof does not by itself certify runtime playback, selectable multi-audio tracks, provider/source provenance in the native players, or FULL provider health.
+- Domain transaction `072cad0f -> 20a0f7bc` is now durably published. Subsequent head `ea558d03` changes only `PROVIDER_CENSUS_STATUS.md`, current census/batch-plan and WAF evidence files, all explicitly evidence-only under the publication drift gate. Therefore it does not invalidate the exact Domain handoff Finalizer.
+- Remaining pre-Brain proof boundary is unchanged: descendant Finalizer must cross reverse byte-identical/release-integrity gates, then exact-final-SHA TV Android + Mobile Android + Mobile iOS + macOS + Windows Native certification must demonstrate real multi-audio selectable-track preservation and provider/source provenance; then current CodeQL/final census/hygiene read-back.
+
 ## 2026-11-17 — NiakVIO métier convergence: generation hash, writer lanes and security cleanup
 
 - Exact executable Workflow Gate run `44137808075` on `f22a6c5e96a2efa45755e1210995e593d96c83d6` completed SUCCESS after the Provider-v3 generation, writer-lane and security-policy changes. The later `cd6b81ee` Fast Brain evidence commit is evidence-only and changes no provider/Core bytes.
