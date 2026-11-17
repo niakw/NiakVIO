@@ -22,6 +22,8 @@ on:
       - 'tests/domain_refresh_publication_drift_gate_test.py'
       # Core/ProviderBase edits must reach published bundles, not stop at source tests.
       - 'scripts/provider_patches/**'
+      - 'scripts/add_provider.py'
+      - 'tests/provider_ticketed_encrypted_api_runtime_test.py'
       - 'scripts/provider_base_store.py'
       - 'scripts/materialize_provider_base_v3_store.py'
       - 'scripts/upgrade_provider_route_media_binding_v35.py'
@@ -282,6 +284,7 @@ jobs:
           python3 tests/provider_anime_semantic_transport_contract_test.py
           python3 tests/global_media_type_resolution_test.py
           python3 tests/provider_stream_multiplicity_contract_test.py
+           python3 tests/provider_ticketed_encrypted_api_runtime_test.py
           python3 tests/special_season_zero_identity_test.py
           python3 tests/native_five_lab_coverage_test.py
           python3 tests/native_hub46_scope_contract_test.py
