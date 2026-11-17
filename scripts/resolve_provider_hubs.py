@@ -1240,6 +1240,24 @@ def gather_candidates(provider_id: str, cfg: dict[str, Any], history_row: dict[s
     candidates.extend(direct_redirects)
     observations.extend(direct_observations)
 
+    # A curated direct address remains the preferred authority while it is
+    # reachable. When every bounded direct probe fails (network error or
+    # non-success status), allow the configured search channel to act as a
+    # discovery fallback. Search never publishes by itself: authoritative
+    # Domain Refresh still requires terminal validation + consecutive-run
+    # confirmation before a plain search result can become authority.
+    direct_probe_failed = bool(direct_observations) and not any(
+        not row.get("error") and 200 <= int(row.get("status") or 0) < 400
+        for row in direct_observations
+        if row.get("redirect_discovery") is True
+    )
+    allow_failed_direct_search = bool(
+        has_authoritative_direct_source(cfg)
+        and direct_probe_failed
+        and str(cfg.get("direct_authority") or "").strip().casefold() != "operator_pin"
+        and any(str(value or "").strip() for value in cfg.get("search_queries") or [])
+    )
+
     for source in cfg.get("sources") or []:
         if not isinstance(source, dict):
             continue
@@ -1366,11 +1384,19 @@ def gather_candidates(provider_id: str, cfg: dict[str, Any], history_row: dict[s
 
     disabled = str(cfg.get("manifest_status") or "").casefold() in {"désactivé", "desactive", "disabled", "inactif", "inactive"}
     legacy_search = bool(cfg.get("legacy_search_refresh", False))
-    deep_search = mode == "deep" and not has_authoritative_route_source(cfg)
+    deep_search = mode == "deep" and (
+        not has_authoritative_route_source(cfg) or allow_failed_direct_search
+    )
     historical_quick_search = mode == "quick" and legacy_search
-    if (deep_search or historical_quick_search) and (not disabled or bool(cfg.get("search_when_disabled", False)) or legacy_search):
-        for query in list(dict.fromkeys(str(item).strip() for item in cfg.get("search_queries") or [] if str(item).strip()))[:2]:
+    failed_direct_quick_search = mode == "quick" and allow_failed_direct_search
+    if (deep_search or historical_quick_search or failed_direct_quick_search) and (
+        not disabled or bool(cfg.get("search_when_disabled", False)) or legacy_search
+    ):
+        search_limit = 1 if failed_direct_quick_search and not legacy_search else 2
+        for query in list(dict.fromkeys(str(item).strip() for item in cfg.get("search_queries") or [] if str(item).strip()))[:search_limit]:
             found, search_observations = search_candidates(provider_id, cfg, query, timeout)
+            for row in search_observations:
+                row.setdefault("fallback_reason", "direct_unreachable" if allow_failed_direct_search else "configured_search")
             candidates.extend(found)
             observations.extend(search_observations)
 
