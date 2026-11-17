@@ -300,6 +300,7 @@ Une œuvre peut légitimement produire plusieurs flux indépendants. NiakVIO tra
 - le runtime ProviderBase et le Core terminal partagent un plafond borné de **40 identités de playback** ; la couverture précède ce cap, elle ne le remplace pas par un ancien plafond intermédiaire 8/12/16 ;
 - le sanitizer Core valide les identités retenues de façon fail-closed ; une variante non testée n'est jamais une preuve positive ;
 - pour HLS, les faits mesurés (résolution/variant effectivement sélectionné) priment sur une qualité annoncée par l'UI du site.
+- le census Quick/TV et le Deep partagent le même contrat d’identité de durée pour les MP4 directs : lecture bornée de `mvhd` (head puis tail uniquement si nécessaire), comparaison à la durée attendue lorsqu’elle est disponible, et refus d’un média hors tolérance ; un `playable` réseau n’est donc pas automatiquement un contenu vérifié.
 - lorsqu’un player expose une rendition enfant et un master multi-audio, le master terminal est conservé afin que les lecteurs Nuvio puissent énumérer eux-mêmes toutes les pistes natives ; `audioTracks` enrichi côté NiakVIO reste un fait de présentation/diagnostic, pas un substitut au média terminal.
 
 Le contrat de non-régression est `tests/provider_stream_multiplicity_contract_test.py` et son test d'exécution Core est `tests/stream_output_sanitizer_multi_variant_test.py`.
