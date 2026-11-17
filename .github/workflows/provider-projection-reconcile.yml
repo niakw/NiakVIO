@@ -67,6 +67,18 @@ jobs:
           node-version: '24'
           package-manager-cache: false
 
+      - name: Reject superseded push before expensive reconciliation
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          remote_sha="$(git rev-parse origin/main)"
+          if [ "$remote_sha" != "$GITHUB_SHA" ]; then
+            echo "FIELD_PROVIDER_PROJECTION_SUPERSEDED source=$GITHUB_SHA current=$remote_sha" >&2
+            exit 1
+          fi
+
       - name: Install locked tooling
         run: npm ci --ignore-scripts --no-audit --no-fund
 
