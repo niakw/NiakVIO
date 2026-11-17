@@ -214,6 +214,18 @@ def validate_contract_files() -> dict:
             for field, expected in required_isolation.items():
                 if contract.get(field) is not expected:
                     raise ValueError(f"{key}: provider isolation contract drifted: {field}")
+        if key == "nuvio-tv":
+            required_tv_isolation = {
+                "fresh_js_runtime_per_plugin_execution": True,
+                "scraper_code_execution_bound_to_scraper_id": True,
+                "repository_grouping_preserves_plugin_source_name": True,
+                "user_selected_source_never_uses_auto_source_fallback": True,
+                "auto_source_fallback_updates_current_addon_identity": True,
+                "expired_link_refresh_restricts_to_same_addon": True,
+            }
+            for field, expected in required_tv_isolation.items():
+                if contract.get(field) is not expected:
+                    raise ValueError(f"{key}: TV provider isolation contract drifted: {field}")
         capabilities = {str(value).strip() for value in client.get("brain_capabilities") or [] if str(value).strip()}
         if "series" not in capabilities:
             raise ValueError(f"{key}: series transport capability missing")
