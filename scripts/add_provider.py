@@ -574,6 +574,39 @@ def site_structure_knowledge() -> tuple[list[str], list[str]]:
     return routes, observed
 
 
+
+def structured_provider_blocks(request: dict[str, Any]) -> list[dict[str, Any]]:
+    """Normalize repository-owned provider Blocs from structured onboarding DATA."""
+    raw = request.get("providerBlocks")
+    if raw is None:
+        raw = request.get("provider_blocks")
+    if raw in (None, []):
+        return []
+    if not isinstance(raw, list) or len(raw) > 8:
+        raise ValueError("providerBlocks must be an array of at most 8 repository-owned Blocs")
+    out: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for item in raw:
+        if not isinstance(item, dict):
+            raise ValueError("providerBlocks entries must be objects")
+        script = str(item.get("script") or "").strip().replace("\\", "/")
+        parts = Path(script).parts
+        if not script.startswith("scripts/provider_patches/") or not script.endswith(".py") or ".." in parts:
+            raise ValueError(f"unsafe provider Bloc path: {script!r}")
+        target = (ROOT / script).resolve()
+        if ROOT not in target.parents or not target.is_file():
+            raise ValueError(f"provider Bloc does not exist in repository: {script!r}")
+        if script in seen:
+            raise ValueError(f"duplicate provider Bloc: {script}")
+        options = item.get("options") or {}
+        if not isinstance(options, dict):
+            raise ValueError(f"provider Bloc options must be an object: {script}")
+        json.dumps(options, ensure_ascii=False, sort_keys=True)
+        seen.add(script)
+        out.append({"script": script, "options": options})
+    return out
+
+
 def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
     request = load_json(request_path, {})
     provider_id = norm_id(request.get("id") or request.get("provider"))
@@ -590,6 +623,7 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
     category = str(request.get("category") or ("VF" if any(value.startswith("fr") for value in languages) else "International")).strip()
     strategy = str(request.get("strategy") or "html_scraper").strip().casefold()
     routes = parse_list(request.get("routes"))
+    provider_blocks = structured_provider_blocks(request)
     validation_routes = pending_validation_routes(request, routes) if bulk else []
     aliases = parse_list(request.get("aliases")) or [provider_id]
     search_queries = parse_list(request.get("search_queries") or request.get("search"))
@@ -726,6 +760,22 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
             "requires_tmdb_before_run": False,
             "required_fields": ["tmdbId", "mediaType"],
         }
+    if provider_blocks:
+        if strategy == "open_archive_public_domain":
+            raise ValueError("open_archive_public_domain owns its provider Bloc and rejects providerBlocks override")
+        patch = overrides["provider_patches"][provider_id]
+        patch["provider_lego_scripts"] = [row["script"] for row in provider_blocks]
+        patch["provider_lego_options"] = {
+            row["script"]: dict(row["options"])
+            for row in provider_blocks
+        }
+        patch["notes"].append(
+            "Structured repository-owned Provider Blocs survive pending restage; "
+            "they provide execution capability only and never grant playback/FULL/activation proof."
+        )
+        if api:
+            patch["official_api"] = api
+
     if routes:
         # Inventory/onboarding routes are durable *candidate* knowledge only.
         # They have not yet proved whether an observed/site numeric identity is
