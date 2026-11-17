@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fail-closed guard for the scheduled Provider domain refresh transaction.
 
-Publication is restricted to providers in the current manifest. Historical hub
+Publication is restricted to providers in the active Global+France projection union. Historical hub
 and history rows remain valid archive knowledge but cannot be mutated or used to
 recreate publication candidates. Public-feed authority is registry-scoped: an
 arbitrary public Telegram/community source is never authoritative by type alone.
@@ -13,6 +13,10 @@ import json
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
+
+from current_provider_scope import projection_active_provider_ids
+
+ROOT = Path(__file__).resolve().parents[1]
 
 AUTHORITY_TYPES = {"hub", "curated_direct", "source_redirect", "provider_config", "live_current"}
 REGISTRY_SCOPED_AUTHORITY_TYPES = {"telegram_public", "redirect"}
@@ -53,6 +57,21 @@ def current_provider_ids(manifest_doc: dict[str, Any]) -> set[str]:
     if len(ids) != len(rows):
         raise AssertionError("manifest: duplicate or missing provider id")
     return ids
+
+
+def validation_provider_ids(manifest_path: Path) -> set[str]:
+    """Use the active Global+France union for the production Domain guard.
+
+    Explicit fixture manifests remain hermetic so isolated transaction tests can
+    continue to validate one synthetic manifest without loading repository state.
+    """
+    try:
+        production_root = manifest_path.resolve() == (ROOT / "manifest.json").resolve()
+    except OSError:
+        production_root = False
+    if production_root:
+        return set(projection_active_provider_ids(ROOT))
+    return current_provider_ids(load(manifest_path))
 
 
 def concrete_http(value: object) -> bool:
@@ -547,7 +566,7 @@ def main() -> int:
         load(args.before_history),
         load(args.report),
         load(args.changes),
-        current_provider_ids(load(args.manifest)),
+        validation_provider_ids(Path(args.manifest)),
     )
     print("FIELD_DOMAIN_REFRESH_GUARD " + json.dumps(result, sort_keys=True))
     return 0
