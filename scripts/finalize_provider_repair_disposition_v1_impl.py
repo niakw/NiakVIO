@@ -325,9 +325,17 @@ def main() -> int:
         hub = declared_hub(patch)
         enabled = provider in active_ids
         manifest_row["enabled"] = enabled
+        # Repair records route debt only. Provider-folder/lifecycle remains the
+        # activation authority and Repair must not manufacture a second
+        # manifest_overrides.enabled authority. An active provider also clears
+        # any stale disable override left from an older lifecycle generation.
         manifest_overrides = patch.get("manifest_overrides") if isinstance(patch.get("manifest_overrides"), dict) else {}
-        manifest_overrides["enabled"] = enabled
-        patch["manifest_overrides"] = manifest_overrides
+        if enabled and "enabled" in manifest_overrides:
+            manifest_overrides.pop("enabled", None)
+        if manifest_overrides:
+            patch["manifest_overrides"] = manifest_overrides
+        else:
+            patch.pop("manifest_overrides", None)
         patch["route_data_state"] = route_state
         if enabled:
             enabled_count += 1
