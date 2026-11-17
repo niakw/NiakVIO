@@ -97,3 +97,9 @@ assert '"image.tmdb.org"' in PROBE
 assert "TMDB_HINT" not in PROBE
 
 print("add provider workflow contract passed: routing=full-auto branding=dedicated full_native_labs=false")
+
+add_provider_source=(ROOT/"scripts/add_provider.py").read_text(encoding="utf-8")
+assert 'patch.setdefault("manifest_overrides", {})["enabled"] = active' not in add_provider_source
+assert "second enabled=true override" in add_provider_source
+assert 'manifest_overrides.pop("enabled", None)' in add_provider_source
+assert 'manifest_overrides["enabled"] = False' in add_provider_source
