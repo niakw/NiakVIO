@@ -64,6 +64,8 @@ for path in (
 ):
     text = path.read_text(encoding="utf-8")
     assert 'native-hub46/manifest.json' in text, path
+    assert 'TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-native-hub46/manifest.json}"' in text, path
+    assert 'TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"' not in text, path
     assert 'TARGET_MANIFEST="manifest-hub46.json"' not in text, path
 
 # Android prebuild must resolve the same physical manifest before QEMU. Historical
@@ -71,7 +73,10 @@ for path in (
 # the scope switch and may not resolve the visible root repository instead.
 prebuild = (ROOT / "scripts/prebuild_native_android_reader_suite.sh").read_text(encoding="utf-8")
 assert "NATIVE_ANDROID_HUB46_PREBUILD_V1" in prebuild
+assert 'TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-native-hub46/manifest.json}"' in prebuild
+assert 'TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"' not in prebuild
 assert 'TARGET_MANIFEST="native-hub46/manifest.json"' in prebuild
+assert prebuild.index('TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-native-hub46/manifest.json}"') < prebuild.index('TARGET_MANIFEST="native-hub46/manifest.json"')
 assert "phase=prebuild" in prebuild
 
 ios = (ROOT / ".github/workflows/native-mobile-ios-reader.yml").read_text(encoding="utf-8")
