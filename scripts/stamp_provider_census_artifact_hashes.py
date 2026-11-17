@@ -76,22 +76,58 @@ def stamp(status: dict[str, Any], hashes: dict[str, str]) -> dict[str, Any]:
     return status
 
 
+def verify_existing(status: dict[str, Any], hashes: dict[str, str]) -> dict[str, Any]:
+    """Refuse to attach source-tested verdicts to different current artifacts."""
+    rows = [row for row in status.get("providers") or [] if isinstance(row, dict)]
+    by_id = {canon(row.get("provider")): row for row in rows if canon(row.get("provider"))}
+    missing = sorted(pid for pid in hashes if pid not in by_id)
+    if missing:
+        raise ValueError(f"all-scope status missing active providers: {missing}")
+    mismatches: list[str] = []
+    for pid, current in sorted(hashes.items()):
+        recorded = str(by_id[pid].get("providerArtifactSha256") or "").strip().casefold()
+        if not recorded:
+            mismatches.append(f"{pid}:missing-tested-hash")
+        elif recorded != current:
+            mismatches.append(f"{pid}:{recorded[:16]}!={current[:16]}")
+    if mismatches:
+        raise ValueError(
+            "current active bytes differ from source-tested census bytes: "
+            + ", ".join(mismatches)
+        )
+    if int(status.get("artifactHashSchemaVersion") or 0) < 1:
+        raise ValueError("source-tested census is missing artifact hash schema")
+    if int(status.get("activeArtifactHashCount") or 0) != len(hashes):
+        raise ValueError(
+            "source-tested active artifact count mismatch: "
+            f"recorded={status.get('activeArtifactHashCount')} current={len(hashes)}"
+        )
+    return status
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--status", type=Path, required=True)
     ap.add_argument("--manifest", type=Path, default=Path("manifest.json"))
     ap.add_argument("--vf-manifest", type=Path, default=Path("vf/manifest.json"))
     ap.add_argument("--output", type=Path, required=True)
+    ap.add_argument(
+        "--verify-existing",
+        action="store_true",
+        help="refuse to rebind census proof when current active bytes differ from source-tested hashes",
+    )
     args = ap.parse_args()
 
     root = Path.cwd()
-    state = stamp(
-        load(args.status),
-        active_hashes(root, [load(args.manifest), load(args.vf_manifest)]),
-    )
+    hashes = active_hashes(root, [load(args.manifest), load(args.vf_manifest)])
+    source = load(args.status)
+    state = verify_existing(source, hashes) if args.verify_existing else stamp(source, hashes)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(state, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"FIELD_CENSUS_ALL_FRESHNESS_HASHES active={state['activeArtifactHashCount']}")
+    print(
+        f"FIELD_CENSUS_ALL_FRESHNESS_HASHES active={state['activeArtifactHashCount']} "
+        f"mode={'verify-existing' if args.verify_existing else 'stamp-source-tested'}"
+    )
     return 0
 
 

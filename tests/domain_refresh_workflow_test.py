@@ -88,6 +88,8 @@ assert "materialize_provider_v3_all.py" not in text, "domain changes must not re
 assert "materialize_provider_v3_one.py" in text, "reconciled provider DATA must be rematerialized incrementally before publication"
 assert "reconcile_targeted_provider_publication.py" in text, "incremental rematerialization must update manifest/materialization/provenance fixed point"
 assert "FIELD_DOMAIN_TARGETED_REMATERIALIZE" in text
+assert "if ids:" in text
+assert "print('\\n'.join(ids))" in text
 assert "project_domain_owned_provider_legos" in source
 reconcile_step=text.index("- name: Reconcile provider-owned domain metadata")
 validate_step=text.index("- name: Validate domain-only Provider v3 mutation")

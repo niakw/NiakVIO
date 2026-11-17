@@ -96,6 +96,7 @@ gate=(ROOT/".github/workflows/github-actions-gate.yml").read_text(encoding="utf-
 fin=(ROOT/".github/workflows/release-finalize.yml").read_text(encoding="utf-8")
 for w in (gate,fin):
  assert "tests/provider_ticketed_encrypted_api_runtime_test.py" in w
- assert "scripts/provider_patches/ticketed_encrypted_api_runtime_v1.py" in w
+assert "scripts/provider_patches/ticketed_encrypted_api_runtime_v1.py" in gate
+assert "scripts/provider_patches/**" in fin
 assert "scripts/add_provider.py" in gate and "scripts/add_provider.py" in fin
 print("ticketed encrypted API Bloc contract passed")

@@ -33,6 +33,18 @@ with tempfile.TemporaryDirectory() as td:
     assert stamped["artifactHashSchemaVersion"]==1
     assert stamped["activeArtifactHashCount"]==1
     assert stamped["providers"][0]["providerArtifactSha256"]==digest
+    verified=mod.verify_existing(stamped,hashes)
+    assert verified["providers"][0]["providerArtifactSha256"]==digest
+
+    asset.write_text("console.log('changed-after-census')\n",encoding="utf-8")
+    changed_hashes=mod.active_hashes(root,[global_manifest,vf_manifest])
+    try:
+        mod.verify_existing(stamped,changed_hashes)
+    except ValueError as exc:
+        assert "differ from source-tested census bytes" in str(exc),exc
+    else:
+        raise AssertionError("changed production bytes inherited stale census proof")
+    asset.write_text("console.log('demo')\n",encoding="utf-8")
 
     # The same provider cannot silently point at different executable bytes
     # between Global and France.

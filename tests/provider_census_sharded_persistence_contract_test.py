@@ -148,6 +148,23 @@ assert 'allowPendingTargets requires explicit targetProviders' in workflow
 assert 'source_workflow\" = \"PROVIDER - Bulk Onboarding' in workflow
 print("pending onboarding sharded proof handoff contract passed")
 
+for forbidden in (
+    "python scripts/materialize_provider_v3_all.py",
+    "python scripts/materialize_provider_v3_one.py",
+    "python scripts/materialize_provider_base_v3_store.py",
+    "python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json",
+):
+    assert forbidden not in workflow, forbidden
+for marker in (
+    "mode=active-all-exact-published-bytes-no-rematerialization",
+    "mode=active-target-exact-published-bytes-no-rematerialization",
+    "FIELD_SHARDED_SOURCE_BYTE_HASHES",
+    "--verify-existing",
+    "reason=active-provider-byte-drift",
+    "authority=source-tested-hash-verified",
+):
+    assert marker in workflow, marker
+
 # Pending onboarding evidence is isolated from canonical production freshness.
 for marker in (
     "automation/provider-onboarding-pending-status-latest.json",

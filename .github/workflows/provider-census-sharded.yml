@@ -288,23 +288,18 @@ jobs:
           PY
             echo "FIELD_SHARDED_TARGET_MATERIALIZATION providers=$TARGET_PROVIDERS mode=pending-exact-staged-bytes"
           else
-            python scripts/materialize_provider_base_v3_store.py
+            # Canonical current-byte census measures the artifacts production
+            # actually serves. Publication/reconciliation owns rematerialization.
+            # Rebuilding here would test candidate bytes and could later stamp a
+            # different published hash after the persistence reset.
+            python scripts/validate_published_provider_config.py
+            python scripts/validate_provider_materialization_authority.py
             if [ -n "$TARGET_PROVIDERS" ]; then
-              IFS=',' read -r -a target_rows <<< "$TARGET_PROVIDERS"
-              for provider in "${target_rows[@]}"; do
-                provider="$(printf '%s' "$provider" | xargs)"
-                [ -z "$provider" ] && continue
-                python scripts/reconcile_provider_domain_metadata.py --rebuild --provider "$provider"
-                python scripts/materialize_provider_v3_one.py "$provider"
-              done
-              echo "FIELD_SHARDED_TARGET_MATERIALIZATION providers=$TARGET_PROVIDERS mode=targeted"
+              echo "FIELD_SHARDED_TARGET_MATERIALIZATION providers=$TARGET_PROVIDERS mode=active-target-exact-published-bytes-no-rematerialization"
             else
-              python scripts/reconcile_provider_domain_metadata.py --rebuild
-              python scripts/materialize_provider_v3_all.py
-              echo "FIELD_SHARDED_TARGET_MATERIALIZATION providers=all mode=global"
+              echo "FIELD_SHARDED_TARGET_MATERIALIZATION providers=all mode=active-all-exact-published-bytes-no-rematerialization"
             fi
           fi
-          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
           python scripts/validate_published_provider_config.py
 
       - name: Run deterministic provider shard
@@ -478,6 +473,22 @@ jobs:
             --status automation/provider-census-sharded-status.json \
             --output automation/PROVIDER-CENSUS-SHARDED.md
 
+          # Bind final verdicts to the exact artifacts executed in this pinned
+          # source checkout before any reset to a newer main.
+          if [ "${{ needs.prepare.outputs.census_scope }}" = "all" ] && \
+             [ "${{ needs.prepare.outputs.allow_pending_targets }}" != "true" ]; then
+            python scripts/stamp_provider_census_artifact_hashes.py \
+              --status automation/provider-census-sharded-status.json \
+              --manifest manifest.json \
+              --vf-manifest vf/manifest.json \
+              --output "$RUNNER_TEMP/provider-census-source-byte-bound.json"
+            mv "$RUNNER_TEMP/provider-census-source-byte-bound.json" automation/provider-census-sharded-status.json
+            python scripts/render_provider_census_status_from_state.py \
+              --status automation/provider-census-sharded-status.json \
+              --output automation/PROVIDER-CENSUS-SHARDED.md
+            echo "FIELD_SHARDED_SOURCE_BYTE_HASHES source=${{ needs.prepare.outputs.source_sha }} authority=executed-published-bytes"
+          fi
+
           batch_args=(python scripts/build_provider_repair_batch_plan.py
             --status automation/provider-census-sharded-status.json
             --sharded-census automation/provider-census-sharded-merged.json
@@ -610,12 +621,20 @@ jobs:
             echo "FIELD_SHARDED_GLOBAL_FANOUT retained=true replaced=false scope=$CENSUS_SCOPE run=$run_id"
           fi
           if [ "$CENSUS_SCOPE" = "all" ] && [ "$ALLOW_PENDING_TARGETS" != "true" ]; then
-            python scripts/stamp_provider_census_artifact_hashes.py \
+            if ! python scripts/stamp_provider_census_artifact_hashes.py \
               --status /tmp/provider-census-status.json \
               --manifest manifest.json \
               --vf-manifest vf/manifest.json \
-              --output automation/provider-census-all-status-latest.json
-            echo "FIELD_SHARDED_ALL_SCOPE_FRESHNESS_LEDGER updated=true run=$run_id"
+              --output automation/provider-census-all-status-latest.json \
+              --verify-existing; then
+              rm -f automation/provider-census-all-status-latest.json
+              echo "FIELD_SHARDED_CENSUS_STALE source=${SOURCE_SHA:0:12} persist_base=${persist_base:0:12} reason=active-provider-byte-drift"
+              echo "stale=true" >> "$GITHUB_OUTPUT"
+              echo "pending=false" >> "$GITHUB_OUTPUT"
+              echo "ok=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "FIELD_SHARDED_ALL_SCOPE_FRESHNESS_LEDGER updated=true run=$run_id authority=source-tested-hash-verified"
           fi
           if [ "$ALLOW_PENDING_TARGETS" = "true" ]; then
             test -n "$TARGET_PROVIDERS"

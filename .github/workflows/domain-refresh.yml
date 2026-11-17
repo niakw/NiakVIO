@@ -178,7 +178,8 @@ jobs:
               for x in (d.get(key) or [])
               if str(x or '').strip()
           })
-          print('\n'.join(ids))
+          if ids:
+              print('\n'.join(ids))
           PY
           )
           if [ "${#reconciled_providers[@]}" -gt 0 ]; then
