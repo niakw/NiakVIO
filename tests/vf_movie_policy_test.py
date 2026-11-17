@@ -50,6 +50,9 @@ official = overrides['official_domain_hubs']
 # conclusive disable/quarantine is allowed by the same global validator.
 activation_errors = validate_activation_preservation_rehash()
 assert not activation_errors, activation_errors
+rehash_source = (ROOT / 'scripts' / 'activation_preservation_core_rehash.py').read_text(encoding='utf-8')
+assert "FIELD_ACTIVATION_LKG_RESTORE_RETIRED" in rehash_source
+assert "restore_inconclusive_previous_state()\n" not in rehash_source.split("def validate() -> list[str]:", 1)[1].split("def ", 1)[0]
 
 # Mainstream VF movie providers must remain represented as movie-capable
 # providers. Activation follows the current deep proof policy: a provider may
