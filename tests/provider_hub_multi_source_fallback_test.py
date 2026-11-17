@@ -235,6 +235,64 @@ assert persisted["type"] == "telegram_public" and persisted["role"] == "fallback
 assert persisted["discovery"] == "authoritative_hub_link", persisted
 assert transaction.sync_registry_discovered_sources(registry, "demo", observations) is False, registry
 
+
+# Generic HTML hubs cover the common workbook shapes without provider-specific
+# parsers: anchor-in-div, raw URL text, JS assignment/window.location and
+# meta-refresh all remain address candidates. This also covers Linktree/bio-link
+# style pages when their outbound URL is rendered in ordinary HTML.
+html_shapes = """
+<div class="address-card"><a href="https://demo-anchor.example/">Entrer</a></div>
+<div class="plain-address">Adresse actuelle: https://demo-text.example/</div>
+<script>
+const currentUrl = "https://demo-js.example/";
+window.location = "https://demo-location.example/";
+</script>
+<meta http-equiv="refresh" content="0; url=https://demo-meta.example/">
+"""
+shape_urls = {row[0].rstrip("/") for row in resolver.links(html_shapes, PRIMARY)}
+for expected in {
+    "https://demo-anchor.example",
+    "https://demo-text.example",
+    "https://demo-js.example",
+    "https://demo-location.example",
+    "https://demo-meta.example",
+}:
+    assert expected in shape_urls, (expected, sorted(shape_urls))
+
+# Telegram bots/private landing pages are interactive surfaces, not public
+# address feeds. Never silently treat them like /s/<channel> preview pages.
+bot_fetch_called = False
+
+def bot_fetch(url: str, timeout: float = 10.0):
+    global bot_fetch_called
+    bot_fetch_called = True
+    raise AssertionError("interactive Telegram source must not be fetched")
+
+try:
+    resolver.fetch = bot_fetch
+    bot_candidates, bot_observations = resolver.gather_candidates(
+        "demo",
+        {
+            "aliases": ["demo"],
+            "sources": [{
+                "type": "telegram_public",
+                "url": "https://t.me/demo_mirror_bot",
+                "role": "fallback",
+                "resolver": "latest_telegram_domain",
+            }],
+        },
+        {},
+        "quick",
+        0.1,
+    )
+finally:
+    resolver.fetch = original_fetch
+
+assert bot_fetch_called is False
+assert not bot_candidates
+assert bot_observations and bot_observations[0]["reason"] == "interactive_or_nonpublic_telegram_source"
+assert bot_observations[0]["publication_authority"] is False
+
 architecture = json.loads((ROOT / "automation/provider-v3-architecture.json").read_text(encoding="utf-8"))
 validation = json.loads((ROOT / "VALIDATION.json").read_text(encoding="utf-8"))
 registry_policy = json.loads((ROOT / "provider-hubs.json").read_text(encoding="utf-8"))["resolution_policy"]
