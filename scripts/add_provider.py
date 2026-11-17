@@ -48,6 +48,42 @@ def norm_id(value: Any) -> str:
     return base_store.canonical_id(raw)
 
 
+PENDING_VALIDATION_ROUTE_REASONS = {
+    "observed_identity_executable_routes",
+}
+
+
+def pending_validation_routes(request: dict[str, Any], routes: list[str]) -> list[str]:
+    """Expose only strong Route Discovery output to disabled pending validation.
+
+    These routes stay proof-neutral: the provider remains disabled/pending and
+    routeProofVersion stays zero. They exist solely so the current-byte census
+    can execute the candidate and gather causal network/media evidence.
+    """
+    evidence = request.get("routeDiscoveryEvidence")
+    if not isinstance(evidence, dict):
+        return []
+    reason = str(evidence.get("reason") or "").strip()
+    if reason not in PENDING_VALIDATION_ROUTE_REASONS:
+        return []
+    try:
+        route_count = int(evidence.get("routeCount") or 0)
+    except (TypeError, ValueError):
+        return []
+    if route_count <= 0:
+        return []
+    out: list[str] = []
+    for value in routes:
+        route = str(value or "").strip()
+        if (
+            route
+            and route not in out
+            and base_store.provider_route_is_validation_candidate(route)
+        ):
+            out.append(route)
+    return out[: min(24, route_count)]
+
+
 def historical_formats(provider_id: str) -> list[str]:
     """Retain known manifest-format capability when an old ID is re-onboarded.
 
@@ -554,6 +590,7 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
     category = str(request.get("category") or ("VF" if any(value.startswith("fr") for value in languages) else "International")).strip()
     strategy = str(request.get("strategy") or "html_scraper").strip().casefold()
     routes = parse_list(request.get("routes"))
+    validation_routes = pending_validation_routes(request, routes) if bulk else []
     aliases = parse_list(request.get("aliases")) or [provider_id]
     search_queries = parse_list(request.get("search_queries") or request.get("search"))
     if not search_queries:
@@ -790,7 +827,7 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
         "officialApi": api or None,
         "origins": origins,
         "observedUrls": [value for value in (api, direct) if value],
-        "routes": [],
+        "routes": validation_routes,
         "candidateRoutes": routes,
         "staticCandidatesExecutable": False,
     }
