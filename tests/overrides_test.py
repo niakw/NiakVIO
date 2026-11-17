@@ -15,6 +15,7 @@ URL_LITERAL_RE = re.compile(r"https?://[^\"'\s}]+")
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from apply_provider_overrides import apply_overrides
+from current_provider_scope import projection_active_provider_ids
 
 
 def literal_url_hosts(value: str | bytes) -> set[str]:
@@ -83,7 +84,8 @@ def test_domain_overrides() -> None:
     assert isinstance(runtime_domains, dict) and runtime_domains
     replacement_hosts = {urlsplit(value if "://" in str(value) else f"https://{value}").hostname for value in runtime_domains.values()}
     assert expected_site_host in replacement_hosts and "api.purstream.ad" in replacement_hosts, replacement_hosts
-    assert (purstream.get("manifest_overrides") or {}).get("enabled") is True
+    assert "enabled" not in (purstream.get("manifest_overrides") or {})
+    assert "purstream" in projection_active_provider_ids()
 
     movix_source = b"const A='https://api.movix.cash'; const B='https://api.movix.cloud';"
     movix_output, movix_records = apply_overrides("movix", movix_source, include_global_core=False)
