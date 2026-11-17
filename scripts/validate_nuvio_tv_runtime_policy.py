@@ -38,7 +38,7 @@ def load(path: Path) -> dict[str, Any]:
 def effective_media_safety_source(path: Path) -> str:
     """Compose the configured terminal sanitizer before validating inherited layers.
 
-    V11 is intentionally a thin delta over V10/V8. Requiring inherited markers to
+    V12 is intentionally a thin delta over V11/V10/V8. Requiring inherited markers to
     be copied into each newer source file would duplicate implementation text and
     make the validator disagree with the bytes actually emitted by Core.
     """
@@ -198,6 +198,7 @@ def main() -> int:
             errors.append(f"NuvioTV shared media-safety authority could not compose: {error}")
             text = ""
         for marker in (
+            "NUVIO_STREAM_OUTPUT_MULTI_AUDIO_FRONTIER_V12",
             "NUVIO_STREAM_OUTPUT_HLS_MASTER_PREFERENCE_V11",
             "NUVIO_STREAM_OUTPUT_NETWORK_EVIDENCE_V10",
             "NUVIO_STREAM_OUTPUT_STRICT_PROBE_V8",
