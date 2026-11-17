@@ -1,133 +1,197 @@
 #!/usr/bin/env python3
-"""Restore user-confirmed provider supportedTypes across published manifests."""
+"""Validate/apply sparse user-confirmed provider semantic media-type constraints.
+
+provider-type-policy.json is deliberately *not* provider scope, activation, or
+manifest transport authority. It is a sparse current-catalog intent contract.
+provider_catalog.json stores semantic capability; rendered manifests may add
+transport-only aliases such as anime -> tv.
+
+Default mode is validation-only. --apply is an explicit maintenance operation
+that aligns current catalog/structured DATA, then uses the canonical catalog
+renderer to regenerate manifests.
+"""
 from __future__ import annotations
 
+import argparse
 import json
-import re
+import subprocess
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 POLICY = ROOT / "provider-type-policy.json"
-MANIFESTS = (ROOT / "manifest.json", ROOT / "vf" / "manifest.json")
+CATALOG = ROOT / "provider_catalog.json"
 OVERRIDES = ROOT / "provider-overrides.json"
+RENDERER = ROOT / "engine_v2/scripts/render-manifests-from-catalog.mjs"
+ALLOWED_TYPES = {"movie", "tv", "anime"}
 
 
-def load(path: Path) -> dict:
-    return json.loads(path.read_text(encoding="utf-8"))
+def load(path: Path) -> dict[str, Any]:
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
+        raise ValueError(f"{path.relative_to(ROOT)}: JSON object required")
+    return value
 
 
-def write(path: Path, payload: dict) -> None:
+def write(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def bump_patch(value: object) -> str:
-    match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", str(value or ""))
-    if not match:
-        return "1.0.1"
-    major, minor, patch = map(int, match.groups())
-    return f"{major}.{minor}.{patch + 1}"
+def cid(value: object) -> str:
+    return str(value or "").strip().casefold().replace("_", "-")
 
 
 def normalize_types(values: object) -> list[str]:
-    allowed = {"movie", "tv", "anime"}
-    result: list[str] = []
+    out: list[str] = []
     for value in values if isinstance(values, list) else []:
-        item = str(value).strip().casefold()
-        if item in allowed and item not in result:
-            result.append(item)
-    return result
+        item = str(value or "").strip().casefold()
+        if item in ALLOWED_TYPES and item not in out:
+            out.append(item)
+    return out
 
 
-def update_manifest(path: Path, policy: dict[str, dict], *, require_all: bool) -> list[str]:
-    data = load(path)
-    rows = {
-        str(row.get("id") or "").casefold(): row
-        for row in data.get("scrapers") or []
-        if isinstance(row, dict) and str(row.get("id") or "").strip()
-    }
-    missing = sorted(set(policy) - set(rows)) if require_all else []
-    if missing:
-        raise RuntimeError(f"{path}: policy providers missing: {missing}")
+def policy_rows(payload: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    if int(payload.get("schema_version") or 0) < 2:
+        raise ValueError("provider-type-policy schema >=2 required")
+    rows = payload.get("providers")
+    if not isinstance(rows, dict):
+        raise ValueError("provider-type-policy providers map required")
+    out: dict[str, dict[str, Any]] = {}
+    for raw_id, row in rows.items():
+        provider = cid(raw_id)
+        if not provider or not isinstance(row, dict):
+            raise ValueError(f"invalid provider-type-policy row: {raw_id!r}")
+        if provider in out:
+            raise ValueError(f"duplicate provider-type-policy identity: {provider}")
+        semantic = normalize_types(row.get("supportedTypes"))
+        if not semantic:
+            raise ValueError(f"{provider}: empty semantic type policy")
+        out[provider] = row
+    return out
+
+
+def catalog_rows(payload: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    if payload.get("sourceOfTruth") is not True:
+        raise ValueError("provider_catalog.json must remain sourceOfTruth")
+    providers = payload.get("providers")
+    if not isinstance(providers, list):
+        raise ValueError("provider_catalog.json providers list required")
+    out: dict[str, dict[str, Any]] = {}
+    for record in providers:
+        if not isinstance(record, dict) or not isinstance(record.get("scraper"), dict):
+            continue
+        scraper = record["scraper"]
+        provider = cid(record.get("canonicalId") or scraper.get("id"))
+        if not provider or provider in out:
+            raise ValueError(f"invalid/duplicate current catalog identity: {provider!r}")
+        out[provider] = scraper
+    return out
+
+
+def validate(
+    policy: dict[str, dict[str, Any]],
+    catalog: dict[str, dict[str, Any]],
+    overrides: dict[str, Any],
+) -> list[str]:
+    errors: list[str] = []
+    outside = sorted(set(policy) - set(catalog))
+    if outside:
+        errors.append("policy identities outside current catalog: " + ",".join(outside))
+
+    patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
+    capabilities = overrides.get("provider_capabilities") if isinstance(overrides.get("provider_capabilities"), dict) else {}
+
+    for provider in sorted(set(policy) & set(catalog)):
+        desired = normalize_types(policy[provider].get("supportedTypes"))
+        scraper = catalog[provider]
+        actual = normalize_types(scraper.get("supportedTypes"))
+        if "canonicalSupportedTypes" in scraper:
+            errors.append(f"{provider}: catalog contains manifest-only canonicalSupportedTypes")
+        if actual != desired:
+            errors.append(f"{provider}: catalog semantic types {actual} != policy {desired}")
+
+        patch = patches.get(provider)
+        if isinstance(patch, dict) and normalize_types(patch.get("published_types")) != desired:
+            errors.append(
+                f"{provider}: provider_patches published_types "
+                f"{normalize_types(patch.get('published_types'))} != policy {desired}"
+            )
+        capability = capabilities.get(provider)
+        if isinstance(capability, dict) and normalize_types(capability.get("catalogue_types")) != desired:
+            errors.append(
+                f"{provider}: provider_capabilities catalogue_types "
+                f"{normalize_types(capability.get('catalogue_types'))} != policy {desired}"
+            )
+    return errors
+
+
+def apply_policy(
+    policy: dict[str, dict[str, Any]],
+    catalog_payload: dict[str, Any],
+    overrides: dict[str, Any],
+) -> list[str]:
+    by_id = catalog_rows(catalog_payload)
+    outside = sorted(set(policy) - set(by_id))
+    if outside:
+        raise ValueError("refuse to resurrect non-current policy identities: " + ",".join(outside))
+
+    patches = overrides.get("provider_patches")
+    capabilities = overrides.get("provider_capabilities")
+    if not isinstance(patches, dict) or not isinstance(capabilities, dict):
+        raise ValueError("structured provider override maps required")
 
     changed: list[str] = []
-    for provider_id, expected in policy.items():
-        row = rows.get(provider_id)
-        if row is None:
-            continue
-        desired_types = normalize_types(expected.get("supportedTypes"))
-        if not desired_types:
-            raise RuntimeError(f"{provider_id}: empty supportedTypes policy")
-        desired_description = expected.get("description")
-        dirty = False
-        if normalize_types(row.get("supportedTypes")) != desired_types:
-            row["supportedTypes"] = desired_types
+    for provider, row in sorted(policy.items()):
+        desired = normalize_types(row.get("supportedTypes"))
+        scraper = by_id[provider]
+        dirty = normalize_types(scraper.get("supportedTypes")) != desired or "canonicalSupportedTypes" in scraper
+        scraper["supportedTypes"] = desired
+        scraper.pop("canonicalSupportedTypes", None)
+
+        patch = patches.get(provider)
+        if isinstance(patch, dict) and normalize_types(patch.get("published_types")) != desired:
+            patch["published_types"] = list(desired)
             dirty = True
-        if isinstance(desired_description, str) and row.get("description") != desired_description:
-            row["description"] = desired_description
+        capability = capabilities.get(provider)
+        if isinstance(capability, dict) and normalize_types(capability.get("catalogue_types")) != desired:
+            capability["catalogue_types"] = list(desired)
             dirty = True
         if dirty:
-            row["version"] = bump_patch(row.get("version"))
-            changed.append(provider_id)
-
-    write(path, data)
+            changed.append(provider)
     return changed
-
-
-def update_overrides(policy: dict[str, dict]) -> list[str]:
-    data = load(OVERRIDES)
-    patches = data.setdefault("provider_patches", {})
-    changed: list[str] = []
-    for provider_id, expected in policy.items():
-        patch = patches.get(provider_id)
-        if not isinstance(patch, dict):
-            continue
-        desired_types = normalize_types(expected.get("supportedTypes"))
-        if normalize_types(patch.get("published_types")) != desired_types:
-            patch["published_types"] = desired_types
-            changed.append(provider_id)
-        options = patch.get("patch_script_options")
-        if isinstance(options, dict):
-            for config in options.values():
-                if isinstance(config, dict) and "types" in config:
-                    config["types"] = desired_types
-    write(OVERRIDES, data)
-    return changed
-
-
-def validate(policy: dict[str, dict]) -> None:
-    for path in MANIFESTS:
-        data = load(path)
-        rows = {
-            str(row.get("id") or "").casefold(): row
-            for row in data.get("scrapers") or []
-            if isinstance(row, dict) and str(row.get("id") or "").strip()
-        }
-        for provider_id, expected in policy.items():
-            if provider_id not in rows:
-                if path.name == "manifest.json" and path.parent == ROOT:
-                    raise RuntimeError(f"{path}: missing {provider_id}")
-                continue
-            actual = normalize_types(rows[provider_id].get("supportedTypes"))
-            desired = normalize_types(expected.get("supportedTypes"))
-            if actual != desired:
-                raise RuntimeError(f"{path}:{provider_id}: {actual} != {desired}")
 
 
 def main() -> int:
-    policy_data = load(POLICY)
-    policy = {
-        str(provider_id).casefold(): config
-        for provider_id, config in (policy_data.get("providers") or {}).items()
-        if isinstance(config, dict)
-    }
-    main_changed = update_manifest(MANIFESTS[0], policy, require_all=True)
-    vf_changed = update_manifest(MANIFESTS[1], policy, require_all=False)
-    overrides_changed = update_overrides(policy)
-    validate(policy)
-    print("provider type policy restored")
-    print("main changed:", ", ".join(main_changed) or "none")
-    print("vf changed:", ", ".join(vf_changed) or "none")
-    print("override types changed:", ", ".join(overrides_changed) or "none")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--apply", action="store_true")
+    args = parser.parse_args()
+
+    policy_payload = load(POLICY)
+    catalog_payload = load(CATALOG)
+    overrides = load(OVERRIDES)
+    policy = policy_rows(policy_payload)
+    catalog = catalog_rows(catalog_payload)
+
+    if args.apply:
+        changed = apply_policy(policy, catalog_payload, overrides)
+        write(CATALOG, catalog_payload)
+        write(OVERRIDES, overrides)
+        subprocess.run(["node", str(RENDERER.relative_to(ROOT))], cwd=ROOT, check=True)
+        catalog_payload = load(CATALOG)
+        overrides = load(OVERRIDES)
+        catalog = catalog_rows(catalog_payload)
+    else:
+        changed = []
+
+    errors = validate(policy, catalog, overrides)
+    if errors:
+        raise SystemExit("provider type policy contract failed:\n- " + "\n- ".join(errors))
+
+    print(
+        "PROVIDER_TYPE_POLICY_OK "
+        f"mode={'apply' if args.apply else 'check'} policy={len(policy)} "
+        f"catalog={len(catalog)} changed={len(changed)}"
+    )
     return 0
 
 
