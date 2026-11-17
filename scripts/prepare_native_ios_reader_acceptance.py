@@ -93,6 +93,15 @@ private data class ResultObservation(
 )
 
 @Serializable
+private data class StreamRowObservation(
+    val fixture: String,
+    val provider: String,
+    val logicalProvider: String = "",
+    val title: String = "",
+    val name: String = "",
+)
+
+@Serializable
 private data class PlayerObservation(
     val fixture: String,
     val provider: String,
@@ -366,6 +375,16 @@ private suspend fun runLab(manifestUrl: String) {
                 }
                 val playerRows = if (learning) rows.take(1) else rows.take(40)
                 playerRows.forEach { row ->
+                    emit(
+                        "FIELD_NATIVE_IOS_ROW",
+                        StreamRowObservation(
+                            fixture = fixture.slug,
+                            provider = info.id,
+                            logicalProvider = row.provider.orEmpty(),
+                            title = row.title,
+                            name = row.name.orEmpty(),
+                        ),
+                    )
                     val player = probeProductionPlayer(row, playerTimeoutMs)
                     val masterAudioFacts = if (player.state == "ready" || player.state == "ended") {
                         hlsMasterAudioFacts(row)
