@@ -10,7 +10,7 @@ script=ROOT/"scripts/stage_provider_batch.py"
 sys.path.insert(0,str(ROOT/"scripts"))
 import add_provider as add_provider_module
 from add_provider import staged_existing_entry, normalized_scope, relocate_bulk_pending_artifacts, pending_validation_routes
-from stage_provider_batch import safe_pending_restage_ids
+from stage_provider_batch import safe_pending_restage_ids, preflight
 
 with tempfile.TemporaryDirectory() as td:
     td=Path(td)
@@ -244,3 +244,39 @@ pending_manifest={"scrapers":[{"id":"pending-demo","enabled":False,"filename":"p
 pending_provenance={"providers":{"pending-demo":{"activation_mode":"bulk_onboarding_pending"},"disabled-demo":{"activation_mode":"disabled_retained"},"active-demo":{"activation_mode":"bulk_onboarding_pending"}}}
 assert safe_pending_restage_ids(pending_manifest,{"scrapers":[]},pending_provenance)=={"pending-demo"}
 print("Bulk pending restage authority is fail-closed outside inactive onboarding identities")
+
+with tempfile.TemporaryDirectory(prefix="niakvio-pending-restage-preflight-") as td:
+    root=Path(td)
+    manifest=root/"manifest.json"
+    vf_manifest=root/"vf-manifest.json"
+    provenance=root/"PROVENANCE.json"
+    manifest.write_text(json.dumps(pending_manifest),encoding="utf-8")
+    vf_manifest.write_text(json.dumps({"scrapers":[]}),encoding="utf-8")
+    provenance.write_text(json.dumps(pending_provenance),encoding="utf-8")
+    old_paths=(add_provider_module.MANIFEST,add_provider_module.VF_MANIFEST,add_provider_module.PROVENANCE)
+    add_provider_module.MANIFEST=manifest
+    add_provider_module.VF_MANIFEST=vf_manifest
+    add_provider_module.PROVENANCE=provenance
+    try:
+        summary=preflight([{
+            "id":"pending-demo",
+            "scope":"global",
+            "types":["movie"],
+            "strategy":"mixed_embed_resolver",
+        }],allow_replace_existing=False)
+        assert summary["replaceProviders"]==["pending-demo"],summary
+        assert summary["safePendingRestageProviders"]==["pending-demo"],summary
+        try:
+            preflight([{
+                "id":"active-demo",
+                "scope":"global",
+                "types":["movie"],
+                "strategy":"mixed_embed_resolver",
+            }],allow_replace_existing=False)
+        except ValueError as exc:
+            assert "already exists" in str(exc),exc
+        else:
+            raise AssertionError("active provider was implicitly replaceable")
+    finally:
+        add_provider_module.MANIFEST,add_provider_module.VF_MANIFEST,add_provider_module.PROVENANCE=old_paths
+print("Bulk pending restage is implicit only for the same disabled onboarding authority")
