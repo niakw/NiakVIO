@@ -1,3 +1,13 @@
+## 2026-11-17 — Portfolio ranking now models 60 Global + 60 France instead of a false 120-unique target
+
+- Final métier audit found a September-era contradiction in the portfolio layer. Current publication/onboarding policy correctly targets **60 active Global and 60 active France**, but `.github/provider-portfolio-policy.json` had been changed to `target_unique_active=120` while `rank_provider_portfolio.cjs` still selected a single unique-provider target. This is mathematically wrong when a provider belongs to both projections: 60+60 is two projection capacities, not a requirement for 120 distinct identities. The ranking regression was also stale and still asserted the old compact `target<50 / max<=45` contract.
+- Portfolio policy schema is now 4. The false `target_unique_active` and redundant `minimum_vf_unique` fields are removed. Authority is `target_global_active=60`, `target_france_active=60`, `unique_active_semantics=derived_union_of_global_and_france_targets`; 120 remains only the theoretical unique ceiling when projections are fully disjoint.
+- Ranking now preserves quality/safety ordering, first preserves specialist coverage inside capacity, then independently fills Global and France to their configured targets. A provider present in both projections satisfies both once. Every candidate addition is bounded so neither projection can exceed 60; out-of-projection observations stay diagnostic and consume no production capacity.
+- Coverage preservation no longer falls back to the removed unique target. It uses the explicit normal/hard unique ceiling, which remains a safety ceiling rather than a publication objective.
+- `provider_portfolio_ranking_test.py` now locks the 60/60 projection semantics and rejects reintroduction of `target_unique_active`. Current production remains 45 Global / 38 France / 75 unique; this change fixes selection semantics only and does not fabricate activation or playback proof.
+- Relevant commits: `1b9c8423` projection-aware ranking, `06c259a6` policy cleanup, `49f5de79` regression alignment, `4f92475b` projection capacity guard, `fc8062ff` coverage fallback cleanup.
+- Fresh exact-current-head certification is required. Brain remains blocked until the user checkpoint.
+
 ## 2026-11-17 — Quick Verify & Publish is now exact-SHA and non-cancellable in release certification
 
 - Final release-child audit confirmed `sync.yml` Quick is verify-only: only Deep mode may commit/publish. However its concurrency block still shared a cancellable per-ref group, so a release-candidate `workflow_dispatch` could be cancelled by a routine verification run.
