@@ -360,7 +360,7 @@ class NiakvioNativeCorpusDesktopTest {{
                 emit("FIELD_NATIVE_RESULT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} duration_ms=${{System.currentTimeMillis()-started}} count=${{rows.size}}")
                 rows.take(3).forEachIndexed {{ index, row ->
                     val hint = humanMediaHint(row.url)
-                    emit("FIELD_NATIVE_ROW client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} index=$index title64=${{b64(row.title)}} name64=${{b64(row.name)}} quality64=${{b64(row.quality)}} language64=${{b64(row.language)}} type64=${{b64(row.type)}} host64=${{b64(hostOnly(row.url))}} media_hint64=${{b64(hint)}}")
+                    emit("FIELD_NATIVE_ROW client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} index=$index title64=${{b64(row.title)}} name64=${{b64(row.name)}} logical_provider64=${{b64(row.provider)}} quality64=${{b64(row.quality)}} language64=${{b64(row.language)}} type64=${{b64(row.type)}} host64=${{b64(hostOnly(row.url))}} media_hint64=${{b64(hint)}}")
                 }}
                 rows.firstOrNull()?.let {{ row ->
                     val probe = probeTransport(row.url, row.headers)
@@ -488,7 +488,7 @@ class {klass} {{
                 emit("FIELD_NATIVE_RESULT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} duration_ms=${{System.currentTimeMillis()-started}} count=${{rows.size}}")
                 rows.take(3).forEachIndexed {{ index, row ->
                     val hint = humanMediaHint(row.url)
-                    emit("FIELD_NATIVE_ROW client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} index=$index title64=${{b64(row.title)}} name64=${{b64(row.name)}} quality64=${{b64(row.quality)}} language64=${{b64(row.language)}} type64=${{b64(row.type)}} host64=${{b64(hostOnly(row.url))}} media_hint64=${{b64(hint)}}")
+                    emit("FIELD_NATIVE_ROW client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} index=$index title64=${{b64(row.title)}} name64=${{b64(row.name)}} logical_provider64=${{b64(row.provider)}} quality64=${{b64(row.quality)}} language64=${{b64(row.language)}} type64=${{b64(row.type)}} host64=${{b64(hostOnly(row.url))}} media_hint64=${{b64(hint)}}")
                 }}
                 rows.firstOrNull()?.let {{ row ->
                     val probe = probeTransport(row.url, row.headers)
