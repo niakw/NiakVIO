@@ -353,6 +353,7 @@ Règles :
 - la preuve multi-audio est causale et player-first : le player de production consomme d'abord le stream, puis un probe transport borné peut compter les renditions `EXT-X-MEDIA:TYPE=AUDIO` du master ; lorsqu'un master prouve au moins deux pistes, le même Lab doit observer au moins deux pistes exposées par le player de production ;
 - Mobile Android et Desktop lisent cette cardinalité via `PlayerEngineController.getAudioTracks()`, iOS via `NuvioPlayerBridge.getAudioTrackCount()`, et TV via l'overlay utilisateur réel « Pistes audio » ; le harness ne patch jamais le code production Nuvio pour fabriquer cette preuve ;
 - un master multi-audio prouvé mais réduit à moins de deux pistes par le player est classé `client_runtime`, pas provider Repair.
+- le sanitizer V12 compare jusqu'à 16 candidats média déjà découverts d'un même player indirect pour éviter qu'un master HLS multi-audio situé après plusieurs child playlists mono-audio soit perdu ; le plafond final reste 40 identités de lecture et la validation reste fail-closed.
 
 Le trigger commun est `.github/triggers/full-native-lab-validation.json`.
 
