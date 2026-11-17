@@ -8,7 +8,7 @@ from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from manage_provider_lifecycle import RETENTION_DAYS, provider_artifacts
+from manage_provider_lifecycle import RETENTION_DAYS, provider_artifacts, hold_archival_for_unverified_auto_off
 from current_provider_scope import pending_provider_ids
 
 manifest=json.loads((ROOT/"manifest.json").read_text(encoding="utf-8"))
@@ -33,6 +33,14 @@ active={
     for row in visible_rows if row.get("enabled") is not False
 }
 ledger=state.get("disabled") or {}
+# A time threshold cannot erase bytes disabled solely after an exact-byte
+# freshness miss; explicit/manual or separately proven terminal lifecycle
+# reasons still follow the ordinary seven-day archival contract.
+assert hold_archival_for_unverified_auto_off("auto_off_current_architecture_nonfunctional")
+assert hold_archival_for_unverified_auto_off("auto_off_current_architecture_regression")
+for terminal_reason in ("manual_off_test", "auto_off_upstream_shutdown", "auto_off_domain_authority_exhausted", "disabled"):
+    assert not hold_archival_for_unverified_auto_off(terminal_reason), terminal_reason
+
 assert state.get("retentionDays") == RETENTION_DAYS
 assert set(disabled)==set(ledger), (set(disabled),set(ledger))
 assert not (set(active)&set(all_disabled))
@@ -80,6 +88,8 @@ assert "python scripts/build_provider_disabled_recovery_queue.py" in workflow, "
 # materialization authority. This keeps lifecycle aligned with the canonical
 # Global+France active byte ledger.
 lifecycle_source=(ROOT/"scripts/manage_provider_lifecycle.py").read_text(encoding="utf-8")
+assert "if day >= purge_day and not hold_archival_for_unverified_auto_off(reason):" in lifecycle_source
+assert '"archiveHoldReason": "independent_negative_proof_pending"' in lifecycle_source
 assert "active providers missing from materialization ledger" in lifecycle_source
 assert "visible providers missing from materialization ledger" not in lifecycle_source
 assert "materialization_ids == active_union" in workflow
