@@ -1,16 +1,15 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "mode": "quality_and_coverage_first",
   "purpose": "Maintain 60 active Global and 60 active France providers while preserving proof quality: GitHub/WAF network rejection is inconclusive, exact-byte offline activations stay live-unverified, and only native/live replay can earn FULL OK.",
   "portfolio": {
-    "target_unique_active": 120,
     "normal_max_unique_active": 120,
     "hard_max_unique_active": 120,
-    "minimum_vf_unique": 60,
     "minimum_anime_specialists": 20,
     "minimum_movie_tv_core": 20,
     "target_global_active": 60,
-    "target_france_active": 60
+    "target_france_active": 60,
+    "unique_active_semantics": "derived_union_of_global_and_france_targets"
   },
   "eligibility": {
     "minimum_relevant_executions": 6,
