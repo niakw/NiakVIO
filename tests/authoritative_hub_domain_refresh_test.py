@@ -164,4 +164,85 @@ assert refresh.has_domain_refresh_source(direct_cfg, "quick") is True
 assert refresh.has_domain_refresh_source({"search_queries": ["demo"]}, "quick") is False
 assert refresh.has_domain_refresh_source({"search_queries": ["demo"]}, "deep") is True
 
-print("authoritative hub domain refresh skips terminal validation and accepts current hub destination")
+# Regression: a direct-only provider whose address is actually unreachable may
+# use search as a bounded discovery fallback in quick/scheduled mode. A plain
+# search result cannot publish on first sighting: it must validate as the same
+# provider terminal on two consecutive runs.
+fallback_old = "https://demo-old.example/"
+fallback_new = "https://demo-new.example"
+fallback_cfg = {
+    "hub": None,
+    "aliases": ["demo"],
+    "direct_candidates": [fallback_old],
+    "allowed_terminal_hosts": ["demo-old.example", "demo-new.example"],
+    "search_queries": ['"demo" official domain'],
+    "search_confirmation_runs": 2,
+}
+fallback_history: dict = {}
+search_calls: list[str] = []
+original_fetch = resolver.fetch
+original_search = resolver.search_candidates
+original_validate = resolver.validate_terminal
+
+def failed_direct_fetch(url: str, timeout: float = 10.0):
+    if url.rstrip("/") == fallback_old.rstrip("/"):
+        raise OSError("direct address unavailable")
+    raise AssertionError(f"unexpected fetch: {url}")
+
+def confirmed_search(provider_id: str, cfg: dict, query: str, timeout: float):
+    search_calls.append(query)
+    return (
+        [{
+            "url": fallback_new,
+            "label": "demo official",
+            "score": 22,
+            "source_type": "search",
+            "source": "synthetic-search",
+            "query": query,
+            "document_index": 0,
+        }],
+        [{"engine": "synthetic", "status": 200}],
+    )
+
+def validate_search(provider_id: str, cfg: dict, candidate: str, timeout: float):
+    assert candidate == fallback_new
+    return {
+        "ok": True,
+        "status": 200,
+        "final_url": fallback_new,
+        "brand_match": True,
+        "content_type": "text/html",
+        "attachment": False,
+    }
+
+try:
+    resolver.fetch = failed_direct_fetch
+    resolver.search_candidates = confirmed_search
+    resolver.validate_terminal = validate_search
+
+    fallback_first = refresh.resolve_authoritative_hub_domain(
+        "demo", fallback_cfg, fallback_history, "quick", 0.1
+    )
+    assert fallback_first["status"] == "pending_confirmation", fallback_first
+    assert fallback_first["reason"] == "search_fallback_requires_consecutive_confirmation", fallback_first
+    assert fallback_first["confirmation"]["observed"] == 1, fallback_first
+    assert fallback_first["terminal_probe_skipped"] is False, fallback_first
+    assert fallback_history["pending"]["url"] == fallback_new, fallback_history
+
+    fallback_second = refresh.resolve_authoritative_hub_domain(
+        "demo", fallback_cfg, fallback_history, "quick", 0.1
+    )
+finally:
+    resolver.fetch = original_fetch
+    resolver.search_candidates = original_search
+    resolver.validate_terminal = original_validate
+
+assert len(search_calls) == 2, search_calls
+assert fallback_second["status"] == "site_authoritative", fallback_second
+assert fallback_second["official_site"] == fallback_new, fallback_second
+assert fallback_second["selected_source_type"] == "search_confirmed", fallback_second
+assert fallback_second["reason"] == "confirmed_search_fallback_after_direct_unreachable", fallback_second
+assert fallback_second["terminal_probe_skipped"] is False, fallback_second
+assert fallback_second["search_confirmation"]["observed"] == 2, fallback_second
+
+print("authoritative hub domain refresh skips terminal validation for strong authority and requires two-run proof for search fallback")
