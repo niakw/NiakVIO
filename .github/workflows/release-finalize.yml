@@ -147,10 +147,10 @@ permissions:
   actions: write
 
 concurrency:
-  # Release finalization and Domain Refresh are both production writers and must
-  # never execute concurrently. Stale finalizers fail closed at the exact-SHA /
-  # executable-drift publication gate instead of cancelling another writer.
-  group: niakvio-core-release-mutation-main
+  # Latest-wins only inside the release lane. Domain/Projection have their own
+  # queues; publication remains protected by exact-head/drift gates and atomic
+  # fast-forward push, so one lane cannot silently erase another pending lane.
+  group: niakvio-release-finalizer-main
   cancel-in-progress: false
 
 jobs:
@@ -198,6 +198,8 @@ jobs:
 
       - name: Reject executable main drift before expensive finalization
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           BASE_SHA="$(cat "$RUNNER_TEMP/accepted-main-sha")"
@@ -214,6 +216,8 @@ jobs:
           git diff --name-status "$BASE_SHA" "$CURRENT_SHA" > "$RUNNER_TEMP/release-preflight-drift.txt"
           python3 scripts/domain_refresh_publication_drift_gate.py --drift-file "$RUNNER_TEMP/release-preflight-drift.txt" || {
             echo "FIELD_RELEASE_PREFLIGHT_BLOCKED reason=executable_main_drift base=$BASE_SHA current=$CURRENT_SHA" >&2
+            gh workflow run release-finalize.yml --repo "$GITHUB_REPOSITORY" --ref main               -f expected_sha="$CURRENT_SHA" -F post_census=true || true
+            echo "FIELD_RELEASE_REQUEUED current=$CURRENT_SHA reason=preflight_executable_drift" >&2
             exit 1
           }
           echo "FIELD_RELEASE_PREFLIGHT_DRIFT state=evidence_only base=$BASE_SHA current=$CURRENT_SHA"
@@ -446,6 +450,8 @@ jobs:
 
       - name: Publish accepted release atomically
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           BASE_SHA="$(cat "$RUNNER_TEMP/accepted-main-sha")"
@@ -469,6 +475,8 @@ jobs:
               git diff --name-status "$BASE_SHA" "$CURRENT_SHA" > "$RUNNER_TEMP/release-main-drift.txt"
               python3 scripts/domain_refresh_publication_drift_gate.py --drift-file "$RUNNER_TEMP/release-main-drift.txt" || {
                 echo "FIELD_RELEASE_PUBLISH_BLOCKED reason=executable_main_drift base=$BASE_SHA current=$CURRENT_SHA" >&2
+                gh workflow run release-finalize.yml --repo "$GITHUB_REPOSITORY" --ref main                   -f expected_sha="$CURRENT_SHA" -F post_census=true || true
+                echo "FIELD_RELEASE_REQUEUED current=$CURRENT_SHA reason=publish_executable_drift" >&2
                 exit 1
               }
               git merge --no-ff --no-edit origin/main
@@ -490,6 +498,10 @@ jobs:
             fi
             echo "FIELD_RELEASE_PUBLISH_RETRY attempt=$attempt reason=remote_moved"
           done
+          git fetch origin main
+          CURRENT_SHA="$(git rev-parse origin/main)"
+          gh workflow run release-finalize.yml --repo "$GITHUB_REPOSITORY" --ref main             -f expected_sha="$CURRENT_SHA" -F post_census=true || true
+          echo "FIELD_RELEASE_REQUEUED current=$CURRENT_SHA reason=remote_did_not_converge" >&2
           echo 'FIELD_RELEASE_PUBLISH_BLOCKED reason=remote_did_not_converge' >&2
           exit 1
 
