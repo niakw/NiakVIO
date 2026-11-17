@@ -1,3 +1,15 @@
+## 2026-11-17 — Deprecated proof-absence auto-off is now replayed through current authority
+
+- The proof-debt fix stops future mass withdrawal, but the repository still contained 86 retained rows whose sole lifecycle reason was `auto_off_current_architecture_nonfunctional`, created by the superseded rule that treated missing exact-byte FULL proof as negative execution evidence.
+- Commits `12b46f9c` and `062168ea` add a controlled rollback path in `classify_provider_authority.py`: only that deprecated auto-off reason is cleared, then the provider is immediately reclassified from its current backend/hub/direct/domain authority. Manual-off, upstream shutdown, removed-source, domain-exhausted and `auto_off_current_architecture_regression` states are not rolled back. A stronger valid disable decision may therefore be re-applied in the same lifecycle pass.
+- This rollback does not claim FULL/playback proof. Exact-byte production freshness remains a separate certification/release gate, while lifecycle ownership is based on independent authority evidence. The lifecycle execution that materializes the reclassification is still pending at this entry; manifests remain 8 Global / 7 France active until that transaction commits.
+
+## 2026-11-17 — September multi-hub inventory revalidated into current Domain discovery authority
+
+- The September MAXIHUBS workbook was re-read as historical discovery evidence and cross-checked against current public sources before changing `provider-hubs.json`. No September terminal URL was copied directly into executable provider DATA.
+- Commit `3fd6733c` adds current discovery sources for existing providers without changing their executable `direct` value: Frenchstream uses live `https://fstream.info/` as primary HTML hub (currently exposing an ephemeral FS terminal), Moiflix uses public `@moiflixfr` as primary address channel, Nakios uses `https://nakios.org/` as primary official reference hub, Webflix records `@webflixfr` as fallback-only, and SFlix records `@sflix_today` as primary multi-domain announcement source.
+- The resolver keeps per-source role/resolver semantics. These sources are address-discovery authority only; Domain Refresh must still validate the terminal and perform CONFIG-only rematerialization/projection reconciliation before any runtime domain changes are published.
+
 ## 2026-11-17 — Preserve reversible auto-off cohort while independent negative proof is absent
 
 - Disabled-recovery queue currently contains **93** candidates: 84 `auto_off_current_architecture_nonfunctional` and 9 `auto_off_current_architecture_regression`. Archive deadlines include 28 on 2026-11-21 and 64 on 2026-11-24. A prior-byte census still distinguished CHAIN REACHED, NO PROOF, HARNESS/ENV BLOCKED, HARNESS MISMATCH and PARTIAL status among these; a timed archive would wrongly treat missing positive proof as independently established negative evidence.
