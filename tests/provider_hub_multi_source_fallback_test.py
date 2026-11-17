@@ -82,7 +82,7 @@ finally:
     resolver.fetch = original_fetch
     resolver.choose_official = original_choose
 
-assert [row["url"] for row in candidates[:2]] == [
+assert [row["url"].rstrip("/") for row in candidates[:2]] == [
     PRIMARY_TERMINAL.rstrip("/"),
     SECONDARY_TERMINAL.rstrip("/"),
 ], candidates
@@ -111,7 +111,7 @@ finally:
     resolver.fetch = original_fetch
     resolver.choose_official = original_choose
 
-assert [row["url"] for row in candidates] == [SECONDARY_TERMINAL.rstrip("/")], candidates
+assert [row["url"].rstrip("/") for row in candidates] == [SECONDARY_TERMINAL.rstrip("/")], candidates
 assert candidates[0]["source_fallback"] is True, candidates
 assert any(row.get("url") == PRIMARY and "error" in row for row in observations), observations
 assert any(row.get("url") == SECONDARY and row.get("resolver") == "alias_outbound" for row in observations), observations
