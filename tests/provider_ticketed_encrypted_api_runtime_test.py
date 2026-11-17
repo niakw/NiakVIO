@@ -14,7 +14,7 @@ assert "WebAssembly" not in mod.WRAPPER
 assert "TextEncoder" not in mod.WRAPPER
 assert "TextDecoder" not in mod.WRAPPER
 assert "NIAKVIO_TICKETED_ENCRYPTED_API_RUNTIME_V1" in mod.WRAPPER
-assert mod.MANAGED_FIX_ID == "PROVIDER.GENERIC.TICKETED.ENCRYPTED.API.V1"
+assert mod.MANAGED_FIX_ID == "PROVIDER.GENERIC.TICKETED_ENCRYPTED.API.V1"
 assert mod.GENERIC_REUSABLE is True
 
 cfg={
