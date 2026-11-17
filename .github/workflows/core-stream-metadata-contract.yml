@@ -41,8 +41,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: core-stream-metadata-${{ github.ref }}
-  cancel-in-progress: true
+  group: core-stream-metadata-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
   stream-metadata-contract:
