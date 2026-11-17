@@ -467,6 +467,8 @@ assert terminal_pipeline["single_token_overlap_is_sufficient_identity"] is False
 assert terminal_pipeline["source_fact_precedence"][:4] == [
     "sourceTitle", "sourceDescription", "sourceLabel", "sourceName",
 ]
+assert terminal_pipeline["quick_deep_direct_mp4_duration_identity_parity"] is True
+assert terminal_pipeline["direct_mp4_duration_probe"] == "bounded mvhd head/tail"
 assert validation_machine["terminal_media_pipeline"]["order"] == terminal_pipeline["order"]
 assert validation_machine["terminal_media_pipeline"]["recovered_url_identity_revalidated"] is True
 assert validation_machine["terminal_media_pipeline"]["terminal_audio_tracks_presented"] is True
@@ -474,6 +476,8 @@ assert validation_machine["terminal_media_pipeline"]["presentation_fields_may_pr
 assert validation_machine["terminal_media_pipeline"]["season_episode_coordinates_require_title_or_terminal_identity"] is True
 assert validation_machine["terminal_media_pipeline"]["single_token_overlap_is_sufficient_identity"] is False
 assert validation_machine["terminal_media_pipeline"]["source_fact_precedence"] == terminal_pipeline["source_fact_precedence"]
+assert validation_machine["terminal_media_pipeline"]["quick_deep_direct_mp4_duration_identity_parity"] is True
+assert validation_machine["terminal_media_pipeline"]["direct_mp4_duration_probe"] == "bounded mvhd head/tail"
 assert validation_machine["special_episodes"]["season_zero_valid"] is True
 assert validation_machine["special_episodes"]["season_zero_fallback_to_one"] is False
 assert validation_machine["special_episodes"]["mandatory_native_fixture"] == "spartacus-s00e01"
