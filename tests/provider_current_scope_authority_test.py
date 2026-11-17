@@ -33,6 +33,9 @@ assert "HUB_MATRIX" not in disposition
 assert "load(args.hub_matrix)" not in disposition
 assert "MATRIX_STALE" not in disposition
 assert "Deprecated compatibility input" in disposition
+assert 'manifest_overrides["enabled"] = enabled' not in disposition
+assert "Repair must not manufacture a second" in disposition
+assert 'if enabled and "enabled" in manifest_overrides' in disposition
 
 activation = sources["activation"]
 assert "active_provider_ids()" in activation
