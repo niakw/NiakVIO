@@ -66,6 +66,7 @@ def validate_prebuild(text: str | None = None) -> None:
     required = (
         PREBUILD_MARKER,
         'NIAKVIO_PROVIDER_SCOPE_MATRIX:-',
+        'TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-native-hub46/manifest.json}"',
         'TARGET_MANIFEST="native-hub46/manifest.json"',
         'phase=prebuild manifest=$TARGET_MANIFEST providers=current-active',
     )
@@ -74,6 +75,12 @@ def validate_prebuild(text: str | None = None) -> None:
         raise AssertionError("Android prebuild Hub-46 ownership missing: " + ",".join(missing))
     if value.index('NIAKVIO="${WORKSPACE}/niakvio"') > value.index('TARGET_MANIFEST="native-hub46/manifest.json"'):
         raise AssertionError("prebuild Hub-46 switch must run after NIAKVIO path is defined")
+    default_pos = value.index('TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-native-hub46/manifest.json}"')
+    switch_pos = value.index('TARGET_MANIFEST="native-hub46/manifest.json"', default_pos + 1)
+    if default_pos > switch_pos:
+        raise AssertionError("prebuild default manifest must be established before the scope override")
+    if 'TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"' in value:
+        raise AssertionError("Global-only prebuild fallback is forbidden")
 
 
 def main() -> int:
