@@ -59,8 +59,10 @@ permissions:
   issues: write
 
 concurrency:
-  group: niakvio-final-provider-security-main
-  cancel-in-progress: true
+  # Exact release-certification dispatches must never be cancelled by a later
+  # push-triggered Final Gate on main. Automated runs remain latest-wins.
+  group: niakvio-final-provider-security-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
   security:
