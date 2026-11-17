@@ -42,8 +42,8 @@ GLOBAL_RUNTIME_COMPAT = "scripts/provider_patches/global_runtime_compat_v1.py"
 GLOBAL_PROVIDER_RUNTIME_DISPATCH = "scripts/provider_patches/global_provider_runtime_dispatch_v1.py"
 GLOBAL_DESKTOP_RUNTIME_COMPAT = "scripts/provider_patches/desktop_runtime_compat_v1.py"
 GLOBAL_PROVIDER_BRANDING = "scripts/provider_patches/global_provider_branding_v1.py"
-# NUVIO_STREAM_SANITIZER_V10_SELECTION
-GLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v10.py"
+# NUVIO_STREAM_SANITIZER_V11_SELECTION
+GLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v11.py"
 CORE_MANAGED_SANITIZER_SCRIPTS = {
     "scripts/provider_patches/stream_output_sanitizer.py",
     "scripts/provider_patches/stream_output_sanitizer_v5.py",
@@ -91,6 +91,7 @@ GENERATED_CORE_TAIL_MARKERS = (
     "NUVIO_STREAM_OUTPUT_CORRELATED_PLAYER_FALLBACK_V7",
     "NUVIO_STREAM_OUTPUT_STRICT_PROBE_V8",
     "NUVIO_STREAM_OUTPUT_NETWORK_EVIDENCE_V10",
+    "NUVIO_STREAM_OUTPUT_HLS_MASTER_PREFERENCE_V11",
     "NUVIO_GLOBAL_STREAM_SCORE_V1",
     "NUVIO_GLOBAL_TELEMETRY_V1",
     "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1",
