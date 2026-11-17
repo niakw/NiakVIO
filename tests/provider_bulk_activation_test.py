@@ -15,7 +15,7 @@ mod=importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
 
 def provider_bundle(pid:str)->bytes:
     fix_id=f"PROVIDER.{pid.upper()}.CONFIG.V1"
-    model={"providerId":pid,"strategy":"direct_media","officialSite":f"https://{pid}.example","origins":[f"https://{pid}.example"]}
+    model={"providerId":pid,"strategy":"direct_media","officialSite":f"https://{pid}.example","origins":[f"https://{pid}.example"],"identityInput":{"mode":"tmdb_direct","requiresTmdbBeforeRun":False,"requiredFields":["tmdbId","mediaType"]}}
     payload=json.dumps(model,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()
     encoded=base64.urlsafe_b64encode(payload).decode("ascii")
     return (
@@ -71,7 +71,7 @@ with tempfile.TemporaryDirectory() as td:
     ]}),encoding="utf-8")
     paths["OVERRIDES"].write_text(json.dumps({
         "provider_patches":{
-            "a":{"manifest_overrides":{"enabled":False}},
+            "a":{"manifest_overrides":{"enabled":False},"provider_lego_scripts":["scripts/provider_patches/example_runtime_v1.py"]},
             "b":{"manifest_overrides":{"enabled":False}},
             "c":{"manifest_overrides":{"enabled":False}},
             "d":{"manifest_overrides":{"enabled":False}},
@@ -159,6 +159,12 @@ assert rows["b"]["filename"]=="provider-disabled/b.js"
 assert "enabled" not in (overrides["provider_patches"]["a"].get("manifest_overrides") or {})
 assert "enabled" not in (overrides["provider_patches"]["d"].get("manifest_overrides") or {})
 assert overrides["provider_capabilities"]["a"]["validation"]=="bulk_census_full_ok"
+assert overrides["provider_patches"]["a"]["identity_input"]=={
+    "mode":"tmdb_direct",
+    "requires_tmdb_before_run":False,
+    "required_fields":["tmdbId","mediaType"],
+}
+assert "learned_routes" not in overrides["provider_patches"]["a"]
 assert provenance["providers"]["a"]["activation_mode"]=="bulk_census_full_ok"
 assert provenance["providers"]["a"]["bulk_activation_proof"]["runId"]==77
 assert provenance["providers"]["a"]["bulk_activation_proof"]["proofSource"]=="onboarding-pending-status"
