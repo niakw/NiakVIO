@@ -22,7 +22,8 @@ assert selected.endswith("stream_output_sanitizer_v10.py"), selected
 assert mod._newer_current(synthetic) is True
 assert mod.NEWER_SANITIZERS[8].endswith("stream_output_sanitizer_v8.py")
 assert mod.NEWER_SANITIZERS[9].endswith("stream_output_sanitizer_v9.py")
-assert mod.NEWER_SANITIZERS[10].endswith("stream_output_sanitizer_v10.py")\nassert mod.NEWER_SANITIZERS[11].endswith("stream_output_sanitizer_v11.py")
+assert mod.NEWER_SANITIZERS[10].endswith("stream_output_sanitizer_v10.py")
+assert mod.NEWER_SANITIZERS[11].endswith("stream_output_sanitizer_v11.py")
 
 before_overrides = mod.OVERRIDES.read_text(encoding="utf-8")
 before_hashes = mod.HASHES.read_text(encoding="utf-8")
