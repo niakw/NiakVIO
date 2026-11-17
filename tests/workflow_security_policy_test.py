@@ -76,6 +76,10 @@ if "FIELD_CODEQL_FULL_WORKFLOW state=completed:success" not in security_gate or 
     errors.append('security-final-gate.yml: block on complete successful CodeQL matrix, not just first analysis')
 if "ref: ${{ github.sha }}" not in security_gate:
     errors.append('security-final-gate.yml: security gate must checkout the exact triggering SHA')
+if "github.event_name == 'workflow_dispatch' && github.run_id || github.ref" not in security_gate:
+    errors.append('security-final-gate.yml: exact release dispatches must use an isolated concurrency group')
+if "cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}" not in security_gate:
+    errors.append('security-final-gate.yml: exact workflow_dispatch certification must never be cancelled')
 for required_path in (
     "scripts/provider_base_store.py",
     "scripts/add_provider.py",
