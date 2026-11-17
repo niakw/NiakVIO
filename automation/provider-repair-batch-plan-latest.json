@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "43940930866",
-  "sourceTriggerSha": "8f8d5c852a0ee989f98e18fdb2edfdf2e1660f28",
+  "sourceRunId": "44010910574",
+  "sourceTriggerSha": "75f7985d94e5230ef173a8d5f98832da92ff8d04",
   "unresolvedProviderCount": 61,
   "dynamicVariantProviderCount": 4,
   "dynamicVariantProviders": [
+    "cinemabz",
     "movix-fr",
     "nakios",
-    "papadustream",
-    "stigstream"
+    "papadustream"
   ],
   "lifecycleSuppressedDynamicProviders": [
     "animevostfr",
@@ -22,6 +22,7 @@
     "allwish",
     "anidb",
     "aniflix-uno",
+    "anikototv",
     "anime-sama",
     "anime-ultime",
     "animejlprovider",
@@ -32,8 +33,10 @@
     "animesultra",
     "animevost-fr",
     "animevostfr",
+    "anisama",
     "arrowtv",
     "boredflix",
+    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -53,6 +56,7 @@
     "franime",
     "frembed",
     "french-anime",
+    "french-manga",
     "frenchstream",
     "fsharetv",
     "fullanime",
@@ -60,6 +64,7 @@
     "hianime",
     "hindmoviez",
     "ihavenotv",
+    "internet-archive",
     "kehflix",
     "kidraz",
     "kurage",
@@ -71,22 +76,32 @@
     "movieshunt",
     "moviesmod",
     "movish",
+    "movix-fr",
     "movy",
+    "mugiwarastream",
+    "nakios",
+    "neko-sama",
     "neobam",
     "neonflix",
     "overlook",
+    "papadustream",
     "persianstremio",
     "playimdb",
     "primewire",
     "pstream",
+    "purstream",
     "rarefilmm",
     "reanime-to",
     "rivestream-app",
     "rivestream-ru",
+    "sadisflix",
+    "sekai",
     "showbox",
     "shuttletv",
     "skstream",
     "stigstream",
+    "streamzo",
+    "topcartoons",
     "uhdmovies",
     "videasy",
     "vidfast",
@@ -102,12 +117,14 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
+    "webflix",
     "wookafr",
     "yflix",
     "youtitou",
+    "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": true,
+  "dynamicVariantFallbackUsed": false,
   "groupCount": 5,
   "executionModel": {
     "default": "family/signature batch",
@@ -137,11 +154,7 @@
       ],
       "harnessTransportClasses": [
         "github-all-transports-challenged",
-        "native-policy-reachable",
-        "no-transport-evidence",
-        "residential-exit-all-challenged",
-        "residential-exit-browser-reachable",
-        "residential-exit-inconclusive"
+        "no-transport-evidence"
       ],
       "transportSignature": "not-applicable",
       "providerCount": 42,
@@ -193,7 +206,9 @@
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [],
+      "dynamicVariantProviders": [
+        "cinemabz"
+      ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -244,9 +259,7 @@
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [
-        "stigstream"
-      ],
+      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -297,7 +310,7 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "native-policy-reachable"
+        "no-transport-evidence"
       ],
       "transportSignature": "not-applicable",
       "providerCount": 1,
