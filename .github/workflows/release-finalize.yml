@@ -109,6 +109,7 @@ on:
       - 'scripts/augment_native_desktop_player.py'
       - 'scripts/prepare_native_ios_reader_acceptance.py'
       - 'scripts/gate_native_ios_multi_audio.py'
+      - 'scripts/gate_native_multi_audio_coverage.cjs'
       - 'scripts/native_evidence_completeness.cjs'
       - 'scripts/analyze_native_ios_results.py'
       - 'scripts/prebuild_native_android_reader_suite.sh'
@@ -124,6 +125,11 @@ on:
       - 'tests/native_player_diagnostics_codegen_test.py'
       - 'tests/native_evidence_codegen_pipeline_test.py'
       - 'tests/native_ios_multi_audio_gate_test.py'
+      - 'tests/native_multi_audio_coverage_gate_test.cjs'
+      - '.github/workflows/native-mobile-android-reader.yml'
+      - '.github/workflows/native-mobile-ios-reader.yml'
+      - '.github/workflows/native-desktop-reader-acceptance.yml'
+      - '.github/workflows/release-candidate-validation.yml'
       - 'scripts/check_nuvio_client_upstreams.py'
       - 'scripts/runtime_contract_gate.py'
       - 'scripts/nuvio_runtime_compatibility.py'
@@ -246,6 +252,7 @@ jobs:
           python3 tests/native_player_diagnostics_codegen_test.py
           python3 tests/native_evidence_codegen_pipeline_test.py
           python3 tests/native_ios_multi_audio_gate_test.py
+          node tests/native_multi_audio_coverage_gate_test.cjs
           python3 tests/global_stream_presentation_test.py
           python3 tests/global_stream_metadata_preservation_contract_test.py
           python3 tests/global_stream_presentation_pipeline_test.py
