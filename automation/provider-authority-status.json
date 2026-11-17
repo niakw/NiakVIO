@@ -1,6 +1,8 @@
 {
   "schemaVersion": 1,
   "authority": "provider-authority-arbiter-v1",
+  "censusStatusSource": "/tmp/provider-census-preauthority.json",
+  "productionFreshnessStatusSource": "persisted-all-scope",
   "policy": {
     "searchRole": "historical-supplement-only",
     "futureHubSearchDefault": false,
@@ -16,7 +18,15 @@
   },
   "providerCount": 140,
   "projectionScope": "Global+France visible union",
-  "repairEligible": [],
+  "repairEligible": [
+    "castle",
+    "french-manga",
+    "mugiwarastream",
+    "neko-sama",
+    "papadustream",
+    "purstream",
+    "streamzo"
+  ],
   "repairBlocked": [
     "1jour1film0626",
     "4khdhub",
@@ -45,7 +55,6 @@
     "asiaflix",
     "bcine",
     "boredflix",
-    "castle",
     "chillflix",
     "cineflux",
     "cinegram",
@@ -75,7 +84,6 @@
     "franime",
     "frembed",
     "french-anime",
-    "french-manga",
     "frenchstream",
     "fsharetv",
     "fullanime",
@@ -102,22 +110,18 @@
     "movish",
     "movix-fr",
     "movy",
-    "mugiwarastream",
     "myfluneo",
     "nakastream",
     "nakios",
-    "neko-sama",
     "neobam",
     "neonflix",
     "nomorflix",
     "openflix",
     "overlook",
-    "papadustream",
     "persianstremio",
     "playimdb",
     "primewire",
     "pstream",
-    "purstream",
     "rarefilmm",
     "reanime-to",
     "rivestream",
@@ -130,7 +134,6 @@
     "shuttletv",
     "skstream",
     "stigstream",
-    "streamzo",
     "svstream",
     "topcartoons",
     "uhdmovies",
@@ -298,7 +301,7 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:FULL OK"
+        "current_status:REGRESSION PROVIDER"
       ]
     },
     {
@@ -442,7 +445,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:FULL OK"
+        "current_status:PROVIDER NETWORK BLOCKED"
       ]
     },
     {
@@ -499,19 +502,16 @@
     },
     {
       "provider": "castle",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
-      "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "action": "KEEP_BACKEND",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "api-or-backend",
       "failureCount": 0,
       "backendUrls": [
         "https://api.hlowb.com"
       ],
       "reasons": [
-        "structured_backend_authority",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:FULL OK"
+        "structured_backend_authority"
       ]
     },
     {
@@ -589,7 +589,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "current_status:CHAIN REACHED"
       ]
     },
     {
@@ -689,7 +689,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "current_status:PROVIDER NETWORK BLOCKED"
       ]
     },
     {
@@ -786,7 +786,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "current_status:HARNESS MISMATCH"
       ]
     },
     {
@@ -899,17 +899,14 @@
     },
     {
       "provider": "french-manga",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
-      "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "action": "KEEP_DIRECT",
+      "repairEligible": true,
+      "confidence": "medium",
+      "authorityClass": "direct",
       "failureCount": 0,
       "reasons": [
         "curated_direct",
-        "existing_positive_route_prior",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:FULL OK"
+        "existing_positive_route_prior"
       ]
     },
     {
@@ -1026,17 +1023,14 @@
     },
     {
       "provider": "internet-archive",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
         "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:FULL OK"
+        "search_supplement_only"
       ]
     },
     {
@@ -1158,7 +1152,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
+        "current_status:HARNESS/ENV BLOCKED"
       ]
     },
     {
@@ -1236,7 +1230,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PARTIAL OK"
+        "current_status:CHAIN REACHED"
       ]
     },
     {
@@ -1253,21 +1247,18 @@
         "structured_backend_authority",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "current_status:HARNESS MISMATCH"
       ]
     },
     {
       "provider": "mugiwarastream",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
-      "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:FULL OK"
+        "authoritative_route_source"
       ]
     },
     {
@@ -1304,22 +1295,19 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PARTIAL OK"
+        "current_status:CHAIN REACHED"
       ]
     },
     {
       "provider": "neko-sama",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
-      "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "action": "KEEP_PROVEN_SITE",
+      "repairEligible": true,
+      "confidence": "medium",
+      "authorityClass": "structured-site-plus-route-proof",
       "failureCount": 0,
       "reasons": [
         "structured_official_site",
-        "existing_positive_route_prior",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:FULL OK"
+        "existing_positive_route_prior"
       ]
     },
     {
@@ -1391,16 +1379,13 @@
     },
     {
       "provider": "papadustream",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
-      "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:FULL OK"
+        "authoritative_route_source"
       ]
     },
     {
@@ -1457,19 +1442,16 @@
     },
     {
       "provider": "purstream",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
-      "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "action": "KEEP_BACKEND",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "api-or-backend",
       "failureCount": 0,
       "backendUrls": [
         "https://api.purstream.ad/api/v1"
       ],
       "reasons": [
-        "structured_backend_authority",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:FULL OK"
+        "structured_backend_authority"
       ]
     },
     {
@@ -1555,7 +1537,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PARTIAL OK"
+        "current_status:CHAIN REACHED"
       ]
     },
     {
@@ -1570,7 +1552,7 @@
         "existing_positive_route_prior",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:FULL OK"
+        "current_status:REGRESSION PROVIDER"
       ]
     },
     {
@@ -1626,7 +1608,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "current_status:HARNESS MISMATCH"
       ]
     },
     {
@@ -1646,17 +1628,14 @@
     },
     {
       "provider": "streamzo",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
-      "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "action": "KEEP_DIRECT",
+      "repairEligible": true,
+      "confidence": "medium",
+      "authorityClass": "direct",
       "failureCount": 0,
       "reasons": [
         "curated_direct",
-        "existing_positive_route_prior",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:FULL OK"
+        "existing_positive_route_prior"
       ]
     },
     {
@@ -1815,7 +1794,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "current_status:HARNESS MISMATCH"
       ]
     },
     {
@@ -1891,17 +1870,14 @@
     },
     {
       "provider": "webflix",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "REDISCOVER_SEARCH",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "low",
+      "authorityClass": "unproven-direct-candidate",
       "failureCount": 0,
       "reasons": [
         "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:FULL OK"
+        "search_supplement_only"
       ]
     },
     {
@@ -1986,7 +1962,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PARTIAL OK"
+        "current_status:CHAIN REACHED"
       ]
     },
     {
