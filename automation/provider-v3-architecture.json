@@ -427,7 +427,18 @@
     "multi_audio_probe_player_first": true,
     "logical_stream_owner": "NiakVIO provider/scraper",
     "terminal_player_provenance_must_not_replace_owner": true,
-    "source_provider_provenance_may_augment_visible_label": true
+    "source_provider_provenance_may_augment_visible_label": true,
+    "provider_execution_isolation": {
+      "scope": [
+        "NuvioMobile",
+        "NuvioDesktop"
+      ],
+      "fresh_js_runtime_per_plugin_execution": true,
+      "scraper_identity_bound_to_execution": true,
+      "reuse_last_link_cache_preserves_addon_identity": true,
+      "manual_selection_bypasses_reuse_cache": true,
+      "automatic_fallback_updates_provider_identity": true
+    }
   },
   "terminal_media_pipeline": {
     "authority": "Core",
