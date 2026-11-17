@@ -132,6 +132,8 @@ for required in (
     "'scripts/check_nuvio_client_upstreams.py'",
     "'scripts/runtime_contract_gate.py'",
     "'scripts/materialize_provider_base_v3_store.py'",
+    "'scripts/upgrade_provider_route_media_binding_v35.py'",
+    "'tests/provider_route_media_binding_v35_test.py'",
     "'tests/provider_clean_reconstruction_contract_test.py'",
     "'.github/provider-portfolio-policy.json'",
     "'.github/workflows/provider-bulk-activation.yml'",
