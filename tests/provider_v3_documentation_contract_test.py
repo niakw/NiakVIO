@@ -130,7 +130,7 @@ assert "material_ids==active_ids" in manual
 assert "==46" not in manual and "46/46" not in manual
 
 
-assert machine["schema_version"] >= 22
+assert machine["schema_version"] >= 23
 source = machine["provider_source_of_truth"]
 assert source["canonical_provider_base_marker"] == "NIAKVIO_PROVIDER_BASE_OWNED_V3"
 assert source["legacy_provider_js_seed_allowed"] is False
@@ -182,6 +182,13 @@ domain_refresh = machine["domain_refresh"]
 assert domain_refresh["provider_scope_authority"] == "scripts/current_provider_scope.py:projection_active_provider_ids"
 assert domain_refresh["global_publication_authority"] == "manifest.json"
 assert domain_refresh["france_only_publication_authority"] == "provider_catalog.json projections general=false,vf=true"
+assert "meta_refresh" in domain_refresh["html_extraction_modes"]
+assert "/s/<channel>" in domain_refresh["public_telegram_contract"]
+assert "manual evidence only" in domain_refresh["interactive_telegram_bot_contract"]
+assert "every curated direct probe fails" in domain_refresh["direct_failure_search_fallback"]
+assert "two consecutive runs" in domain_refresh["search_fallback_publication_contract"]
+assert domain_refresh["reachable_direct_prevents_search_fallback"] is True
+assert domain_refresh["operator_pin_prevents_search_fallback"] is True
 assert machine["route_recognition"]["provider_scope_authority"] == "scripts/current_provider_scope.py:projection_runtime_visible_provider_ids"
 assert machine["route_recognition"]["global_publication_authority"] == "manifest.json"
 assert machine["route_recognition"]["france_only_publication_authority"] == "provider_catalog.json projections general=false,vf=true"
@@ -279,11 +286,19 @@ assert machine["provider_scopes"]["availability_report_visible"] == "scripts/cur
 
 assert platform_runtime_machine["schema_version"] == 3
 assert 'data.get("schema_version") != 3' in renderer_source
-assert validation_machine["schema_version"] >= 80
+assert validation_machine["schema_version"] >= 81
 assert validation_machine["checks"]["clean_provider_base_matches_current_common_source"] is True
 assert validation_machine["checks"]["common_provider_source_migrations_validation_only"] is True
 assert validation_machine["final_certification"]["requires_clean_provider_base_current_source"] is True
 assert validation_machine["final_certification"]["requires_common_source_migration_fixed_point"] is True
+assert validation_machine["domain_refresh"]["public_telegram_requires_web_preview"] is True
+assert validation_machine["domain_refresh"]["interactive_telegram_bot_is_automatic_authority"] is False
+assert validation_machine["domain_refresh"]["direct_failure_search_fallback_enabled"] is True
+assert validation_machine["domain_refresh"]["reachable_direct_suppresses_search_fallback"] is True
+assert validation_machine["domain_refresh"]["search_fallback_requires_runtime_terminal_validation"] is True
+assert validation_machine["domain_refresh"]["search_fallback_requires_consecutive_confirmation"] is True
+assert validation_machine["domain_refresh"]["search_fallback_minimum_confirmation_runs"] == 2
+assert validation_machine["domain_refresh"]["operator_pin_never_superseded_by_search"] is True
 assert validation_machine["final_certification"]["requires_multi_audio_witness_per_native_platform"] is True
 assert validation_machine["final_certification"]["multi_audio_witness_platforms"] == [
     "TVAndroid", "MobileAndroid", "MobileIOS", "DesktopMACOS", "DesktopWindows"
