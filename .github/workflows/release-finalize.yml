@@ -36,6 +36,8 @@ on:
       - 'tests/provider_v3_strategy_plan_contract_test.py'
       - 'tests/final_published_provider_config_test.py'
       - 'tests/provider_cardinality_source_of_truth_test.py'
+      - 'scripts/render_provider_census_status.py'
+      - 'tests/provider_census_status_markdown_test.py'
       - '.github/provider-portfolio-policy.json'
       - '.github/workflows/provider-bulk-activation.yml'
       - 'scripts/activate_bulk_proven_providers.py'
@@ -274,6 +276,7 @@ jobs:
           python3 tests/provider_v3_strategy_plan_contract_test.py
           python3 tests/final_published_provider_config_test.py
           python3 tests/provider_cardinality_source_of_truth_test.py
+          python3 tests/provider_census_status_markdown_test.py
           python3 tests/provider_anime_semantic_transport_contract_test.py
           python3 tests/global_media_type_resolution_test.py
           python3 tests/provider_stream_multiplicity_contract_test.py
