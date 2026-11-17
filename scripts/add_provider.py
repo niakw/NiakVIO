@@ -327,16 +327,112 @@ def request_sources(
     telegram: str,
     api: str,
     search_queries: list[str],
+    structured_sources: Any = None,
 ) -> list[dict[str, Any]]:
+    """Normalize legacy hub fields plus an arbitrary ordered source set.
+
+    Each discovery source may own its resolver and fallback role. This keeps
+    HTML hubs, Telegram address channels, redirectors and catalogue pages
+    separate from executable provider origins while preserving legacy request
+    compatibility.
+    """
     rows: list[dict[str, Any]] = []
+    allowed_types = {"hub", "telegram_public", "redirect", "search"}
+    allowed_roles = {"primary", "supplementary", "fallback", "secondary", "backup"}
+    allowed_resolvers = {
+        "official_outbound",
+        "latest_telegram_domain",
+        "telegram_description",
+        "redirect",
+        "alias_outbound",
+        "service_catalogue",
+    }
+
+    if isinstance(structured_sources, list):
+        for raw in structured_sources:
+            if not isinstance(raw, dict):
+                continue
+            source_type = str(raw.get("type") or "hub").strip().casefold()
+            if source_type not in allowed_types:
+                raise ValueError(f"unsupported provider hub source type: {source_type}")
+            row: dict[str, Any] = {"type": source_type}
+            if source_type == "search":
+                query = str(raw.get("query") or "").strip()
+                if not query:
+                    continue
+                row["query"] = query
+            else:
+                url = normalized_url(raw.get("url"))
+                if not url:
+                    continue
+                row["url"] = url
+            priority = int(raw.get("priority") or (35 if source_type == "search" else 100))
+            row["priority"] = max(0, min(200, priority))
+            role = str(raw.get("role") or raw.get("source_role") or "primary").strip().casefold()
+            if role not in allowed_roles:
+                raise ValueError(f"unsupported provider hub source role: {role}")
+            row["role"] = role
+            resolver_name = str(raw.get("resolver") or "").strip()
+            if resolver_name:
+                if resolver_name not in allowed_resolvers:
+                    raise ValueError(f"unsupported provider hub resolver: {resolver_name}")
+                row["resolver"] = resolver_name
+            purpose = str(raw.get("purpose") or "").strip()
+            if purpose:
+                row["purpose"] = purpose
+            for key in (
+                "official_link_labels",
+                "terminal_markers",
+                "allowed_terminal_hosts",
+                "allowed_terminal_host_patterns",
+                "blocked_hosts",
+            ):
+                values = raw.get(key)
+                if isinstance(values, list):
+                    row[key] = [str(value).strip() for value in values if str(value).strip()]
+            rows.append(row)
+
+    def append_unique(row: dict[str, Any]) -> None:
+        identity = (
+            str(row.get("type") or ""),
+            str(row.get("url") or row.get("query") or "").rstrip("/").casefold(),
+        )
+        for existing in rows:
+            existing_identity = (
+                str(existing.get("type") or ""),
+                str(existing.get("url") or existing.get("query") or "").rstrip("/").casefold(),
+            )
+            if existing_identity == identity:
+                return
+        rows.append(row)
+
     if hub:
-        rows.append({"type": "hub", "url": hub, "priority": 100, "purpose": "Authoritative address reference"})
+        append_unique({
+            "type": "hub",
+            "url": hub,
+            "priority": 100,
+            "role": "primary",
+            "purpose": "Authoritative address reference",
+        })
     # Direct terminal URLs and API origins live in direct_candidates/api_templates.
     # They are validated as terminal/API knowledge, never misclassified as hubs.
     if telegram:
-        rows.append({"type": "telegram_public", "url": telegram, "priority": 80, "purpose": "Known public provider Telegram address feed"})
+        append_unique({
+            "type": "telegram_public",
+            "url": telegram,
+            "priority": 80,
+            "role": "fallback" if hub else "primary",
+            "resolver": "latest_telegram_domain",
+            "purpose": "Known public provider Telegram address feed",
+        })
     for query in search_queries:
-        rows.append({"type": "search", "query": query, "priority": 35, "purpose": "Fallback route discovery"})
+        append_unique({
+            "type": "search",
+            "query": query,
+            "priority": 35,
+            "role": "fallback",
+            "purpose": "Fallback route discovery",
+        })
     return rows
 
 
@@ -462,6 +558,37 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
     search_queries = parse_list(request.get("search_queries") or request.get("search"))
     if not search_queries:
         search_queries = [f'"{name}" official domain']
+
+    address_sources = request_sources(
+        hub=hub,
+        direct=direct,
+        telegram=telegram,
+        api=api,
+        search_queries=search_queries,
+        structured_sources=request.get("sources") or request.get("hub_sources"),
+    )
+    authoritative_sources = [
+        row for row in address_sources
+        if str(row.get("type") or "") in {"hub", "telegram_public", "redirect"}
+    ]
+    preferred_sources = [
+        row for row in authoritative_sources
+        if str(row.get("role") or "primary").casefold() not in {"fallback", "secondary", "backup"}
+    ]
+    primary_source = (preferred_sources or authoritative_sources or [None])[0]
+    if not hub and isinstance(primary_source, dict) and str(primary_source.get("type") or "") in {"hub", "redirect"}:
+        hub = str(primary_source.get("url") or "")
+    if not telegram:
+        telegram_source = next(
+            (
+                row for row in authoritative_sources
+                if str(row.get("type") or "") == "telegram_public"
+            ),
+            None,
+        )
+        if isinstance(telegram_source, dict):
+            telegram = str(telegram_source.get("url") or "")
+
     vf = bool_value(request.get("vf"), any(value.startswith("fr") for value in languages))
     if vf and not any(value.startswith("fr") for value in languages):
         languages.insert(0, "fr")
@@ -498,8 +625,10 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
     overrides.setdefault("provider_capabilities", {})
     overrides.setdefault("official_domain_hubs", {})
 
+    # Discovery hubs/channels are address authority only. They must never be
+    # promoted into executable provider origins during onboarding.
     origins = []
-    for value in (direct, hub, telegram, api):
+    for value in (direct, api):
         if value:
             origin = f"{urlsplit(value).scheme}://{urlsplit(value).netloc}"
             if origin not in origins:
@@ -577,12 +706,19 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
         "generated_from_manifest_or_stage": True,
         "catalogue_types": types,
     }
-    if hub or telegram:
-        resolver = "latest_telegram_domain" if telegram and not hub else "official_outbound"
+    if authoritative_sources:
+        primary_authority = primary_source if isinstance(primary_source, dict) else authoritative_sources[0]
+        primary_type = str(primary_authority.get("type") or "hub")
+        resolver = str(primary_authority.get("resolver") or "").strip()
+        if not resolver:
+            resolver = "latest_telegram_domain" if primary_type == "telegram_public" else (
+                "redirect" if primary_type == "redirect" else "official_outbound"
+            )
         overrides["official_domain_hubs"][provider_id] = {
-            "hub": hub or telegram,
+            "hub": str(primary_authority.get("url") or hub or telegram),
             "aliases": aliases,
             "resolver": resolver,
+            "sources": address_sources,
             "official_link_labels": [
                 "Entrer",
                 "Accéder",
@@ -622,7 +758,7 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
         "direct_candidates": [direct] if direct else [],
         "allowed_terminal_hosts": direct_hosts,
         "search_queries": search_queries,
-        "sources": request_sources(hub=hub, direct=direct, telegram=telegram, api=api, search_queries=search_queries),
+        "sources": address_sources,
         "search_confirmation_runs": 2,
     }
     write_json(HUBS, hubs)
@@ -648,7 +784,7 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
 
     provider_model = {
         "strategy": strategy,
-        "knownSite": direct or hub or telegram or None,
+        "knownSite": direct or None,
         "officialSite": direct or None,
         "officialHub": hub or telegram or None,
         "officialApi": api or None,
@@ -661,7 +797,7 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
     base_relative, base_sha, _stripped = base_store.persist_clean_provider_seed(
         provider_id,
         entry,
-        known_site=direct or hub or telegram or None,
+        known_site=direct or None,
         provider_model=provider_model,
         overrides_path=OVERRIDES,
     )
