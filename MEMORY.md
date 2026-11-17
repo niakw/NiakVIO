@@ -1,3 +1,9 @@
+## 2026-11-17 — Add Provider ordering regression now checks execution scope, not function-definition order
+
+- Workflow Gate run `44116543409` on `a495d8c8a7ac81e16fe9851ee4d1a11b793651e0` progressed through the complete Core/Nuvio/provider-v3 stack to Add Provider and failed on a test bug: it compared the first textual occurrence of `materialize_onboarding_bundle(`, which is the helper definition near the top of `add_provider.py`, against the later `persist_clean_provider_seed(` call.
+- The business invariant is the order inside `stage()`: derive/persist the clean ProviderBase first, then materialize the onboarding bundle. The regression now scopes both searches to the already extracted `stage_body`; current source has the required order at the actual call sites. No onboarding implementation or provider bytes changed.
+- Fresh exact-head Workflow Gate remains required.
+
 ## 2026-11-17 — Add Provider regression follows the current isolated publication writer
 
 - Workflow Gate run `44115964025` on `64d1b4a17abd59067f00a057f7ef1d92dffd7058` progressed through Branding V13, multi-audio, Provider-v3 finalization and bulk-offline contracts before failing only because `tests/add_provider_workflow_test.py` still required the retired concurrency group `nuvio-provider-publish-main`.

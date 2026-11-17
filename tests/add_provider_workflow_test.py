@@ -64,7 +64,7 @@ assert "python scripts/add_provider.py stage --request" in ADD
 assert "base_store.persist_clean_provider_seed(" in SCRIPT
 assert '"require_identity_match": True' in SCRIPT
 assert "materialize_onboarding_bundle(" in SCRIPT
-assert SCRIPT.index("base_store.persist_clean_provider_seed(") < SCRIPT.index("materialize_onboarding_bundle(")
+assert stage_body.index("base_store.persist_clean_provider_seed(") < stage_body.index("materialize_onboarding_bundle(")
 assert '"clean_reconstruction_required": False' in SCRIPT
 assert '"clean_reconstruction_verified": True' in SCRIPT
 
