@@ -380,8 +380,8 @@ assert machine_runtime["final_native_multi_audio_witness_platforms"] == [
     "TVAndroid", "MobileAndroid", "MobileIOS", "DesktopMACOS", "DesktopWindows"
 ]
 assert machine_runtime["ordinary_native_diagnostics_may_have_zero_multi_audio_witness"] is True
-assert "gate_native_multi_audio_coverage.cjs" in machine_runtime["final_native_multi_audio_witness_gates"]
-assert "gate_native_ios_multi_audio.py" in machine_runtime["final_native_multi_audio_witness_gates"]
+assert "scripts/gate_native_multi_audio_coverage.cjs" in machine_runtime["final_native_multi_audio_witness_gates"]
+assert "scripts/gate_native_ios_multi_audio.py" in machine_runtime["final_native_multi_audio_witness_gates"]
 assert machine_runtime["logical_stream_owner"] == "NiakVIO provider/scraper"
 assert machine_runtime["terminal_player_provenance_must_not_replace_owner"] is True
 assert machine_runtime["source_provider_provenance_may_augment_visible_label"] is True
