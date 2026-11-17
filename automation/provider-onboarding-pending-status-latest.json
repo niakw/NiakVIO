@@ -1,32 +1,40 @@
 {
   "schemaVersion": 3,
-  "runId": "44187654255",
-  "triggerSha": "3081c345aba7a3628f2b86d319e04f680d8b69a0",
+  "runId": "44190017135",
+  "triggerSha": "ecf95e2886b1f6c22267475427a64faaef524e17",
   "providers": [
     {
       "provider": "meowtv",
-      "status": "PROVIDER JS BROKEN",
+      "status": "FULL OK",
       "underlyingStatus": "",
-      "color": "🟠",
+      "color": "🟢",
       "declaredLanes": [
         "anime",
         "movie",
         "tv"
       ],
-      "currentVerifiedLanes": [],
-      "historicalProof": [],
+      "currentVerifiedLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "historicalProof": [
+        "anime: Jujutsu Kaisen",
+        "movie: Avatar",
+        "tv: Dark Desire"
+      ],
       "candidateProof": [],
       "routeProof": [],
       "latestLaneVerdicts": [
-        "anime=wrong_content/provider_returned_wrong_content",
-        "movie=wrong_content/provider_returned_wrong_content",
-        "tv=wrong_content/provider_returned_wrong_content"
+        "anime=OK",
+        "movie=OK",
+        "tv=OK"
       ],
-      "dominantIssue": "provider_returned_wrong_content×3",
+      "dominantIssue": "none",
       "searchProgress": [
-        "anime: 1 works tested / 15 retained misses",
-        "movie: 1 works tested / 7 retained misses / 8 retained chain hits",
-        "tv: 1 works tested / 7 retained misses / 8 retained chain hits"
+        "anime: 1 works tested / 14 retained misses",
+        "movie: 1 works tested / 7 retained misses / 7 retained chain hits",
+        "tv: 1 works tested / 7 retained misses / 7 retained chain hits"
       ],
       "evidenceDepth": [
         "anime=chain_reached",
@@ -45,8 +53,8 @@
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
       "action": "onboarding candidate is non-active/non-repairable; run only the explicit pending current-byte census and activate only after fresh FULL OK proof",
-      "brainCheckRequired": true,
-      "statusRepairEligible": true,
+      "brainCheckRequired": false,
+      "statusRepairEligible": false,
       "repairEligible": false,
       "testedThisRun": true
     },
@@ -5186,12 +5194,11 @@
   "counts": {
     "CHAIN REACHED": 24,
     "DISABLED": 35,
-    "FULL OK": 9,
+    "FULL OK": 10,
     "HARNESS MISMATCH": 3,
     "HARNESS/ENV BLOCKED": 15,
     "NO PROOF": 15,
     "PARTIAL OK": 1,
-    "PROVIDER JS BROKEN": 1,
     "PROVIDER NETWORK BLOCKED": 5,
     "REGRESSION PROVIDER": 2,
     "ROUTE PROVEN": 1
@@ -5231,7 +5238,6 @@
     "ihavenotv",
     "kidraz",
     "latestmovies",
-    "meowtv",
     "moiflix",
     "moviebite",
     "movish",
@@ -5299,7 +5305,6 @@
     "ihavenotv",
     "kidraz",
     "latestmovies",
-    "meowtv",
     "moiflix",
     "moviebite",
     "movish",
@@ -5393,7 +5398,6 @@
     "kurage",
     "latestmovies",
     "mallumv",
-    "meowtv",
     "moviebite",
     "moviebox",
     "movieshunt",
@@ -5500,7 +5504,6 @@
     "ihavenotv",
     "kidraz",
     "latestmovies",
-    "meowtv",
     "moviebite",
     "movish",
     "movix-fr",
@@ -5555,8 +5558,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "44187654255-sharded-waf",
-  "harnessEvidenceSha": "3081c345aba7a3628f2b86d319e04f680d8b69a0",
+  "harnessEvidenceRunId": "44190017135-sharded-waf",
+  "harnessEvidenceSha": "ecf95e2886b1f6c22267475427a64faaef524e17",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
