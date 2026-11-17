@@ -6,15 +6,16 @@ set -euo pipefail
 CLIENT="${1:-}"
 WORKSPACE="${GITHUB_WORKSPACE:?GITHUB_WORKSPACE is required}"
 NIAKVIO="${WORKSPACE}/niakvio"
+TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-native-hub46/manifest.json}"
 # NATIVE_ANDROID_HUB46_PREBUILD_V1
-# Keep prebuild repository resolution on the same physical Hub-46 manifest as the
-# runtime suite even when historical workflow env still says manifest.json.
+# Native acceptance defaults to the exact active Global+France transport. Explicit
+# candidate manifests remain allowed, while the current provider-scope matrix
+# always binds prebuild to the same immutable union manifest as runtime execution.
 if [[ -n "${NIAKVIO_PROVIDER_SCOPE_MATRIX:-}" && -f "${NIAKVIO}/native-hub46/manifest.json" ]]; then
   TARGET_MANIFEST="native-hub46/manifest.json"
   echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE phase=prebuild manifest=$TARGET_MANIFEST providers=current-active authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"
 fi
 FIXTURE="${NIAKVIO_PRIMARY_FIXTURE:-sinners-2025}"
-TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"
 TARGET_PROVIDER="${NIAKVIO_TARGET_PROVIDER:-all}"
 STREAM_SCOPE="${NIAKVIO_PRIMARY_STREAM_SCOPE:-all}"
 SOURCE_SHA="${NIAKVIO_SOURCE_SHA:-$(git -C "$NIAKVIO" rev-parse HEAD)}"
