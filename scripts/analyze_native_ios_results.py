@@ -11,6 +11,48 @@ SUITE = "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS "
 FIXTURE_END = "FIELD_NATIVE_IOS_FIXTURE_END "
 EXPECTED = {"interstellar", "breaking-bad-s01e01", "jujutsu-kaisen-s01e01"}
 
+LANGUAGE_ALIASES = {
+    "eng": "en", "fra": "fr", "fre": "fr", "deu": "de", "ger": "de",
+    "spa": "es", "por": "pt", "ita": "it", "jpn": "ja", "kor": "ko",
+    "zho": "zh", "chi": "zh",
+}
+
+
+def normalize_languages(raw: object) -> list[str]:
+    output: list[str] = []
+    for value in str(raw or "").split(","):
+        token = value.strip().casefold().replace("_", "-")
+        if not token or token == "und":
+            continue
+        parts = [part for part in token.split("-") if part]
+        if not parts:
+            continue
+        parts[0] = LANGUAGE_ALIASES.get(parts[0], parts[0])
+        normalized = "-".join(parts)
+        if normalized not in output:
+            output.append(normalized)
+    return output
+
+
+def language_coverage(expected: list[str], observed: list[str]) -> bool:
+    used: set[int] = set()
+    for language in expected:
+        match = next(
+            (
+                index
+                for index, candidate in enumerate(observed)
+                if index not in used and (
+                    language == candidate
+                    or language.split("-", 1)[0] == candidate.split("-", 1)[0]
+                )
+            ),
+            None,
+        )
+        if match is None:
+            return False
+        used.add(match)
+    return True
+
 
 def parse_fields(text: str) -> dict[str, str]:
     out: dict[str, str] = {}
@@ -80,7 +122,17 @@ def main() -> int:
             player_audio_tracks = int(
                 row.get("audioTrackCount") if row.get("audioTrackCount") is not None else -1
             )
-            multi_audio_collapsed = master_audio_tracks >= 2 and player_audio_tracks < 2
+            master_audio_languages = normalize_languages(row.get("masterAudioTrackLanguages"))
+            player_audio_languages = normalize_languages(row.get("audioTrackLanguages"))
+            multi_audio_count_collapsed = master_audio_tracks >= 2 and player_audio_tracks < 2
+            multi_audio_language_collapsed = (
+                len(master_audio_languages) >= 2
+                and (
+                    len(player_audio_languages) < 2
+                    or not language_coverage(master_audio_languages, player_audio_languages)
+                )
+            )
+            multi_audio_collapsed = multi_audio_count_collapsed or multi_audio_language_collapsed
             healthy = state in {"ready", "ended"} and not multi_audio_collapsed
             observations.append(
                 {
@@ -93,8 +145,10 @@ def main() -> int:
                     "failureClass": (
                         "healthy"
                         if healthy
+                        else "multi_audio_language_collapsed"
+                        if multi_audio_language_collapsed
                         else "multi_audio_player_collapsed"
-                        if multi_audio_collapsed
+                        if multi_audio_count_collapsed
                         else "reader_timeout"
                         if state == "timeout"
                         else "player_error"
@@ -105,6 +159,8 @@ def main() -> int:
                     "host": str(row.get("host") or ""),
                     "masterAudioTrackCount": master_audio_tracks,
                     "playerAudioTrackCount": player_audio_tracks,
+                    "masterAudioTrackLanguages": master_audio_languages,
+                    "playerAudioTrackLanguages": player_audio_languages,
                     "failureOwner": "client_runtime" if multi_audio_collapsed else "",
                     "blocking": multi_audio_collapsed,
                 }
