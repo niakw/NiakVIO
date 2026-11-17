@@ -5,9 +5,10 @@ ROOT=Path(__file__).resolve().parents[1]
 wf=(ROOT/".github/workflows/provider-projection-reconcile.yml").read_text(encoding="utf-8")
 
 assert wf.startswith("name: PROVIDERS - Projection Reconcile")
-assert "group: niakvio-core-release-mutation-main" in wf
-assert "cancel-in-progress: false" in wf, "shared release mutation concurrency must never cancel finalization"
-assert "cancel-in-progress: true" not in wf, "projection must queue; exact-head/drift guard rejects stale after acquisition"
+assert "group: niakvio-provider-projection-main" in wf
+assert "cancel-in-progress: false" in wf, "projection lane must queue latest work without cancelling its in-flight publication"
+assert "cancel-in-progress: true" not in wf, "projection lane must preserve the in-flight writer and requeue superseded work"
+assert "FIELD_PROVIDER_PROJECTION_REQUEUED" in wf
 assert "FIELD_PROVIDER_PROJECTION_SUPERSEDED" in wf
 assert "FIELD_PROVIDER_PROJECTION_SUPERSEDED_DURING_REBUILD" in wf
 assert "require_current_projection_head" in wf
