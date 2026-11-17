@@ -1,15 +1,7 @@
 {
-  "schema_version": 1,
-  "description": "User-confirmed Nuvio media-type mappings. Automated publication must preserve these exact capabilities instead of inferring them from a transient test result.",
+  "schema_version": 2,
+  "description": "Sparse user-confirmed semantic media-type constraints for current provider_catalog identities. This file is validation/intent authority only: it does not own provider scope, activation, transport aliases, or publication. Catalog/structured DATA must already agree with each retained entry.",
   "providers": {
-    "toflix": {
-      "supportedTypes": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "description": "Films, séries et animes en anglais et en français."
-    },
     "papadustream": {
       "supportedTypes": [
         "movie",
@@ -21,8 +13,7 @@
     "purstream": {
       "supportedTypes": [
         "movie",
-        "tv",
-        "anime"
+        "tv"
       ]
     },
     "coflix": {
@@ -33,13 +24,6 @@
       ]
     },
     "frenchstream": {
-      "supportedTypes": [
-        "movie",
-        "tv",
-        "anime"
-      ]
-    },
-    "movix": {
       "supportedTypes": [
         "movie",
         "tv",
@@ -227,8 +211,7 @@
     "chillflix": {
       "supportedTypes": [
         "movie",
-        "tv",
-        "anime"
+        "tv"
       ]
     },
     "neonflix": {
@@ -311,9 +294,7 @@
     },
     "cinegram": {
       "supportedTypes": [
-        "movie",
-        "tv",
-        "anime"
+        "movie"
       ]
     },
     "movish": {
