@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "authority": "provider-authority-arbiter-v1",
-  "censusStatusSource": "/home/runner/work/NiakVIO/NiakVIO/automation/provider-census-status.json",
+  "censusStatusSource": "/tmp/provider-census-preauthority.json",
   "productionFreshnessStatusSource": "persisted-all-scope",
   "policy": {
     "searchRole": "historical-supplement-only",
@@ -162,9 +162,7 @@
     "zone-streaming",
     "zone-telechargement"
   ],
-  "disabledNow": [
-    "sadisflix"
-  ],
+  "disabledNow": [],
   "providers": [
     {
       "provider": "1jour1film0626",
@@ -1332,19 +1330,14 @@
     },
     {
       "provider": "sadisflix",
-      "action": "DISABLE_ARCHITECTURE_NONFUNCTIONAL",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "current-byte-production-proof",
-      "authorityClass": "current-architecture-nonfunctional",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:PARTIAL OK"
-      ],
-      "appliedDisableReason": "auto_off_current_architecture_nonfunctional"
+        "already_disabled"
+      ]
     },
     {
       "provider": "sekai",

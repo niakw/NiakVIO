@@ -1,18 +1,19 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44090132633",
-  "sourceTriggerSha": "e79bc4169244087c15280488eb3ada0163dc1a3d",
-  "unresolvedProviderCount": 65,
-  "dynamicVariantProviderCount": 4,
+  "sourceRunId": "44092397246",
+  "sourceTriggerSha": "6831619b2369eff2ec388862ae588d3dc21477cf",
+  "unresolvedProviderCount": 1,
+  "dynamicVariantProviderCount": 1,
   "dynamicVariantProviders": [
-    "movix-fr",
-    "nakios",
-    "papadustream",
-    "stigstream"
+    "papadustream"
   ],
   "lifecycleSuppressedDynamicProviders": [
     "animevostfr",
-    "hindmoviez"
+    "hindmoviez",
+    "movish",
+    "movix-fr",
+    "nakios",
+    "stigstream"
   ],
   "dynamicVariantCurrentObservedProviders": [
     "1jour1film0626",
@@ -36,7 +37,6 @@
     "anisama",
     "arrowtv",
     "boredflix",
-    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -56,7 +56,6 @@
     "franime",
     "frembed",
     "french-anime",
-    "french-manga",
     "frenchstream",
     "fsharetv",
     "fullanime",
@@ -64,7 +63,6 @@
     "hianime",
     "hindmoviez",
     "ihavenotv",
-    "internet-archive",
     "kehflix",
     "kidraz",
     "kurage",
@@ -76,32 +74,23 @@
     "movieshunt",
     "moviesmod",
     "movish",
-    "movix-fr",
     "movy",
-    "mugiwarastream",
-    "nakios",
-    "neko-sama",
     "neobam",
     "neonflix",
     "overlook",
-    "papadustream",
     "persianstremio",
     "playimdb",
     "primewire",
     "pstream",
-    "purstream",
     "rarefilmm",
     "reanime-to",
     "rivestream-app",
     "rivestream-ru",
-    "sadisflix",
     "sekai",
     "showbox",
     "shuttletv",
     "skstream",
     "stigstream",
-    "streamzo",
-    "topcartoons",
     "uhdmovies",
     "videasy",
     "vidfast",
@@ -117,7 +106,6 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
-    "webflix",
     "wookafr",
     "yflix",
     "youtitou",
@@ -125,7 +113,7 @@
     "zone-telechargement"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 6,
+  "groupCount": 1,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -133,234 +121,6 @@
     "providerLocalRepair": "exception path only"
   },
   "groups": [
-    {
-      "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "chain",
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "network_http_error",
-        "network_zero_result",
-        "timeout",
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "github-all-transports-challenged",
-        "native-policy-reachable",
-        "no-transport-evidence",
-        "residential-exit-all-challenged",
-        "residential-exit-browser-reachable",
-        "residential-exit-inconclusive",
-        "residential-exit-native-reachable"
-      ],
-      "transportSignature": "not-applicable",
-      "providerCount": 45,
-      "providers": [
-        "1jour1film0626",
-        "67movies",
-        "anikototv",
-        "animeonsen",
-        "anisama",
-        "arrowtv",
-        "boredflix",
-        "cinegram",
-        "cinemabz",
-        "cinematheque-de-bretagne",
-        "cinetimes",
-        "corsflix",
-        "dulourd",
-        "emnexmovies",
-        "fawesome",
-        "fexini",
-        "film-a-revoir",
-        "flixer",
-        "franime",
-        "frembed",
-        "french-anime",
-        "frenchstream",
-        "fullanime",
-        "hexa",
-        "hianime",
-        "kidraz",
-        "latestmovies",
-        "moiflix",
-        "moviebite",
-        "movish",
-        "neobam",
-        "neonflix",
-        "overlook",
-        "primewire",
-        "pstream",
-        "showbox",
-        "shuttletv",
-        "skstream",
-        "voirserie",
-        "vuflix",
-        "watch-cartoon-online",
-        "waveanime",
-        "youtitou",
-        "zone-streaming",
-        "zone-telechargement"
-      ],
-      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "transport|html_scraper|runtime:html_scraper",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "html_scraper"
-      ],
-      "runtimeFamilySignature": "html_scraper",
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "chain",
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "network_exception",
-        "network_http_error",
-        "network_zero_result",
-        "timeout",
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "github-all-transports-challenged",
-        "no-transport-evidence"
-      ],
-      "transportSignature": "not-applicable",
-      "providerCount": 15,
-      "providers": [
-        "anidb",
-        "aniflix-uno",
-        "animejlprovider",
-        "documentary-area",
-        "flixhq",
-        "fsharetv",
-        "ihavenotv",
-        "rarefilmm",
-        "reanime-to",
-        "rivestream-app",
-        "rivestream-ru",
-        "stigstream",
-        "videasy",
-        "vidlink",
-        "watchott"
-      ],
-      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [
-        "stigstream"
-      ],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "variant-coverage|mixed_embed_resolver|runtime:mixed_embed_resolver",
-      "repairScope": "variant-coverage",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_zero_result"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 2,
-      "providers": [
-        "movix-fr",
-        "nakios"
-      ],
-      "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
-      "selectionAuthorities": [
-        "provider-census-sharded-latest.json:dynamic-variant-debt"
-      ],
-      "dynamicVariantProviders": [
-        "movix-fr",
-        "nakios"
-      ],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "transport|api_stream_resolver|runtime:api_stream_resolver",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "api_stream_resolver"
-      ],
-      "runtimeFamilySignature": "api_stream_resolver",
-      "capabilityStrategy": "api_stream_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "native-policy-reachable"
-      ],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "movy"
-      ],
-      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "transport|html_scraper|runtime:sitemap-script-family",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "sitemap-script-family"
-      ],
-      "runtimeFamilySignature": "sitemap-script-family",
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_http_error"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "sekai"
-      ],
-      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
     {
       "groupId": "variant-coverage|html_scraper|runtime:html_scraper",
       "repairScope": "variant-coverage",
