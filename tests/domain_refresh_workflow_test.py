@@ -34,6 +34,13 @@ assert "scripts/domain_refresh_priority_wrapper.py" in text
 assert "--apply" in text
 assert "provider-hubs.json" in text
 assert "published-manifest-baseline.json" in text
+
+sanitize_start = text.index("- name: Sanitize stale registry constructors before resolution")
+resolve_start = text.index("- name: Resolve and publish authoritative hub terminal DATA", sanitize_start)
+sanitize_block = text[sanitize_start:resolve_start]
+assert 'cp provider-hubs.json "$RUNNER_TEMP/provider-hubs.before.json"' in sanitize_block
+assert 'cp provider-domain-history.json "$RUNNER_TEMP/provider-domain-history.before.json"' in sanitize_block
+assert "sanitizer-only registry cleanup" in sanitize_block
 assert "python scripts/generate_language_manifests.py" in text
 assert "python scripts/sync_release_versions.py" in text
 assert '--previous "$RUNNER_TEMP/published-manifest-baseline.json"' in text
