@@ -1,3 +1,12 @@
+## 2026-11-17 — Domain Refresh Global+France guards and sanitation baseline aligned
+
+- The recent Domain Refresh failures were pipeline failures before network resolution, not provider/hub failures. Run 44036287604 stopped in `Sanitize stale registry constructors before resolution` with `provider hub sanitizer selection is outside current manifest`: the workflow supplied active Global+France identities while `sanitize_provider_hub_registry.py` still validated them against root `manifest.json` only.
+- The production sanitizer now derives its default scope from `projection_visible_provider_rows()`, while explicit fixture manifests remain hermetic. Regression coverage requires strict France-only identities to survive the sanitizer scope.
+- A second Global-only boundary existed in `validate_domain_refresh_transaction.py`: its production publication guard called `current_provider_ids(load(manifest.json))`. Production validation now uses `projection_active_provider_ids()`; fixture manifests still use their local rows. This keeps sanitize -> resolve -> publication guard on the same Global+France authority.
+- Audit of the workflow found a separate transaction-baseline defect: `provider-hubs.before.json` was captured before deterministic sanitation, so sanitizer-only cleanup could later look like an undeclared domain mutation. The workflow now snapshots both `provider-hubs.json` and domain history again immediately after sanitation, before authoritative resolution. `tests/domain_refresh_workflow_test.py` locks that ordering.
+- These fixes do not prove any domain change or provider playback. The next exact-head Domain Refresh must pass sanitation, multi-source resolution, fail-closed authority validation, CONFIG-only rematerialization, projection/release integrity and publication guards before this lane is considered operational.
+- Relevant commits: `41ab3230`, `cb36809f`, `7c91ea8f`, `94668414`, `6f3da9d6`, `f097bc00`.
+
 ## 2026-11-17 — Domain Refresh now owns heterogeneous multi-hub fallback authority
 
 - NiakVIO-first métier audit of the September MAXIHUBS inventory exposed a real address-authority gap: providers may have a stable HTML/wiki hub, a Telegram address channel, a redirector and/or a secondary catalogue, but the current registry/resolver mostly treated the resolver as provider-wide and onboarding accepted only one legacy hub plus one Telegram value. This could leave useful fallback links present in inventory/history while automatic Domain Refresh never treated them with their own extraction semantics.
