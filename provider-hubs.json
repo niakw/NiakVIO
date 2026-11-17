@@ -2913,6 +2913,15 @@
       ],
       "sources": [
         {
+          "type": "hub",
+          "url": "https://fstream.info/",
+          "priority": 130,
+          "role": "primary",
+          "resolver": "official_outbound",
+          "purpose": "Current French Stream address hub exposing the ephemeral terminal",
+          "evidence": "live-hub-verified-2026-11-17"
+        },
+        {
           "type": "search",
           "query": "\"French-stream\" official domain",
           "priority": 35,
@@ -2949,6 +2958,15 @@
         "\"Nakios\" official domain"
       ],
       "sources": [
+        {
+          "type": "hub",
+          "url": "https://nakios.org/",
+          "priority": 130,
+          "role": "primary",
+          "resolver": "official_outbound",
+          "purpose": "Official Nakios reference hub linking current catalogue and status domains",
+          "evidence": "live-hub-verified-2026-11-17"
+        },
         {
           "type": "search",
           "query": "\"Nakios\" official domain",
@@ -3516,6 +3534,15 @@
         "https://sflix.today/"
       ],
       "sources": [
+        {
+          "type": "telegram_public",
+          "url": "https://t.me/s/sflix_today",
+          "priority": 130,
+          "role": "primary",
+          "resolver": "latest_telegram_domain",
+          "purpose": "Official SFlix channel listing synchronized primary and mirror domains",
+          "evidence": "live-public-channel-verified-2026-11-17"
+        },
         {
           "type": "search",
           "query": "\"SFlix\" official domain",
@@ -5743,6 +5770,15 @@
       ],
       "sources": [
         {
+          "type": "telegram_public",
+          "url": "https://t.me/s/moiflixfr",
+          "priority": 125,
+          "role": "primary",
+          "resolver": "latest_telegram_domain",
+          "purpose": "Official Moiflix address and service-status channel",
+          "evidence": "live-public-channel-verified-2026-11-17"
+        },
+        {
           "type": "search",
           "query": "\"Moiflix\" official domain",
           "priority": 35,
@@ -5878,6 +5914,15 @@
         "\"Webflix\" official domain"
       ],
       "sources": [
+        {
+          "type": "telegram_public",
+          "url": "https://t.me/s/webflixfr",
+          "priority": 95,
+          "role": "fallback",
+          "resolver": "latest_telegram_domain",
+          "purpose": "Public Webflix address channel fallback; terminal still requires resolver validation",
+          "evidence": "public-channel-present-2026-11-17"
+        },
         {
           "type": "search",
           "query": "\"Webflix\" official domain",
