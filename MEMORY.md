@@ -1,3 +1,11 @@
+## 2026-11-17 — Release certification no longer reuses an old success from the same SHA
+
+- Audit of `release-candidate-validation.yml` found that exact child selection filtered only by workflow, `event=workflow_dispatch` and `head_sha == TARGET_SHA`. That is insufficient for a no-op/replayed Finalizer: a prior workflow_dispatch on the same immutable SHA could be selected as the maximum run id before the newly dispatched run became visible, allowing a fresh certification campaign to reuse stale proof.
+- The dispatch step now records an exact UTC `started_at` boundary before the first child dispatch. The wait step receives that boundary and accepts only child runs whose `created_at` is at or after the current campaign boundary (with a two-second API timestamp tolerance) in addition to exact workflow/event/head SHA matching.
+- `tests/workflow_security_policy_test.py` requires the dispatch step id, persisted start marker, propagated `DISPATCH_STARTED_AT`, GitHub `created_at` parsing and the `dispatch_epoch` filter. Same-SHA historical successes can no longer satisfy a new release proof campaign.
+- Relevant commits: `321c3a1e` fresh child-run selection and `cdb825b9` regression. No provider/Core/runtime bytes or manifest membership changed.
+- A fresh exact-current-head campaign remains required before the user checkpoint; Brain remains blocked.
+
 ## 2026-11-17 — Exact pre-Brain release now requires Workflow Gate on the same SHA
 
 - Audit of the final pre-Brain certification chain found one remaining proof-ownership gap: `release-finalize.yml` and `release-candidate-validation.yml` described Workflow Gate as required, but the release orchestrator did not explicitly dispatch or wait for `github-actions-gate.yml` on the exact candidate SHA. A release could therefore have completed its release/security/native cohort without a machine-bound Workflow Gate result for those exact bytes.
