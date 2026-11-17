@@ -1,14 +1,14 @@
 {
   "schemaVersion": 2,
   "scope": "all",
-  "reason": "Source-bound v2 exact-published-byte all-scope proof in dedicated certification concurrency lane; routine workflow_run events may not evict this pending proof.",
-  "requestedAt": "2026-11-17T23:50:00+01:00",
-  "validation": "source-bound-v2-exact-published-bytes-dedicated-proof-lane",
+  "reason": "Source-bound v2 exact-published-byte all-scope replay after persistence-order regression fix; dedicated certification lane, no pre-probe rematerialization.",
+  "requestedAt": "2026-11-17T23:58:00+01:00",
+  "validation": "source-bound-v2-exact-published-bytes-dedicated-proof-lane-post-test-fix",
   "source": "niakvio-metier-source-bound-freshness-v2-proof-lane",
   "targetProviders": [],
   "allowPendingTargets": false,
-  "requiredEvidence": "Execute published active Global+France bytes verbatim, source-stamp v2 hashes, verify identical hashes at persistence, requeue on byte drift; proof concurrency cannot be replaced by routine workflow_run.",
-  "retryRevision": 18,
-  "fullRefreshRevision": 18,
-  "requestedSourceParent": "f2d2bdcb6c3ffb636affd6a588fc6c0a8ee3ed0a"
+  "requiredEvidence": "Execute current active Global+France published bytes verbatim; source-stamp hash schema v2; verify same hashes at persistence; requeue on byte drift; then allow proof-driven MeowTV activation only from its byte-identical pending FULL proof.",
+  "retryRevision": 19,
+  "fullRefreshRevision": 19,
+  "requestedSourceParent": "a8fe1aa636aac60776f11eb470e32abc6ba732b9"
 }
