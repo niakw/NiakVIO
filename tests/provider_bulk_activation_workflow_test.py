@@ -17,7 +17,7 @@ for token in (
     "provider: bulk activate $ACTIVATION_COUNT full-ok",
     "tests/provider_v3_minimizer_published_test.py",
     "scripts/validate_published_provider_config.py",
-    "tests/production_active_provider_freshness_test.py",
+    "tests/production_active_provider_freshness_test.py --allow-proof-debt",
     "provider_catalog.json",
     "scripts/reconcile_provider_static_authority.py --apply",
     "scripts/validate_provider_materialization_authority.py",
@@ -47,6 +47,19 @@ for token in (
     assert token in script, token
 
 assert "provider-disabled" in activation
+assert "'.github/workflows/provider-bulk-activation.yml'" in activation
+assert "production_active_provider_freshness_test.py --allow-proof-debt" in activation
+# Proof debt applies only to the pre-existing production cohort. New activation
+# remains fail-closed on fresh exact pending FULL proof and source-byte equality.
+for strict_new_provider_token in (
+    '"status") or "")!="FULL OK"',
+    'proof.get("testedThisRun") is not True',
+    "declared.issubset(verified)",
+    "proof_source_artifact_digest",
+    "pending_proof_source_byte_drift",
+    '"providerSha256":active_sha',
+):
+    assert strict_new_provider_token in script, strict_new_provider_token
 assert "provider-disabled" in onboard
 assert "automation/provider-bulk-activation-latest.json" in sharded
 assert 'from current_provider_scope import projection_runtime_visible_provider_count' in sharded
