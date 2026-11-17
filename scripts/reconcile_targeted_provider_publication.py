@@ -92,6 +92,7 @@ def sync_global_catalog_scraper(
     if not isinstance(semantic, list) or not semantic:
         semantic = manifest_row.get("supportedTypes") or []
     scraper["supportedTypes"] = copy.deepcopy(semantic)
+    scraper.pop("canonicalSupportedTypes", None)
 
     filename = str(manifest_row.get("filename") or "").strip().replace("\\", "/")
     while filename.startswith("../"):
