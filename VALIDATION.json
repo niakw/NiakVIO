@@ -1,5 +1,5 @@
 {
-  "schema_version": 82,
+  "schema_version": 83,
   "release": "dynamic",
   "release_authority": "manifest.json:version",
   "candidate_track": "main",
@@ -322,7 +322,19 @@
       "STREAM_PRESENTATION"
     ],
     "recovered_url_identity_revalidated": true,
-    "terminal_audio_tracks_presented": true
+    "terminal_audio_tracks_presented": true,
+    "identity_authority": "provider-owned source* facts + terminal media facts; Core presentation fields are non-authoritative",
+    "presentation_fields_may_prove_identity": false,
+    "season_episode_coordinates_require_title_or_terminal_identity": true,
+    "single_token_overlap_is_sufficient_identity": false,
+    "source_fact_precedence": [
+      "sourceTitle",
+      "sourceDescription",
+      "sourceLabel",
+      "sourceName",
+      "terminal filename",
+      "measured media facts"
+    ]
   },
   "network_origin_validation": {
     "github_only_network_failure_is_provider_failure": false,
