@@ -9,7 +9,7 @@ ROOT=Path(__file__).resolve().parents[1]
 script=ROOT/"scripts/stage_provider_batch.py"
 sys.path.insert(0,str(ROOT/"scripts"))
 import add_provider as add_provider_module
-from add_provider import staged_existing_entry, normalized_scope, relocate_bulk_pending_artifacts, pending_validation_routes
+from add_provider import staged_existing_entry, normalized_scope, relocate_pending_artifacts, relocate_bulk_pending_artifacts, pending_validation_routes
 from stage_provider_batch import safe_pending_restage_ids, preflight
 
 with tempfile.TemporaryDirectory() as td:
@@ -124,7 +124,7 @@ with tempfile.TemporaryDirectory(prefix="niakvio-bulk-pending-path-") as td:
     base=root/"provider-bases/demo--base--abc.js"
     published.write_bytes(b"provider")
     base.write_bytes(b"base")
-    relative=relocate_bulk_pending_artifacts(
+    relative=relocate_pending_artifacts(
         "providers/demo--nuvio--abc.js",
         "provider-bases/demo--base--abc.js",
         root=root,
@@ -133,6 +133,14 @@ with tempfile.TemporaryDirectory(prefix="niakvio-bulk-pending-path-") as td:
     assert not published.exists() and not base.exists()
     assert (root/relative).read_bytes()==b"provider"
     assert (root/"provider-disabled/provider-bases/demo--base--abc.js").read_bytes()==b"base"
+
+# Every single-provider onboarding stage is disabled/pending too. The Site Probe
+# must never manufacture enabled=false + providers/... while inspecting a request.
+source=(ROOT/"scripts/add_provider.py").read_text(encoding="utf-8")
+assert "published_relative = relocate_pending_artifacts(published_relative, base_relative)" in source
+stage_tail=source.split("published_relative, published_sha, published_patches = materialize_onboarding_bundle",1)[1].split('entry["filename"]',1)[0]
+assert "if bulk:" not in stage_tail, stage_tail
+assert "def relocate_bulk_pending_artifacts(" in source
 
 print("Bulk provider onboarding dry-run + Global/France-only scope contract passed")
 
