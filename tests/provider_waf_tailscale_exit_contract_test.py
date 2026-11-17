@@ -116,7 +116,9 @@ assert "group: provider-waf-transport-main" in wf
 assert "cancel-in-progress: true" in wf
 assert "group: provider-census-waf-main" in temp
 assert "cancel-in-progress: true" in temp
-assert "group: provider-census-waf-main" in sharded
+assert "group: provider-census-" in sharded
+assert "'routine' || 'proof' }}-main" in sharded
+assert "group: provider-census-waf-main" not in sharded
 assert "cancel-in-progress: false" in sharded
 assert "group: provider-repair-main-v3" in repair, repair[:600]
 assert "cancel-in-progress: ${{ github.event_name == 'push' }}" in repair, repair[:600]
