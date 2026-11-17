@@ -66,13 +66,13 @@ source = (
     'globalThis.getStreams=async function(){return [{'
     'url:"https://example.com/video.m3u8",'
     'name:"Peachify - 1080p",title:"Peachify - 1080p",quality:"1080p",'
-    'sourceName:"StreamWish",playerHost:"streamwish.to",terminalHost:"cdn.streamwish.to",'
+    'provider:"streamwish",sourceName:"StreamWish",playerHost:"streamwish.to",terminalHost:"cdn.streamwish.to",'
     'sourceTitle:"StreamWish Server 2 VFF WEB-DL HEVC"'
     '}]};\n'
 )
 output = module.apply(source, context={"provider_id": "peachify"})
 assert "NUVIO_GLOBAL_PROVIDER_BRANDING_V1" in output
-assert "post-safety-terminal-source-label-v11" in output
+assert "provider-owner-terminal-source-label-v12" in output
 assert "🍑" in output and "Peachify" in output
 assert module.apply(output, context={"provider_id": "peachify"}) == output
 expected = "🍑 Peachify · streamwish.to - 1080p"
@@ -81,7 +81,7 @@ with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-
     handle.write(output)
     handle.write(
         '\nPromise.resolve(globalThis.getStreams()).then(function(rows){'
-        'if(!Array.isArray(rows)||rows.length!==1||rows[0].name!==' + json.dumps(expected) + '||rows[0].title!==' + json.dumps(expected) + ')'
+        'if(!Array.isArray(rows)||rows.length!==1||rows[0].name!==' + json.dumps(expected) + '||rows[0].title!==' + json.dumps(expected) + '||rows[0].provider!=="peachify"||rows[0].sourceProvider!=="streamwish")'
         '{console.error(JSON.stringify(rows));process.exit(2)}'
         'console.log(rows[0].name)'
         '}).catch(function(error){console.error(error);process.exit(3)});\n'
@@ -129,5 +129,5 @@ for raw_quality, expected_suffix in [("1080i", "1080i"), ("4320p", "8K"), ("Inco
 
 print(
     f"provider branding V11 contract passed: providers={len(rows)} "
-    "client_visible_name_title_quality=1 source_player_metadata_visible=1"
+    "client_visible_name_title_quality=1 source_player_metadata_visible=1 logical_provider_owner=1"
 )
