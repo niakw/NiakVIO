@@ -1,3 +1,9 @@
+## 2026-11-17 — Add Provider regression follows the current isolated publication writer
+
+- Workflow Gate run `44115964025` on `64d1b4a17abd59067f00a057f7ef1d92dffd7058` progressed through Branding V13, multi-audio, Provider-v3 finalization and bulk-offline contracts before failing only because `tests/add_provider_workflow_test.py` still required the retired concurrency group `nuvio-provider-publish-main`.
+- The current Add Provider workflow deliberately uses `niakvio-add-provider-publication-main`, already enforced by `provider_onboarding_workflow_test.py`, while its staging job remains `nuvio-provider-onboarding-stage-main`. The stale duplicate assertion is aligned to that current writer; workflow orchestration itself is unchanged.
+- Fresh exact-head Workflow Gate remains required.
+
 ## 2026-11-17 — Branding V13 test now proves logical owner plus terminal source provenance
 
 - Workflow Gate run `44115080261` on `543eeb535a1db2604f235b4ee0c9528b6202b4c9` reached the current Branding V13 regression but the fixture supplied only nine provider-owned streams while the expected output included a tenth external-source label. The failure was therefore a broken fixture, not a Branding runtime failure.
