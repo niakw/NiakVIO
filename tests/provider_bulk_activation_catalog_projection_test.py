@@ -36,3 +36,10 @@ assert 'catalog_entry["scraper"] = canonical_catalog_scraper(manifest_row)' in t
 assert 'catalog_entry["scraper"] = dict(manifest_row)' not in text
 
 print("PROVIDER_BULK_ACTIVATION_CATALOG_PROJECTION_OK")
+
+normal_source=(ROOT/"scripts/activate_bulk_proven_providers.py").read_text(encoding="utf-8")
+offline_source=SCRIPT.read_text(encoding="utf-8")
+assert 'setdefault("manifest_overrides",{})["enabled"]=True' not in normal_source
+assert 'setdefault("manifest_overrides", {})["enabled"] = True' not in offline_source
+assert 'manifest_overrides.pop("enabled",None)' in normal_source
+assert 'manifest_overrides.pop("enabled", None)' in offline_source
