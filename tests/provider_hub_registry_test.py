@@ -862,7 +862,24 @@ for provider_id, expected_host in (
     candidates, preferred = resolver.choose_official(
         provider_id, cfg, 'https://flixnetwork.is/', flixnetwork_html
     )
-    assert preferred and resolver.host(preferred) == expected_host, (provider_id, preferred, candidates)
-    assert all(resolver.host(str(row.get('url') or '')) != 'unrelated.example' for row in candidates)
+    # A still-usable curated direct remains preferred. The catalogue is a
+    # fallback candidate, not authority to churn a healthy address.
+    assert preferred and resolver.host(preferred) == resolver.host(hubs[provider_id]['direct']), (
+        provider_id, preferred, candidates
+    )
+    assert any(resolver.host(str(row.get('url') or '')) == expected_host for row in candidates), (
+        provider_id, expected_host, candidates
+    )
+    fallback_cfg = copy.deepcopy(cfg)
+    fallback_cfg['direct_candidates'] = []
+    fallback_cfg.pop('direct_fallback', None)
+    fallback_cfg['direct'] = None
+    fallback_candidates, fallback_preferred = resolver.choose_official(
+        provider_id, fallback_cfg, 'https://flixnetwork.is/', flixnetwork_html
+    )
+    assert fallback_preferred and resolver.host(fallback_preferred) == expected_host, (
+        provider_id, fallback_preferred, fallback_candidates
+    )
+    assert all(resolver.host(str(row.get('url') or '')) != 'unrelated.example' for row in fallback_candidates)
 
 print("current multi-hub fallback registry contract passed")
