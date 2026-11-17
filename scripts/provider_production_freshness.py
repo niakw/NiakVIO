@@ -168,7 +168,10 @@ class ProductionFreshnessAuthority:
         provider = canon(row.get("id"))
         declared = declared_lanes(row)
         digest = artifact_digest(self.root, row.get("filename"))
-        if fresh_full(self.all_scope.get(provider), declared, digest):
+        if (
+            int(self.all_scope_state.get("artifactHashSchemaVersion") or 0) >= 2
+            and fresh_full(self.all_scope.get(provider), declared, digest)
+        ):
             return True, "all-scope-full-exact-byte"
 
         if exact_disabled_reactivation(self.reactivation.get(provider), declared, digest):

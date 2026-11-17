@@ -93,7 +93,7 @@ for manifest_path, projection in (
         elif proof_authority == "pending-full-exact-byte":
             pending_seen += 1
 
-assert int(authority.all_scope_state.get("artifactHashSchemaVersion") or 0) >= 1, (
+assert int(authority.all_scope_state.get("artifactHashSchemaVersion") or 0) >= 2, (
     "missing byte-bound all-scope freshness ledger"
 )
 

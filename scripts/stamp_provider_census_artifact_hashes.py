@@ -71,7 +71,7 @@ def stamp(status: dict[str, Any], hashes: dict[str, str]) -> dict[str, Any]:
         raise ValueError(f"all-scope status missing active providers: {missing}")
     for pid, current in hashes.items():
         by_id[pid]["providerArtifactSha256"] = current
-    status["artifactHashSchemaVersion"] = 1
+    status["artifactHashSchemaVersion"] = 2
     status["activeArtifactHashCount"] = len(hashes)
     return status
 
@@ -95,7 +95,7 @@ def verify_existing(status: dict[str, Any], hashes: dict[str, str]) -> dict[str,
             "current active bytes differ from source-tested census bytes: "
             + ", ".join(mismatches)
         )
-    if int(status.get("artifactHashSchemaVersion") or 0) < 1:
+    if int(status.get("artifactHashSchemaVersion") or 0) < 2:
         raise ValueError("source-tested census is missing artifact hash schema")
     if int(status.get("activeArtifactHashCount") or 0) != len(hashes):
         raise ValueError(

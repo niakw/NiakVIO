@@ -30,7 +30,7 @@ with tempfile.TemporaryDirectory() as td:
         "currentVerifiedLanes":["movie"],
     }]}
     stamped=mod.stamp(status,hashes)
-    assert stamped["artifactHashSchemaVersion"]==1
+    assert stamped["artifactHashSchemaVersion"]==2
     assert stamped["activeArtifactHashCount"]==1
     assert stamped["providers"][0]["providerArtifactSha256"]==digest
     verified=mod.verify_existing(stamped,hashes)
