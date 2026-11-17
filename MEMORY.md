@@ -1,3 +1,10 @@
+## 2026-11-17 — V12 authority wiring complete; exact-byte rematerialization is the next proof boundary
+
+- Sanitizer V12 is now the selected terminal Core authority everywhere that can affect publication: provider overrides, Core composer, policy normalizer, monotonic migration, release hash scope, NuvioTV media-safety contract, Core ownership/presentation/playback regressions, workflow path triggers and machine documentation.
+- The shared generated-Core tail contract now requires `NUVIO_STREAM_OUTPUT_MULTI_AUDIO_FRONTIER_V12`; published-byte ownership regression requires both the V12 marker and `probeLimit=Math.min(candidates.length,16)` inside every active provider's `CORE.STREAM_SANITIZER.V6` block.
+- Machine authority is `strict_v12`, indirect HLS candidate probe cap 16, final playback-identity cap 40. HLS runtime integrity was re-audited and already preserves the original valid master URL while validating child video/audio playlists; it enriches facts without replacing a valid multi-audio master by its child.
+- The previous projection trigger is superseded by subsequent V12 authority/test commits. A new exact-HEAD Projection Reconcile must now materialize branding V13 + sanitizer V12 together before any census/native result is accepted.
+
 ## 2026-11-17 — Sanitizer V12 closes the six-candidate multi-audio collapse
 
 - User playback evidence that Nuvio frequently exposes only one audio language led to a Core-first audit of the terminal media path. Mobile/Desktop's provider ABI has no `audioTracks` field; selectable native audio tracks must therefore survive in the actual terminal media resource. V11 correctly preferred a multi-audio HLS master over a child playlist, but its indirect-player comparison stopped after the first six discovered candidates.
