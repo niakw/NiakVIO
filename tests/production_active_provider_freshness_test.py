@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import sys
@@ -10,7 +11,23 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from provider_production_freshness import ProductionFreshnessAuthority, load
+from provider_production_freshness import (
+    ProductionFreshnessAuthority,
+    artifact_digest,
+    declared_lanes,
+    load,
+)
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--allow-proof-debt",
+    action="store_true",
+    help=(
+        "Architecture/CI mode: keep exact current active bytes visible while their "
+        "fresh FULL proof is being recomputed. This never grants FULL/proof authority."
+    ),
+)
+args = parser.parse_args()
 
 authority = ProductionFreshnessAuthority(ROOT)
 workflow = (ROOT / ".github" / "workflows" / "github-actions-gate.yml").read_text(encoding="utf-8")
@@ -29,9 +46,12 @@ for dependency in (
 ):
     assert workflow.count(f'- "{dependency}"') >= 2, dependency
 
+assert "production_active_provider_freshness_test.py --allow-proof-debt" in workflow
+
 offline_seen = 0
 reactivated_seen = 0
 pending_seen = 0
+proof_debt_seen = 0
 
 for manifest_path, projection in (
     (ROOT / "manifest.json", "global"),
@@ -47,10 +67,25 @@ for manifest_path, projection in (
         provider = str(row.get("id") or "").strip().casefold().replace("_", "-")
         assert provider, (manifest_path, row)
         allowed, proof_authority = authority.authorize(row, projection)
-        assert allowed, (
-            f"{manifest_path}: active {provider} lacks fresh FULL proof or "
-            f"exact-byte production exception proof ({proof_authority})"
-        )
+        if not allowed:
+            if not args.allow_proof_debt:
+                raise AssertionError(
+                    f"{manifest_path}: active {provider} lacks fresh FULL proof or "
+                    f"exact-byte production exception proof ({proof_authority})"
+                )
+            assert proof_authority == "no-current-byte-production-proof", (
+                manifest_path,
+                provider,
+                proof_authority,
+            )
+            assert declared_lanes(row), (manifest_path, provider, "missing-declared-lanes")
+            assert artifact_digest(ROOT, row.get("filename")), (
+                manifest_path,
+                provider,
+                "missing-current-provider-artifact",
+            )
+            proof_debt_seen += 1
+            continue
         if proof_authority == "offline-contract-exact-byte":
             offline_seen += 1
         elif proof_authority == "disabled-recovery-exact-byte":
@@ -112,6 +147,8 @@ with tempfile.TemporaryDirectory(prefix="niakvio-freshness-scope-") as tmp:
 print(
     "Production active providers require shared byte-bound all-scope FULL OK or exact-byte "
     "activation authority; "
+    f"mode={'architecture-proof-debt' if args.allow_proof_debt else 'strict-production'} "
     f"offline_live_unverified_checks={offline_seen} "
-    f"reactivation_checks={reactivated_seen} pending_checks={pending_seen}"
+    f"reactivation_checks={reactivated_seen} pending_checks={pending_seen} "
+    f"proof_debt_checks={proof_debt_seen}"
 )

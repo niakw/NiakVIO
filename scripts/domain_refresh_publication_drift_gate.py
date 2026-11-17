@@ -19,6 +19,10 @@ SAFE_FILES = {
     "automation/brain-llm-force-memory.json",
     "automation/brain-repair-experience.json",
     "automation/provider-census-status.json",
+    # Lifecycle classifier outputs are evidence/queue state only. They do not
+    # mutate provider bytes, manifests, DATA or publication authority by themselves.
+    "automation/provider-authority-status.json",
+    "automation/provider-disabled-recovery-queue.json",
     "automation/provider-brain-repair-latest.json",
     "automation/provider-fast-repair-summary.json",
     "automation/provider-repair-learn-handoff-v1.json",
