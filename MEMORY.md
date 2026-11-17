@@ -1,3 +1,10 @@
+## 2026-11-17 — Pre-Brain phase gate YAML regression corrected before certification
+
+- The first implementation of the new execution-phase gate at `9d388ee9` embedded Python heredocs whose bodies were not indented inside the YAML literal block. GitHub therefore treated the workflow definition as invalid; this was an orchestration syntax defect, not a provider/Core/Nuvio failure.
+- `5b2f546e` replaces those heredocs with bounded `python -c` reads of `automation/execution-phase.json`, preserving the exact fail-closed semantics: Fast Repair and Brain Learning are suppressed while Domain/REMAT/client evidence remain available.
+- `c8ff1401` locks the YAML-safe implementation and rejects reintroduction of a heredoc in the phase block. The earlier certification request `8362b839` is superseded by these workflow/test corrections and must not be used as proof.
+- Fresh exact-head Workflow Gate + Finalizer are required next; Brain remains blocked until the user checkpoint.
+
 ## 2026-11-17 — Pre-Brain execution phase is now an explicit fail-closed control plane
 
 - While NiakVIO métier certification was still incomplete, stable lifecycle/census convergence automatically dispatched Provider Brain Autopilot. Fast Brain run `44161788709` completed technically but produced **0 candidate / 0 compiled / 0 validated / 0 published** for `corsflix,nakios,primewire,shuttletv`; it only persisted bounded evidence on main at `321cb736`. No provider/Core/runtime bytes or manifest membership were changed by that run.
