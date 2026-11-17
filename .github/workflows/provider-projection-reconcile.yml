@@ -371,3 +371,11 @@ jobs:
             -f expected_sha="$FINAL_SHA"
           gh workflow run security-final-gate.yml --repo "$GITHUB_REPOSITORY" --ref main \
             -f expected_sha="$FINAL_SHA"
+          # Projection Reconcile can rotate ProviderBase/provider bytes and its
+          # bot-authored push does not recursively trigger push workflows. Hand
+          # the exact reconciled SHA to the canonical release transaction so
+          # reverse rebuild, release seal and five-client Native certification
+          # cannot remain bound to the pre-reconcile generation.
+          gh workflow run release-finalize.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f expected_sha="$FINAL_SHA" -F post_census=true
+          echo "FIELD_PROVIDER_PROJECTION_RELEASE_HANDOFF sha=$FINAL_SHA"
