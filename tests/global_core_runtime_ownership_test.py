@@ -26,11 +26,11 @@ REQUIRED_GLOBAL_CORE_IDS = (
     "CORE.PROVIDER_SECURITY_BOUNDARY.V1",
     "CORE.RUNTIME_COMPAT.V1",
     "CORE.STREAM_FACTS.V1",
+    "CORE.STREAM_SANITIZER.V6",
     "CORE.STREAM_IDENTITY.V1",
     "CORE.MEDIA_TYPE_RESOLUTION.V1",
     "CORE.STREAM_PRESENTATION.V1",
     "CORE.PROVIDER_BRANDING.V1",
-    "CORE.STREAM_SANITIZER.V6",
     "CORE.RUNTIME_MEDIA_SAFETY.V4",
     "CORE.STREAM_SCORE.V1",
     "CORE.TELEMETRY.V1",
@@ -134,17 +134,18 @@ for row in rows:
 
     # These are output/request wrappers whose ordering is itself part of the
     # shared Core ABI. HLS/security run before host compatibility; normalized
-    # facts/identity/media type precede presentation; terminal validation and
-    # safety precede scoring; telemetry remains the outermost observer.
+    # facts preserve discovery metadata; terminal resolution then runs before
+    # identity/media type/presentation so downstream checks see the real media.
+    # Safety precedes scoring; telemetry remains the outermost observer.
     ordered = (
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
         "CORE.PROVIDER_SECURITY_BOUNDARY.V1",
         "CORE.RUNTIME_COMPAT.V1",
         "CORE.STREAM_FACTS.V1",
+        "CORE.STREAM_SANITIZER.V6",
         "CORE.STREAM_IDENTITY.V1",
         "CORE.MEDIA_TYPE_RESOLUTION.V1",
         "CORE.STREAM_PRESENTATION.V1",
-        "CORE.STREAM_SANITIZER.V6",
         "CORE.RUNTIME_MEDIA_SAFETY.V4",
         "CORE.PROVIDER_BRANDING.V1",
         "CORE.STREAM_SCORE.V1",
@@ -155,4 +156,4 @@ for row in rows:
         [(key, positions[key]) for key in ordered],
     )
 
-print(f"GLOBAL_CORE_RUNTIME_OWNERSHIP_OK providers={len(rows)} scope=Global+France required_core={len(REQUIRED_GLOBAL_CORE_IDS)} timers=core 403=core facts=core identity=core hls=core presentation=core branding=core sanitizer_v10=network-evidence stream_score=core telemetry=core provider_specific_runtime_hacks=forbidden")
+print(f"GLOBAL_CORE_RUNTIME_OWNERSHIP_OK providers={len(rows)} scope=Global+France required_core={len(REQUIRED_GLOBAL_CORE_IDS)} timers=core 403=core facts=core identity=core hls=core presentation=core branding=core sanitizer_v11=master-audio+network-evidence stream_score=core telemetry=core provider_specific_runtime_hacks=forbidden")
