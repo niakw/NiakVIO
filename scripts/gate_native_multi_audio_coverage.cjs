@@ -38,9 +38,12 @@ for (const file of logs) {
 const assessment = assessNativeEvidence(logs);
 const expected = Number(assessment?.stats?.multiAudioExpected || 0);
 const verified = Number(assessment?.stats?.multiAudioVerified || 0);
-const audioProblems = (assessment?.problems || []).filter((row) =>
-  String(row).startsWith('multi_audio_player_')
-);
+const languageExpected = Number(assessment?.stats?.multiAudioLanguageExpected || 0);
+const languageVerified = Number(assessment?.stats?.multiAudioLanguageVerified || 0);
+const audioProblems = (assessment?.problems || []).filter((row) => {
+  const value = String(row);
+  return value.startsWith('multi_audio_player_') || value.startsWith('multi_audio_language_');
+});
 
 if (expected < 1) {
   console.error(
@@ -48,13 +51,22 @@ if (expected < 1) {
   );
   process.exit(3);
 }
-if (audioProblems.length || verified < expected) {
+if (languageExpected < 1) {
+  console.error(
+    `FIELD_NATIVE_MULTI_AUDIO_COVERAGE status=unproven client=${client} expected=${expected} verified=${verified} ` +
+    `language_expected=0 language_verified=0 reason=no_distinct_language_witness logs=${logs.length}`
+  );
+  process.exit(3);
+}
+if (audioProblems.length || verified < expected || languageVerified < languageExpected) {
   console.error(
     `FIELD_NATIVE_MULTI_AUDIO_COVERAGE status=fail client=${client} expected=${expected} verified=${verified} ` +
+    `language_expected=${languageExpected} language_verified=${languageVerified} ` +
     `problems=${audioProblems.slice(0, 12).join(';') || 'verification_gap'}`
   );
   process.exit(4);
 }
 console.log(
-  `FIELD_NATIVE_MULTI_AUDIO_COVERAGE status=verified client=${client} expected=${expected} verified=${verified} logs=${logs.length}`
+  `FIELD_NATIVE_MULTI_AUDIO_COVERAGE status=verified client=${client} expected=${expected} verified=${verified} ` +
+  `language_expected=${languageExpected} language_verified=${languageVerified} logs=${logs.length}`
 );
