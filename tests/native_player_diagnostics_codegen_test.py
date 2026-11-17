@@ -46,7 +46,8 @@ assert "entry=nuvio-production-player" in tv
 assert "UiDevice.getInstance(instrumentation)" in tv
 assert "R.string.cd_audio_tracks" in tv
 assert 'By.clazz("android.widget.RadioButton")' in tv
-assert "val audioTracks = probeTvAudioTracks" in tv\nassert "track.contentDescription" in tv
+assert "val audioTracks = probeTvAudioTracks" in tv
+assert "track.contentDescription" in tv
 assert "audio_track_count=${reader.audioTrackCount}" in tv
 assert "audio_track_count=${transport.audioTrackCount}" in tv
 
