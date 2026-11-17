@@ -300,39 +300,53 @@ def _move_exact(source: Path, target: Path) -> None:
     source.replace(target)
 
 
-def relocate_bulk_pending_artifacts(
+def relocate_pending_artifacts(
     published_relative: str,
     base_relative: str,
     *,
     root: Path = ROOT,
 ) -> str:
-    """Move a newly staged bulk candidate out of executable directories."""
+    """Move a newly staged disabled/pending candidate out of executable directories."""
     root = root.resolve()
     source = (root / published_relative).resolve()
     base_source = (root / base_relative).resolve()
     active = (root / "providers").resolve()
     bases = (root / "provider-bases").resolve()
     if active not in source.parents:
-        raise ValueError(f"bulk pending provider is not in active provider directory: {published_relative}")
+        raise ValueError(f"pending provider is not in active provider directory: {published_relative}")
     if bases not in base_source.parents:
-        raise ValueError(f"bulk pending ProviderBase is not in active base directory: {base_relative}")
+        raise ValueError(f"pending ProviderBase is not in active base directory: {base_relative}")
     disabled = (root / "provider-disabled" / source.name).resolve()
     disabled_base = (root / "provider-disabled" / "provider-bases" / base_source.name).resolve()
     # Use a root-local move helper here rather than the lifecycle module: bulk
     # staging is not yet lifecycle authority and must remain proof-neutral.
     def move(source_path: Path, target_path: Path) -> None:
         if not source_path.is_file():
-            raise ValueError(f"bulk pending artifact missing: {source_path.relative_to(root)}")
+            raise ValueError(f"pending artifact missing: {source_path.relative_to(root)}")
         target_path.parent.mkdir(parents=True, exist_ok=True)
         if target_path.exists():
             if source_path.read_bytes() != target_path.read_bytes():
-                raise ValueError(f"bulk pending artifact collision: {target_path.relative_to(root)}")
+                raise ValueError(f"pending artifact collision: {target_path.relative_to(root)}")
             source_path.unlink()
         else:
             source_path.replace(target_path)
     move(source, disabled)
     move(base_source, disabled_base)
     return disabled.relative_to(root).as_posix()
+
+
+def relocate_bulk_pending_artifacts(
+    published_relative: str,
+    base_relative: str,
+    *,
+    root: Path = ROOT,
+) -> str:
+    """Compatibility alias for callers/tests predating generic pending staging."""
+    return relocate_pending_artifacts(
+        published_relative,
+        base_relative,
+        root=root,
+    )
 
 
 def first_fixture(media_type: str) -> dict[str, Any]:
@@ -894,8 +908,10 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
         provider_model,
         base_relative,
     )
-    if bulk:
-        published_relative = relocate_bulk_pending_artifacts(published_relative, base_relative)
+    # Every onboarding stage is fail-closed and disabled until its validation
+    # path explicitly promotes it. Keep both provider bytes and ProviderBase out
+    # of executable directories for bulk and single-provider probes alike.
+    published_relative = relocate_pending_artifacts(published_relative, base_relative)
     entry["filename"] = ("../" + published_relative) if scope == "france" else published_relative
     scrapers = target_manifest.setdefault("scrapers", [])
     if replace_existing:
