@@ -17,8 +17,12 @@ assert "code-scanning/analyses" in guard
 assert '"PATCH"' in guard
 assert "dismissed_reason" in guard
 assert "dismissed_comment" in guard
-assert "retire_stale_codeql_2531.py" in workflow
-assert "delete_stale_codeql_2531_configuration.py" not in workflow
+assert "legacy_js_categories" in cleanup
+assert "confirm_delete=true" in cleanup
+assert "Exact-main maintained JS Core CodeQL analysis not found" in cleanup
+assert "Unresolved current JS Core High/Critical alert remains" in cleanup
+assert "delete_stale_codeql_2531_configuration.py" in workflow
+assert "retire_stale_codeql_2531.py" not in workflow
 assert "security-events: write" in workflow
 assert "github.event.workflow_run.conclusion == 'success'" in workflow
 assert "pull_request_target" not in workflow
