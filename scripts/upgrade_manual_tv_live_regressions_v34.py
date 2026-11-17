@@ -171,6 +171,15 @@ def patch_provider_base() -> bool:
     gate_call = 'if (kind === "api" && !_spv34RouteMediaCompatible(route, mediaType)) continue;'
     helper_count = text.count(helper_signature)
     marker_count = text.count(gate_marker)
+    # V35 strengthens this same V34 helper/gate instead of duplicating it.
+    # Historical V34 replay must therefore accept the V35 fixed point and must
+    # never downgrade route/media selection back to API-only filtering.
+    if (
+        "NIAKVIO_PROVIDER_ROUTE_MEDIA_BINDING_V35" in text
+        and helper_count == 1
+        and marker_count == 1
+    ):
+        return False
     if helper_count == 1 and marker_count == 1 and gate_call in text:
         return False
     if helper_count or marker_count:
