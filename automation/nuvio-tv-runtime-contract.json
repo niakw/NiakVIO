@@ -6,7 +6,7 @@
   "runtime_contract": "getStreams(tmdbId, mediaType, season, episode) plus global SCRAPER_ID, SCRAPER_SETTINGS and runtime TMDB_API_KEY",
   "source_repository": "NuvioMedia/NuvioTV",
   "source_branch": "dev",
-  "source_ref": "fc5c10c3d2d5def54bb21e452291cb7b281b07b3",
+  "source_ref": "03705cdd1dcff3eeffe57593a85839b2602e4bc8",
   "runtime_source": "app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt",
   "settings_source": "app/src/main/java/com/nuvio/tv/data/local/PluginDataStore.kt",
   "stream_repository_source": "app/src/main/java/com/nuvio/tv/data/repository/StreamRepositoryImpl.kt",
@@ -51,22 +51,22 @@
   },
   "audit": {
     "date": "2026-11-17",
-    "previous_ref": "2c853c1786743822c5ec7932e855529e0c731221",
-    "audited_ref": "fc5c10c3d2d5def54bb21e452291cb7b281b07b3",
+    "previous_ref": "fc5c10c3d2d5def54bb21e452291cb7b281b07b3",
+    "audited_ref": "03705cdd1dcff3eeffe57593a85839b2602e4bc8",
     "hard_contract_paths_changed": false,
     "plugin_runtime_positional_getstreams_unchanged": true,
     "provider_stream_repository_contract_unchanged": true,
     "provider_url_header_ingestion_unchanged": true,
     "semantic_changes_reviewed": [
-      "No configured provider/plugin/stream contract path changed between 2c853c178674 and fc5c10c3d2d5",
+      "No configured provider/plugin/stream contract path changed between fc5c10c3d2d5 and 03705cdd1dcf",
       "No configured core/player or ui/screens/player semantic-review path changed in this delta",
-      "New commits add Plex/Silo media-server, artwork, sign-in, settings and sync support outside the provider plugin ABI",
+      "Fourteen commits change activity/media-server sync/UI/translations outside the provider plugin ABI",
       "PluginRuntime still uses positional getStreams(tmdbId, mediaType, season, episode), TMDB_API_KEY and independent stream/subtitle header projection"
     ],
     "runtime_reproof_required": true,
-    "runtime_reproof_reason": "Source ABI audit is current at fc5c10c3d2d5; a fresh Android-TV Native Lab is still required to certify real current-client execution and playback.",
+    "runtime_reproof_reason": "Source ABI audit is current at 03705cdd1dcf; a fresh Android-TV Native Lab is still required to certify real current-client execution and playback.",
     "audited_at": "2026-11-17",
-    "note": "Current-source audit at fc5c10c3d2d5: Plex/Silo media-server integration only; provider/plugin/stream and player semantic-review paths unchanged. QuickJS provider ABI, TMDB runtime key, headers and subtitle projection unchanged; native TV execution still required."
+    "note": "2026-11-17: exact safe-head audit at dev 03705cdd1dcf. Since fc5c10c3d2d5, 14 commits change activity/media-server sync/UI/translations only; no configured provider/plugin/stream or player semantic-review path changed. Positional getStreams, QuickJS transport, TMDB runtime key and URL/header/subtitle projection remain unchanged. Exact Android-TV Native Lab proof remains required."
   },
   "notes": [
     "NuvioTV source contract re-audited on 2026-11-16 at 2c853c1786743822c5ec7932e855529e0c731221.",
@@ -81,7 +81,8 @@
     "Cross-work infinite loading that clears immediately after restarting NuvioTV is client lifecycle/executor exhaustion evidence, not provider disablement proof.",
     "NuvioTV does not expose TextEncoder/TextDecoder or WebAssembly from PluginRuntime.",
     "The canonical Node TV probe may use non-authoritative fallback invocation only for diagnostics; release/playback authority requires the exact four-positional-argument NuvioTV call path.",
-    "2026-11-17 upstream audit: dev fc5c10c3d2d5 adds media-server functionality outside provider/plugin/player contract paths; no provider ABI promotion is inferred and exact TV Native Lab remains mandatory."
+    "2026-11-17 upstream audit: dev fc5c10c3d2d5 adds media-server functionality outside provider/plugin/player contract paths; no provider ABI promotion is inferred and exact TV Native Lab remains mandatory.",
+    "2026-11-17 safe-head audit: dev 03705cdd1dcf changes only activity/media-server sync/UI/translations; provider/plugin/player contract paths remain unchanged and exact TV Native proof remains mandatory."
   ],
   "media_safety_authority": "scripts/provider_patches/stream_output_sanitizer_v12.py",
   "historical_direct_media_promotion": {
