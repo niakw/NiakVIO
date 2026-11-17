@@ -1,5 +1,5 @@
 {
-  "schema_version": 19,
+  "schema_version": 20,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -376,6 +376,9 @@
     ],
     "hls_multi_audio_requires_master_preservation": true,
     "indirect_media_resolution_prefers_richer_hls_master": true,
+    "native_multi_audio_expected_source": "post-player HLS master EXT-X-MEDIA TYPE=AUDIO cardinality",
+    "native_multi_audio_player_parity_required_when_master_has_multiple_audio": true,
+    "native_multi_audio_probe_order": "production player first, transport evidence second",
     "terminal_source_provenance_may_augment_visible_label": true
   },
   "nuvio_runtime_contract": {
@@ -418,6 +421,10 @@
     "final_native_certification_transitive_between_clients": false,
     "plugin_result_audio_tracks_field": false,
     "multi_audio_playback_authority": "terminal media resource (HLS master/container), not plugin metadata",
+    "multi_audio_native_acceptance_gate": "proven master audio tracks >=2 requires production player audio tracks >=2",
+    "multi_audio_native_evidence_owner": "NiakVIO test harness over official production player APIs/UI",
+    "multi_audio_collapse_failure_owner": "client_runtime",
+    "multi_audio_probe_player_first": true,
     "logical_stream_owner": "NiakVIO provider/scraper",
     "terminal_player_provenance_must_not_replace_owner": true
   },
