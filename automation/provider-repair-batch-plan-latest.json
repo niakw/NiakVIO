@@ -1,11 +1,10 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44191914183",
-  "sourceTriggerSha": "4298425dc12bc4100c2c47a85b0d4c9d3c73ec24",
+  "sourceRunId": "44193433665",
+  "sourceTriggerSha": "8a257aaf601d049d3ff37f7df77f4db3f3720a68",
   "unresolvedProviderCount": 72,
-  "dynamicVariantProviderCount": 5,
+  "dynamicVariantProviderCount": 4,
   "dynamicVariantProviders": [
-    "movish",
     "movix-fr",
     "nakios",
     "papadustream",
@@ -150,6 +149,7 @@
       "dominantIssues": [
         "network_http_error",
         "network_zero_result",
+        "provider_returned_streams",
         "timeout",
         "waf_challenge"
       ],
@@ -163,7 +163,7 @@
         "residential-exit-native-reachable"
       ],
       "transportSignature": "not-applicable",
-      "providerCount": 41,
+      "providerCount": 40,
       "providers": [
         "1jour1film0626",
         "anikototv",
@@ -188,7 +188,6 @@
         "hianime",
         "kidraz",
         "latestmovies",
-        "moiflix",
         "moviebite",
         "movish",
         "movix-fr",
@@ -212,7 +211,6 @@
         "provider-census-status.json:brainCheckRequired"
       ],
       "dynamicVariantProviders": [
-        "movish",
         "movix-fr"
       ],
       "executionPolicy": "batch-first",
@@ -232,9 +230,9 @@
         "none"
       ],
       "dominantIssues": [
+        "network_exception",
         "network_http_error",
         "network_zero_result",
-        "provider_returned_streams, provider_returned_wrong_content",
         "timeout",
         "waf_challenge"
       ],
@@ -273,41 +271,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
-      "repairScope": "terminal-extraction",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_http_error",
-        "network_zero_result"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 5,
-      "providers": [
-        "67movies",
-        "corsflix",
-        "nakios",
-        "primewire",
-        "shuttletv"
-      ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [
-        "nakios"
-      ],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
       "repairScope": "learning",
       "runtimeFamilies": [
@@ -325,14 +288,81 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 4,
+      "providerCount": 5,
       "providers": [
         "frenchstream",
         "mugiwarastream",
+        "nakios",
         "neko-sama",
         "streamzo"
       ],
       "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [
+        "nakios"
+      ],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
+      "repairScope": "terminal-extraction",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "mixed_embed_resolver",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_http_error",
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 4,
+      "providers": [
+        "67movies",
+        "corsflix",
+        "primewire",
+        "shuttletv"
+      ],
+      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-all-challenged",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "not-applicable",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup",
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-all-challenged"
+      ],
+      "transportSignature": "residential-exit-all-challenged",
+      "providerCount": 2,
+      "providers": [
+        "french-anime",
+        "moiflix"
+      ],
+      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -399,36 +429,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-all-challenged",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "not-applicable",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "residential-exit-all-challenged"
-      ],
-      "transportSignature": "residential-exit-all-challenged",
-      "providerCount": 1,
-      "providers": [
-        "french-anime"
-      ],
-      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "learning|html_scraper|runtime:html_scraper",
       "repairScope": "learning",
       "runtimeFamilies": [
@@ -459,6 +459,34 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
+      "groupId": "learning|html_scraper|runtime:sitemap-script-family",
+      "repairScope": "learning",
+      "runtimeFamilies": [
+        "sitemap-script-family"
+      ],
+      "runtimeFamilySignature": "sitemap-script-family",
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "sekai"
+      ],
+      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
       "groupId": "learning|official_domain_hub|runtime:official_domain_hub",
       "repairScope": "learning",
       "runtimeFamilies": [
@@ -479,34 +507,6 @@
         "purstream"
       ],
       "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "transport|html_scraper|runtime:sitemap-script-family",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "sitemap-script-family"
-      ],
-      "runtimeFamilySignature": "sitemap-script-family",
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_http_error"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "sekai"
-      ],
-      "action": "refresh transport authority before provider-local code changes",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
