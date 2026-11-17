@@ -28,7 +28,7 @@ function decode(value) {
 
 function fields(line) {
   const out = {};
-  const re = /([A-Za-z0-9_]+)=([^\\s]+)/g;
+  const re = /([A-Za-z0-9_]+)=([^\s]+)/g;
   let match;
   while ((match = re.exec(line)) !== null) out[match[1]] = match[2];
   return out;
@@ -39,7 +39,7 @@ function canonicalProvider(value) {
     .trim()
     .toLowerCase()
     .replace(/_/g, '-')
-    .replace(/\\s+/g, '-');
+    .replace(/\s+/g, '-');
 }
 
 function externalVisibleSource(title, name) {
@@ -59,7 +59,7 @@ for (const file of logs) {
     console.error('FIELD_NATIVE_PROVIDER_PROVENANCE status=fail client=' + client + ' reason=missing_log file=' + file);
     process.exit(2);
   }
-  for (const raw of fs.readFileSync(file, 'utf8').split(/\\r?\\n/)) {
+  for (const raw of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
     const genericAt = raw.indexOf('FIELD_NATIVE_ROW ');
     if (genericAt >= 0) {
       const f = fields(raw.slice(genericAt).trim());
