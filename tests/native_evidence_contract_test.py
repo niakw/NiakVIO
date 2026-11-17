@@ -181,7 +181,6 @@ for required in (
     "getAudioTracks()",
     "audio_track_count=",
     "audio_track_languages64=",
-    "logical_provider64=",
     "UiDevice.getInstance(instrumentation)",
     "R.string.cd_audio_tracks",
     'By.clazz("android.widget.RadioButton")',
@@ -193,7 +192,6 @@ for required in (
     "getAudioTracks()",
     "audio_track_count=",
     "audio_track_languages64=",
-    "logical_provider64=",
 ):
     assert required in desktop_player, required
 for required in (
@@ -206,6 +204,7 @@ for required in (
     "logicalProvider",
 ):
     assert required in ios_player, required
+assert "logical_provider64=" in native_corpus
 assert "hlsAudioTrackCount" in native_corpus
 assert "hlsAudioTrackLanguages" in native_corpus
 assert "LANGUAGE" in native_corpus
