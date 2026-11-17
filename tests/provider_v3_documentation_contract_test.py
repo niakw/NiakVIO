@@ -31,7 +31,11 @@ engine = (ROOT / "engine_v2/README.md").read_text(encoding="utf-8")
 sync = (ROOT / ".github/workflows/sync.yml").read_text(encoding="utf-8")
 manual = (ROOT / ".github/workflows/provider-v3-reconstruct-all.yml").read_text(encoding="utf-8")
 machine = json.loads((ROOT / "automation/provider-v3-architecture.json").read_text(encoding="utf-8"))
+assert machine["schema_version"] >= 26
+assert "schemaVersion" not in machine
 validation_machine = json.loads((ROOT / "VALIDATION.json").read_text(encoding="utf-8"))
+assert validation_machine["schema_version"] >= 84
+assert "schemaVersion" not in validation_machine
 sources_machine = json.loads((ROOT / "sources.json").read_text(encoding="utf-8"))
 platform_runtime_machine = json.loads((ROOT / "automation/platform-runtime-contracts.json").read_text(encoding="utf-8"))
 compatibility_matrix = json.loads((ROOT / "automation/nuvio-client-compatibility-matrix.json").read_text(encoding="utf-8"))
