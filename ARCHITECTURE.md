@@ -318,7 +318,7 @@ Contrat :
 - le transport Hub-46 épinglé, les hashes et l’intégrité de release sont ensuite reconstruits et validés ;
 - les commits de génération et de pinning sont préparés localement, puis publiés atomiquement uniquement si `origin/main` pointe toujours sur le SHA de base accepté ; tout mouvement concurrent de `main` fait échouer la transaction ;
 - une génération déjà finalisée peut rester un no-op ; aucune version provider/cache ne doit être inventée lorsque les bytes publiés n’ont pas changé.
-- après publication atomique, le finalizer déclenche la pile permanente `release-candidate-validation.yml` avec le **SHA final exact** ; cette pile refuse de certifier si `main` ne pointe plus sur ce SHA et exécute les cinq Labs indépendants sur le transport natif épinglé. Une validation pré-finalizer ou sur un autre SHA ne certifie jamais les bytes finalement publiés.
+- après publication atomique, le finalizer déclenche la pile permanente `release-candidate-validation.yml` avec le **SHA final exact** ; cette pile refuse de certifier si `main` ne pointe plus sur ce SHA, exécute CodeQL au SHA attendu, attend explicitement `SEC - Final Gate`, lance l’audit externe sur le SHA candidat lui-même (jamais sur un `main` mouvant), puis exécute les cinq Labs indépendants sur le transport natif épinglé. Une validation pré-finalizer, un scan sécurité non finalisé ou une preuve sur un autre SHA ne certifie jamais les bytes finalement publiés.
 
 Le finalizer n’est ni une autorité de découverte, ni un moteur Learning, ni une reconstruction complète : sa rematérialisation éventuelle est strictement bornée aux patches durables et à la génération courante acceptée, dans la transaction atomique de release.
 
@@ -456,7 +456,7 @@ Provider JS est de l’entrée non fiable : sandbox, budgets mémoire/temps/rés
 
 Le stripping HTML générique par regexp est interdit. Les findings CodeQL sur code NiakVIO doivent être corrigés ou justifiés ; les snapshots/bundles générés restent traités comme code non fiable même lorsqu’un finding est classé vendored/generated.
 
-`.github/workflows/codeql.yml` produit une preuve locale `security-extended` au SHA exact, conserve le SARIF en artifact et gate les findings High/Critical. Le même workflow audite les dépendances production au niveau High/Critical. Cette preuve complète le CodeQL Default Setup GitHub ; elle ne doit pas être désactivée pour masquer des alertes historiques.
+`.github/workflows/codeql.yml` produit une preuve locale `security-extended` au SHA exact, conserve le SARIF en artifact et gate les findings High/Critical. `.github/workflows/security-final-gate.yml` est l’autorité finale de release : il attend la matrice CodeQL complète du même SHA, rescane le périmètre Global+France publié, et bloque les High/Critical release-reachable. La release candidate attend explicitement ce Final Gate ainsi que l’audit externe pincé sur le même SHA avant de pouvoir devenir verte. Cette preuve complète le CodeQL Default Setup GitHub ; elle ne doit pas être désactivée pour masquer des alertes historiques.
 
 Voir [`SECURITY.md`](SECURITY.md).
 
