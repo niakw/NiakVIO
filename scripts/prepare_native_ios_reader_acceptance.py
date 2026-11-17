@@ -40,6 +40,7 @@ KOTLIN_TEMPLATE = r'''@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class
 package com.nuvio.app
 
 import com.nuvio.app.features.addons.httpGetText
+import com.nuvio.app.features.addons.httpGetTextWithHeaders
 import com.nuvio.app.features.player.NuvioPlayerBridgeFactory
 import com.nuvio.app.features.plugins.PluginManifestParser
 import com.nuvio.app.features.plugins.PluginRepository
@@ -103,6 +104,7 @@ private data class PlayerObservation(
     val errorClass: String,
     val audioTrackCount: Int = -1,
     val audioTrackLanguages: String = "",
+    val masterAudioTrackCount: Int = 0,
 )
 
 private data class ProductionPlayerProbe(
@@ -148,6 +150,24 @@ private fun codeUrl(manifestUrl: String, filename: String): String {
 }
 
 private fun hostOnly(url: String): String = NSURL.URLWithString(url)?.host.orEmpty()
+
+private suspend fun hlsMasterAudioTrackCount(row: PluginRuntimeResult): Int {
+    val body = runCatching {
+        withTimeout(5000L) {
+            httpGetTextWithHeaders(row.url, row.headers.orEmpty())
+        }
+    }.getOrNull() ?: return 0
+    if (!body.trimStart().startsWith("#EXTM3U", ignoreCase = true)) return 0
+    return body.lineSequence()
+        .map { it.trim() }
+        .filter { line ->
+            line.startsWith("#EXT-X-MEDIA", ignoreCase = true) &&
+                Regex("""(?:^|,)\s*TYPE\s*=\s*AUDIO(?:,|$)""", RegexOption.IGNORE_CASE)
+                    .containsMatchIn(line.substringAfter(':', line))
+        }
+        .distinct()
+        .count()
+}
 
 private suspend fun probeProductionPlayer(row: PluginRuntimeResult, playerTimeoutMs: Long): ProductionPlayerProbe =
     withContext(Dispatchers.Main) {
@@ -329,6 +349,9 @@ private suspend fun runLab(manifestUrl: String) {
                 val playerRows = if (learning) rows.take(1) else rows.take(40)
                 playerRows.forEach { row ->
                     val player = probeProductionPlayer(row, playerTimeoutMs)
+                    val masterAudioTrackCount = if (player.state == "ready" || player.state == "ended") {
+                        hlsMasterAudioTrackCount(row)
+                    } else 0
                     emit(
                         "FIELD_NATIVE_IOS_PLAYER",
                         PlayerObservation(
@@ -342,6 +365,7 @@ private suspend fun runLab(manifestUrl: String) {
                             errorClass = if (player.state == "error") "player_error" else "",
                             audioTrackCount = player.audioTrackCount,
                             audioTrackLanguages = player.audioTrackLanguages,
+                            masterAudioTrackCount = masterAudioTrackCount,
                         ),
                     )
                 }
