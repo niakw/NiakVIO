@@ -49,6 +49,7 @@ const raw = {
   network: "CDN-A",
   folder_size: 9876543210,
   seeders: 42,
+  provider: "foreign-reader",
 };
 
 for (const device of ["mobile", "desktop", "tv"]) {
@@ -82,6 +83,7 @@ for (const device of ["mobile", "desktop", "tv"]) {
   assert.equal(row.network, "CDN-A");
   assert.equal(row.folderSize, 9876543210);
   assert.equal(row.seeders, 42);
+  assert.equal(row.provider, "example");
   assert.equal(row.behaviorHints.bingeGroup, "example-group");
   assert.equal(row.behaviorHints.notWebReady, true);
   assert.equal(row.headers.Referer, "https://player.example/");
