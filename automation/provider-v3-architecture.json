@@ -1,5 +1,5 @@
 {
-  "schema_version": 18,
+  "schema_version": 19,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -420,5 +420,19 @@
     "multi_audio_playback_authority": "terminal media resource (HLS master/container), not plugin metadata",
     "logical_stream_owner": "NiakVIO provider/scraper",
     "terminal_player_provenance_must_not_replace_owner": true
+  },
+  "terminal_media_pipeline": {
+    "authority": "Core",
+    "order": [
+      "STREAM_FACTS",
+      "STREAM_SANITIZER",
+      "STREAM_IDENTITY",
+      "MEDIA_TYPE_RESOLUTION",
+      "STREAM_PRESENTATION"
+    ],
+    "terminal_resolution_before_identity": true,
+    "terminal_resolution_before_presentation": true,
+    "recovered_url_identity_revalidated": true,
+    "terminal_audio_tracks_presented": true
   }
 }
