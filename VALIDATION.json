@@ -1,5 +1,5 @@
 {
-  "schema_version": 84,
+  "schema_version": 85,
   "release": "dynamic",
   "release_authority": "manifest.json:version",
   "candidate_track": "main",
@@ -156,6 +156,9 @@
     "requires_five_native_platforms": true,
     "requires_projection_union_coverage": true,
     "requires_codeql_security_extended": true,
+    "requires_exact_sha_security_final_gate": true,
+    "requires_exact_sha_external_audit": true,
+    "release_candidate_waits_for_security_final_gate": true,
     "requires_npm_audit_high": true,
     "requires_fixed_point_and_reverse_rebuild": true,
     "requires_immutable_pinned_native_transport": true,
