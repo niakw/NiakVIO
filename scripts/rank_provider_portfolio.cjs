@@ -228,8 +228,18 @@ const minMovieTv = Number(policy.portfolio?.minimum_movie_tv_core || 10);
 const eligible = rows.filter((r) => r.qualityEligible);
 const selected = [];
 const selectedIds = new Set();
+function projectionCount(predicate) {
+  return selected.filter((row) => predicate(row)).length;
+}
 function add(row) {
   if (!row || selectedIds.has(row.provider) || selected.length >= hardMax) return false;
+  const global = manifestMap.has(row.provider);
+  const france = row.vf === true;
+  if (global && projectionCount((candidate) => manifestMap.has(candidate.provider)) >= targetGlobal) return false;
+  if (france && projectionCount((candidate) => candidate.vf === true) >= targetFrance) return false;
+  // Every production candidate belongs to at least one projection. Unknown
+  // out-of-projection observations stay diagnostic instead of consuming union capacity.
+  if (!global && !france) return false;
   selectedIds.add(row.provider); selected.push(row); return true;
 }
 function ensure(predicate, minimum) {
@@ -240,12 +250,12 @@ function ensure(predicate, minimum) {
     if (predicate(row) && add(row)) have++;
   }
 }
-// Fill each production projection independently. Overlapping providers satisfy
-// both targets once and therefore reduce, rather than inflate, unique count.
-ensure((r) => manifestMap.has(r.provider), targetGlobal);
-ensure((r) => r.vf, targetFrance);
+// Preserve coverage specialists inside the same projection capacities, then
+// fill each production projection independently. Overlap satisfies both once.
 ensure((r) => r.animeSpecialist, minAnime);
 ensure((r) => r.movieTvCore, minMovieTv);
+ensure((r) => manifestMap.has(r.provider), targetGlobal);
+ensure((r) => r.vf, targetFrance);
 
 for (const row of rows) {
   row.recommendation = selectedIds.has(row.provider) ? 'active_core'
