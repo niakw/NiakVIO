@@ -8,9 +8,9 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PATCH = ROOT / "scripts" / "provider_patches" / "stream_output_sanitizer_v11.py"
+PATCH = ROOT / "scripts" / "provider_patches" / "stream_output_sanitizer_v12.py"
 
-spec = importlib.util.spec_from_file_location("stream_output_sanitizer_v11_multi", PATCH)
+spec = importlib.util.spec_from_file_location("stream_output_sanitizer_v12_multi", PATCH)
 assert spec and spec.loader
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
@@ -121,6 +121,7 @@ def main() -> int:
 
     # Plugin results do not carry rich audioTracks into Nuvio Mobile/Desktop.
     # Keep the richer HLS master so the player itself can discover every audio rendition.
+    # Regression: seven playable child playlists precede the master; V11's six-candidate frontier collapsed this to mono-audio.
     master_source = r"""
 module.exports={getStreams:async function(){return [{
   name:"reader",url:"https://player.example/embed/abc",
@@ -136,14 +137,16 @@ module.exports={getStreams:async function(){return [{
             "min_vod_duration_seconds": 0,
         },
     )
+    assert "NUVIO_STREAM_OUTPUT_MULTI_AUDIO_FRONTIER_V12" in master_patched
+    assert "probeLimit=Math.min(candidates.length,16)" in master_patched
     master_runner = r"""
 const vm=require('vm');const source=process.argv[2];const enc=t=>new Uint8Array(Buffer.from(t,'utf8'));
 function response(url,type,text){let used=false,b=enc(text);return {ok:true,status:200,url,headers:{get:k=>String(k).toLowerCase()==='content-type'?type:''},body:{getReader:()=>({read:async()=>used?{done:true}:{done:false,value:(used=true,b)},cancel:async()=>{}})}}}
 const child='#EXTM3U\n#EXT-X-TARGETDURATION:120\n#EXTINF:120,\nseg.ts\n#EXT-X-ENDLIST\n';
 const master='#EXTM3U\n#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="aud",LANGUAGE="fr",NAME="Français",DEFAULT=YES,URI="fr.m3u8"\n#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="aud",LANGUAGE="en",NAME="English",AUTOSELECT=YES,URI="en.m3u8"\n#EXT-X-STREAM-INF:BANDWIDTH=3000000,AUDIO="aud"\nvideo.m3u8\n';
-const html='<video><source src="https://cdn.example/child.m3u8"><source src="https://cdn.example/master.m3u8"></video>';
+const html='<video>'+Array.from({length:7},(_,i)=>'<source src="https://cdn.example/child-'+(i+1)+'.m3u8">').join('')+'<source src="https://cdn.example/master.m3u8"></video>';
 const sandbox={module:{exports:{}},exports:{},URL,AbortController,setTimeout,clearTimeout,Uint8Array,encodeURIComponent,
- fetch:async(url)=>{let u=String(url);if(u.includes('/embed/'))return response(u,'text/html',html);if(u.endsWith('/child.m3u8'))return response(u,'application/vnd.apple.mpegurl',child);if(u.endsWith('/master.m3u8'))return response(u,'application/vnd.apple.mpegurl',master);throw new Error('unexpected '+u)}};
+ fetch:async(url)=>{let u=String(url);if(u.includes('/embed/'))return response(u,'text/html',html);if(/\/child-\d+\.m3u8$/.test(u))return response(u,'application/vnd.apple.mpegurl',child);if(u.endsWith('/master.m3u8'))return response(u,'application/vnd.apple.mpegurl',master);throw new Error('unexpected '+u)}};
 sandbox.globalThis=sandbox;vm.runInNewContext(source,sandbox,{timeout:10000});
 sandbox.module.exports.getStreams({tmdbId:'1',mediaType:'movie'}).then(rows=>console.log(JSON.stringify(rows))).catch(e=>{console.error(e);process.exit(1)});
 """
