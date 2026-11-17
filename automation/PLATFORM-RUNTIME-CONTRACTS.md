@@ -2,7 +2,7 @@
 
 > Généré depuis `automation/platform-runtime-contracts.json` par `scripts/render_platform_runtime_contracts.py`. Ne pas éditer la matrice à la main.
 
-Dernier audit du contrat : **2026-11-16**.
+Dernier audit du contrat : **2026-11-17**.
 
 **Lecture rapide :** 🟢 identique sur tous les clients · 🟠 implémentation/sémantique différente · 🔴 capacité absente, incompatible ou à ré-auditer sur au moins un client.
 
@@ -60,12 +60,12 @@ Critical provider identity, quality, language, request-header and subtitle facts
 
 | Device | Dépôt / branche | Révision auditée | État | Transport runtime |
 | --- | --- | --- | --- | --- |
-| Android | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `fc05fe8e516a5bd749c8a4e7b1c05143acd3f031` | **audited** | `composeApp/src/androidMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.android.kt` |
-| iOS | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `fc05fe8e516a5bd749c8a4e7b1c05143acd3f031` | **audited** | `composeApp/src/iosMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.ios.kt` |
+| Android | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `dd0e84704df5e4d746e28b9d6556305332ff3483` | **audited** | `composeApp/src/androidMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.android.kt` |
+| iOS | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `dd0e84704df5e4d746e28b9d6556305332ff3483` | **audited** | `composeApp/src/iosMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.ios.kt` |
 | macOS | `NuvioMedia/NuvioDesktop` / `Dev` | `3020193d8303c38ce88381f0a2a613b389219e62` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
 | Windows | `NuvioMedia/NuvioDesktop` / `Dev` | `3020193d8303c38ce88381f0a2a613b389219e62` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
 | Linux | `NuvioMedia/NuvioDesktop` / `Dev` | `3020193d8303c38ce88381f0a2a613b389219e62` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
-| Android TV | `NuvioMedia/NuvioTV` / `dev` | `2c853c1786743822c5ec7932e855529e0c731221` | **audited** | `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt` |
+| Android TV | `NuvioMedia/NuvioTV` / `dev` | `fc5c10c3d2d5def54bb21e452291cb7b281b07b3` | **audited** | `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt` |
 
 ## Lecture des états
 
@@ -124,7 +124,7 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt`
 - Transport : `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt`
 - Modèle de résultat : `composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt`
-- Note d'audit : 2026-11-16: exact current-source audit at Dev 3020193d8303. Since 8e779958a5f4, upstream changed only DesktopVersion.properties (0.1.37-alpha / 37) and DesktopDetailHero UI. No configured provider/plugin/streams contract path or player semantic-review path changed; positional getStreams, full result-list mapping, request/response headers, subtitles and the runtime TMDB_API_KEY bridge remain intact. macOS/Windows reader execution remains independently required.
+- Note d'audit : 2026-11-17: exact current-source audit at Dev 3020193d8303. Since 8e779958a5f4, upstream changed only DesktopVersion.properties (0.1.37-alpha / 37) and DesktopDetailHero UI. No configured provider/plugin/streams contract path or player semantic-review path changed; positional getStreams, full result-list mapping, request/response headers, subtitles and the runtime TMDB_API_KEY bridge remain intact. macOS/Windows reader execution remains independently required.
 
 ### Windows
 
@@ -132,7 +132,7 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt`
 - Transport : `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt`
 - Modèle de résultat : `composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt`
-- Note d'audit : 2026-11-16: exact current-source audit at Dev 3020193d8303. Since 8e779958a5f4, upstream changed only DesktopVersion.properties (0.1.37-alpha / 37) and DesktopDetailHero UI. No configured provider/plugin/streams contract path or player semantic-review path changed; positional getStreams, full result-list mapping, request/response headers, subtitles and the runtime TMDB_API_KEY bridge remain intact. macOS/Windows reader execution remains independently required.
+- Note d'audit : 2026-11-17: exact current-source audit at Dev 3020193d8303. Since 8e779958a5f4, upstream changed only DesktopVersion.properties (0.1.37-alpha / 37) and DesktopDetailHero UI. No configured provider/plugin/streams contract path or player semantic-review path changed; positional getStreams, full result-list mapping, request/response headers, subtitles and the runtime TMDB_API_KEY bridge remain intact. macOS/Windows reader execution remains independently required.
 
 ### Linux
 
@@ -140,7 +140,7 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt`
 - Transport : `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt`
 - Modèle de résultat : `composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt`
-- Note d'audit : 2026-11-16: exact current-source audit at Dev 3020193d8303. Since 8e779958a5f4, upstream changed only DesktopVersion.properties (0.1.37-alpha / 37) and DesktopDetailHero UI. No configured provider/plugin/streams contract path or player semantic-review path changed; positional getStreams, full result-list mapping, request/response headers, subtitles and the runtime TMDB_API_KEY bridge remain intact. macOS/Windows reader execution remains independently required.
+- Note d'audit : 2026-11-17: exact current-source audit at Dev 3020193d8303. Since 8e779958a5f4, upstream changed only DesktopVersion.properties (0.1.37-alpha / 37) and DesktopDetailHero UI. No configured provider/plugin/streams contract path or player semantic-review path changed; positional getStreams, full result-list mapping, request/response headers, subtitles and the runtime TMDB_API_KEY bridge remain intact. macOS/Windows reader execution remains independently required.
 
 ### Android TV
 
