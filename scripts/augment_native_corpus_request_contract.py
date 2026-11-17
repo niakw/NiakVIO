@@ -5,10 +5,11 @@ Canonical provider identity is strictly movie|tv|anime, while Nuvio transport
 metadata may additionally expose aliases such as series. The lab still traverses every
 staged provider (including manifest-disabled rows), but executes only canonical media routes.
 
-Canonical native acceptance selects providers with the logical fixture media type.
-Anime therefore remains anime for provider selection, while the Nuvio plugin ABI
-receives its TV transport alias only after selection. Cross-type capability discovery
-belongs to Learning/Deep, not to this acceptance layer.
+Canonical native acceptance selects providers with the logical fixture media type
+and passes that same canonical movie|tv|anime value into the published Nuvio provider.
+Any provider-specific transport alias belongs to the provider/Core structured contract,
+not to the Lab harness. Cross-type capability discovery belongs to Learning/Deep, not
+to this acceptance layer.
 """
 from __future__ import annotations
 
@@ -148,7 +149,7 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
     provider_list = re.search(r"(    private val providers = listOf\(\n.*?\n    \)\n)", text, flags=re.S)
     if not provider_list:
         raise SystemExit("request-contract provider list anchor missing")
-    helpers = f'''\n    data class ProviderRequestRoute(val mediaType: String)\n\n    private val declaredTypesByProvider: Map<String, Set<String>> = {kotlin_map(types)}\n\n    private val transportTypesByProvider: Map<String, Set<String>> = {kotlin_map(transport_types)}\n\n    private val logicalFixtureMediaType: String = {json.dumps(resolved_fixture_media_type)}\n\n    private fun requestRoutesFor(providerId: String, fixtureMediaType: String): List<ProviderRequestRoute> {{\n        val declared: Set<String> = declaredTypesByProvider[providerId.lowercase()] ?: emptySet<String>()\n        if (logicalFixtureMediaType !in declared) return emptyList<ProviderRequestRoute>()\n        val runtimeMediaType = if (logicalFixtureMediaType == "anime") "tv" else logicalFixtureMediaType\n        return listOf<ProviderRequestRoute>(ProviderRequestRoute(runtimeMediaType))\n    }}\n'''
+    helpers = f'''\n    data class ProviderRequestRoute(val mediaType: String)\n\n    private val declaredTypesByProvider: Map<String, Set<String>> = {kotlin_map(types)}\n\n    private val transportTypesByProvider: Map<String, Set<String>> = {kotlin_map(transport_types)}\n\n    private val logicalFixtureMediaType: String = {json.dumps(resolved_fixture_media_type)}\n\n    private fun requestRoutesFor(providerId: String, fixtureMediaType: String): List<ProviderRequestRoute> {{\n        val declared: Set<String> = declaredTypesByProvider[providerId.lowercase()] ?: emptySet<String>()\n        if (logicalFixtureMediaType !in declared) return emptyList<ProviderRequestRoute>()\n        val runtimeMediaType = logicalFixtureMediaType\n        return listOf<ProviderRequestRoute>(ProviderRequestRoute(runtimeMediaType))\n    }}\n'''
     text = text[: provider_list.end()] + helpers + text[provider_list.end() :]
 
     if client in {"tv", "mobile"}:
@@ -167,7 +168,7 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
         text = replace_once(text, begin, f"        launchClientUi()\n{begin}", "ui launch")
 
     # Legacy static-contract markers retained for audit continuity; runtime code
-    # below now distinguishes canonical anime selection from the TV transport alias:
+    # below keeps canonical selection and runtime request identity aligned:
     # listOf<String>(fixtureMediaType).filter {{ it in declared }}
     # ProviderRequestRoute(type)
     # QuickJS/JNI is not safe under parallel provider execution in the native
@@ -225,7 +226,7 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
     path.write_text(text, encoding="utf-8")
     print(
         f"FIELD_NATIVE_REQUEST_CONTRACT client={client} fixture={slug} media_type={resolved_fixture_media_type} "
-        f"canonical_selection=true anime_runtime_alias=tv providers={len(types)} provider_batch_size=1 "
+        f"canonical_selection=true runtime_media_type=canonical providers={len(types)} provider_batch_size=1 "
         f"player_probes_disabled={str(disable_player).lower()} path={path}"
     )
 
