@@ -286,7 +286,11 @@ portfolio.recommendedVf = rows.filter((row) => selected.has(String(row.provider 
 portfolio.protectedCoverageProviders = [...protectedByCoverage.keys()].sort();
 portfolio.protectedVfCoverageProviders = [...protectedByVfCoverage.keys()].sort();
 portfolio.repairPriorityProviders = [...repairPriority.keys()].sort();
-portfolio.normalPortfolioMax = Number(policy.portfolio?.normal_max_unique_active || policy.portfolio?.target_unique_active || 45);
+portfolio.normalPortfolioMax = Number(
+  policy.portfolio?.normal_max_unique_active ||
+  policy.portfolio?.hard_max_unique_active ||
+  ((Number(policy.portfolio?.target_global_active || 60)) + (Number(policy.portfolio?.target_france_active || 60)))
+);
 portfolio.coverageOverrideAboveNormalMax = orderedSelected.length > portfolio.normalPortfolioMax;
 portfolio.coverageEvidence = 'FIELD_NATIVE_RESULT count plus usable transport/runtime evidence per fixture and client; broken executions do not count as successful coverage';
 portfolio.vfCoverageEvidence = 'usable FIELD_NATIVE_ROW language/title evidence per fixture and client; VOSTFR/subtitle-only or broken executions do not count as VF';
