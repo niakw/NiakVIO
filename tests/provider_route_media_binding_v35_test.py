@@ -11,6 +11,14 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import provider_base_store as base_store
 
+provider_base_path = ROOT / "scripts" / "provider_base_store.py"
+before_v35 = provider_base_path.read_bytes()
+subprocess.run([sys.executable, "scripts/upgrade_provider_route_media_binding_v35.py"], cwd=ROOT, check=True)
+after_v35 = provider_base_path.read_bytes()
+assert after_v35 == before_v35, "committed ProviderBase must already be at the V35 fixed point"
+subprocess.run([sys.executable, "scripts/upgrade_provider_route_media_binding_v35.py"], cwd=ROOT, check=True)
+assert provider_base_path.read_bytes() == after_v35, "V35 migration must be byte-idempotent"
+
 model = base_store.build_provider_data_model(
     "typed-route-demo",
     {
