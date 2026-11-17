@@ -1,5 +1,5 @@
 {
-  "schema_version": 21,
+  "schema_version": 22,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -250,7 +250,17 @@
     ],
     "primary_precedes_fallback": true,
     "hub_linked_telegram_learning": "bounded one-hop discovery; persisted as fallback; publication authority begins on a later run",
-    "discovery_sources_never_runtime_origins": true
+    "discovery_sources_never_runtime_origins": true,
+    "html_extraction_modes": [
+      "anchor_href",
+      "absolute_url_text",
+      "common_js_url_assignment",
+      "window_location",
+      "meta_refresh"
+    ],
+    "public_telegram_contract": "only public /s/<channel> previews are automatic address sources",
+    "interactive_telegram_bot_contract": "manual evidence only; no automatic terminal publication",
+    "link_aggregator_contract": "public Linktree/bio-link/status pages are ordinary HTML hubs; outbound terminals still require validation"
   },
   "routine_workflow": {
     "path": ".github/workflows/sync.yml",
