@@ -947,14 +947,14 @@ Canonical Core order:
 
 ~~~text
 STREAM_FACTS
+→ STREAM_SANITIZER
 → STREAM_IDENTITY
 → MEDIA_TYPE
 → STREAM_PRESENTATION
 → PROVIDER_BRANDING
-→ SANITIZER
 ~~~
 
-HLS Runtime Integrity and Stream Score remain separate common contracts integrated at their defined boundaries; provider-local repair must not duplicate or bypass them.
+HLS Runtime Integrity and Stream Score remain separate common contracts integrated at their defined boundaries; provider-local repair must not duplicate or bypass them. Terminal sanitizer resolution precedes identity/presentation so any recovered player/media URL is revalidated for episode/content identity and its terminal audio facts are the ones presented to Nuvio.
 
 The public term is **Bloc**. Legacy compatibility field names such as provider_lego_scripts may remain in serialized DATA until a dedicated schema migration, but they are not architectural terminology.
 
