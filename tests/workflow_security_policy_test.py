@@ -46,6 +46,7 @@ release_candidate = (WORKFLOWS / 'release-candidate-validation.yml').read_text(e
 for marker in (
     'dispatch codeql.yml -f "inputs[expected_sha]=${TARGET_SHA}"',
     'dispatch security-final-gate.yml -f "inputs[expected_sha]=${TARGET_SHA}"',
+    'dispatch external-code-audit.yml -f "inputs[ref]=${TARGET_SHA}" -F \'inputs[publish]=false\'',
     "'security-final-gate.yml',",
     'security=codeql+final-gate+external',
 ):
