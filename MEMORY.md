@@ -1,3 +1,10 @@
+## 2026-11-17 — Quick TV census now measures direct MP4 duration like Deep
+
+- Topcartoons recovery exposed a second Quick/Deep identity asymmetry after the source-first metadata fix: Deep health already reads bounded MP4 `mvhd` duration (head, then tail range only when needed), while `nuvio_tv_probe_v2.cjs` previously measured HLS duration only. A direct MP4 could therefore remain Quick-`playable_verified` even when Deep later proved an impossible runtime for the requested movie/episode.
+- Commit `6157ccf7` ports the bounded MP4 movie-duration parser into the TV probe and feeds the result into its existing fixture-duration identity decision. It does not download the complete file and does not widen stream/network budgets.
+- Commit `4862b366` extends `tests/media_duration_identity_test.py` with deterministic local MP4 fixtures: a 420 s MP4 for an expected 58-minute episode must be rejected as `fixture_duration_mismatch`, while a 3480 s MP4 with the same source identity must remain verified. `0ae30667`, `5bfb8145`, `a4223f86` and `dd6ee57a` persist the Quick/Deep parity invariant in human/machine architecture and documentation tests.
+- Fresh exact-head CI and a new current-byte census are still required; older census FULL/PARTIAL/OK rows are not rebound to this stricter identity contract.
+
 ## 2026-11-17 — Quick census identity can no longer prove itself from Core presentation labels
 
 - Disabled-recovery run `44098101998` replayed exact retained Topcartoons bytes with residential transport. The workflow itself completed SUCCESS, but the authoritative disposition was negative/inconclusive: `aggregate_healthy=false`, `terminal_identity_complete=false`, missing `movie,tv`, action `transport_inconclusive_replay`, publication false. Brain guidance was empty/abstained, so no provider mutation was justified.
