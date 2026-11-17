@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Make all native Lab clients consume the physical active-scope manifest.
+"""Validate the current native Global+France projection-union transport.
 
-This is intentionally an idempotent source transformation used only by the repair
-campaign branch. The recoverable catalogue remains unchanged.
+This file is retained as a compatibility entry point for the historical Hub46
+migration. It is intentionally validation-only: current native suites already
+own the projection-union transport and this helper must never rewrite them back
+to the old Global-only or manifest-hub46 paths.
 """
 from __future__ import annotations
 
@@ -11,101 +13,56 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 
-TARGET_ANCHOR = 'TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"'
-TARGET_BLOCK = '''TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"
-if [[ -n "${NIAKVIO_PROVIDER_SCOPE_MATRIX:-}" && -f "${NIAKVIO}/manifest-hub46.json" ]]; then
-  TARGET_MANIFEST="manifest-hub46.json"
-  echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=$TARGET_MANIFEST providers=active-scope authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"
-fi'''
-
-LEGACY_DURATION = '''  EXPECTED_MINUTES="$(python3 - "$fixture" "$NIAKVIO/.github/triggers/nuvio-client-lab.json" <<'PY'
-import json, sys
-slug, path = sys.argv[1], sys.argv[2]
-data = json.load(open(path, encoding='utf-8'))
-for row in data.get('fixtures', []):
-    if row.get('slug') == slug:
-        print(int((row.get('fixture') or {}).get('expectedDurationMinutes') or 0))
-        break
-else:
-    raise SystemExit(f'fixture not found: {slug}')
-PY
-)" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }'''
-
-ROTATING_DURATION = '''  EXPECTED_MINUTES="$(PYTHONPATH="${NIAKVIO}/scripts" python3 - "$fixture" <<'PY'
-import sys
-from rotating_corpus import fixture_by_slug
-print(int(fixture_by_slug(sys.argv[1]).get("expectedDurationMinutes") or 0))
-PY
-)" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }'''
-
-IOS_ANCHOR = 'MANIFEST_URL="${NIAKVIO_MANIFEST_URL:?NIAKVIO_MANIFEST_URL is required}"'
-IOS_BLOCK = '''MANIFEST_URL="${NIAKVIO_MANIFEST_URL:?NIAKVIO_MANIFEST_URL is required}"
-if [[ -n "${NIAKVIO_PROVIDER_SCOPE_MATRIX:-}" && -f "${NIAKVIO_ROOT}/manifest-hub46.json" ]]; then
-  SOURCE_REPOSITORY="${GITHUB_REPOSITORY:-niakw/NiakVIO}"
-  SOURCE_SHA="${GITHUB_SHA:-$(git -C "$NIAKVIO_ROOT" rev-parse HEAD)}"
-  MANIFEST_URL="https://raw.githubusercontent.com/${SOURCE_REPOSITORY}/${SOURCE_SHA}/manifest-hub46.json"
-  echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=manifest-hub46.json providers=active-scope authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"
-fi'''
+SUITES = (
+    "run_native_corpus_desktop_suite.sh",
+    "run_native_corpus_mobile_suite.sh",
+    "run_native_corpus_tv_suite.sh",
+)
 
 
-def replace_once_or_assert(text: str, old: str, new: str, marker: str, label: str) -> str:
-    if marker in text:
-        return text
-    count = text.count(old)
-    if count != 1:
-        raise SystemExit(f"{label}: anchor count={count}")
-    return text.replace(old, new, 1)
-
-
-def patch_target_manifest(name: str) -> None:
+def require_current_suite(name: str) -> None:
     path = SCRIPTS / name
     text = path.read_text(encoding="utf-8")
-    text = replace_once_or_assert(
-        text,
-        TARGET_ANCHOR,
-        TARGET_BLOCK,
-        "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=$TARGET_MANIFEST providers=active-scope",
-        name,
+    required = (
+        'TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-native-hub46/manifest.json}"',
+        'TARGET_MANIFEST="native-hub46/manifest.json"',
+        "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE",
     )
-    path.write_text(text, encoding="utf-8")
+    missing = [needle for needle in required if needle not in text]
+    if missing:
+        raise SystemExit(f"{name}: current projection-union contract missing: {missing}")
+    forbidden = (
+        'TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"',
+        'TARGET_MANIFEST="manifest-hub46.json"',
+    )
+    for needle in forbidden:
+        if needle in text:
+            raise SystemExit(f"{name}: retired native manifest authority survived: {needle}")
 
 
-def patch_desktop_duration() -> None:
-    path = SCRIPTS / "run_native_corpus_desktop_suite.sh"
-    text = path.read_text(encoding="utf-8")
-    if ROTATING_DURATION not in text:
-        count = text.count(LEGACY_DURATION)
-        if count != 1:
-            raise SystemExit(f"desktop legacy duration block count={count}")
-        text = text.replace(LEGACY_DURATION, ROTATING_DURATION, 1)
-    if '"$NIAKVIO/.github/triggers/nuvio-client-lab.json"' in text.split("EXPECTED_MINUTES=", 1)[-1].split("python3 \"$PLAYER_AUGMENT\"", 1)[0]:
-        raise SystemExit("desktop legacy fixture duration lookup survived")
-    path.write_text(text, encoding="utf-8")
-
-
-def patch_ios() -> None:
+def require_current_ios() -> None:
     path = SCRIPTS / "run_native_corpus_ios_suite.sh"
     text = path.read_text(encoding="utf-8")
-    text = replace_once_or_assert(
-        text,
-        IOS_ANCHOR,
-        IOS_BLOCK,
-        "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=manifest-hub46.json providers=active-scope",
-        "iOS",
+    required = (
+        "native-hub46/manifest.json",
+        "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE",
     )
-    path.write_text(text, encoding="utf-8")
+    missing = [needle for needle in required if needle not in text]
+    if missing:
+        raise SystemExit(f"iOS: current projection-union contract missing: {missing}")
+    if "manifest-hub46.json" in text:
+        raise SystemExit("iOS: retired manifest-hub46 transport survived")
 
 
 def main() -> int:
-    for name in (
-        "run_native_corpus_desktop_suite.sh",
-        "run_native_corpus_mobile_suite.sh",
-        "run_native_corpus_tv_suite.sh",
-    ):
-        patch_target_manifest(name)
-    patch_desktop_duration()
-    patch_ios()
-    print("FIELD_HUB46_NATIVE_SCOPE_APPLIED clients=desktop,mobile,tv,ios providers=active-scope")
+    for name in SUITES:
+        require_current_suite(name)
+    require_current_ios()
+    print(
+        "FIELD_HUB46_NATIVE_SCOPE_APPLIED "
+        "clients=desktop,mobile,tv,ios providers=current-active "
+        "authority=projection-active-union mode=validation-only"
+    )
     return 0
 
 
