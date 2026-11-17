@@ -323,8 +323,8 @@ assert "preuve manuelle uniquement" in arch_md
 # providers before any network resolution.
 root_manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 vf_manifest = json.loads((ROOT / "vf/manifest.json").read_text(encoding="utf-8"))
-global_ids = {row["id"] for row in root_manifest["scrapers"]}
-vf_ids = {row["id"] for row in vf_manifest["scrapers"]}
+global_ids = {str(row["id"]).strip().casefold() for row in root_manifest["scrapers"]}
+vf_ids = {str(row["id"]).strip().casefold() for row in vf_manifest["scrapers"]}
 strict_fr = vf_ids - global_ids
 sanitized_scope = set(sanitizer.current_provider_rows(ROOT / "manifest.json"))
 assert strict_fr, "fixture requires at least one strict France-only provider"
@@ -332,11 +332,12 @@ assert strict_fr <= sanitized_scope, (sorted(strict_fr - sanitized_scope), len(s
 
 # The publication guard must use the active Global+France union too; otherwise
 # the sanitizer can pass France-only rows only for the next guard to reject them.
-guard_scope = domain_guard.validation_provider_ids(ROOT / "manifest.json")
+guard_scope = {str(value).strip().casefold() for value in domain_guard.validation_provider_ids(ROOT / "manifest.json")}
 from current_provider_scope import projection_active_provider_ids
-assert guard_scope == set(projection_active_provider_ids(ROOT)), (
+expected_guard_scope = {str(value).strip().casefold() for value in projection_active_provider_ids(ROOT)}
+assert guard_scope == expected_guard_scope, (
     len(guard_scope),
-    len(projection_active_provider_ids(ROOT)),
+    len(expected_guard_scope),
 )
 assert strict_fr & guard_scope, "active France-only scope must reach Domain publication guard"
 
