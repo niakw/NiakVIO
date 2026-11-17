@@ -305,15 +305,28 @@ assert domain_arch["discovery_sources_never_runtime_origins"] is True, domain_ar
 assert "meta_refresh" in domain_arch["html_extraction_modes"], domain_arch
 assert "/s/<channel>" in domain_arch["public_telegram_contract"], domain_arch
 assert "manual evidence only" in domain_arch["interactive_telegram_bot_contract"], domain_arch
+assert "every curated direct probe fails" in domain_arch["direct_failure_search_fallback"], domain_arch
+assert "two consecutive runs" in domain_arch["search_fallback_publication_contract"], domain_arch
+assert domain_arch["reachable_direct_prevents_search_fallback"] is True
+assert domain_arch["operator_pin_prevents_search_fallback"] is True
 assert validation["domain_refresh"]["multi_source_address_authority"] is True, validation["domain_refresh"]
 assert validation["domain_refresh"]["learned_hub_linked_telegram_requires_later_run_before_publication"] is True
 assert validation["domain_refresh"]["public_telegram_requires_web_preview"] is True
 assert validation["domain_refresh"]["interactive_telegram_bot_is_automatic_authority"] is False
 assert validation["domain_refresh"]["link_aggregators_use_generic_html_hub_parser"] is True
+assert validation["domain_refresh"]["direct_failure_search_fallback_enabled"] is True
+assert validation["domain_refresh"]["reachable_direct_suppresses_search_fallback"] is True
+assert validation["domain_refresh"]["search_fallback_requires_runtime_terminal_validation"] is True
+assert validation["domain_refresh"]["search_fallback_requires_consecutive_confirmation"] is True
+assert validation["domain_refresh"]["search_fallback_minimum_confirmation_runs"] == 2
+assert validation["domain_refresh"]["operator_pin_never_superseded_by_search"] is True
 assert "window_location" in validation["domain_refresh"]["html_hub_extraction_modes"]
 assert "multi_source_policy" in registry_policy and "linked_source_learning" in registry_policy, registry_policy
 assert "meta_refresh" in registry_policy["html_extraction_modes"], registry_policy
 assert "manual evidence only" in registry_policy["interactive_telegram_bot_policy"], registry_policy
+assert "every bounded curated-direct probe fails" in registry_policy["direct_failure_search_fallback"], registry_policy
+assert "consecutive runs" in registry_policy["search_publication"], registry_policy
+assert "operator_pin" in registry_policy["operator_pin_search_policy"], registry_policy
 assert "plusieurs sources d’adresse ordonnées" in arch_md, "Domain Refresh multi-source documentation missing"
 assert "Sources d'adresse hétérogènes et fallbacks" in arch_md
 assert "preuve manuelle uniquement" in arch_md
