@@ -1,3 +1,10 @@
+## 2026-11-17 — Lifecycle rollback reached reactivation but failed before ledger rebuild
+
+- Provider Disabled Lifecycle run `44102398776` on `05c52d512836855ea3542feabd57ec39bbaf5280` correctly reached the deprecated proof-absence reclassification, but failed before commit in `manage_provider_lifecycle.py`: 86 restored identities had already become active in the in-memory catalogue/filesystem while `provider-v3-materialization.json` still contained only the previously active executable rows.
+- The strict failure `active providers missing from materialization ledger` prevented partial publication. This is a transaction-order defect, not evidence against the restored providers.
+- Commit `1e9a73ec` makes lifecycle reactivation reuse the canonical `reconcile_materialization_from_active_bundles(apply=True)` path when newly active identities are absent from the executable ledger. Exact retained bytes are restored first, updated Global+France manifests/catalogue are persisted, then materialization rows are reconstructed/rebound from those exact active bundles before the existing strict identity/count/generation checks continue.
+- Commit `42e74ccb` locks that canonical recovery path in the lifecycle regression. No provider health is promoted by this change; restored proof-gap providers remain uncertified until the stricter source-first/MP4-duration census and normal release/native proof run on their current bytes.
+
 ## 2026-11-17 — Quick TV census now measures direct MP4 duration like Deep
 
 - Topcartoons recovery exposed a second Quick/Deep identity asymmetry after the source-first metadata fix: Deep health already reads bounded MP4 `mvhd` duration (head, then tail range only when needed), while `nuvio_tv_probe_v2.cjs` previously measured HLS duration only. A direct MP4 could therefore remain Quick-`playable_verified` even when Deep later proved an impossible runtime for the requested movie/episode.
