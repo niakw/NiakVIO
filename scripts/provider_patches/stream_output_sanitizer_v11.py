@@ -42,8 +42,10 @@ NEW_HLS = r'''        var hls=normalizeHlsText(text,finalUrl);
         recoverQuality(stream,hls.text,finalUrl);
         var master=/#EXT-X-STREAM-INF\s*:/i.test(hls.text),audioCount=0,am,reAudio=/#EXT-X-MEDIA\s*:[^\r\n]*TYPE\s*=\s*["']?AUDIO["']?[^\r\n]*/gi;
         while((am=reAudio.exec(hls.text))!==null)audioCount++;
-        stream.__nuvioHlsMasterV1=master;
-        stream.__nuvioHlsMasterAudioCountV1=master?audioCount:0;
+        if(depth>0){
+          stream.__nuvioHlsMasterV1=master;
+          stream.__nuvioHlsMasterAudioCountV1=master?audioCount:0;
+        }
         if(depth>0&&referer)try{stream.playerHost=hostOf(referer)}catch(_e){}
         try{stream.terminalHost=hostOf(finalUrl)}catch(_e){}
         if(hls.repaired){
