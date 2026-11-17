@@ -201,7 +201,8 @@ for required in (
 ):
     assert required in ios_player, required
 assert "hlsAudioTrackCount" in native_corpus
-assert 'TYPE\\s*=\\s*AUDIO' in native_corpus
+assert 'startsWith("#EXT-X-MEDIA", ignoreCase = true)' in native_corpus
+assert "TYPE" in native_corpus and "AUDIO" in native_corpus
 assert 'androidx.test.uiautomator:uiautomator:2.3.0' in native_corpus
 
 assert "PlatformPlayerSurface(" in desktop_player
