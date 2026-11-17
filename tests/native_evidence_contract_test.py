@@ -184,6 +184,7 @@ for required in (
     "UiDevice.getInstance(instrumentation)",
     "R.string.cd_audio_tracks",
     'By.clazz("android.widget.RadioButton")',
+    "track.contentDescription",
 ):
     assert required in android_player, required
 for required in (
@@ -198,9 +199,12 @@ for required in (
     "getAudioTrackLang(index)",
     "audioTrackCount",
     "audioTrackLanguages",
+    "masterAudioTrackLanguages",
 ):
     assert required in ios_player, required
 assert "hlsAudioTrackCount" in native_corpus
+assert "hlsAudioTrackLanguages" in native_corpus
+assert "LANGUAGE" in native_corpus
 assert 'startsWith("#EXT-X-MEDIA", ignoreCase = true)' in native_corpus
 assert "TYPE" in native_corpus and "AUDIO" in native_corpus
 assert 'androidx.test.uiautomator:uiautomator:2.3.0' in native_corpus
