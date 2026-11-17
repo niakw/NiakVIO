@@ -1,6 +1,6 @@
 {
   "schema_version": 63,
-  "updated_at": "2026-11-17T13:42:49.062843+00:00",
+  "updated_at": "2026-11-17T23:37:02.572223+00:00",
   "providers": {
     "1jour1film0626": {
       "last_checked_at": "2026-11-16T15:15:55.700455+00:00",
@@ -291,15 +291,15 @@
       "host_health": {}
     },
     "aniflix-uno": {
-      "last_checked_at": "2026-11-16T15:15:55.700455+00:00",
-      "last_status": "no_streams",
-      "last_score": 100,
-      "last_sha256": "d766a00a72e57f41dd1b46370fc0491e8341dc7f4b63c843052f53678c6bdd1c",
+      "last_checked_at": "2026-11-17T23:37:02.572223+00:00",
+      "last_status": "blocked",
+      "last_score": 30,
+      "last_sha256": "3c9e7bc45ae8bd654421d8a2c1e0fdeea497efcd278444eb5f020c7036bf2dee",
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
-      "consecutive_blocked": 0,
-      "consecutive_no_streams": 1,
+      "consecutive_blocked": 1,
+      "consecutive_no_streams": 0,
       "auto_disabled": false,
       "last_success_at": null,
       "hosts": [],
@@ -1425,23 +1425,19 @@
       "host_health": {}
     },
     "french-manga": {
-      "last_checked_at": "2026-11-10T13:13:12.372998+00:00",
-      "last_status": "healthy",
-      "last_score": 100,
-      "last_sha256": "8124f6bfb672c89951f483f867da05015d2d816a3899705b85f80ed50eca021b",
+      "last_checked_at": "2026-11-17T23:37:02.572223+00:00",
+      "last_status": "no_streams",
+      "last_score": 85,
+      "last_sha256": "5e8540f4c96346ab4b3963eecd525bfc2e38fd916c0a62c4e2061e5c52a7d53b",
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
+      "consecutive_successes": 0,
       "consecutive_blocked": 0,
-      "consecutive_no_streams": 0,
+      "consecutive_no_streams": 1,
       "auto_disabled": false,
       "last_success_at": "2026-11-10T13:13:12.372998+00:00",
-      "hosts": [
-        "u14.vidzy.org"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "u14.vidzy.cc": {
           "last_checked_at": "2026-11-10T13:13:12.372998+00:00",
@@ -2257,19 +2253,21 @@
     },
     "ilmiv": {},
     "internet-archive": {
-      "last_checked_at": "2026-11-16T18:44:43.276183+00:00",
-      "last_status": "no_streams",
+      "last_checked_at": "2026-11-17T23:37:02.572223+00:00",
+      "last_status": "degraded",
       "last_score": 100,
-      "last_sha256": "8872a408be60d6d034c9891c9f49cd4f84857057101d809cf1b763feb184b1de",
+      "last_sha256": "2e56fc26f04b45ac8237020a6c68ed9e8aa9b17001459091d4f87727ed90f364",
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "consecutive_blocked": 0,
-      "consecutive_no_streams": 1,
+      "consecutive_no_streams": 0,
       "auto_disabled": false,
       "last_success_at": null,
       "hosts": [],
-      "response_categories": [],
+      "response_categories": [
+        "content_identity_mismatch"
+      ],
       "host_health": {
         "ia600600.us.archive.org": {
           "last_checked_at": "2026-11-15T06:53:03.425850+00:00",
@@ -2283,11 +2281,11 @@
           "consecutive_blocked": 0
         },
         "ia800600.us.archive.org": {
-          "last_checked_at": "2026-11-16T15:15:55.700455+00:00",
+          "last_checked_at": "2026-11-17T23:37:02.572223+00:00",
           "last_category": "content_identity_mismatch",
           "reachable": false,
           "http_status": 206,
-          "latency_ms": 412,
+          "latency_ms": 245,
           "kind": "mp4",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
@@ -2394,7 +2392,38 @@
       "response_categories": [],
       "host_health": {}
     },
-    "meowtv": {},
+    "meowtv": {
+      "last_checked_at": "2026-11-17T23:37:02.572223+00:00",
+      "last_status": "healthy",
+      "last_score": 85,
+      "last_sha256": "6e46650c4b7fa7120e393d4b30f7065896e9010f7056b67b505fab34568d88dd",
+      "consecutive_hard_failures": 0,
+      "hard_failure_started_at": null,
+      "consecutive_successes": 1,
+      "consecutive_blocked": 0,
+      "consecutive_no_streams": 0,
+      "auto_disabled": false,
+      "last_success_at": "2026-11-17T23:37:02.572223+00:00",
+      "hosts": [
+        "cdn2.slowcloud.live"
+      ],
+      "response_categories": [
+        "playable"
+      ],
+      "host_health": {
+        "cdn2.slowcloud.live": {
+          "last_checked_at": "2026-11-17T23:37:02.572223+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 200,
+          "latency_ms": 211,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        }
+      }
+    },
     "moiflix": {
       "last_checked_at": "2026-11-16T15:15:55.700455+00:00",
       "last_status": "no_streams",
@@ -3479,29 +3508,33 @@
       "host_health": {}
     },
     "purstream": {
-      "last_checked_at": "2026-11-17T13:42:49.062843+00:00",
-      "last_status": "no_streams",
+      "last_checked_at": "2026-11-17T23:37:02.572223+00:00",
+      "last_status": "healthy",
       "last_score": 100,
-      "last_sha256": "3a675555138189673152d9fa556955177a0c64610f8e84430f77bffffae10d00",
+      "last_sha256": "7f0b54e9969eefbbdb1bda17fa5806adcecea29352283bbb5158bcda1044f34f",
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
+      "consecutive_successes": 1,
       "consecutive_blocked": 0,
-      "consecutive_no_streams": 1,
+      "consecutive_no_streams": 0,
       "auto_disabled": false,
-      "last_success_at": "2026-11-15T15:45:39.860152+00:00",
-      "hosts": [],
-      "response_categories": [],
+      "last_success_at": "2026-11-17T23:37:02.572223+00:00",
+      "hosts": [
+        "free.finepulfe.xyz"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "free.finepulfe.xyz": {
-          "last_checked_at": "2026-11-15T15:45:39.860152+00:00",
+          "last_checked_at": "2026-11-17T23:37:02.572223+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 206,
-          "latency_ms": 113,
+          "latency_ms": 95,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 16,
+          "consecutive_successes": 17,
           "consecutive_blocked": 0
         }
       }
@@ -3725,23 +3758,19 @@
       "host_health": {}
     },
     "streamzo": {
-      "last_checked_at": "2026-11-17T13:42:49.062843+00:00",
-      "last_status": "healthy",
+      "last_checked_at": "2026-11-17T23:37:02.572223+00:00",
+      "last_status": "no_streams",
       "last_score": 100,
-      "last_sha256": "6b66afdba78dc9eca14035c13eb209820133822302a3d94f32ed0ff301d911a0",
+      "last_sha256": "9374756c5efda50ac3e5ee7d4bef82723212352e35edd5aec7aba429b6572772",
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 0,
       "consecutive_blocked": 0,
-      "consecutive_no_streams": 0,
+      "consecutive_no_streams": 1,
       "auto_disabled": false,
       "last_success_at": "2026-11-17T13:42:49.062843+00:00",
-      "hosts": [
-        "prx-1590-for.vmnow.online"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "static.cloudflareinsights.com": {
           "last_checked_at": "2026-11-17T13:42:49.062843+00:00",
