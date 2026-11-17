@@ -36,13 +36,14 @@ with tempfile.TemporaryDirectory() as td:
         "deferredProviders":[]
     }),encoding="utf-8")
     paths["MANIFEST"].write_text(json.dumps({"scrapers":[
-        {"id":"a","enabled":False,"filename":"provider-disabled/a.js"},{"id":"b","enabled":False,"filename":"provider-disabled/b.js"},{"id":"c","enabled":False,"filename":"provider-disabled/c.js"}
+        {"id":"a","enabled":False,"filename":"provider-disabled/a.js"},{"id":"b","enabled":False,"filename":"provider-disabled/b.js"},{"id":"c","enabled":False,"filename":"provider-disabled/c.js"},{"id":"e","enabled":False,"filename":"provider-disabled/e.js"}
     ]}),encoding="utf-8")
     paths["CATALOG"].write_text(json.dumps({"providers":[
         {"canonicalId":"a","scraper":{"id":"a","enabled":False,"filename":"provider-disabled/a.js"},"projections":{"general":True,"vf":False}},
         {"canonicalId":"b","scraper":{"id":"b","enabled":False,"filename":"provider-disabled/b.js"},"projections":{"general":True,"vf":False}},
         {"canonicalId":"c","scraper":{"id":"c","enabled":False,"filename":"provider-disabled/c.js"},"projections":{"general":True,"vf":False}},
         {"canonicalId":"d","scraper":{"id":"d","enabled":False,"filename":"provider-disabled/d.js","supportedTypes":["anime","tv"],"canonicalSupportedTypes":["anime"]},"projections":{"general":False,"vf":True}},
+        {"canonicalId":"e","scraper":{"id":"e","enabled":False,"filename":"provider-disabled/e.js"},"projections":{"general":True,"vf":False}},
     ]}),encoding="utf-8")
     paths["OVERRIDES"].write_text(json.dumps({
         "provider_patches":{
@@ -50,18 +51,20 @@ with tempfile.TemporaryDirectory() as td:
             "b":{"manifest_overrides":{"enabled":False}},
             "c":{"manifest_overrides":{"enabled":False}},
             "d":{"manifest_overrides":{"enabled":False}},
+            "e":{"manifest_overrides":{"enabled":False}},
         },
-        "provider_capabilities":{"a":{},"b":{},"c":{},"d":{}},
+        "provider_capabilities":{"a":{},"b":{},"c":{},"d":{},"e":{}},
     }),encoding="utf-8")
     paths["PROVENANCE"].write_text(json.dumps({"providers":{
         "a":{"activation_mode":"bulk_onboarding_pending","published_filename":"provider-disabled/a.js","base_filename":"provider-bases/a--base.js"},
         "b":{"activation_mode":"bulk_onboarding_pending","published_filename":"provider-disabled/b.js","base_filename":"provider-bases/b--base.js"},
         "c":{"activation_mode":"bulk_onboarding_pending","published_filename":"provider-disabled/c.js","base_filename":"provider-bases/c--base.js"},
         "d":{"activation_mode":"bulk_onboarding_pending","published_filename":"provider-disabled/d.js","base_filename":"provider-bases/d--base.js"},
+        "e":{"activation_mode":"bulk_onboarding_pending","published_filename":"provider-disabled/e.js","base_filename":"provider-bases/e--base.js"},
     }}),encoding="utf-8")
-    paths["HUBS"].write_text(json.dumps({"providers":{"a":{},"b":{},"c":{},"d":{}}}),encoding="utf-8")
+    paths["HUBS"].write_text(json.dumps({"providers":{"a":{},"b":{},"c":{},"d":{},"e":{}}}),encoding="utf-8")
     (td/"provider-disabled/provider-bases").mkdir(parents=True)
-    for pid in ("a","b","c","d"):
+    for pid in ("a","b","c","d","e"):
         (td/f"provider-disabled/{pid}.js").write_bytes(("provider-"+pid).encode())
         (td/f"provider-disabled/provider-bases/{pid}--base.js").write_bytes(("base-"+pid).encode())
     paths["STATUS"].write_text(json.dumps({
@@ -70,6 +73,7 @@ with tempfile.TemporaryDirectory() as td:
             {"provider":"b","status":"FULL OK","testedThisRun":True,"declaredLanes":["movie","tv"],"currentVerifiedLanes":["movie","tv"],"brainCheckRequired":False},
             {"provider":"c","status":"FULL OK","testedThisRun":False,"declaredLanes":["anime"],"currentVerifiedLanes":["anime"],"brainCheckRequired":False},
             {"provider":"d","status":"FULL OK","testedThisRun":True,"declaredLanes":["movie","tv"],"currentVerifiedLanes":["movie","tv"],"brainCheckRequired":False},
+            {"provider":"e","status":"FULL OK","testedThisRun":True,"declaredLanes":["movie"],"currentVerifiedLanes":["movie"],"brainCheckRequired":False},
         ]
     }),encoding="utf-8")
     old={name:getattr(mod,name) for name in ("MANIFEST","CATALOG","OVERRIDES","PROVENANCE","HUBS","STATUS","OUTPUT")}
@@ -105,16 +109,18 @@ with tempfile.TemporaryDirectory() as td:
         "d_base":(td/"provider-bases/d--base.js").is_file(),
         "b_pending":(td/"provider-disabled/b.js").is_file(),
         "c_pending":(td/"provider-disabled/c.js").is_file(),
+        "e_pending":(td/"provider-disabled/e.js").is_file(),
     }
 
 assert activation["activatedProviders"]==["a","d"]
 assert activation["activationCount"]==2
 assert activation["activationScopes"]=={"a":"global","d":"france"}
-assert {x["provider"] for x in activation["blockedProviders"]}=={"b","c"}
+assert {x["provider"] for x in activation["blockedProviders"]}=={"b","c","e"}
 blocked={x["provider"]:x for x in activation["blockedProviders"]}
 assert blocked["b"]["reason"]=="portfolio_projection_capacity_reached"
 assert blocked["b"]["projections"]==["global"]
 assert blocked["c"]["reason"]=="full_ok_not_fresh_this_run"
+assert blocked["e"]["reason"]=="portfolio_priority_missing"
 assert activation["portfolio"]["targetGlobal"]==1
 assert activation["portfolio"]["targetFrance"]==1
 assert activation["portfolio"]["activeGlobalBefore"]==0
@@ -138,7 +144,7 @@ assert provenance["providers"]["a"]["published_filename"]=="providers/a.js"
 assert provenance["providers"]["d"]["published_filename"]=="providers/d.js"
 assert filesystem_postconditions["a_provider"] and filesystem_postconditions["a_base"], filesystem_postconditions
 assert filesystem_postconditions["d_provider"] and filesystem_postconditions["d_base"], filesystem_postconditions
-assert filesystem_postconditions["b_pending"] and filesystem_postconditions["c_pending"], filesystem_postconditions
+assert filesystem_postconditions["b_pending"] and filesystem_postconditions["c_pending"] and filesystem_postconditions["e_pending"], filesystem_postconditions
 cat={x["canonicalId"]:x for x in catalog["providers"]}
 assert cat["d"]["scraper"]["enabled"] is True
 assert cat["d"]["scraper"]["filename"]=="providers/d.js"
