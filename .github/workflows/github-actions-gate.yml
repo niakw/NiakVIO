@@ -72,6 +72,11 @@ on:
       - "tests/generic_recovery_hardening_test.py"
       - "tests/repository_hygiene_contract_test.py"
       - "tests/workflow_security_policy_test.py"
+      - "scripts/retire_stale_codeql_2531.py"
+      - "scripts/delete_stale_codeql_2531_configuration.py"
+      - "tests/retire_stale_codeql_2531_test.py"
+      - "tests/retire_stale_codeql_2531_policy_test.py"
+      - "tests/delete_stale_codeql_configuration_test.py"
   push:
     branches: [main]
     paths:
@@ -121,6 +126,11 @@ on:
       - "tests/native_app_provider_selection_gate_test.py"
       - "tests/native_evidence_codegen_pipeline_test.py"
       - "tests/workflow_security_policy_test.py"
+      - "scripts/retire_stale_codeql_2531.py"
+      - "scripts/delete_stale_codeql_2531_configuration.py"
+      - "tests/retire_stale_codeql_2531_test.py"
+      - "tests/retire_stale_codeql_2531_policy_test.py"
+      - "tests/delete_stale_codeql_configuration_test.py"
   workflow_dispatch:
     inputs:
       expected_sha:
@@ -218,6 +228,9 @@ jobs:
       - name: Validate workflow architecture contracts
         run: |
           python3 tests/workflow_security_policy_test.py
+          python3 tests/retire_stale_codeql_2531_test.py
+          python3 tests/retire_stale_codeql_2531_policy_test.py
+          python3 tests/delete_stale_codeql_configuration_test.py
           python3 tests/brain_no_paid_workflows_test.py
           python3 tests/repository_hygiene_contract_test.py
           python3 tests/release_version_sync_test.py
