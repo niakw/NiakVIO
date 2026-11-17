@@ -13503,7 +13503,15 @@
         "/play/movie/{tmdbId}",
         "/play/tv/{tmdbId}/{season}/{episode}",
         "/anime/{tmdbId}"
-      ]
+      ],
+      "identity_input": {
+        "mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "required_fields": [
+          "tmdbId",
+          "mediaType"
+        ]
+      }
     },
     "willow": {
       "notes": [
