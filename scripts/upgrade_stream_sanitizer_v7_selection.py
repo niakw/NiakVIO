@@ -21,6 +21,7 @@ NEWER_SANITIZERS = {
     8: V8,
     9: V9,
     10: V10,
+    11: V11,
 }
 SELECTION_RE = re.compile(
     r'GLOBAL_STREAM_SANITIZER = "'
