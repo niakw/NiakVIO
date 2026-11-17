@@ -34,6 +34,7 @@ machine = json.loads((ROOT / "automation/provider-v3-architecture.json").read_te
 validation_machine = json.loads((ROOT / "VALIDATION.json").read_text(encoding="utf-8"))
 sources_machine = json.loads((ROOT / "sources.json").read_text(encoding="utf-8"))
 platform_runtime_machine = json.loads((ROOT / "automation/platform-runtime-contracts.json").read_text(encoding="utf-8"))
+compatibility_matrix = json.loads((ROOT / "automation/nuvio-client-compatibility-matrix.json").read_text(encoding="utf-8"))
 renderer_source = (ROOT / "scripts/render_platform_runtime_contracts.py").read_text(encoding="utf-8")
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 provider_catalog = json.loads((ROOT / "provider_catalog.json").read_text(encoding="utf-8"))
@@ -319,7 +320,8 @@ assert runtime_contract["multi_audio_native_evidence_owner"] == (
 assert runtime_contract["multi_audio_collapse_failure_owner"] == "client_runtime"
 assert runtime_contract["multi_audio_probe_player_first"] is True
 assert runtime_contract["logical_stream_owner"] == "NiakVIO provider/scraper"
-assert runtime_contract["terminal_player_provenance_must_not_replace_owner"] is True\nassert runtime_contract["source_provider_provenance_may_augment_visible_label"] is True
+assert runtime_contract["terminal_player_provenance_must_not_replace_owner"] is True
+assert runtime_contract["source_provider_provenance_may_augment_visible_label"] is True
 machine_runtime = machine["nuvio_runtime_contract"]
 assert machine_runtime["provider_call_signature"] == "getStreams(tmdbId, mediaType, season, episode)"
 assert machine_runtime["historical_platform_matrix_authority"] is False
@@ -344,7 +346,15 @@ assert machine_runtime["multi_audio_native_evidence_owner"] == (
 assert machine_runtime["multi_audio_collapse_failure_owner"] == "client_runtime"
 assert machine_runtime["multi_audio_probe_player_first"] is True
 assert machine_runtime["logical_stream_owner"] == "NiakVIO provider/scraper"
-assert machine_runtime["terminal_player_provenance_must_not_replace_owner"] is True\nassert machine_runtime["source_provider_provenance_may_augment_visible_label"] is True
+assert machine_runtime["terminal_player_provenance_must_not_replace_owner"] is True
+assert machine_runtime["source_provider_provenance_may_augment_visible_label"] is True
+for client_id in ("nuvio-mobile", "nuvio-desktop"):
+    client_contract = compatibility_matrix["clients"][client_id]["provider_contract"]
+    assert client_contract["fresh_js_runtime_per_plugin_execution"] is True
+    assert client_contract["scraper_code_execution_bound_to_scraper_id"] is True
+    assert client_contract["reuse_last_link_cache_preserves_addon_identity"] is True
+    assert client_contract["manual_stream_selection_bypasses_reuse_last_link_cache"] is True
+    assert client_contract["auto_source_fallback_updates_active_provider_identity"] is True
 assert validation_machine["release_authority"] == "manifest.json:version"
 catalogue_contract = validation_machine["catalogue"]
 assert catalogue_contract["cardinality_policy"] == "derived-never-frozen"
