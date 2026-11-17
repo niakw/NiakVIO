@@ -1,3 +1,11 @@
+## 2026-11-17 — Projection Reconcile now follows durable provider-byte inputs
+
+- The V12/V13 source-versus-production split exposed an orchestration owner gap: `provider-projection-reconcile.yml` only auto-triggered when its permanent trigger JSON changed. A shared Core patch or ProviderBase composition input could therefore land on `main` while the manifests continued serving older content-addressed bundles until somebody manually refreshed the trigger.
+- Projection Reconcile now also watches the durable byte-composition inputs that caused this exact drift: `provider-overrides.json`, `scripts/apply_provider_overrides.py`, `scripts/normalize_core_media_policy.py`, `scripts/provider_base_store.py`, and `scripts/provider_patches/**`. Its own workflow file also retriggers the contract when orchestration changes.
+- The transaction remains serialized with Domain Refresh/Release Finalizer and keeps exact-head/superseded-source guards, so this adds automatic convergence without allowing an old wave to overwrite newer main. Workflow-produced publication commits remain protected by normal GitHub Actions recursion semantics and the existing fixed-point/drift gates.
+- Regression `tests/provider_projection_reconcile_workflow_test.py` now requires those source inputs to remain push triggers. The next exact-head projection run must still prove 75/75 current V12 sanitizer + branding V13 bytes before the user-visible multi-audio/provider-provenance symptoms can be called fixed.
+- Commits: `56ce5d37`, `d60e07d6`.
+
 ## 2026-11-17 — Published fleet still V11/branding V12; V12/V13 rematerialization must precede Domain Refresh
 
 - Direct inspection of current production authority found a source/byte split that explains why the user-visible multi-audio/provenance fixes cannot yet be called effective. `provider-overrides.json` selects `scripts/provider_patches/stream_output_sanitizer_v12.py`, but `provider-v3-materialization.json` still records **75/75** active rows applied with `stream_output_sanitizer_v11.py` and **0/75** with V12. The ledger source SHA is `a95703936f11c2e841451ffacc6aad38a1a7220f`, while current main is a much newer descendant.
