@@ -236,6 +236,43 @@ function hlsGraph(text, baseUrl) {
   return { variants, externalAudio, audioGroups, durationSeconds: durationEntryCount ? durationSeconds : null, isVod };
 }
 
+function readUInt64BEAsNumber(body, offset) {
+  if (!Buffer.isBuffer(body) || offset < 0 || offset + 8 > body.length) return null;
+  const high = body.readUInt32BE(offset);
+  const low = body.readUInt32BE(offset + 4);
+  const value = high * 4294967296 + low;
+  return Number.isSafeInteger(value) ? value : null;
+}
+
+function parseMp4MovieDurationSeconds(body) {
+  if (!Buffer.isBuffer(body) || body.length < 40) return null;
+  for (let index = 4; index + 36 <= body.length; index += 1) {
+    if (body[index] !== 0x6d || body[index + 1] !== 0x76 || body[index + 2] !== 0x68 || body[index + 3] !== 0x64) continue;
+    const start = index - 4;
+    const size = body.readUInt32BE(start);
+    if (size < 32 || start + Math.min(size, 40) > body.length) continue;
+    const version = body[start + 8];
+    let timescale = null;
+    let duration = null;
+    if (version === 0 && start + 28 <= body.length) {
+      timescale = body.readUInt32BE(start + 20);
+      duration = body.readUInt32BE(start + 24);
+    } else if (version === 1 && start + 40 <= body.length) {
+      timescale = body.readUInt32BE(start + 28);
+      duration = readUInt64BEAsNumber(body, start + 32);
+    }
+    if (!Number.isFinite(timescale) || timescale <= 0 || !Number.isFinite(duration) || duration <= 0) continue;
+    const seconds = duration / timescale;
+    if (Number.isFinite(seconds) && seconds >= 1 && seconds <= 1_209_600) return seconds;
+  }
+  return null;
+}
+
+function contentRangeTotal(value) {
+  const match = String(value || '').match(/bytes\s+\d+-\d+\/(\d+)/i);
+  return match ? Number(match[1]) : null;
+}
+
 async function inspectHlsChild(url, headers) {
   try {
     const response = await fetch(url, { headers, redirect: 'follow', signal: AbortSignal.timeout(16000) });
@@ -331,8 +368,36 @@ async function inspectStream(row) {
       result.playable = true;
     }
     else if (/application\/dash\+xml/.test(type) || /<MPD[\s>]/i.test(text.slice(0, 4096))) { result.playable = true; result.kind = 'dash'; }
-    else if (result.binary_signature) { result.playable = response.ok || response.status === 206; result.kind = result.binary_signature; }
-    else if (/^video\//.test(type) && !/^text\//.test(type)) { result.playable = response.ok || response.status === 206; result.kind = type.split('/')[1] || 'video'; }
+    else if (result.binary_signature) {
+      result.playable = response.ok || response.status === 206;
+      result.kind = result.binary_signature;
+      if (result.kind === 'mp4') {
+        result.media_duration_seconds = parseMp4MovieDurationSeconds(buffer);
+        if (result.media_duration_seconds == null) {
+          const total = contentRangeTotal(response.headers.get('content-range'));
+          if (Number.isFinite(total) && total > 262144) {
+            try {
+              const tailStart = Math.max(0, total - 262144);
+              const tailHeaders = { ...headers, Range: `bytes=${tailStart}-${total - 1}` };
+              const tailResponse = await fetch(response.url || url, {
+                headers: tailHeaders,
+                redirect: 'follow',
+                signal: AbortSignal.timeout(20000),
+              });
+              if (tailResponse.ok || tailResponse.status === 206) {
+                const tail = Buffer.from(await tailResponse.arrayBuffer());
+                result.media_duration_seconds = parseMp4MovieDurationSeconds(tail);
+              }
+            } catch (_) {}
+          }
+        }
+      }
+    }
+    else if (/^video\//.test(type) && !/^text\//.test(type)) {
+      result.playable = response.ok || response.status === 206;
+      result.kind = type.split('/')[1] || 'video';
+      if (result.kind === 'mp4') result.media_duration_seconds = parseMp4MovieDurationSeconds(buffer);
+    }
     else if (/text\/html|application\/xhtml/.test(type) || /^<!doctype html|^<html/i.test(text)) result.error = 'html_not_media';
     else if (!response.ok) result.error = `http_${response.status}`;
     else result.error = 'unrecognized_media';
