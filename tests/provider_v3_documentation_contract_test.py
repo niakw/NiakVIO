@@ -322,6 +322,13 @@ assert runtime_contract["multi_audio_probe_player_first"] is True
 assert runtime_contract["logical_stream_owner"] == "NiakVIO provider/scraper"
 assert runtime_contract["terminal_player_provenance_must_not_replace_owner"] is True
 assert runtime_contract["source_provider_provenance_may_augment_visible_label"] is True
+validation_isolation = runtime_contract["provider_execution_isolation"]
+assert validation_isolation["scope"] == ["NuvioMobile", "NuvioDesktop"]
+assert validation_isolation["fresh_js_runtime_per_plugin_execution"] is True
+assert validation_isolation["scraper_identity_bound_to_execution"] is True
+assert validation_isolation["reuse_last_link_cache_preserves_addon_identity"] is True
+assert validation_isolation["manual_selection_bypasses_reuse_cache"] is True
+assert validation_isolation["automatic_fallback_updates_provider_identity"] is True
 machine_runtime = machine["nuvio_runtime_contract"]
 assert machine_runtime["provider_call_signature"] == "getStreams(tmdbId, mediaType, season, episode)"
 assert machine_runtime["historical_platform_matrix_authority"] is False
@@ -348,6 +355,8 @@ assert machine_runtime["multi_audio_probe_player_first"] is True
 assert machine_runtime["logical_stream_owner"] == "NiakVIO provider/scraper"
 assert machine_runtime["terminal_player_provenance_must_not_replace_owner"] is True
 assert machine_runtime["source_provider_provenance_may_augment_visible_label"] is True
+machine_isolation = machine_runtime["provider_execution_isolation"]
+assert machine_isolation == validation_isolation
 for client_id in ("nuvio-mobile", "nuvio-desktop"):
     client_contract = compatibility_matrix["clients"][client_id]["provider_contract"]
     assert client_contract["fresh_js_runtime_per_plugin_execution"] is True
