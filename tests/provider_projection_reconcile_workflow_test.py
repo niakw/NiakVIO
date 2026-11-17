@@ -92,7 +92,7 @@ assert "git rebase" not in publisher and "git push --force" not in publisher
 assert "for attempt in 1 2 3 4" in publisher
 assert "python scripts/validate_release_integrity.py" in publisher
 
-assert "materialize_provider_v3_all.py" not in wf
+assert "python scripts/materialize_provider_v3_all.py" not in wf
 assert 'steps.drift.outputs.count != \'0\'' in wf
 assert "Projection reconcile staged a forbidden path." in wf
 assert "PROVENANCE.json provider-overrides.json provider-v3-materialization.json" in wf
@@ -142,6 +142,10 @@ for required_trigger in (
     "scripts/apply_provider_overrides.py",
     "scripts/normalize_core_media_policy.py",
     "scripts/provider_base_store.py",
+    "scripts/materialize_provider_v3_all.py",
+    "scripts/materialize_provider_v3_one.py",
+    "scripts/reconcile_provider_static_authority.py",
+    "scripts/sanitize_provider_v3_core_metadata_routes.py",
     "scripts/provider_patches/**",
 ):
     assert required_trigger in wf, f"projection reconcile must auto-follow byte input {required_trigger}"
