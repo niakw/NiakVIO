@@ -142,12 +142,27 @@ jobs:
           cp provider-overrides.json "$RUNNER_TEMP/provider-overrides.before.json"
           IFS=',' read -r -a providers <<< "$TARGETS"
           reconcile=(python scripts/reconcile_targeted_provider_publication.py)
+          processed=0
+          require_current_projection_head() {
+            git fetch --no-tags origin main >/dev/null 2>&1
+            remote_sha="$(git rev-parse origin/main)"
+            if [ "$remote_sha" != "$GITHUB_SHA" ]; then
+              echo "FIELD_PROVIDER_PROJECTION_SUPERSEDED_DURING_REBUILD source=$GITHUB_SHA current=$remote_sha processed=$processed" >&2
+              exit 1
+            fi
+          }
+          require_current_projection_head
           for provider in "${providers[@]}"; do
             [ -n "$provider" ] || continue
+            if [ $((processed % 4)) -eq 0 ]; then
+              require_current_projection_head
+            fi
             echo "FIELD_PROVIDER_PROJECTION_REBUILD provider=$provider"
             python scripts/materialize_provider_v3_one.py "$provider" --preserve-structured-data
             reconcile+=(--provider "$provider")
+            processed=$((processed + 1))
           done
+          require_current_projection_head
           "${reconcile[@]}"
           cmp -s provider-overrides.json "$RUNNER_TEMP/provider-overrides.before.json" || {
             echo "Projection reconcile mutated accepted provider-overrides.json." >&2
