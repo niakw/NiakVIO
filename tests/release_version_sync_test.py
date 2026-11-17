@@ -198,6 +198,7 @@ with tempfile.TemporaryDirectory() as tmp:
             "version": "1.0.1",
             "enabled": True,
             "supportedTypes": ["movie"],
+            "canonicalSupportedTypes": ["movie"],
             "filename": "providers/alpha-old.js",
             "disabledPlatforms": ["android"],
         },
@@ -218,6 +219,7 @@ with tempfile.TemporaryDirectory() as tmp:
     assert scraper["version"] == "1.0.2"
     assert scraper["filename"] == "providers/alpha-new.js"
     assert scraper["supportedTypes"] == ["anime"]
+    assert "canonicalSupportedTypes" not in scraper
     assert scraper["disabledPlatforms"] == []
 
 
