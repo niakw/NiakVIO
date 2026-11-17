@@ -7,6 +7,7 @@ import json
 import re
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_REQUEST = ROOT / ".github/provider-onboarding/batch.json"
@@ -63,6 +64,21 @@ def _normalized_routes(values: Any) -> list[str]:
             out.append(route)
     return out[:24]
 
+def _route_evidence_origin(value: Any) -> str:
+    raw = str(value or "").strip()
+    if not raw:
+        return ""
+    try:
+        parsed = urlsplit(raw)
+    except ValueError:
+        return ""
+    host = (parsed.hostname or "").casefold().rstrip(".")
+    if not host or parsed.scheme.casefold() not in {"http", "https"}:
+        return ""
+    port = f":{parsed.port}" if parsed.port else ""
+    return f"{parsed.scheme.casefold()}://{host}{port}"
+
+
 
 def merge_route_discovery_evidence(
     row: dict[str, Any],
@@ -76,11 +92,16 @@ def merge_route_discovery_evidence(
     provider-owned routes. This preserves experience, not health: neither result
     grants playback proof or production activation.
     """
+    current_origin = _route_evidence_origin(
+        result.get("direct") or row.get("direct") or row.get("direct_url")
+    )
     current = {
         "transport": result.get("transport"),
         "reason": result.get("reason"),
         "routeCount": len(patterns),
     }
+    if current_origin:
+        current["origin"] = current_origin
     previous = row.get("routeDiscoveryEvidence")
     if not isinstance(previous, dict):
         return current, None
@@ -98,15 +119,19 @@ def merge_route_discovery_evidence(
         ROUTE_DISCOVERY_TRANSPORT_STRENGTH.get(str(current.get("transport") or ""), 0),
     )
     if previous_rank > current_rank:
+        previous_origin = _route_evidence_origin(previous.get("origin"))
+        if not previous_origin or not current_origin or previous_origin != current_origin:
+            return current, None
         preserved = {
             "transport": previous.get("transport"),
             "reason": previous.get("reason"),
             "routeCount": int(previous.get("routeCount") or len(previous_routes)),
+            "origin": previous_origin,
         }
         replay = {
             **current,
             "authorityPreserved": True,
-            "preservedReason": "same_route_plan_stronger_prior_observation",
+            "preservedReason": "same-origin-same-route-plan-stronger-prior-observation",
         }
         return preserved, replay
     return current, None

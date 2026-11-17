@@ -1,3 +1,11 @@
+## 2026-11-17 — Pending route evidence is now origin-bound and existing-route input is syntax-safe
+
+- V35 Projection Reconcile `44180783192` succeeded and published `1d2ea0470c262d9e3c766959ad60b880a5a6a0d2`. MeowTV was then restaged alone on V35 as exact disabled/pending bytes.
+- A concurrent v49 Route Discovery could still re-qualify route-shaped inventory noise before the next family expansion. The existing-route shortcut now applies the SPA syntax envelope plus identity-aware contract. Exact FlickyStream bundle-fragment and DPStream opaque query-fragment regressions are rejected while MeowTV typed routes and proper query search routes remain accepted.
+- Strong pending route observation is now monotone only for the **same origin and same normalized route plan**. A domain/origin change drops the retained witness even if route text is unchanged. The MeowTV witness is explicitly bound to `https://meowtv.ru`; it remains route-execution-only evidence, never playback/FULL/activation proof.
+- Batch requestVersion 50 keeps MeowTV as the sole representative and intentionally supersedes any in-flight v49 discovery merge. FlickyStream and DPStream remain deferred. Brain remains phase-gated.
+- NEXT: consume the V35 MeowTV pending census, inspect actual fetch route families and terminal media. Expand only after this representative proves the generic path.
+
 ## 2026-11-17 — Finalizer now owns census proof-classification semantics
 
 - The pending clean-seed proof-gap correction changes `scripts/render_provider_census_status.py`, which is part of the production proof/activation authority. Prior `release-finalize.yml` neither watched this script or its regression nor executed the regression during the pre-release métier ABI gate. A release could therefore be treated as certified after a proof-rule change that never re-ran release checks.

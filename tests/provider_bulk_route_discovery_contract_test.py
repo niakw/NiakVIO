@@ -68,6 +68,12 @@ assert probe.identity_route_candidate("/search?q={query}") is True
 assert probe.identity_route_candidate("/search?s={query}") is True
 assert probe._render_route("/search?q={query}", fixture) == "/search?q=Interstellar"
 assert probe._render_route("/movie/{tmdbId}", fixture) == "/movie/157336"
+assert probe.safe_existing_route_candidate("/play/movie/{tmdbId}") is True
+assert probe.safe_existing_route_candidate("/play/tv/{tmdbId}/{season}/{episode}") is True
+assert probe.safe_existing_route_candidate("/anime/{tmdbId}") is True
+assert probe.safe_existing_route_candidate("/search?q={query}") is True
+assert probe.safe_existing_route_candidate("),c(`/anime/{tmdbId}`,{state:{backgroundLocation:u}})},className:") is False
+assert probe.safe_existing_route_candidate("?oe=%60https%3A%2F%2Fwww.vidking.net%2Fembed%2Fmovie%2F{tmdbId}%60%3AY.id%3D%3D%3D") is False
 assert probe._identity_response(b'<a href="/movie/42" title="Interstellar online free">watch</a>', fixture, direct_media_route=False) is True
 assert probe._identity_response(b'<div data-id="157336">movie card</div>', fixture, direct_media_route=False) is True
 assert probe._identity_response(b'<html><head><title>Stream Interstellar Full HD</title><link rel="canonical" href="/?s=Interstellar"></head><body><h1>Search: Interstellar</h1></body></html>', fixture, direct_media_route=False) is False
@@ -140,6 +146,7 @@ assert apply_mod.defer_missing_probe_result(
 
 strong_row={
     "id":"meowtv",
+    "direct":"https://meowtv.ru",
     "routes":[
         "/play/movie/{tmdbId}",
         "/play/tv/{tmdbId}/{season}/{episode}",
@@ -149,9 +156,11 @@ strong_row={
         "transport":"residential-exit",
         "reason":"observed_identity_executable_routes",
         "routeCount":3,
+        "origin":"https://meowtv.ru",
     },
 }
 same_plan_result={
+    "direct":"https://meowtv.ru",
     "transport":"request-existing",
     "reason":"existing_identity_executable_route_plan",
 }
@@ -163,9 +172,16 @@ assert replay=={
     "transport":"request-existing",
     "reason":"existing_identity_executable_route_plan",
     "routeCount":3,
+    "origin":"https://meowtv.ru",
     "authorityPreserved":True,
-    "preservedReason":"same_route_plan_stronger_prior_observation",
+    "preservedReason":"same-origin-same-route-plan-stronger-prior-observation",
 },replay
+changed_origin,replay=apply_mod.merge_route_discovery_evidence(
+    strong_row,{**same_plan_result,"direct":"https://mirror.example"},strong_row["routes"]
+)
+assert changed_origin["reason"]=="existing_identity_executable_route_plan",changed_origin
+assert changed_origin["origin"]=="https://mirror.example",changed_origin
+assert replay is None
 
 changed_plan=["/play/movie/{tmdbId}","/play/tv/{tmdbId}/{season}/{episode}"]
 current,replay=apply_mod.merge_route_discovery_evidence(

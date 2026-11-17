@@ -529,6 +529,25 @@ def _safe_spa_route_candidate(value: Any) -> bool:
         return False
     return True
 
+def safe_existing_route_candidate(value: Any) -> bool:
+    """Reject opaque JS/query fragments before reusing an intake route."""
+    raw = str(value or "").strip()
+    if not _safe_spa_route_candidate(raw) or not identity_route_candidate(raw):
+        return False
+    try:
+        parsed = urlsplit(raw)
+    except ValueError:
+        return False
+    if not parsed.path or parsed.path == "/":
+        keys = {str(key or "").strip().casefold() for key, _ in parse_qsl(parsed.query, keep_blank_values=True)}
+        allowed = (
+            SEARCH_KEYS | TMDB_KEYS | IMDB_KEYS | MEDIA_KEYS | SEASON_KEYS | EPISODE_KEYS
+            | {"id", "e", "m"}
+        )
+        if not (keys & allowed):
+            return False
+    return True
+
 
 def _identity_bound_api_response(body: bytes, route: str, fixture: dict[str, Any]) -> bool:
     if _identity_response(body, fixture, direct_media_route=True):
@@ -742,12 +761,13 @@ def main() -> int:
         for fixture in fixtures:
             for raw_route in [*(row.get("routes") or []), *retained_routes]:
                 pattern = route_pattern(raw_route, fixture)
-                if pattern and identity_route_candidate(pattern) and pattern not in existing:
+                if pattern and safe_existing_route_candidate(pattern) and pattern not in existing:
                     existing.append(pattern)
         if existing:
             results.append({
                 "provider": pid,
                 "scope": str(row.get("scope") or "global"),
+                "direct": direct,
                 "transport": "retained-v3-rag" if retained_sources else "request-existing",
                 "probeAttempted": False,
                 "probeReachedSite": False if retained_sources else True,
