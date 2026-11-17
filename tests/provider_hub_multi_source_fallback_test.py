@@ -11,6 +11,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import resolve_provider_hubs as resolver
 import refresh_authoritative_hub_domains as authoritative
 import domain_refresh_transaction_v2 as transaction
+import sanitize_provider_hub_registry as sanitizer
 
 PRIMARY = "https://primary-hub.example/"
 SECONDARY = "https://secondary-hub.example/"
@@ -246,5 +247,17 @@ assert validation["domain_refresh"]["multi_source_address_authority"] is True, v
 assert validation["domain_refresh"]["learned_hub_linked_telegram_requires_later_run_before_publication"] is True
 assert "multi_source_policy" in registry_policy and "linked_source_learning" in registry_policy, registry_policy
 assert "plusieurs sources d’adresse ordonnées" in arch_md, "Domain Refresh multi-source documentation missing"
+
+# The Domain preflight sanitizer must accept the exact current Global+France
+# visible union; using root manifest.json alone previously rejected France-only
+# providers before any network resolution.
+root_manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+vf_manifest = json.loads((ROOT / "vf/manifest.json").read_text(encoding="utf-8"))
+global_ids = {row["id"] for row in root_manifest["scrapers"]}
+vf_ids = {row["id"] for row in vf_manifest["scrapers"]}
+strict_fr = vf_ids - global_ids
+sanitized_scope = set(sanitizer.current_provider_rows(ROOT / "manifest.json"))
+assert strict_fr, "fixture requires at least one strict France-only provider"
+assert strict_fr <= sanitized_scope, (sorted(strict_fr - sanitized_scope), len(sanitized_scope))
 
 print("provider hub heterogeneous multi-source fallback contract passed")
