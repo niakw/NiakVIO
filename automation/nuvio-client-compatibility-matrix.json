@@ -201,7 +201,7 @@
         "version_code": 17
       },
       "current_audited": {
-        "ref": "3020193d8303c38ce88381f0a2a613b389219e62",
+        "ref": "65061186dde35fc0a0f90b05d380f2318133f227",
         "version_name": "0.1.37-alpha",
         "version_code": 37
       },
@@ -218,7 +218,7 @@
           "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt",
           "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt"
         ],
-        "audited_change": "2026-11-16 exact current-source audit at Dev 3020193d8303. Since 8e779958a5f4, upstream changed only DesktopVersion.properties (0.1.37-alpha / 37) and DesktopDetailHero UI. No configured provider/plugin/streams contract path or player semantic-review path changed; positional getStreams, full result-list mapping, request/response headers, subtitles and the runtime TMDB_API_KEY bridge remain intact. macOS/Windows reader execution remains independently required.",
+        "audited_change": "2026-11-17: exact current-source audit at Dev 65061186dde3. Since 3020193d8303, upstream changed only composeApp/src/desktopMain/kotlin/com/nuvio/app/features/discordrpc/DiscordIpcClient.kt (4 lines) to include the Discord IPC protocol version. No configured provider/plugin/streams contract path or player semantic-review path changed; positional getStreams, full result-list mapping, request/response headers, subtitles and the runtime TMDB_API_KEY bridge remain intact. macOS/Windows reader execution remains independently required.",
         "runtime_validation": "execute the exact official Desktop runtime and re-prove macOS/Windows reader behavior; Mobile success is not Desktop proof",
         "runtime_family_equivalent_to_sibling_clients": false,
         "official_getStreams_error_behavior": "application runtime catches JavaScript getStreams errors and captures []",
