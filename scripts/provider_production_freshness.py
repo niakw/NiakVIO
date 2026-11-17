@@ -147,9 +147,13 @@ def exact_offline_contract(prov: dict[str, Any], digest: str, expected_scope: st
 
 
 class ProductionFreshnessAuthority:
-    def __init__(self, root: Path):
+    def __init__(self, root: Path, *, all_scope_status: Path | None = None):
         self.root = root
-        self.all_scope_state = load(root / "automation/provider-census-all-status-latest.json")
+        self.all_scope_state = load(
+            all_scope_status
+            if all_scope_status is not None
+            else root / "automation/provider-census-all-status-latest.json"
+        )
         self.pending_state = load(root / "automation/provider-onboarding-pending-status-latest.json")
         self.all_scope = proof_map(self.all_scope_state)
         self.pending = proof_map(self.pending_state)
