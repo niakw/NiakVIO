@@ -9,7 +9,7 @@ ROOT=Path(__file__).resolve().parents[1]
 script=ROOT/"scripts/stage_provider_batch.py"
 sys.path.insert(0,str(ROOT/"scripts"))
 import add_provider as add_provider_module
-from add_provider import staged_existing_entry, normalized_scope, relocate_bulk_pending_artifacts
+from add_provider import staged_existing_entry, normalized_scope, relocate_bulk_pending_artifacts, pending_validation_routes
 from stage_provider_batch import safe_pending_restage_ids
 
 with tempfile.TemporaryDirectory() as td:
@@ -41,6 +41,33 @@ assert value["declaredTypeCounts"]=={"movie":1,"tv":1}
 assert value["scopeCounts"]=={"global":1}
 assert normalized_scope("vf")=="france"
 assert normalized_scope("global")=="global"
+
+# Route Discovery may grant execution authority only to disabled pending validation,
+# never proof/publication authority. Strong observed identity routes pass; static
+# navigation, fixed-content examples and merely-retained route plans stay candidates.
+assert pending_validation_routes({
+    "routeDiscoveryEvidence": {
+        "reason": "observed_identity_executable_routes",
+        "transport": "residential-exit",
+        "routeCount": 3,
+    }
+}, ["/play/movie/{tmdbId}", "/play/tv/{tmdbId}/{season}/{episode}", "/anime/{tmdbId}"]) == [
+    "/play/movie/{tmdbId}", "/play/tv/{tmdbId}/{season}/{episode}", "/anime/{tmdbId}"
+]
+assert pending_validation_routes({
+    "routeDiscoveryEvidence": {
+        "reason": "existing_identity_executable_route_plan",
+        "transport": "request-existing",
+        "routeCount": 2,
+    }
+}, ["/movie/{tmdbId}", "/anime/{tmdbId}"]) == []
+assert pending_validation_routes({
+    "routeDiscoveryEvidence": {
+        "reason": "observed_identity_executable_routes",
+        "transport": "github-hosted",
+        "routeCount": 3,
+    }
+}, ["/embed/sw.js", "/search", "/movie/157336-interstellar"]) == []
 
 # Global and France-only identities are distinct authorities and collisions fail closed.
 with tempfile.TemporaryDirectory(prefix="niakvio-onboard-scope-") as td:
