@@ -38,6 +38,19 @@ with patch.object(mod,"api",return_value=response([
     "MEMORY.md",
 ])):
     assert mod.evidence_only_drift(src,head)
+
+# Lifecycle classifier/disabled-recovery outputs are evidence and queue state only.
+# They may follow a clean scan, but the actual lifecycle ledger remains executable
+# publication authority and must stay blocked.
+with patch.object(mod,"api",return_value=response([
+    "automation/provider-authority-status.json",
+    "automation/provider-disabled-recovery-queue.json",
+])):
+    assert mod.evidence_only_drift(src,head)
+with patch.object(mod,"api",return_value=response([
+    "automation/provider-disabled-lifecycle.json",
+])):
+    assert not mod.evidence_only_drift(src,head)
 with patch.object(mod,"api",return_value={
     **initial,
     "files":[{"filename":"automation/provider-census-status-42308514242.json",
