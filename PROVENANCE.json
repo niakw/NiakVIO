@@ -4,13 +4,13 @@
   "notice": "Third-party files retain upstream authorship and licence. See THIRD_PARTY_NOTICES.md.",
   "provider_base_store": {
     "schema_version": 5,
-    "provider_count": 75,
-    "unique_base_count": 75,
-    "initial_reconstruction_scope": 75,
+    "provider_count": 76,
+    "unique_base_count": 76,
+    "initial_reconstruction_scope": 76,
     "migration_scope": "all-current-providers",
     "owner": "provider_pipeline",
     "future_source": "provider_pipeline_only",
-    "clean_reconstructed": 75,
+    "clean_reconstructed": 76,
     "reconstruction_required": 0,
     "authoring_version": 3,
     "authoring_policy": "niakvio-owned-clean-reconstruction-only",
@@ -72485,7 +72485,7 @@
     },
     "meowtv": {
       "id": "meowtv",
-      "published_filename": "provider-disabled/meowtv--nuvio--6e46650c4b7fa712.js",
+      "published_filename": "providers/meowtv--nuvio--6e46650c4b7fa712.js",
       "sha256": "6e46650c4b7fa7120e393d4b30f7065896e9010f7056b67b505fab34568d88dd",
       "patched_sha256": "6e46650c4b7fa7120e393d4b30f7065896e9010f7056b67b505fab34568d88dd",
       "base_filename": "provider-bases/meowtv--base--0cd547c0e052272d.js",
@@ -72606,16 +72606,14 @@
       "upstream_id": "meowtv",
       "upstream_filename": null,
       "checked_at": "2026-11-17T22:32:58.154281+00:00",
-      "check_mode": "bulk_onboarding_pending",
-      "check_status": "pending",
+      "check_mode": "bulk_sharded_census",
+      "check_status": "healthy",
       "health_score": 0,
-      "activation_eligible": false,
-      "strict_activation_eligible": false,
-      "runtime_evidence_eligible": false,
-      "activation_mode": "bulk_onboarding_pending",
-      "activation_blockers": [
-        "bulk_census_full_ok_required"
-      ],
+      "activation_eligible": true,
+      "strict_activation_eligible": true,
+      "runtime_evidence_eligible": true,
+      "activation_mode": "bulk_census_full_ok",
+      "activation_blockers": [],
       "onboarding_rebuild": true,
       "pending_minimizer": {
         "schemaVersion": 1,
@@ -72623,6 +72621,24 @@
         "sha256": "6e46650c4b7fa7120e393d4b30f7065896e9010f7056b67b505fab34568d88dd",
         "savedBytes": 38178,
         "transformedLines": 6660
+      },
+      "bulk_activation_proof": {
+        "scope": "global",
+        "runId": "44190017135",
+        "triggerSha": "ecf95e2886b1f6c22267475427a64faaef524e17",
+        "status": "FULL OK",
+        "declaredLanes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "verifiedLanes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "providerSha256": "6e46650c4b7fa7120e393d4b30f7065896e9010f7056b67b505fab34568d88dd",
+        "proofSource": "onboarding-pending-status"
       }
     },
     "willow": {

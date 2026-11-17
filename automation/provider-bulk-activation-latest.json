@@ -1,23 +1,19 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "43600537871",
-  "sourceTriggerSha": "7c51e342caea4ef253c2b512bb99f66d02831f39",
-  "pendingBulkProviderCount": 18,
+  "sourceRunId": "44190017135",
+  "sourceTriggerSha": "ecf95e2886b1f6c22267475427a64faaef524e17",
+  "pendingBulkProviderCount": 32,
   "activationCount": 1,
   "activatedProviders": [
-    "internet-archive"
+    "meowtv"
   ],
   "activationScopes": {
-    "internet-archive": "global"
+    "meowtv": "global"
   },
-  "blockedCount": 17,
+  "blockedCount": 31,
   "blockedProviders": [
     {
-      "provider": "1jour1film0626",
-      "reason": "missing_current_census_row"
-    },
-    {
-      "provider": "asiaflix",
+      "provider": "kisskh",
       "reason": "missing_current_census_row"
     },
     {
@@ -25,31 +21,7 @@
       "reason": "missing_current_census_row"
     },
     {
-      "provider": "cpasmal",
-      "reason": "missing_current_census_row"
-    },
-    {
-      "provider": "dotriv",
-      "reason": "missing_current_census_row"
-    },
-    {
-      "provider": "frembed",
-      "reason": "missing_current_census_row"
-    },
-    {
-      "provider": "ilmiv",
-      "reason": "missing_current_census_row"
-    },
-    {
-      "provider": "kidraz",
-      "reason": "missing_current_census_row"
-    },
-    {
-      "provider": "kordoz",
-      "reason": "missing_current_census_row"
-    },
-    {
-      "provider": "movix-fr",
+      "provider": "yablom",
       "reason": "missing_current_census_row"
     },
     {
@@ -57,11 +29,99 @@
       "reason": "missing_current_census_row"
     },
     {
+      "provider": "cpasmal",
+      "reason": "missing_current_census_row"
+    },
+    {
       "provider": "nakastream",
       "reason": "missing_current_census_row"
     },
     {
-      "provider": "neobam",
+      "provider": "cinejoy",
+      "reason": "missing_current_census_row"
+    },
+    {
+      "provider": "aether",
+      "reason": "missing_current_census_row"
+    },
+    {
+      "provider": "flickystream",
+      "reason": "missing_current_census_row"
+    },
+    {
+      "provider": "dotriv",
+      "reason": "missing_current_census_row"
+    },
+    {
+      "provider": "flikhub",
+      "reason": "missing_current_census_row"
+    },
+    {
+      "provider": "ilmiv",
+      "reason": "missing_current_census_row"
+    },
+    {
+      "provider": "kordoz",
+      "reason": "missing_current_census_row"
+    },
+    {
+      "provider": "openflix",
+      "reason": "missing_current_census_row"
+    },
+    {
+      "provider": "willow",
+      "reason": "missing_current_census_row"
+    },
+    {
+      "provider": "wowfilms0626",
+      "reason": "missing_current_census_row"
+    },
+    {
+      "provider": "dessinanime",
+      "reason": "missing_current_census_row"
+    },
+    {
+      "provider": "7movies",
+      "reason": "missing_current_census_row"
+    },
+    {
+      "provider": "cineflux",
+      "reason": "missing_current_census_row"
+    },
+    {
+      "provider": "all-you-can-watch",
+      "reason": "missing_current_census_row"
+    },
+    {
+      "provider": "bcine",
+      "reason": "missing_current_census_row"
+    },
+    {
+      "provider": "diostream",
+      "reason": "missing_current_census_row"
+    },
+    {
+      "provider": "dpstream",
+      "reason": "missing_current_census_row"
+    },
+    {
+      "provider": "nomorflix",
+      "reason": "missing_current_census_row"
+    },
+    {
+      "provider": "svstream",
+      "reason": "missing_current_census_row"
+    },
+    {
+      "provider": "kickassanime",
+      "reason": "missing_current_census_row"
+    },
+    {
+      "provider": "animeko",
+      "reason": "missing_current_census_row"
+    },
+    {
+      "provider": "asiaflix",
       "reason": "missing_current_census_row"
     },
     {
@@ -75,12 +135,26 @@
     {
       "provider": "vidsrc2",
       "reason": "missing_current_census_row"
-    },
-    {
-      "provider": "yablom",
-      "reason": "missing_current_census_row"
     }
   ],
-  "policy": "fresh FULL OK (testedThisRun) + every declared lane currently verified + no remaining Brain check",
+  "portfolio": {
+    "targetGlobal": 60,
+    "targetFrance": 60,
+    "activeGlobalBefore": 45,
+    "activeFranceBefore": 38,
+    "activeGlobalAfter": 46,
+    "activeFranceAfter": 38,
+    "priorityAuthority": ".github/provider-onboarding/batch.json inventory rank/score; health authority remains current FULL proof"
+  },
+  "versionFloorUpdates": [
+    {
+      "provider": "meowtv",
+      "floor": "0.0.0",
+      "version": "1.0.0",
+      "seeded": true,
+      "bumped": false
+    }
+  ],
+  "policy": "fresh FULL OK + all declared lanes current + no Brain check + current structured onboarding priority + ranked projection capacity; unranked/over-cap FULL stays pending",
   "dryRun": false
 }

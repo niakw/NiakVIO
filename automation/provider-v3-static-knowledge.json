@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "providerCount": 108,
+  "providerCount": 109,
   "source": "niakvio.provider-contract-local-enricher",
   "role": "durable-structured-provider-data",
   "legacyProviderJsExecuted": false,
@@ -272553,6 +272553,97 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false
+    },
+    "meowtv": {
+      "model": {
+        "apiRecipe": null,
+        "authoring": "niakvio-owned-v3",
+        "displayName": "MeowTV",
+        "domainSubstitutions": {},
+        "externalIdentityPlan": [],
+        "fixedApi": null,
+        "identityInput": {
+          "mode": "tmdb_direct",
+          "requiredFields": [
+            "tmdbId",
+            "mediaType"
+          ],
+          "requiresTmdbBeforeRun": false
+        },
+        "knownSite": "https://meowtv.ru",
+        "modelSchemaVersion": 4,
+        "observedUrls": [
+          "https://api.meowtv.ru",
+          "https://meowtv.ru"
+        ],
+        "officialApi": "https://api.meowtv.ru",
+        "officialHub": null,
+        "officialSite": "https://meowtv.ru",
+        "origins": [
+          "https://meowtv.ru",
+          "https://api.meowtv.ru"
+        ],
+        "outputLanguageRules": [],
+        "outputUrlHostRewrites": [],
+        "proofDetailBases": [],
+        "proofProtectedHosts": [],
+        "proofSearchBases": [],
+        "providerValuePlan": [],
+        "reconstructionState": "learning-clean-seed",
+        "routePlanVersion": 3,
+        "routeProofVersion": 0,
+        "routes": [
+          "/play/movie/{tmdbId}",
+          "/play/tv/{tmdbId}/{season}/{episode}",
+          "/anime/{tmdbId}"
+        ],
+        "runtimeDiscovery": false,
+        "runtimeRole": "reader",
+        "searchRequestPlan": [],
+        "sourceRuntimeFamily": "unknown",
+        "strategy": "api_stream_resolver",
+        "strictHtmlIdentity": false,
+        "strictIdentity": false,
+        "supportedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "upstreamCodeEmbedded": false,
+        "upstreamCodeExecuted": false
+      },
+      "knowledge": {
+        "hosts": [
+          "meowtv.ru",
+          "api.meowtv.ru"
+        ],
+        "routes": [
+          "/play/movie/{tmdbId}",
+          "/play/tv/{tmdbId}/{season}/{episode}",
+          "/anime/{tmdbId}"
+        ],
+        "routeFragments": [],
+        "observedUrls": [
+          "https://api.meowtv.ru",
+          "https://meowtv.ru"
+        ],
+        "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown"
+      },
+      "sources": [
+        {
+          "source": "activation-static-config",
+          "sourceName": "NiakVIO exact managed Provider CONFIG",
+          "upstreamId": "meowtv",
+          "manifestOrigin": "",
+          "upstreamSha256": "",
+          "upstreamKnowledgeSource": "managed-config-lego",
+          "codeRole": "knowledge-only",
+          "codeExecuted": false
+        }
+      ],
+      "legacyProviderJsExecuted": false,
+      "upstreamJsExecuted": false
     }
   },
   "gowaruSourceRef": "c3ce6f43a1ba8ccf2f3838b5cd9db40745c33fa2",
@@ -272568,7 +272659,7 @@
     "mode": "niakvio-local-data",
     "externalProviderRepositoriesRequired": false,
     "providerJavaScriptExecuted": false,
-    "providerCount": 108,
+    "providerCount": 109,
     "seedCount": 6,
     "prunedRouteCount": 476,
     "canonicalRouteData": "providers.<id>.model.routeData",
@@ -272577,7 +272668,7 @@
   "routeReconstruction": {
     "version": 1,
     "canonicalRouteData": "providers.<id>.model.routeData",
-    "providerCount": 108,
+    "providerCount": 109,
     "routeCount": 401,
     "httpProvenRouteCount": 6,
     "unknownProviders": [
@@ -272588,7 +272679,7 @@
   },
   "routeRecovery": {
     "schemaVersion": 5,
-    "providerCount": 108,
+    "providerCount": 109,
     "provenRouteCount": 0,
     "apiRecipeCount": 0,
     "authority": "upstream-or-native-provider-runtime-http-proof",
