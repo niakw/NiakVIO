@@ -5,13 +5,47 @@
   "browserExecutable": "google-chrome",
   "targetCount": 54,
   "providerFilter": [],
-  "attemptsPerTarget": 2,
-  "clientProfileMatrixEnabled": false,
+  "attemptsPerTarget": 1,
+  "clientProfileMatrixEnabled": true,
   "clientProfiles": [
     {
       "id": "github-default-browser",
       "transportApproximation": "GitHub-hosted Chromium",
       "userAgent": "browser-default"
+    },
+    {
+      "id": "nuvio-tv-ua-browser",
+      "transportApproximation": "GitHub-hosted Chromium with audited NuvioTV default UA only",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "nativeContract": {
+        "httpStack": "OkHttp",
+        "proxyPolicy": "Proxy.NO_PROXY",
+        "dnsPolicy": "IPv4FirstDns",
+        "redirects": "HTTP+SSL enabled"
+      }
+    },
+    {
+      "id": "nuvio-tv-okhttp-jvm",
+      "transportApproximation": "GitHub JVM OkHttp 4.12.0 with audited NuvioTV PluginRuntime policy",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "nativeContractApproximation": {
+        "httpStack": "OkHttp 4.12.0",
+        "proxyPolicy": "Proxy.NO_PROXY",
+        "dnsPolicy": "IPv4FirstDns",
+        "redirects": "HTTP+SSL enabled",
+        "tlsRuntime": "GitHub JVM, not Android device"
+      }
+    },
+    {
+      "id": "nuvio-tv-direct-http-approx",
+      "transportApproximation": "GitHub libcurl with IPv4, NO_PROXY, redirects and audited NuvioTV UA",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "nativeContractApproximation": {
+        "httpStack": "libcurl-not-OkHttp",
+        "proxyPolicy": "NO_PROXY",
+        "dnsPolicy": "IPv4 only",
+        "redirects": "enabled"
+      }
     }
   ],
   "limitations": [
@@ -22,10 +56,9 @@
     "exact failed provider GET replay is transport differential evidence only; it cannot grant playback proof"
   ],
   "counts": {
-    "browser_challenge_persisted": 39,
+    "browser_challenge_persisted": 41,
     "browser_content_reached": 12,
-    "browser_inconclusive": 1,
-    "browser_timeout": 2
+    "browser_inconclusive": 1
   },
   "rows": [
     {
@@ -2710,7 +2743,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 6374,
+      "durationMs": 14171,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -2723,7 +2756,7 @@
           },
           {
             "profile": "nuvio-tv-ua-browser",
-            "outcome": "browser_inconclusive",
+            "outcome": "browser_challenge_persisted",
             "attemptCount": 1
           }
         ],
@@ -2984,12 +3017,13 @@
       "challenge": "metadata-homepage-seed",
       "seedKind": "metadata-homepage",
       "seedRoute": null,
-      "outcome": "browser_timeout",
+      "outcome": "browser_challenge_persisted",
       "attemptCount": 1,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_timeout"
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
         }
       ],
       "ordinarySessionReused": false,
@@ -2997,12 +3031,13 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_timeout",
+          "outcome": "browser_challenge_persisted",
           "attemptCount": 1,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_timeout"
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
             }
           ],
           "ordinarySessionReused": false
@@ -3067,7 +3102,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 51987,
+      "durationMs": 42572,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -3080,7 +3115,7 @@
           },
           {
             "profile": "nuvio-tv-ua-browser",
-            "outcome": "browser_timeout",
+            "outcome": "browser_challenge_persisted",
             "attemptCount": 1
           }
         ],
@@ -3108,12 +3143,13 @@
       "challenge": "metadata-homepage-seed",
       "seedKind": "metadata-homepage",
       "seedRoute": null,
-      "outcome": "browser_timeout",
+      "outcome": "browser_challenge_persisted",
       "attemptCount": 1,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_timeout"
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
         }
       ],
       "ordinarySessionReused": false,
@@ -3121,12 +3157,13 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_timeout",
+          "outcome": "browser_challenge_persisted",
           "attemptCount": 1,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_timeout"
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
             }
           ],
           "ordinarySessionReused": false
@@ -3191,7 +3228,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 52155,
+      "durationMs": 42878,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -3199,7 +3236,7 @@
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
-            "outcome": "browser_timeout",
+            "outcome": "browser_challenge_persisted",
             "attemptCount": 1
           },
           {
@@ -3482,7 +3519,7 @@
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 9601,
+      "durationMs": 16778,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -3619,7 +3656,7 @@
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 7613,
+      "durationMs": 6942,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -3756,7 +3793,7 @@
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5957,
+      "durationMs": 6120,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -5131,7 +5168,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 15,
+    "matchedProviderLanes": 6,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -5190,15 +5227,15 @@
       "yflix"
     ],
     "rawProviders": [
-      "french-anime",
+      "movy",
       "vostfree"
     ],
     "playableProviders": [
-      "french-anime",
+      "movy",
       "vostfree"
     ],
     "verifiedProviders": [
-      "french-anime",
+      "movy",
       "vostfree"
     ],
     "wrongContentProviders": [],
@@ -6265,21 +6302,23 @@
       {
         "provider": "french-anime",
         "lane": "anime",
-        "status": "playable_verified",
-        "debugStage": "provider_returned_streams",
-        "sampleCount": 1,
+        "status": "no_streams",
+        "debugStage": "provider_waf_challenge",
+        "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_returned_streams"
+          "provider_waf_challenge",
+          "provider_zero_before_provider_network"
         ],
         "sampleStatuses": [
-          "playable_verified"
+          "no_streams"
         ],
         "sampleProgressStages": [
-          "chain_reached"
+          "lookup_only",
+          "none"
         ],
-        "raw": 1,
-        "playable": 1,
-        "verified": 1,
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
         "contradictions": 0,
         "identitySafe": true
       },
@@ -6396,13 +6435,15 @@
         "debugStage": "provider_waf_challenge",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_waf_challenge"
+          "provider_waf_challenge",
+          "provider_zero_before_provider_network"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
-          "lookup_only"
+          "lookup_only",
+          "none"
         ],
         "raw": 0,
         "playable": 0,
@@ -6565,13 +6606,17 @@
         "debugStage": "provider_network_zero_result",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_network_zero_result"
+          "provider_network_exception",
+          "provider_network_http_error",
+          "provider_network_zero_result",
+          "provider_zero_before_provider_network"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
-          "chain_reached"
+          "lookup_only",
+          "none"
         ],
         "raw": 0,
         "playable": 0,
@@ -6582,21 +6627,23 @@
       {
         "provider": "movy",
         "lane": "movie",
-        "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
-        "sampleCount": 4,
+        "status": "playable_verified",
+        "debugStage": "provider_returned_streams",
+        "sampleCount": 3,
         "sampleDebugStages": [
-          "provider_network_zero_result"
+          "provider_network_http_error",
+          "provider_returned_streams"
         ],
         "sampleStatuses": [
-          "no_streams"
+          "no_streams",
+          "playable_verified"
         ],
         "sampleProgressStages": [
-          "chain_reached"
+          "lookup_only"
         ],
-        "raw": 0,
-        "playable": 0,
-        "verified": 0,
+        "raw": 9,
+        "playable": 9,
+        "verified": 9,
         "contradictions": 0,
         "identitySafe": true
       },
@@ -6604,16 +6651,18 @@
         "provider": "movy",
         "lane": "tv",
         "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
+        "debugStage": "provider_zero_before_provider_network",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_network_zero_result"
+          "provider_network_http_error",
+          "provider_zero_before_provider_network"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
-          "chain_reached"
+          "lookup_only",
+          "none"
         ],
         "raw": 0,
         "playable": 0,
@@ -7084,40 +7133,132 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": false,
-      "providerCount": 0,
+      "available": true,
+      "providerCount": 43,
       "refreshedProviders": [
         "1jour1film0626",
+        "allwish",
         "aniflix-uno",
         "animejlprovider",
         "animeonsen",
         "animesalt",
+        "animesultra",
+        "animevost-fr",
         "arrowtv",
         "chillflix",
         "cinegram",
         "cinetimes",
-        "corsflix"
+        "coflix",
+        "corsflix",
+        "dulourd",
+        "fexini",
+        "film-a-revoir",
+        "flemmix",
+        "franime",
+        "french-anime",
+        "fullanime",
+        "kehflix",
+        "mallumv",
+        "moiflix",
+        "moviebox",
+        "moviesmod",
+        "movy",
+        "skstream",
+        "vidfast",
+        "vidrock",
+        "voirserie",
+        "vostfree",
+        "waveanime",
+        "yflix"
       ],
-      "replayedProviders": []
+      "replayedProviders": [
+        "1jour1film0626",
+        "67movies",
+        "allwish",
+        "anime-ultime",
+        "animeonsen",
+        "animesalt",
+        "animesultra",
+        "animevost-fr",
+        "arrowtv",
+        "boredflix",
+        "chillflix",
+        "cinegram",
+        "cinemabz",
+        "cinetimes",
+        "coflix",
+        "corsflix",
+        "dulourd",
+        "emnexmovies",
+        "fexini",
+        "film-a-revoir",
+        "flemmix",
+        "flixer",
+        "franime",
+        "french-anime",
+        "fullanime",
+        "latestmovies",
+        "mallumv",
+        "moiflix",
+        "moviebox",
+        "moviesmod",
+        "movish",
+        "movy",
+        "neonflix",
+        "primewire",
+        "shuttletv",
+        "skstream",
+        "vidfast",
+        "voirserie",
+        "vostfree",
+        "vuflix",
+        "watch-cartoon-online",
+        "waveanime",
+        "yflix"
+      ]
     }
   },
   "lastRefreshProviderFilter": [
     "1jour1film0626",
+    "allwish",
     "aniflix-uno",
     "animejlprovider",
     "animeonsen",
     "animesalt",
+    "animesultra",
+    "animevost-fr",
     "arrowtv",
     "chillflix",
     "cinegram",
     "cinetimes",
-    "corsflix"
+    "coflix",
+    "corsflix",
+    "dulourd",
+    "fexini",
+    "film-a-revoir",
+    "flemmix",
+    "franime",
+    "french-anime",
+    "fullanime",
+    "kehflix",
+    "mallumv",
+    "moiflix",
+    "moviebox",
+    "moviesmod",
+    "movy",
+    "skstream",
+    "vidfast",
+    "vidrock",
+    "voirserie",
+    "vostfree",
+    "waveanime",
+    "yflix"
   ],
   "residentialExitNodeLastAttempt": {
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 15,
+    "matchedProviderLanes": 6,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,

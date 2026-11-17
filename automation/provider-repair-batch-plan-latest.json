@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "sourceRunId": "44110423782",
   "sourceTriggerSha": "21de026cfcfbc562603db08e46b25b42887d5bff",
-  "unresolvedProviderCount": 67,
+  "unresolvedProviderCount": 66,
   "dynamicVariantProviderCount": 4,
   "dynamicVariantProviders": [
     "movix-fr",
@@ -36,6 +36,7 @@
     "anisama",
     "arrowtv",
     "boredflix",
+    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -55,6 +56,7 @@
     "franime",
     "frembed",
     "french-anime",
+    "french-manga",
     "frenchstream",
     "fsharetv",
     "fullanime",
@@ -62,6 +64,7 @@
     "hianime",
     "hindmoviez",
     "ihavenotv",
+    "internet-archive",
     "kehflix",
     "kidraz",
     "kurage",
@@ -75,14 +78,18 @@
     "movish",
     "movix-fr",
     "movy",
+    "mugiwarastream",
     "nakios",
+    "neko-sama",
     "neobam",
     "neonflix",
     "overlook",
+    "papadustream",
     "persianstremio",
     "playimdb",
     "primewire",
     "pstream",
+    "purstream",
     "rarefilmm",
     "reanime-to",
     "rivestream-app",
@@ -93,6 +100,7 @@
     "shuttletv",
     "skstream",
     "stigstream",
+    "streamzo",
     "topcartoons",
     "uhdmovies",
     "videasy",
@@ -109,14 +117,15 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
+    "webflix",
     "wookafr",
     "yflix",
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": true,
-  "groupCount": 8,
+  "dynamicVariantFallbackUsed": false,
+  "groupCount": 7,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -325,7 +334,7 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-inconclusive",
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-all-challenged",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver"
@@ -340,43 +349,13 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "residential-exit-inconclusive"
+        "residential-exit-all-challenged"
       ],
-      "transportSignature": "residential-exit-inconclusive",
+      "transportSignature": "residential-exit-all-challenged",
       "providerCount": 2,
       "providers": [
         "french-anime",
         "moiflix"
-      ],
-      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|api_stream_resolver|harness:native-policy-reachable",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "api_stream_resolver"
-      ],
-      "runtimeFamilySignature": "not-applicable",
-      "capabilityStrategy": "api_stream_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "native-policy-reachable"
-      ],
-      "transportSignature": "native-policy-reachable",
-      "providerCount": 1,
-      "providers": [
-        "movy"
       ],
       "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
