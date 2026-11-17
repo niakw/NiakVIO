@@ -57,6 +57,15 @@ if "github.event_name == 'workflow_dispatch' && github.run_id" not in release_ca
     errors.append('release-candidate-validation.yml: exact final certification dispatch must use an isolated run_id concurrency group')
 if "cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}" not in release_candidate:
     errors.append('release-candidate-validation.yml: exact final certification dispatch must never be cancelled')
+for marker in (
+    'id: dispatch',
+    'FIELD_RELEASE_CHILD_DISPATCH_STARTED_AT',
+    'DISPATCH_STARTED_AT: ${{ steps.dispatch.outputs.started_at }}',
+    "row.get('created_at')",
+    'dispatch_epoch',
+):
+    if marker not in release_candidate:
+        errors.append(f'release-candidate-validation.yml: freshly dispatched exact-SHA run selection missing {marker}')
 
 # Every workflow_dispatch launched by release-candidate validation is exact-SHA
 # proof. It must not share a cancellable main/ref concurrency slot with routine
