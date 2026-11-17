@@ -967,7 +967,16 @@ def finalize(provider_id: str, report_path: Path) -> bool:
     patch = (overrides.get("provider_patches") or {}).get(provider_id)
     if not isinstance(patch, dict):
         raise ValueError(f"{provider_id}: missing provider override row during finalize")
-    patch.setdefault("manifest_overrides", {})["enabled"] = active
+    manifest_overrides = patch.setdefault("manifest_overrides", {})
+    if active:
+        # The activated manifest/provider folder is authoritative. Do not leave
+        # a second enabled=true override that can outlive a later lifecycle
+        # decision; retain only non-activation projection metadata.
+        manifest_overrides.pop("enabled", None)
+    else:
+        manifest_overrides["enabled"] = False
+    if not manifest_overrides:
+        patch.pop("manifest_overrides", None)
     capability = (overrides.get("provider_capabilities") or {}).get(provider_id)
     if isinstance(capability, dict):
         capability["validation"] = (
