@@ -13,7 +13,8 @@ from typing import Any, Callable
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from domain_refresh_transaction_v2 import _generation, source_qualified_provider_name
+from domain_refresh_transaction_v2 import source_qualified_provider_name
+from provider_materialization_generation import materialization_generation
 from provider_patch_blocks import decode_managed_data, validate_managed_fixes
 from provider_v3_minimizer import minimize_text, validate_transform
 from current_provider_scope import projection_active_provider_ids
@@ -299,7 +300,7 @@ def reconcile(
         if cid(row.get("provider")) in active_ids
     ]
     materialization["providers"] = material_rows
-    materialization["generation"] = _generation(material_rows)
+    materialization["generation"] = materialization_generation(material_rows)
     materialization["providerCount"] = len(material_rows)
     materialization["activeProviderIdentityCount"] = len(active_ids)
     materialization["expectedProviderCount"] = len(active_ids)

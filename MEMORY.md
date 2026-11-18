@@ -4563,3 +4563,11 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Follow-up audit found two remaining local generation implementations in `materialize_provider_v3_one.py` and `domain_refresh_transaction_v2.py`. Both can rewrite `provider-v3-materialization.json` after the full materializer, so leaving them independent could recreate generation drift through targeted REMAT or an address rotation.
 - Both writers now call `provider_materialization_generation.materialization_generation`; the generation contract test explicitly rejects reintroduction of either local implementation.
 - The targeted materializer and Domain Refresh transaction are now explicit `CORE_FILES` in release hash scope alongside the shared helper. The repository-wide inventory already hashed them, but the mandatory release contract now names them as required authorities.
+
+
+## 2026-11-18 — Targeted projection reconciler migrated to canonical Provider v3 generation helper
+
+- Exact-head Workflow Gate on `3d03163b` failed after generation unification with `ImportError: cannot import name '_generation' from domain_refresh_transaction_v2`. The old targeted publication reconciler still imported the private Domain Refresh generation helper removed by `08f444e5`.
+- `scripts/reconcile_targeted_provider_publication.py` now imports `materialization_generation` directly from the canonical `provider_materialization_generation.py` authority and writes the ledger generation through that helper. Generation contract regression explicitly rejects the stale private import.
+- Projection Reconcile workflow contract now also requires both the canonical generation helper and targeted publication reconciler in its byte-input trigger set, so future changes cannot silently leave active provider bytes stale.
+- This is a pipeline correction only. Current in-flight projection from `3d03163b` is expected to self-supersede and requeue against this descendant SHA; no provider playback status is promoted by this change.
