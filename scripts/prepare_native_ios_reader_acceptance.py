@@ -142,6 +142,7 @@ private fun normalizedType(value: String): String = when (value.lowercase()) {
 private fun emit(marker: String, payload: Any) {
     val encoded = when (payload) {
         is ResultObservation -> json.encodeToString(payload)
+        is StreamRowObservation -> json.encodeToString(payload)
         is PlayerObservation -> json.encodeToString(payload)
         else -> payload.toString()
     }
