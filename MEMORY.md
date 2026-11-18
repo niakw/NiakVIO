@@ -4700,3 +4700,9 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Added `scripts/disable_active_wrong_content_from_current_census.py`. It is lifecycle safety, not provider Repair: it requires the provider to be in the current run's `wrongContentProviders`, requires raw contradiction evidence, proves the census SHA is an ancestor, compares the current active provider bytes to the exact bytes tested at the census SHA, and requires provider execution/domain authority to be unchanged. Stale negative evidence therefore cannot disable a newer generation.
 - The Provider Disabled Lifecycle workflow now runs this exact-byte negative handoff before reactivation and then lets the normal lifecycle move files/projections. The durable disable reason is `auto_off_current_wrong_content`; the same retained bytes may only be reactivated later by the existing strict exact-byte FULL/all-lanes contradiction-free proof.
 - Added `tests/provider_active_wrong_content_lifecycle_test.py` covering exact proof, changed provider bytes, changed hub/domain authority, absence from the current wrong-content set, and persisted disable proof. This is a generic pipeline correction; TopCartoons is not manually patched.
+
+
+## 2026-11-18 — Wrong-content lifecycle test import harness corrected
+
+- Provider Disabled Lifecycle run 44232860391 failed before executing the new lifecycle logic because the importlib-based contract test loaded `disable_active_wrong_content_from_current_census.py` without `scripts/` on Python's module path; its sibling import of `reactivate_disabled_from_current_census` therefore failed.
+- The script now self-registers its own directory on `sys.path`, matching other repository scripts that support both CLI and importlib test execution. No lifecycle semantics changed in this follow-up.
