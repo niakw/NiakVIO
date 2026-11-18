@@ -80,10 +80,19 @@ assert '"current-published-config-recovery"' in audit_source
 assert '"activation-static-config"' in audit_source, "proof-bound activation CONFIG must remain exact audit authority"
 assert '"managed-config-lego"' in audit_source
 reconcile_pos=workflow.index("python scripts/reconcile_provider_static_authority.py --apply")
-classify_pos=workflow.index("python scripts/classify_provider_authority.py --apply-safe-disables")
-manage_pos=workflow.index("python scripts/manage_provider_lifecycle.py --apply")
-assert reconcile_pos < classify_pos < manage_pos, "active authority must reconcile before a fresh safe-disable row is moved by lifecycle"
+reactivate_pos=workflow.index("python scripts/reactivate_disabled_from_current_census.py --apply")
+first_manage=workflow.index("python scripts/manage_provider_lifecycle.py --apply", reactivate_pos)
+classify_pos=workflow.index("python scripts/classify_provider_authority.py --apply-safe-disables", first_manage)
+second_manage=workflow.index("python scripts/manage_provider_lifecycle.py --apply", classify_pos)
+assert reconcile_pos < reactivate_pos < first_manage < classify_pos < second_manage, (
+    "fresh exact-byte reactivation must relocate proven bytes before production "
+    "freshness classification, then settle independent safe-disables"
+)
 assert "python scripts/build_provider_disabled_recovery_queue.py" in workflow, "lifecycle must preserve eligible auto-disabled Brain recovery debt"
+assert "provider_disabled_current_census_reactivation_test.py" in workflow
+assert "current_bytes_census_lifecycle_handoff_test.py" in workflow
+assert "automation/provider-disabled-reactivation-ledger.json" in workflow
+assert "automation/provider-disabled-current-census-reactivation-latest.json" in workflow
 # Retained disabled providers stay in static Brain knowledge, not in executable
 # materialization authority. This keeps lifecycle aligned with the canonical
 # Global+France active byte ledger.

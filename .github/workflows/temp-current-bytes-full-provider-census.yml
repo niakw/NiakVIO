@@ -534,6 +534,15 @@ jobs:
           git add "automation/provider-repair-batch-plan-${run_id}.json" automation/provider-repair-batch-plan-latest.json
           git commit -m "ci(census): persist current bytes ${verified} from ${GITHUB_SHA::12}"
           git push origin HEAD:main
+          # GITHUB_TOKEN pushes do not recursively trigger push workflows.
+          # Hand the newly persisted exact-byte proof to lifecycle explicitly.
+          if gh workflow run provider-disabled-lifecycle.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref main; then
+            echo "FIELD_CURRENT_BYTES_CENSUS_LIFECYCLE source_run=${GITHUB_RUN_ID} dispatched=true"
+          else
+            echo "FIELD_CURRENT_BYTES_CENSUS_LIFECYCLE source_run=${GITHUB_RUN_ID} dispatched=false reason=token-dispatch-denied" >&2
+          fi
 
 
 # PR_OBSERVABILITY_TRIGGER_20260919_R19_STATIC_FIXED

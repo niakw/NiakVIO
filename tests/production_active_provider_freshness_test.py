@@ -144,6 +144,46 @@ with tempfile.TemporaryDirectory(prefix="niakvio-freshness-scope-") as tmp:
     allowed, proof_authority = synthetic.authorize(global_row, "unknown")
     assert not allowed and proof_authority == "invalid-projection-scope", proof_authority
 
+    # Fresh exact-byte census proof can reauthorize lifecycle-retained bytes
+    # without forcing a Brain run whose only valid action would be abstention.
+    (root / "automation").mkdir(exist_ok=True)
+    ledger = {
+        "schemaVersion": 1,
+        "authority": "provider-disabled-reactivation-ledger-v1",
+        "providers": {
+            "demo": {
+                "proofAuthority": "current-census-exact-byte-terminal-v1",
+                "proofStatus": "terminal_identity_verified",
+                "sourceKind": "current-bytes-census",
+                "sourceRunId": "42",
+                "sourceSha": "a" * 40,
+                "providerArtifactSha256": digest,
+                "declaredLanes": ["movie"],
+                "verifiedLanes": ["movie"],
+                "testedThisRun": True,
+                "verifiedRowCount": 1,
+                "identityContradictionCount": 0,
+                "wrongContent": False,
+                "repairRequired": False,
+                "directMutationAuthority": False,
+                "routeAuthorityVerified": True,
+            }
+        },
+    }
+    (root / "automation/provider-disabled-reactivation-ledger.json").write_text(
+        json.dumps(ledger), encoding="utf-8"
+    )
+    census_reactivated = ProductionFreshnessAuthority(root)
+    allowed, proof_authority = census_reactivated.authorize(global_row, "global")
+    assert allowed and proof_authority == "disabled-recovery-exact-byte", proof_authority
+    ledger["providers"]["demo"]["providerArtifactSha256"] = "0" * 64
+    (root / "automation/provider-disabled-reactivation-ledger.json").write_text(
+        json.dumps(ledger), encoding="utf-8"
+    )
+    drifted = ProductionFreshnessAuthority(root)
+    allowed, proof_authority = drifted.authorize(global_row, "global")
+    assert not allowed, proof_authority
+
 print(
     "Production active providers require shared byte-bound all-scope FULL OK or exact-byte "
     "activation authority; "

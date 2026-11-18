@@ -4589,3 +4589,41 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Audit after `3d03163b` found that release hashes still omitted four scripts capable of rewriting `provider-v3-materialization.json`, and two of those writers (`manage_provider_lifecycle.py`, legacy `update_provider_v3_domain_config.py`) still implemented generation locally. Their local loops depended on ledger order, unlike the canonical helper which sorts provider identities, so they could recreate a generation mismatch even with identical provider bytes.
 - Lifecycle and the legacy domain updater now call `provider_materialization_generation.materialization_generation`; local hash loops are removed. The release-hash Core scope now pins the shared helper plus full materializer, targeted materializer, Domain Refresh transaction, static-authority reconciler, targeted publication reconciler, lifecycle writer and legacy domain updater.
 - Generation and release-hash regression tests enumerate these writers. This is a control-plane consistency fix; it does not change provider functionality or promote playback evidence. The in-flight older projection is expected to self-supersede and rerun on this descendant before any accepted release.
+
+
+## 2026-11-18 — Current-byte census exposes lifecycle reactivation debt
+
+- Exact current-byte census run \`44221592944\` on published SHA
+  \`3b6ec6830d6cb9ea236a8a50e28e38be29af3b1f\` completed successfully:
+  105 providers freshly tested, 14 returned accepted playable streams, only
+  \`hindmoviez\` achieved fresh strict terminal verification; \`topcartoons\`
+  returned wrong content. The four FULL OK rows (Castle, Internet Archive,
+  MeowTV, Webflix) remain carried historical proof, not fresh validation from
+  this unresolved census.
+- HindMoviez is still lifecycle-disabled from the 2026-11-14 automatic
+  \`auto_off_current_architecture_nonfunctional\` wave even though the fresh
+  census verifies both declared lanes movie+tv. Raw evidence reaches HTTP 200
+  Matroska media, matches Interstellar identity for movie and
+  Breaking.Bad.S01E01 for TV, with no contradictions. Its current route gate is
+  \`declared-types-qualified\` with 9 live routes and complete movie+tv coverage.
+- Root cause is generic: disabled reactivation was coupled to
+  \`BRAIN - Disabled Provider Recovery Lab\`, so already-good exact bytes could
+  only return to production after an unnecessary Brain abstention artifact.
+  Additionally, Current Bytes Census persisted evidence with a GITHUB_TOKEN push
+  but did not explicitly dispatch Provider Disabled Lifecycle, so fresh proof
+  could not converge automatically.
+- Added a fail-closed NiakVIO lifecycle authority
+  \`reactivate_disabled_from_current_census.py\`: only automatic architecture
+  disable reasons, exact source/current byte equality, fresh per-lane
+  \`playable_verified\` evidence, zero wrong-content/identity contradiction,
+  unchanged provider patch/domain registry, and complete observed route authority
+  can reactivate. No provider id is special-cased and no provider bytes are
+  mutated.
+- Provider Disabled Lifecycle now relocates exact reactivated bytes first,
+  classifies production freshness using the new byte-bound ledger proof, then
+  settles any independent safe-disable in a second lifecycle pass. Current Bytes
+  Census explicitly dispatches lifecycle after persistence.
+- Publication drift classification now treats timestamped current-byte census
+  artifacts and repair-batch evidence as non-executable evidence, so an exact
+  Finalizer is not invalidated merely because its own/current census was
+  persisted.

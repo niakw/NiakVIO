@@ -5,7 +5,8 @@ This module is deliberately proof-oriented. A provider is allowed to remain
 active only when its exact current artifact is covered by one of the production
 freshness authorities accepted by NiakVIO:
 - fresh all-scope FULL OK replay;
-- exact-byte disabled-recovery residential replay;
+- exact-byte disabled recovery proof, from either residential recovery or a fresh
+  canonical current-byte census that required no provider mutation;
 - exact-byte offline activation contract (live still unverified);
 - exact pending onboarding FULL replay bound to the promoted bytes.
 
@@ -86,20 +87,35 @@ def exact_disabled_reactivation(
         for value in proof.get("declaredLanes") or []
         if str(value).strip()
     }
-    return (
-        proof.get("proofAuthority") == "disabled-recovery-exact-byte-residential-v1"
-        and proof.get("proofStatus") == "terminal_identity_verified"
-        and proof.get("brainAbstained") is True
+    common = (
+        proof.get("proofStatus") == "terminal_identity_verified"
         and proof.get("repairRequired") is False
         and proof.get("directMutationAuthority") is False
         and bool(declared)
         and proof_declared == declared
         and declared <= verified
-        and int(proof.get("streamsPlayable") or 0) >= len(declared)
-        and int(proof.get("payloadVerifiedStreams") or 0) >= len(declared)
-        and int(proof.get("identityVerifiedStreams") or 0) >= len(declared)
         and str(proof.get("providerArtifactSha256") or "").strip().casefold() == digest
     )
+    if not common:
+        return False
+    authority = proof.get("proofAuthority")
+    if authority == "disabled-recovery-exact-byte-residential-v1":
+        return (
+            proof.get("brainAbstained") is True
+            and int(proof.get("streamsPlayable") or 0) >= len(declared)
+            and int(proof.get("payloadVerifiedStreams") or 0) >= len(declared)
+            and int(proof.get("identityVerifiedStreams") or 0) >= len(declared)
+        )
+    if authority == "current-census-exact-byte-terminal-v1":
+        return (
+            proof.get("sourceKind") == "current-bytes-census"
+            and proof.get("testedThisRun") is True
+            and int(proof.get("verifiedRowCount") or 0) >= len(declared)
+            and int(proof.get("identityContradictionCount") or 0) == 0
+            and proof.get("wrongContent") is False
+            and proof.get("routeAuthorityVerified") is True
+        )
+    return False
 
 
 def artifact_digest(root: Path, filename: object) -> str:

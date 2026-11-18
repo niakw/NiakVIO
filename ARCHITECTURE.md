@@ -919,3 +919,30 @@ Toute génération client-visible est publiée atomiquement par `CORE - Finalize
 - toutes les projections (`manifest.json`, `vf/manifest.json`, no-anime, VF no-anime, catalogue/package/sources) sont resynchronisées sur la même version de release.
 
 `CORE - Manifest Version Guard` contrôle également les commits directs : un changement de manifest ou de ligne provider sans bump correspondant échoue avant d'être considéré comme une publication valide. Une nouvelle génération de finalizer annule les générations supersédées ; chaque run reste néanmoins épinglé sur son SHA accepté et le drift-gate interdit la publication si des inputs exécutables ont changé entre-temps.
+
+
+## Réactivation lifecycle depuis un census exact
+
+Un provider \`disabled-retained\` désactivé uniquement par une décision automatique
+\`auto_off_current_architecture_*\` peut être réactivé **sans Repair Brain** lorsque
+le census canonique courant démontre que les mêmes bytes sont terminalement
+lisibles et sans contradiction sur toutes ses lanes déclarées.
+
+L'autorité est \`scripts/reactivate_disabled_from_current_census.py\`. Elle exige le
+SHA source immuable du census, l'identité byte-identical de l'artefact
+\`provider-disabled/\`, des verdicts \`OK\` et des lignes brutes
+\`playable_verified\` pour chaque lane, l'absence de wrong-content/contradiction,
+et une route authority observée couvrant les mêmes lanes. Le Provider patch et
+le registry de domaine doivent être inchangés depuis le SHA testé. Les
+désactivations manuelles, sécurité, shutdown ou autorité épuisée ne sont jamais
+éligibles.
+
+La transaction ne modifie pas le provider. Elle enregistre la preuve
+\`current-census-exact-byte-terminal-v1\`, remet uniquement l'état d'activation à
+vrai, puis le lifecycle déplace les mêmes bytes vers \`providers/\`. La
+production-freshness reconnaît ensuite cette preuve exacte. Toute divergence de
+bytes ou de DATA d'exécution annule l'autorité et impose une nouvelle validation.
+
+Le Current Bytes Census doit dispatcher explicitement Provider Disabled
+Lifecycle après la persistance : un push produit avec \`GITHUB_TOKEN\` ne
+redéclenche pas de workflow \`push\` GitHub Actions.

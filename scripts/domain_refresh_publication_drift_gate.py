@@ -30,6 +30,7 @@ SAFE_FILES = {
     "automation/brain-llm-force-memory.json",
     "automation/brain-repair-experience.json",
     "automation/provider-census-status.json",
+    "automation/current-bytes-full-provider-census-latest-summary.json",
     # Lifecycle classifier outputs are evidence/queue state only. They do not
     # mutate provider bytes, manifests, DATA or publication authority by themselves.
     "automation/provider-authority-status.json",
@@ -53,6 +54,8 @@ SAFE_FILES = {
 # generic automation/*.json glob: provider-overrides and authority DATA live there.
 SAFE_ARTIFACT_PATTERNS = (
     re.compile(r"^automation/provider-census-sharded-[0-9]{8,20}\.json$"),
+    re.compile(r"^automation/current-bytes-full-provider-census-[0-9]{8,20}(?:-summary)?\.json$"),
+    re.compile(r"^automation/provider-repair-batch-plan-[0-9]{8,20}\.json$"),
     re.compile(r"^automation/provider-waf-browser-session-[0-9]{8,20}\.json$"),
     re.compile(r"^automation/provider-onboarding-pending-census-[0-9]{8,20}\.json$"),
     re.compile(r"^automation/provider-onboarding-pending-status-[0-9]{8,20}\.json$"),
