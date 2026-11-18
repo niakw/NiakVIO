@@ -46,7 +46,7 @@ assert "NUVIO_HLS_RUNTIME_INTEGRITY_V1" in wrapped
 # Native first-segment/VOD proof is enabled by default and is the current
 # strongest revision for the default HLS guard. Older v5 was only the base
 # recovery layer before native proof was added.
-assert "native-master-sibling-fallback-v16" in wrapped
+assert "native-audio-terminal-proof-v17" in wrapped
 assert '"probeFirstSegmentNative":true' in wrapped
 assert 'typeof setTimeout==="function"' in wrapped
 assert 'typeof clearTimeout==="function"' in wrapped
@@ -134,7 +134,7 @@ assert ordered.count(hls_end) == 1
 assert ordered.rfind(hls_begin) > ordered.rfind("streamzo #1")
 # Strict final-output flags must survive even though the implementation revision
 # is then upgraded by the default native first-segment proof layer.
-assert "native-master-sibling-fallback-v16" in ordered
+assert "native-audio-terminal-proof-v17" in ordered
 assert '"probeAllUrls":true' in ordered
 assert '"failClosedUnknown":true' in ordered
 run_node(r'''
