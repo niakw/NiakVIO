@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44227188421",
-  "sourceTriggerSha": "cce4e3e229a4771cab88375939c43adcafafa464",
+  "sourceRunId": "44237198508",
+  "sourceTriggerSha": "fdc793d553df965fb0cfe4c0febc3fc945efde45",
   "unresolvedProviderCount": 73,
   "dynamicVariantProviderCount": 7,
   "dynamicVariantProviders": [
@@ -290,15 +290,44 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 5,
+      "providerCount": 4,
       "providers": [
         "frenchstream",
         "mugiwarastream",
-        "nakios",
         "neko-sama",
         "streamzo"
       ],
       "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
+      "repairScope": "terminal-extraction",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "mixed_embed_resolver",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_http_error",
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 2,
+      "providers": [
+        "corsflix",
+        "nakios"
+      ],
+      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -485,43 +514,15 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "terminal-extraction|html_scraper|runtime:sitemap-script-family",
-      "repairScope": "terminal-extraction",
+      "groupId": "transport|html_scraper|runtime:sitemap-script-family",
+      "repairScope": "transport",
       "runtimeFamilies": [
         "sitemap-script-family"
       ],
       "runtimeFamilySignature": "sitemap-script-family",
       "capabilityStrategy": "html_scraper",
       "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "sekai"
-      ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
-      "repairScope": "terminal-extraction",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "chain"
+        "lookup"
       ],
       "dominantIssues": [
         "network_http_error"
@@ -530,9 +531,9 @@
       "transportSignature": "not-applicable",
       "providerCount": 1,
       "providers": [
-        "corsflix"
+        "sekai"
       ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "action": "refresh transport authority before provider-local code changes",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
