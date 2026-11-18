@@ -1,8 +1,8 @@
 {
   "schemaVersion": 3,
-  "sourceSha": "564df01e48c3a0f8509b4a7182130a99e3e1823c",
+  "sourceSha": "d57c8022225694bf1cf1c4891f76780e1096b783",
   "context": "main",
-  "generation": "d868dec586e01926a5c060156fd2041f5a946f88fd8d363d5fee7d000618d2dd",
+  "generation": "169d6168a6999bd5f0637e8a1b5b4c701cc503e6e8a31e9eccd181fefc903573",
   "providerCount": 77,
   "expectedProviderCount": 77,
   "providers": [
@@ -4857,8 +4857,9 @@
     },
     {
       "provider": "hindmoviez",
-      "file": "providers/hindmoviez--nuvio--514500222905430a.js",
-      "sha256": "514500222905430ab4b72b81d588056d4d09067ccb5bc9e3e8d1037068d71cc6",
+      "entryAuthority": "global-manifest",
+      "file": "providers/hindmoviez--nuvio--53b312396a6f039d.js",
+      "sha256": "53b312396a6f039de903a26b2bd5dafdb052a8affeeff0cccd2bdb884481d0ad",
       "providerDataSha256": "1c4c650a0e09790eb9c0fbd11e1e809fc7cfe9878809e4bcbc0c19f13091dce0",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -4880,7 +4881,98 @@
         "PROVIDER.HINDMOVIEZ.RUNTIME.V1"
       ],
       "coreCount": 14,
-      "applied": [],
+      "applied": [
+        {
+          "type": "provider_lego",
+          "path": "scripts/provider_patches/hindmoviez_runtime_v1.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.HINDMOVIEZ.RUNTIME.V1"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/desktop_runtime_compat_v1.py",
+          "phase": "discovery",
+          "scope": "global_desktop_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
+          "phase": "discovery",
+          "scope": "global_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_runtime_dispatch_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_runtime_dispatch"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_facts_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_facts"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_identity_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_identity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_presentation"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_score_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_score"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_telemetry_v1.py",
+          "phase": "discovery",
+          "scope": "global_telemetry"
+        }
+      ],
       "deviceSpecificJs": false,
       "devices": [
         "tv",
@@ -4889,15 +4981,30 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false,
-      "staticAuthorityReconciledProviders": [
-        "hindmoviez"
-      ],
-      "materializationRecoveredFromExactPublishedBytes": true,
+      "securityHardening": {
+        "changed": false,
+        "alreadyHardened": false,
+        "literalDecodeChanges": 0,
+        "hostnameChanges": 0,
+        "percentDecodeChanges": 0,
+        "htmlEntityDecodeReorders": 0,
+        "consoleSinkChanges": 0,
+        "consoleShadow": false
+      },
+      "byteValidation": {
+        "tool": "raw-bytes",
+        "toolVersion": "raw-v1",
+        "phase": "provider-byte-stability-v1",
+        "sourceSha256": "53b312396a6f039de903a26b2bd5dafdb052a8affeeff0cccd2bdb884481d0ad",
+        "fixedPointVerified": true
+      },
+      "staticAuthorityReconciledProviders": [],
+      "domainSubstitutionReconciledProviders": [],
       "minimizer": {
         "enabled": true,
-        "savedBytes": 0,
-        "transformedLines": 0,
-        "skippedReason": "published-byte-recovery"
+        "savedBytes": 38253,
+        "transformedLines": 6566,
+        "skippedReason": ""
       }
     },
     {
@@ -11324,82 +11431,7 @@
     "zone-telechargement"
   ],
   "targetedPublicationFixedPointProviders": [
-    "1jour1film0626",
-    "67movies",
-    "anidb",
-    "aniflix-uno",
-    "anikototv",
-    "animejlprovider",
-    "animeonsen",
-    "anisama",
-    "arrowtv",
-    "boredflix",
-    "castle",
-    "cinegram",
-    "cinemabz",
-    "cinematheque-de-bretagne",
-    "cinetimes",
-    "corsflix",
-    "documentary-area",
-    "dulourd",
-    "emnexmovies",
-    "fawesome",
-    "fexini",
-    "film-a-revoir",
-    "flixer",
-    "flixhq",
-    "franime",
-    "frembed",
-    "french-anime",
-    "french-manga",
-    "frenchstream",
-    "fsharetv",
-    "fullanime",
-    "hexa",
-    "hianime",
-    "ihavenotv",
-    "internet-archive",
-    "kidraz",
-    "latestmovies",
-    "meowtv",
-    "moiflix",
-    "moviebite",
-    "movish",
-    "movix-fr",
-    "movy",
-    "mugiwarastream",
-    "nakios",
-    "neko-sama",
-    "neobam",
-    "neonflix",
-    "overlook",
-    "papadustream",
-    "primewire",
-    "pstream",
-    "purstream",
-    "rarefilmm",
-    "reanime-to",
-    "rivestream-app",
-    "rivestream-ru",
-    "sadisflix",
-    "sekai",
-    "showbox",
-    "shuttletv",
-    "skstream",
-    "stigstream",
-    "streamzo",
-    "topcartoons",
-    "videasy",
-    "vidlink",
-    "voirserie",
-    "vuflix",
-    "watch-cartoon-online",
-    "watchott",
-    "waveanime",
-    "webflix",
-    "youtitou",
-    "zone-streaming",
-    "zone-telechargement"
+    "hindmoviez"
   ],
   "activeProviderIdentityCount": 77,
   "lifecycleScopeReconciled": true,
@@ -11438,6 +11470,7 @@
     "fullanime",
     "hexa",
     "hianime",
+    "hindmoviez",
     "ihavenotv",
     "internet-archive",
     "kidraz",
