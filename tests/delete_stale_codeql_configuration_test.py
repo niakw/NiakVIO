@@ -103,6 +103,15 @@ except RuntimeError:
     pass
 else:
     raise AssertionError("foreign CodeQL continuation host accepted")
+try:
+    mod._analysis_delete_path("https://api.github.com/repos/niakw/NiakVIO/code-scanning/analyses/20")
+except RuntimeError:
+    pass
+else:
+    raise AssertionError("unconfirmed CodeQL continuation accepted")
+assert mod._analysis_delete_path(
+    "https://api.github.com/repos/niakw/NiakVIO/code-scanning/analyses/20?confirm_delete"
+).endswith("?confirm_delete=true")
 
 try:
     mod.verify_alert_identity({

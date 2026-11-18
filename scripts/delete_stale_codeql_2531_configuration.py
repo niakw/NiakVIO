@@ -87,8 +87,15 @@ def _analysis_delete_path(url: str) -> str:
         raise RuntimeError("Invalid CodeQL deletion continuation host")
     if not parsed.path.startswith(prefix):
         raise RuntimeError("Invalid CodeQL deletion continuation path")
-    query = ("?" + parsed.query) if parsed.query else ""
-    return parsed.path.lstrip("/") + query
+    # A continuation is allowed only when GitHub itself explicitly authorizes
+    # deletion of the final analysis in the same set. Keep the literal
+    # confirm_delete=true marker as a fail-closed policy/audit invariant.
+    normalized_query = parsed.query.replace("confirm_delete&", "confirm_delete=true&")
+    if normalized_query == "confirm_delete":
+        normalized_query = "confirm_delete=true"
+    if "confirm_delete=true" not in normalized_query.split("&"):
+        raise RuntimeError("CodeQL deletion continuation lacks confirm_delete=true")
+    return parsed.path.lstrip("/") + "?" + normalized_query
 
 
 def delete_category(category: str, rows: list[dict]) -> int:

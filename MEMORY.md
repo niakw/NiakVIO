@@ -4537,3 +4537,10 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Security cleanup runs after the current `SEC - CodeQL` and Final Gate succeeded on `5e84867f`, but `SEC - Retire verified stale CodeQL category` failed before deletion with `Security listing exceeded bounded pages`: the repository has more than the previous 120×100 analysis window.
 - The cleanup now enumerates CodeQL analysis history once with a larger bounded window and then follows GitHub's authenticated `confirm_delete_url` continuation chain for the exact verified stale ref/tool/category set. It validates every continuation host/path before use and never constructs a cross-category deletion target.
 - The deletion contract test now covers same-set continuation and rejects foreign continuation hosts. This is cleanup infrastructure only; current CodeQL/Security proof remains owned by the successful exact-head scans and no provider gains functional status.
+
+
+## 2026-11-18 — CodeQL deletion continuation is explicitly fail-closed on confirm_delete
+
+- Exact-head Workflow Gate `44216477818` and Provider Non-Regression `44216477821` both failed on the same static policy assertion after the stale-analysis traversal change: the cleanup script did not itself contain the audited literal `confirm_delete=true`, even though it consumed GitHub's `confirm_delete_url`.
+- The continuation validator now normalizes GitHub's documented bare `?confirm_delete` form to `confirm_delete=true`, requires that exact confirmation token, and rejects same-host continuation URLs that omit it. Tests cover foreign hosts, missing confirmation and bare-confirm normalization.
+- This fixes the security policy regression only. Re-run exact-head Workflow Gate and Provider Non-Regression; no provider or playback status is changed by this patch.
