@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "authority": "provider-disabled-reactivation-ledger-v1",
+  "providers": {
+    "hindmoviez": {
+      "provider": "hindmoviez",
+      "scope": "global",
+      "proofAuthority": "current-census-exact-byte-terminal-v1",
+      "proofStatus": "terminal_identity_verified",
+      "sourceKind": "current-bytes-census",
+      "sourceRunId": "44221592944",
+      "sourceSha": "3b6ec6830d6cb9ea236a8a50e28e38be29af3b1f",
+      "providerArtifactSha256": "514500222905430ab4b72b81d588056d4d09067ccb5bc9e3e8d1037068d71cc6",
+      "declaredLanes": [
+        "movie",
+        "tv"
+      ],
+      "verifiedLanes": [
+        "movie",
+        "tv"
+      ],
+      "testedThisRun": true,
+      "verifiedRowCount": 2,
+      "identityContradictionCount": 0,
+      "wrongContent": false,
+      "repairRequired": false,
+      "directMutationAuthority": false,
+      "routeAuthorityVerified": true,
+      "routeValidatedLanes": [
+        "movie",
+        "tv"
+      ],
+      "laneEvidence": {
+        "movie": [
+          {
+            "fixture": {
+              "tmdbId": "157336",
+              "mediaType": "movie",
+              "category": "movie",
+              "title": "Interstellar",
+              "year": 2014
+            },
+            "verified": 1,
+            "qualityHeights": [
+              480,
+              720,
+              1080,
+              2160
+            ]
+          }
+        ],
+        "tv": [
+          {
+            "fixture": {
+              "slug": "health-tv-1396-s1e1",
+              "tmdbId": "1396",
+              "mediaType": "tv",
+              "title": "Breaking Bad",
+              "year": 2008,
+              "season": 1,
+              "episode": 1
+            },
+            "verified": 4,
+            "qualityHeights": [
+              480,
+              720,
+              1080,
+              2160
+            ]
+          }
+        ]
+      },
+      "disabledReason": "auto_off_current_architecture_nonfunctional"
+    }
+  }
+}
