@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import json
 import sys
@@ -57,6 +58,19 @@ def main():
     providers.write_text(json.dumps({"providers":["beta","alpha"]}),encoding="utf-8")
     output=root/"out.json"
 
+    # Global-only and France-only published bytes must both be stamped.
+    (root/"providers").mkdir()
+    (root/"vf").mkdir()
+    (root/"providers/alpha.js").write_text("alpha exact JS", encoding="utf-8")
+    (root/"providers/beta.js").write_text("beta exact JS", encoding="utf-8")
+    (root/"manifest.json").write_text(json.dumps({
+        "scrapers":[{"id":"alpha","filename":"providers/alpha.js","enabled":True}]
+    }),encoding="utf-8")
+    (root/"vf/manifest.json").write_text(json.dumps({
+        "scrapers":[{"id":"beta","filename":"../providers/beta.js","enabled":True}]
+    }),encoding="utf-8")
+    original_root=mod.ROOT
+    mod.ROOT=root
     original_base=mod.BASE_PATH
     original_argv=list(sys.argv)
     mod.BASE_PATH=fake
@@ -68,6 +82,7 @@ def main():
         assert sys.argv==expected_wrapper_argv, (sys.argv,expected_wrapper_argv)
     finally:
         mod.BASE_PATH=original_base
+        mod.ROOT=original_root
         sys.argv=original_argv
 
     data=json.loads(output.read_text(encoding="utf-8"))
@@ -77,6 +92,15 @@ def main():
     assert data["playable_providers"]==["alpha","beta"],data
     assert data["verified_providers"]==["alpha","beta"],data
     assert len(data["rows"])==4,data
+    expected_sha={
+        provider:hashlib.sha256((root/"providers"/(provider+".js")).read_bytes()).hexdigest()
+        for provider in ("alpha","beta")
+    }
+    assert data["provider_bundle_sha256"]==expected_sha,data
+    assert all(
+        row["provider_artifact_sha256"]==expected_sha[row["provider_id"]]
+        for row in data["rows"]
+    ),data
 
 source=path.read_text(encoding="utf-8")
 assert "mod.build_tasks =" not in source
