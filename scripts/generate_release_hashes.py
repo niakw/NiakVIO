@@ -85,6 +85,8 @@ CORE_FILES = [
     "scripts/provider_patch_blocks.py",
     "scripts/provider_byte_stability.py",
     "scripts/materialize_provider_v3_all.py",
+    "scripts/materialize_provider_v3_one.py",
+    "scripts/domain_refresh_transaction_v2.py",
     "scripts/provider_materialization_generation.py",
     "scripts/verify_provider_v3_reverse_rebuild.py",
     "scripts/provider_patches/stream_output_sanitizer_v5.py",

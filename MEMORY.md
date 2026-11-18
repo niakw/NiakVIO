@@ -4557,3 +4557,9 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Root cause: the materialization ledger is rebound after final minimization to exact published content-addressed bytes, while the reverse verifier compared that publication generation to the pre-minimizer workspace generation and then compared raw workspace digests directly to minimized production digests.
 - Added one canonical `scripts/provider_materialization_generation.py` generation contract shared by materialization and reconciliation. Reverse proof now verifies deterministic raw workspace bytes, applies the exact final minimizer, proves its fixed point, checks each final digest and content-addressed filename, then compares the canonical published generation.
 - Added `tests/provider_materialization_generation_contract_test.py` to Workflow Gate and Release Finalizer and included the generation helper in release hash scope. This tightens byte-identical proof; no provider, playback or native gate is relaxed.
+
+## 2026-11-18 — Canonical generation extended to REMAT and Domain Refresh writers
+
+- Follow-up audit found two remaining local generation implementations in `materialize_provider_v3_one.py` and `domain_refresh_transaction_v2.py`. Both can rewrite `provider-v3-materialization.json` after the full materializer, so leaving them independent could recreate generation drift through targeted REMAT or an address rotation.
+- Both writers now call `provider_materialization_generation.materialization_generation`; the generation contract test explicitly rejects reintroduction of either local implementation.
+- The targeted materializer and Domain Refresh transaction are now explicit `CORE_FILES` in release hash scope alongside the shared helper. The repository-wide inventory already hashed them, but the mandatory release contract now names them as required authorities.

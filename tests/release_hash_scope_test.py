@@ -31,6 +31,8 @@ assert "scripts/validate_nuvio_tv_runtime_policy.py" in module.CORE_FILES
 assert "scripts/apply_provider_overrides.py" in module.CORE_FILES
 assert "scripts/reapply_published_overrides.py" in module.CORE_FILES
 assert "scripts/provider_materialization_generation.py" in module.CORE_FILES
+assert "scripts/materialize_provider_v3_one.py" in module.CORE_FILES
+assert "scripts/domain_refresh_transaction_v2.py" in module.CORE_FILES
 assert "scripts/provider_patches/stream_output_sanitizer_v5.py" in module.CORE_FILES
 assert "scripts/provider_patches/stream_output_sanitizer_v6.py" in module.CORE_FILES
 assert "scripts/provider_patches/runtime_capability_media_safety_v4.py" in module.CORE_FILES
