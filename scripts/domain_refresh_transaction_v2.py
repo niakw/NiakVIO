@@ -30,6 +30,7 @@ import materialize_provider_v3_all as allmat
 import refresh_authoritative_hub_domains as refresh
 import resolve_provider_hubs as resolver
 from current_provider_scope import projection_active_provider_ids
+from provider_materialization_generation import materialization_generation
 from provider_patch_blocks import (
     decode_managed_data,
     owned_span,
@@ -598,18 +599,6 @@ def source_qualified_provider_name(provider_id: str, old_path: Path, digest: str
     return f"{_safe_fragment(provider_id.casefold())}--{_safe_fragment(source)}--{digest[:16]}.js"
 
 
-def _generation(rows: list[dict[str, Any]]) -> str:
-    aggregate = hashlib.sha256()
-    for row in rows:
-        provider_id = canonical(row.get("provider"))
-        digest = str(row.get("sha256") or "")
-        if not provider_id or len(digest) != 64:
-            raise RuntimeError(f"invalid materialization row: {provider_id!r}")
-        aggregate.update(provider_id.encode("utf-8"))
-        aggregate.update(bytes.fromhex(digest))
-    return aggregate.hexdigest()
-
-
 def _normalized_domain_projection(data: dict[str, Any]) -> dict[str, Any]:
     """Extract only provider-domain DATA owned by Domain Refresh."""
     def normalized_url(value: object) -> str:
@@ -958,7 +947,7 @@ def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
             "runtimeFixes": ",".join(runtime_fix_ids),
         })
 
-    materialization["generation"] = _generation(material_rows)
+    materialization["generation"] = materialization_generation(material_rows)
     materialization["providerCount"] = len(active_ids)
     materialization["activeProviderIdentityCount"] = len(active_ids)
     materialization["expectedProviderCount"] = len(active_ids)

@@ -54,3 +54,13 @@ assert "rebuilt.get(\"generation\") != expected.get(\"generation\")" not in reve
 assert "final published byte digest mismatch" in reverse
 
 print("PROVIDER_MATERIALIZATION_GENERATION_CONTRACT_OK canonical_order=1 publication_minimizer=1")
+
+targeted = (ROOT / "scripts" / "materialize_provider_v3_one.py").read_text(encoding="utf-8")
+domain = (ROOT / "scripts" / "domain_refresh_transaction_v2.py").read_text(encoding="utf-8")
+assert "from provider_materialization_generation import materialization_generation" in targeted
+assert "document[\"generation\"] = materialization_generation(rows)" in targeted
+assert "def _materialization_generation(" not in targeted
+assert "from provider_materialization_generation import materialization_generation" in domain
+assert 'materialization["generation"] = materialization_generation(material_rows)' in domain
+assert "def _generation(rows:" not in domain
+print("PROVIDER_MATERIALIZATION_GENERATION_SECONDARY_PATHS_OK targeted=1 domain_refresh=1")

@@ -19,22 +19,11 @@ from pathlib import Path
 import materialize_provider_v3_all as allmat
 from provider_security_hardening import assert_hardened, harden_bytes
 from current_provider_scope import projection_active_provider_ids
+from provider_materialization_generation import materialization_generation
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / "provider-hubs.json"
 PROVIDER_CATALOG = ROOT / "provider_catalog.json"
-
-
-def _materialization_generation(rows: list[dict[str, object]]) -> str:
-    aggregate = hashlib.sha256()
-    for row in rows:
-        provider_id = allmat.canonical_id(str(row.get("provider") or ""))
-        digest = str(row.get("sha256") or "").strip().casefold()
-        if not provider_id or len(digest) != 64:
-            raise ValueError(f"invalid targeted materialization row: {provider_id!r}")
-        aggregate.update(provider_id.encode("utf-8"))
-        aggregate.update(bytes.fromhex(digest))
-    return aggregate.hexdigest()
 
 
 def upsert_materialization_report(report: dict[str, object]) -> dict[str, object]:
@@ -87,7 +76,7 @@ def upsert_materialization_report(report: dict[str, object]) -> dict[str, object
     document["providerCount"] = len(rows)
     document["activeProviderIdentityCount"] = len(active)
     document["expectedProviderCount"] = len(active)
-    document["generation"] = _materialization_generation(rows)
+    document["generation"] = materialization_generation(rows)
     document["publication"] = allmat.materialization_context() in {"release", "main"}
     document["mainTouched"] = allmat.materialization_context() == "main"
     targeted = [
