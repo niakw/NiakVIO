@@ -4714,3 +4714,8 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - `prune_unreferenced_providers.py` now supports explicit `--prune-provider-bases`. ProviderBase uses its own `provider-bases/.generation-retention.json` ledger and the same default window of 10 distinct generations. The current `PROVENANCE.json:base_filename` is hard-protected; a missing authoritative base fails closed. Re-referenced bases become a fresh occurrence, and security revocation still overrides retention for non-authoritative artifacts.
 - ProviderBase pruning is opt-in by transaction ownership. Projection Reconcile and Provider v3 Reconstruct All enable it because both stage `provider-bases/` atomically. Domain Refresh deliberately does not, preserving its domain-only no-ProviderBase-mutation contract.
 - Added regression coverage for 1→11 ProviderBase generations, provider-only no-op behavior, rolling eviction, rollback/re-reference, separate ledger policy and security revocation.
+
+
+## 2026-11-18 — Provider generation retention tests promoted into Workflow Gate
+
+- The rolling-retention tests were repository contracts but were not executed by the short CORE Workflow Gate. Added `tests/prune_unreferenced_providers_test.py` and `tests/provider_prune_batch_history_test.py` to that gate so both published-bundle and ProviderBase retention behavior are checked on ordinary relevant main changes.
