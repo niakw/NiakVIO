@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import sys
@@ -18,6 +19,41 @@ def load(path: Path) -> dict:
     if not isinstance(value, dict):
         raise ValueError(path)
     return value
+
+
+def published_bundle_digests(root: Path, providers: set[str]) -> dict[str, str]:
+    """Hash the exact active JS selected by Global/VF source projections.
+
+    A residential result without its executed JS digest must never promote a
+    different published generation. Manifest rows alone are not playback proof.
+    """
+    digests: dict[str, str] = {}
+    root = root.resolve()
+    for manifest_rel in ("manifest.json", "vf/manifest.json"):
+        manifest_path = root / manifest_rel
+        if not manifest_path.is_file():
+            continue
+        manifest = load(manifest_path)
+        for row in manifest.get("scrapers") or []:
+            if not isinstance(row, dict):
+                continue
+            pid = str(row.get("id") or "").strip().casefold().replace("_", "-")
+            if pid not in providers or row.get("enabled") is False:
+                continue
+            filename = str(row.get("filename") or "").strip()
+            if not filename:
+                raise ValueError(f"{pid}: active provider missing filename")
+            bundle = (manifest_path.parent / filename).resolve()
+            if not bundle.is_relative_to(root) or not bundle.is_file():
+                raise ValueError(f"{pid}: active bundle outside published checkout")
+            digest = hashlib.sha256(bundle.read_bytes()).hexdigest()
+            if pid in digests and digests[pid] != digest:
+                raise ValueError(f"{pid}: Global/VF bytes conflict")
+            digests[pid] = digest
+    missing = providers - set(digests)
+    if missing:
+        raise ValueError("missing published JS bundle for residential replay: " + ",".join(sorted(missing)))
+    return digests
 
 
 def main() -> int:
@@ -94,8 +130,10 @@ def main() -> int:
             )
         return sorted(values)
 
+    bundle_sha256 = published_bundle_digests(ROOT, selected)
     merged = {
-        "schema_version": 2,
+        "schema_version": 3,
+        "provider_bundle_sha256": bundle_sha256,
         "environment": "targeted-canonical-quick-yield-union",
         "provider_count": len(selected),
         "attempts": attempts,
@@ -106,10 +144,11 @@ def main() -> int:
         "verified_providers": union("verified_providers"),
         "wrong_content_providers": union("wrong_content_providers"),
         "rows": [
-            row
+            {**row, "provider_artifact_sha256": bundle_sha256[str(row.get("provider_id") or "").strip().casefold().replace("_", "-")]}
             for report in reports
             for row in report.get("rows") or []
             if isinstance(row, dict)
+            and str(row.get("provider_id") or "").strip().casefold().replace("_", "-") in bundle_sha256
         ],
     }
     Path(args.output).write_text(
