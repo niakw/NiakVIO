@@ -142,7 +142,7 @@ def _manifest_path(value: str | Path) -> Path:
     return path
 
 
-def _provider_source(filename: str) -> Path:
+def _provider_source(filename: str, *, manifest_dir: Path | None = None) -> Path:
     raw = str(filename or "").strip()
     if not raw:
         raise SystemExit("manifest provider has no filename")
@@ -160,9 +160,14 @@ def _provider_source(filename: str) -> Path:
         relative = Path(*parts[providers_index:])
         source = (ROOT / relative).resolve()
     else:
-        source = (ROOT / raw).resolve()
+        # Native Nuvio clients resolve a relative provider filename from the
+        # manifest URL, not from the repository root. This also applies to VF
+        # and both no-anime release variants.
+        source = ((manifest_dir or ROOT) / raw).resolve()
     try:
-        source.relative_to(ROOT.resolve())
+        relative = source.relative_to(ROOT.resolve())
+        if not relative.parts or relative.parts[0] not in {"providers", "provider-disabled"}:
+            raise SystemExit(f"provider source is outside lifecycle directories: {raw}")
     except ValueError as error:
         raise SystemExit(f"provider bundle escapes repository: {raw}") from error
     if not source.is_file():
@@ -199,7 +204,7 @@ def manifest_providers(manifest_path: str | Path) -> list[dict]:
                     for value in (row.get("supportedTypes") or [])
                     if str(value).strip()
                 ],
-                "source": _provider_source(filename),
+                "source": _provider_source(filename, manifest_dir=manifest_file.parent),
                 "manifest": str(manifest_file.relative_to(ROOT)),
             }
         )

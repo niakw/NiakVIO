@@ -1,3 +1,9 @@
+## 2026-11-19 — Official native reader accepts VF and both no-anime manifest bases (pending CI)
+
+- Corrected a concrete generic client-staging error: relative provider filenames had been resolved against repository root even when manifest was vf/, no-anime/ or vf-no-anime/. The reader now stages relative to the actual manifest directory and rejects lifecycle escapes. Added a regression executing the staging resolver for all four preserved release variants, checking every staged source exists.
+- Explicit VF/no-anime manifest requests are no longer silently overwritten with the old native-hub46 projection when a historical provider scope env variable is present. Existing legacy root default is retained for workflow compatibility pending full two-canonical-manifest native suite migration.
+- Historical native-hub46 and manifest-hub46 are **not yet removed**; old suite workflows and release checks still consume them. No native device playback, release hash or stream has been validated yet.
+
 ## 2026-11-19 — WAF client classification and Tailscale exit proof (pending CI)
 
 - The two no-anime manifests (no-anime/manifest.json and vf-no-anime/manifest.json) are user-confirmed features. Keep both. Only the legacy Hub46 aliases are candidates for later deprecation after migration; neither has been deleted.

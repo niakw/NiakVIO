@@ -948,3 +948,8 @@ bytes ou de DATA d'exécution annule l'autorité et impose une nouvelle validati
 Le Current Bytes Census doit dispatcher explicitement Provider Disabled
 Lifecycle après la persistance : un push produit avec \`GITHUB_TOKEN\` ne
 redéclenche pas de workflow \`push\` GitHub Actions.
+
+
+### 2026-11-19 — Preserving no-anime and client transport authority
+
+The release exposes four intentional consumer manifests: Global root, France vf/, Global no-anime/ and France vf-no-anime/. The two no-anime variants are supported features, not obsolete Hub46 aliases. Official Nuvio acceptance staging resolves relative provider bundle filenames from the actual manifest directory, exactly as a repository client should, and refuses paths outside providers/ and provider-disabled/. Explicit VF/no-anime selection is honored even if a historical native scope matrix exists. Legacy manifest-hub46.json and native-hub46/manifest.json remain transport debt until native workflow, checksums and publication references are migrated, not a new product scope.

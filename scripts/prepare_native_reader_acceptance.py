@@ -261,7 +261,8 @@ def main() -> int:
     # repository consumed by the native suite.
     requested_manifest = args.manifest
     if (
-        os.environ.get("NIAKVIO_PROVIDER_SCOPE_MATRIX", "").strip()
+        requested_manifest in {"manifest.json", "native-hub46/manifest.json"}
+        and os.environ.get("NIAKVIO_PROVIDER_SCOPE_MATRIX", "").strip()
         and (ROOT / "native-hub46/manifest.json").is_file()
     ):
         requested_manifest = "native-hub46/manifest.json"
