@@ -43,8 +43,11 @@ def requires_proof_refresh(live: dict) -> bool:
     if str(live.get('preflight_status') or '').strip().casefold() != 'healthy':
         return False
     playable = live.get('preflight_playable')
+    contradictions = live.get('preflight_identity_contradictions')
     fixtures = live.get('fixture_evidence')
     if type(playable) is not int or playable <= 0:
+        return False
+    if type(contradictions) is not int or contradictions != 0:
         return False
     if not isinstance(fixtures, list) or not 0 < len(fixtures) <= 8:
         return False
