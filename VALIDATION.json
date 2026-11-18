@@ -358,22 +358,21 @@
       "NiakGH-MacBridge"
     ],
     "macbridge_required_when": [
-      "github_dns_failure",
-      "github_timeout_tls_or_route_anomaly",
-      "github_401_403_429_or_challenge",
-      "tailscale_residential_unavailable_or_inconclusive",
-      "provider_disable_or_domain_mutation_would_otherwise_rely_on_github_only_network_evidence"
+      "operator_explicitly_requires_mac_user_network_comparison"
     ],
+    "residential_oracle_choice": "prefer authenticated private Tailscale exit via GitHub Actions; optional MacBridge when it is available; neither may be replaced by GitHub-hosted-only evidence",
+    "oracle_exhaustion_policy": "leave transport diagnosis inconclusive and defer provider/domain mutation or disabling when no independent oracle exists",
     "macbridge_not_required_for": [
       "deterministic_code_contracts",
       "syntax_or_compilation",
       "provider_materialization_fixed_point",
       "pure_metadata_or_documentation_checks"
     ],
-    "evidence_rule": "MacBridge/residential success contradicts GitHub-only transport failure and routes diagnosis to WAF/DNS/ASN/client transport; MacBridge failure corroborates but does not alone prove provider logic failure",
+    "evidence_rule": "A real independent Tailscale or MacBridge playback/transport success contradicts GitHub-only failures; network-only successes never prove decoded media or identity. A blocked/unavailable residential probe remains inconclusive; never promote it to provider code or domain failure.",
     "stronger_evidence_precedence": [
       "exact-byte native playback",
       "full provider replay residential",
+      "Tailscale residential browser/client profiles",
       "MacBridge browser/provider replay",
       "MacBridge HTTP/DNS seed",
       "GitHub-hosted HTTP seed"
