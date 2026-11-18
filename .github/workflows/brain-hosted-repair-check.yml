@@ -110,6 +110,20 @@ jobs:
           python brain-llm/scripts/audit_replay_provenance.py --niakvio-root . \
             --output local-output/hosted-check/replay-program-inventory.json
           python brain-llm/scripts/import_public_niakvio.py --niakvio-root . --output local-output/hosted-check/experience.jsonl
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          source = Path('local-output/hosted-check/experience.jsonl')
+          records = [json.loads(line) for line in source.read_text(encoding='utf-8').splitlines() if line.strip()]
+          negative = [r for r in records if r.get('source') == 'hosted-executed-negative']
+          historical = [r for r in records if r.get('source') in {'brain-repair-experience', 'historical-seed'}]
+          print('FIELD_BRAIN_PUBLIC_LEARNING historical_cases=%d executed_negative=%d proof_authority=false'
+                % (len(historical), len(negative)))
+          if not historical or not negative:
+              raise SystemExit('Brain FORCE cannot start without historical reverse cases and a real executed-negative prior')
+          if any(r.get('proof_authority') is not False or r.get('prior_only') is not True for r in negative):
+              raise SystemExit('Imported hosted negatives cannot claim positive or current proof authority')
+          PY
           python brain-llm/scripts/import_public_docs.py --niakvio-root . --config brain-llm/config/document_sources.json --output local-output/hosted-check/documents.jsonl
       - name: Validate existing local-Brain sandbox and identity contracts
         shell: bash
