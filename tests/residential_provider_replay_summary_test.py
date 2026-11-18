@@ -20,6 +20,7 @@ replay={
     "wrong_content_providers":[],
     "rows":[{
         "provider_id":"yflix","semantic_type":"movie","status":"OK",
+        "provider_artifact_sha256":"a"*64,
         "debug_stage":"provider_returned_streams","raw":2,"playable":1,"verified":1,
         "contradictions":0,"identity_safe":True,
         "samples":[
@@ -35,6 +36,8 @@ merged=mod.merge(waf,replay)
 summary=merged["residentialProviderReplay"]
 assert summary["verifiedProviders"]==["yflix"],summary
 assert summary["rows"][0]["verified"]==1,summary
+assert summary["rows"][0]["providerArtifactSha256"]=="a"*64,summary
+assert summary["providerBundleDigestAuthority"]=="executed-global-vf-published-bytes",summary
 assert summary["rows"][0]["identitySafe"] is True,summary
 assert summary["rows"][0]["sampleCount"]==2,summary
 assert summary["rows"][0]["sampleDebugStages"]==["provider_returned_streams","provider_waf_challenge"],summary
