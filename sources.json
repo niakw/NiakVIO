@@ -2,7 +2,7 @@
   "schema_version": 69,
   "repository": {
     "name": "NiakVIO",
-    "manifest_version": "5.21.159",
+    "manifest_version": "5.21.160",
     "description": "NiakVIO-owned provider catalogue and routing policy. ProviderBase, structured DATA, owned Lego, official address discovery and validated runtime observations are the operational sources of truth. External provider repositories are not required for ordinary reconstruction or playback."
   },
   "selection_policy": {
@@ -128,7 +128,7 @@
     "external_provider_repository_required": false,
     "route_learning_owner": "NiakVIO"
   },
-  "manifest_version": "5.21.159",
+  "manifest_version": "5.21.160",
   "nuvio_client_compatibility": {
     "schema_version": 1,
     "policy": "accepted_ref may advance automatically only when hard and semantic runtime contract checks remain unchanged",
@@ -174,16 +174,35 @@
       },
       "nuvio-tv": {
         "contract_ref": "3ff5e2b41a9dba282c57e7602e401df09dabe703",
-        "accepted_ref": "2b02219d5e585ff976618f1ff3bb4703692b04ba",
-        "accepted_at": "2026-11-18T11:43:30.199262+00:00",
+        "accepted_ref": "f0df1830cf47c104de8ee425dbbd843c6f973d2f",
+        "accepted_at": "2026-11-18T12:45:16.350249+00:00",
         "acceptance": "automatic-contract-safe-advance",
-        "changed_file_count": 4,
+        "changed_file_count": 23,
         "observed_sensitive_changed_files": [],
         "unrelated_changed_files": [
+          "app/src/main/java/com/nuvio/tv/core/tmdb/TmdbMetadataService.kt",
+          "app/src/main/java/com/nuvio/tv/data/local/LayoutPreferenceDataStore.kt",
+          "app/src/main/java/com/nuvio/tv/data/local/TmdbSettingsDataStore.kt",
+          "app/src/main/java/com/nuvio/tv/data/mapper/MetaMapper.kt",
+          "app/src/main/java/com/nuvio/tv/data/remote/api/TmdbApi.kt",
+          "app/src/main/java/com/nuvio/tv/data/remote/dto/MetaResponseDto.kt",
+          "app/src/main/java/com/nuvio/tv/domain/model/Meta.kt",
+          "app/src/main/java/com/nuvio/tv/domain/model/TmdbSettings.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/detail/EpisodesSection.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/detail/MetaDetailsScreen.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/detail/MetaDetailsUiState.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/detail/MetaDetailsViewModel.kt",
           "app/src/main/java/com/nuvio/tv/ui/screens/home/ModernHomeContent.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/home/ModernHomeRows.kt",
-          "app/src/main/res/values-fr/strings_servers.xml",
-          "app/src/main/res/values-sk/strings.xml"
+          "app/src/main/java/com/nuvio/tv/ui/screens/home/ModernHomePresentation.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/settings/LayoutDetailSettings.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/settings/LayoutSettingsViewModel.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/settings/TmdbSettingsScreen.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/settings/TmdbSettingsViewModel.kt",
+          "app/src/main/java/com/nuvio/tv/ui/util/SmoothDownscaleTransformation.kt",
+          "app/src/main/res/values-pl/strings.xml",
+          "app/src/main/res/values/strings.xml",
+          "app/src/test/java/com/nuvio/tv/data/mapper/MetaMapperTest.kt",
+          "app/src/test/java/com/nuvio/tv/ui/screens/home/ModernHomeIdentityRelocationTest.kt"
         ]
       }
     }
