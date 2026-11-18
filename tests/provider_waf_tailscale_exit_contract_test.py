@@ -14,6 +14,10 @@ validation_machine=json.loads(validation.read_text(encoding="utf-8"))
 assert machine["schema_version"] >= 24
 oracle=machine["network_oracle"]
 assert oracle["macbridge_repository"] == "niakw/NiakGH-MacBridge"
+assert oracle["primary_residential_oracle"] == "tailscale-residential-exit"
+assert "optional" in oracle["macbridge_role"]
+assert "indeterminate" in oracle["oracle_unavailable_policy"]
+assert "tailscale residential browser/client profiles" in oracle["evidence_precedence"]
 assert oracle["require_non_github_replay_for_network_failures"] is True
 assert oracle["provider_mutation_requires_cross_environment_evidence_when_network_ambiguous"] is True
 assert oracle["provider_disable_requires_cross_environment_evidence_when_network_ambiguous"] is True
@@ -26,13 +30,17 @@ net=validation_machine["network_origin_validation"]
 assert net["github_only_network_failure_is_provider_failure"] is False
 assert net["residential_crosscheck_required_before_provider_or_domain_failure"] is True
 assert "NiakGH-MacBridge" in net["residential_oracles"]
-assert "github_dns_failure" in net["macbridge_required_when"]
-assert "provider_disable_or_domain_mutation_would_otherwise_rely_on_github_only_network_evidence" in net["macbridge_required_when"]
+assert net["macbridge_required_when"] == ["operator_explicitly_requires_mac_user_network_comparison"]
+assert "Tailscale" in net["residential_oracle_choice"]
+assert "MacBridge" in net["residential_oracle_choice"]
+assert "defer provider/domain mutation" in net["oracle_exhaustion_policy"]
+assert "Tailscale residential browser/client profiles" in net["stronger_evidence_precedence"]
 assert "deterministic_code_contracts" in net["macbridge_not_required_for"]
 
-assert "Oracle réseau résidentiel MacBridge" in arch_md
+assert "Oracle réseau résidentiel indépendant" in arch_md
 assert "échec réseau GitHub-hosted seul" in arch_md
-assert "exact-byte native playback > full provider replay résidentiel > MacBridge browser/provider replay" in arch_md
+assert "exact-byte native playback > full provider replay résidentiel" in arch_md
+assert "Tailscale" in arch_md
 
 macbridge_evidence=json.loads((ROOT/"automation/macbridge-network-oracle-latest.json").read_text(encoding="utf-8"))
 assert macbridge_evidence["role"] == "residential-network-contradiction-oracle"
