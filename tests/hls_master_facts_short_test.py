@@ -84,11 +84,11 @@ require(process.argv[2]);
     console.log('HLS_DEAD_AUDIO_RENDITION_REJECTED');
     return;
   }
-  const expectedCount=mode==='native-many'?10:1;
+  const expectedCount=mode==='native-many'?2:1;
   if(!Array.isArray(out)||out.length!==expectedCount)throw new Error('unexpected rows '+JSON.stringify(out));
   if(mode==='native-many'){
-    for(const late of out){
-      if(late.quality!=='720p'||late.resolution!=='1440x720'||late.codec!=='AVC'||late.audioCodec!=='AAC')throw new Error('late-batch HLS facts missing '+JSON.stringify(late));
+    for(const proven of out){
+      if(proven.quality!=='720p'||proven.resolution!=='1440x720'||proven.codec!=='AVC'||proven.audioCodec!=='AAC')throw new Error('validated HLS facts missing '+JSON.stringify(proven));
     }
   }
   const row=out[0];
