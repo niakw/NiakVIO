@@ -47,6 +47,8 @@ loop_source=(root/'scripts/run_hosted_brain_repair_loop.py').read_text(encoding=
 assert "'--timeout-seconds', '300'" in loop_source
 assert "'--force-provider-budget-seconds', '360'" in loop_source
 assert 'test_force_rejected_unit_diversification.py' in source
+assert "test_force_cpu_retry_budget.py" in source
+assert "test_planner.py" in source
 assert 'test_live_function_context.py' in source
 assert 'brain-llm/tests/test_force_cpu_tight_prompt.py' in source
 assert 'FIELD_BRAIN_GRAPHQL_OBSERVATION' in source
