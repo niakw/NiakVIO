@@ -4544,3 +4544,9 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Exact-head Workflow Gate `44216477818` and Provider Non-Regression `44216477821` both failed on the same static policy assertion after the stale-analysis traversal change: the cleanup script did not itself contain the audited literal `confirm_delete=true`, even though it consumed GitHub's `confirm_delete_url`.
 - The continuation validator now normalizes GitHub's documented bare `?confirm_delete` form to `confirm_delete=true`, requires that exact confirmation token, and rejects same-host continuation URLs that omit it. Tests cover foreign hosts, missing confirmation and bare-confirm normalization.
 - This fixes the security policy regression only. Re-run exact-head Workflow Gate and Provider Non-Regression; no provider or playback status is changed by this patch.
+
+
+## 2026-11-18 — CodeQL cleanup regression test follows the expanded bounded history window
+
+- Workflow Gate on `f0ae09ae` failed inside `tests/retire_stale_codeql_2531_test.py` with `AssertionError: 500`: the test still required the old 120-page history bound even though the production cleanup was intentionally expanded because the repository now exceeds 12k CodeQL analyses.
+- The test now requires the new explicit 500-page maximum. The traversal remains bounded and still fails closed on a permanently full listing; this change updates the oracle to the actual repository scale rather than weakening the security contract.
