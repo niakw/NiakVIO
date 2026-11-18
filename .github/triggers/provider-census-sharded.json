@@ -1,14 +1,16 @@
 {
   "schemaVersion": 2,
-  "scope": "all",
-  "reason": "Post-MeowTV representative activation exact all-scope replay: prove 76 active Global+France published bytes after byte-identical FULL activation, preserve strict identity and source-bound freshness.",
-  "requestedAt": "2026-11-17T23:05:00+01:00",
-  "validation": "post-representative-meowtv-activation-source-bound-v2-exact-published-bytes",
-  "source": "niakvio-metier-post-representative-activation-proof",
-  "targetProviders": [],
+  "scope": "unresolved",
+  "reason": "Exact-current-byte representative replay for rematerialized active MeowTV after 5.21.155 projection publication",
+  "requestedAt": "2026-11-18T00:16:30+01:00",
+  "validation": "representative-meowtv-active-exact-rematerialized-byte-proof",
+  "source": "niakvio-metier-representative-byte-revalidation",
+  "targetProviders": [
+    "meowtv"
+  ],
   "allowPendingTargets": false,
-  "requiredEvidence": "Execute all 76 active published provider bytes verbatim with no pre-probe rematerialization; source-stamp hash schema v2; verify exact MeowTV active blob remains proof blob; preserve wrong-content/identity contradictions; persist all-scope ledger before release/native certification.",
-  "retryRevision": 20,
-  "fullRefreshRevision": 20,
-  "requestedSourceParent": "daf18dccf044f12bdd827207df212120d421eb71"
+  "requiredEvidence": "Execute only the currently published active MeowTV blob verbatim; require anime/movie/tv all verified, zero identity contradictions, terminal media, exact providerArtifactSha256 matching current manifest filename bytes; do not carry forward historical FULL as fresh proof.",
+  "retryRevision": 21,
+  "fullRefreshRevision": 21,
+  "requestedSourceParent": "a5993adb6c3108ab01bf641699492ecbf2ecf8ff"
 }
