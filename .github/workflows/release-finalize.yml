@@ -31,6 +31,9 @@ on:
       - 'scripts/provider_base_store.py'
       - 'scripts/materialize_provider_base_v3_store.py'
       - 'scripts/materialize_provider_v3_one.py'
+      - 'scripts/prune_unreferenced_providers.py'
+      - 'tests/prune_unreferenced_providers_test.py'
+      - 'tests/provider_prune_batch_history_test.py'
       - 'scripts/reconcile_provider_static_authority.py'
       - 'scripts/sanitize_provider_v3_core_metadata_routes.py'
       - 'tests/provider_v3_core_metadata_route_sanitizer_test.py'
@@ -415,7 +418,7 @@ jobs:
             --source manifest.json \
             --vf-source vf/manifest.json \
             --output manifest-hub46.json
-          python3 scripts/prune_unreferenced_providers.py
+          python3 scripts/prune_unreferenced_providers.py --prune-provider-bases
           python3 tests/provider_html_filter_security_test.py --published
           python3 scripts/audit_provider_v3_static.py
           # The exact Global+France active projection union must be reconstructible
@@ -447,14 +450,14 @@ jobs:
         run: |
           set -euo pipefail
           git diff --name-only | tee "$RUNNER_TEMP/release-generation-files.txt"
-          if grep -Ev '^(PROVENANCE\.json|provider-overrides\.json|provider-v3-materialization\.json|providers/.*|manifest\.json|manifest-hub46\.json|vf/manifest\.json|no-anime/manifest\.json|vf-no-anime/manifest\.json|package\.json|package-lock\.json|sources\.json|provider_catalog\.json|provider-version-floors\.json|nuvio-client-id-state\.json|automation/provider-v3-static-knowledge\.json|automation/PLATFORM-RUNTIME-CONTRACTS\.md)$' "$RUNNER_TEMP/release-generation-files.txt"; then
+          if grep -Ev '^(PROVENANCE\.json|provider-overrides\.json|provider-v3-materialization\.json|providers/.*|provider-bases/.*|manifest\.json|manifest-hub46\.json|vf/manifest\.json|no-anime/manifest\.json|vf-no-anime/manifest\.json|package\.json|package-lock\.json|sources\.json|provider_catalog\.json|provider-version-floors\.json|nuvio-client-id-state\.json|automation/provider-v3-static-knowledge\.json|automation/PLATFORM-RUNTIME-CONTRACTS\.md)$' "$RUNNER_TEMP/release-generation-files.txt"; then
             echo 'Unexpected path changed by provider-generation finalization' >&2
             exit 1
           fi
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add \
-            PROVENANCE.json provider-overrides.json provider-v3-materialization.json providers/ \
+            PROVENANCE.json provider-overrides.json provider-v3-materialization.json providers/ provider-bases/ \
             automation/provider-v3-static-knowledge.json \
             manifest.json manifest-hub46.json \
             vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \

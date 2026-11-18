@@ -4726,3 +4726,10 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Projection Reconcile run 44233445081 reached the new ProviderBase prune after rebuilding all 77 current providers, then failed closed because the first implementation treated every `PROVENANCE.json:base_filename` as an active-store mandatory base. PROVENANCE deliberately retains historical/pending provider rows whose bases may live under disabled/archive lifecycle storage, so that scope was too broad.
 - ProviderBase rolling retention now treats a base as mandatory/protected only when the same provenance row's published provider path is currently referenced by an authoritative active manifest (`providers/...`). Existing historical provenance may remain security evidence, but it cannot pin the active ProviderBase retention window or fail it for a missing inactive base.
 - Added a regression with an inactive `provider-disabled/...` provenance row pointing at an absent logical `provider-bases/...` path. Active base pruning must still succeed.
+
+
+## 2026-11-18 — Finalizer owns ProviderBase rolling retention
+
+- ProviderBase rolling-retention logic is now promoted into the release transaction, not left as a Projection-only maintenance behavior.
+- `release-finalize.yml` opts into `--prune-provider-bases`, stages `provider-bases/` atomically and permits those paths in its generation allowlist. Changes to the pruner/tests also trigger both Finalizer and Projection Reconcile.
+- Workflow contracts now require Finalizer, Projection Reconcile and full Provider-v3 reconstruction to own ProviderBase pruning; Domain Refresh remains explicitly excluded because it is domain-only.

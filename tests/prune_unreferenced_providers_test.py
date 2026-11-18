@@ -13,9 +13,11 @@ RECONCILE = (REPO / ".github/workflows/provider-projection-reconcile.yml").read_
 RECONSTRUCT = (REPO / ".github/workflows/provider-v3-reconstruct-all.yml").read_text(encoding="utf-8")
 DOMAIN_REFRESH = (REPO / ".github/workflows/domain-refresh.yml").read_text(encoding="utf-8")
 
-for name, workflow in (("reconcile", RECONCILE), ("reconstruct", RECONSTRUCT)):
+for name, workflow in (("finalizer", FINALIZER), ("reconcile", RECONCILE), ("reconstruct", RECONSTRUCT)):
     assert "prune_unreferenced_providers.py --prune-provider-bases" in workflow, name
     assert "provider-bases" in workflow, name
+assert "provider-bases/.*" in FINALIZER, "Finalizer allowlist must stage ProviderBase retention changes"
+assert "provider-v3-materialization.json providers/ provider-bases/" in FINALIZER
 assert "prune_unreferenced_providers.py --prune-provider-bases" not in DOMAIN_REFRESH, (
     "Domain Refresh is domain-only and must not own ProviderBase retention mutations"
 )

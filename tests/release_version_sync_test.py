@@ -32,8 +32,9 @@ assert workflow.index("python3 scripts/generate_release_hashes.py") < workflow.i
 # prune authority, so its projection must be refreshed before stale bundles are pruned.
 _first_reapply = workflow.index("python3 scripts/reapply_published_overrides.py")
 _first_hub46 = workflow.index("python3 scripts/generate_hub46_manifest.py")
-_prune = workflow.index("python3 scripts/prune_unreferenced_providers.py")
+_prune = workflow.index("python3 scripts/prune_unreferenced_providers.py --prune-provider-bases")
 assert _first_reapply < _first_hub46 < _prune
+assert "provider-v3-materialization.json providers/ provider-bases/" in workflow
 # A late authority/type reconciliation is followed by one bounded reapply.
 # Reapply emits canonical readable bytes, so the main finalizer must restore
 # the minimizer fixed point before asking reapply --check to certify the final
