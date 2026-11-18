@@ -42,6 +42,18 @@ function canonicalProvider(value) {
     .replace(/\s+/g, '-');
 }
 
+function canonicalHost(value) {
+  return String(value || '').trim().toLowerCase().replace(/^www\./, '').replace(/\.$/, '');
+}
+
+function hostIsExternalToProvider(host, provider) {
+  const h = canonicalHost(host);
+  const p = canonicalProvider(provider).replace(/-/g, '');
+  if (!h || !p) return false;
+  const labels = h.split('.').map((part) => part.replace(/[^a-z0-9]/g, '')).filter(Boolean);
+  return !labels.some((label) => label.length >= 4 && (label.includes(p) || p.includes(label)));
+}
+
 function externalVisibleSource(title, name) {
   for (const raw of [title, name]) {
     const value = String(raw || '').trim();
@@ -69,6 +81,7 @@ for (const file of logs) {
         logical: decode(f.logical_provider64),
         title: decode(f.title64),
         name: decode(f.name64),
+        host: decode(f.host64),
       });
       continue;
     }
@@ -84,6 +97,7 @@ for (const file of logs) {
             logical: String(row.logicalProvider || ''),
             title: String(row.title || ''),
             name: String(row.name || ''),
+            host: String(row.host || ''),
           });
         }
       } catch {}
@@ -98,7 +112,9 @@ if (!rows.length) {
 
 const mismatches = [];
 let externalWitnesses = 0;
+let terminalHostWitnesses = 0;
 const sources = new Set();
+const terminalHosts = new Set();
 for (const row of rows) {
   const expected = canonicalProvider(row.expected);
   const logical = canonicalProvider(row.logical);
@@ -112,6 +128,10 @@ for (const row of rows) {
   if (source) {
     externalWitnesses += 1;
     sources.add(source);
+    if (hostIsExternalToProvider(row.host, expected)) {
+      terminalHostWitnesses += 1;
+      terminalHosts.add(canonicalHost(row.host));
+    }
   }
 }
 
@@ -129,7 +149,17 @@ if (externalWitnesses < 1) {
   console.error(
     'FIELD_NATIVE_PROVIDER_PROVENANCE status=unproven client=' + client +
     ' rows=' + rows.length +
-    ' ownership_mismatches=0 external_witnesses=0 reason=no_visible_external_provenance_witness'
+    ' ownership_mismatches=0 external_witnesses=0 terminal_host_witnesses=0 reason=no_visible_external_provenance_witness'
+  );
+  process.exit(3);
+}
+
+if (terminalHostWitnesses < 1) {
+  console.error(
+    'FIELD_NATIVE_PROVIDER_PROVENANCE status=unproven client=' + client +
+    ' rows=' + rows.length +
+    ' ownership_mismatches=0 external_witnesses=' + externalWitnesses +
+    ' terminal_host_witnesses=0 reason=no_real_external_terminal_host_witness'
   );
   process.exit(3);
 }
@@ -138,5 +168,7 @@ console.log(
   'FIELD_NATIVE_PROVIDER_PROVENANCE status=verified client=' + client +
   ' rows=' + rows.length +
   ' ownership_mismatches=0 external_witnesses=' + externalWitnesses +
-  ' distinct_sources=' + sources.size
+  ' terminal_host_witnesses=' + terminalHostWitnesses +
+  ' distinct_sources=' + sources.size +
+  ' distinct_terminal_hosts=' + terminalHosts.size
 );
