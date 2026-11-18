@@ -560,12 +560,10 @@ export function normalizeLanguage(stream = {}, provider = {}, metadata = {}, pre
     if (code) return code;
   }
 
-  const providerCodes = uniq(
-    [...(provider.contentLanguage ?? []), ...(provider.languages ?? []), ...(provider.scraper?.contentLanguage ?? [])]
-      .map((value) => normalizeLanguageCode(value))
-      .filter(Boolean),
-  );
-  return providerCodes.length === 1 ? providerCodes[0] : null;
+  // Provider catalogue/contentLanguage describes provider capability, not the
+  // terminal media track selected by the player. Never fabricate a per-stream
+  // audio language from provider metadata when the row itself has no audio proof.
+  return null;
 }
 
 export function normalizeSourceType(value) {

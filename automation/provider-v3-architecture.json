@@ -302,13 +302,17 @@
     "positive_invalid_examples": [
       "MPEG-TS sync byte missing",
       "HTML/JSON segment payload",
-      "fMP4 signature missing"
+      "fMP4 signature missing",
+      "MPEG-TS PMT proves video with no audio elementary stream",
+      "advertised HLS audio rendition resolves to invalid media payload"
     ],
     "inconclusive_is_not_rejected": [
       "network timeout",
       "temporary fetch failure",
       "encrypted HLS segment"
-    ]
+    ],
+    "native_budget_exhaustion_policy": "when drop_unprobed_hls_after_budget=true, unprobed HLS rows are removed rather than published from facts-only inspection",
+    "stream_language_authority": "terminal stream/audio evidence only; provider contentLanguage is catalogue capability and must not fabricate per-stream audio language"
   },
   "reference_reconstruction": {
     "status": "frozen_historical_materialization_reference",

@@ -191,6 +191,14 @@ assert.match(richTechnical.description, /AAC • 2\.0 • 48 kHz/); assert.match
 assert.equal(normalizeLanguage({ language: "fr" }, vfProvider), "fr");
 assert.equal(normalizeLanguage({ language: "VFQ" }, vfProvider), "fr-ca");
 assert.equal(normalizeLanguage({ language: "MULTI" }, voProvider), null);
+assert.equal(normalizeLanguage({}, voProvider), null);
+const providerLanguageIsNotTrackProof = presentStreamCandidate({
+  name: "Cineby",
+  url: "https://media.example/provider-only-language.mp4",
+}, { title: "Example", year: 2026, mediaType: "movie" }, voProvider);
+assert.equal(providerLanguageIsNotTrackProof.language, null, JSON.stringify(providerLanguageIsNotTrackProof));
+assert.doesNotMatch(providerLanguageIsNotTrackProof.description ?? "", /English/i);
+assert.ok(!providerLanguageIsNotTrackProof.badgeIds.some((id) => id === "lang-en"), JSON.stringify(providerLanguageIsNotTrackProof));
 assert.deepEqual(buildBadges({ quality: "2160p", language: "VFQ", codec: "AVC" }), ["4K", "AVC", "FR-CA"]);
 assert.deepEqual(buildBadgeIds({ quality: "2160p", language: "VFQ", codec: "AVC", subtitles: [] }), ["4k-ultra-hd", "avc", "lang-fr-ca"]);
 

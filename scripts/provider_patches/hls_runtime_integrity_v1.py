@@ -7,10 +7,11 @@ response, follow public player/embed context and recover a real HLS/DASH/direct
 media source while preserving ordinary request headers. Only a conclusively
 invalid row with no bounded recovery path is removed.
 
-Rows beyond the heavy native probe budget remain eligible for lightweight
-master inspection so late-arriving HLS streams can still retain technical facts
-without fabricating network evidence. Master bitrate is exposed both as display
-text and numeric `bitrateMbps` for downstream scoring.
+Rows beyond the heavy native probe budget are dropped when the configured
+fail-closed budget policy requires it; an explicit opt-out may retain a
+lightweight master-facts-only path. MPEG-TS samples can additionally prove a
+video-only PMT and reject it before playback. Master bitrate is exposed both as
+display text and numeric `bitrateMbps` for downstream scoring.
 """
 from __future__ import annotations
 
@@ -110,7 +111,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         payload_config.update(
             {
                 "inspectMasterFacts": True,
-                "implementationRevision": "native-master-sibling-fallback-v16",
+                "implementationRevision": "native-audio-terminal-proof-v17",
             }
         )
     payload = json.dumps(payload_config, separators=(",", ":"))
@@ -202,7 +203,13 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     return new Uint8Array(0);
   }
   function asciiPrefix(bytes,cap){var out="",n=Math.min(bytes&&bytes.length||0,Number(cap||96)||96);for(var i=0;i<n;i++){var b=bytes[i];out+=b>=32&&b<=126?String.fromCharCode(b):" "}return out.trim().toLowerCase()}
-  function hasTsSync(bytes){var n=bytes&&bytes.length||0;if(n<188)return n>0&&bytes[0]===0x47;var max=Math.min(187,n-1);for(var o=0;o<=max;o++){if(bytes[o]!==0x47)continue;if(o+188<n&&bytes[o+188]!==0x47)continue;if(o+376<n&&bytes[o+376]!==0x47)continue;return true}return false}
+  function tsPacketStart(bytes){var n=bytes&&bytes.length||0;if(n<=0)return-1;if(n<188)return bytes[0]===0x47?0:-1;var max=Math.min(187,n-1);for(var o=0;o<=max;o++){if(bytes[o]!==0x47)continue;if(o+188<n&&bytes[o+188]!==0x47)continue;if(o+376<n&&bytes[o+376]!==0x47)continue;return o}return-1}
+  function hasTsSync(bytes){return tsPacketStart(bytes)>=0}
+  function tsPayloadOffset(bytes,o){if(!bytes||o<0||o+4>bytes.length||bytes[o]!==0x47)return-1;var afc=(bytes[o+3]>>4)&3;if(afc===0||afc===2)return-1;var p=o+4;if(afc===3){if(p>=bytes.length)return-1;p+=1+Number(bytes[p]||0)}return p<o+188&&p<bytes.length?p:-1}
+  function tsPid(bytes,o){return ((bytes[o+1]&31)<<8)|bytes[o+2]}
+  function tsPsiSection(bytes,pid,tableId){var base=tsPacketStart(bytes),n=bytes&&bytes.length||0;if(base<0)return null;var acc=[],started=false,expected=0;for(var o=base;o+188<=n;o+=188){if(bytes[o]!==0x47)break;if(tsPid(bytes,o)!==pid)continue;var p=tsPayloadOffset(bytes,o);if(p<0)continue;var pusi=(bytes[o+1]&64)!==0;if(pusi){var pointer=Number(bytes[p]||0);p+=1+pointer;acc=[];started=true;expected=0}if(!started||p>=o+188)continue;for(var i=p;i<o+188&&i<n;i++)acc.push(bytes[i]);if(!expected&&acc.length>=3)expected=3+(((acc[1]&15)<<8)|acc[2]);if(expected&&acc.length>=expected){var sec=new Uint8Array(acc.slice(0,expected));if(sec[0]===tableId)return sec;started=false;acc=[];expected=0}}return null}
+  function tsElementaryProof(bytes){var pat=tsPsiSection(bytes,0,0);if(!pat)return{state:"unknown",reason:"ts_pat_unavailable"};var patEnd=Math.max(8,pat.length-4),pmtPid=-1;for(var i=8;i+3<patEnd;i+=4){var program=(pat[i]<<8)|pat[i+1];if(program!==0){pmtPid=((pat[i+2]&31)<<8)|pat[i+3];break}}if(pmtPid<0)return{state:"unknown",reason:"ts_pmt_pid_unavailable"};var pmt=tsPsiSection(bytes,pmtPid,2);if(!pmt||pmt.length<16)return{state:"unknown",reason:"ts_pmt_unavailable"};var infoLen=((pmt[10]&15)<<8)|pmt[11],end=Math.max(12,pmt.length-4),pos=12+infoLen,hasVideo=false,hasAudio=false,hasPrivate=false;while(pos+4<end){var type=pmt[pos],esLen=((pmt[pos+3]&15)<<8)|pmt[pos+4];if(type===0x01||type===0x02||type===0x10||type===0x1b||type===0x24||type===0x42||type===0xea)hasVideo=true;else if(type===0x03||type===0x04||type===0x0f||type===0x11||type===0x81||type===0x87)hasAudio=true;else if(type===0x06)hasPrivate=true;pos+=5+esLen}if(hasVideo&&!hasAudio&&!hasPrivate)return{state:"invalid",reason:"ts_audio_missing"};return{state:"valid",kind:"mpegts",audioPresent:hasAudio||null,videoPresent:hasVideo||null}}
+  function hasAdtsSync(bytes){var n=Math.min(bytes&&bytes.length||0,128);for(var i=0;i+1<n;i++)if(bytes[i]===0xff&&(bytes[i+1]&0xf0)===0xf0&&(bytes[i+1]&0x06)===0)return true;return false}
   function hasMp4Box(bytes){if(!bytes||bytes.length<8)return false;for(var o=0;o+8<=bytes.length&&o<64;o+=4){var a=String.fromCharCode(bytes[o+4]||0,bytes[o+5]||0,bytes[o+6]||0,bytes[o+7]||0);if(a==="ftyp"||a==="styp"||a==="moof"||a==="moov")return true}return false}
   function nonMediaPayload(bytes,contentType){var ct=String(contentType||"").toLowerCase(),p=asciiPrefix(bytes,160);if(/text\/html|application\/(?:json|problem\+json)|text\/plain|application\/xhtml\+xml/.test(ct))return true;return /^<!doctype\s+html|^<html\b|^<\?xml\b|^\{|^\[/.test(p)}
   function mapUri(body,base){var m=clean(body).match(/#EXT-X-MAP\s*:[^\n\r]*\bURI\s*=\s*"([^"]+)"/i)||clean(body).match(/#EXT-X-MAP\s*:[^\n\r]*\bURI\s*=\s*([^,\s]+)/i);return m?absolute(m[1],base):""}
@@ -214,8 +221,10 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     if(nonMediaPayload(bytes,contentType))return {state:"invalid",reason:"segment_non_media_payload"};
     if(encrypted)return {state:"unknown",reason:"encrypted_segment"};
     var u=String(url||"").toLowerCase(),ct=String(contentType||"").toLowerCase();
+    var aac=/\.aac(?:[?#]|$)/i.test(u)||/audio\/(?:aac|aacp)/i.test(ct);
+    if(aac)return hasAdtsSync(bytes)?{state:"valid",kind:"aac"}:{state:"invalid",reason:"aac_sync_missing"};
     var ts=/\.ts(?:[?#]|$)/i.test(u)||/video\/(?:mp2t|mpegts)|application\/(?:mp2t|mpegts)/i.test(ct);
-    if(ts)return hasTsSync(bytes)?{state:"valid",kind:"mpegts"}:{state:"invalid",reason:"ts_sync_missing"};
+    if(ts){if(!hasTsSync(bytes))return{state:"invalid",reason:"ts_sync_missing"};var elementary=tsElementaryProof(bytes);return elementary.state==="invalid"?elementary:{state:"valid",kind:"mpegts",audioPresent:elementary.audioPresent,videoPresent:elementary.videoPresent}}
     var fragmented=hasMap||/\.(?:m4s|mp4)(?:[?#]|$)/i.test(u)||/video\/mp4|application\/mp4/i.test(ct);
     if(fragmented)return hasMp4Box(bytes)?{state:"valid",kind:"fmp4"}:{state:"invalid",reason:"fmp4_signature_missing"};
     return {state:"unknown",reason:"segment_container_unknown"};
@@ -248,6 +257,23 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     }
     return base;
   }
+  async function proveAudioRenditions(urls,stream,referer){
+    if(!urls||!urls.length)return{state:"valid",reason:"no_external_audio_rendition"};
+    var firstUnknown=null;
+    for(var i=0;i<urls.length;i++){
+      var result=await fetchBounded(urls[i],stream,referer,false,config.nativeProbeTimeoutMs||config.timeoutMs);
+      if(result.state==="invalid")return{state:"invalid",reason:result.reason||"audio_playlist_invalid"};
+      if(result.state!=="ok"){if(!firstUnknown)firstUnknown={state:"unknown",reason:result.reason||"audio_playlist_fetch_unknown"};continue}
+      var body=await responseText(result),kind=playlistKind(body),base=result.url||urls[i];
+      if(kind==="invalid"||kind==="header_only")return{state:"invalid",reason:"audio_playlist_"+kind};
+      if(kind==="master"){if(!firstUnknown)firstUnknown={state:"unknown",reason:"nested_audio_master"};continue}
+      var tiny=shortMediaDuration(body);if(tiny)return{state:"invalid",reason:"audio_vod_duration_too_short",durationSeconds:tiny};
+      var proof=await proveMediaPlaylist(body,base,stream,referer);
+      if(proof.state==="invalid")return Object.assign({audioRendition:true},proof);
+      if(proof.state!=="valid"&&!firstUnknown)firstUnknown=proof;
+    }
+    return firstUnknown||{state:"valid",reason:"audio_renditions_verified"};
+  }
   async function nativeFirstSegmentProof(stream){
     var referer=headerValue(stream,"referer"),root=await fetchBounded(String(stream.url||""),stream,referer,false,config.nativeProbeTimeoutMs||config.timeoutMs);
     if(root.state==="invalid")return root;if(root.state!=="ok")return {state:"unknown",reason:root.reason||"playlist_fetch_unknown"};
@@ -255,7 +281,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     if(kind==="invalid"||kind==="header_only")return {state:"invalid",reason:"playlist_"+kind};
     if(kind==="master"){
       if(config.inspectMasterFacts)facts=masterFacts(body);
-      var variants=variantUris(body,base);if(!variants.length)return {state:"invalid",reason:"master_without_variants"};
+      var variants=variantUris(body,base),audio=audioUris(body,base);if(!variants.length)return {state:"invalid",reason:"master_without_variants"};
       var firstUnknown=null,firstInvalid=null;
       for(var vi=0;vi<variants.length;vi++){
         var child=await fetchBounded(variants[vi],stream,referer,false,config.nativeProbeTimeoutMs||config.timeoutMs);
@@ -276,7 +302,12 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
           continue;
         }
         var childProof=await proveMediaPlaylist(childBody,childBase,stream,referer);
-        if(childProof.state==="valid"){if(facts)childProof.facts=facts;return childProof}
+        if(childProof.state==="valid"){
+          var audioProof=await proveAudioRenditions(audio,stream,base);
+          if(audioProof.state==="invalid")return audioProof;
+          if(audioProof.state==="unknown"&&config.failClosedUnknown)return audioProof;
+          if(facts)childProof.facts=facts;return childProof
+        }
         if(childProof.state==="invalid"){if(!firstInvalid)firstInvalid=childProof}
         else if(!firstUnknown)firstUnknown=childProof;
       }
@@ -419,11 +450,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     }
     if(variantState!=="valid")return {state:variantState,kind:"master_child_"+variantState,body:body,result:result};
     if(audio.length){
-      var audioState="invalid";
-      for(var j=0;j<audio.length;j++){
-        var a=await validateChild(audio[j],stream,result.url||referer);if(a==="valid"){audioState="valid";break}if(a==="unknown")audioState="unknown";
-      }
-      if(audioState!=="valid")return {state:audioState,kind:"audio_child_"+audioState,body:body,result:result};
+      var audioProof=await proveAudioRenditions(audio,stream,result.url||referer);
+      if(audioProof.state==="invalid"||(audioProof.state==="unknown"&&config.failClosedUnknown))return {state:audioProof.state,kind:"audio_child_"+audioProof.state,reason:audioProof.reason,body:body,result:result};
     }
     return {state:"valid",kind:"master",url:result.url,body:body,result:result,facts:facts};
   }
@@ -519,7 +547,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       if(!config.probeFirstSegmentNative||!rows||!rows.length)return value;
       var remaining=Math.max(1,Number(config.nativeProbeMaxRows||1)||1);
       var checks=await Promise.all(rows.map(async function(stream){
-        if(remaining<=0){if(!hlsHint(stream))return stream;return await nativeFactsOnly(stream);}
+        if(remaining<=0){if(!hlsHint(stream))return stream;if(config.dropUnprobedHlsAfterBudget)return null;return await nativeFactsOnly(stream);}
         if(!hlsHint(stream)){
           if(!config.probeAllUrls)return stream;
           remaining-=1;

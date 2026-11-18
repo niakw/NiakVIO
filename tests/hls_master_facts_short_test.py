@@ -53,14 +53,16 @@ function tsResponse(url){
   const b=Buffer.alloc(376);b[0]=0x47;b[188]=0x47;
   return {ok:true,status:200,url,headers:headers('video/mp2t'),arrayBuffer:async()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)};
 }
-if(mode==='browser'||mode==='native'||mode==='native-many'){
+if(mode==='browser'||mode==='native'||mode==='native-many'||mode==='native-dead-audio'){
   const row={url:'https://media.example/master.m3u8',name:'Purstream',quality:'720p',resolution:'1280x720',language:'VF'};
   globalThis.__rows=mode==='native-many'?Array.from({length:10},(_,i)=>({...row,name:'Purstream '+String(i+1)})):[row];
-  if(mode==='native'||mode==='native-many')globalThis.__native_fetch=function(){};
+  if(mode==='native'||mode==='native-many'||mode==='native-dead-audio')globalThis.__native_fetch=function(){};
   globalThis.fetch=async(url)=>{
     url=String(url);
     if(url.endsWith('/master.m3u8'))return textResponse(url,master);
-    if(url.endsWith('/540.m3u8')||url.endsWith('/720.m3u8')||url.endsWith('/audio-ko.m3u8')||url.endsWith('/sub-fr.m3u8'))return textResponse(url,media);
+    if(url.endsWith('/540.m3u8')||url.endsWith('/720.m3u8')||url.endsWith('/sub-fr.m3u8'))return textResponse(url,media);
+    if(url.endsWith('/audio-ko.m3u8'))return textResponse(url,mode==='native-dead-audio'?media.replace('seg.ts','dead-audio.ts'):media);
+    if(url.endsWith('/dead-audio.ts'))return textResponse(url,'<!doctype html><html>dead audio</html>','text/html');
     if(url.endsWith('/seg.ts'))return tsResponse(url);
     throw new Error('unexpected fetch '+url);
   };
@@ -75,6 +77,11 @@ require(process.argv[2]);
   if(mode==='playimdb403'){
     if(!Array.isArray(out)||out.length!==0)throw new Error('403 row survived '+JSON.stringify(out));
     console.log('PLAYIMDB_403_FAIL_CLOSED_OK');
+    return;
+  }
+  if(mode==='native-dead-audio'){
+    if(!Array.isArray(out)||out.length!==0)throw new Error('dead advertised audio rendition survived '+JSON.stringify(out));
+    console.log('HLS_DEAD_AUDIO_RENDITION_REJECTED');
     return;
   }
   const expectedCount=mode==='native-many'?10:1;
@@ -122,13 +129,16 @@ with tempfile.TemporaryDirectory() as tmp:
         "timeout_ms": 1200,
         "max_children": 2,
     }), encoding="utf-8")
-    for mode in ("browser", "native", "native-many"):
+    for mode in ("browser", "native", "native-many", "native-dead-audio"):
         result = subprocess.run(
             ["node", str(runner), str(facts_provider), mode, str(master), str(media)],
             cwd=ROOT, capture_output=True, text=True, timeout=6, check=False,
         )
         assert result.returncode == 0, result.stdout + result.stderr
-        assert f"HLS_MASTER_FACTS_OK mode={mode}" in result.stdout, result.stdout
+        if mode == "native-dead-audio":
+            assert "HLS_DEAD_AUDIO_RENDITION_REJECTED" in result.stdout, result.stdout
+        else:
+            assert f"HLS_MASTER_FACTS_OK mode={mode}" in result.stdout, result.stdout
 
     strict_provider = root / "strict.cjs"
     strict_provider.write_text(generated({
@@ -152,7 +162,7 @@ global_hls = cfg["playback_integrity_policy"]["hls_runtime_options"]
 assert global_hls["inspect_master_facts"] is True, global_hls
 assert global_hls["drop_unprobed_hls_after_budget"] is True, global_hls
 assert int(global_hls["native_probe_max_rows"]) == 8, global_hls
-assert "native-master-sibling-fallback-v16" in generated({"inspect_master_facts": True}), "late-batch HLS revision missing"
+assert "native-audio-terminal-proof-v17" in generated({"inspect_master_facts": True}), "late-batch HLS revision missing"
 play = providers["playimdb"]["core_options"]["hls_runtime_integrity"]
 assert play["probe_all_urls"] is True and play["fail_closed_unknown"] is True, play
 

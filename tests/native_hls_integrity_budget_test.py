@@ -43,7 +43,7 @@ assert '"probeFirstSegmentNative":true' in native_patched
 assert '"nativeProbeMaxRows":3' in native_patched
 assert '"nativeProbeTimeoutMs":1500' in native_patched
 assert '"networkSampleBytes":65536' in native_patched
-assert '"implementationRevision":"native-master-sibling-fallback-v16"' in native_patched
+assert '"implementationRevision":"native-audio-terminal-proof-v17"' in native_patched
 assert module.apply(native_patched, native_options) == native_patched
 
 cfg = json.loads(OVERRIDES.read_text(encoding="utf-8"))
@@ -147,6 +147,32 @@ PATCHED
 '''.replace("PATCHED", native_patched)
 )
 
+# A valid TS sync pattern is not enough when PAT/PMT positively proves video
+# without any audio elementary stream.
+run_node(
+    r'''
+globalThis.__native_fetch=function(){};
+function packet(pid,pusi,payload){
+  const b=new Uint8Array(188);b.fill(0xff);b[0]=0x47;b[1]=(pusi?0x40:0)|((pid>>8)&0x1f);b[2]=pid&0xff;b[3]=0x10;
+  let p=4;if(pusi)b[p++]=0;for(let i=0;i<payload.length&&p<188;i++)b[p++]=payload[i];return b;
+}
+const pat=Uint8Array.from([0x00,0xb0,0x0d,0x00,0x01,0xc1,0x00,0x00,0x00,0x01,0xe1,0x00,0,0,0,0]);
+const pmt=Uint8Array.from([0x02,0xb0,0x12,0x00,0x01,0xc1,0x00,0x00,0xe1,0x01,0xf0,0x00,0x1b,0xe1,0x01,0xf0,0x00,0,0,0,0]);
+const a=packet(0,true,pat),b=packet(0x100,true,pmt),ts=new Uint8Array(376);ts.set(a,0);ts.set(b,188);
+function response(url,ct,text,bytes){return{ok:true,status:200,url,headers:{get:()=>ct},text:async()=>text||'',arrayBuffer:async()=>{const x=bytes||new Uint8Array(0);return x.buffer.slice(x.byteOffset,x.byteOffset+x.byteLength)}}}
+globalThis.fetch=async function(url){
+ if(url.endsWith('media.m3u8'))return response(url,'application/vnd.apple.mpegurl','#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:1\n#EXT-X-PROGRAM-DATE-TIME:2026-09-25T00:00:00Z\n#EXTINF:6,\nvideo-only.ts\n');
+ if(url.endsWith('video-only.ts'))return response(url,'video/mp2t','',ts);
+ throw new Error('unexpected '+url);
+};
+PATCHED
+(async function(){
+ const rows=await globalThis.getStreams('1','movie');
+ if(!Array.isArray(rows)||rows.length!==0)throw new Error('video-only TS survived '+JSON.stringify(rows));
+})().catch(e=>{console.error(e);process.exit(1)});
+'''.replace("PATCHED", native_patched)
+)
+
 # Android TV contract: fetch exposes text()/json() but no body/arrayBuffer and
 # TextEncoder/TextDecoder are absent. Lack of readable segment bytes is unknown,
 # not positive malformed-media evidence, so the stream must survive.
@@ -204,8 +230,8 @@ PATCHED
 '''.replace("PATCHED", native_patched)
 )
 
-# HLS rows beyond the heavy native validation budget still receive a bounded master-facts pass.
-# This guarantees delayed provider rows keep technical facts/badge inputs without extra segment probes.
+# With fail-closed budget enabled, HLS rows beyond the heavy native validation
+# budget are not exposed merely because a facts-only pass succeeded.
 budget_base = r'''globalThis.getStreams=async function(){
   return [
     {url:"https://media.example/a.m3u8",type:"hls"},
@@ -234,18 +260,39 @@ globalThis.fetch=async function(url){
 PATCHED
 (async()=>{
  const rows=await globalThis.getStreams('1','movie');
- assert.equal(rows.length,3,JSON.stringify(rows));
- const late=rows.find(x=>/c\.m3u8$/.test(x.url));assert.ok(late,JSON.stringify(rows));
- assert.equal(late.resolution,'1920x1080',JSON.stringify(late));
- assert.equal(late.quality,'1080p',JSON.stringify(late));
- assert.equal(late.codec,'AVC',JSON.stringify(late));
- assert.equal(late.audioCodec,'AAC',JSON.stringify(late));
- assert.equal(late.bitrate,'5.5 Mbps max',JSON.stringify(late));
- assert.equal(late.hlsMasterBandwidth,5500000,JSON.stringify(late));
- assert.equal(late.bitrateMbps,5.5,JSON.stringify(late));
- assert.ok(!late.__nuvioStreamNetworkEvidenceV1,JSON.stringify(late));
+ assert.equal(rows.length,2,JSON.stringify(rows));
+ assert.ok(!rows.some(x=>/c\.m3u8$/.test(x.url)),JSON.stringify(rows));
 })().catch(e=>{console.error(e);process.exit(1)});
 '''.replace('PATCHED', budget_patched))
 
-print("native HLS heavy proof is bounded and late master rows still receive technical facts")
+budget_facts_patched = module.apply(budget_base, {
+    "timeout_ms": 2000,
+    "probe_first_segment_native": True,
+    "native_probe_max_rows": 2,
+    "native_probe_timeout_ms": 1200,
+    "drop_unprobed_hls_after_budget": False,
+})
+run_node(r'''
+const assert=require('assert');
+globalThis.__native_fetch=function(){};
+function response(url,text,bytes){return {ok:true,status:200,url,headers:{get:()=>url.endsWith('.ts')?'video/mp2t':'application/vnd.apple.mpegurl'},text:async()=>text||'',arrayBuffer:async()=>{const b=bytes||new Uint8Array(0);return b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)}}}
+const ts=new Uint8Array(376);ts[0]=0x47;ts[188]=0x47;
+globalThis.fetch=async function(url){
+ if(/\/[ab]\.m3u8$/.test(url))return response(url,'#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:1\n#EXT-X-PROGRAM-DATE-TIME:2026-09-25T00:00:00Z\n#EXTINF:6,\nseg.ts\n');
+ if(/\/c\.m3u8$/.test(url))return response(url,'#EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=6000000,AVERAGE-BANDWIDTH=5500000,RESOLUTION=1920x1080,FRAME-RATE=24,CODECS="avc1.640028,mp4a.40.2"\nvariant.m3u8\n');
+ if(url.endsWith('/seg.ts'))return response(url,'',ts);
+ throw new Error('unexpected fetch: '+url);
+};
+PATCHED
+(async()=>{
+ const rows=await globalThis.getStreams('1','movie');
+ assert.equal(rows.length,3,JSON.stringify(rows));
+ const late=rows.find(x=>/c\.m3u8$/.test(x.url));assert.ok(late,JSON.stringify(rows));
+ assert.equal(late.resolution,'1920x1080',JSON.stringify(late));
+ assert.ok(!late.__nuvioStreamNetworkEvidenceV1,JSON.stringify(late));
+})().catch(e=>{console.error(e);process.exit(1)});
+'''.replace('PATCHED', budget_facts_patched))
+
+print("native HLS heavy proof is bounded, video-only TS is rejected, and budget exhaustion is fail-closed")
+
 
