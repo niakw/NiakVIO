@@ -4571,3 +4571,8 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - `scripts/reconcile_targeted_provider_publication.py` now imports `materialization_generation` directly from the canonical `provider_materialization_generation.py` authority and writes the ledger generation through that helper. Generation contract regression explicitly rejects the stale private import.
 - Projection Reconcile workflow contract now also requires both the canonical generation helper and targeted publication reconciler in its byte-input trigger set, so future changes cannot silently leave active provider bytes stale.
 - This is a pipeline correction only. Current in-flight projection from `3d03163b` is expected to self-supersede and requeue against this descendant SHA; no provider playback status is promoted by this change.
+
+
+## 2026-11-18 — Projection Reconcile trigger closes canonical generation dependency
+
+- Follow-up to the targeted reconciler migration: `.github/workflows/provider-projection-reconcile.yml` now explicitly watches `scripts/provider_materialization_generation.py` and `scripts/reconcile_targeted_provider_publication.py`, matching the strengthened workflow contract test. A future change to either generation authority therefore schedules a projection fixed-point transaction instead of relying on a later census to discover stale bytes.
