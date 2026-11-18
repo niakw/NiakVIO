@@ -4,14 +4,10 @@
     "maxNearestPeers": 3,
     "providerIds": [
       "castle",
-      "french-manga",
+      "hindmoviez",
       "internet-archive",
-      "mugiwarastream",
+      "meowtv",
       "neko-sama",
-      "papadustream",
-      "purstream",
-      "streamzo",
-      "topcartoons",
       "webflix"
     ],
     "version": 1
@@ -955,7 +951,7 @@
       ]
     }
   ],
-  "operationalProviderCount": 10,
+  "operationalProviderCount": 6,
   "providerCount": 142,
   "providers": {
     "1jour1film0626": {
@@ -973,7 +969,7 @@
         "movie",
         "tv"
       ],
-      "officialHost": "1jour1film1026.monster",
+      "officialHost": "1jour1film1126.shop",
       "operational": false,
       "peerRequestRecipes": [],
       "peerRouteTemplates": [
@@ -1038,9 +1034,9 @@
     "67movies": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=lookup_only",
-        "movie=chain_reached",
-        "tv=chain_reached"
+        "anime=none",
+        "movie=none",
+        "tv=none"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -1067,7 +1063,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "PROVIDER NETWORK BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "7movies": {
@@ -1257,7 +1253,7 @@
     "anidb": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=none"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -1285,7 +1281,7 @@
         "/watch/${slug}",
         "/?search={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "PROVIDER NETWORK BLOCKED",
       "strategy": "html_scraper"
     },
     "aniflix-uno": {
@@ -1383,7 +1379,7 @@
     "anime-sama": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=none"
+        "anime=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -2563,7 +2559,7 @@
     "animevostfr": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=lookup_only"
+        "anime=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -2830,7 +2826,7 @@
     "anisama": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=none"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -2857,7 +2853,7 @@
         "/?s={query}",
         "/recherche?q={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "PROVIDER NETWORK BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "arrowtv": {
@@ -3247,7 +3243,7 @@
         "/?s={query}",
         "/index.php?do=search&subaction=search&story={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "PROOF REFRESH REQUIRED",
       "strategy": "mixed_embed_resolver"
     },
     "cinestream": {
@@ -4168,14 +4164,29 @@
       "officialHost": "dpstream.fyi",
       "operational": false,
       "peerRequestRecipes": [],
-      "peerRouteTemplates": [],
+      "peerRouteTemplates": [
+        "/download/movie/{tmdbId}",
+        "/movie/{tmdbId}",
+        "/watch/movie/{tmdbId}",
+        "/tv/{tmdbId}"
+      ],
       "providerLegoScripts": [],
       "recipeMethods": [],
       "recipeResponses": [],
       "recipeRoles": [],
       "requestRecipes": [],
-      "routeFamilies": [],
-      "routeTemplates": [],
+      "routeFamilies": [
+        "detail",
+        "other",
+        "player",
+        "source"
+      ],
+      "routeTemplates": [
+        "/download/movie/{tmdbId}",
+        "/movie/{tmdbId}",
+        "/watch/movie/{tmdbId}",
+        "/tv/{tmdbId}"
+      ],
       "status": "UNKNOWN",
       "strategy": "mixed_embed_resolver"
     },
@@ -4366,7 +4377,7 @@
     "film-a-revoir": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=none"
+        "movie=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -4391,7 +4402,7 @@
       "routeTemplates": [
         "/search?q={query}"
       ],
-      "status": "HARNESS MISMATCH",
+      "status": "HARNESS/ENV BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "flemmix": {
@@ -4685,9 +4696,9 @@
     "frembed": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=lookup_only",
-        "movie=lookup_only",
-        "tv=lookup_only"
+        "anime=chain_reached",
+        "movie=chain_reached",
+        "tv=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -4714,7 +4725,7 @@
       "routeTemplates": [
         "/embed/movie/{tmdbId}"
       ],
-      "status": "NO PROOF",
+      "status": "CHAIN REACHED",
       "strategy": "mixed_embed_resolver"
     },
     "french-anime": {
@@ -4762,7 +4773,7 @@
         "anime"
       ],
       "officialHost": "w16.french-manga.net",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -4957,7 +4968,7 @@
         "/api/v2/themoviedb?id={tmdbId}",
         "/meta/series/tt12343534.json"
       ],
-      "status": "FULL OK",
+      "status": "CANDIDATE OK",
       "strategy": "mixed_embed_resolver"
     },
     "frenchstream": {
@@ -5438,7 +5449,7 @@
     "hianime": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=none"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -5465,7 +5476,7 @@
         "/?s={query}",
         "/search?q={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "PROVIDER NETWORK BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "hindmoviez": {
@@ -5479,7 +5490,7 @@
       "hasSearchRequestPlan": false,
       "mediaTypes": [],
       "officialHost": "v4.hindmovie.im",
-      "operational": false,
+      "operational": true,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -5707,7 +5718,7 @@
         "/wp-json/wp/v2/posts?search={query}",
         "/wp-json/wp/v2/posts?search={imdbId}&per_page=100"
       ],
-      "status": "DISABLED",
+      "status": "FULL OK",
       "strategy": "direct_media"
     },
     "ihavenotv": {
@@ -6445,7 +6456,11 @@
     },
     "meowtv": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "anime=chain_reached",
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
@@ -6455,18 +6470,31 @@
         "tv"
       ],
       "officialHost": "meowtv.ru",
-      "operational": false,
+      "operational": true,
       "peerRequestRecipes": [],
-      "peerRouteTemplates": [],
-      "providerLegoScripts": [],
+      "peerRouteTemplates": [
+        "/play/movie/{tmdbId}",
+        "/play/tv/{tmdbId}/{season}/{episode}",
+        "/anime/{tmdbId}"
+      ],
+      "providerLegoScripts": [
+        "ticketed_encrypted_api_runtime_v1.py"
+      ],
       "recipeMethods": [],
       "recipeResponses": [],
       "recipeRoles": [],
       "requestRecipes": [],
-      "routeFamilies": [],
-      "routeTemplates": [],
-      "status": "UNKNOWN",
-      "strategy": "mixed_embed_resolver"
+      "routeFamilies": [
+        "detail",
+        "episode"
+      ],
+      "routeTemplates": [
+        "/play/movie/{tmdbId}",
+        "/play/tv/{tmdbId}/{season}/{episode}",
+        "/anime/{tmdbId}"
+      ],
+      "status": "FULL OK",
+      "strategy": "api_stream_resolver"
     },
     "moiflix": {
       "domainMemory": true,
@@ -6542,8 +6570,8 @@
     "moviebox": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=none",
-        "tv=none"
+        "movie=lookup_only",
+        "tv=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -6699,8 +6727,8 @@
     "moviesmod": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=none",
-        "tv=none"
+        "movie=lookup_only",
+        "tv=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -6854,7 +6882,7 @@
         "movie",
         "tv"
       ],
-      "officialHost": "movix.zip",
+      "officialHost": "movix.free",
       "operational": false,
       "peerRequestRecipes": [],
       "peerRouteTemplates": [
@@ -6927,7 +6955,7 @@
         "anime"
       ],
       "officialHost": "mugiwara-no-streaming.com",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -7687,7 +7715,7 @@
         "/api/search?q=Ulduzlararas%C4%B1",
         "/catalogue/{id}/episodes/saison1"
       ],
-      "status": "FULL OK",
+      "status": "PROOF REFRESH REQUIRED",
       "strategy": "mixed_embed_resolver"
     },
     "myfluneo": {
@@ -8142,7 +8170,7 @@
         "tv"
       ],
       "officialHost": "papadustream-v2.watch",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -8360,7 +8388,7 @@
         "/search/{slug}/",
         "/movie/{slug}"
       ],
-      "status": "FULL OK",
+      "status": "PROOF REFRESH REQUIRED",
       "strategy": "html_scraper"
     },
     "persianstremio": {
@@ -8640,8 +8668,8 @@
     "primewire": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=chain_reached",
-        "tv=chain_reached"
+        "movie=none",
+        "tv=none"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -8667,7 +8695,7 @@
       "routeTemplates": [
         "/movie/{tmdbId}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "PROVIDER NETWORK BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "pstream": {
@@ -8719,7 +8747,7 @@
         "tv"
       ],
       "officialHost": "purstream.tech",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -8855,7 +8883,7 @@
         "/stream/{id}",
         "/stream/{id}/episode?season={season}&episode={episode}"
       ],
-      "status": "FULL OK",
+      "status": "PROOF REFRESH REQUIRED",
       "strategy": "official_domain_hub"
     },
     "rarefilmm": {
@@ -9042,8 +9070,8 @@
     "sadisflix": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=none",
-        "tv=none"
+        "movie=chain_reached",
+        "tv=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -9069,13 +9097,13 @@
       "routeTemplates": [
         "/search?q={query}"
       ],
-      "status": "PROVIDER NETWORK BLOCKED",
+      "status": "CHAIN REACHED",
       "strategy": "mixed_embed_resolver"
     },
     "sekai": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -9178,7 +9206,7 @@
         "/meta/series/tt12343534.json",
         "/sitemap.xml"
       ],
-      "status": "CHAIN REACHED",
+      "status": "REGRESSION PROVIDER",
       "strategy": "html_scraper"
     },
     "sflix": {
@@ -9242,9 +9270,9 @@
     "shuttletv": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=lookup_only",
-        "movie=chain_reached",
-        "tv=chain_reached"
+        "anime=none",
+        "movie=none",
+        "tv=none"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -9273,7 +9301,7 @@
         "/recherche?q={query}",
         "/recherche?query={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "PROVIDER NETWORK BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "skstream": {
@@ -9306,7 +9334,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "HARNESS MISMATCH",
+      "status": "HARNESS/ENV BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "stigstream": {
@@ -9352,7 +9380,7 @@
       "evidenceDepth": [
         "anime=lookup_only",
         "movie=chain_reached",
-        "tv=lookup_only"
+        "tv=chain_reached"
       ],
       "hasApiRecipe": true,
       "hasProviderValuePlan": false,
@@ -9363,7 +9391,7 @@
         "tv"
       ],
       "officialHost": "streamzo.fr",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -9658,7 +9686,7 @@
         "/embed/",
         "/embed"
       ],
-      "status": "FULL OK",
+      "status": "PROOF REFRESH REQUIRED",
       "strategy": "mixed_embed_resolver"
     },
     "svstream": {
@@ -9706,7 +9734,7 @@
         "tv"
       ],
       "officialHost": "www.topcartoons.tv",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -9796,7 +9824,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "PARTIAL OK",
+      "status": "DISABLED",
       "strategy": "html_scraper"
     },
     "uhdmovies": {
@@ -10709,7 +10737,7 @@
       "routeTemplates": [
         "/recherche?q={query}"
       ],
-      "status": "HARNESS MISMATCH",
+      "status": "HARNESS/ENV BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "vostfree": {
@@ -10860,9 +10888,9 @@
     "watchott": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=none",
-        "movie=none",
-        "tv=none"
+        "anime=lookup_only",
+        "movie=lookup_only",
+        "tv=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -11770,7 +11798,7 @@
         "/?s={query}",
         "/index.php?do=search&subaction=search&story={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "REGRESSION PROVIDER",
       "strategy": "mixed_embed_resolver"
     },
     "zone-telechargement": {
@@ -11829,133 +11857,72 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "44152321903",
-  "sourceSha": "67a67832c5081f394d59dbcec8ca8532a2e45fa3",
+  "sourceRunId": "44349669527",
+  "sourceSha": "d44cfc24f862b1833893844e7e84501db806825e",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
       "commonRouteTemplates": [],
-      "greenProviderCount": 2,
+      "greenProviderCount": 3,
       "greenProviders": [
         "castle",
+        "meowtv",
         "webflix"
       ],
       "routeFamilies": [
         {
-          "providerSupport": 1,
-          "role": "other",
-          "supportRatio": 0.5
+          "providerSupport": 2,
+          "role": "detail",
+          "supportRatio": 0.6667
+        },
+        {
+          "providerSupport": 2,
+          "role": "episode",
+          "supportRatio": 0.6667
         },
         {
           "providerSupport": 1,
-          "role": "detail",
-          "supportRatio": 0.5
+          "role": "other",
+          "supportRatio": 0.3333
         },
         {
           "providerSupport": 1,
           "role": "search",
-          "supportRatio": 0.5
-        },
-        {
-          "providerSupport": 1,
-          "role": "episode",
-          "supportRatio": 0.5
+          "supportRatio": 0.3333
         }
       ]
     },
-    "html_scraper": {
+    "direct_media": {
       "commonRequestRecipes": [],
       "commonRouteTemplates": [],
-      "greenProviderCount": 2,
+      "greenProviderCount": 1,
       "greenProviders": [
-        "papadustream",
-        "topcartoons"
+        "hindmoviez"
       ],
       "routeFamilies": [
         {
-          "providerSupport": 2,
-          "role": "search",
+          "providerSupport": 1,
+          "role": "detail",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "detail",
-          "supportRatio": 0.5
-        },
-        {
-          "providerSupport": 1,
-          "role": "api",
-          "supportRatio": 0.5
+          "role": "search",
+          "supportRatio": 1.0
         }
       ]
     },
     "mixed_embed_resolver": {
       "commonRequestRecipes": [],
-      "commonRouteTemplates": [
-        {
-          "providerSupport": 2,
-          "role": "search",
-          "route": "/?s={query}",
-          "supportRatio": 0.5
-        },
-        {
-          "providerSupport": 2,
-          "role": "detail",
-          "route": "/{slug}",
-          "supportRatio": 0.5
-        }
-      ],
-      "greenProviderCount": 4,
-      "greenProviders": [
-        "french-manga",
-        "mugiwarastream",
-        "neko-sama",
-        "streamzo"
-      ],
-      "routeFamilies": [
-        {
-          "providerSupport": 4,
-          "role": "detail",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 3,
-          "role": "search",
-          "supportRatio": 0.75
-        },
-        {
-          "providerSupport": 3,
-          "role": "episode",
-          "supportRatio": 0.75
-        },
-        {
-          "providerSupport": 2,
-          "role": "other",
-          "supportRatio": 0.5
-        },
-        {
-          "providerSupport": 2,
-          "role": "player",
-          "supportRatio": 0.5
-        },
-        {
-          "providerSupport": 1,
-          "role": "api",
-          "supportRatio": 0.25
-        }
-      ]
-    },
-    "official_domain_hub": {
-      "commonRequestRecipes": [],
       "commonRouteTemplates": [],
       "greenProviderCount": 1,
       "greenProviders": [
-        "purstream"
+        "neko-sama"
       ],
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "episode",
+          "role": "detail",
           "supportRatio": 1.0
         },
         {
@@ -11965,7 +11932,7 @@
         },
         {
           "providerSupport": 1,
-          "role": "api",
+          "role": "episode",
           "supportRatio": 1.0
         }
       ]
