@@ -130,6 +130,22 @@ for required in (
 ):
     assert required in workflow, required
 
+# The external FORCE candidate's isolated comparison MUST enforce actual
+# decoder/identity fixtures, not only emitted URLs or optimistic stream counts.
+# The evaluator's decoded_repair_gate is gated by this environment variable,
+# so assert the flag belongs to the actual candidate evaluation step.
+force_step = workflow[
+    workflow.index("- name: Evaluate isolated Brain LLM Force candidates"):
+    workflow.index("- name: Run canonical", workflow.index("- name: Evaluate isolated Brain LLM Force candidates"))
+] if "- name: Run canonical" in workflow[workflow.index("- name: Evaluate isolated Brain LLM Force candidates"):] else workflow[
+    workflow.index("- name: Evaluate isolated Brain LLM Force candidates"):
+    workflow.index("- name: Enforce four-version floor on repair candidate")
+]
+assert "NIAKVIO_REQUIRE_DECODE_PROOF: '1'" in force_step
+assert "python scripts/evaluate_brain_llm_force_candidates.py" in force_step
+assert "scripts/materialize_provider_v3_one.py" in force_step
+assert "accepted_count" in force_step
+
 # A source-pinned FORCE candidate must not be discarded just because the
 # Brain updated historical MEMORY.md after generation. The exception is
 # ancestry-checked, fetched-main-pinned, and restricted to non-executable docs.
