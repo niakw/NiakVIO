@@ -103,6 +103,8 @@ assert "active providers missing from materialization ledger" in lifecycle_sourc
 assert "reconcile_materialization_from_active_bundles(apply=True)" in lifecycle_source
 assert "reconcile_provider_base_store_metadata(" in lifecycle_source
 assert "base_store.provider_base_store_metadata(" in lifecycle_source
+assert "store.update(metadata)" in lifecycle_source
+assert 'provenance["provider_base_store"] = metadata' not in lifecycle_source
 assert "PROVENANCE.json" in workflow
 assert "visible providers missing from materialization ledger" not in lifecycle_source
 assert "materialization_ids == active_union" in workflow

@@ -458,15 +458,18 @@ def reconcile_provider_base_store_metadata(
             clean += 1
 
     previous = provenance.get("provider_base_store")
+    store = previous if isinstance(previous, dict) else {}
     metadata = base_store.provider_base_store_metadata(
         provider_count=len(active_ids),
         unique_base_count=len(bases),
         clean_reconstructed=clean,
         reconstruction_required=len(active_ids) - clean,
-        previous_store=previous if isinstance(previous, dict) else None,
+        previous_store=store,
     )
     if apply:
-        provenance["provider_base_store"] = metadata
+        if not isinstance(previous, dict):
+            provenance["provider_base_store"] = store
+        store.update(metadata)
         dump_json(PROVENANCE_PATH, provenance)
     return {
         "providerCount": len(active_ids),

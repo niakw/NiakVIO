@@ -4741,3 +4741,10 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Root cause was transaction ownership: `manage_provider_lifecycle.py` already reconciled manifests, static knowledge and executable materialization, but never rebound the ProviderBase-store metadata block. The release test was correct and remains strict.
 - Lifecycle now recomputes ProviderBase-store cardinality/clean counts from the post-transition Global+France active identity set, validates every active base against the active `provider-bases/` store during apply, writes the canonical metadata through `provider_base_store_metadata`, and stages `PROVENANCE.json` in the same lifecycle commit.
 - Dry-run computes the same cardinality without requiring hypothetical file moves. This is control-plane consistency only; no provider is promoted and no playback proof changes.
+
+
+## 2026-11-18 — Lifecycle ProviderBase metadata merge corrected before release acceptance
+
+- The first real lifecycle transition after the cardinality fix produced `fd2f953d`: counts correctly moved from 77 to 76, but the new helper assigned the canonical metadata dict wholesale and therefore dropped enrichment fields owned by the canonical ProviderBase materializer.
+- This intermediate PROVENANCE-only transition is superseded. The next source commit restores the exact pre-transition PROVENANCE blob from `9386c0a6` and changes lifecycle reconciliation to update the existing `provider_base_store` dictionary in place. Canonical count/scope fields are refreshed while materialization/runtime/sanitizer enrichment remains intact.
+- The lifecycle contract now rejects a wholesale `provenance["provider_base_store"] = metadata` replacement. A new lifecycle run must produce the 76-provider metadata transition again before Finalizer proof is accepted.
