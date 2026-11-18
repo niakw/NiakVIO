@@ -6,6 +6,11 @@ import re
 root=Path(__file__).resolve().parents[1]
 source=(root/'.github/workflows/brain-hosted-repair-check.yml').read_text(encoding='utf-8')
 assert "if: ${{ false }}" not in source, "hosted proof remains disabled"
+# The pilot must identify actual FORCE synthesis, never conflate advisor-only Learning with repair.
+assert "FIELD_BRAIN_HOSTED_PILOT" in source
+assert "single-provider-exact-source-force" in source
+assert "automatic_fleet=" in source
+
 assert "github.ref == 'refs/heads/main'" in source
 assert "github.repository == 'niakw/NiakVIO'" in source
 assert 'default: allanime' in source
