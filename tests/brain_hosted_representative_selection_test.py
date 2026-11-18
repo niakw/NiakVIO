@@ -37,6 +37,25 @@ with TemporaryDirectory() as td:
             "acceptedProviderCount":0,
             "scopeTrace":[{"scope":"provider_bloc","reason":"no_op"}]}))
     (base/"not-an-archive.json").write_text("{}")
+    (base/"44327993359.json").write_text(json.dumps({
+        "provider": "sekai", "publicationAuthority": False,
+        "acceptedProviderCount": 0,
+        "scopeTrace": [{"scope": "provider_bloc", "reason": "valueerror"}],
+        "verification": [{
+            "accepted": False, "executionObserved": True,
+            "materializedMutationObserved": True,
+            "reason": "decoded_repair_no_new_fixture_control",
+        }],
+    }))
+    (base/"44327994444.json").write_text(json.dumps({
+        "provider": "brain-infra", "publicationAuthority": False,
+        "acceptedProviderCount": 0,
+        "scopeTrace": [{"scope": "provider_bloc", "reason": "valueerror"}],
+        "verification": [],
+    }))
+    debt=mod.negative_history(base)
+    assert debt["sekai"]==100, "actual executed no-improvement must incur causal debt"
+    assert "brain-infra" not in debt, "local model error cannot poison provider repair memory"
     debt=mod.negative_history(base)
     assert debt["allanime"]==200
     # The strongest retained CANDIDATE has a replay-only Brain strategy and
