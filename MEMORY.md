@@ -1,3 +1,8 @@
+## 2026-11-19 — Current-run proof gate added to census transport overlay
+
+- The census previously gated replay freshness only by lastAttempt provider ID plus an optional expected JS digest. In a targeted ledger that retains a past positive row under the same ID, that can still replay-promote historical success. Updated the census to require, when freshRunReceipt exists, an exact matching per-row residentialReplayReceipt source SHA/run ID and provider JS digest before any replay status update. Legacy direct synthetic fixtures remain diagnostic to avoid breaking older standalone tests; actual WAF runs produce pinned receipts.
+- Regression explicitly tests wrong run ID rejected, correct run ID plus exact bytes accepted, mismatched JS digest rejected. This is a generic Brain/census proof-integrity correction, not a direct provider patch.
+
 ## 2026-11-19 — Exercise WAF replay freshness against active CI lane
 
 - The explicit WAF GitHub Actions lane now runs targeted historical/current merge regression, durable latest merge regression and census replay merge regression on the same SHA before network tests. This closes the previous gap where a successful transport check did not exercise latest-run replay provenance.

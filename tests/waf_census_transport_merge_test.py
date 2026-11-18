@@ -701,6 +701,30 @@ assert partial_fresh_rows["stale"]["status"] == "ROUTE PROVEN", partial_fresh_re
 assert partial_fresh_result["residentialProviderReplayPromotedProviders"] == ["fresh"]
 assert partial_fresh_result["repairQueue"] == ["stale"], partial_fresh_result
 
+# Regression: a targeted historical record can carry an old exact same provider
+# ID + playable result. The current-run receipt, not that ID, is the authority.
+receipt_bound = copy.deepcopy(partial_fresh_waf)
+receipt_bound["freshRunReceipt"] = {
+    "sourceNiakvioSha": "a" * 40,
+    "runId": "44423214248",
+}
+record = receipt_bound["residentialProviderReplay"]["rows"][1]
+record["providerArtifactSha256"] = "b" * 64
+record["residentialReplayReceipt"] = {
+    "sourceNiakvioSha": "a" * 40,
+    "runId": "44423214247",
+    "providerBundleSha256": "b" * 64,
+}
+old_proof = mod.merge_transport(partial_fresh_baseline, receipt_bound)
+assert old_proof["residentialProviderReplayPromotedProviders"] == [], old_proof
+assert {r["provider"]: r for r in old_proof["providers"]}["fresh"]["status"] == "ROUTE PROVEN"
+record["residentialReplayReceipt"]["runId"] = "44423214248"
+valid_proof = mod.merge_transport(partial_fresh_baseline, receipt_bound)
+assert valid_proof["residentialProviderReplayPromotedProviders"] == ["fresh"], valid_proof
+record["residentialReplayReceipt"]["providerBundleSha256"] = "c" * 64
+wrong_bytes = mod.merge_transport(partial_fresh_baseline, receipt_bound)
+assert wrong_bytes["residentialProviderReplayPromotedProviders"] == [], wrong_bytes
+
 # The durable WAF ledger must record actual replay providers independently of
 # the broader seed refresh, including on an unavailable/offline attempt.
 LATEST_SCRIPT = ROOT / "scripts" / "merge_waf_latest_evidence.py"

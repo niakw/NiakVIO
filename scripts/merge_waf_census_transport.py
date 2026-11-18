@@ -417,6 +417,24 @@ def merge_transport(
             if provider in fresh_replay_providers
             else []
         )
+        # A targeted ledger carries old rows alongside this-run rows. A
+        # current-run summary alone is insufficient when the same provider has
+        # a historical verified replay. Match each row to this run AND its
+        # executed JS bytes before allowing any census status mutation.
+        current_receipt = waf.get("freshRunReceipt")
+        if isinstance(current_receipt, dict):
+            source_sha = str(current_receipt.get("sourceNiakvioSha") or "")
+            run_id = str(current_receipt.get("runId") or "")
+            provider_replay_rows = [
+                observation for observation in provider_replay_rows
+                if isinstance(observation.get("residentialReplayReceipt"), dict)
+                and source_sha and run_id
+                and str(observation["residentialReplayReceipt"].get("sourceNiakvioSha") or "") == source_sha
+                and str(observation["residentialReplayReceipt"].get("runId") or "") == run_id
+                and str(observation.get("providerArtifactSha256") or "")
+                and str(observation.get("providerArtifactSha256") or "")
+                == str(observation["residentialReplayReceipt"].get("providerBundleSha256") or "")
+            ]
         # Replays can complete while other provider generations are published.
         # A fresh *run ID* does not prove this census row used the same JS.
         # If the census knows its exact bundle digest, require a matching digest
