@@ -545,6 +545,11 @@ assert resolver.same_brand(
     "https://1jour1film1126.shop/",
     versioned_cfg,
 )
+assert not resolver.same_brand(
+    "1jour1film0626",
+    "https://1jour1film9926.shop/",
+    versioned_cfg,
+)
 for unsafe in (
     "https://cinesuper.lol/",
     "https://miaw.tv/",
