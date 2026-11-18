@@ -26,6 +26,8 @@ on:
       - 'tests/core_media_policy_test.py'
       - 'engine_v2/src/contracts.mjs'
       - 'engine_v2/tests/contracts.test.mjs'
+      - 'engine_v2/src/runtime-adapters.mjs'
+      - 'engine_v2/tests/runtime-adapters.test.mjs'
       - 'engine_v2/src/stream-presentation.mjs'
       - 'engine_v2/tests/stream-presentation.test.mjs'
       - 'scripts/nuvio_client_lab.cjs'
@@ -78,6 +80,7 @@ jobs:
       - name: Validate canonical multi-audio stream transport and presentation
         run: |
           node engine_v2/tests/contracts.test.mjs
+          node engine_v2/tests/runtime-adapters.test.mjs
           node engine_v2/tests/stream-presentation.test.mjs
       - name: Validate cross-client stream identity and external player identity
         run: |

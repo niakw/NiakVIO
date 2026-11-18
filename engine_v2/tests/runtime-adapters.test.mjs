@@ -90,6 +90,43 @@ for (const device of ["mobile", "desktop", "tv"]) {
   assert.equal(row.headers.Origin, "https://player.example/");
 }
 
+// HLS master audio track metadata must survive the final device projection,
+ // not merely the shared candidate normalizer.
+const masterTracks = [
+  { language: "en", name: "English", groupId: "audio" },
+  { language: "fr", name: "Français", groupId: "audio" },
+];
+for (const device of ["worker", "mobile", "desktop", "tv"]) {
+  const row = toRuntimeStream({
+    url: "https://cdn.example/master.m3u8",
+    language: "MULTI",
+    audioLanguages: ["en", "fr"],
+    hlsMasterAudioTracks: masterTracks,
+    hlsMasterAudioTrackLanguages: ["en", "fr"],
+    sourceLanguage: "en",
+    sourceLanguages: ["en", "fr"],
+    provider: "third-party-player",
+  }, device, { providerId: "example-hls" });
+  assert.equal(row.url, "https://cdn.example/master.m3u8");
+  assert.deepEqual(row.audioTracks, masterTracks);
+  assert.deepEqual(row.hlsMasterAudioTracks, masterTracks);
+  assert.deepEqual(row.audioLanguages, ["en", "fr"]);
+  assert.deepEqual(row.hlsMasterAudioTrackLanguages, ["en", "fr"]);
+  assert.equal(row.sourceLanguage, "en");
+  assert.deepEqual(row.sourceLanguages, ["en", "fr"]);
+  assert.equal(row.provider, "example-hls");
+  assert.deepEqual(row.provenance, {
+    providerId: "example-hls", sourceProvider: "third-party-player", source: null,
+  });
+}
+const specials = compareDeviceInvocations({
+  tmdbId: "46296", mediaType: "tv", title: "Spartacus", season: 0, episode: 1,
+});
+assert.equal(specials.consistent, true);
+for (const device of ["mobile", "desktop", "tv"]) {
+  assert.deepEqual(specials.invocations[device].positionalArgs, ["46296", "tv", 0, 1]);
+}
+
 const dimensions = toRuntimeStream({
   url: "https://cdn.example/master.m3u8", width: 3840, height: 2160,
   resolution: "3840x2160", title: "Source",
