@@ -324,7 +324,7 @@
         "version_code": 1045
       },
       "current_audited": {
-        "ref": "3ff5e2b41a9dba282c57e7602e401df09dabe703",
+        "ref": "67bbb3c3f3be2235e3abb7fda9c4670f97df8448",
         "version_name": "1.2.0-beta.2",
         "version_code": 1079
       },
@@ -350,7 +350,7 @@
           "app/src/main/java/com/nuvio/tv/domain/model/Subtitle.kt",
           "app/src/main/java/com/nuvio/tv/data/remote/dto/SubtitleResponseDto.kt"
         ],
-        "audited_change": "2026-11-17: exact current-source re-audit at dev 3ff5e2b41a9d. Since 5b371fcd0d7e, two commits change only TmdbMetadataService person-filmography filtering for talk-show guest appearances plus tests; no configured provider/plugin/stream/player semantic path changed. getStreams, QuickJS transport, stream URL/header projection, audio-track enumeration/selection, provider grouping/fallback identity and expired-link same-addon refresh remain unchanged. Exact Android-TV Native Lab proof remains required.",
+        "audited_change": "2026-11-18 exact source re-audit at NuvioTV dev 67bbb3c3f3be. Across 21 commits / 58 files since 3ff5e2b41a9d, PluginRuntime, PluginManager, StreamRepository and getStreams transport are unchanged. Subtitle DTO/domain changes only add optional label while preserving url/lang/headers; StreamMapper and SubtitleRepository map that label additively. Player deltas add background-trailer handoff, fail-soft runtime buffer overrides and Dolby Vision diagnostics; no audio-track enumeration/selection or provider stream/header ownership path changed. Upstream full debug build workflow 44343356067 succeeded on this exact head. Source ABI is compatible; exact Android-TV Native Lab decoded playback/audio-language proof remains required.",
         "runtime_validation": "execute NuvioTV's own Android-TV QuickJS/host implementation; Desktop/Mobile success is never TV proof",
         "runtime_family_equivalent_to_sibling_clients": false,
         "official_getStreams_error_behavior": "application runtime catches JavaScript getStreams errors and captures []",
