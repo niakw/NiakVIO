@@ -1,15 +1,16 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44400860352",
-  "sourceTriggerSha": "7ffd78262450b52d251d632ba87ed338d204f0c2",
-  "unresolvedProviderCount": 69,
-  "dynamicVariantProviderCount": 6,
+  "sourceRunId": "44419640637",
+  "sourceTriggerSha": "d647a5f6ce5bdee416015df78764a82a704f1755",
+  "unresolvedProviderCount": 68,
+  "dynamicVariantProviderCount": 7,
   "dynamicVariantProviders": [
     "hindmoviez",
     "meowtv",
     "movix-fr",
     "nakios",
     "papadustream",
+    "sadisflix",
     "stigstream"
   ],
   "lifecycleSuppressedDynamicProviders": [
@@ -126,8 +127,8 @@
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": false,
-  "groupCount": 10,
+  "dynamicVariantFallbackUsed": true,
+  "groupCount": 11,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -159,10 +160,11 @@
         "native-policy-reachable",
         "no-transport-evidence",
         "residential-exit-all-challenged",
-        "residential-exit-browser-reachable"
+        "residential-exit-browser-reachable",
+        "residential-exit-native-reachable"
       ],
       "transportSignature": "not-applicable",
-      "providerCount": 39,
+      "providerCount": 38,
       "providers": [
         "1jour1film0626",
         "anikototv",
@@ -172,7 +174,6 @@
         "boredflix",
         "cinegram",
         "cinemabz",
-        "cinematheque-de-bretagne",
         "cinetimes",
         "dulourd",
         "emnexmovies",
@@ -285,11 +286,10 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 6,
+      "providerCount": 5,
       "providers": [
         "67movies",
         "corsflix",
-        "nakios",
         "primewire",
         "sadisflix",
         "shuttletv"
@@ -299,7 +299,7 @@
         "provider-census-status.json:brainCheckRequired"
       ],
       "dynamicVariantProviders": [
-        "nakios"
+        "sadisflix"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
@@ -314,29 +314,27 @@
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "chain",
-        "lookup",
-        "none"
+        "lookup"
       ],
       "dominantIssues": [
         "network_zero_result",
-        "provider_returned_streams",
-        "waf_challenge"
+        "provider_returned_streams"
       ],
-      "harnessTransportClasses": [
-        "residential-exit-all-challenged"
-      ],
+      "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
       "providerCount": 3,
       "providers": [
-        "french-anime",
         "frenchstream",
+        "nakios",
         "streamzo"
       ],
       "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [],
+      "dynamicVariantProviders": [
+        "nakios"
+      ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -369,42 +367,42 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "learning|direct_media|runtime:direct_media",
-      "repairScope": "learning",
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-all-challenged",
+      "repairScope": "harness-compatibility",
       "runtimeFamilies": [
-        "direct_media"
+        "mixed_embed_resolver"
       ],
-      "runtimeFamilySignature": "direct_media",
-      "capabilityStrategy": "direct_media",
+      "runtimeFamilySignature": "not-applicable",
+      "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "lookup"
+        "none"
       ],
       "dominantIssues": [
-        "timeout"
+        "waf_challenge"
       ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
+      "harnessTransportClasses": [
+        "residential-exit-all-challenged"
+      ],
+      "transportSignature": "residential-exit-all-challenged",
       "providerCount": 1,
       "providers": [
-        "hindmoviez"
+        "french-anime"
       ],
-      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
+      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [
-        "hindmoviez"
-      ],
+      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "route-to-terminal|mixed_embed_resolver|runtime:mixed_embed_resolver",
-      "repairScope": "route-to-terminal",
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-inconclusive",
+      "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
+      "runtimeFamilySignature": "not-applicable",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "lookup"
@@ -415,12 +413,12 @@
       "harnessTransportClasses": [
         "residential-exit-inconclusive"
       ],
-      "transportSignature": "not-applicable",
+      "transportSignature": "residential-exit-inconclusive",
       "providerCount": 1,
       "providers": [
         "moiflix"
       ],
-      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
+      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -437,7 +435,7 @@
       "runtimeFamilySignature": "sitemap-script-family",
       "capabilityStrategy": "html_scraper",
       "evidenceDepths": [
-        "lookup"
+        "chain"
       ],
       "dominantIssues": [
         "network_http_error"
@@ -468,7 +466,7 @@
         "chain"
       ],
       "dominantIssues": [
-        "timeout"
+        "none"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
@@ -482,6 +480,36 @@
       ],
       "dynamicVariantProviders": [
         "meowtv"
+      ],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "variant-coverage|direct_media|runtime:direct_media",
+      "repairScope": "variant-coverage",
+      "runtimeFamilies": [
+        "direct_media"
+      ],
+      "runtimeFamilySignature": "direct_media",
+      "capabilityStrategy": "direct_media",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "none"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "hindmoviez"
+      ],
+      "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
+      "selectionAuthorities": [
+        "provider-census-sharded-latest.json:dynamic-variant-debt"
+      ],
+      "dynamicVariantProviders": [
+        "hindmoviez"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
