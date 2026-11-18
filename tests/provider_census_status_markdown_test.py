@@ -18,6 +18,7 @@ report = {
         {"provider_id": "full", "semantic_type": "tv", "status": "playable_verified", "verified": 1, "contradictions": 0, "debug_stage": "provider_returned_streams", "sample_count": 1},
         {"provider_id": "partial", "semantic_type": "movie", "status": "playable_verified", "verified": 1, "contradictions": 0, "debug_stage": "provider_returned_streams", "sample_count": 1},
         {"provider_id": "partial", "semantic_type": "tv", "status": "no_streams", "verified": 0, "contradictions": 0, "debug_stage": "provider_network_http_error", "sample_count": 1},
+        {"provider_id": "proof-refresh", "semantic_type": "movie", "status": "playable_unverified", "verified": 0, "contradictions": 0, "debug_stage": "provider_returned_streams", "raw": 1, "playable": 1, "sample_count": 1},
         {"provider_id": "no-proof", "semantic_type": "anime", "status": "no_streams", "verified": 0, "contradictions": 0, "debug_stage": "provider_network_zero_result", "debug_progress_stage": "lookup_only", "sample_count": 4, "samples": []},
         {"provider_id": "chain", "semantic_type": "movie", "status": "no_streams", "verified": 0, "contradictions": 0, "debug_stage": "provider_network_zero_result", "debug_progress_stage": "chain_reached", "sample_count": 1, "samples": []},
         {"provider_id": "candidate", "semantic_type": "anime", "status": "no_streams", "verified": 0, "contradictions": 0, "debug_stage": "provider_network_zero_result", "debug_progress_stage": "lookup_only", "sample_count": 1, "samples": []},
@@ -79,6 +80,10 @@ baseline = {
 rows = {row["provider"]: row for row in build_status_rows(report, history, baseline, candidate_evidence, provider_overrides, waf_browser_evidence)}
 assert rows["full"]["status"] == "FULL OK"
 assert rows["partial"]["status"] == "PARTIAL OK"
+assert rows["proof-refresh"]["status"] == "PROOF REFRESH REQUIRED"
+assert rows["proof-refresh"]["brainCheckRequired"] is False
+assert rows["proof-refresh"]["repairEligible"] is False
+assert "strict decoded/native playback proof" in rows["proof-refresh"]["action"]
 assert rows["no-proof"]["status"] == "NO PROOF"
 assert rows["chain"]["status"] == "CHAIN REACHED"
 assert rows["candidate"]["status"] == "CANDIDATE OK"
@@ -218,6 +223,7 @@ md = render(report, run_id="123", sha="abcdef0123456789", history=history, basel
 assert "🟢 **FULL OK**" in md
 assert "🟡 **PARTIAL OK**" in md
 assert "🟦 **CANDIDATE OK**" in md
+assert "🔹 **PROOF REFRESH REQUIRED**" in md
 assert "🟪 **ROUTE PROVEN**" in md
 assert "3 live routes / movie" in md
 assert "🔵 **NO PROOF**" in md
