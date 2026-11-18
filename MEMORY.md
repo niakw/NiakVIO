@@ -4785,3 +4785,10 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Exact Provider Non-Regression Gate run `44286045927` on `b05340b` failed only in `tests/provider_v3_workflow_ownership_test.py`: that older oracle still required `cancel-in-progress: false` for the release Finalizer even though the release-lane contract had just been intentionally corrected to latest-wins.
 - All preceding static/provider contracts in the same step passed. The stale assertion is updated to require `cancel-in-progress: true` and explicitly reject the old false setting. Domain Refresh keeps its separate queued-writer policy unchanged.
 - This is a test-oracle synchronization for the harness change, not a relaxation of provider non-regression behavior. A fresh exact Non-Regression Gate and Finalizer are required on the resulting main SHA.
+
+
+## 2026-11-18 — Release trigger coverage includes workflow-ownership acceptance oracle
+
+- The oracle-only fix on `643e4fc` corrected `tests/provider_v3_workflow_ownership_test.py`, but that file was not part of `release-finalize.yml` push paths. Therefore the current HEAD could pass/fail release ownership semantics without automatically receiving an exact Finalizer.
+- Added the workflow-ownership test to Finalizer trigger coverage. This keeps the release acceptance surface closed under its own policy tests: changing a blocking release-workflow oracle now automatically creates a latest-wins exact Finalizer.
+- The preceding Verify & Publish failure on `b05340b` was the same stale `cancel-in-progress:false` assertion already diagnosed; no separate provider/Core failure was exposed there.
