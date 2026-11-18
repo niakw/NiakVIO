@@ -537,6 +537,51 @@ redirect_rows = [row for row in found if row.get("source_type") == "source_redir
 assert redirect_rows and redirect_rows[0]["url"] == "https://demo-provider.example", found
 assert any(row.get("search_result_probe") for row in observed), observed
 
+# Rolling numeric address generations remain same-brand only when both sides
+# share the same long stem and differ solely by a four-digit revision suffix.
+versioned_cfg = {"aliases": ["1jour1film0626"], "blocked_hosts": []}
+assert resolver.same_brand(
+    "1jour1film0626",
+    "https://1jour1film1126.shop/",
+    versioned_cfg,
+)
+for unsafe in (
+    "https://cinesuper.lol/",
+    "https://miaw.tv/",
+    "https://fmhy.net/video",
+):
+    assert not resolver.same_brand("1jour1film0626", unsafe, versioned_cfg), unsafe
+
+_original_fetch = resolver.fetch
+try:
+    def fake_versioned_direct_redirect(url: str, timeout: float = 10.0):
+        assert url == "https://1jour1film0626.monster/"
+        return (
+            200,
+            "https://1jour1film1126.shop/",
+            "<html><title>1jour1film</title></html>",
+            {"Content-Type": "text/html"},
+        )
+    resolver.fetch = fake_versioned_direct_redirect
+    redirect_rows, redirect_observations = resolver._curated_direct_redirect_candidates(
+        "1jour1film0626",
+        {
+            **versioned_cfg,
+            "direct_authority": "explicit_current",
+            "direct_candidates": ["https://1jour1film0626.monster/"],
+        },
+        [{
+            "url": "https://1jour1film0626.monster/",
+            "source_type": "curated_direct",
+        }],
+        0.2,
+    )
+finally:
+    resolver.fetch = _original_fetch
+assert redirect_rows and redirect_rows[0]["url"] == "https://1jour1film1126.shop", redirect_rows
+assert redirect_rows[0]["source_type"] == "source_redirect", redirect_rows
+assert redirect_observations and redirect_observations[0]["redirect_discovery"] is True
+
 # Deep discovery uses Yandex first and DuckDuckGo as a bounded fallback.
 engines = resolver.search_engine_urls('example provider')
 yandex_url = urlparse(engines[0][1])
