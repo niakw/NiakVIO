@@ -4098,6 +4098,232 @@
       "executionAuditReason": "legacy_bloc_missing_materialization_proof"
     },
     {
+      "providerId": "papadustream",
+      "mutationFingerprint": "2b0baadd500bceb098ff7a1dfe5a0e19a2559cafedb90c96daabf9daae81beba",
+      "mutationContextFingerprint": "faad80808c6aa5f56ca8355dd15d284cd595f0f737666a2676ff4bdf060e8288",
+      "failures": 1,
+      "consecutiveFailures": 1,
+      "successes": 0,
+      "executionObserved": true,
+      "materializedMutationObserved": true,
+      "lastOutcome": "rejected",
+      "lastReason": "decoded_repair_no_new_fixture_control",
+      "lastMutationSummary": [
+        {
+          "scope": "provider_bloc",
+          "operation": "upsert",
+          "family": "papadustream"
+        }
+      ],
+      "repairFamily": {
+        "version": 2,
+        "key": "83cd919990911ba1ebe590f4758d105d45441b947b4bb9f41e6ce8f4c2c9a18e",
+        "failure": "chain-terminal-gap",
+        "status": "regression-provider-js",
+        "archetype": "chain-terminal-gap:dom-selector-container",
+        "mediaTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "signals": [
+          "class-prefix-family",
+          "mixed-tag-nested-container",
+          "nested-anchor-html",
+          "provider-http-2xx",
+          "provider-http-auth-or-challenge",
+          "response-html",
+          "response-json"
+        ],
+        "stages": [
+          "provider-returned-streams",
+          "provider-returned-streams×3"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ]
+      },
+      "mechanismFamily": "papadustream",
+      "lastBaselineCoverage": {
+        "streamsReturned": 0,
+        "streamsPlayable": 0,
+        "identityContradictions": 0,
+        "qualityHeights": [],
+        "announcedQualityHeights": [
+          360,
+          480,
+          720,
+          1080,
+          2160
+        ],
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 64,
+        "announcedVariantCandidates": 64,
+        "exploredPlayerRequests": 28,
+        "reachableHostCount": 0,
+        "fanoutStates": [
+          "announced-not-explored",
+          "explored-not-resolved"
+        ]
+      },
+      "lastCandidateCoverage": {
+        "streamsReturned": 2,
+        "streamsPlayable": 0,
+        "identityContradictions": 2,
+        "qualityHeights": [
+          360,
+          480
+        ],
+        "announcedQualityHeights": [
+          360,
+          480,
+          720,
+          1080,
+          2160
+        ],
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 64,
+        "announcedVariantCandidates": 127,
+        "exploredPlayerRequests": 28,
+        "reachableHostCount": 0,
+        "fanoutStates": [
+          "announced-not-explored",
+          "explored-not-resolved",
+          "returned-subset"
+        ]
+      },
+      "lastCoverageDelta": {
+        "streamsReturned": 2,
+        "streamsPlayable": 0,
+        "identityContradictions": 2,
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 0,
+        "announcedVariantCandidates": 63,
+        "exploredPlayerRequests": 0,
+        "reachableHostCount": 0,
+        "qualityHeightCount": 2
+      },
+      "lastCurrentSha": "076e1eadfdb58a632428e4d45303c93452272d9b",
+      "sourceNiakvioSha": "076e1eadfdb58a632428e4d45303c93452272d9b",
+      "sourceBrainLlmSha": "b3fb2a919551487b019de30d0436e6b93e8ec775"
+    },
+    {
+      "providerId": "papadustream",
+      "mutationFingerprint": "420e0cfe89494dd2dda6df5abece04e94e3a2abe82ca136fbb313c099bb63763",
+      "mutationContextFingerprint": "faad80808c6aa5f56ca8355dd15d284cd595f0f737666a2676ff4bdf060e8288",
+      "failures": 1,
+      "consecutiveFailures": 1,
+      "successes": 0,
+      "executionObserved": true,
+      "materializedMutationObserved": true,
+      "lastOutcome": "rejected",
+      "lastReason": "decoded_repair_fixture_regression:157336",
+      "lastMutationSummary": [
+        {
+          "scope": "provider_bloc",
+          "operation": "upsert",
+          "family": "papadustream"
+        }
+      ],
+      "repairFamily": {
+        "version": 2,
+        "key": "83cd919990911ba1ebe590f4758d105d45441b947b4bb9f41e6ce8f4c2c9a18e",
+        "failure": "chain-terminal-gap",
+        "status": "regression-provider-js",
+        "archetype": "chain-terminal-gap:dom-selector-container",
+        "mediaTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "signals": [
+          "class-prefix-family",
+          "mixed-tag-nested-container",
+          "nested-anchor-html",
+          "provider-http-2xx",
+          "provider-http-auth-or-challenge",
+          "response-html",
+          "response-json"
+        ],
+        "stages": [
+          "provider-returned-streams",
+          "provider-returned-streams×3"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ]
+      },
+      "mechanismFamily": "papadustream",
+      "lastBaselineCoverage": {
+        "streamsReturned": 2,
+        "streamsPlayable": 0,
+        "identityContradictions": 2,
+        "qualityHeights": [
+          360,
+          480
+        ],
+        "announcedQualityHeights": [
+          360,
+          480,
+          720,
+          1080,
+          2160
+        ],
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 64,
+        "announcedVariantCandidates": 126,
+        "exploredPlayerRequests": 28,
+        "reachableHostCount": 0,
+        "fanoutStates": [
+          "announced-not-explored",
+          "explored-not-resolved",
+          "returned-subset"
+        ]
+      },
+      "lastCandidateCoverage": {
+        "streamsReturned": 0,
+        "streamsPlayable": 0,
+        "identityContradictions": 0,
+        "qualityHeights": [],
+        "announcedQualityHeights": [
+          360,
+          480,
+          720,
+          1080,
+          2160
+        ],
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 64,
+        "announcedVariantCandidates": 99,
+        "exploredPlayerRequests": 28,
+        "reachableHostCount": 0,
+        "fanoutStates": [
+          "announced-not-explored",
+          "explored-not-resolved"
+        ]
+      },
+      "lastCoverageDelta": {
+        "streamsReturned": -2,
+        "streamsPlayable": 0,
+        "identityContradictions": -2,
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 0,
+        "announcedVariantCandidates": -27,
+        "exploredPlayerRequests": 0,
+        "reachableHostCount": 0,
+        "qualityHeightCount": -2
+      },
+      "lastCurrentSha": "076e1eadfdb58a632428e4d45303c93452272d9b",
+      "sourceNiakvioSha": "076e1eadfdb58a632428e4d45303c93452272d9b",
+      "sourceBrainLlmSha": "b3fb2a919551487b019de30d0436e6b93e8ec775"
+    },
+    {
       "providerId": "sekai",
       "mutationFingerprint": "d2ce130b40ac3b1c3fd621199ef78bd2ca8d7b7d8bd3c0cc5162b6833041015c",
       "mutationContextFingerprint": "3d9b2e2b2797021dfaae44860bab667f42b2d97cd76e74c895ca6ff4a97f1374",
