@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "43855893372",
-  "sourceTriggerSha": "75f010ed8be65cbfd0ae6815ae46d532a27e8aed",
-  "sourcePlanRunId": "43855893372",
-  "sourceVerdictRunId": "43857227000",
-  "providerCount": 62,
-  "groupCount": 15,
+  "sourceRunId": "44221592944",
+  "sourceTriggerSha": "3b6ec6830d6cb9ea236a8a50e28e38be29af3b1f",
+  "sourcePlanRunId": "44221592944",
+  "sourceVerdictRunId": "44226526037",
+  "providerCount": 73,
+  "groupCount": 12,
   "groups": [
     {
       "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver#r1",
@@ -19,34 +19,57 @@
         "none"
       ],
       "dominantIssues": [
-        "network_exception",
         "network_http_error",
         "network_zero_result",
+        "provider_returned_streams, timeout",
         "timeout",
         "waf_challenge"
       ],
-      "providerCount": 20,
+      "providerCount": 43,
       "providers": [
+        "1jour1film0626",
         "67movies",
+        "anikototv",
+        "animeonsen",
+        "anisama",
         "arrowtv",
         "boredflix",
-        "chillflix",
         "cinegram",
         "cinemabz",
-        "corsflix",
+        "cinematheque-de-bretagne",
+        "cinetimes",
+        "dulourd",
         "emnexmovies",
+        "fawesome",
+        "fexini",
+        "film-a-revoir",
         "flixer",
+        "franime",
+        "frembed",
+        "fullanime",
         "hexa",
+        "hianime",
+        "kidraz",
         "latestmovies",
         "moviebite",
         "movish",
+        "movix-fr",
+        "neobam",
         "neonflix",
         "overlook",
         "primewire",
         "pstream",
+        "sadisflix",
+        "showbox",
         "shuttletv",
+        "skstream",
+        "voirserie",
         "vuflix",
-        "watch-cartoon-online"
+        "watch-cartoon-online",
+        "waveanime",
+        "youtitou",
+        "zone-streaming",
+        "zone-telechargement"
       ],
       "networkSignature": "provider|not-probed",
       "debugStages": [],
@@ -70,10 +93,11 @@
         "network_exception",
         "network_http_error",
         "network_zero_result",
+        "provider_returned_streams, provider_returned_wrong_content",
         "timeout",
         "waf_challenge"
       ],
-      "providerCount": 14,
+      "providerCount": 16,
       "providers": [
         "anidb",
         "aniflix-uno",
@@ -86,6 +110,8 @@
         "reanime-to",
         "rivestream-app",
         "rivestream-ru",
+        "stigstream",
+        "topcartoons",
         "videasy",
         "vidlink",
         "watchott"
@@ -104,48 +130,20 @@
       "capabilityStrategy": "mixed_embed_resolver",
       "transportSignature": "not-applicable",
       "evidenceDepths": [
+        "chain",
         "lookup"
       ],
       "dominantIssues": [
-        "network_zero_result"
+        "network_zero_result",
+        "provider_returned_streams"
       ],
-      "providerCount": 7,
+      "providerCount": 5,
       "providers": [
-        "cinematheque-de-bretagne",
-        "fawesome",
-        "frembed",
-        "kidraz",
-        "neobam",
-        "youtitou",
-        "zone-telechargement"
-      ],
-      "networkSignature": "provider|not-probed",
-      "debugStages": [],
-      "networkShape": [],
-      "observedHostCount": 0,
-      "splitReason": "observed-signature-divergence",
-      "executionPolicy": "batch-first"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-all-challenged#r1",
-      "parentGroupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-all-challenged",
-      "repairScope": "harness-compatibility",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "transportSignature": "residential-exit-all-challenged",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "providerCount": 6,
-      "providers": [
-        "animeonsen",
-        "cinetimes",
-        "fexini",
-        "franime",
-        "fullanime",
-        "waveanime"
+        "frenchstream",
+        "mugiwarastream",
+        "nakios",
+        "neko-sama",
+        "streamzo"
       ],
       "networkSignature": "provider|not-probed",
       "debugStages": [],
@@ -155,48 +153,20 @@
       "executionPolicy": "batch-first"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-inconclusive#r1",
-      "parentGroupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-inconclusive",
-      "repairScope": "harness-compatibility",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "transportSignature": "residential-exit-inconclusive",
-      "evidenceDepths": [
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "providerCount": 4,
-      "providers": [
-        "1jour1film0626",
-        "dulourd",
-        "french-anime",
-        "moiflix"
-      ],
-      "networkSignature": "provider|not-probed",
-      "debugStages": [],
-      "networkShape": [],
-      "observedHostCount": 0,
-      "splitReason": "shared-signature",
-      "executionPolicy": "batch-first"
-    },
-    {
-      "groupId": "variant-coverage|mixed_embed_resolver|runtime:mixed_embed_resolver#r1",
-      "parentGroupId": "variant-coverage|mixed_embed_resolver|runtime:mixed_embed_resolver",
-      "repairScope": "variant-coverage",
+      "groupId": "candidate-replay|mixed_embed_resolver|runtime:mixed_embed_resolver#r1",
+      "parentGroupId": "candidate-replay|mixed_embed_resolver|runtime:mixed_embed_resolver",
+      "repairScope": "candidate-replay",
       "capabilityStrategy": "mixed_embed_resolver",
       "transportSignature": "not-applicable",
       "evidenceDepths": [
-        "chain"
+        "lookup"
       ],
       "dominantIssues": [
-        "network_zero_result"
+        "provider_returned_streams"
       ],
-      "providerCount": 2,
+      "providerCount": 1,
       "providers": [
-        "movix-fr",
-        "nakios"
+        "french-manga"
       ],
       "networkSignature": "provider|not-probed",
       "debugStages": [],
@@ -229,34 +199,11 @@
       "executionPolicy": "batch-first"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:native-policy-reachable#r1",
-      "parentGroupId": "harness-compatibility|mixed_embed_resolver|harness:native-policy-reachable",
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-all-challenged#r1",
+      "parentGroupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-all-challenged",
       "repairScope": "harness-compatibility",
       "capabilityStrategy": "mixed_embed_resolver",
-      "transportSignature": "native-policy-reachable",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "providerCount": 1,
-      "providers": [
-        "skstream"
-      ],
-      "networkSignature": "provider|not-probed",
-      "debugStages": [],
-      "networkShape": [],
-      "observedHostCount": 0,
-      "splitReason": "shared-signature",
-      "executionPolicy": "batch-first"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-browser-reachable#r1",
-      "parentGroupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-browser-reachable",
-      "repairScope": "harness-compatibility",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "transportSignature": "residential-exit-browser-reachable",
+      "transportSignature": "residential-exit-all-challenged",
       "evidenceDepths": [
         "none"
       ],
@@ -265,7 +212,7 @@
       ],
       "providerCount": 1,
       "providers": [
-        "voirserie"
+        "french-anime"
       ],
       "networkSignature": "provider|not-probed",
       "debugStages": [],
@@ -275,11 +222,11 @@
       "executionPolicy": "batch-first"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable#r1",
-      "parentGroupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable",
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-inconclusive#r1",
+      "parentGroupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-inconclusive",
       "repairScope": "harness-compatibility",
       "capabilityStrategy": "mixed_embed_resolver",
-      "transportSignature": "residential-exit-native-reachable",
+      "transportSignature": "residential-exit-inconclusive",
       "evidenceDepths": [
         "lookup"
       ],
@@ -288,7 +235,7 @@
       ],
       "providerCount": 1,
       "providers": [
-        "film-a-revoir"
+        "moiflix"
       ],
       "networkSignature": "provider|not-probed",
       "debugStages": [],
@@ -298,64 +245,46 @@
       "executionPolicy": "batch-first"
     },
     {
-      "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver#r2",
-      "parentGroupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+      "groupId": "learning|html_scraper|runtime:html_scraper#r1",
+      "parentGroupId": "learning|html_scraper|runtime:html_scraper",
       "repairScope": "learning",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "transportSignature": "not-applicable",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "network_zero_result"
-      ],
-      "providerCount": 1,
-      "providers": [
-        "frenchstream"
-      ],
-      "networkSignature": "provider|provider_network_zero_result||anime:GET:200:/search/super-dragon-ball-heroes;anime:GET:200:/xfsearch/ftagz/superhero;anime:GET:200:/xfsearch/xx89/supernatural;anime:GET:200:/{id}/tv/{id};movie:GET:200:/films/romances;movie:GET:200:/romance-series-;movie:GET:200:/search/spider-man-homecoming;movie:GET:200:/xfsearch/lang/Allemand;movie:GET:200:/xfsearch/xx89/romance;movie:GET:200:/{id}/movie/{id};tv:GET:200:/search/adolescence;tv:GET:200:/xfsearch/date-de-sortie/{id};tv:GET:200:/{id}/tv/{id}",
-      "debugStages": [
-        "provider_network_zero_result"
-      ],
-      "networkShape": [
-        "anime:GET:200:/search/super-dragon-ball-heroes",
-        "anime:GET:200:/xfsearch/ftagz/superhero",
-        "anime:GET:200:/xfsearch/xx89/supernatural",
-        "anime:GET:200:/{id}/tv/{id}",
-        "movie:GET:200:/films/romances",
-        "movie:GET:200:/romance-series-",
-        "movie:GET:200:/search/spider-man-homecoming",
-        "movie:GET:200:/xfsearch/lang/Allemand",
-        "movie:GET:200:/xfsearch/xx89/romance",
-        "movie:GET:200:/{id}/movie/{id}",
-        "tv:GET:200:/search/adolescence",
-        "tv:GET:200:/xfsearch/date-de-sortie/{id}",
-        "tv:GET:200:/{id}/tv/{id}"
-      ],
-      "observedHostCount": 2,
-      "splitReason": "observed-signature-divergence",
-      "executionPolicy": "batch-first"
-    },
-    {
-      "groupId": "terminal-extraction|html_scraper|runtime:html_scraper#r1",
-      "parentGroupId": "terminal-extraction|html_scraper|runtime:html_scraper",
-      "repairScope": "terminal-extraction",
       "capabilityStrategy": "html_scraper",
       "transportSignature": "not-applicable",
       "evidenceDepths": [
         "chain"
       ],
       "dominantIssues": [
-        "timeout"
+        "provider_returned_streams"
       ],
       "providerCount": 1,
       "providers": [
-        "stigstream"
+        "papadustream"
       ],
-      "networkSignature": "provider|timeout||",
-      "debugStages": [
-        "timeout"
+      "networkSignature": "provider|not-probed",
+      "debugStages": [],
+      "networkShape": [],
+      "observedHostCount": 0,
+      "splitReason": "shared-signature",
+      "executionPolicy": "batch-first"
+    },
+    {
+      "groupId": "learning|official_domain_hub|runtime:official_domain_hub#r1",
+      "parentGroupId": "learning|official_domain_hub|runtime:official_domain_hub",
+      "repairScope": "learning",
+      "capabilityStrategy": "official_domain_hub",
+      "transportSignature": "not-applicable",
+      "evidenceDepths": [
+        "chain"
       ],
+      "dominantIssues": [
+        "provider_returned_streams"
+      ],
+      "providerCount": 1,
+      "providers": [
+        "purstream"
+      ],
+      "networkSignature": "provider|not-probed",
+      "debugStages": [],
       "networkShape": [],
       "observedHostCount": 0,
       "splitReason": "shared-signature",
@@ -371,51 +300,47 @@
         "chain"
       ],
       "dominantIssues": [
-        "network_zero_result",
-        "waf_challenge"
+        "network_http_error"
       ],
       "providerCount": 1,
       "providers": [
-        "showbox"
+        "corsflix"
       ],
       "networkSignature": "provider|not-probed",
       "debugStages": [],
       "networkShape": [],
       "observedHostCount": 0,
-      "splitReason": "observed-signature-divergence",
+      "splitReason": "shared-signature",
       "executionPolicy": "batch-first"
     },
     {
-      "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver#r2",
-      "parentGroupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
-      "repairScope": "terminal-extraction",
-      "capabilityStrategy": "mixed_embed_resolver",
+      "groupId": "transport|html_scraper|runtime:sitemap-script-family#r1",
+      "parentGroupId": "transport|html_scraper|runtime:sitemap-script-family",
+      "repairScope": "transport",
+      "capabilityStrategy": "html_scraper",
       "transportSignature": "not-applicable",
       "evidenceDepths": [
         "chain"
       ],
       "dominantIssues": [
-        "network_zero_result",
-        "waf_challenge"
+        "network_http_error"
       ],
       "providerCount": 1,
       "providers": [
-        "hianime"
+        "sekai"
       ],
-      "networkSignature": "provider|timeout||",
-      "debugStages": [
-        "timeout"
-      ],
+      "networkSignature": "provider|not-probed",
+      "debugStages": [],
       "networkShape": [],
       "observedHostCount": 0,
-      "splitReason": "observed-signature-divergence",
+      "splitReason": "shared-signature",
       "executionPolicy": "batch-first"
     },
     {
-      "groupId": "variant-coverage|html_scraper|runtime:html_scraper#r1",
-      "parentGroupId": "variant-coverage|html_scraper|runtime:html_scraper",
+      "groupId": "variant-coverage|api_stream_resolver|runtime:api_stream_resolver#r1",
+      "parentGroupId": "variant-coverage|api_stream_resolver|runtime:api_stream_resolver",
       "repairScope": "variant-coverage",
-      "capabilityStrategy": "html_scraper",
+      "capabilityStrategy": "api_stream_resolver",
       "transportSignature": "not-applicable",
       "evidenceDepths": [
         "chain"
@@ -425,7 +350,7 @@
       ],
       "providerCount": 1,
       "providers": [
-        "papadustream"
+        "meowtv"
       ],
       "networkSignature": "provider|not-probed",
       "debugStages": [],
