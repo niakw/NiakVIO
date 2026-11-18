@@ -240,6 +240,11 @@ regression = {
 }
 assert module.current_architecture_nonfunctional(regression) is True
 assert module.current_architecture_nonfunctional({**regression,"testedThisRun":False}) is False
+proof_refresh = {
+    "provider":"demo","status":"PROOF REFRESH REQUIRED","testedThisRun":True,
+    "brainCheckRequired":False,"repairEligible":False,
+}
+assert module.current_architecture_nonfunctional(proof_refresh) is False
 
 # Missing current-byte positive proof is a freshness/validation debt, not
 # evidence that the provider stopped functioning. This guards against mass
