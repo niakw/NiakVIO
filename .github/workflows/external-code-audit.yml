@@ -82,6 +82,10 @@ jobs:
         if: always()
         run: python3 scripts/external_audit/build_index.py
 
+      - name: Validate external-audit scope policy
+        if: always()
+        run: python3 tests/external_audit_scope_policy_test.py
+
       - name: Classify maintained-source findings
         if: always()
         run: python3 scripts/external_audit/classify_findings.py --root "$OUT" --strict

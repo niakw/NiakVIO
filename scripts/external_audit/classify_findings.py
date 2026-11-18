@@ -13,7 +13,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Iterable
 
-DERIVED_PREFIXES = ("providers/", "native-hub46/")
+DERIVED_PREFIXES = ("providers/", "provider-disabled/", "native-hub46/")
 HISTORICAL_PREFIXES = ("provider-old/", "upstream-lkg/")
 EVIDENCE_PREFIXES = ("audit/", "automation/evidence/", "health-output/")
 MAINTAINED_PREFIXES = (
@@ -48,7 +48,11 @@ def norm_path(value: object) -> str:
         left, right = path.split(":", 1)
         if "/" not in left and "/" in right:
             path = right
-    return path.lstrip("./")
+    # Strip an explicit relative-path prefix without erasing a repository
+    # directory whose actual name starts with a dot (notably .github/).
+    while path.startswith("./"):
+        path = path[2:]
+    return path.lstrip("/")
 
 
 def scope(path: str) -> str:
