@@ -1,3 +1,10 @@
+## 2026-11-18 — Memory-aware Sekai A/B generated a real candidate, then exposed a cross-helper semantic transplant
+
+- Private-guided A/B `44370331940`, Brain `802ad5c0039c4338c4e1c36fd11c6b41479898d5`, source NiakVIO `01fdc866818c827ca4aaf542fa850b2beffef6c7`, improved over baseline `44367715216`: baseline had 4/4 no-op/abstention and `0` executable mutation; memory-aware exact-unit ranking produced **1 sanitized executable FORCE row** for Sekai (`FIELD_NIAKVIO_FORCE_MUTATIONS_READY ready=true providers=1`). This is generation progress only, not repair proof.
+- Artifact `14459391370` mutation fingerprint `8cfb3a40e263d9f46e830a2882a46d90a7d4e99b51a0c5dcb563f27eda093adb` selected a provider_bloc unit containing episode-offset/index logic, but replacement was effectively a different current helper's title/alternative-title body. It was syntactically executable but causally wrong. Do **not** apply/publish it as provider repair.
+- Brain infrastructure reacted generically: `69fe7273` rejects an explicit sibling helper wrapper for a selected exact unit and rejects a raw replacement body that exactly copies another current named helper; `785fcc9a` added regressions, initial CI exposed one stale test, `b16c96c1` corrected it and CI passed. This converts the bad model proposal into a reusable Brain guard rather than a Sekai-specific manual patch.
+- Fresh current-main regeneration is running on Brain trigger `c9fe352e` against provider bytes sourced from NiakVIO `f3b8c8d9`; Brain main must remain unchanged until publication. Only a new materially different candidate may proceed to canonical apply/materialize/execute/decoded media/identity/non-regression.
+
 ## 2026-11-18 — Brain submodule synchronized to validated memory-aware runtime
 
 - NiakVIO's committed `brain-llm` gitlink was still `cb1fddf4ee8b06be9a29bb0a69f1210d925cb93e` while private/hosted workflows separately pinned current Brain main. This could make local/submodule tests exercise a different Brain than Actions.
