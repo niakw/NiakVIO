@@ -48,6 +48,18 @@ jobs:
         run: |
           set -euo pipefail
           python tests/brain_hosted_representative_selection_test.py
+          # This lane performs genuine FORCE proposal + candidate replay.
+          # The separately green Learning Lab is advisor-only and cannot
+          # establish a repaired provider by itself.
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          phase=json.loads(Path('automation/execution-phase.json').read_text(encoding='utf-8'))
+          print('FIELD_BRAIN_HOSTED_PILOT phase='+str(phase.get('phase'))
+                +' current_sha='+str(os.environ.get('GITHUB_SHA') or '')
+                +' task=single-provider-exact-source-force'
+                +' automatic_fleet='+str(phase.get('automatic_brain_repair') is True).lower())
+          PY
           python scripts/select_brain_hosted_representative.py \
             --census automation/provider-census-status.json \
             --evidence-dir automation/hosted-repair-evidence \
