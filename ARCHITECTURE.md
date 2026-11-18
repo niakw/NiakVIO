@@ -607,15 +607,17 @@ Provider ownership and terminal playback provenance are separate. Nuvio groups a
 Stream Score numeric 0-100 remains an internal scoring primitive. Runtime/client projection exposes the score state and grade letter/badge only; it must not expose `x/100` as user-facing metadata.
 
 
-### Oracle réseau résidentiel MacBridge
+### Oracle réseau résidentiel indépendant — Tailscale prioritaire, MacBridge facultatif
 
-NiakVIO ne doit jamais conclure qu'un provider, un domaine ou une route est cassé à partir d'un **échec réseau GitHub-hosted seul** lorsque l'origine réseau peut être causale. Les cas concernés incluent au minimum : DNS, timeout, TLS/route, `401/403/429`, challenge/anti-bot et résultat vide après une requête provider réellement émise.
+NiakVIO ne conclut jamais qu'un provider, un domaine ou une route est cassé sur un **échec réseau GitHub-hosted seul**. Cela couvre DNS, timeout, TLS/route, `401/403/429`, challenge/anti-bot et zéro résultat après une vraie requête provider. La validation séparée du fournisseur, du terminal média et de l'identité reste obligatoire.
 
-Dans ces cas, `niakw/NiakGH-MacBridge` est l'oracle résidentiel de contradiction obligatoire avant mutation/disable provider ou décision Domain basée sur cet échec. La lane Tailscale résidentielle reste une autre preuve utile ; MacBridge devient obligatoire lorsqu'elle est absente/inconclusive ou lorsqu'il faut reproduire le comportement depuis le Mac/réseau utilisateur réel. Un succès MacBridge contredit un échec GitHub et renvoie la cause vers WAF/DNS/ASN/client transport. Un échec MacBridge corrobore l'observation mais ne prouve pas, à lui seul, un défaut de logique provider.
+La lane `Provider WAF Browser Session Diagnostics` utilise **GitHub Actions + Tailscale + nœud résidentiel privé déjà autorisé**. Elle compare HTTP, navigateur ordinaire, profil client et replay provider sous deux origines réseau, sans dépendre des quotas de NiakGH MacBridge ni de Desktop Commander. Le run `44361421016` a démontré que la connexion Tailscale, la sélection de la sortie privée, les profils résidentiels et le replay de providers s'exécutent avec succès. Une connexion Tailscale réussie n'implique toutefois pas que chaque WAF accepte le client.
 
-Hiérarchie de preuve : exact-byte native playback > full provider replay résidentiel > MacBridge browser/provider replay > MacBridge HTTP/DNS seed > GitHub-hosted HTTP seed.
+NiakGH MacBridge reste un **oracle secondaire facultatif** quand le runner Mac est accessible ou qu'une différence propre à la connexion Mac réelle doit être étudiée. L'épuisement de ses quotas ne bloque plus les comparaisons Tailscale. Si aucun oracle indépendant n'est disponible, l'état est `transport non qualifié` : on conserve le provider, on évite de lui attribuer une panne de code et on ne modifie ni domaine ni activation sur cette seule preuve GitHub.
 
-Les tests déterministes (syntaxe, compilation, matérialisation, fixed point, contrats purs) restent sur CI et **ne nécessitent pas** MacBridge.
+Hiérarchie : exact-byte native playback > full provider replay résidentiel > profils navigateur/client via Tailscale > MacBridge browser/provider replay > MacBridge HTTP/DNS seed > GitHub-hosted HTTP seed. Les probes réseau ne prouvent ni le décodage terminal ni le bon épisode.
+
+Les challenges CAPTCHA/Turnstile ou connexions nécessitant une autorisation ne sont pas résolus automatiquement, les cookies/jetons de clearance ne sont pas exportés, et aucune modification des protections d'un site n'est tentée. Un WAF qui persiste sous les deux sorties reste `external_access_blocked` ou `inconclusive` selon les preuves, et non « provider réparé ». Les tests déterministes (syntaxe, compilation, matérialisation, fixed-point) restent sur CI sans réseau résidentiel.
 
 ### WAF / client transport : ordre causal de preuve
 
