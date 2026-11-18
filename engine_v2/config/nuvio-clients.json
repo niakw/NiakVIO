@@ -122,9 +122,9 @@
     "tv": {
       "repository": "NuvioMedia/NuvioTV",
       "branch": "dev",
-      "audited_ref": "3ff5e2b41a9dba282c57e7602e401df09dabe703",
-      "accepted_ref": "3ff5e2b41a9dba282c57e7602e401df09dabe703",
-      "observed_head": "3ff5e2b41a9dba282c57e7602e401df09dabe703",
+      "audited_ref": "67bbb3c3f3be2235e3abb7fda9c4670f97df8448",
+      "accepted_ref": "67bbb3c3f3be2235e3abb7fda9c4670f97df8448",
+      "observed_head": "67bbb3c3f3be2235e3abb7fda9c4670f97df8448",
       "platforms": [
         "android-tv"
       ],
@@ -141,7 +141,7 @@
         ]
       },
       "supports_subtitles_in_plugin_result": true,
-      "head_delta_note": "2026-08-16 targeted review from cd864c6988ff to 6db5c38bb77: 17 commits. No plugin runtime, StreamRepository, Plugin model or PlayerMediaSourceFactory path changed. Player changes are subtitle/Matroska/audio/runtime work; current initialization still propagates provider headers into media probing and both player engines. Accepted as provider-contract compatible; watcher remains active for later drift.",
+      "head_delta_note": "2026-11-18 audited 21-commit delta from 3ff5e2b41a9d to 67bbb3c3f3be. Optional subtitle label is additive; trailer/buffer/Dolby Vision changes are reader-side. Provider/QuickJS/getStreams/stream URL+headers/audio selection contracts remain source-compatible. Upstream full debug build 44343356067 is green; native playback proof remains separate.",
       "contract_paths": [
         "app/src/full/java/com/nuvio/tv/core/plugin/",
         "app/src/main/java/com/nuvio/tv/core/network/IPv4FirstDns.kt",
@@ -160,7 +160,7 @@
         "app/build.gradle.kts",
         "gradle/libs.versions.toml"
       ],
-      "audit_note": "2026-11-17: exact current-source re-audit at dev 3ff5e2b41a9d. Since 5b371fcd0d7e, two commits change only TmdbMetadataService person-filmography filtering for talk-show guest appearances plus tests; no configured provider/plugin/stream/player semantic path changed. getStreams, QuickJS transport, stream URL/header projection, audio-track enumeration/selection, provider grouping/fallback identity and expired-link same-addon refresh remain unchanged. Exact Android-TV Native Lab proof remains required."
+      "audit_note": "2026-11-18 exact source re-audit at NuvioTV dev 67bbb3c3f3be. Across 21 commits / 58 files since 3ff5e2b41a9d, PluginRuntime, PluginManager, StreamRepository and getStreams transport are unchanged. Subtitle DTO/domain changes only add optional label while preserving url/lang/headers; StreamMapper and SubtitleRepository map that label additively. Player deltas add background-trailer handoff, fail-soft runtime buffer overrides and Dolby Vision diagnostics; no audio-track enumeration/selection or provider stream/header ownership path changed. Upstream full debug build workflow 44343356067 succeeded on this exact head. Source ABI is compatible; exact Android-TV Native Lab decoded playback/audio-language proof remains required."
     }
   },
   "semantic_tokens": [
