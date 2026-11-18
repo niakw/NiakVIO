@@ -217,8 +217,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   function firstMediaUri(body,base){var rows=mediaUris(body,base,1);return rows.length?rows[0]:""}
   function playlistEncrypted(body){var lines=clean(body).match(/#EXT-X-KEY\s*:[^\n\r]*/gi)||[];for(var i=0;i<lines.length;i++){var m=lines[i].match(/METHOD\s*=\s*([^,\s]+)/i),method=clean(m&&m[1]).toUpperCase();if(method&&method!=="NONE")return true}return false}
   function segmentProof(bytes,contentType,url,hasMap,encrypted){
-    if(!bytes||!bytes.length)return {state:"unknown",reason:"segment_bytes_unavailable"};
     if(nonMediaPayload(bytes,contentType))return {state:"invalid",reason:"segment_non_media_payload"};
+    if(!bytes||!bytes.length)return {state:"unknown",reason:"segment_bytes_unavailable"};
     if(encrypted)return {state:"unknown",reason:"encrypted_segment"};
     var u=String(url||"").toLowerCase(),ct=String(contentType||"").toLowerCase();
     var aac=/\.aac(?:[?#]|$)/i.test(u)||/audio\/(?:aac|aacp)/i.test(ct);

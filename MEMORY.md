@@ -4684,3 +4684,11 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Release Finalizer on `68bc9f00` reached the HLS behavior tests and failed in `hls_master_facts_short_test.py` before the dead-audio case. The fixture created ten native HLS rows with `native_probe_max_rows=2` but still expected all ten rows, which encoded the former facts-only overflow behavior.
 - The v17 contract intentionally honors `drop_unprobed_hls_after_budget=true`: only the two segment-probed rows may survive. The test now expects two enriched/proven rows. The separate explicit opt-out test continues to prove that facts-only overflow remains available only when the drop flag is false.
 - This is a test-oracle correction, not a relaxation of media validation. The advertised dead-audio-rendition case remains in the same test and must still pass before release finalization.
+
+
+## 2026-11-18 — HLS dead-audio failure traced to text-only runtime segment classification
+
+- Finalizer on `0ab1e02a` reached the new `native-dead-audio` regression and correctly exposed a real Core gap: an advertised HLS audio rendition resolved to a media playlist whose segment returned `Content-Type: text/html`, but the fixture/runtime response exposed `text()` without `arrayBuffer()/body`.
+- `responseBytes()` therefore produced an empty byte array and `segmentProof()` returned `segment_bytes_unavailable` before consulting the already-known non-media Content-Type. Because the default HLS policy does not fail closed on generic network unknowns, the dead audio rendition survived.
+- `segmentProof()` now checks deterministic non-media Content-Type/prefix evidence before the empty-byte fallback. HTML/JSON/text segment responses are conclusively invalid even on text-only host fetch bridges; truly byte-inaccessible media responses remain inconclusive rather than falsely rejected.
+- The existing `native-dead-audio` test is retained unchanged as the regression oracle and must pass in Finalizer before rematerialized provider bytes are accepted.
