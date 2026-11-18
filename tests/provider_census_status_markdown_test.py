@@ -12,7 +12,7 @@ from render_provider_census_status import build_status_rows, harness_transport_d
 from update_provider_census_proof_history import INFRA_STAGES, NETWORK_STAGES, TECHNICAL_STAGES
 
 report = {
-    "provider_count": 9,
+    "provider_count": 10,
     "rows": [
         {"provider_id": "full", "semantic_type": "movie", "status": "playable_verified", "verified": 1, "contradictions": 0, "debug_stage": "provider_returned_streams", "sample_count": 1},
         {"provider_id": "full", "semantic_type": "tv", "status": "playable_verified", "verified": 1, "contradictions": 0, "debug_stage": "provider_returned_streams", "sample_count": 1},
