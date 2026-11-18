@@ -130,6 +130,23 @@ for required in (
 ):
     assert required in workflow, required
 
+# A source-pinned FORCE candidate must not be discarded just because the
+# Brain updated historical MEMORY.md after generation. The exception is
+# ancestry-checked, fetched-main-pinned, and restricted to non-executable docs.
+# A modified src/, workflow, config, or policy still rejects the artifact.
+for required in (
+    "brain_runtime_compatible=false",
+    'git merge-base --is-ancestor "$artifact_brain_sha" "$current_brain_sha"',
+    'git rev-parse refs/remotes/niakvio-brain-llm/main',
+    'git diff --name-only "$artifact_brain_sha" "$current_brain_sha"',
+    'p=="MEMORY.md"',
+    'p.startswith("docs/") and p.endswith(".md")',
+    "FIELD_BRAIN_LLM_FORCE_NONRUNTIME_DRIFT accepted=true",
+    'if [ "$brain_runtime_compatible" != "true" ]; then',
+    "reason=stale-brain-force-artifact",
+):
+    assert required in workflow, required
+
 # Learning remains proposal/sandbox only and does not apply Force mutations.
 assert "Open or refresh Brain architecture PR" in learning
 assert "apply_brain_llm_force_mutations.py" not in learning
