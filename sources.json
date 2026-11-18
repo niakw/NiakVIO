@@ -2,7 +2,7 @@
   "schema_version": 69,
   "repository": {
     "name": "NiakVIO",
-    "manifest_version": "5.21.158",
+    "manifest_version": "5.21.159",
     "description": "NiakVIO-owned provider catalogue and routing policy. ProviderBase, structured DATA, owned Lego, official address discovery and validated runtime observations are the operational sources of truth. External provider repositories are not required for ordinary reconstruction or playback."
   },
   "selection_policy": {
@@ -128,16 +128,43 @@
     "external_provider_repository_required": false,
     "route_learning_owner": "NiakVIO"
   },
-  "manifest_version": "5.21.158",
+  "manifest_version": "5.21.159",
   "nuvio_client_compatibility": {
     "schema_version": 1,
     "policy": "accepted_ref may advance automatically only when hard and semantic runtime contract checks remain unchanged",
     "clients": {
       "nuvio-mobile": {
         "contract_ref": "dd0e84704df5e4d746e28b9d6556305332ff3483",
-        "accepted_ref": "dd0e84704df5e4d746e28b9d6556305332ff3483",
-        "accepted_at": "2026-11-17",
-        "acceptance": "contract-reaudited-current-head-watch-party-only-semantic-delta"
+        "accepted_ref": "b66f7725ca08f0455e5097797253a2d7ac432f84",
+        "accepted_at": "2026-11-18T11:43:30.199262+00:00",
+        "acceptance": "automatic-contract-safe-advance",
+        "changed_file_count": 23,
+        "observed_sensitive_changed_files": [],
+        "unrelated_changed_files": [
+          ".github/workflows/android-release.yml",
+          ".github/workflows/update-store-source.yml",
+          "README.md",
+          "composeApp/src/commonMain/composeResources/values/strings.xml",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/DownloadsDestinations.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/EpisodeRatingsAlignment.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/ImdbEpisodeRatingsRepository.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/MetaDetailsScreen.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/SeriesGraphApi.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadActionSheet.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadArtwork.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadDisplay.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadRows.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadSpeeds.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadWatchStatus.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadsRepository.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadsScreen.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/tmdb/TmdbMetadataService.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/trakt/TraktLibraryRepository.kt",
+          "composeApp/src/commonTest/kotlin/com/nuvio/app/features/details/EpisodeRatingsAlignmentTest.kt",
+          "composeApp/src/commonTest/kotlin/com/nuvio/app/features/tmdb/TmdbMetadataServiceTest.kt",
+          "iosApp/Configuration/Version.xcconfig",
+          "store-beta.json"
+        ]
       },
       "nuvio-desktop": {
         "contract_ref": "c0eb7bfa7c74820bd189a63a48ae364af8bb3058",
@@ -147,9 +174,17 @@
       },
       "nuvio-tv": {
         "contract_ref": "3ff5e2b41a9dba282c57e7602e401df09dabe703",
-        "accepted_ref": "3ff5e2b41a9dba282c57e7602e401df09dabe703",
-        "accepted_at": "2026-11-17",
-        "acceptance": "audited-tmdb-filmography-only-head-advance"
+        "accepted_ref": "2b02219d5e585ff976618f1ff3bb4703692b04ba",
+        "accepted_at": "2026-11-18T11:43:30.199262+00:00",
+        "acceptance": "automatic-contract-safe-advance",
+        "changed_file_count": 4,
+        "observed_sensitive_changed_files": [],
+        "unrelated_changed_files": [
+          "app/src/main/java/com/nuvio/tv/ui/screens/home/ModernHomeContent.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/home/ModernHomeRows.kt",
+          "app/src/main/res/values-fr/strings_servers.xml",
+          "app/src/main/res/values-sk/strings.xml"
+        ]
       }
     }
   }

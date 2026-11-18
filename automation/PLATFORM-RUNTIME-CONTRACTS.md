@@ -108,7 +108,7 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt`
 - Transport : `composeApp/src/androidMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.android.kt`
 - Modèle de résultat : `composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt`
-- Note d'audit : Exact current-source re-audit at NuvioMobile fc05fe8e516a. Provider/runtime bridge paths remain byte-identical to the prior audit and preserve positional getStreams, full result-list mapping, stream/subtitle headers and the TMDB_API_KEY bridge. The only new Mobile diff is Android MPV player integration/dependency code.
+- Note d'audit : Exact current-source re-audit at NuvioMobile dd0e84704df5. Provider/plugin/streams contract paths remain unchanged. A two-line common player Watch Party guard now refuses to share signed media-server streams with headers; ordinary provider playback/result/header/subtitle semantics and TMDB_API_KEY bridge remain unchanged. Native reader execution is still required.
 
 ### iOS
 
@@ -116,7 +116,7 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt`
 - Transport : `composeApp/src/iosMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.ios.kt`
 - Modèle de résultat : `composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt`
-- Note d'audit : Exact current-source re-audit at NuvioMobile fc05fe8e516a. Provider/runtime bridge paths remain byte-identical to the prior audit and preserve positional getStreams, full result-list mapping, stream/subtitle headers and the TMDB_API_KEY bridge. The only new Mobile diff is Android MPV player integration/dependency code.
+- Note d'audit : Exact current-source re-audit at NuvioMobile dd0e84704df5. Provider/plugin/streams contract paths remain unchanged. A two-line common player Watch Party guard now refuses to share signed media-server streams with headers; ordinary provider playback/result/header/subtitle semantics and TMDB_API_KEY bridge remain unchanged. Native reader execution is still required.
 
 ### macOS
 
@@ -124,7 +124,7 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt`
 - Transport : `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt`
 - Modèle de résultat : `composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt`
-- Note d'audit : 2026-11-17: exact current-source audit at Dev 65061186dde3. Since 3020193d8303, upstream changed only composeApp/src/desktopMain/kotlin/com/nuvio/app/features/discordrpc/DiscordIpcClient.kt (4 lines) to include the Discord IPC protocol version. No configured provider/plugin/streams contract path or player semantic-review path changed; positional getStreams, full result-list mapping, request/response headers, subtitles and the runtime TMDB_API_KEY bridge remain intact. macOS/Windows reader execution remains independently required.
+- Note d'audit : 2026-11-17: exact current-source re-audit at Dev c0eb7bfa7c74. Since 65061186dde3, 22 commits merge current Mobile/controller/media-server UI into Desktop. The configured streams-file deltas are focus/touch presentation only; provider/plugin QuickJS runtime, positional getStreams, full result-list mapping, request/response headers, subtitles and runtime TMDB_API_KEY bridge are unchanged. Player deltas add controller volume/seek and RTX HDR plumbing without changing audio-track enumeration/selection semantics. Exact macOS/Windows Native Labs remain required.
 
 ### Windows
 
@@ -132,7 +132,7 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt`
 - Transport : `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt`
 - Modèle de résultat : `composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt`
-- Note d'audit : 2026-11-17: exact current-source audit at Dev 65061186dde3. Since 3020193d8303, upstream changed only composeApp/src/desktopMain/kotlin/com/nuvio/app/features/discordrpc/DiscordIpcClient.kt (4 lines) to include the Discord IPC protocol version. No configured provider/plugin/streams contract path or player semantic-review path changed; positional getStreams, full result-list mapping, request/response headers, subtitles and the runtime TMDB_API_KEY bridge remain intact. macOS/Windows reader execution remains independently required.
+- Note d'audit : 2026-11-17: exact current-source re-audit at Dev c0eb7bfa7c74. Since 65061186dde3, 22 commits merge current Mobile/controller/media-server UI into Desktop. The configured streams-file deltas are focus/touch presentation only; provider/plugin QuickJS runtime, positional getStreams, full result-list mapping, request/response headers, subtitles and runtime TMDB_API_KEY bridge are unchanged. Player deltas add controller volume/seek and RTX HDR plumbing without changing audio-track enumeration/selection semantics. Exact macOS/Windows Native Labs remain required.
 
 ### Linux
 
@@ -140,7 +140,7 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt`
 - Transport : `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt`
 - Modèle de résultat : `composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt`
-- Note d'audit : 2026-11-17: exact current-source audit at Dev 65061186dde3. Since 3020193d8303, upstream changed only composeApp/src/desktopMain/kotlin/com/nuvio/app/features/discordrpc/DiscordIpcClient.kt (4 lines) to include the Discord IPC protocol version. No configured provider/plugin/streams contract path or player semantic-review path changed; positional getStreams, full result-list mapping, request/response headers, subtitles and the runtime TMDB_API_KEY bridge remain intact. macOS/Windows reader execution remains independently required.
+- Note d'audit : 2026-11-17: exact current-source re-audit at Dev c0eb7bfa7c74. Since 65061186dde3, 22 commits merge current Mobile/controller/media-server UI into Desktop. The configured streams-file deltas are focus/touch presentation only; provider/plugin QuickJS runtime, positional getStreams, full result-list mapping, request/response headers, subtitles and runtime TMDB_API_KEY bridge are unchanged. Player deltas add controller volume/seek and RTX HDR plumbing without changing audio-track enumeration/selection semantics. Exact macOS/Windows Native Labs remain required.
 
 ### Android TV
 
@@ -148,7 +148,7 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `app/src/full/java/com/nuvio/tv/core/plugin/PluginManager.kt`
 - Transport : `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt`
 - Modèle de résultat : `app/src/main/java/com/nuvio/tv/domain/model/Plugin.kt`
-- Note d'audit : Exact current-source re-audit at NuvioTV 2c853c178674. Positional getStreams, BuildConfig TMDB_API_KEY injection, stream/subtitle header preservation and the QuickJS runtime contract remain unchanged. The new TV commits only adjust episode-ratings alignment and bump the app to 1.2.0-beta.2; provider/plugin/runtime transport paths are unchanged.
+- Note d'audit : 2026-11-17: exact current-source re-audit at dev 3ff5e2b41a9d. Since 5b371fcd0d7e, two commits change only TmdbMetadataService person-filmography filtering for talk-show guest appearances plus tests; no configured provider/plugin/stream/player semantic path changed. getStreams, QuickJS transport, stream URL/header projection, audio-track enumeration/selection, provider grouping/fallback identity and expired-link same-addon refresh remain unchanged. Exact Android-TV Native Lab proof remains required.
 
 ## Évidence croisée Native + tests utilisateur
 

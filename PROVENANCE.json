@@ -3459,6 +3459,12 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
         }
       ],
       "source": "niakvio-onboarding",
@@ -3700,8 +3706,8 @@
       "clean_reconstruction_candidate_learning_strict_playable": false,
       "upstream_code_role": "knowledge-only",
       "upstream_code_executed": false,
-      "published_runtime_base_filename": "provider-bases/anidb--base--ede6ce28ae5b4a72.js",
-      "published_runtime_base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "published_runtime_base_filename": "provider-bases/anidb--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/anidb--base--6dd44d56f896df3f.js",
       "legacy_base_sha256_before_clean_v3": "6dd44d56f896df3ff26e968b8f5947615ec8c47f5ba263c3cf136f8d4ab8adfa",
@@ -3742,8 +3748,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "6e2d5d66a17f3514b6ce20a006fdd03e39c1c61b9fe71cfa5472515a2164e9ac"
       },
@@ -4122,6 +4128,12 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
         }
       ],
       "source": "aio",
@@ -4384,8 +4396,8 @@
       ],
       "preserved_candidate_key": "aio:anikototv",
       "preserved_candidate_sha256": "c13b7404034db40014e6db58ac61927728957877489dd4d01688b56167378bef",
-      "published_runtime_base_filename": "provider-bases/anikototv--base--ede6ce28ae5b4a72.js",
-      "published_runtime_base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "published_runtime_base_filename": "provider-bases/anikototv--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/anikototv--base--b0db6e72d5207ca1.js",
       "legacy_base_sha256_before_clean_v3": "b0db6e72d5207ca1eda9a79ba31ad439fc9eeda811ba820f76203b16ddf3e730",
@@ -4399,8 +4411,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 34886,
-        "transformed_lines": 6328,
+        "saved_bytes": 38152,
+        "transformed_lines": 6656,
         "skipped_reason": "",
         "sha256": "e575df6c4b459d3f565f2204e44bee442451009dad5f664eec8aaa14a350e371"
       },
@@ -14343,6 +14355,12 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
         }
       ],
       "source": "aio",
@@ -14606,8 +14624,8 @@
       ],
       "preserved_candidate_key": "aio:castle",
       "preserved_candidate_sha256": "ce18abcfb07aa80f8dcd671b75abfd9bc56c6c5ab4e9bf71ec778ed3004585f7",
-      "published_runtime_base_filename": "provider-bases/castle--base--ede6ce28ae5b4a72.js",
-      "published_runtime_base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "published_runtime_base_filename": "provider-bases/castle--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/castle--base--58f00754c8307e44.js",
       "legacy_base_sha256_before_clean_v3": "58f00754c8307e44d9ff9cd6b39ff1e4d8d4b278ca5b88d8b47256f64b0612c6",
@@ -14621,8 +14639,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 36406,
-        "transformed_lines": 6525,
+        "saved_bytes": 39673,
+        "transformed_lines": 6885,
         "skipped_reason": "",
         "sha256": "cbc6810d11f9bb966b995326c3104178ebf76549b687d328239786d850015050"
       },
@@ -20845,10 +20863,9 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "cbd431cb82e23141b3783613c9284b7cff4398943c611a301da6cb4a8fc80af9",
-        "one_physical_line": true
+        "one_physical_line": true,
+        "sha256": "cbd431cb82e23141b3783613c9284b7cff4398943c611a301da6cb4a8fc80af9"
       },
       "build_input_sha256": "13584c11dbc6a1c0616f157b4913ef32fd8b50bfb7ac434c53935e98e64e0a7f",
       "clean_reconstruction_required": false,
@@ -20907,8 +20924,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "cbd431cb82e23141b3783613c9284b7cff4398943c611a301da6cb4a8fc80af9"
       },
@@ -24114,6 +24131,23 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "provider_stream_output_cap",
+          "path": "scripts/provider_patches/french_manga_dle_runtime_v1.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.FRENCH-MANGA.DLE.RUNTIME.V1",
+          "cap": 40,
+          "optionKeys": [
+            "max_streams"
+          ],
+          "renderedConfigRewrites": 1
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
         }
       ],
       "source": "gowaru",
@@ -24378,8 +24412,8 @@
       "upstream_code_executed": false,
       "preserved_candidate_key": "gowaru:french-manga",
       "preserved_candidate_sha256": "da02b92a20a6d2b0eaaeb2c3308183e9a540eb7aeea0d40c548e575fc2e9ad8d",
-      "published_runtime_base_filename": "provider-bases/french-manga--base--ede6ce28ae5b4a72.js",
-      "published_runtime_base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "published_runtime_base_filename": "provider-bases/french-manga--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
       "published_runtime_base_source": "canonical-providerbase",
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "restored_from_activation_lkg": false,
@@ -24399,8 +24433,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 35199,
-        "transformed_lines": 6356,
+        "saved_bytes": 38466,
+        "transformed_lines": 6716,
         "skipped_reason": "",
         "sha256": "c52b149838114c0c5bd4f4e60a7596d0704b3b55495d7cb3ee88d87d34ee8919"
       },
@@ -24720,10 +24754,9 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "e14deca5b175ef48611014a7aa31f8b9b2e56ae15af717f59b12a2bcad808760",
-        "one_physical_line": true
+        "one_physical_line": true,
+        "sha256": "e14deca5b175ef48611014a7aa31f8b9b2e56ae15af717f59b12a2bcad808760"
       },
       "build_contract_schema": 4,
       "build_input_sha256": "f593e149aa2d8f1c2f83daaf282cef33d2a46b75a965cda20f6c6dfcddd4868e",
@@ -24757,11 +24790,11 @@
         "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
-        "saved_bytes": 1,
-        "transformed_lines": 1,
+        "one_physical_line": true,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
-        "sha256": "e14deca5b175ef48611014a7aa31f8b9b2e56ae15af717f59b12a2bcad808760",
-        "one_physical_line": true
+        "sha256": "e14deca5b175ef48611014a7aa31f8b9b2e56ae15af717f59b12a2bcad808760"
       },
       "onboarding_rebuild": false,
       "pending_minimizer": {
@@ -28138,10 +28171,9 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "191d6d0ea17ab5656e80d4c1c8a94d302abb918ab505218e94975ac4d489c2a5",
-        "one_physical_line": true
+        "one_physical_line": true,
+        "sha256": "191d6d0ea17ab5656e80d4c1c8a94d302abb918ab505218e94975ac4d489c2a5"
       },
       "build_input_sha256": "30efb2d93b543cf22edbdae0fac83ece41a92bc66b55e0295ef978503164e8c9",
       "clean_reconstruction_required": false,
@@ -28200,8 +28232,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "191d6d0ea17ab5656e80d4c1c8a94d302abb918ab505218e94975ac4d489c2a5"
       },
@@ -28578,6 +28610,12 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
         }
       ],
       "source": "aio",
@@ -28865,8 +28903,8 @@
       "clean_reconstruction_candidate_learning_strict_playable": false,
       "upstream_code_role": "knowledge-only",
       "upstream_code_executed": false,
-      "published_runtime_base_filename": "provider-bases/hindmoviez--base--ede6ce28ae5b4a72.js",
-      "published_runtime_base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "published_runtime_base_filename": "provider-bases/hindmoviez--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/hindmoviez--base--ae2fab53ab7c4c08.js",
       "legacy_base_sha256_before_clean_v3": "ae2fab53ab7c4c08c54db0a477cbadea6d6486b197dcc6e48224fff16f1403fc",
@@ -28880,8 +28918,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 35117,
-        "transformed_lines": 6232,
+        "saved_bytes": 38384,
+        "transformed_lines": 6593,
         "skipped_reason": "",
         "sha256": "9b11436b920e0c43acbbdc4e63ac4828deae8fdba1628a5bd79561f60aaaedc6"
       },
@@ -36642,6 +36680,12 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
         }
       ],
       "source": "published-baseline",
@@ -36918,8 +36962,8 @@
       "clean_reconstruction_candidate_learning_strict_playable": false,
       "upstream_code_role": "knowledge-only",
       "upstream_code_executed": false,
-      "published_runtime_base_filename": "provider-bases/mugiwarastream--base--ede6ce28ae5b4a72.js",
-      "published_runtime_base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "published_runtime_base_filename": "provider-bases/mugiwarastream--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/mugiwarastream--base--2c84c059e745a649.js",
       "legacy_base_sha256_before_clean_v3": "2c84c059e745a6494fa4d3e9a47cf41a0bad0bbd78ee1c0d100c18c5dc02c1e3",
@@ -36933,8 +36977,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 34977,
-        "transformed_lines": 6314,
+        "saved_bytes": 38246,
+        "transformed_lines": 6675,
         "skipped_reason": "",
         "sha256": "6e29429e73f62192c7a8ce941583f5b078bff5e61df67d5be300483bc01988db"
       },
@@ -37868,10 +37912,9 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "28ba18356f26a931bbba5da1a3cb0694b27dbf88a1a06e9f0c54c153e995adc0",
-        "one_physical_line": true
+        "one_physical_line": true,
+        "sha256": "28ba18356f26a931bbba5da1a3cb0694b27dbf88a1a06e9f0c54c153e995adc0"
       },
       "build_contract_schema": 4,
       "build_input_sha256": "20e5c0ebf73734de78e801519a17bbf47c35e2b3aeca295747b0f2a904811ab4",
@@ -37939,8 +37982,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "28ba18356f26a931bbba5da1a3cb0694b27dbf88a1a06e9f0c54c153e995adc0"
       },
@@ -38302,6 +38345,12 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
         }
       ],
       "source": "gowaru",
@@ -38567,8 +38616,8 @@
       ],
       "preserved_candidate_key": "gowaru:neko-sama",
       "preserved_candidate_sha256": "904102d5cc149399b9685f9c0ad82cd41e29277e158f733d9461060df719c6ce",
-      "published_runtime_base_filename": "provider-bases/neko-sama--base--ede6ce28ae5b4a72.js",
-      "published_runtime_base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "published_runtime_base_filename": "provider-bases/neko-sama--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/neko-sama--base--57432ecd16d016c8.js",
       "legacy_base_sha256_before_clean_v3": "57432ecd16d016c88426929168be245dd8f804e1838e7e1454fc9659074f8d69",
@@ -38582,8 +38631,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 35898,
-        "transformed_lines": 6399,
+        "saved_bytes": 39165,
+        "transformed_lines": 6759,
         "skipped_reason": "",
         "sha256": "8c87a188abe15d42710ff291f976586924f2731b4897c3a7b572c0a24f80c4fa"
       },
@@ -39712,6 +39761,12 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
         }
       ],
       "source": "published-baseline",
@@ -40025,8 +40080,8 @@
       "clean_reconstruction_candidate_learning_strict_playable": false,
       "upstream_code_role": "knowledge-only",
       "upstream_code_executed": false,
-      "published_runtime_base_filename": "provider-bases/papadustream--base--ede6ce28ae5b4a72.js",
-      "published_runtime_base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "published_runtime_base_filename": "provider-bases/papadustream--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/papadustream--base--a9a2d6b0f6744e75.js",
       "legacy_base_sha256_before_clean_v3": "a9a2d6b0f6744e750d657acd9d47cd1de239cb02d88721012e60ec62d1f090ac",
@@ -40040,8 +40095,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 34885,
-        "transformed_lines": 6286,
+        "saved_bytes": 38152,
+        "transformed_lines": 6646,
         "skipped_reason": "",
         "sha256": "e18fa58d721d898e791ac8bb94fc9530cc4929da019e45795cf54c636e68302c"
       },
@@ -42239,6 +42294,12 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
         }
       ],
       "source": "published-baseline",
@@ -42523,8 +42584,8 @@
       "clean_reconstruction_candidate_learning_strict_playable": false,
       "upstream_code_role": "knowledge-only",
       "upstream_code_executed": false,
-      "published_runtime_base_filename": "provider-bases/purstream--base--ede6ce28ae5b4a72.js",
-      "published_runtime_base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "published_runtime_base_filename": "provider-bases/purstream--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/purstream--base--068652a732445be3.js",
       "legacy_base_sha256_before_clean_v3": "068652a732445be33983297d6b722a43f9c006ef1efc01f9ff7082366c1fe9aa",
@@ -42538,8 +42599,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 34517,
-        "transformed_lines": 6070,
+        "saved_bytes": 37784,
+        "transformed_lines": 6430,
         "skipped_reason": "",
         "sha256": "e236311c5adb2c2afac39fcfd6c1524fb4894f755dac111e4fe1bc23ac41ee09"
       },
@@ -42837,6 +42898,12 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
         }
       ],
       "source": "published-baseline",
@@ -43124,8 +43191,8 @@
       "clean_reconstruction_candidate_learning_strict_playable": false,
       "upstream_code_role": "knowledge-only",
       "upstream_code_executed": false,
-      "published_runtime_base_filename": "provider-bases/sekai--base--ede6ce28ae5b4a72.js",
-      "published_runtime_base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "published_runtime_base_filename": "provider-bases/sekai--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
       "published_runtime_base_source": "canonical-providerbase",
       "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
@@ -43145,8 +43212,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 34885,
-        "transformed_lines": 6299,
+        "saved_bytes": 38152,
+        "transformed_lines": 6660,
         "skipped_reason": "",
         "sha256": "be7898d0cd10d8cb6df2804720ef1fa927abc1114e1a4d9cf4eb06a67f70f1a0"
       },
@@ -43463,10 +43530,9 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "52ab95aca048dba7e2f012689b65168d76ebcc0d62602a69df0097049b445f2c",
-        "one_physical_line": true
+        "one_physical_line": true,
+        "sha256": "52ab95aca048dba7e2f012689b65168d76ebcc0d62602a69df0097049b445f2c"
       },
       "build_contract_schema": 4,
       "build_input_sha256": "fda940f25769098939406c47521080e7d99b901d18797aef068f8c326c06ecfe",
@@ -43501,8 +43567,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 32209,
-        "transformed_lines": 5876,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "52ab95aca048dba7e2f012689b65168d76ebcc0d62602a69df0097049b445f2c"
       },
@@ -44801,6 +44867,12 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
         }
       ],
       "source": "published-baseline",
@@ -45082,8 +45154,8 @@
       "clean_reconstruction_candidate_learning_strict_playable": false,
       "upstream_code_role": "knowledge-only",
       "upstream_code_executed": false,
-      "published_runtime_base_filename": "provider-bases/streamzo--base--ede6ce28ae5b4a72.js",
-      "published_runtime_base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "published_runtime_base_filename": "provider-bases/streamzo--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/streamzo--base--6960007e96a48a9a.js",
       "legacy_base_sha256_before_clean_v3": "6960007e96a48a9a582c1d7c2a4df0596eedbe5b7b3f665177a0667dc28e2e10",
@@ -45097,8 +45169,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 35328,
-        "transformed_lines": 6389,
+        "saved_bytes": 38595,
+        "transformed_lines": 6751,
         "skipped_reason": "",
         "sha256": "fc51a8fce01ded1ef879707a847d8362f03d1e95df070aff55388b9ecd687558"
       },
@@ -47539,6 +47611,12 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
         }
       ],
       "source": "niakvio-onboarding",
@@ -47813,8 +47891,8 @@
       "clean_reconstruction_candidate_learning_strict_playable": false,
       "upstream_code_role": "knowledge-only",
       "upstream_code_executed": false,
-      "published_runtime_base_filename": "provider-bases/videasy--base--ede6ce28ae5b4a72.js",
-      "published_runtime_base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "published_runtime_base_filename": "provider-bases/videasy--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/videasy--base--4efef216428ac06f.js",
       "legacy_base_sha256_before_clean_v3": "4efef216428ac06ff73ee4b0373fb465a41d0d358f7f10de2f4d7e826b6e0cdb",
@@ -47828,8 +47906,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 33839,
-        "transformed_lines": 6188,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "3615c1daea87de59f0d05f1dd0f927e97885f7ef9525eef220942e63ad24e544"
       },
@@ -48708,6 +48786,12 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
         }
       ],
       "source": "niakvio-onboarding",
@@ -48951,8 +49035,8 @@
       "clean_reconstruction_candidate_learning_strict_playable": false,
       "upstream_code_role": "knowledge-only",
       "upstream_code_executed": false,
-      "published_runtime_base_filename": "provider-bases/vidlink--base--ede6ce28ae5b4a72.js",
-      "published_runtime_base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
+      "published_runtime_base_filename": "provider-bases/vidlink--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
       "published_runtime_base_source": "canonical-providerbase",
       "legacy_base_filename_before_clean_v3": "provider-bases/vidlink--base--7086ccb18d73fdd7.js",
       "legacy_base_sha256_before_clean_v3": "7086ccb18d73fdd703cf6678f9c2d58ca3d09af64e5d3c394b49b258695e1e1b",
@@ -48993,8 +49077,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "99d7626e50131c554839244522cb3a48afe9238665ae13ff1b107ad3fc9003fb"
       },
@@ -54576,10 +54660,9 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "1cea03ac84a8d9c51849cc498f32ae3adf16a6495adf8eeae99eeafd3fb71923",
-        "one_physical_line": true
+        "one_physical_line": true,
+        "sha256": "1cea03ac84a8d9c51849cc498f32ae3adf16a6495adf8eeae99eeafd3fb71923"
       },
       "build_contract_schema": 4,
       "build_input_sha256": "333b7e1ffa0c74123f048eae6314bc414e5f1c467733b738eeed2964463b6228",
@@ -54641,8 +54724,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "1cea03ac84a8d9c51849cc498f32ae3adf16a6495adf8eeae99eeafd3fb71923"
       },
@@ -58449,10 +58532,9 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "bbcdef85cf5dfe8fa5862e8a08557b78e9d6abe146e3fabd8d924f3873e66b6d",
-        "one_physical_line": true
+        "one_physical_line": true,
+        "sha256": "bbcdef85cf5dfe8fa5862e8a08557b78e9d6abe146e3fabd8d924f3873e66b6d"
       },
       "build_input_sha256": "a8f2a1ef9dfc5f617d04e0a4093b1b05022ed733fd7941f2e44af4ea4934c226",
       "clean_reconstruction_required": false,
@@ -58511,8 +58593,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "bbcdef85cf5dfe8fa5862e8a08557b78e9d6abe146e3fabd8d924f3873e66b6d"
       },
@@ -61452,7 +61534,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "857998764c97f0e3b56f45482011ea6e4286a9ce00a750a2977659aaa5987de8"
@@ -61464,8 +61545,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "857998764c97f0e3b56f45482011ea6e4286a9ce00a750a2977659aaa5987de8"
       },
@@ -61963,7 +62044,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "40fe43f4fe29a196916f202e6080e096ff3e5210ff22df77d3fc7711ea3d90aa"
@@ -61975,8 +62055,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "40fe43f4fe29a196916f202e6080e096ff3e5210ff22df77d3fc7711ea3d90aa"
       },
@@ -62250,7 +62330,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "8a484e8843dab3f9198f877f18543edad65b0ac40631fa4e42b50f2f61df2f20"
@@ -62262,8 +62341,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "8a484e8843dab3f9198f877f18543edad65b0ac40631fa4e42b50f2f61df2f20"
       },
@@ -62649,7 +62728,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "5ccaeb488d9b0f2335c7bf7bd0592886c29f0a4e2a5114fb5b480418f7dbcd11"
@@ -62661,8 +62739,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "5ccaeb488d9b0f2335c7bf7bd0592886c29f0a4e2a5114fb5b480418f7dbcd11"
       },
@@ -62936,7 +63014,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "4c66673364d3fb4b8a7d87d9553e00823ee0199696b45ba68adbfaf7edaa8ed0"
@@ -62948,8 +63025,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "4c66673364d3fb4b8a7d87d9553e00823ee0199696b45ba68adbfaf7edaa8ed0"
       },
@@ -63055,6 +63132,23 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "provider_stream_output_cap",
+          "path": "scripts/provider_patches/internet_archive_public_domain_runtime_v1.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.INTERNET-ARCHIVE.OPEN_ARCHIVE.RUNTIME.V1",
+          "cap": 40,
+          "optionKeys": [
+            "max_streams"
+          ],
+          "renderedConfigRewrites": 1
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
         }
       ],
       "source": "niakvio-onboarding",
@@ -63106,8 +63200,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "cbbeee84b899b71c3f0ad247e0bbb88d07f4bddde74ca961baa071d9b6adc4ee"
+        "sha256": "cbbeee84b899b71c3f0ad247e0bbb88d07f4bddde74ca961baa071d9b6adc4ee",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -63116,8 +63210,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 38141,
+        "transformed_lines": 6559,
         "skipped_reason": "",
         "sha256": "cbbeee84b899b71c3f0ad247e0bbb88d07f4bddde74ca961baa071d9b6adc4ee"
       },
@@ -63125,7 +63219,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "6223ecbd25f088a99febb2eb25e8c1d955534a02d0b418dab94cf83c66a8bc62",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/internet-archive--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "corsflix": {
       "id": "corsflix",
@@ -63217,6 +63314,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -63275,8 +63384,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "ed1cbae482a3e18bce263d0a52e6d11fe262747b4d11ec17b767e55a0b365153"
+        "sha256": "ed1cbae482a3e18bce263d0a52e6d11fe262747b4d11ec17b767e55a0b365153",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -63285,8 +63394,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "ed1cbae482a3e18bce263d0a52e6d11fe262747b4d11ec17b767e55a0b365153"
       },
@@ -63294,7 +63403,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "cdae19c2b53693d727ef2c35b4a3e8490de9c21364f2cbe43d0179841ba8f810",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/corsflix--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "emnexmovies": {
       "id": "emnexmovies",
@@ -63386,6 +63498,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -63444,8 +63568,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "a109f3f8db106556d384d6c43c1975fd682e5e158299f34e8216850b6c6d8cc4"
+        "sha256": "a109f3f8db106556d384d6c43c1975fd682e5e158299f34e8216850b6c6d8cc4",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -63454,8 +63578,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "a109f3f8db106556d384d6c43c1975fd682e5e158299f34e8216850b6c6d8cc4"
       },
@@ -63463,7 +63587,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "997388b3b8f90dd4f70b250430692507414a9dc7e8f76ff062649116caaa4b8a",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/emnexmovies--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "latestmovies": {
       "id": "latestmovies",
@@ -63555,6 +63682,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -63613,8 +63752,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "ca96edf214a2b4b3ced70eae673e3ff4717ad85f94ac95fe503c16f098a1c589"
+        "sha256": "ca96edf214a2b4b3ced70eae673e3ff4717ad85f94ac95fe503c16f098a1c589",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -63623,8 +63762,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "ca96edf214a2b4b3ced70eae673e3ff4717ad85f94ac95fe503c16f098a1c589"
       },
@@ -63632,7 +63771,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "e6b95cc66847642da2c09fc656ef5b75db02990b3953d1dec7139ed28440df74",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/latestmovies--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "movy": {
       "id": "movy",
@@ -63724,6 +63866,24 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "provider_lego",
+          "path": "scripts/provider_patches/movy_wecollege_runtime_v1.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.MOVY.WECOLLEGE.WINGS.V1"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -63782,8 +63942,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "66c4187eda282cd23f6719fde03e1e05ca1239119dc1ee40a9ebd983e4d6093b"
+        "sha256": "66c4187eda282cd23f6719fde03e1e05ca1239119dc1ee40a9ebd983e4d6093b",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -63792,8 +63952,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 38484,
+        "transformed_lines": 6668,
         "skipped_reason": "",
         "sha256": "66c4187eda282cd23f6719fde03e1e05ca1239119dc1ee40a9ebd983e4d6093b"
       },
@@ -63801,7 +63961,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "18066b55bc3278fcfb2d630bb39b401d7a26e547b9ab29f8a76a030134c72c2d",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/movy--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "arrowtv": {
       "id": "arrowtv",
@@ -63893,6 +64056,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -63951,8 +64126,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "0b662f229d89add14c4638afa98dcfec57c116872675a8ea1e22f11ca71b0994"
+        "sha256": "0b662f229d89add14c4638afa98dcfec57c116872675a8ea1e22f11ca71b0994",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -63961,8 +64136,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "0b662f229d89add14c4638afa98dcfec57c116872675a8ea1e22f11ca71b0994"
       },
@@ -63970,7 +64145,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "1286bfe4166c111338c38e1c8e1d03f71ee4df01404c73a3a2e722f8cc36df52",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/arrowtv--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "chillflix": {
       "id": "chillflix",
@@ -64200,6 +64378,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -64258,8 +64448,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "66fbf9501aa9dbffeb4e499af13ee5a49fd6ea79907d20bb0e62119a76712092"
+        "sha256": "66fbf9501aa9dbffeb4e499af13ee5a49fd6ea79907d20bb0e62119a76712092",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -64268,8 +64458,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "66fbf9501aa9dbffeb4e499af13ee5a49fd6ea79907d20bb0e62119a76712092"
       },
@@ -64277,7 +64467,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "0c31fe98d7c14a4ffc5cd8b79b99b5212337bfcdffb9c64ad29dc5c489c3437b",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/neonflix--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "boredflix": {
       "id": "boredflix",
@@ -64369,6 +64562,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -64427,8 +64632,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "ed740920562abe095063a8f61353fe4af41bbe5c4cc8d51ba71408ace89f86b4"
+        "sha256": "ed740920562abe095063a8f61353fe4af41bbe5c4cc8d51ba71408ace89f86b4",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -64437,8 +64642,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "ed740920562abe095063a8f61353fe4af41bbe5c4cc8d51ba71408ace89f86b4"
       },
@@ -64446,7 +64651,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "c9ee79d918f2423bc2e330d9db5bf655f2ca174563b418955f868fcb5463d873",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/boredflix--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "fexini": {
       "id": "fexini",
@@ -64594,7 +64802,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "b564b82db92a02efcb477ff1746aab3fa700a0bcc75934301f778d13422bd306"
@@ -64606,8 +64813,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "b564b82db92a02efcb477ff1746aab3fa700a0bcc75934301f778d13422bd306"
       },
@@ -64763,7 +64970,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "4c83d04d65296ecd7df2acc2d618b46f07b280205e820982e2124a280088a760"
@@ -64775,8 +64981,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "4c83d04d65296ecd7df2acc2d618b46f07b280205e820982e2124a280088a760"
       },
@@ -64876,6 +65082,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -64934,8 +65152,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "7e156c41fc3e2ade6a4faba4843c9b6684bccd5b604baa71fa865c3a401df578"
+        "sha256": "7e156c41fc3e2ade6a4faba4843c9b6684bccd5b604baa71fa865c3a401df578",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -64944,8 +65162,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "7e156c41fc3e2ade6a4faba4843c9b6684bccd5b604baa71fa865c3a401df578"
       },
@@ -64953,7 +65171,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "2cc6fa48603701ac08fea239eea5576f02474cf74f1dfc88cff03adb7d8d5636",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/shuttletv--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "primewire": {
       "id": "primewire",
@@ -65045,6 +65266,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -65103,8 +65336,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "21b46e3005854e64fdd074332c325bd67b075dd5577ee7ed85b4a9ac2c4b0e42"
+        "sha256": "21b46e3005854e64fdd074332c325bd67b075dd5577ee7ed85b4a9ac2c4b0e42",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -65113,8 +65346,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "21b46e3005854e64fdd074332c325bd67b075dd5577ee7ed85b4a9ac2c4b0e42"
       },
@@ -65122,7 +65355,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "c931ed0ea2c0d2a79b4fc39a6d602dd0e2fe262e042e46b661e995460596701a",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/primewire--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "67movies": {
       "id": "67movies",
@@ -65214,6 +65450,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -65272,8 +65520,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "6795eee8e404a2f24a9127e639ca067a998f0717796b7f0c2668608474c790dc"
+        "sha256": "6795eee8e404a2f24a9127e639ca067a998f0717796b7f0c2668608474c790dc",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -65282,8 +65530,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "6795eee8e404a2f24a9127e639ca067a998f0717796b7f0c2668608474c790dc"
       },
@@ -65291,7 +65539,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "1e1c439a0428b537eb8e07ad8c07dd20334851594cb30392049856cba6fb9e89",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/67movies--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "watch-cartoon-online": {
       "id": "watch-cartoon-online",
@@ -65383,6 +65634,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -65441,8 +65704,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "726a3069647831e3ec0983c46e65bf7ab4c70d5f7c69cf6c3c22aa3a5ec4a27e"
+        "sha256": "726a3069647831e3ec0983c46e65bf7ab4c70d5f7c69cf6c3c22aa3a5ec4a27e",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -65451,8 +65714,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "726a3069647831e3ec0983c46e65bf7ab4c70d5f7c69cf6c3c22aa3a5ec4a27e"
       },
@@ -65460,7 +65723,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "939ddc4e70eade51c37806fd7280a90e9b08708aadf3054b2d9739dcf47a568b",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/watch-cartoon-online--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "cinemabz": {
       "id": "cinemabz",
@@ -65552,6 +65818,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -65610,8 +65888,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "46e0a871bbd48112129968ba008d64eba7db44301793941210e61324969fa93b"
+        "sha256": "46e0a871bbd48112129968ba008d64eba7db44301793941210e61324969fa93b",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -65620,8 +65898,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "46e0a871bbd48112129968ba008d64eba7db44301793941210e61324969fa93b"
       },
@@ -65629,7 +65907,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "9cb493247a95cd2983beaed543995f6380a24a9c7ff730e1ed02246c3cff3669",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/cinemabz--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "flixer": {
       "id": "flixer",
@@ -65721,6 +66002,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -65779,8 +66072,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "726d178e286b0f2548a2157e3b091816584120b672e65640f8f1b9d73d99b1de"
+        "sha256": "726d178e286b0f2548a2157e3b091816584120b672e65640f8f1b9d73d99b1de",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -65789,8 +66082,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "726d178e286b0f2548a2157e3b091816584120b672e65640f8f1b9d73d99b1de"
       },
@@ -65798,7 +66091,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "ea6f0febfd9323535aa1fce21dcdc90731e25b67f1bfd2453c6469ec1e4dd034",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/flixer--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "cinegram": {
       "id": "cinegram",
@@ -65890,6 +66186,41 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "provider_lego",
+          "path": "scripts/provider_patches/cinegram_runtime_v1.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.CINEGRAM.RUNTIME.V1"
+        },
+        {
+          "type": "provider_stream_output_cap",
+          "path": "scripts/provider_patches/cinegram_runtime_v1.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.CINEGRAM.RUNTIME.V1",
+          "cap": 40,
+          "optionKeys": [
+            "maxStreams"
+          ],
+          "renderedConfigRewrites": 0
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_runtime_dispatch_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_runtime_dispatch"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -65948,8 +66279,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "bde9b5294102471e7144cbdbb2e3e447e76bae593e53ae36229f1f4a2672d90a"
+        "sha256": "bde9b5294102471e7144cbdbb2e3e447e76bae593e53ae36229f1f4a2672d90a",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -65958,8 +66289,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 38158,
+        "transformed_lines": 6660,
         "skipped_reason": "",
         "sha256": "bde9b5294102471e7144cbdbb2e3e447e76bae593e53ae36229f1f4a2672d90a"
       },
@@ -65967,7 +66298,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "d36381b1e6a922ee7d15aa605bce967a0d8e32e532be71d80c02bcd631010a77",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/cinegram--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "movish": {
       "id": "movish",
@@ -66059,6 +66393,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -66117,8 +66463,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "114edca9e78da454ecefd0076dac8dbd657ad79d95db312d000d1305d6bc7f46"
+        "sha256": "114edca9e78da454ecefd0076dac8dbd657ad79d95db312d000d1305d6bc7f46",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -66127,8 +66473,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "114edca9e78da454ecefd0076dac8dbd657ad79d95db312d000d1305d6bc7f46"
       },
@@ -66136,7 +66482,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "4c08ac3e3b4e488587c7b50be186034f75465b65df781ff35a0ac0ac76b4d721",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/movish--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "vuflix": {
       "id": "vuflix",
@@ -66228,6 +66577,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -66286,8 +66647,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "1007f43a0305ef18dbdb9eb0f7a290cca5965294aeb3419e50e901f0968a7ffb"
+        "sha256": "1007f43a0305ef18dbdb9eb0f7a290cca5965294aeb3419e50e901f0968a7ffb",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -66296,8 +66657,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "1007f43a0305ef18dbdb9eb0f7a290cca5965294aeb3419e50e901f0968a7ffb"
       },
@@ -66305,7 +66666,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "96620068a52f7269b3c383eb5f2cb1664d6a46fc74a87607d06567b59bf09487",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/vuflix--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "anisama": {
       "id": "anisama",
@@ -66453,7 +66817,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "c5b7edb711dff51237c31807462b82214b1d9b202457552e829d6c33e6ad0854"
@@ -66465,8 +66828,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "c5b7edb711dff51237c31807462b82214b1d9b202457552e829d6c33e6ad0854"
       },
@@ -66622,7 +66985,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "b0f02cd3806804a7ebc8c939cedf90db1e91f8617cc4f362d30b50216bbfd434"
@@ -66634,8 +66996,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "b0f02cd3806804a7ebc8c939cedf90db1e91f8617cc4f362d30b50216bbfd434"
       },
@@ -66791,7 +67153,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "62de7273fb4e5d3cc8398b6fa8f6cbce3d9f27342c9b112ff1853b7f8f8adcbf"
@@ -66803,8 +67164,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "62de7273fb4e5d3cc8398b6fa8f6cbce3d9f27342c9b112ff1853b7f8f8adcbf"
       },
@@ -66960,7 +67321,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "f8c4ddb1727c24fbd443b5c7944e9324c371a1b635de61271b88a602519013cd"
@@ -66972,8 +67332,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "f8c4ddb1727c24fbd443b5c7944e9324c371a1b635de61271b88a602519013cd"
       },
@@ -67129,7 +67489,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "72c632240befd2fa1c3afef8d84ce112b0d127ac8b8ab3970960ac88441bb736"
@@ -67141,8 +67500,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "72c632240befd2fa1c3afef8d84ce112b0d127ac8b8ab3970960ac88441bb736"
       },
@@ -67298,7 +67657,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "16fb9f472e38c12388add23b436d47768d7fb9d2900d275a40d90b0bf372dc90"
@@ -67310,8 +67668,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "16fb9f472e38c12388add23b436d47768d7fb9d2900d275a40d90b0bf372dc90"
       },
@@ -67467,7 +67825,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "0c54fb0cafa8ab2b34504eb836d0845a9cb95335448c9d34cbf392fe28b961dd"
@@ -67479,8 +67836,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "0c54fb0cafa8ab2b34504eb836d0845a9cb95335448c9d34cbf392fe28b961dd"
       },
@@ -67636,7 +67993,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "aa2b94bcc41cb5d10edd4cb3efd6635e08dfbb90a6f79093088f3db40ec33092"
@@ -67648,8 +68004,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "aa2b94bcc41cb5d10edd4cb3efd6635e08dfbb90a6f79093088f3db40ec33092"
       },
@@ -67805,7 +68161,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "bc07fe2d7817e66a624548a507c73e4de9c0754c1fe73f020f4cb65ebb9edfee"
@@ -67817,8 +68172,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "bc07fe2d7817e66a624548a507c73e4de9c0754c1fe73f020f4cb65ebb9edfee"
       },
@@ -67974,7 +68329,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "de60848ba62d76dbc379073f6fac2d5d52b5e799b9898f03b43d2bd4ba0a2203"
@@ -67986,8 +68340,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "de60848ba62d76dbc379073f6fac2d5d52b5e799b9898f03b43d2bd4ba0a2203"
       },
@@ -68087,6 +68441,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -68145,8 +68511,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "9dfca08aefea8fbb0c902ec812a849271770e3a7a0ac2d6d360ed5aa140ce838"
+        "sha256": "9dfca08aefea8fbb0c902ec812a849271770e3a7a0ac2d6d360ed5aa140ce838",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -68155,8 +68521,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "9dfca08aefea8fbb0c902ec812a849271770e3a7a0ac2d6d360ed5aa140ce838"
       },
@@ -68164,7 +68530,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "b135d02bd04122195d208f2c97e0680fe508367ea951af10316d5ae758e2ff20",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/rivestream-app--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "overlook": {
       "id": "overlook",
@@ -68256,6 +68625,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -68314,8 +68695,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "f6d5af4be2d712f67ade0173954907d07342eb93d2bbb746b6472e39d810586c"
+        "sha256": "f6d5af4be2d712f67ade0173954907d07342eb93d2bbb746b6472e39d810586c",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -68324,8 +68705,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "f6d5af4be2d712f67ade0173954907d07342eb93d2bbb746b6472e39d810586c"
       },
@@ -68333,7 +68714,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "ea1b27cc7fb25efbc00f2a884d2af208f60653262cf5f3e2d84662cd67ade5a0",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/overlook--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "hexa": {
       "id": "hexa",
@@ -68425,6 +68809,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -68483,8 +68879,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "1f067d93571ee81f12817369149a8e969c2871d3c066474a359db5a1d3a5b7a5"
+        "sha256": "1f067d93571ee81f12817369149a8e969c2871d3c066474a359db5a1d3a5b7a5",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -68493,8 +68889,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "1f067d93571ee81f12817369149a8e969c2871d3c066474a359db5a1d3a5b7a5"
       },
@@ -68502,7 +68898,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "44d108d160bbf14c08a86dc5de61cfee7ba5dce6fd822581e8c6f6a32a77a3ff",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/hexa--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "rivestream-ru": {
       "id": "rivestream-ru",
@@ -68594,6 +68993,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -68652,8 +69063,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "1df0a1304f9a0ad34ad1780b4eebe8d1dbc5e3fec56cdceeb5e6849de3685537"
+        "sha256": "1df0a1304f9a0ad34ad1780b4eebe8d1dbc5e3fec56cdceeb5e6849de3685537",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -68662,8 +69073,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "1df0a1304f9a0ad34ad1780b4eebe8d1dbc5e3fec56cdceeb5e6849de3685537"
       },
@@ -68671,7 +69082,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "194d1825264cc6b94fd91590326813b129647c2dcf7707e2f856f2cc2c82bd59",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/rivestream-ru--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "moviebite": {
       "id": "moviebite",
@@ -68763,6 +69177,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -68821,8 +69247,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "4f8a0d9cc8997e5c26a375d35a8c7401a18d8b8de800728d312d4654d0bd81ae"
+        "sha256": "4f8a0d9cc8997e5c26a375d35a8c7401a18d8b8de800728d312d4654d0bd81ae",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -68831,8 +69257,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "4f8a0d9cc8997e5c26a375d35a8c7401a18d8b8de800728d312d4654d0bd81ae"
       },
@@ -68840,7 +69266,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "0c5eb1c255ea39fe9bf4a0524e224af5f33dcd735a8bd8836fa8a6317c3d2434",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/moviebite--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "pstream": {
       "id": "pstream",
@@ -68932,6 +69361,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -68990,8 +69431,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "2ccc8bdf75f742ae6e16257b70f43dc22b8e287cee9fe58136428877e8009fa8"
+        "sha256": "2ccc8bdf75f742ae6e16257b70f43dc22b8e287cee9fe58136428877e8009fa8",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -69000,8 +69441,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "2ccc8bdf75f742ae6e16257b70f43dc22b8e287cee9fe58136428877e8009fa8"
       },
@@ -69009,7 +69450,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "075f4ce16c0e806d27d83dcab8e572274fa91a93dcd777c26648d2da455b9308",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/pstream--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "ihavenotv": {
       "id": "ihavenotv",
@@ -69101,6 +69545,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -69159,8 +69615,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "06e68418ab58d77c5d592898626c35200b7f3b0faf7920075e0c8be972455754"
+        "sha256": "06e68418ab58d77c5d592898626c35200b7f3b0faf7920075e0c8be972455754",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -69169,8 +69625,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "06e68418ab58d77c5d592898626c35200b7f3b0faf7920075e0c8be972455754"
       },
@@ -69178,7 +69634,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "7ca6c657a839ea174229b4d249ace332524547184e2076f72540dd4f6291676b",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/ihavenotv--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "reanime-to": {
       "id": "reanime-to",
@@ -69270,6 +69729,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -69328,8 +69799,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "7713ab43c12f93da0ceffb5b71b06dc0af4572e3c0a1d644ff0eb5cec0183fe7"
+        "sha256": "7713ab43c12f93da0ceffb5b71b06dc0af4572e3c0a1d644ff0eb5cec0183fe7",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -69338,8 +69809,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "7713ab43c12f93da0ceffb5b71b06dc0af4572e3c0a1d644ff0eb5cec0183fe7"
       },
@@ -69347,7 +69818,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "0c1e1b5d162497818620babacb8f663d35be489d843b5258650cb0a55d7b12cc",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/reanime-to--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "flixhq": {
       "id": "flixhq",
@@ -69439,6 +69913,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -69497,8 +69983,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "a56975a8ab2a8535b8f1bdaf10324c3fc14e788441ce5e496ca715fa12a96193"
+        "sha256": "a56975a8ab2a8535b8f1bdaf10324c3fc14e788441ce5e496ca715fa12a96193",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -69507,8 +69993,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "a56975a8ab2a8535b8f1bdaf10324c3fc14e788441ce5e496ca715fa12a96193"
       },
@@ -69516,7 +70002,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "fcf6d33644fdc7711183a11f3d97c9db760879c3d5dca8ad3e52511df97d8571",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/flixhq--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "documentary-area": {
       "id": "documentary-area",
@@ -69608,6 +70097,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -69666,8 +70167,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "35f1e022bb312d77b265d143f6aa447ef1c4d7d83467e9865237dc64993b8752"
+        "sha256": "35f1e022bb312d77b265d143f6aa447ef1c4d7d83467e9865237dc64993b8752",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -69676,8 +70177,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "35f1e022bb312d77b265d143f6aa447ef1c4d7d83467e9865237dc64993b8752"
       },
@@ -69685,7 +70186,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "09caf454822146924a813a387d5dc5e958945e54a7efb1c658dbafd8431f1d92",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/documentary-area--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "fsharetv": {
       "id": "fsharetv",
@@ -69777,6 +70281,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -69835,8 +70351,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "415aedb05214e24fc04d6e201d464f1244da95421b544688e4271fc4e6a897ee"
+        "sha256": "415aedb05214e24fc04d6e201d464f1244da95421b544688e4271fc4e6a897ee",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -69845,8 +70361,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "415aedb05214e24fc04d6e201d464f1244da95421b544688e4271fc4e6a897ee"
       },
@@ -69854,7 +70370,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "cdae8b90fcf7a245d98afa6488730c6e9b85415d1b1fe607c59443466e7e83af",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/fsharetv--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "aniflix-uno": {
       "id": "aniflix-uno",
@@ -69946,6 +70465,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -70004,8 +70535,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "fc8c6a9dc85f591ce5a8b97756f9f742d20ab00903f4e1576f3e38176cec7a25"
+        "sha256": "fc8c6a9dc85f591ce5a8b97756f9f742d20ab00903f4e1576f3e38176cec7a25",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -70014,8 +70545,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "fc8c6a9dc85f591ce5a8b97756f9f742d20ab00903f4e1576f3e38176cec7a25"
       },
@@ -70023,7 +70554,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "1ff9b8dadde1671de2cd7e5caee91f5350696e11cb42e53f2bac7487ab7d2b56",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/aniflix-uno--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "rarefilmm": {
       "id": "rarefilmm",
@@ -70115,6 +70649,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -70173,8 +70719,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "9011bdfb601e4ecfedbe15a289b0863a171c91d1b0cd6a4568766b09bc458278"
+        "sha256": "9011bdfb601e4ecfedbe15a289b0863a171c91d1b0cd6a4568766b09bc458278",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -70183,8 +70729,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "9011bdfb601e4ecfedbe15a289b0863a171c91d1b0cd6a4568766b09bc458278"
       },
@@ -70192,7 +70738,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "f518037d9f4d8e94d80b9f19381a58bc72830fe78feff9d2922272dfc8f06bd3",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/rarefilmm--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "stigstream": {
       "id": "stigstream",
@@ -70340,7 +70889,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "a69a55e7c4dd07a15487d3a9e473c7dc869fa3762f81c7098081ae7f41f1f9c4"
@@ -70352,8 +70900,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "a69a55e7c4dd07a15487d3a9e473c7dc869fa3762f81c7098081ae7f41f1f9c4"
       },
@@ -70509,7 +71057,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "9ababe40afbe0c5126c716e0fa21f51dae63da07de507e064450801d24f4a777"
@@ -70521,8 +71068,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "9ababe40afbe0c5126c716e0fa21f51dae63da07de507e064450801d24f4a777"
       },
@@ -70678,7 +71225,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "5e91eb3a16e5a272f759400a732036714f9170ac03f86056f42e428959d0a4ad"
@@ -70690,8 +71236,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "5e91eb3a16e5a272f759400a732036714f9170ac03f86056f42e428959d0a4ad"
       },
@@ -70847,7 +71393,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "9f84eaeac5b124831380a50afc13b51b8a1f8ce9e44ecee83d7ca9cf72755fd8"
@@ -70859,8 +71404,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "9f84eaeac5b124831380a50afc13b51b8a1f8ce9e44ecee83d7ca9cf72755fd8"
       },
@@ -70960,6 +71505,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -71018,8 +71575,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "4804ea8ccf439e3e3bf7ba8ae819f3e34ffab8acce0e7bc1af6559f1f9225886"
+        "sha256": "4804ea8ccf439e3e3bf7ba8ae819f3e34ffab8acce0e7bc1af6559f1f9225886",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -71028,8 +71585,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "4804ea8ccf439e3e3bf7ba8ae819f3e34ffab8acce0e7bc1af6559f1f9225886"
       },
@@ -71037,7 +71594,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "a9d2f21b899e553436caf70d0055e3ae80bc5067ca3b5f439ebcddfb0757bd28",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/watchott--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "animejlprovider": {
       "id": "animejlprovider",
@@ -71129,6 +71689,18 @@
           "path": "scripts/provider_patches/global_telemetry_v1.py",
           "phase": "discovery",
           "scope": "global_telemetry"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "source": "niakvio-onboarding",
@@ -71187,8 +71759,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "8735f17b5f4a499785e15e991928eb6082b67a472b03d41b4fff667f917aa751"
+        "sha256": "8735f17b5f4a499785e15e991928eb6082b67a472b03d41b4fff667f917aa751",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -71197,8 +71769,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "8735f17b5f4a499785e15e991928eb6082b67a472b03d41b4fff667f917aa751"
       },
@@ -71206,7 +71778,10 @@
       "build_contract_schema": 4,
       "build_input_sha256": "682efb53ee80195ff76615808660bcdad2fcf4395bffe12c6880baa6ca61ae5a",
       "legacy_provider_js_role": "knowledge-only",
-      "legacy_provider_js_executed_for_reconstruction": false
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "published_runtime_base_filename": "provider-bases/animejlprovider--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "webflix": {
       "id": "webflix",
@@ -71354,7 +71929,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "8ab2d58d204f269ba50bf3735b7e3fbef363fd52bb6172b625b94c9572de5e6d"
@@ -71366,8 +71940,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 39067,
+        "transformed_lines": 6739,
         "skipped_reason": "",
         "sha256": "8ab2d58d204f269ba50bf3735b7e3fbef363fd52bb6172b625b94c9572de5e6d"
       },
@@ -71529,7 +72103,6 @@
         "schema_version": 1,
         "verified": true,
         "tool": "raw-bytes",
-        "tool_version": "raw-v1",
         "mangle": false,
         "one_physical_line": true,
         "sha256": "f5e5e318d195c5d31de97aa94815e5eda96fea9de3208a39a607f551112e64d4"
@@ -71541,8 +72114,8 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 37995,
+        "transformed_lines": 6586,
         "skipped_reason": "",
         "sha256": "f5e5e318d195c5d31de97aa94815e5eda96fea9de3208a39a607f551112e64d4"
       },
@@ -72803,8 +73376,8 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "one_physical_line": true,
-        "sha256": "dbf3b404e29d84490d238107fa740ae572f2df1820749d1ca5d08148fe34924a"
+        "sha256": "dbf3b404e29d84490d238107fa740ae572f2df1820749d1ca5d08148fe34924a",
+        "one_physical_line": true
       },
       "final_minimizer": {
         "schema_version": 3,
@@ -72813,14 +73386,17 @@
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
+        "saved_bytes": 38309,
+        "transformed_lines": 6686,
         "skipped_reason": "",
         "sha256": "dbf3b404e29d84490d238107fa740ae572f2df1820749d1ca5d08148fe34924a"
       },
       "provider_policy_sha256": "0a4376329105e180f757cd122122cc85c0fbd3b6c937f0375afa3f72ad70f22e",
       "build_contract_schema": 4,
-      "build_input_sha256": "4da463eefa3d5deac1b0ea20058a98ed46dea8e75515b85dc0ff022ab7e22e59"
+      "build_input_sha256": "4da463eefa3d5deac1b0ea20058a98ed46dea8e75515b85dc0ff022ab7e22e59",
+      "published_runtime_base_filename": "provider-bases/meowtv--base--0cd547c0e052272d.js",
+      "published_runtime_base_sha256": "0cd547c0e052272dfe9130004e75dc8930796676e823d14eb0f18275b69ee785",
+      "published_runtime_base_source": "canonical-providerbase"
     },
     "willow": {
       "id": "willow",
@@ -73897,7 +74473,7 @@
   "provider_publication_contract": {
     "schema_version": 4,
     "sha256": "9a236198e67e684f1e11ea1f044bd52c95d1fb0858c86dfc5cc53dd1fa78a1b0",
-    "provider_count": 76,
-    "mode": "provider_base_plus_deterministic_core_provider_local_policy"
+    "provider_count": 46,
+    "mode": "provider_base_plus_deterministic_core"
   }
 }
