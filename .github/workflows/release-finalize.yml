@@ -98,6 +98,7 @@ on:
       - 'scripts/reapply_published_overrides.py'
       - 'scripts/sync_manifest_projection_rows.py'
       - 'scripts/materialize_provider_v3_all.py'
+      - 'scripts/provider_materialization_generation.py'
       - 'scripts/reconcile_provider_static_authority.py'
       - 'scripts/reconcile_targeted_provider_publication.py'
       - 'scripts/reconcile_active_provider_publication.py'
@@ -122,6 +123,7 @@ on:
       - 'tests/provider_v3_minimizer_publication_pipeline_test.py'
       - 'scripts/generate_release_hashes.py'
       - 'scripts/verify_provider_v3_reverse_rebuild.py'
+      - 'tests/provider_materialization_generation_contract_test.py'
       - 'tests/release_hash_scope_test.py'
       - 'automation/nuvio-client-upstreams.json'
       - 'automation/nuvio-client-compatibility-matrix.json'
@@ -420,6 +422,7 @@ jobs:
           # from ProviderBase + structured DATA + owned Blocs without using current
           # provider JS as a seed. Historical provider-old snapshots are provenance
           # only and may share an identity with a reactivated provider.
+          python3 tests/provider_materialization_generation_contract_test.py
           python3 scripts/verify_provider_v3_reverse_rebuild.py
 
       - name: Finalize synchronized release and provider cache versions

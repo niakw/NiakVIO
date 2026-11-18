@@ -248,6 +248,8 @@ Interdictions :
 
 La preuve finale doit inclure la reconstruction reverse byte-identical via `scripts/verify_provider_v3_reverse_rebuild.py`.
 
+La génération Provider v3 utilise un contrat canonique unique (`scripts/provider_materialization_generation.py`) sur les SHA-256 des bytes exécutables triés par identifiant. La preuve reverse reconstruit les bytes source, applique le même minimizer final que la publication, puis exige l’identité exacte des bundles content-addressed et de la génération publiée.
+
 ### Blocs communs et dérive de publication
 
 Les sources des Blocs communs `CORE.*` sont des **inputs de build** au même titre que ProviderBase, DATA et Blocs `PROVIDER.*`.

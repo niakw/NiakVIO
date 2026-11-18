@@ -4550,3 +4550,10 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 
 - Workflow Gate on `f0ae09ae` failed inside `tests/retire_stale_codeql_2531_test.py` with `AssertionError: 500`: the test still required the old 120-page history bound even though the production cleanup was intentionally expanded because the repository now exceeds 12k CodeQL analyses.
 - The test now requires the new explicit 500-page maximum. The traversal remains bounded and still fails closed on a permanently full listing; this change updates the oracle to the actual repository scale rather than weakening the security contract.
+
+## 2026-11-18 — Reverse rebuild generation authority unified after Finalizer mismatch
+
+- Finalizer run `44210828821` rebuilt all 76 active Global+France providers and reached the reverse proof, then failed with `generation mismatch expected=cb42db32146d… actual=cb85e3ca1950…`. The failure happened after complete materialization, not inside a provider.
+- Root cause: the materialization ledger is rebound after final minimization to exact published content-addressed bytes, while the reverse verifier compared that publication generation to the pre-minimizer workspace generation and then compared raw workspace digests directly to minimized production digests.
+- Added one canonical `scripts/provider_materialization_generation.py` generation contract shared by materialization and reconciliation. Reverse proof now verifies deterministic raw workspace bytes, applies the exact final minimizer, proves its fixed point, checks each final digest and content-addressed filename, then compares the canonical published generation.
+- Added `tests/provider_materialization_generation_contract_test.py` to Workflow Gate and Release Finalizer and included the generation helper in release hash scope. This tightens byte-identical proof; no provider, playback or native gate is relaxed.
