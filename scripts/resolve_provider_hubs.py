@@ -300,7 +300,14 @@ def _versioned_brand_stem(value: str) -> str:
     """
     token = compact(value)
     match = re.fullmatch(r"(.{6,}?)(\d{4})", token)
-    return match.group(1) if match else ""
+    if not match:
+        return ""
+    digits = match.group(2)
+    month = int(digits[:2])
+    year = int(digits[2:])
+    if not (1 <= month <= 12 and 20 <= year <= 39):
+        return ""
+    return match.group(1)
 
 
 def same_brand(provider_id: str, candidate: str, cfg: dict[str, Any]) -> bool:
