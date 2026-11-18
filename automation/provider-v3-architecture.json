@@ -550,7 +550,9 @@
   },
   "network_oracle": {
     "github_ci_role": "deterministic orchestration, code, materialization and reproducibility",
-    "macbridge_role": "required residential contradiction oracle for network-origin ambiguity",
+    "macbridge_role": "optional independent Mac egress oracle; use only when available and quota permits",
+    "primary_residential_oracle": "tailscale-residential-exit",
+    "oracle_unavailable_policy": "indeterminate: never promote Github-only network failure to provider, domain or disable authority",
     "macbridge_repository": "niakw/NiakGH-MacBridge",
     "require_non_github_replay_for_network_failures": true,
     "triggers": [
@@ -571,6 +573,7 @@
     "evidence_precedence": [
       "exact-byte native playback",
       "full provider replay residential",
+      "tailscale residential browser/client profiles",
       "macbridge browser/provider replay",
       "macbridge http/dns seed",
       "github-hosted http seed"
