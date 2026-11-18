@@ -192,4 +192,15 @@ with tempfile.TemporaryDirectory(prefix="niakvio-disabled-current-census-") as t
     else:
         raise AssertionError("provider byte drift was accepted")
 
+    # A newer sharded-only status must not be mistaken for a published full
+    # current-byte census, nor silently inherit the previous run's proof.
+    (root / f"automation/current-bytes-full-provider-census-{run_id}-summary.json").unlink()
+    try:
+        mod.census_inputs(root)
+    except mod.CensusEvidenceNotPublished as exc:
+        assert run_id in str(exc)
+        assert "no published full evidence" in str(exc)
+    else:
+        raise AssertionError("unpublished sharded status was accepted as full census proof")
+
 print("current census exact-byte disabled reactivation contract passed")

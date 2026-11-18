@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 import subprocess
 import tempfile
 from pathlib import Path
@@ -143,5 +144,29 @@ with tempfile.TemporaryDirectory(prefix="niakvio-wrong-content-lifecycle-") as t
     updated_hubs = json.loads((root / "provider-hubs.json").read_text(encoding="utf-8"))
     assert updated_hubs["providers"]["demo"]["manifest_status"] == "Désactivé"
     assert updated_hubs["providers"]["demo"]["activation_eligible"] is False
+
+    # Sharded status can be fresher than the persisted full census. Unattended
+    # lifecycle must defer without touching provider, manifest or patch bytes.
+    (root / f"automation/current-bytes-full-provider-census-{run_id}-summary.json").unlink()
+    original_root, original_latest, original_argv = mod.ROOT, mod.LATEST, sys.argv
+    receipt_path = root / "automation/provider-active-wrong-content-disable-latest.json"
+    try:
+        mod.ROOT = root
+        mod.LATEST = receipt_path
+        sys.argv = [str(SCRIPT), "--apply"]
+        manifest_before = (root / "manifest.json").read_bytes()
+        provider_before = provider_path.read_bytes()
+        assert mod.main() == 0
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        assert receipt["deferred"] is True
+        assert receipt["deferredReason"] == "full-current-byte-census-not-published"
+        assert receipt["sourceCensusRunId"] == run_id
+        assert receipt["eligible"] == [] and receipt["applied"] == []
+        assert (root / "manifest.json").read_bytes() == manifest_before
+        assert provider_path.read_bytes() == provider_before
+        sys.argv = [str(SCRIPT), "--apply", "--provider", "demo"]
+        assert mod.main() == 2
+    finally:
+        mod.ROOT, mod.LATEST, sys.argv = original_root, original_latest, original_argv
 
 print("active exact-byte wrong-content lifecycle contract passed")

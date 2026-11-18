@@ -22,6 +22,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from reactivate_disabled_from_current_census import (
     EligibilityError,
+    CensusEvidenceNotPublished,
     canon,
     canonical_json,
     census_inputs,
@@ -219,7 +220,29 @@ def main() -> int:
     parser.add_argument("--provider", action="append", default=[])
     args = parser.parse_args()
 
-    _status, summary, _raw = census_inputs(ROOT)
+    try:
+        _status, summary, _raw = census_inputs(ROOT)
+    except CensusEvidenceNotPublished as exc:
+        status = load(ROOT / "automation/provider-census-status.json", {})
+        result = {
+            "schemaVersion": 1,
+            "authority": PROOF_AUTHORITY,
+            "sourceCensusRunId": str(status.get("runId") or ""),
+            "sourceCensusSha": str(status.get("triggerSha") or ""),
+            "eligible": [],
+            "blocked": [],
+            "applied": [],
+            "deferred": True,
+            "deferredReason": "full-current-byte-census-not-published",
+            "details": str(exc),
+        }
+        dump(LATEST, result)
+        print(
+            "FIELD_ACTIVE_WRONG_CONTENT_LIFECYCLE_DEFERRED "
+            f"source_run={result['sourceCensusRunId']} "
+            "reason=full-current-byte-census-not-published applied=0"
+        )
+        return 2 if args.provider else 0
     candidates = sorted({
         canon(value)
         for value in (args.provider or summary.get("wrongContentProviders") or [])

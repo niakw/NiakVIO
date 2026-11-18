@@ -35,6 +35,15 @@ class EligibilityError(RuntimeError):
     pass
 
 
+class CensusEvidenceNotPublished(EligibilityError):
+    """Canonical status is ahead of the durable full current-byte census evidence.
+
+    Sharded census status alone cannot authorize lifecycle mutations. In this
+    case unattended lifecycle may continue without any census-driven changes;
+    explicit provider requests and malformed published evidence still fail.
+    """
+
+
 def canon(value: object) -> str:
     return str(value or "").strip().casefold().replace("_", "-")
 
@@ -206,8 +215,16 @@ def census_inputs(root: Path) -> tuple[dict[str, Any], dict[str, Any], dict[str,
     trigger_sha = str(status.get("triggerSha") or "").strip().casefold()
     if not run_id.isdigit() or len(trigger_sha) != 40:
         raise EligibilityError("canonical census is missing runId/triggerSha")
-    summary = load(root / f"automation/current-bytes-full-provider-census-{run_id}-summary.json")
-    raw = load(root / f"automation/current-bytes-full-provider-census-{run_id}.json")
+    summary_path = root / f"automation/current-bytes-full-provider-census-{run_id}-summary.json"
+    raw_path = root / f"automation/current-bytes-full-provider-census-{run_id}.json"
+    missing = [str(path.relative_to(root)) for path in (summary_path, raw_path) if not path.is_file()]
+    if missing:
+        raise CensusEvidenceNotPublished(
+            f"canonical current-byte census {run_id} has no published full evidence: "
+            + ", ".join(missing)
+        )
+    summary = load(summary_path)
+    raw = load(raw_path)
     if str(summary.get("runId") or "") != run_id:
         raise EligibilityError("census summary runId mismatch")
     if str(summary.get("triggerSha") or "").casefold() != trigger_sha:
