@@ -1,3 +1,7 @@
+## 2026-11-19 — Exercise WAF replay freshness against active CI lane
+
+- The explicit WAF GitHub Actions lane now runs targeted historical/current merge regression, durable latest merge regression and census replay merge regression on the same SHA before network tests. This closes the previous gap where a successful transport check did not exercise latest-run replay provenance.
+
 ## 2026-11-19 — WAF full-run evidence and historical/current replay separation (CI pending)
 
 - Real WAF run 44423214248 SUCCESS on e1417622044256827a55eafd86532fad21040e29. Java OkHttp selftest and four native manifest staging tests passed. Tailscale public IPv4 actually changed after exit selection. Full residential JS replay: 3 providers, 0 playable, 0 verified. Sekai is still zero before provider network, AnimeOnsen is runtime WAF blocked, Vostfree is currently disabled.

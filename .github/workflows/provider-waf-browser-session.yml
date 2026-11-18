@@ -135,6 +135,8 @@ jobs:
           python tests/residential_provider_replay_summary_test.py
           python tests/targeted_quick_yield_canonical_cli_test.py
           python tests/targeted_waf_refresh_merge_test.py
+          python tests/waf_latest_evidence_merge_test.py
+          python tests/waf_census_transport_merge_test.py
 
       - name: Normalize private Tailscale CI tag
         if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
