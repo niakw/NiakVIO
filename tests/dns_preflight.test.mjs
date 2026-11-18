@@ -9,6 +9,7 @@ import {
   providerDecision,
   simpleDnsStatus,
   requestedProviderIds,
+  rotateDnsObservationOrder,
 } from '../scripts/provider_dns_preflight.mjs';
 
 // Missing/empty --providers in a scheduled all-hub refresh must never
@@ -18,6 +19,39 @@ assert.deepEqual([...requestedProviderIds(false)], []);
 assert.deepEqual([...requestedProviderIds('')], []);
 assert.deepEqual([...requestedProviderIds('  ')], []);
 assert.deepEqual([...requestedProviderIds('HindMoviez, UHDMovies, hindmoviez')], ['hindmoviez', 'uhdmovies']);
+
+// The free Globalping API can rate-limit after the first few providers.
+// Rotate the first probe group daily for full-cohort observations, while
+// explicit/targeted checks stay reproducible and bypass the rotating queue.
+{
+  const source = Array.from({ length: 76 }, (_, i) => ({ canonical_id: 'p' + i }));
+  const dates = Array.from({ length: 10 }, (_, n) =>
+    new Date(Date.UTC(2026, 10, 18 + n)).toISOString().slice(0, 10));
+  const rounds = dates.map((utcDay) =>
+    rotateDnsObservationOrder(source, { allDomains: true, utcDay, chunkSize: 8 }));
+  assert.ok(rounds.every((round) => round.rotated));
+  assert.ok(rounds.every((round) => round.candidates.length === source.length));
+  for (let i = 1; i < rounds.length; i++) {
+    assert.equal(rounds[i].offset, (rounds[i - 1].offset + 8) % source.length);
+  }
+  const observed = new Set(rounds.flatMap((round) =>
+    round.candidates.slice(0, 8).map((row) => row.canonical_id)));
+  assert.equal(observed.size, 76, 'daily quota rotation must cover every identity');
+  const target = rotateDnsObservationOrder(source, {
+    allDomains: true, targeted: true, utcDay: dates[0],
+  });
+  assert.equal(target.rotated, false);
+  assert.deepEqual(target.candidates, source);
+  const normal = rotateDnsObservationOrder(source, {
+    allDomains: false, utcDay: dates[0],
+  });
+  assert.equal(normal.rotated, false);
+  assert.deepEqual(normal.candidates, source);
+  const invalid = rotateDnsObservationOrder(source, {
+    allDomains: true, utcDay: 'bad-date',
+  });
+  assert.equal(invalid.rotated, false);
+}
 
 const baseConfig = {
   primary_french_isp: 'sfr',
