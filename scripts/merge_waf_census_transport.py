@@ -417,6 +417,18 @@ def merge_transport(
             if provider in fresh_replay_providers
             else []
         )
+        # Replays can complete while other provider generations are published.
+        # A fresh *run ID* does not prove this census row used the same JS.
+        # If the census knows its exact bundle digest, require a matching digest
+        # from the bytes staged/executed in the residential replay. Legacy rows
+        # without a digest remain historical context only, never publication.
+        expected_bundle_digest = str(row.get("providerArtifactSha256") or "").strip().casefold()
+        if expected_bundle_digest:
+            provider_replay_rows = [
+                observation for observation in provider_replay_rows
+                if str(observation.get("providerArtifactSha256") or "").strip().casefold()
+                == expected_bundle_digest
+            ]
         if row.get("authorityRepairEligible") is False and census._lifecycle_disabled(row):
             row["status"] = "DISABLED"
             row["color"] = census.STATUS_META["DISABLED"][0]
