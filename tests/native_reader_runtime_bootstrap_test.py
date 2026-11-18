@@ -133,6 +133,11 @@ with tempfile.TemporaryDirectory(prefix="niakvio-tv-bootstrap-") as tmp:
     assert first.count('testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"') == 1
     assert first.count('androidTestImplementation("androidx.test.ext:junit:1.3.0")') == 1
     assert first.count('androidTestImplementation("androidx.test:runner:1.7.0")') == 1
+    # Generated TV diagnostics imports UiDevice, By and Until. A missing
+    # UIAutomator test-only dependency blocked native Android run 44307300810.
+    assert 'import androidx.test.uiautomator.UiDevice' in TV_IMPORTS
+    assert first.count('androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")') == 1
+    assert second.count('androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")') == 1
     assert 'signingConfigs.getByName("debug")' in first
     assert 'versionName = "9.99.0-future"' in first
 

@@ -41,6 +41,7 @@ MOBILE_DEVICE_TEST_MANIFEST = '''<?xml version="1.0" encoding="utf-8"?>
 TV_RUNNER = 'testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"'
 TV_EXT_JUNIT = 'androidTestImplementation("androidx.test.ext:junit:1.3.0")'
 TV_TEST_RUNNER = 'androidTestImplementation("androidx.test:runner:1.7.0")'
+TV_UIAUTOMATOR = 'androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")'
 TV_DEBUG_ENTRYPOINT = '''package com.nuvio.tv.core.plugin
 
 import com.nuvio.tv.data.local.PlayerSettingsDataStore
@@ -178,7 +179,7 @@ def enable_tv_tests(repo: Path) -> None:
         text = text.replace(default_config, default_config + f"        {TV_RUNNER}\n", 1)
 
     missing_dependencies = [
-        dependency for dependency in (TV_EXT_JUNIT, TV_TEST_RUNNER) if dependency not in text
+        dependency for dependency in (TV_EXT_JUNIT, TV_TEST_RUNNER, TV_UIAUTOMATOR) if dependency not in text
     ]
     if missing_dependencies:
         text = text.rstrip() + "\n\n\ndependencies {\n"
