@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "authority": "provider-authority-arbiter-v1",
-  "censusStatusSource": "/home/runner/work/NiakVIO/NiakVIO/automation/provider-census-status.json",
+  "censusStatusSource": "/tmp/provider-census-preauthority.json",
   "productionFreshnessStatusSource": "persisted-all-scope",
   "policy": {
     "searchRole": "historical-supplement-only",
@@ -1213,8 +1213,13 @@
         "https://api.meowtv.ru"
       ],
       "reasons": [
-        "structured_backend_authority"
-      ]
+        "structured_backend_authority",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:FULL OK"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "moiflix",
