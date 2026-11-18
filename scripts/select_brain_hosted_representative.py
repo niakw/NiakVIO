@@ -50,8 +50,31 @@ def negative_history(directory: Path) -> dict[str, int]:
         # before burning another full 3B CPU budget on identical source bytes.
         # Timeouts are infrastructure/model evidence, so their penalty is
         # smaller: don't confuse a timeout with an invalid provider mechanism.
-        if "no_op" in reasons or "causally_empty_deletion" in reasons:
+        executed_rejected = [
+            row for row in (raw.get("verification") or [])
+            if isinstance(row, dict)
+            and row.get("accepted") is False
+            and row.get("executionObserved") is True
+            and row.get("materializedMutationObserved") is True
+        ]
+        # The hosted experiment may generate a syntactically valid but
+        # behaviorally unchanged nested block. This is *actual* negative
+        # materialization/replay evidence and must outrank a later model
+        # retry error. Otherwise the selector forgets to rotate families.
+        if "no_op" in reasons or "causally_empty_deletion" in reasons or any(
+            str(row.get("reason") or "").strip().casefold()
+            in {"decoded_repair_no_new_fixture_control",
+                "decoded_repair_no_improvement",
+                "no_new_decoded_media"}
+            for row in executed_rejected
+        ):
             debt[provider] = debt.get(provider, 0) + 100
+        elif trace and reasons.issubset({"valueerror", "timeout", "model_unavailable"}):
+            # A local model/prompt failure without a materialized candidate
+            # describes Brain infrastructure, not a provider-specific causal
+            # impossibility. The Brain must retain the failure and retry after
+            # infrastructure repair instead of poisoning provider memory.
+            continue
         elif trace:
             debt[provider] = debt.get(provider, 0) + 25
     return {key: min(300, value) for key, value in debt.items()}
