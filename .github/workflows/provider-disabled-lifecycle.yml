@@ -13,12 +13,14 @@ on:
       - 'scripts/classify_provider_authority.py'
       - 'scripts/manage_provider_lifecycle.py'
       - 'scripts/reactivate_disabled_from_current_census.py'
+      - 'scripts/disable_active_wrong_content_from_current_census.py'
       - 'scripts/provider_production_freshness.py'
       - 'scripts/current_provider_scope.py'
       - 'scripts/reconcile_provider_static_authority.py'
       - 'scripts/build_provider_disabled_recovery_queue.py'
       - 'tests/provider_disabled_brain_recovery_queue_test.py'
       - 'tests/provider_disabled_current_census_reactivation_test.py'
+      - 'tests/provider_active_wrong_content_lifecycle_test.py'
       - 'tests/current_bytes_census_lifecycle_handoff_test.py'
       - 'tests/production_active_provider_freshness_test.py'
       - 'tests/provider_authority_arbiter_test.py'
@@ -61,7 +63,10 @@ jobs:
           python scripts/reconcile_provider_static_authority.py --apply
           python tests/provider_static_authority_france_only_test.py
           python tests/provider_disabled_current_census_reactivation_test.py
+          python tests/provider_active_wrong_content_lifecycle_test.py
           python tests/current_bytes_census_lifecycle_handoff_test.py
+          # Fresh exact-byte identity contradictions are lifecycle safety, not provider Repair.
+          python scripts/disable_active_wrong_content_from_current_census.py --apply
           python scripts/reactivate_disabled_from_current_census.py --apply
           # Move exact proven retained bytes back before production freshness
           # classifies the active row. The second lifecycle pass then settles
@@ -69,7 +74,7 @@ jobs:
           python scripts/manage_provider_lifecycle.py --apply
           python scripts/classify_provider_authority.py --apply-safe-disables
           python scripts/manage_provider_lifecycle.py --apply
-          python -m py_compile scripts/manage_provider_lifecycle.py scripts/reactivate_disabled_from_current_census.py scripts/provider_production_freshness.py scripts/current_provider_scope.py scripts/classify_provider_authority.py
+          python -m py_compile scripts/manage_provider_lifecycle.py scripts/reactivate_disabled_from_current_census.py scripts/disable_active_wrong_content_from_current_census.py scripts/provider_production_freshness.py scripts/current_provider_scope.py scripts/classify_provider_authority.py
           python tests/production_active_provider_freshness_test.py --allow-proof-debt
           python tests/provider_authority_arbiter_test.py
           python tests/provider_authority_current_catalogue_test.py
@@ -183,6 +188,7 @@ jobs:
             automation/provider-disabled-recovery-queue.json \
             automation/provider-disabled-reactivation-ledger.json \
             automation/provider-disabled-current-census-reactivation-latest.json \
+            automation/provider-active-wrong-content-disable-latest.json \
             automation/provider-v3-static-knowledge.json provider-v3-materialization.json \
             provider-overrides.json provider-hubs.json providers provider-disabled provider-bases provider-old
           if git diff --cached --quiet; then

@@ -27,6 +27,7 @@ PROOF_AUTHORITY = "current-census-exact-byte-terminal-v1"
 SAFE_AUTO_OFF_PREFIXES = (
     "auto_off_current_architecture_regression",
     "auto_off_current_architecture_nonfunctional",
+    "auto_off_current_wrong_content",
 )
 
 
