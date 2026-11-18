@@ -127,6 +127,7 @@ for required in (
     "'.github/workflows/github-actions-gate.yml'",
     "'tests/workflow_security_policy_test.py'",
     "'tests/repository_hygiene_contract_test.py'",
+    "'tests/provider_v3_workflow_ownership_test.py'",
     "'.github/workflows/sync.yml'",
     "'.github/workflows/provider-non-regression.yml'",
     "'.github/workflows/core-stream-metadata-contract.yml'",

@@ -4792,3 +4792,9 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - The oracle-only fix on `643e4fc` corrected `tests/provider_v3_workflow_ownership_test.py`, but that file was not part of `release-finalize.yml` push paths. Therefore the current HEAD could pass/fail release ownership semantics without automatically receiving an exact Finalizer.
 - Added the workflow-ownership test to Finalizer trigger coverage. This keeps the release acceptance surface closed under its own policy tests: changing a blocking release-workflow oracle now automatically creates a latest-wins exact Finalizer.
 - The preceding Verify & Publish failure on `b05340b` was the same stale `cancel-in-progress:false` assertion already diagnosed; no separate provider/Core failure was exposed there.
+
+
+## 2026-11-18 — Finalizer ownership-trigger coverage locked by release contract
+
+- The release projection transaction contract now explicitly requires `tests/provider_v3_workflow_ownership_test.py` to remain in Finalizer trigger coverage. This prevents the trigger fix itself from silently regressing later.
+- This is the last planned harness-only adjustment before freezing main for exact release finalization; further main movement now requires a demonstrated failing gate or publication defect.
