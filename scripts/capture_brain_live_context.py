@@ -141,6 +141,7 @@ def main():
         # code-causal mutation prompt just because a model is available.
         'preflight_status': str(result.get('status') or '').strip().casefold()[:48],
         'preflight_playable': verifier.runtime_repair.playable_stream_count(result),
+        'preflight_identity_contradictions': verifier.runtime_repair.identity_contradiction_count(result),
         'active_functions': names[:6],
         'http_script_shell_only': script_shell_only(events),
         'fixture_evidence': fixture_rows,
