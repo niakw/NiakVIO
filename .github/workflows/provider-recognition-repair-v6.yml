@@ -1096,6 +1096,10 @@ jobs:
           DISPATCH_MODE: ${{ inputs.mode || '' }}
           TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
           REQUIRE_EXTERNAL_FORCE_MUTATIONS: ${{ inputs.require_external_force_mutations || 'false' }}
+          # Canonical FORCE promotion must use category-matched immutable repair
+          # fixtures and independently decoded terminal media. A mere URL,
+          # HTTP 200 or streamsPlayable count is never repair acceptance.
+          NIAKVIO_REQUIRE_DECODE_PROOF: '1'
         run: |
           set -euo pipefail
           force_requested=false
