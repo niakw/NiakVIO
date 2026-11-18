@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "authority": "provider-authority-arbiter-v1",
-  "censusStatusSource": "/home/runner/work/NiakVIO/NiakVIO/automation/provider-census-status.json",
-  "productionFreshnessStatusSource": "persisted-all-scope",
+  "censusStatusSource": "/tmp/provider-census-preauthority.json",
+  "productionFreshnessStatusSource": "/tmp/provider-census-current-freshness.json",
   "policy": {
     "searchRole": "historical-supplement-only",
     "futureHubSearchDefault": false,
@@ -207,7 +207,7 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
+        "current_status:CHAIN REACHED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -462,7 +462,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
+        "current_status:CHAIN REACHED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -534,13 +534,8 @@
         "https://api.hlowb.com"
       ],
       "reasons": [
-        "structured_backend_authority",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:FULL OK"
-      ],
-      "productionFreshnessAuthorized": false,
-      "productionProofAuthority": "no-current-byte-production-proof"
+        "structured_backend_authority"
+      ]
     },
     {
       "provider": "chillflix",
@@ -621,7 +616,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
+        "current_status:CHAIN REACHED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -833,7 +828,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "current_status:HARNESS MISMATCH"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -1067,13 +1062,8 @@
         "https://hindmovie.icu/wp-json/wp/v2/posts"
       ],
       "reasons": [
-        "structured_backend_authority",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:FULL OK"
-      ],
-      "productionFreshnessAuthorized": false,
-      "productionProofAuthority": "no-current-byte-production-proof"
+        "structured_backend_authority"
+      ]
     },
     {
       "provider": "ihavenotv",
@@ -1112,13 +1102,8 @@
       "failureCount": 0,
       "reasons": [
         "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:FULL OK"
-      ],
-      "productionFreshnessAuthorized": false,
-      "productionProofAuthority": "no-current-byte-production-proof"
+        "search_supplement_only"
+      ]
     },
     {
       "provider": "kehflix",
@@ -1231,13 +1216,8 @@
         "https://api.meowtv.ru"
       ],
       "reasons": [
-        "structured_backend_authority",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:FULL OK"
-      ],
-      "productionFreshnessAuthorized": false,
-      "productionProofAuthority": "no-current-byte-production-proof"
+        "structured_backend_authority"
+      ]
     },
     {
       "provider": "moiflix",
@@ -1250,7 +1230,7 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "current_status:PROVIDER NETWORK BLOCKED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -1334,7 +1314,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "current_status:PROVIDER JS BROKEN"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -1407,7 +1387,7 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "current_status:PROVIDER JS BROKEN"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -1551,7 +1531,7 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
+        "current_status:CHAIN REACHED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -1743,7 +1723,7 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
+        "current_status:CHAIN REACHED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -1760,7 +1740,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "current_status:HARNESS MISMATCH"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -1955,7 +1935,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "current_status:HARNESS MISMATCH"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -1983,7 +1963,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
+        "current_status:CHAIN REACHED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -2047,13 +2027,8 @@
       "authorityClass": "hub-or-redirect",
       "failureCount": 0,
       "reasons": [
-        "authoritative_route_source",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:FULL OK"
-      ],
-      "productionFreshnessAuthorized": false,
-      "productionProofAuthority": "no-current-byte-production-proof"
+        "authoritative_route_source"
+      ]
     },
     {
       "provider": "willow",
@@ -2139,7 +2114,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PARTIAL OK"
+        "current_status:REGRESSION PROVIDER"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -2156,7 +2131,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "current_status:HARNESS/ENV BLOCKED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"

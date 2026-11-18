@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44237198508",
-  "sourceTriggerSha": "fdc793d553df965fb0cfe4c0febc3fc945efde45",
+  "sourceRunId": "44297456672",
+  "sourceTriggerSha": "276600c13be865f4bf916b42f62b57c460080bbd",
   "unresolvedProviderCount": 73,
   "dynamicVariantProviderCount": 7,
   "dynamicVariantProviders": [
@@ -127,8 +127,8 @@
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": false,
-  "groupCount": 13,
+  "dynamicVariantFallbackUsed": true,
+  "groupCount": 12,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -152,19 +152,21 @@
       "dominantIssues": [
         "network_http_error",
         "network_zero_result",
-        "provider_returned_streams, timeout",
         "timeout",
         "waf_challenge"
       ],
       "harnessTransportClasses": [
         "github-all-transports-challenged",
-        "no-transport-evidence"
+        "native-policy-reachable",
+        "no-transport-evidence",
+        "residential-exit-all-challenged",
+        "residential-exit-browser-reachable",
+        "residential-exit-native-reachable"
       ],
       "transportSignature": "not-applicable",
-      "providerCount": 42,
+      "providerCount": 40,
       "providers": [
         "1jour1film0626",
-        "67movies",
         "anikototv",
         "animeonsen",
         "anisama",
@@ -187,23 +189,22 @@
         "hianime",
         "kidraz",
         "latestmovies",
+        "moiflix",
         "moviebite",
         "movish",
         "movix-fr",
         "neobam",
         "neonflix",
         "overlook",
-        "primewire",
         "pstream",
-        "sadisflix",
         "showbox",
-        "shuttletv",
         "skstream",
         "voirserie",
         "vuflix",
         "watch-cartoon-online",
         "waveanime",
         "youtitou",
+        "zone-streaming",
         "zone-telechargement"
       ],
       "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
@@ -211,8 +212,7 @@
         "provider-census-status.json:brainCheckRequired"
       ],
       "dynamicVariantProviders": [
-        "movix-fr",
-        "sadisflix"
+        "movix-fr"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
@@ -234,7 +234,6 @@
         "network_exception",
         "network_http_error",
         "network_zero_result",
-        "provider_returned_streams, provider_returned_wrong_content",
         "timeout",
         "waf_challenge"
       ],
@@ -243,7 +242,7 @@
         "no-transport-evidence"
       ],
       "transportSignature": "not-applicable",
-      "providerCount": 16,
+      "providerCount": 15,
       "providers": [
         "anidb",
         "aniflix-uno",
@@ -257,7 +256,6 @@
         "rivestream-app",
         "rivestream-ru",
         "stigstream",
-        "topcartoons",
         "videasy",
         "vidlink",
         "watchott"
@@ -290,10 +288,11 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 4,
+      "providerCount": 5,
       "providers": [
         "frenchstream",
         "mugiwarastream",
+        "nakios",
         "neko-sama",
         "streamzo"
       ],
@@ -301,7 +300,9 @@
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [],
+      "dynamicVariantProviders": [
+        "nakios"
+      ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -318,21 +319,25 @@
       ],
       "dominantIssues": [
         "network_http_error",
-        "network_zero_result"
+        "network_zero_result",
+        "timeout"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 2,
+      "providerCount": 5,
       "providers": [
+        "67movies",
         "corsflix",
-        "nakios"
+        "primewire",
+        "sadisflix",
+        "shuttletv"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
       "dynamicVariantProviders": [
-        "nakios"
+        "sadisflix"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
@@ -416,36 +421,6 @@
       "providerCount": 1,
       "providers": [
         "french-anime"
-      ],
-      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-inconclusive",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "not-applicable",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "residential-exit-inconclusive"
-      ],
-      "transportSignature": "residential-exit-inconclusive",
-      "providerCount": 1,
-      "providers": [
-        "moiflix"
       ],
       "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
