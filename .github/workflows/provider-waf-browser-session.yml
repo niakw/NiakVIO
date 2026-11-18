@@ -106,11 +106,15 @@ jobs:
       - name: Build NuvioTV-policy OkHttp diagnostic helper
         run: mvn -q -f tools/waf-okhttp-probe/pom.xml -DskipTests package
 
-      - name: Validate ordinary-browser diagnostic contract
-        run: python tests/provider_waf_browser_session_test.py
+      - name: Validate ordinary-browser diagnostic contract and canonical native manifest bases
+        run: |
+          python tests/provider_waf_browser_session_test.py
+          python tests/native_nested_manifest_resolution_test.py
 
       - name: Validate NuvioTV-policy OkHttp diagnostic contract
-        run: python tests/provider_waf_okhttp_profile_test.py
+        run: |
+          python tests/provider_waf_okhttp_profile_test.py
+          java -cp 'tools/waf-okhttp-probe/target/classes:tools/waf-okhttp-probe/target/dependency/*' WafOkHttpProbe --self-test
 
       - name: Validate transport-only census merge contract
         run: |

@@ -69,6 +69,19 @@ public final class WafOkHttpProbe {
     }
 
     public static void main(String[] args) throws Exception {
+        if (args.length == 1 && "--self-test".equals(args[0])) {
+            String ordinary = "<html><script>var lib='challenge-platform turnstile captcha just a moment';</script>"
+                + "<body>" + "regular catalogue data ".repeat(12) + "</body></html>";
+            String challenge = "<html><title>Just a moment...</title>"
+                + "<body><div id='challenge-platform'>checking your browser</div></body></html>";
+            if (!"okhttp_jvm_content_reached".equals(classify(ordinary))
+                || !"okhttp_jvm_challenge_persisted".equals(classify(challenge))
+                || !"okhttp_jvm_inconclusive".equals(classify("<html></html>"))) {
+                throw new IllegalStateException("NuvioTV OkHttp DOM classification self-test failed");
+            }
+            System.out.println("FIELD_WAF_OKHTTP_CLASSIFIER_SELFTEST=passed");
+            return;
+        }
         if (args.length < 4) {
             throw new IllegalArgumentException("usage: WafOkHttpProbe <url> <attempts> <timeoutSeconds> <userAgent>");
         }

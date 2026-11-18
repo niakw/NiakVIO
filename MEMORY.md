@@ -1,3 +1,8 @@
+## 2026-11-19 — Executable native/OkHttp harness regressions wired to explicit WAF lane
+
+- WAF workflow now runs all-four-manifest native staging regression and a compiled JVM OkHttp classifier self-test (real Java code, not only textual assertions) before network/replay. This is an explicit workflow; commit alone will not trigger it until the dedicated WAF trigger is updated.
+- Self-test differentiates an ordinary site shipping challenge libraries, a true visible challenge page, and inconclusive short HTML. Still not device TLS, decoded provider media, or native playback.
+
 ## 2026-11-19 — Official native reader accepts VF and both no-anime manifest bases (pending CI)
 
 - Corrected a concrete generic client-staging error: relative provider filenames had been resolved against repository root even when manifest was vf/, no-anime/ or vf-no-anime/. The reader now stages relative to the actual manifest directory and rejects lifecycle escapes. Added a regression executing the staging resolver for all four preserved release variants, checking every staged source exists.
