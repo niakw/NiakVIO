@@ -369,6 +369,29 @@ export function requestedProviderIds(value) {
   return new Set(value.split(',').map((id) => id.trim().toLowerCase()).filter(Boolean));
 }
 
+// Globalping quota is account-wide: an all-provider scheduled run may exhaust
+// the remote API after only a few checks. Rotate which providers are checked
+// first each UTC day so the same initial slice cannot monopolize every run.
+// Explicit --providers probes and non-all-domains calls remain stable.
+// This changes only observation order, never domain or publication authority.
+export function rotateDnsObservationOrder(candidates, {
+  allDomains = false, targeted = false, utcDay = new Date().toISOString().slice(0, 10),
+  chunkSize = 8,
+} = {}) {
+  const source = Array.isArray(candidates) ? [...candidates] : [];
+  const day = /^\\d{4}-\\d{2}-\\d{2}$/.test(String(utcDay || ''))
+    ? Date.parse(`${utcDay}T00:00:00Z`) : NaN;
+  const step = Math.max(1, Math.min(source.length || 1, Math.trunc(Number(chunkSize) || 8)));
+  if (!allDomains || targeted || source.length < 2 || !Number.isFinite(day)) {
+    return { candidates: source, offset: 0, chunkSize: step, rotated: false };
+  }
+  const offset = ((Math.floor(day / 86400000) * step) % source.length + source.length) % source.length;
+  return {
+    candidates: [...source.slice(offset), ...source.slice(0, offset)],
+    offset, chunkSize: step, rotated: true,
+  };
+}
+
 function normalizeHost(value) {
   return String(value || '')
     .trim()
@@ -1129,6 +1152,17 @@ async function runCli() {
     const missing = [...requestedProviders].filter((provider) => !found.has(provider));
     if (missing.length) throw new Error(`unknown provider selection for DNS preflight: ${missing.join(',')}`);
   }
+  const observationOrder = rotateDnsObservationOrder(candidates, {
+    allDomains: args['all-domains'] === true,
+    targeted: requestedProviders.size > 0,
+    chunkSize: preflightConfig.remote_probe?.rotation_chunk_size || 8,
+  });
+  const orderedCandidates = observationOrder.candidates;
+  if (observationOrder.rotated) {
+    process.stdout.write(
+      `FIELD_DNS_OBSERVATION_ROTATION providers=${orderedCandidates.length} offset=${observationOrder.offset} chunk=${observationOrder.chunkSize} authority=none\\n`,
+    );
+  }
   const frenchResolverNames = [preflightConfig.primary_french_isp, ...(preflightConfig.fallback_french_isps || [])].filter(Boolean);
   const remoteDependencies = createGlobalpingDependencies(preflightConfig);
   let apiLimitReached = false;
@@ -1139,13 +1173,13 @@ async function runCli() {
   }));
   const frenchResolverTransportAvailable = preflightConfig.remote_probe?.enabled !== false;
   let nextIndex = 0;
-  const results = new Array(candidates.length);
+  const results = new Array(orderedCandidates.length);
 
   async function worker() {
     while (true) {
       const index = nextIndex++;
-      if (index >= candidates.length) return;
-      const candidate = candidates[index];
+      if (index >= orderedCandidates.length) return;
+      const candidate = orderedCandidates[index];
       try {
         if (apiLimitReached) {
           results[index] = {
@@ -1163,7 +1197,7 @@ async function runCli() {
               reason: 'globalping_api_limit_reached',
             },
           };
-          process.stdout.write(`[DNS ${index + 1}/${candidates.length}] ${candidate.key}: DNS API LIMIT REACH (circuit-breaker)\n`);
+          process.stdout.write(`[DNS ${index + 1}/${orderedCandidates.length}] ${candidate.key}: DNS API LIMIT REACH (circuit-breaker)\n`);
           continue;
         }
         const providerPath = path.resolve(stage, String(candidate.local_path || ''));
@@ -1202,7 +1236,7 @@ async function runCli() {
           dns_status: dnsStatus,
           decision,
         };
-        process.stdout.write(`[DNS ${index + 1}/${candidates.length}] ${candidate.key}: ${dnsStatus || 'N/A'} (internal=${decision.status})\n`);
+        process.stdout.write(`[DNS ${index + 1}/${orderedCandidates.length}] ${candidate.key}: ${dnsStatus || 'N/A'} (internal=${decision.status})\n`);
       } catch (error) {
         results[index] = {
           key: candidate.key,
@@ -1218,7 +1252,7 @@ async function runCli() {
       }
     }
   }
-  await Promise.all(Array.from({ length: Math.min(concurrency, candidates.length || 1) }, () => worker()));
+  await Promise.all(Array.from({ length: Math.min(concurrency, orderedCandidates.length || 1) }, () => worker()));
   providers.push(...results.filter(Boolean));
   const counts = {};
   const internalCounts = {};
@@ -1239,6 +1273,13 @@ async function runCli() {
     hub_observation_included: Boolean(hubReportPath),
     observation_only: true,
     candidate_count: providers.length,
+    observation_rotation: {
+      enabled: observationOrder.rotated,
+      offset: observationOrder.offset,
+      chunk_size: observationOrder.chunkSize,
+      scope: observationOrder.rotated ? 'full-cohort-daily-utc' : 'original-order',
+      publication_authority: false,
+    },
     resolver_order: frenchResolverNames,
     resolver_transport: {
       control_domain: 'example.com',
