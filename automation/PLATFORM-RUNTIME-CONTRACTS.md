@@ -2,7 +2,7 @@
 
 > Généré depuis `automation/platform-runtime-contracts.json` par `scripts/render_platform_runtime_contracts.py`. Ne pas éditer la matrice à la main.
 
-Dernier audit du contrat : **2026-11-17**.
+Dernier audit du contrat : **2026-11-18**.
 
 **Lecture rapide :** 🟢 identique sur tous les clients · 🟠 implémentation/sémantique différente · 🔴 capacité absente, incompatible ou à ré-auditer sur au moins un client.
 
@@ -65,7 +65,7 @@ Critical provider identity, quality, language, request-header and subtitle facts
 | macOS | `NuvioMedia/NuvioDesktop` / `Dev` | `c0eb7bfa7c74820bd189a63a48ae364af8bb3058` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
 | Windows | `NuvioMedia/NuvioDesktop` / `Dev` | `c0eb7bfa7c74820bd189a63a48ae364af8bb3058` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
 | Linux | `NuvioMedia/NuvioDesktop` / `Dev` | `c0eb7bfa7c74820bd189a63a48ae364af8bb3058` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
-| Android TV | `NuvioMedia/NuvioTV` / `dev` | `3ff5e2b41a9dba282c57e7602e401df09dabe703` | **audited** | `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt` |
+| Android TV | `NuvioMedia/NuvioTV` / `dev` | `67bbb3c3f3be2235e3abb7fda9c4670f97df8448` | **audited** | `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt` |
 
 ## Lecture des états
 
@@ -148,7 +148,7 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `app/src/full/java/com/nuvio/tv/core/plugin/PluginManager.kt`
 - Transport : `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt`
 - Modèle de résultat : `app/src/main/java/com/nuvio/tv/domain/model/Plugin.kt`
-- Note d'audit : 2026-11-17: exact current-source re-audit at dev 3ff5e2b41a9d. Since 5b371fcd0d7e, two commits change only TmdbMetadataService person-filmography filtering for talk-show guest appearances plus tests; no configured provider/plugin/stream/player semantic path changed. getStreams, QuickJS transport, stream URL/header projection, audio-track enumeration/selection, provider grouping/fallback identity and expired-link same-addon refresh remain unchanged. Exact Android-TV Native Lab proof remains required.
+- Note d'audit : 2026-11-18 exact source re-audit at NuvioTV dev 67bbb3c3f3be. Across 21 commits / 58 files since 3ff5e2b41a9d, PluginRuntime, PluginManager, StreamRepository and getStreams transport are unchanged. Subtitle DTO/domain changes only add optional label while preserving url/lang/headers; StreamMapper and SubtitleRepository map that label additively. Player deltas add background-trailer handoff, fail-soft runtime buffer overrides and Dolby Vision diagnostics; no audio-track enumeration/selection or provider stream/header ownership path changed. Upstream full debug build workflow 44343356067 succeeded on this exact head. Source ABI is compatible; exact Android-TV Native Lab decoded playback/audio-language proof remains required.
 
 ## Évidence croisée Native + tests utilisateur
 
