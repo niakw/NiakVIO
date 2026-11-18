@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import copy
 import importlib.util
 from pathlib import Path
 
@@ -159,5 +160,25 @@ assert row["testedThisRun"] is True,row
 assert tls["repairQueue"]==[],tls
 assert tls["environmentQueue"]==["tls-browser-only"],tls
 assert tls["clientTransportGapQueue"]==["tls-browser-only"],tls
+
+# Current-byte replays may reclassify, but a stale/MISSING digest cannot
+# silently promote a previously blocked new JS generation on main.
+for measured_sha, expected_reclassified in (
+    ("", False),
+    ("b" * 64, False),
+    ("a" * 64, True),
+):
+    baseline = copy.deepcopy(harness_zero_baseline)
+    baseline["providers"][0]["providerArtifactSha256"] = "a" * 64
+    waf = copy.deepcopy(harness_zero_waf)
+    waf["residentialProviderReplay"]["rows"][0]["providerArtifactSha256"] = measured_sha
+    result = mod.merge_transport(baseline, waf)
+    provider = result["providers"][0]
+    assert bool(provider.get("residentialProviderReplayReclassified")) is expected_reclassified, (
+        measured_sha, provider,
+    )
+    assert ("env-zero" in result.get("residentialProviderReplayReclassifiedProviders", [])) is expected_reclassified
+    if not expected_reclassified:
+        assert not provider.get("residentialProviderReplayClass"), provider
 
 print("residential zero-result and browser-only transport reclassification tests passed")
