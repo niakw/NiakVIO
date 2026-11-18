@@ -10,6 +10,10 @@ assert "if: ${{ false }}" not in source, "hosted proof remains disabled"
 assert "FIELD_BRAIN_HOSTED_PILOT" in source
 assert "single-provider-exact-source-force" in source
 assert "automatic_fleet=" in source
+assert "FIELD_BRAIN_CENSUS_PROVENANCE" in source
+assert "hosted Brain refuses census after executable/source drift" in source
+assert "triggerSha" in source
+assert "git','diff','--name-only',census,current" in source
 
 assert "github.ref == 'refs/heads/main'" in source
 assert "github.repository == 'niakw/NiakVIO'" in source

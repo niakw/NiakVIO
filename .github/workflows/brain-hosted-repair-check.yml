@@ -48,6 +48,37 @@ jobs:
         run: |
           set -euo pipefail
           python tests/brain_hosted_representative_selection_test.py
+          # The persisted census may be one evidence-only commit behind HEAD.
+          # Accept that only when no provider/runtime source changed since its
+          # exact trigger SHA. Never synthesize against bytes the census did not observe.
+          python - <<'PY'
+          import json, os, re, subprocess
+          from pathlib import Path
+          state=json.loads(Path('automation/provider-census-status.json').read_text(encoding='utf-8'))
+          census=str(state.get('triggerSha') or '').strip().lower()
+          current=str(os.environ.get('GITHUB_SHA') or '').strip().lower()
+          if not re.fullmatch(r'[0-9a-f]{40}', census):
+              raise SystemExit('hosted Brain requires census triggerSha')
+          subprocess.run(['git','cat-file','-e',census+'^{commit}'],check=True)
+          if subprocess.run(['git','merge-base','--is-ancestor',census,current]).returncode != 0:
+              raise SystemExit('hosted Brain census trigger is not an ancestor of current main')
+          changed=subprocess.check_output(
+              ['git','diff','--name-only',census,current,'--'],text=True
+          ).splitlines()
+          allowed_exact={
+              'PROVIDER_CENSUS_STATUS.md',
+              '.github/workflows/brain-hosted-repair-check.yml',
+              'tests/brain_hosted_local_proof_workflow_test.py',
+          }
+          allowed_prefix=('automation/','docs/')
+          unsafe=[p for p in changed if p not in allowed_exact and not p.startswith(allowed_prefix)]
+          print('FIELD_BRAIN_CENSUS_PROVENANCE census_sha='+census
+                +' current_sha='+current
+                +' evidence_only_drift='+str(not unsafe).lower()
+                +' changed_files='+str(len(changed)))
+          if unsafe:
+              raise SystemExit('hosted Brain refuses census after executable/source drift: '+','.join(unsafe[:12]))
+          PY
           # This lane performs genuine FORCE proposal + candidate replay.
           # The separately green Learning Lab is advisor-only and cannot
           # establish a repaired provider by itself.
