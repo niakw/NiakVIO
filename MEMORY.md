@@ -4530,3 +4530,10 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 
 - Follow-up regression: canonical `normalizeStreamCandidate` initially used nullish fallback for audioTracks. An explicit empty `audioTracks: []` incorrectly prevented using populated `hlsMasterAudioTracks`, despite the actual HLS master having multiple language renditions. New `firstNonEmptyTrackArray` selects the first non-empty observed track array (primary list wins if populated), otherwise preserves a declared empty array without fabricating tracks.
 - Added regression for empty primary and available arrays as well as snake_case HLS master inputs. This preserves metadata across Core/adapter projections but does not itself qualify Nuvio native playback or selectable alternate audio.
+
+
+## 2026-11-18 — Stale CodeQL cleanup no longer rescans >12k analyses per deletion
+
+- Security cleanup runs after the current `SEC - CodeQL` and Final Gate succeeded on `5e84867f`, but `SEC - Retire verified stale CodeQL category` failed before deletion with `Security listing exceeded bounded pages`: the repository has more than the previous 120×100 analysis window.
+- The cleanup now enumerates CodeQL analysis history once with a larger bounded window and then follows GitHub's authenticated `confirm_delete_url` continuation chain for the exact verified stale ref/tool/category set. It validates every continuation host/path before use and never constructs a cross-category deletion target.
+- The deletion contract test now covers same-set continuation and rejects foreign continuation hosts. This is cleanup infrastructure only; current CodeQL/Security proof remains owned by the successful exact-head scans and no provider gains functional status.

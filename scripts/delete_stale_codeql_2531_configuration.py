@@ -12,6 +12,7 @@ import sys
 import time
 from pathlib import Path
 from urllib.error import HTTPError
+from urllib.parse import urlparse
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
@@ -65,42 +66,66 @@ def legacy_js_categories(rows: list[dict]) -> dict[str, list[dict]]:
 
 
 def list_main_analyses() -> list[dict]:
-    # The configuration we are retiring is historical. GitHub's default
-    # analysis listing is newest-first, which forced us to walk thousands of
-    # maintained analyses before reaching the obsolete category. Query oldest
-    # first so the stale configuration is found within a bounded window.
+    # We need the latest deletable row of each historical set, but this repository
+    # has accumulated well over 12k CodeQL analyses. Enumerate the CodeQL history
+    # once, oldest-first, then use GitHub's same-set deletion links below. Re-reading
+    # the entire history after every deletion is both unnecessary and rate-limit prone.
     rows = guard.read_pages(
         "repos/" + REPO + "/code-scanning/analyses?ref=" + MAIN_REF
-        + "&sort=created&direction=asc",
-        max_pages=120,
+        + "&tool_name=CodeQL&sort=created&direction=asc",
+        max_pages=500,
     )
     if not all(isinstance(row, dict) for row in rows):
         raise RuntimeError("Invalid CodeQL analysis listing")
     return rows
 
 
-def delete_category(category: str) -> int:
-    """Delete one exact stale set from newest to oldest, including its final row."""
-    deleted = 0
-    for _ in range(200):
-        matching = legacy_js_categories(list_main_analyses()).get(category, [])
-        if not matching:
+def _analysis_delete_path(url: str) -> str:
+    parsed = urlparse(str(url or ""))
+    prefix = "/repos/" + REPO + "/code-scanning/analyses/"
+    if parsed.scheme != "https" or parsed.netloc != "api.github.com":
+        raise RuntimeError("Invalid CodeQL deletion continuation host")
+    if not parsed.path.startswith(prefix):
+        raise RuntimeError("Invalid CodeQL deletion continuation path")
+    query = ("?" + parsed.query) if parsed.query else ""
+    return parsed.path.lstrip("/") + query
+
+
+def delete_category(category: str, rows: list[dict]) -> int:
+    """Delete one exact stale set via GitHub's same-category continuation chain."""
+    matching = legacy_js_categories(rows).get(category, [])
+    if not matching:
+        return 0
+    deletable = [row for row in matching if row.get("deletable") is True]
+    if len(deletable) != 1:
+        raise RuntimeError(
+            "Expected exactly one deletable analysis for stale category "
+            + category + ", got " + str(len(deletable))
+        )
+    row = deletable[0]
+    analysis_id = row.get("id")
+    if not isinstance(analysis_id, int) or analysis_id <= 0:
+        raise RuntimeError("Invalid stale CodeQL analysis id")
+
+    response = guard.api(
+        "repos/" + REPO + "/code-scanning/analyses/" + str(analysis_id),
+        "DELETE",
+    )
+    if not isinstance(response, dict):
+        raise RuntimeError("GitHub returned invalid stale-analysis deletion response")
+    deleted = 1
+
+    # GitHub returns a confirm_delete_url for the next analysis in the *same*
+    # ref/tool/category set. Following that server-provided chain is the
+    # documented way to remove the historical set without rescanning unrelated
+    # analyses. Never construct a continuation URL ourselves.
+    for _ in range(199):
+        continuation = response.get("confirm_delete_url")
+        if not continuation:
             return deleted
-        deletable = [row for row in matching if row.get("deletable") is True]
-        if len(deletable) != 1:
-            raise RuntimeError(
-                "Expected exactly one deletable analysis for stale category "
-                + category + ", got " + str(len(deletable))
-            )
-        row = deletable[0]
-        analysis_id = row.get("id")
-        if not isinstance(analysis_id, int) or analysis_id <= 0:
-            raise RuntimeError("Invalid stale CodeQL analysis id")
-        final = len(matching) == 1
-        path = "repos/" + REPO + "/code-scanning/analyses/" + str(analysis_id)
-        if final:
-            path += "?confirm_delete=true"
-        response = guard.api(path, "DELETE")
+        response = guard.api(_analysis_delete_path(continuation), "DELETE")
+        if response is None:
+            return deleted + 1
         if not isinstance(response, dict):
             raise RuntimeError("GitHub returned invalid stale-analysis deletion response")
         deleted += 1
@@ -180,7 +205,8 @@ def main() -> None:
         if "scope:core" in str(recent.get("analysis_key") or "").casefold():
             raise RuntimeError("Unresolved current JS Core High/Critical alert remains")
 
-    categories = legacy_js_categories(list_main_analyses())
+    rows = list_main_analyses()
+    categories = legacy_js_categories(rows)
     if not categories:
         raise RuntimeError(
             "Alert #2531 is open but no exact stale JS analysis category was found"
@@ -188,15 +214,11 @@ def main() -> None:
 
     removed: dict[str, int] = {}
     for category in sorted(categories):
-        removed[category] = delete_category(category)
+        removed[category] = delete_category(category, rows)
 
-    # Prove all selected stale sets are actually gone.
-    remaining = legacy_js_categories(list_main_analyses())
-    if remaining:
-        raise RuntimeError(
-            "Stale CodeQL JS categories remain after bounded deletion: "
-            + ",".join(sorted(remaining))
-        )
+    # Every deletion after the first follows GitHub's server-provided
+    # same-category continuation chain. The alert itself is the independent
+    # end-to-end proof that the configuration which owned #2531 is gone.
     if not alert_is_resolved():
         raise RuntimeError(
             "CodeQL #2531 remains open after deleting its stale analysis configuration"

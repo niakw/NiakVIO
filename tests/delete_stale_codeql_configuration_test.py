@@ -72,28 +72,37 @@ assert not mod.is_current_core_analysis({**legacy_default, "commit_sha": sha}, s
 category = key + "/language:javascript-typescript"
 first = {**legacy_default, "id": 21, "deletable": True}
 older = {**legacy_default, "id": 20, "deletable": False}
-last = {**legacy_default, "id": 20, "deletable": True}
-snapshots = [[first, older], [last], []]
 calls = []
-
-def list_rows():
-    return snapshots.pop(0)
 
 def api(path, method="GET", body=None):
     calls.append((path, method, body))
     assert method == "DELETE"
-    return {"next_analysis_url": "unused", "confirm_delete_url": "unused"}
+    if path.endswith("/code-scanning/analyses/21"):
+        return {
+            "next_analysis_url": "https://api.github.com/repos/niakw/NiakVIO/code-scanning/analyses/20",
+            "confirm_delete_url": "https://api.github.com/repos/niakw/NiakVIO/code-scanning/analyses/20?confirm_delete=true",
+        }
+    if path.endswith("/code-scanning/analyses/20?confirm_delete=true"):
+        return {}
+    raise AssertionError(path)
 
-with patch.object(mod, "list_main_analyses", side_effect=list_rows), patch.object(
-    mod.guard, "api", side_effect=api
-):
-    deleted = mod.delete_category(category)
+with patch.object(mod.guard, "api", side_effect=api):
+    deleted = mod.delete_category(category, [first, older])
 
 assert deleted == 2
 assert calls[0][0].endswith("/code-scanning/analyses/21")
 assert "confirm_delete" not in calls[0][0]
 assert calls[1][0].endswith("/code-scanning/analyses/20?confirm_delete=true")
 assert all(method == "DELETE" for _, method, _ in calls)
+assert mod._analysis_delete_path(
+    "https://api.github.com/repos/niakw/NiakVIO/code-scanning/analyses/20?confirm_delete=true"
+).endswith("/code-scanning/analyses/20?confirm_delete=true")
+try:
+    mod._analysis_delete_path("https://evil.example/repos/niakw/NiakVIO/code-scanning/analyses/20")
+except RuntimeError:
+    pass
+else:
+    raise AssertionError("foreign CodeQL continuation host accepted")
 
 try:
     mod.verify_alert_identity({
