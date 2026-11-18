@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44393870924",
-  "sourceTriggerSha": "7a80500fe6d1378492ac62c354fe85b4c620a2ee",
-  "unresolvedProviderCount": 68,
+  "sourceRunId": "44400860352",
+  "sourceTriggerSha": "7ffd78262450b52d251d632ba87ed338d204f0c2",
+  "unresolvedProviderCount": 69,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
     "hindmoviez",
@@ -159,8 +159,7 @@
         "native-policy-reachable",
         "no-transport-evidence",
         "residential-exit-all-challenged",
-        "residential-exit-browser-reachable",
-        "residential-exit-native-reachable"
+        "residential-exit-browser-reachable"
       ],
       "transportSignature": "not-applicable",
       "providerCount": 39,
@@ -306,6 +305,37 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
+      "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+      "repairScope": "learning",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "mixed_embed_resolver",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "chain",
+        "lookup"
+      ],
+      "dominantIssues": [
+        "network_zero_result",
+        "provider_returned_streams"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 2,
+      "providers": [
+        "frenchstream",
+        "streamzo"
+      ],
+      "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
       "groupId": "candidate-replay|mixed_embed_resolver|runtime:mixed_embed_resolver",
       "repairScope": "candidate-replay",
       "runtimeFamilies": [
@@ -394,8 +424,38 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "learning|html_scraper|runtime:sitemap-script-family",
+      "groupId": "learning|direct_media|runtime:direct_media",
       "repairScope": "learning",
+      "runtimeFamilies": [
+        "direct_media"
+      ],
+      "runtimeFamilySignature": "direct_media",
+      "capabilityStrategy": "direct_media",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "timeout"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "hindmoviez"
+      ],
+      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [
+        "hindmoviez"
+      ],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "transport|html_scraper|runtime:sitemap-script-family",
+      "repairScope": "transport",
       "runtimeFamilies": [
         "sitemap-script-family"
       ],
@@ -405,7 +465,7 @@
         "lookup"
       ],
       "dominantIssues": [
-        "network_zero_result"
+        "network_http_error"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
@@ -413,35 +473,7 @@
       "providers": [
         "sekai"
       ],
-      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
-      "repairScope": "learning",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "network_zero_result"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "frenchstream"
-      ],
-      "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
+      "action": "refresh transport authority before provider-local code changes",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -461,7 +493,7 @@
         "chain"
       ],
       "dominantIssues": [
-        "none"
+        "timeout"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
@@ -475,36 +507,6 @@
       ],
       "dynamicVariantProviders": [
         "meowtv"
-      ],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "variant-coverage|direct_media|runtime:direct_media",
-      "repairScope": "variant-coverage",
-      "runtimeFamilies": [
-        "direct_media"
-      ],
-      "runtimeFamilySignature": "direct_media",
-      "capabilityStrategy": "direct_media",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "provider_returned_streams"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "hindmoviez"
-      ],
-      "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
-      "selectionAuthorities": [
-        "provider-census-sharded-latest.json:dynamic-variant-debt"
-      ],
-      "dynamicVariantProviders": [
-        "hindmoviez"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"

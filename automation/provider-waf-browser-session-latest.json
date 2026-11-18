@@ -22,10 +22,10 @@
     "exact failed provider GET replay is transport differential evidence only; it cannot grant playback proof"
   ],
   "counts": {
-    "browser_challenge_persisted": 36,
+    "browser_challenge_persisted": 38,
     "browser_content_reached": 11,
     "browser_inconclusive": 2,
-    "browser_timeout": 4
+    "browser_timeout": 2
   },
   "rows": [
     {
@@ -39,110 +39,13 @@
       "challenge": "cloudflare",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_timeout",
-      "attemptCount": 2,
-      "attempts": [
-        {
-          "attempt": 1,
-          "outcome": "browser_timeout"
-        },
-        {
-          "attempt": 2,
-          "outcome": "browser_timeout"
-        }
-      ],
-      "ordinarySessionReused": true,
-      "clientProfileMatrix": [
-        {
-          "profile": "github-default-browser",
-          "userAgent": null,
-          "outcome": "browser_timeout",
-          "attemptCount": 2,
-          "attempts": [
-            {
-              "attempt": 1,
-              "outcome": "browser_timeout"
-            },
-            {
-              "attempt": 2,
-              "outcome": "browser_timeout"
-            }
-          ],
-          "ordinarySessionReused": true
-        }
-      ],
-      "directHttpProfile": null,
-      "okHttpJvmProfile": null,
-      "contentProfiles": [],
-      "nativeTvTransportStillUnproven": true,
-      "durationMs": 40227
-    },
-    {
-      "provider": "1jour1film0626",
-      "lane": "movie",
-      "publicUrl": "https://1jour1film1126.shop/index.php",
-      "host": "1jour1film1126.shop",
-      "path": "/index.php",
-      "method": "GET",
-      "fetchStatus": 403,
-      "challenge": "cloudflare",
-      "seedKind": null,
-      "seedRoute": null,
-      "outcome": "browser_timeout",
-      "attemptCount": 2,
-      "attempts": [
-        {
-          "attempt": 1,
-          "outcome": "browser_timeout"
-        },
-        {
-          "attempt": 2,
-          "outcome": "browser_timeout"
-        }
-      ],
-      "ordinarySessionReused": true,
-      "clientProfileMatrix": [
-        {
-          "profile": "github-default-browser",
-          "userAgent": null,
-          "outcome": "browser_timeout",
-          "attemptCount": 2,
-          "attempts": [
-            {
-              "attempt": 1,
-              "outcome": "browser_timeout"
-            },
-            {
-              "attempt": 2,
-              "outcome": "browser_timeout"
-            }
-          ],
-          "ordinarySessionReused": true
-        }
-      ],
-      "directHttpProfile": null,
-      "okHttpJvmProfile": null,
-      "contentProfiles": [],
-      "nativeTvTransportStillUnproven": true,
-      "durationMs": 40213
-    },
-    {
-      "provider": "1jour1film0626",
-      "lane": "tv",
-      "publicUrl": "https://1jour1film1126.shop/index.php",
-      "host": "1jour1film1126.shop",
-      "path": "/index.php",
-      "method": "GET",
-      "fetchStatus": 403,
-      "challenge": "cloudflare",
-      "seedKind": null,
-      "seedRoute": null,
       "outcome": "browser_challenge_persisted",
       "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_timeout"
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
         },
         {
           "attempt": 2,
@@ -160,7 +63,8 @@
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_timeout"
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
             },
             {
               "attempt": 2,
@@ -175,7 +79,113 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 34834
+      "durationMs": 7512
+    },
+    {
+      "provider": "1jour1film0626",
+      "lane": "movie",
+      "publicUrl": "https://1jour1film1126.shop/index.php",
+      "host": "1jour1film1126.shop",
+      "path": "/index.php",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "contentProfiles": [],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 6837
+    },
+    {
+      "provider": "1jour1film0626",
+      "lane": "tv",
+      "publicUrl": "https://1jour1film1126.shop/index.php",
+      "host": "1jour1film1126.shop",
+      "path": "/index.php",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "contentProfiles": [],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 7252
     },
     {
       "provider": "allwish",
@@ -362,7 +372,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2806
+      "durationMs": 3491
     },
     {
       "provider": "animejlprovider",
@@ -415,7 +425,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2606
+      "durationMs": 3866
     },
     {
       "provider": "animeonsen",
@@ -468,7 +478,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4252
+      "durationMs": 4124
     },
     {
       "provider": "animesalt",
@@ -521,7 +531,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5159,
+      "durationMs": 4670,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -863,7 +873,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5023
+      "durationMs": 3525
     },
     {
       "provider": "arrowtv",
@@ -916,7 +926,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4438
+      "durationMs": 4402
     },
     {
       "provider": "arrowtv",
@@ -969,14 +979,14 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3646
+      "durationMs": 3963
     },
     {
       "provider": "chillflix",
       "lane": "movie",
-      "publicUrl": "https://www.chillflix.lol/movie/872585",
+      "publicUrl": "https://www.chillflix.lol/movie/68721",
       "host": "www.chillflix.lol",
-      "path": "/movie/872585",
+      "path": "/movie/68721",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1022,14 +1032,14 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4203
+      "durationMs": 3661
     },
     {
       "provider": "chillflix",
       "lane": "tv",
-      "publicUrl": "https://www.chillflix.lol/tv/66732",
+      "publicUrl": "https://www.chillflix.lol/tv/85271",
       "host": "www.chillflix.lol",
-      "path": "/tv/66732",
+      "path": "/tv/85271",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1075,7 +1085,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3925
+      "durationMs": 3708
     },
     {
       "provider": "cinegram",
@@ -1128,7 +1138,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4243
+      "durationMs": 3740
     },
     {
       "provider": "cinetimes",
@@ -1181,7 +1191,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4910
+      "durationMs": 4488
     },
     {
       "provider": "cinetimes",
@@ -1234,7 +1244,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4269
+      "durationMs": 4215
     },
     {
       "provider": "coflix",
@@ -1721,7 +1731,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3203
+      "durationMs": 2882
     },
     {
       "provider": "fexini",
