@@ -202,6 +202,8 @@ for required in (
     "masterAudioTrackLanguages",
     "FIELD_NATIVE_IOS_ROW",
     "logicalProvider",
+    "is StreamRowObservation -> json.encodeToString(payload)",
+    "host = hostOnly(row.url)",
 ):
     assert required in ios_player, required
 assert "logical_provider64=" in native_corpus
