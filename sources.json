@@ -2,7 +2,7 @@
   "schema_version": 69,
   "repository": {
     "name": "NiakVIO",
-    "manifest_version": "5.21.163",
+    "manifest_version": "5.21.164",
     "description": "NiakVIO-owned provider catalogue and routing policy. ProviderBase, structured DATA, owned Lego, official address discovery and validated runtime observations are the operational sources of truth. External provider repositories are not required for ordinary reconstruction or playback."
   },
   "selection_policy": {
@@ -128,7 +128,7 @@
     "external_provider_repository_required": false,
     "route_learning_owner": "NiakVIO"
   },
-  "manifest_version": "5.21.163",
+  "manifest_version": "5.21.164",
   "nuvio_client_compatibility": {
     "schema_version": 1,
     "policy": "accepted_ref may advance automatically only when hard and semantic runtime contract checks remain unchanged",
@@ -168,39 +168,13 @@
       },
       "nuvio-desktop": {
         "contract_ref": "c0eb7bfa7c74820bd189a63a48ae364af8bb3058",
-        "accepted_ref": "029fcf0dea3852513f0e5aa3768d2a5e880bd015",
-        "accepted_at": "2026-11-18T19:12:04.870938+00:00",
+        "accepted_ref": "35bdb2a77ca86b4141588832a3fc3ca0c80bfc4d",
+        "accepted_at": "2026-11-18T21:22:34.897555+00:00",
         "acceptance": "automatic-contract-safe-advance",
-        "changed_file_count": 27,
+        "changed_file_count": 1,
         "observed_sensitive_changed_files": [],
         "unrelated_changed_files": [
-          ".github/workflows/android-release.yml",
-          ".github/workflows/update-store-source.yml",
-          "composeApp/src/commonMain/composeResources/values/strings.xml",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/DownloadsDestinations.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/EpisodeRatingsAlignment.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/ImdbEpisodeRatingsRepository.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/MetaDetailsScreen.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/SeriesGraphApi.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadActionSheet.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadArtwork.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadDisplay.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadRows.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadSpeeds.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadWatchStatus.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadsRepository.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadsScreen.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/settings/SettingsComponents.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/settings/SettingsScreen.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/tmdb/TmdbMetadataService.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/trakt/TraktLibraryRepository.kt",
-          "composeApp/src/commonTest/kotlin/com/nuvio/app/features/details/EpisodeRatingsAlignmentTest.kt",
-          "composeApp/src/commonTest/kotlin/com/nuvio/app/features/tmdb/TmdbMetadataServiceTest.kt",
-          "composeApp/src/desktopMain/kotlin/com/nuvio/app/ClickableHandCursor.kt",
-          "composeApp/src/desktopMain/kotlin/com/nuvio/app/Main.kt",
-          "composeApp/src/desktopMain/native/linux/player_bridge.cpp",
-          "iosApp/Configuration/Version.xcconfig",
-          "store-beta.json"
+          "composeApp/Configuration/DesktopVersion.properties"
         ]
       },
       "nuvio-tv": {
