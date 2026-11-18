@@ -462,7 +462,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "current_status:PROVIDER NETWORK BLOCKED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -616,7 +616,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "current_status:PROVIDER JS BROKEN"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -1062,8 +1062,13 @@
         "https://hindmovie.icu/wp-json/wp/v2/posts"
       ],
       "reasons": [
-        "structured_backend_authority"
-      ]
+        "structured_backend_authority",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:REGRESSION PROVIDER"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "ihavenotv",
@@ -1401,13 +1406,8 @@
       "failureCount": 0,
       "reasons": [
         "structured_official_site",
-        "existing_positive_route_prior",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:REGRESSION PROVIDER JS"
-      ],
-      "productionFreshnessAuthorized": false,
-      "productionProofAuthority": "no-current-byte-production-proof"
+        "existing_positive_route_prior"
+      ]
     },
     {
       "provider": "neobam",
@@ -1679,7 +1679,7 @@
         "existing_positive_route_prior",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:REGRESSION PROVIDER"
+        "current_status:CHAIN REACHED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -2131,7 +2131,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS/ENV BLOCKED"
+        "current_status:NO PROOF"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
