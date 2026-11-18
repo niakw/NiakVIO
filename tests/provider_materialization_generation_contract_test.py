@@ -68,4 +68,14 @@ assert "def _materialization_generation(" not in targeted
 assert "from provider_materialization_generation import materialization_generation" in domain
 assert 'materialization["generation"] = materialization_generation(material_rows)' in domain
 assert "def _generation(rows:" not in domain
-print("PROVIDER_MATERIALIZATION_GENERATION_SECONDARY_PATHS_OK targeted=1 domain_refresh=1")
+
+lifecycle = (ROOT / "scripts" / "manage_provider_lifecycle.py").read_text(encoding="utf-8")
+domain_updater = (ROOT / "scripts" / "update_provider_v3_domain_config.py").read_text(encoding="utf-8")
+assert "from provider_materialization_generation import materialization_generation" in lifecycle
+assert 'doc["generation"] = generation' in lifecycle
+assert "aggregate = hashlib.sha256()" not in lifecycle
+assert "generation = materialization_generation(rows)" in lifecycle
+assert "from provider_materialization_generation import materialization_generation" in domain_updater
+assert 'material["generation"]=materialization_generation(rrows)' in domain_updater
+assert "def generation(rows:" not in domain_updater
+print("PROVIDER_MATERIALIZATION_GENERATION_SECONDARY_PATHS_OK targeted=1 domain_refresh=1 lifecycle=1 legacy_domain_updater=1")

@@ -25,6 +25,7 @@ from typing import Any
 
 from generate_language_manifests import france_only_catalog_rows
 from current_provider_scope import pending_provider_ids
+from provider_materialization_generation import materialization_generation
 
 ROOT = Path(__file__).resolve().parents[1]
 ACTIVE_DIR = ROOT / "providers"
@@ -377,8 +378,6 @@ def reconcile_materialization_report(
     learn/recover them, but provider-v3-materialization.json is executable
     authority and must never retain disabled rows.
     """
-    import hashlib
-
     doc = load_json(MATERIALIZATION_PATH)
     raw_rows = [row for row in doc.get("providers") or [] if isinstance(row, dict)]
     by_id = {cid(row.get("provider")): row for row in raw_rows if cid(row.get("provider"))}
@@ -401,14 +400,10 @@ def reconcile_materialization_report(
     if row_ids != active_ids:
         raise RuntimeError("materialization/active catalogue identity mismatch after lifecycle reconcile")
 
-    aggregate = hashlib.sha256()
-    for row in rows:
-        provider = cid(row.get("provider"))
-        digest = str(row.get("sha256") or "").strip().casefold()
-        if len(digest) != 64:
-            raise RuntimeError(f"{provider}: invalid materialization digest during lifecycle reconcile")
-        aggregate.update(provider.encode("utf-8"))
-        aggregate.update(bytes.fromhex(digest))
+    try:
+        generation = materialization_generation(rows)
+    except ValueError as exc:
+        raise RuntimeError(f"invalid materialization generation during lifecycle reconcile: {exc}") from exc
 
     removed = sorted(set(by_id) - active_ids)
     doc["providers"] = rows
@@ -417,7 +412,7 @@ def reconcile_materialization_report(
         doc["expectedProviderCount"] = len(rows)
     doc["activeProviderIdentityCount"] = len(active_ids)
     doc["staticKnowledgeProviderCount"] = int(static_provider_count)
-    doc["generation"] = aggregate.hexdigest()
+    doc["generation"] = generation
     doc["lifecycleScopeReconciled"] = True
     doc["lifecycleReconciledArchivedProviders"] = removed
     if apply:

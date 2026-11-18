@@ -4582,3 +4582,10 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 
 - The real `3d03163b` Workflow Gate caught a stale generation import while Projection Reconcile was already rebuilding providers. To move that failure to the responsible transaction boundary, Projection Reconcile now runs `tests/provider_materialization_generation_contract_test.py` during its drift/preflight phase, before the first provider is rematerialized.
 - The workflow contract test requires this early gate. This intentionally causes the in-flight pre-fix projection to self-supersede once, but prevents future 76-provider rebuilds from running behind a broken generation writer.
+
+
+## 2026-11-18 — Every Provider v3 generation writer now shares one canonical algorithm
+
+- Audit after `3d03163b` found that release hashes still omitted four scripts capable of rewriting `provider-v3-materialization.json`, and two of those writers (`manage_provider_lifecycle.py`, legacy `update_provider_v3_domain_config.py`) still implemented generation locally. Their local loops depended on ledger order, unlike the canonical helper which sorts provider identities, so they could recreate a generation mismatch even with identical provider bytes.
+- Lifecycle and the legacy domain updater now call `provider_materialization_generation.materialization_generation`; local hash loops are removed. The release-hash Core scope now pins the shared helper plus full materializer, targeted materializer, Domain Refresh transaction, static-authority reconciler, targeted publication reconciler, lifecycle writer and legacy domain updater.
+- Generation and release-hash regression tests enumerate these writers. This is a control-plane consistency fix; it does not change provider functionality or promote playback evidence. The in-flight older projection is expected to self-supersede and rerun on this descendant before any accepted release.

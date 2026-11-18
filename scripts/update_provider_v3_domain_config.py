@@ -10,6 +10,7 @@ import argparse, hashlib, json, re
 from pathlib import Path
 from current_provider_scope import runtime_visible_provider_count, runtime_visible_provider_ids
 from typing import Any
+from provider_materialization_generation import materialization_generation
 from provider_patch_blocks import decode_managed_data, owned_span, replace_provider_fix, validate_managed_fixes
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -32,15 +33,6 @@ def component(pid:str)->str:
 def data_digest(data:dict[str,Any])->str:
     raw=json.dumps(data,ensure_ascii=False,sort_keys=True,separators=(",",":")).encode("utf-8")
     return hashlib.sha256(raw).hexdigest()
-
-def generation(rows:list[dict[str,Any]])->str:
-    h=hashlib.sha256()
-    for row in rows:
-        pid=canonical(row.get("provider")); sha=str(row.get("sha256") or "")
-        if not pid or not re.fullmatch(r"[0-9a-f]{64}",sha):
-            raise SystemExit(f"invalid materialization row: {pid!r}")
-        h.update(pid.encode("utf-8")); h.update(bytes.fromhex(sha))
-    return h.hexdigest()
 
 def main()->int:
     p=argparse.ArgumentParser()
@@ -106,7 +98,7 @@ def main()->int:
         updated.append(pid)
 
     if updated:
-        material["generation"]=generation(rrows)
+        material["generation"]=materialization_generation(rrows)
         material["providerCount"]=runtime_visible_provider_count(); material["expectedProviderCount"]=runtime_visible_provider_count()
         material["domainConfigOnlyUpdate"]=True; material["domainConfigUpdatedProviders"]=updated
         write(args.manifest,manifest); write(args.materialization,material)
