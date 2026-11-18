@@ -9,6 +9,9 @@ end = workflow.index("- name: Run adaptive Learning provider queue", start)
 llm = workflow[start:end]
 
 assert "\\${" not in llm, "Brain LLM workflow contains escaped GitHub/shell interpolation"
+assert "Detect private NiakVIO memory availability" in workflow
+assert "brain_llm_private_token.outputs.available == 'true'" in workflow
+assert 'if [ -d brain-llm-private/raw/chatgpt-project ]; then' in workflow
 for required in (
     "token: ${{ secrets.NIAKVIO_PRIVATE_READ_TOKEN }}",
     "PROVIDER_FILTER: ${{ steps.learning-slot.outputs.provider_filter }}",
