@@ -5,47 +5,13 @@
   "browserExecutable": "google-chrome",
   "targetCount": 53,
   "providerFilter": [],
-  "attemptsPerTarget": 1,
-  "clientProfileMatrixEnabled": true,
+  "attemptsPerTarget": 2,
+  "clientProfileMatrixEnabled": false,
   "clientProfiles": [
     {
       "id": "github-default-browser",
       "transportApproximation": "GitHub-hosted Chromium",
       "userAgent": "browser-default"
-    },
-    {
-      "id": "nuvio-tv-ua-browser",
-      "transportApproximation": "GitHub-hosted Chromium with audited NuvioTV default UA only",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      "nativeContract": {
-        "httpStack": "OkHttp",
-        "proxyPolicy": "Proxy.NO_PROXY",
-        "dnsPolicy": "IPv4FirstDns",
-        "redirects": "HTTP+SSL enabled"
-      }
-    },
-    {
-      "id": "nuvio-tv-okhttp-jvm",
-      "transportApproximation": "GitHub JVM OkHttp 4.12.0 with audited NuvioTV PluginRuntime policy",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      "nativeContractApproximation": {
-        "httpStack": "OkHttp 4.12.0",
-        "proxyPolicy": "Proxy.NO_PROXY",
-        "dnsPolicy": "IPv4FirstDns",
-        "redirects": "HTTP+SSL enabled",
-        "tlsRuntime": "GitHub JVM, not Android device"
-      }
-    },
-    {
-      "id": "nuvio-tv-direct-http-approx",
-      "transportApproximation": "GitHub libcurl with IPv4, NO_PROXY, redirects and audited NuvioTV UA",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      "nativeContractApproximation": {
-        "httpStack": "libcurl-not-OkHttp",
-        "proxyPolicy": "NO_PROXY",
-        "dnsPolicy": "IPv4 only",
-        "redirects": "enabled"
-      }
     }
   ],
   "limitations": [
@@ -57,8 +23,8 @@
   ],
   "counts": {
     "browser_challenge_persisted": 38,
-    "browser_content_reached": 12,
-    "browser_inconclusive": 1,
+    "browser_content_reached": 11,
+    "browser_inconclusive": 2,
     "browser_timeout": 2
   },
   "rows": [
@@ -113,7 +79,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 8948
+      "durationMs": 9985
     },
     {
       "provider": "1jour1film0626",
@@ -166,7 +132,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 9118
+      "durationMs": 9995
     },
     {
       "provider": "1jour1film0626",
@@ -219,7 +185,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 9210
+      "durationMs": 7042
     },
     {
       "provider": "allwish",
@@ -406,7 +372,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4110
+      "durationMs": 4874
     },
     {
       "provider": "animejlprovider",
@@ -459,7 +425,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3825
+      "durationMs": 4516
     },
     {
       "provider": "animeonsen",
@@ -512,7 +478,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3853
+      "durationMs": 4448
     },
     {
       "provider": "animesalt",
@@ -565,7 +531,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4270,
+      "durationMs": 5596,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -907,7 +873,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4833
+      "durationMs": 4828
     },
     {
       "provider": "arrowtv",
@@ -960,7 +926,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4092
+      "durationMs": 5102
     },
     {
       "provider": "arrowtv",
@@ -1013,14 +979,14 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4197
+      "durationMs": 5021
     },
     {
       "provider": "chillflix",
       "lane": "movie",
-      "publicUrl": "https://www.chillflix.lol/movie/634649",
+      "publicUrl": "https://www.chillflix.lol/movie/11324",
       "host": "www.chillflix.lol",
-      "path": "/movie/634649",
+      "path": "/movie/11324",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1066,14 +1032,14 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4074
+      "durationMs": 4471
     },
     {
       "provider": "chillflix",
       "lane": "tv",
-      "publicUrl": "https://www.chillflix.lol/tv/1402",
+      "publicUrl": "https://www.chillflix.lol/tv/76479",
       "host": "www.chillflix.lol",
-      "path": "/tv/1402",
+      "path": "/tv/76479",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1119,7 +1085,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3537
+      "durationMs": 4892
     },
     {
       "provider": "cinegram",
@@ -1172,7 +1138,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3727
+      "durationMs": 4990
     },
     {
       "provider": "cinetimes",
@@ -1225,7 +1191,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4468
+      "durationMs": 5982
     },
     {
       "provider": "cinetimes",
@@ -1278,7 +1244,7 @@
       "okHttpJvmProfile": null,
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4346
+      "durationMs": 4694
     },
     {
       "provider": "coflix",
@@ -1663,21 +1629,26 @@
     },
     {
       "provider": "corsflix",
-      "lane": "tv",
-      "publicUrl": "https://www.themoviedb.org/movie/85271-popolvar-najvacsi-na-svete/watch",
-      "host": "www.themoviedb.org",
-      "path": "/movie/85271-popolvar-najvacsi-na-svete/watch",
+      "lane": "anime",
+      "publicUrl": "https://corsflix.gd/search",
+      "host": "corsflix.gd",
+      "path": "/search",
       "method": "GET",
-      "fetchStatus": 403,
+      "fetchStatus": 200,
       "challenge": "generic",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_content_reached",
-      "attemptCount": 1,
+      "outcome": "browser_inconclusive",
+      "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_content_reached",
+          "outcome": "browser_inconclusive",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_inconclusive",
           "exitCode": 0
         }
       ],
@@ -1686,12 +1657,17 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_content_reached",
-          "attemptCount": 1,
+          "outcome": "browser_inconclusive",
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_content_reached",
+              "outcome": "browser_inconclusive",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_inconclusive",
               "exitCode": 0
             }
           ],
@@ -1700,11 +1676,9 @@
       ],
       "directHttpProfile": null,
       "okHttpJvmProfile": null,
-      "contentProfiles": [
-        "github-default-browser"
-      ],
+      "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 1994
+      "durationMs": 2935
     },
     {
       "provider": "dulourd",
@@ -6756,126 +6730,34 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": true,
-      "providerCount": 43,
+      "available": false,
+      "providerCount": 0,
       "refreshedProviders": [
         "1jour1film0626",
-        "allwish",
         "aniflix-uno",
         "animejlprovider",
         "animeonsen",
         "animesalt",
-        "animesultra",
-        "animevost-fr",
         "arrowtv",
         "chillflix",
         "cinegram",
         "cinetimes",
-        "coflix",
-        "corsflix",
-        "dulourd",
-        "fexini",
-        "film-a-revoir",
-        "flemmix",
-        "franime",
-        "french-anime",
-        "fullanime",
-        "kehflix",
-        "mallumv",
-        "moiflix",
-        "moviebox",
-        "moviesmod",
-        "movy",
-        "skstream",
-        "vidfast",
-        "vidrock",
-        "voirserie",
-        "vostfree",
-        "waveanime",
-        "yflix"
+        "corsflix"
       ],
-      "replayedProviders": [
-        "1jour1film0626",
-        "67movies",
-        "allwish",
-        "anime-ultime",
-        "animeonsen",
-        "animesalt",
-        "animesultra",
-        "animevost-fr",
-        "arrowtv",
-        "boredflix",
-        "chillflix",
-        "cinegram",
-        "cinemabz",
-        "cinetimes",
-        "coflix",
-        "corsflix",
-        "dulourd",
-        "emnexmovies",
-        "fexini",
-        "film-a-revoir",
-        "flemmix",
-        "flixer",
-        "franime",
-        "french-anime",
-        "fullanime",
-        "latestmovies",
-        "mallumv",
-        "moiflix",
-        "moviebox",
-        "moviesmod",
-        "movish",
-        "movy",
-        "neonflix",
-        "primewire",
-        "shuttletv",
-        "skstream",
-        "vidfast",
-        "voirserie",
-        "vostfree",
-        "vuflix",
-        "watch-cartoon-online",
-        "waveanime",
-        "yflix"
-      ]
+      "replayedProviders": []
     }
   },
   "lastRefreshProviderFilter": [
     "1jour1film0626",
-    "allwish",
     "aniflix-uno",
     "animejlprovider",
     "animeonsen",
     "animesalt",
-    "animesultra",
-    "animevost-fr",
     "arrowtv",
     "chillflix",
     "cinegram",
     "cinetimes",
-    "coflix",
-    "corsflix",
-    "dulourd",
-    "fexini",
-    "film-a-revoir",
-    "flemmix",
-    "franime",
-    "french-anime",
-    "fullanime",
-    "kehflix",
-    "mallumv",
-    "moiflix",
-    "moviebox",
-    "moviesmod",
-    "movy",
-    "skstream",
-    "vidfast",
-    "vidrock",
-    "voirserie",
-    "vostfree",
-    "waveanime",
-    "yflix"
+    "corsflix"
   ],
   "residentialExitNodeLastAttempt": {
     "enabled": true,
