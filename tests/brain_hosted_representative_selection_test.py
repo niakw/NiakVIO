@@ -53,8 +53,18 @@ with TemporaryDirectory() as td:
         "scopeTrace": [{"scope": "provider_bloc", "reason": "valueerror"}],
         "verification": [],
     }))
+    (base/"44340000001.json").write_text(json.dumps({
+        "provider":"purstream","publicationAuthority":False,
+        "acceptedProviderCount":0,
+        "scopeTrace":[{
+            "scope":"provider_bloc","outcome":"abstain",
+            "reason":"current_baseline_playable_requires_proof_refresh"
+        }],
+        "verification":[],
+    }))
     debt=mod.negative_history(base)
     assert debt["sekai"]==100, "actual executed no-improvement must incur causal debt"
+    assert debt["purstream"]==300, "playable current baseline must leave source synthesis"
     assert "brain-infra" not in debt, "local model error cannot poison provider repair memory"
     debt=mod.negative_history(base)
     assert debt["allanime"]==200
