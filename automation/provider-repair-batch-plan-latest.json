@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44349669527",
-  "sourceTriggerSha": "d44cfc24f862b1833893844e7e84501db806825e",
+  "sourceRunId": "44360457366",
+  "sourceTriggerSha": "963bfa194191913dceeb46d591c73b4bc8b41469",
   "unresolvedProviderCount": 68,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -37,7 +37,6 @@
     "anisama",
     "arrowtv",
     "boredflix",
-    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -63,15 +62,12 @@
     "fullanime",
     "hexa",
     "hianime",
-    "hindmoviez",
     "ihavenotv",
-    "internet-archive",
     "kehflix",
     "kidraz",
     "kurage",
     "latestmovies",
     "mallumv",
-    "meowtv",
     "moiflix",
     "moviebite",
     "moviebox",
@@ -82,7 +78,6 @@
     "movy",
     "mugiwarastream",
     "nakios",
-    "neko-sama",
     "neobam",
     "neonflix",
     "overlook",
@@ -119,14 +114,13 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
-    "webflix",
     "wookafr",
     "yflix",
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": false,
+  "dynamicVariantFallbackUsed": true,
   "groupCount": 11,
   "executionModel": {
     "default": "family/signature batch",
@@ -156,13 +150,16 @@
       ],
       "harnessTransportClasses": [
         "github-all-transports-challenged",
-        "no-transport-evidence"
+        "native-policy-reachable",
+        "no-transport-evidence",
+        "residential-exit-all-challenged",
+        "residential-exit-browser-reachable",
+        "residential-exit-native-reachable"
       ],
       "transportSignature": "not-applicable",
-      "providerCount": 41,
+      "providerCount": 38,
       "providers": [
         "1jour1film0626",
-        "67movies",
         "anikototv",
         "animeonsen",
         "anisama",
@@ -190,10 +187,8 @@
         "neobam",
         "neonflix",
         "overlook",
-        "primewire",
         "pstream",
         "showbox",
-        "shuttletv",
         "skstream",
         "voirserie",
         "vuflix",
@@ -284,11 +279,14 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 3,
+      "providerCount": 6,
       "providers": [
+        "67movies",
         "corsflix",
         "nakios",
-        "sadisflix"
+        "primewire",
+        "sadisflix",
+        "shuttletv"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
@@ -361,28 +359,26 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|api_stream_resolver|harness:native-policy-reachable",
-      "repairScope": "harness-compatibility",
+      "groupId": "learning|api_stream_resolver|runtime:api_stream_resolver",
+      "repairScope": "learning",
       "runtimeFamilies": [
         "api_stream_resolver"
       ],
-      "runtimeFamilySignature": "not-applicable",
+      "runtimeFamilySignature": "api_stream_resolver",
       "capabilityStrategy": "api_stream_resolver",
       "evidenceDepths": [
-        "none"
+        "lookup"
       ],
       "dominantIssues": [
-        "waf_challenge"
+        "provider_returned_wrong_content"
       ],
-      "harnessTransportClasses": [
-        "native-policy-reachable"
-      ],
-      "transportSignature": "native-policy-reachable",
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
       "providerCount": 1,
       "providers": [
         "movy"
       ],
-      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
+      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
