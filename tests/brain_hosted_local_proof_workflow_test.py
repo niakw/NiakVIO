@@ -14,6 +14,15 @@ assert "FIELD_BRAIN_CENSUS_PROVENANCE" in source
 assert "hosted Brain refuses census after executable/source drift" in source
 assert "triggerSha" in source
 assert "git','diff','--name-only',census,current" in source
+assert "audit_metadata_paths" in source
+assert "engine_v2/config/nuvio-clients.json" in source
+assert "repository: niakw/niakvio-private" in source
+assert "NIAKVIO_PRIVATE_READ_TOKEN" in source
+assert "import_private_chat_project.py" in source
+assert "FIELD_BRAIN_HOSTED_PRIVATE_MEMORY available=true" in source
+assert "private_docs=" in source
+assert "proof_authority') is False" in source
+assert "FIELD_BRAIN_HOSTED_PRIVATE_MEMORY_CLEANUP removed=true" in source
 
 assert "github.ref == 'refs/heads/main'" in source
 assert "github.repository == 'niakw/NiakVIO'" in source

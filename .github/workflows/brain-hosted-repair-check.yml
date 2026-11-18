@@ -71,7 +71,38 @@ jobs:
               'tests/brain_hosted_local_proof_workflow_test.py',
           }
           allowed_prefix=('automation/','docs/')
-          unsafe=[p for p in changed if p not in allowed_exact and not p.startswith(allowed_prefix)]
+          audit_metadata_paths={
+              'engine_v2/config/nuvio-clients.json',
+              'sources.json',
+          }
+          def audit_only(path):
+              if path not in audit_metadata_paths:
+                  return False
+              import copy
+              before=json.loads(subprocess.check_output(
+                  ['git','show',census+':'+path],text=True
+              ))
+              after=json.loads(Path(path).read_text(encoding='utf-8'))
+              if path == 'engine_v2/config/nuvio-clients.json':
+                  keys={'audited_ref','accepted_ref','observed_head','audit_note','head_delta_note'}
+                  for data in (before,after):
+                      row=((data.get('clients') or {}).get('tv') or {})
+                      for key in keys: row.pop(key,None)
+              else:
+                  keys={'contract_ref','accepted_ref','accepted_at','acceptance',
+                        'changed_file_count','observed_sensitive_changed_files',
+                        'unrelated_changed_files'}
+                  for data in (before,after):
+                      row=(((data.get('nuvio_client_compatibility') or {}).get('clients') or {})
+                           .get('nuvio-tv') or {})
+                      for key in keys: row.pop(key,None)
+              return before == after
+          unsafe=[
+              p for p in changed
+              if p not in allowed_exact
+              and not p.startswith(allowed_prefix)
+              and not audit_only(p)
+          ]
           print('FIELD_BRAIN_CENSUS_PROVENANCE census_sha='+census
                 +' current_sha='+current
                 +' evidence_only_drift='+str(not unsafe).lower()
@@ -113,13 +144,25 @@ jobs:
           ref: ${{ steps.brain_pin.outputs.sha }}
           path: brain-llm
           persist-credentials: false
+      - name: Checkout historical NiakVIO ChatGPT memory read-only
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: niakw/niakvio-private
+          ref: main
+          token: ${{ secrets.NIAKVIO_PRIVATE_READ_TOKEN }}
+          path: brain-private
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: |
+            raw/chatgpt-project
+          sparse-checkout-cone-mode: true
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
         with:
           python-version: '3.12'
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: '24'
-      - name: Prepare public-only context
+      - name: Prepare unified bounded public and historical-private memory
         shell: bash
         run: |
           set -euo pipefail
@@ -156,9 +199,32 @@ jobs:
               raise SystemExit('Imported hosted negatives cannot claim positive or current proof authority')
           PY
           python brain-llm/scripts/import_public_docs.py --niakvio-root . --config brain-llm/config/document_sources.json --output local-output/hosted-check/documents.jsonl
-          # Check the same public memory RAG inputs consumed by real FORCE.
-          # Private ChatGPT transcripts remain in the separate authenticated
-          # Brain private-guidance workflow; never fetch them in this public lane.
+          project_root="$(find brain-private/raw/chatgpt-project -mindepth 1 -maxdepth 1 -type d -print)"
+          test "$(printf '%s\n' "$project_root" | sed '/^$/d' | wc -l)" -eq 1
+          python brain-llm/scripts/import_private_chat_project.py \
+            --project-root "$project_root" \
+            --output local-output/hosted-check/private-documents.jsonl \
+            > local-output/hosted-check/private-memory-report.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('local-output/hosted-check')
+          report=json.loads((root/'private-memory-report.json').read_text(encoding='utf-8'))
+          assert int(report.get('source_conversations') or 0)>0, report
+          assert int(report.get('indexed_conversations') or 0)>0, report
+          assert int(report.get('documents') or 0)>0, report
+          assert report.get('proof_authority') is False, report
+          private=(root/'private-documents.jsonl').read_text(encoding='utf-8')
+          with (root/'documents.jsonl').open('a',encoding='utf-8') as handle:
+              handle.write(private)
+          print('FIELD_BRAIN_HOSTED_PRIVATE_MEMORY available=true historical_only=true '
+                +'source='+str(report.get('source_conversations'))
+                +' indexed='+str(report.get('indexed_conversations'))
+                +' documents='+str(report.get('documents'))
+                +' proof_authority=false')
+          PY
+          # Check the exact unified memory RAG input consumed by real FORCE.
+          # Private history remains sanitized, historical-only and non-authoritative.
           python - <<'PY'
           import json, os
           from niakvio_brain_llm.contracts import RepairRequest
@@ -169,8 +235,10 @@ jobs:
           store = ExperienceStore.from_jsonl(root+'experience.jsonl')
           documents = DocumentStore.from_jsonl(root+'documents.jsonl')
           assert store.rows and documents.rows, 'existing historical memory is empty'
-          assert not any(row.get('private_memory') is True for row in documents.rows), (
-              'public Brain sandbox unexpectedly loaded private conversations'
+          private=[row for row in documents.rows if row.get('private_memory') is True]
+          assert private, 'hosted FORCE did not load sanitized historical ChatGPT memory'
+          assert all(row.get('proof_authority') is False for row in private), (
+              'private historical memory cannot claim proof authority'
           )
           provider = os.environ['TARGET_PROVIDER']
           req = RepairRequest(
@@ -193,7 +261,8 @@ jobs:
                 +' experience_rows='+str(len(store.rows))
                 +' retrieved_history='+str(len(history))
                 +' retrieved_executed_negatives='+str(len(negatives))
-                +' private_content=false publication_authority=false')
+                +' private_docs='+str(len(private))
+                +' private_content_ephemeral=true publication_authority=false')
           PY
       - name: Validate existing local-Brain sandbox and identity contracts
         shell: bash
@@ -365,6 +434,15 @@ jobs:
           python scripts/run_hosted_brain_repair_loop.py --brain-root brain-llm \
             --provider "$TARGET_PROVIDER" --output local-output/hosted-check \
             --max-attempts 2 --budget-seconds 900 --endpoint http://127.0.0.1:8080 "${args[@]}"
+      - name: Remove ephemeral private memory before evidence retention
+        if: always()
+        shell: bash
+        run: |
+          rm -rf brain-private
+          rm -f local-output/hosted-check/private-documents.jsonl
+          rm -f local-output/hosted-check/private-memory-report.json
+          rm -f local-output/hosted-check/documents.jsonl
+          echo "FIELD_BRAIN_HOSTED_PRIVATE_MEMORY_CLEANUP removed=true artifacts_private=false"
       - name: Report generation and verification separately
         if: always()
         shell: bash
