@@ -183,6 +183,49 @@ assert not loop.requires_transport_differential({'preflight_status':'provider_un
 assert not loop.requires_transport_differential({'preflight_status':'blocked','preflight_playable':1})
 assert not loop.requires_transport_differential({'preflight_status':'runtime_error','preflight_playable':0})
 
+# Exact-current playable fixtures must route to proof/census refresh, not a
+# provider-local mutation even when an older census says REGRESSION.
+playable_live={
+    'preflight_status':'healthy', 'preflight_playable':2,
+    'fixture_selection_complete':True,
+    'fixture_evidence':[
+        {'fixture':'Movie','streamsReturned':1,'streamsPlayable':1},
+        {'fixture':'Episode','streamsReturned':1,'streamsPlayable':1},
+    ],
+}
+assert loop.requires_proof_refresh(playable_live)
+for invalid in (
+    {**playable_live, 'preflight_status':'no_streams'},
+    {**playable_live, 'preflight_playable':1},
+    {**playable_live, 'fixture_selection_complete':False},
+    {**playable_live, 'fixture_evidence':[
+        {'fixture':'Movie','streamsReturned':1,'streamsPlayable':1},
+        {'fixture':'Episode','streamsReturned':0,'streamsPlayable':0},
+    ]},
+):
+    assert not loop.requires_proof_refresh(invalid)
+
+with tempfile.TemporaryDirectory() as directory:
+    root=Path(directory)
+    (root/'live-context.json').write_text(json.dumps({
+        **playable_live, 'provider':'demo', 'sourceSha':'a'*40,
+        'http_script_shell_only':False,
+    }))
+    argv=['loop','--brain-root',str(root/'brain'),'--provider','demo','--output',str(root)]
+    with (patch.object(sys,'argv',argv),
+          patch.object(loop.subprocess,'check_output',return_value='a'*40),
+          patch.object(loop.subprocess,'run',side_effect=AssertionError('playable baseline must not invoke model')),
+          contextlib.redirect_stdout(io.StringIO())):
+        assert loop.main()==0
+    verdict=json.loads((root/'evaluation.json').read_text())
+    assert verdict['rows']==[] and verdict['candidateCount']==0
+    assert verdict['proofRefreshRequired'] is True
+    assert verdict['baselineCurrentPlayable'] is True
+    assert verdict['baselinePlayableStreams']==2
+    assert verdict['unavailableEvidenceReason']=='current_baseline_playable_requires_proof_refresh'
+    reason=json.loads((root/'diagnostics.json').read_text())['rows'][0]['scopeTrace'][0]['reason']
+    assert reason=='current_baseline_playable_requires_proof_refresh'
+
 # The census may be stale: a route-proven source which is blocked in today's
 # live preflight must not burn CPU/model budget generating unsupported JS edits.
 with tempfile.TemporaryDirectory() as directory:
