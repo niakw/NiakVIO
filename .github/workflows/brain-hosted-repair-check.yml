@@ -128,6 +128,9 @@ jobs:
           # either generic Brain regression reappears.
           python -m unittest discover -s brain-llm/tests -p test_force_cpu_retry_budget.py
           python -m unittest discover -s brain-llm/tests -p test_planner.py
+          # Only source-pinned, materialized+executed negative replays may
+          # teach FORCE; they never grant provider publication authority.
+          python -m unittest discover -s brain-llm/tests -p test_hosted_executed_negative_learning.py
           python -m unittest discover -s brain-llm/tests -p test_replay_provenance.py
           echo "FIELD_BRAIN_DECODE_NEGATIVE_FEEDBACK_PREFLIGHT exact_source_rotation=true"
           echo "FIELD_BRAIN_GRAPHQL_CAUSAL_PREFLIGHT exact_unit_selection=true"
