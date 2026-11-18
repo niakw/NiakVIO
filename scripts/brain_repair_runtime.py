@@ -84,6 +84,7 @@ def _force_preferred_strategy(mode: str) -> str:
 POST_EXHAUSTION_STRATEGY_PROFILES = {
     "provider_positive_program_replay_v1",
     "transport_request_differential_v1",
+    "transport_request_differential_v2",
     "route_transition_graph_v1",
     "route_transition_graph_v2",
     "route_transition_graph_v3",

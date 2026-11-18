@@ -70,6 +70,7 @@ const LLM_ADVISOR_PROFILES = new Set([
 const POST_EXHAUSTION_STRATEGIES = {
   provider_transport_gap: [
     { profile: "transport_request_differential_v1", method: "provider-owned-request-differential" },
+    { profile: "transport_request_differential_v2", method: "brain-evolved-executable-transition" },
     { profile: "provider_session_bootstrap_replay_v1", method: "provider-owned-session-bootstrap-replay" },
     { profile: "runtime_response_salvage_v1", method: "successful-runtime-response-salvage" },
   ],

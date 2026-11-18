@@ -19,12 +19,22 @@ Targets: scripts/brain_repair_runtime.py, scripts/run_brain_learning_queue.py, s
 
 ## New strategy blueprints
 
-### route_transition_graph_v52 — route-to-terminal|html_scraper
+### representative_native_transport_alignment_v1 — harness-compatibility|mixed_embed_resolver|harness:residential-exit-inconclusive
 
-Providers: 4khdhub
+Providers: french-anime, moiflix
 
-Trigger: catalogue/detail route is live and identity-qualified but no terminal/player media is reached
+Trigger: GitHub Node/browser transport is challenged or diverges before provider-code breakage is established
 
-Method: derive and implement a genuinely new executable Repair strategy route_transition_graph_v52 from negative evidence for exhausted route_transition_graph_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
+Method: use census harnessTransportClass to replay provider-owned safe routes under the closest audited native TV/mobile HTTP policy; classify native-policy-reachable, browser-profile-only, native-policy-inconclusive or all-transports-challenged before any provider mutation
 
-Acceptance: playback-verified media; content identity not contradicted; no green-lane regression
+Acceptance: harness/client divergence classified; browser or native transport reachability is not promoted to playback; provider JS mutation remains forbidden without implementation evidence
+
+### transport_request_differential_v2 — transport|html_scraper|runtime:sitemap-script-family
+
+Providers: sekai
+
+Trigger: provider request fails with HTTP/network exception before a code-level causal defect is proven
+
+Method: derive and implement a genuinely new executable Repair strategy transport_request_differential_v2 from negative evidence for exhausted transport_request_differential_v1; preserve the causal intent of the prior method without reusing its implementation, register the new profile in Repair planning/runtime, and require targeted playback/identity proof
+
+Acceptance: causal transport classification; provider mutation only after harness mismatch excluded; no credential/challenge-token fabrication

@@ -68,6 +68,7 @@ CAUSAL_STRATEGY_BASES = {
 POST_EXHAUSTION_STRATEGY_PROFILES = {
     "provider_positive_program_replay_v1",
     "transport_request_differential_v1",
+    "transport_request_differential_v2",
     "route_transition_graph_v1",
     "route_transition_graph_v2",
     "route_transition_graph_v3",
@@ -2155,6 +2156,12 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             current_request_recipes, provider_request_recipes, limit=32
         )
         second_order_role_preferences = ["api", "detail", "search", "player", "source", "episode", "other"]
+    elif new_strategy_id == "transport_request_differential_v2":
+        search_paths = _unique_routes(configured_search, learned_search, generic_search, limit=12)
+        direct_paths = _unique_routes(configured_direct, learned_direct, positive_program_routes(provider_id), peer_direct, limit=16)
+        request_recipes = _unique_request_recipes(current_request_recipes, provider_request_recipes, positive_request_recipes, historical_provider_request_recipes, limit=20)
+        transition_prefixes = _owned_transition_prefixes(learned_direct, limit=10)
+        second_order_role_preferences = ["source", "api", "player", "episode", "detail"]
     elif new_strategy_id == "identity_alias_search_traversal_v1":
         search_paths = _unique_routes(configured_search, learned_search, peer_search, generic_search, limit=32)
         direct_paths = _unique_routes(
