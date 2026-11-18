@@ -1,3 +1,8 @@
+## 2026-11-18 — Brain submodule synchronized to validated memory-aware runtime
+
+- NiakVIO's committed `brain-llm` gitlink was still `cb1fddf4ee8b06be9a29bb0a69f1210d925cb93e` while private/hosted workflows separately pinned current Brain main. This could make local/submodule tests exercise a different Brain than Actions.
+- Brain `8fda35132437f9647a352a45496fcd33f229516f` includes explicit project-memory semantics, route-free Lego mechanism secondary exact-unit ranking, stdin-only JavaScript syntax validation and source-free unit-selection telemetry. Exact Brain runs: CI `44370866326` SUCCESS, Private Chat Memory Contract `44370866324` SUCCESS, security inventory `44370866588` SUCCESS with CodeQL open=0. NiakVIO gitlink is synchronized to this validated Brain commit; this alone is not provider repair proof.
+
 ## 2026-11-18 — Existing project memory proven in live FORCE; Brain now uses it for secondary exact-unit ranking
 
 - Exact private-guided Sekai baseline `44367715216` used the already-existing memory stack on every FORCE attempt: 5 retrieved documents, 1 public Markdown hint, 1 historical ChatGPT-private hint, 1 same-provider structured ProviderBase/Lego hint and 1 executed-negative hint. Four hypotheses still collapsed to no-op/timeout/abstention; final external FORCE mutation set was empty. Therefore missing memory was **not** the cause of failed repair.
