@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44207078139",
-  "sourceTriggerSha": "2dc07d82d1c59f817079c4739c82f3077b64fac1",
+  "sourceRunId": "44221592944",
+  "sourceTriggerSha": "3b6ec6830d6cb9ea236a8a50e28e38be29af3b1f",
   "unresolvedProviderCount": 73,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -128,7 +128,7 @@
     "zone-telechargement"
   ],
   "dynamicVariantFallbackUsed": false,
-  "groupCount": 11,
+  "groupCount": 12,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -152,21 +152,19 @@
       "dominantIssues": [
         "network_http_error",
         "network_zero_result",
+        "provider_returned_streams, timeout",
         "timeout",
         "waf_challenge"
       ],
       "harnessTransportClasses": [
         "github-all-transports-challenged",
-        "native-policy-reachable",
-        "no-transport-evidence",
-        "residential-exit-all-challenged",
-        "residential-exit-browser-reachable",
-        "residential-exit-native-reachable"
+        "no-transport-evidence"
       ],
       "transportSignature": "not-applicable",
-      "providerCount": 40,
+      "providerCount": 43,
       "providers": [
         "1jour1film0626",
+        "67movies",
         "anikototv",
         "animeonsen",
         "anisama",
@@ -195,9 +193,11 @@
         "neobam",
         "neonflix",
         "overlook",
+        "primewire",
         "pstream",
         "sadisflix",
         "showbox",
+        "shuttletv",
         "skstream",
         "voirserie",
         "vuflix",
@@ -283,60 +283,23 @@
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "chain",
-        "lookup",
-        "none"
+        "lookup"
       ],
       "dominantIssues": [
         "network_zero_result",
-        "provider_returned_streams",
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "residential-exit-all-challenged"
-      ],
-      "transportSignature": "not-applicable",
-      "providerCount": 5,
-      "providers": [
-        "french-anime",
-        "frenchstream",
-        "mugiwarastream",
-        "neko-sama",
-        "streamzo"
-      ],
-      "action": "residential full-provider replay disproved transport ownership; learn a provider-side request/route strategy before mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
-      "repairScope": "terminal-extraction",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_http_error",
-        "network_zero_result"
+        "provider_returned_streams"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
       "providerCount": 5,
       "providers": [
-        "67movies",
-        "corsflix",
+        "frenchstream",
+        "mugiwarastream",
         "nakios",
-        "primewire",
-        "shuttletv"
+        "neko-sama",
+        "streamzo"
       ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -375,12 +338,12 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "learning|api_stream_resolver|runtime:api_stream_resolver",
-      "repairScope": "learning",
+      "groupId": "harness-compatibility|api_stream_resolver|harness:native-policy-reachable",
+      "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "api_stream_resolver"
       ],
-      "runtimeFamilySignature": "api_stream_resolver",
+      "runtimeFamilySignature": "not-applicable",
       "capabilityStrategy": "api_stream_resolver",
       "evidenceDepths": [
         "none"
@@ -391,12 +354,72 @@
       "harnessTransportClasses": [
         "native-policy-reachable"
       ],
-      "transportSignature": "not-applicable",
+      "transportSignature": "native-policy-reachable",
       "providerCount": 1,
       "providers": [
         "movy"
       ],
-      "action": "residential full-provider replay disproved transport ownership; learn a provider-side request/route strategy before mutation",
+      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-all-challenged",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "not-applicable",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-all-challenged"
+      ],
+      "transportSignature": "residential-exit-all-challenged",
+      "providerCount": 1,
+      "providers": [
+        "french-anime"
+      ],
+      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-inconclusive",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "not-applicable",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-inconclusive"
+      ],
+      "transportSignature": "residential-exit-inconclusive",
+      "providerCount": 1,
+      "providers": [
+        "moiflix"
+      ],
+      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -463,15 +486,15 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "route-to-terminal|mixed_embed_resolver|runtime:mixed_embed_resolver",
-      "repairScope": "route-to-terminal",
+      "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
+      "repairScope": "terminal-extraction",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
       "runtimeFamilySignature": "mixed_embed_resolver",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "lookup"
+        "chain"
       ],
       "dominantIssues": [
         "network_http_error"
@@ -480,9 +503,9 @@
       "transportSignature": "not-applicable",
       "providerCount": 1,
       "providers": [
-        "moiflix"
+        "corsflix"
       ],
-      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
+      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -499,7 +522,7 @@
       "runtimeFamilySignature": "sitemap-script-family",
       "capabilityStrategy": "html_scraper",
       "evidenceDepths": [
-        "lookup"
+        "chain"
       ],
       "dominantIssues": [
         "network_http_error"
