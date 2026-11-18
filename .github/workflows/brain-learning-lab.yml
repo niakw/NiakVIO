@@ -123,9 +123,23 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
+      - name: Detect private NiakVIO memory availability
+        id: brain_llm_private_token
+        shell: bash
+        env:
+          PRIVATE_READ_TOKEN: ${{ secrets.NIAKVIO_PRIVATE_READ_TOKEN }}
+        run: |
+          if [ -n "${PRIVATE_READ_TOKEN:-}" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            echo "FIELD_BRAIN_LLM_PRIVATE_SOURCE configured=true"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "FIELD_BRAIN_LLM_PRIVATE_SOURCE configured=false"
+          fi
+
       - name: Checkout private NiakVIO chat memory read-only
         id: brain_llm_private
-        continue-on-error: true
+        if: steps.brain_llm_private_token.outputs.available == 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: niakw/niakvio-private
@@ -727,7 +741,10 @@ jobs:
             --output brain-sandbox/brain-llm/public-documents.jsonl \
             > brain-sandbox/brain-llm/public-document-report.json
 
-          mapfile -t private_projects < <(find brain-llm-private/raw/chatgpt-project -mindepth 1 -maxdepth 1 -type d -print | sort)
+          private_projects=()
+          if [ -d brain-llm-private/raw/chatgpt-project ]; then
+            mapfile -t private_projects < <(find brain-llm-private/raw/chatgpt-project -mindepth 1 -maxdepth 1 -type d -print | sort)
+          fi
           if [ "${#private_projects[@]}" -gt 1 ]; then
             echo "Expected at most one private ChatGPT project directory, found ${#private_projects[@]}" >&2
             exit 1
