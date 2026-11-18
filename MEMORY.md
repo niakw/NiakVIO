@@ -4495,3 +4495,10 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - The workflow was rebuilt from the last known-good `ed062c18` definition, then the intended static-authority reconciliation/staging changes were reapplied narrowly. Contract tests now require exactly one Build/Publish/Finalize block and the complete staged-path guard terminator.
 - Projection replay must be launched again from the repaired workflow HEAD; no success is inferred from the absent run.
 
+
+
+## 2026-11-18 — Shared Core stream contract preserves multi-audio provenance (pending native playback certification)
+
+- Source audit of `engine_v2/src/contracts.mjs` found that `normalizeStreamCandidate` dropped provider-provided `audioLanguages`, `hlsMasterAudioTracks`, `hlsMasterAudioTrackLanguages`, `sourceLanguage` and `sourceLanguages`. It also discarded master audio rows if `audioTracks` was absent. This was a concrete normalization/transport metadata loss, not proof that it caused the native iOS track collapse.
+- The shared normalizer now preserves original/alternate audio track provenance and falls back to transport-proven HLS master tracks only when primary audio tracks are absent; primary audio tracks remain authoritative when present. Added explicit en/fr multi-track and override regression to `engine_v2/tests/contracts.test.mjs`.
+- This code-level regression is not a native playback result. Gate still requires the real HLS master and Nuvio's selectable audio tracks to match, with at least one distinct-language witness in iOS tests. No providers are newly marked FULL or reactivated from this change. Validate exact commit SHA in CI and native labs before publication claims.

@@ -95,6 +95,35 @@ assert.equal(stream.subtitles.length, 1);
 assert.equal(stream.subtitles[0].url, "https://sub.example/fr.vtt?token=sub%2F1");
 assert.equal(stream.subtitles[0].headers.Referer, "https://subtitle.example/");
 
+// HLS multi-audio evidence and source language must survive the shared Core
+// boundary; display metadata is not a substitute for actual player track proof.
+const masterAudioTracks = [
+  { language: "en", name: "English", groupId: "main-audio" },
+  { language: "fr", name: "Français", groupId: "main-audio" },
+];
+const hlsMulti = normalizeStreamCandidate({
+  url: "https://media.example/master.m3u8",
+  language: "MULTI",
+  audioLanguages: ["en", "fr"],
+  hlsMasterAudioTracks: masterAudioTracks,
+  hlsMasterAudioTrackLanguages: ["en", "fr"],
+  sourceLanguage: "en",
+  sourceLanguages: ["en", "fr"],
+}, { providerId: "example-hls" });
+assert.deepEqual(hlsMulti.audioTracks, masterAudioTracks);
+assert.deepEqual(hlsMulti.hlsMasterAudioTracks, masterAudioTracks);
+assert.deepEqual(hlsMulti.audioLanguages, ["en", "fr"]);
+assert.deepEqual(hlsMulti.hlsMasterAudioTrackLanguages, ["en", "fr"]);
+assert.equal(hlsMulti.sourceLanguage, "en");
+assert.deepEqual(hlsMulti.sourceLanguages, ["en", "fr"]);
+assert.equal(hlsMulti.url, "https://media.example/master.m3u8");
+assert.deepEqual(hlsMulti.provenance, { providerId: "example-hls", sourceProvider: null, source: null });
+assert.equal(normalizeStreamCandidate({
+  url: "https://media.example/only.m3u8",
+  audioTracks: [{ language: "ja" }],
+  hlsMasterAudioTracks: masterAudioTracks,
+}).audioTracks[0].language, "ja");
+
 const nested = normalizeStreamCandidate({
   url: {
     url: "https://signed.example/media?X-Amz-Signature=a%2Bb%2Fc&X-Amz-Expires=600",
