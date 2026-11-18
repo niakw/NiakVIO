@@ -1,0 +1,66 @@
+{
+  "brainLlmSha": "102060eff17e949f24b7531b2031336c32da185e",
+  "minConfidence": 0.8,
+  "privateContentRetained": false,
+  "proofAuthority": false,
+  "providerCount": 1,
+  "providerMutationContentRetained": true,
+  "publicationAuthority": false,
+  "rows": [
+    {
+      "candidateOrdinal": 1,
+      "confidence": 0.96,
+      "failureClass": "route-proven-gap",
+      "mechanismFamily": "slug-saga-inline-media",
+      "mutationContextFingerprint": "3d9b2e2b2797021dfaae44860bab667f42b2d97cd76e74c895ca6ff4a97f1374",
+      "mutationFingerprint": "d2ce130b40ac3b1c3fd621199ef78bd2ca8d7b7d8bd3c0cc5162b6833041015c",
+      "mutations": [
+        {
+          "family": "slug_saga_inline_media",
+          "find": "if (formRequest && requests < requestBudget) { try { requests += 1; const postResponse = await fetch(formRequest.url, { method: \"POST\", headers: { Accept: \"text/html,application/xhtml+xml,*/*;q=0.8\", \"Content-Type\": \"application/x-www-form-urlencoded\", Referer: responseUrl }, body: formRequest.body, redirect: \"follow\" }); if (postResponse && postResponse.ok) { const postUrl = _text(postResponse.url || formRequest.url); const postText = await postResponse.text(); const postDecoded = _spv186UnpackPackedPlayer(postText); streams.push(..._spv26ExplicitMediaRows(postDecoded, postUrl, postUrl)); const postUrls = _extractUrls(postDecoded, postUrl); const postDirect = postUrls.filter(_directMedia); if (postDirect.length) streams.push(..._streams(postDirect, postUrl)); if (row.depth < Math.max(0, Number(maxDepth) || 0)) { for (const nested of postUrls.filter(_crawlEligible).slice(0, 16)) { const next = _crawlCanonical(nested); if (next && !seen.has(next)) queue.push({ url: next, depth: row.depth + 1, referer: postUrl }); } } } } catch (_) {} }",
+          "operation": "upsert",
+          "replace": "if (formRequest && requests < requestBudget) {\nif (formRequest && requests < requestBudget) { try { requests += 1; const postResponse = await fetch(formRequest.url, { method: \"POST\", headers: { Accept: \"text/html,application/xhtml+xml,*/*;q=0.8\", \"Content-Type\": \"application/x-www-form-urlencoded\", Referer: responseUrl }, body: formRequest.body, redirect: \"follow\" }); if (postResponse && postResponse.ok) { const postUrl = _text(postResponse.url || formRequest.url); const postText = await postResponse.text(); const postDecoded = _spv186UnpackPackedPlayer(postText); streams.push(..._spv26ExplicitMediaRows(postDecoded, postUrl, postUrl)); const postUrls = _extractUrls(postDecoded, postUrl); const postDirect = postUrls.filter(_directMedia); if (postDirect.length) streams.push(..._streams(postDirect, postUrl)); if (row.depth < Math.max(0, Number(maxDepth) || 0)) { for (const nested of postUrls.filter(_crawlEligible).slice(0, 16)) { const next = _crawlCanonical(nested); if (next && !seen.has(next)) queue.push({ url: next, depth: row.depth + 1, referer: postUrl }); } } } } catch (_) {} }\n}",
+          "scope": "provider_bloc"
+        }
+      ],
+      "providerId": "sekai",
+      "repairFamily": {
+        "archetype": "route-proven-gap:route-parser",
+        "failure": "route-proven-gap",
+        "key": "3d41033886e9ee6dcd07f2b297bd85eeb51403b7dda3ef64c6f46340f0b069fd",
+        "mediaTypes": [
+          "anime"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ],
+        "signals": [
+          "provider-http-2xx",
+          "response-html",
+          "response-json"
+        ],
+        "sourceTopologies": [
+          "html-player"
+        ],
+        "stages": [
+          "provider-network-zero-result"
+        ],
+        "status": "regression-provider",
+        "version": 2
+      },
+      "strategy": "search-detail-player-terminal-traversal",
+      "targetLayer": "provider",
+      "tests": [
+        "replay_proven_route",
+        "traverse_search_detail_player_terminal",
+        "validate_terminal_media_identity"
+      ]
+    }
+  ],
+  "sandboxMutationAuthority": true,
+  "schemaVersion": 1,
+  "sourceNiakvioSha": "fadece1234ddaf33f0cf5bfdac74575005a95924"
+}
