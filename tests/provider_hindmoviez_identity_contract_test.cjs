@@ -10,6 +10,15 @@ const patch = fs.readFileSync(path.join(root, 'scripts/provider_patches/hindmovi
 if (!patch.includes('title:f,filename:f,sourceName:f')) {
   throw new Error('HindMoviez runtime must preserve provider filename identity');
 }
+if (/season\s*:\s*Number\([^\n;]*\)\s*\|\|\s*1/.test(patch)) {
+  throw new Error('HindMoviez runtime must not collapse S00 to S01 through JavaScript truthiness');
+}
+if (!patch.includes('season:C((o&&o.season)!=null?o.season:(a[2]!=null?a[2]:x.season),1,true)')) {
+  throw new Error('HindMoviez runtime must preserve season zero at its request boundary');
+}
+if (!patch.includes('episode:C((o&&o.episode)!=null?o.episode:(a[3]!=null?a[3]:x.episode),1,false)')) {
+  throw new Error('HindMoviez runtime must keep episode coordinates positive');
+}
 
 const movieFile = 'The.Colony.AKA.Tides.2021.480p.BluRay.Hindi.English.Esubs.mkv';
 const movie = streamIdentity({

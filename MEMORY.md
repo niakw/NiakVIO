@@ -4645,3 +4645,11 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
   asserting that every other production proof disappears.
 - This is a test-oracle correction only; HindMoviez still requires the rerun to
   commit/move the exact bytes on main before it can be called reactivated.
+
+
+## 2026-11-18 — HindMoviez S00 request boundary fixed after exact Workflow Gate failure
+
+- Exact Workflow Gate run `44225005019` on `b82638ef` failed in `special_season_zero_identity_test.py`: active HindMoviez Lego `scripts/provider_patches/hindmoviez_runtime_v1.py` still used `season:Number(...)||1`, collapsing a valid season zero into season one before provider resolution.
+- Cohort audit used the current Global+France active episodic set: 70 active TV/anime providers, 12 declared active provider Lego files, and HindMoviez was the only active Lego matching the unsafe S00 truthiness patterns. No broad provider rewrite was justified.
+- HindMoviez now validates coordinates explicitly: season accepts integer `>= 0`, episode requires integer `> 0`, both with fallback 1 only for invalid/missing values. Added provider-specific static regression alongside the existing global active-Lego S00 gate.
+- This source fix does not itself promote HindMoviez playback or prove an S00 terminal stream. It must be rematerialized into current content-addressed provider bytes, the exact bytes inspected, and the Workflow Gate/finalizer rerun. Provider bundle retention remains a rolling 10-generation window in `providers/.generation-retention.json`; the prior generated HindMoviez bundle remains rollback history unless evicted by normal rolling retention/security policy.
