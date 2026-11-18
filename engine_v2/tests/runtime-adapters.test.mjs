@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { compareDeviceInvocations, toRuntimeStream } from "../src/runtime-adapters.mjs";
+import { presentStreamCandidate } from "../src/stream-presentation.mjs";
 
 const comparison = compareDeviceInvocations({
   tmdbId: "1396", mediaType: "series", title: "Breaking Bad", season: 1, episode: 1,
@@ -118,6 +119,21 @@ for (const device of ["worker", "mobile", "desktop", "tv"]) {
   assert.deepEqual(row.provenance, {
     providerId: "example-hls", sourceProvider: "third-party-player", source: null,
   });
+}
+// A presentation-enriched stream must retain every computed language track
+// across the second normalization and final client adapter projection.
+const enriched = presentStreamCandidate({
+  url: "https://cdn.example/multi.m3u8",
+  audioTracks: masterTracks,
+  language: "MULTI",
+}, { title: "Example", mediaType: "movie", originalLanguage: "en" }, {
+  id: "example-hls", name: "Example HLS",
+});
+for (const device of ["worker", "mobile", "desktop", "tv"]) {
+  const row = toRuntimeStream(enriched, device, { providerId: "example-hls" });
+  assert.equal(row.originalLanguage, "en");
+  assert.deepEqual(row.languageTracks, enriched.languageTracks);
+  assert.deepEqual(row.audioTracks, masterTracks);
 }
 const specials = compareDeviceInvocations({
   tmdbId: "46296", mediaType: "tv", title: "Spartacus", season: 0, episode: 1,

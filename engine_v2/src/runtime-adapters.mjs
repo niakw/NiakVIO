@@ -34,6 +34,8 @@ export function toRuntimeStream(candidate, device, context = {}) {
     resolution: stream.resolution,
     size: stream.size,
     language: stream.language,
+    originalLanguage: stream.originalLanguage,
+    languageTracks: stream.languageTracks,
     codec: stream.codec,
     audio: stream.audio,
     audioCodec: stream.audioCodec,

@@ -91,6 +91,8 @@ export function normalizeStreamCandidate(raw = {}, context = {}) {
     quality: inferQualityLabel(raw, url),
     size: scalarOrNull(raw.size),
     language: extractLanguageLabel(raw),
+    originalLanguage: textOrNull(raw.originalLanguage ?? raw.original_language),
+    languageTracks: clonePortable(raw.languageTracks ?? raw.language_tracks),
     codec: textOrNull(raw.codec ?? raw.codecName ?? raw.videoCodec ?? raw.video_codec),
     audio: textOrNull(raw.audio ?? raw.audioCodec ?? raw.audio_codec),
     resolution: scalarOrNull(raw.resolution ?? raw.displayResolution ?? raw.videoResolution),
