@@ -379,7 +379,7 @@ export function rotateDnsObservationOrder(candidates, {
   chunkSize = 8,
 } = {}) {
   const source = Array.isArray(candidates) ? [...candidates] : [];
-  const day = /^\\d{4}-\\d{2}-\\d{2}$/.test(String(utcDay || ''))
+  const day = /^\d{4}-\d{2}-\d{2}$/.test(String(utcDay || ''))
     ? Date.parse(`${utcDay}T00:00:00Z`) : NaN;
   const step = Math.max(1, Math.min(source.length || 1, Math.trunc(Number(chunkSize) || 8)));
   if (!allDomains || targeted || source.length < 2 || !Number.isFinite(day)) {
@@ -1160,7 +1160,7 @@ async function runCli() {
   const orderedCandidates = observationOrder.candidates;
   if (observationOrder.rotated) {
     process.stdout.write(
-      `FIELD_DNS_OBSERVATION_ROTATION providers=${orderedCandidates.length} offset=${observationOrder.offset} chunk=${observationOrder.chunkSize} authority=none\\n`,
+      `FIELD_DNS_OBSERVATION_ROTATION providers=${orderedCandidates.length} offset=${observationOrder.offset} chunk=${observationOrder.chunkSize} authority=none\n`,
     );
   }
   const frenchResolverNames = [preflightConfig.primary_french_isp, ...(preflightConfig.fallback_french_isps || [])].filter(Boolean);
