@@ -194,6 +194,24 @@ with tempfile.TemporaryDirectory() as tmp:
     assert base_gens[5].exists(), "re-referenced ProviderBase must become a fresh occurrence"
     assert not base_gens[2].exists(), "oldest unprotected ProviderBase must be evicted"
 
+    # A historical/pending provenance row may point at a logical active-store
+    # base that is not physically present. It is not current active authority and
+    # must neither fail the prune nor pin an old generation.
+    (root / "PROVENANCE.json").write_text(
+        json.dumps({"providers": {
+            "movix": {
+                "published_filename": current_provider_rel,
+                "base_filename": relative(base_gens[12], root),
+            },
+            "retired": {
+                "published_filename": "provider-disabled/retired--nuvio--ffffffffffffffff.js",
+                "base_filename": "provider-bases/retired--base--eeeeeeeeeeeeeeee.js",
+            },
+        }}),
+        encoding="utf-8",
+    )
+    run_pruner(root, provider_bases=True)
+
     base_ledger = json.loads((bases / ".generation-retention.json").read_text(encoding="utf-8"))
     assert base_ledger["retention_generations"] == 10
     assert base_ledger["policy"] == "rolling-content-addressed-providerbase-generations"

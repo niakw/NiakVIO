@@ -4719,3 +4719,10 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 ## 2026-11-18 — Provider generation retention tests promoted into Workflow Gate
 
 - The rolling-retention tests were repository contracts but were not executed by the short CORE Workflow Gate. Added `tests/prune_unreferenced_providers_test.py` and `tests/provider_prune_batch_history_test.py` to that gate so both published-bundle and ProviderBase retention behavior are checked on ordinary relevant main changes.
+
+
+## 2026-11-18 — ProviderBase retention authority narrowed after real Projection Reconcile failure
+
+- Projection Reconcile run 44233445081 reached the new ProviderBase prune after rebuilding all 77 current providers, then failed closed because the first implementation treated every `PROVENANCE.json:base_filename` as an active-store mandatory base. PROVENANCE deliberately retains historical/pending provider rows whose bases may live under disabled/archive lifecycle storage, so that scope was too broad.
+- ProviderBase rolling retention now treats a base as mandatory/protected only when the same provenance row's published provider path is currently referenced by an authoritative active manifest (`providers/...`). Existing historical provenance may remain security evidence, but it cannot pin the active ProviderBase retention window or fail it for a missing inactive base.
+- Added a regression with an inactive `provider-disabled/...` provenance row pointing at an absent logical `provider-bases/...` path. Active base pruning must still succeed.

@@ -355,9 +355,14 @@ def main() -> int:
                 if isinstance(record, dict):
                     retain_existing_recorded_provider_path(root, protected, record.get("published_filename"))
                     retain_existing_recorded_provider_path(root, protected_generated, record.get("published_filename"))
+                    published = normalize_provider_path(str(record.get("published_filename") or ""))
                     base = normalize_generated_path(record.get("base_filename"))
                     if base and base.startswith("provider-bases/"):
-                        authoritative_base_paths.add(base)
+                        # PROVENANCE also retains historical/pending identities. Only a
+                        # provider that is currently present in an authoritative active
+                        # manifest makes its active-store ProviderBase mandatory.
+                        if published and published in manifest_protected:
+                            authoritative_base_paths.add(base)
                         if (root / base).is_file():
                             protected_generated.add(base)
         except json.JSONDecodeError as exc:
@@ -459,10 +464,9 @@ def main() -> int:
         base_ledger = load_ledger(base_ledger_path)
         base_order = base_ledger.setdefault("order", {})
         base_previous_referenced = base_ledger.setdefault("referenced", {})
-        base_protected = {
-            relative for relative in protected_generated
-            if relative.startswith("provider-bases/")
-        }
+        # Rolling retention follows current publication authority, not every
+        # historical PROVENANCE row that happens to reference an old local base.
+        base_protected = set(authoritative_base_paths)
         existing_bases_by_provider: dict[str, list[str]] = {}
         for path in sorted(bases_dir.glob("*.js")):
             if not path.is_file() or not HASHED_PROVIDER_RE.match(path.name):
