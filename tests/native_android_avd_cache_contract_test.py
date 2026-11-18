@@ -63,7 +63,7 @@ assert "--install platform-tools" in prime
 assert "adb start-server" in prime
 assert prebuild.count("--max-workers=1") >= 2
 
-assert "runs-on: macos-26" in IOS
+assert "runs-on: xcode-27" in IOS
 assert "iphonesimulator" in ios_suite
 assert 'xcrun simctl launch --terminate-running-process --console "$UDID" "$BUNDLE_ID" > >(tee -a "$LOG") 2>&1 &' in ios_suite
 assert '\ncat "$LOG"\n' not in ios_suite

@@ -29,7 +29,7 @@ assert android.count("gate_native_declared_provider_matrix.py") >= 2
 
 # 1 Mobile iOS.
 assert "mobile-ios-reader:" in ios
-assert "runs-on: macos-26" in ios
+assert "runs-on: xcode-27" in ios
 assert "run_native_corpus_ios_suite.sh" in ios
 assert "gate_native_declared_provider_matrix.py" in ios
 assert "|| '25000'" in ios

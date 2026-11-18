@@ -147,8 +147,12 @@ assert "NuvioMedia/NuvioMobile.git" in mobile_android
 assert "native-mobile-android-full-${{ github.run_id }}" in mobile_android
 
 assert "mobile-ios-reader:" in mobile_ios
-assert "runs-on: macos-26" in mobile_ios
-assert "DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer" in mobile_ios
+assert "runs-on: xcode-27" in mobile_ios
+assert "DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer" in mobile_ios
+assert 'if [ "$sdk_version" != "27.1" ]; then' in mobile_ios
+assert "FIELD_NATIVE_IOS_TOOLCHAIN xcode=27.1 sdk=$sdk_version" in mobile_ios
+assert "-xcode27.1-" in mobile_ios
+assert "Xcode_26.6.app" not in mobile_ios
 assert "Build official unsigned device IPA before Lab instrumentation" in mobile_ios
 assert "./scripts/build-ios-ipa.sh" in mobile_ios
 assert "NIAKVIO_IOS_LAB_MODE" in mobile_ios

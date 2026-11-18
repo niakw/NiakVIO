@@ -79,11 +79,11 @@ jobs:
 
   mobile-ios-reader:
     needs: resolve
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 240
     env:
       NIAKVIO_MANIFEST_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/native-hub46/manifest.json
-      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
       GRADLE_OPTS: -Dfile.encoding=UTF-8
       NUVIO_GRADLE_JVMARGS: -Xmx4608M -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=768M
       NUVIO_KOTLIN_NATIVE_JVMARGS: -Xmx4608M
@@ -108,13 +108,18 @@ jobs:
           git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
           git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
           touch nuvio-mobile/local.properties
-      - name: Verify official iOS 26 toolchain
+      - name: Verify official iOS 27.1 toolchain
         shell: bash
         run: |
           set -euo pipefail
           xcodebuild -version
-          xcrun --sdk iphoneos --show-sdk-version
-          test "$DEVELOPER_DIR" = "/Applications/Xcode_26.6.app/Contents/Developer"
+          sdk_version="$(xcrun --sdk iphoneos --show-sdk-version)"
+          test "$DEVELOPER_DIR" = "/Applications/Xcode_27.1.app/Contents/Developer"
+          if [ "$sdk_version" != "27.1" ]; then
+            echo "FIELD_NATIVE_IOS_SDK_MISMATCH expected=27.1 actual=$sdk_version" >&2
+            exit 1
+          fi
+          echo "FIELD_NATIVE_IOS_TOOLCHAIN xcode=27.1 sdk=$sdk_version official_client_apis=available"
       - name: Restore iOS prebuild cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
@@ -127,7 +132,7 @@ jobs:
             nuvio-mobile/build/ios-derived-full-debug
             nuvio-mobile/build/ios-ipa
             ios-derived
-          key: native-prebuild-v2-ios-${{ runner.os }}-${{ needs.resolve.outputs.mobile_sha }}-xcode26.6-${{ hashFiles('niakvio/scripts/prepare_native_ios_reader_acceptance.py', 'niakvio/scripts/run_native_corpus_ios_suite.sh', 'niakvio/native-hub46/manifest.json') }}
+          key: native-prebuild-v2-ios-${{ runner.os }}-${{ needs.resolve.outputs.mobile_sha }}-xcode27.1-${{ hashFiles('niakvio/scripts/prepare_native_ios_reader_acceptance.py', 'niakvio/scripts/run_native_corpus_ios_suite.sh', 'niakvio/native-hub46/manifest.json') }}
       - name: Build official unsigned device IPA before Lab instrumentation
         if: ${{ github.event_name == 'schedule' || inputs.mode != 'only' }}
         shell: bash
