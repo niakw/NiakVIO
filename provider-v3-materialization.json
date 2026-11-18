@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "sourceSha": "9fc631b8bf17774cd0e03f4a2489f06bf9516c90",
   "context": "main",
-  "generation": "4200a89a576d8be60f46227e09fa0efc05ef08fe202695fbfa0f943492968768",
-  "providerCount": 77,
-  "expectedProviderCount": 77,
+  "generation": "ff7ddda3d52adef4a30efa57cc049c98b564ad4d61540516525f322dbf1cea4c",
+  "providerCount": 76,
+  "expectedProviderCount": 76,
   "providers": [
     {
       "provider": "1jour1film0626",
@@ -9588,151 +9588,6 @@
       }
     },
     {
-      "provider": "topcartoons",
-      "entryAuthority": "global-manifest",
-      "file": "providers/topcartoons--nuvio--c7702656d086e3fa.js",
-      "sha256": "c7702656d086e3fa43794a27892f11e59157f6b05eb689fefdd46afc0708ae1a",
-      "providerDataSha256": "0dc953dcb507f4cc7713e2d9bd7f1fe1fe326feefcff0b4fc24e8e4b8a87d152",
-      "baseStrippedGeneratedCore": false,
-      "fixIds": [
-        "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
-        "CORE.HLS_RUNTIME_INTEGRITY.V1",
-        "CORE.MEDIA_ENRICHMENT.V1",
-        "CORE.MEDIA_TYPE_RESOLUTION.V1",
-        "CORE.PROVIDER_BRANDING.V1",
-        "CORE.PROVIDER_SECURITY_BOUNDARY.V1",
-        "CORE.RUNTIME_COMPAT.V1",
-        "CORE.RUNTIME_MEDIA_SAFETY.V4",
-        "CORE.STREAM_FACTS.V1",
-        "CORE.STREAM_IDENTITY.V1",
-        "CORE.STREAM_PRESENTATION.V1",
-        "CORE.STREAM_SANITIZER.V6",
-        "CORE.STREAM_SCORE.V1",
-        "CORE.TELEMETRY.V1",
-        "PROVIDER.TOPCARTOONS.CONFIG.V1"
-      ],
-      "coreCount": 14,
-      "applied": [
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
-          "phase": "discovery",
-          "scope": "global_catalogue_resolution"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_enrichment"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery",
-          "scope": "global_playback_integrity"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
-          "phase": "discovery",
-          "scope": "global_playback_integrity"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
-          "phase": "discovery",
-          "scope": "global_runtime_compat"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_facts_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_facts"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
-          "phase": "discovery",
-          "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_identity_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_identity"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_presentation"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
-          "phase": "discovery",
-          "scope": "global_runtime_media_safety"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_provider_branding_v1.py",
-          "phase": "discovery",
-          "scope": "global_provider_branding"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_score_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_score"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_telemetry_v1.py",
-          "phase": "discovery",
-          "scope": "global_telemetry"
-        }
-      ],
-      "deviceSpecificJs": false,
-      "devices": [
-        "tv",
-        "mobile",
-        "desktop"
-      ],
-      "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false,
-      "securityHardening": {
-        "changed": false,
-        "alreadyHardened": false,
-        "literalDecodeChanges": 0,
-        "hostnameChanges": 0,
-        "percentDecodeChanges": 0,
-        "htmlEntityDecodeReorders": 0,
-        "consoleSinkChanges": 0,
-        "consoleShadow": false
-      },
-      "byteValidation": {
-        "tool": "raw-bytes",
-        "toolVersion": "raw-v1",
-        "phase": "provider-byte-stability-v1",
-        "sourceSha256": "c7702656d086e3fa43794a27892f11e59157f6b05eb689fefdd46afc0708ae1a",
-        "fixedPointVerified": true
-      },
-      "staticAuthorityReconciledProviders": [],
-      "domainSubstitutionReconciledProviders": [],
-      "minimizer": {
-        "enabled": true,
-        "savedBytes": 37995,
-        "transformedLines": 6586,
-        "skippedReason": ""
-      }
-    },
-    {
       "provider": "videasy",
       "entryAuthority": "global-manifest",
       "file": "providers/videasy--nuvio--3615c1daea87de59.js",
@@ -11509,7 +11364,7 @@
     "zone-streaming",
     "zone-telechargement"
   ],
-  "activeProviderIdentityCount": 77,
+  "activeProviderIdentityCount": 76,
   "lifecycleScopeReconciled": true,
   "lifecycleReconciledArchivedProviders": [],
   "targetedMaterializedProviders": [

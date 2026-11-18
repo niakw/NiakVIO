@@ -621,7 +621,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "current_status:PROVIDER NETWORK BLOCKED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -726,7 +726,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "current_status:PROVIDER NETWORK BLOCKED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -1334,7 +1334,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER JS BROKEN"
+        "current_status:CHAIN REACHED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -1407,7 +1407,7 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER JS BROKEN"
+        "current_status:CHAIN REACHED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -1700,7 +1700,7 @@
         "existing_positive_route_prior",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "current_status:REGRESSION PROVIDER"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -1813,20 +1813,14 @@
     },
     {
       "provider": "topcartoons",
-      "action": "REDISCOVER_SEARCH",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER JS BROKEN"
-      ],
-      "productionFreshnessAuthorized": false,
-      "productionProofAuthority": "no-current-byte-production-proof"
+        "already_disabled"
+      ]
     },
     {
       "provider": "uhdmovies",
@@ -1990,7 +1984,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "current_status:PROVIDER NETWORK BLOCKED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"

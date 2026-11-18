@@ -12762,11 +12762,36 @@
         "formats": [
           "mp4",
           "m3u8"
-        ]
+        ],
+        "enabled": false
       },
       "learned_routes": [
         "/?s={query}"
-      ]
+      ],
+      "route_data_state": "off",
+      "activation_eligible": false,
+      "wrong_content_disable_proof": {
+        "provider": "topcartoons",
+        "scope": "global",
+        "proofAuthority": "current-census-exact-byte-wrong-content-v1",
+        "sourceKind": "current-bytes-census",
+        "sourceRunId": "44237198508",
+        "sourceSha": "fdc793d553df965fb0cfe4c0febc3fc945efde45",
+        "providerArtifactSha256": "c7702656d086e3fa43794a27892f11e59157f6b05eb689fefdd46afc0708ae1a",
+        "declaredLanes": [
+          "movie",
+          "tv"
+        ],
+        "contradictoryLanes": [
+          "tv"
+        ],
+        "identityContradictionCount": 1,
+        "wrongContent": true,
+        "testedThisRun": true,
+        "disableReason": "auto_off_current_wrong_content",
+        "repairRequired": true,
+        "directProviderMutationAuthority": false
+      }
     },
     "vidlink": {
       "notes": [
