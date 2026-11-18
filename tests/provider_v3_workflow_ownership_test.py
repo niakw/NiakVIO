@@ -177,7 +177,8 @@ assert "requires 96/96 state" not in transaction
 assert "group: niakvio-domain-refresh-main" in domain
 assert "cancel-in-progress: false" in domain
 assert "group: niakvio-release-finalizer-main" in finalizer
-assert "cancel-in-progress: false" in finalizer
+assert "cancel-in-progress: true" in finalizer
+assert "cancel-in-progress: false" not in finalizer
 assert "FIELD_DOMAIN_RELEASE_HANDOFF" in domain
 assert "FIELD_RELEASE_REQUEUED" in finalizer
 assert "python3 scripts/reconcile_provider_static_authority.py --apply" in finalizer

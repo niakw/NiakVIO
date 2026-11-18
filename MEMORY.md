@@ -4778,3 +4778,10 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - This is a harness/orchestration defect: executable main drift guarantees the older Finalizer cannot be the accepted publisher, so allowing it to consume the full release slot only delays validation of the true HEAD.
 - The release lane now uses `cancel-in-progress: true`. Domain/Projection keep their independent queue semantics. Exact-SHA checkout, executable-drift rejection and atomic fast-forward publication remain the publication safety boundary.
 - `tests/release_finalizer_projection_transaction_test.py` now locks the release-lane concurrency contract so the comment and executable workflow cannot diverge again.
+
+
+## 2026-11-18 — Provider workflow ownership oracle aligned with release latest-wins contract
+
+- Exact Provider Non-Regression Gate run `44286045927` on `b05340b` failed only in `tests/provider_v3_workflow_ownership_test.py`: that older oracle still required `cancel-in-progress: false` for the release Finalizer even though the release-lane contract had just been intentionally corrected to latest-wins.
+- All preceding static/provider contracts in the same step passed. The stale assertion is updated to require `cancel-in-progress: true` and explicitly reject the old false setting. Domain Refresh keeps its separate queued-writer policy unchanged.
+- This is a test-oracle synchronization for the harness change, not a relaxation of provider non-regression behavior. A fresh exact Non-Regression Gate and Finalizer are required on the resulting main SHA.
