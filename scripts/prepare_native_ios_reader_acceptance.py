@@ -99,6 +99,7 @@ private data class StreamRowObservation(
     val logicalProvider: String = "",
     val title: String = "",
     val name: String = "",
+    val host: String = "",
 )
 
 @Serializable
@@ -383,6 +384,7 @@ private suspend fun runLab(manifestUrl: String) {
                             logicalProvider = row.provider.orEmpty(),
                             title = row.title,
                             name = row.name.orEmpty(),
+                            host = hostOnly(row.url),
                         ),
                     )
                     val player = probeProductionPlayer(row, playerTimeoutMs)
