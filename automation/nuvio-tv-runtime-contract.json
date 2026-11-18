@@ -6,7 +6,7 @@
   "runtime_contract": "getStreams(tmdbId, mediaType, season, episode) plus global SCRAPER_ID, SCRAPER_SETTINGS and runtime TMDB_API_KEY",
   "source_repository": "NuvioMedia/NuvioTV",
   "source_branch": "dev",
-  "source_ref": "3ff5e2b41a9dba282c57e7602e401df09dabe703",
+  "source_ref": "67bbb3c3f3be2235e3abb7fda9c4670f97df8448",
   "runtime_source": "app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt",
   "settings_source": "app/src/main/java/com/nuvio/tv/data/local/PluginDataStore.kt",
   "stream_repository_source": "app/src/main/java/com/nuvio/tv/data/repository/StreamRepositoryImpl.kt",
@@ -50,23 +50,26 @@
     "consequence": "Do not rely on manifest platform fields to hide an unsafe provider from NuvioTV; the provider output itself must be strict-media safe or globally disabled."
   },
   "audit": {
-    "date": "2026-11-17",
-    "previous_ref": "5b371fcd0d7ee080bb1de8de4d438882f67e8bfd",
-    "audited_ref": "3ff5e2b41a9dba282c57e7602e401df09dabe703",
-    "hard_contract_paths_changed": false,
+    "date": "2026-11-18",
+    "previous_ref": "3ff5e2b41a9dba282c57e7602e401df09dabe703",
+    "audited_ref": "67bbb3c3f3be2235e3abb7fda9c4670f97df8448",
+    "hard_contract_paths_changed": true,
     "plugin_runtime_positional_getstreams_unchanged": true,
     "provider_stream_repository_contract_unchanged": true,
     "provider_url_header_ingestion_unchanged": true,
     "semantic_changes_reviewed": [
-      "No configured provider/plugin/stream/player semantic path changed between 5b371fcd0d7e and 3ff5e2b41a9d",
-      "TmdbMetadataService now filters talk-show guest appearances from person filmography",
-      "The only accompanying change is TmdbMetadataServiceTest coverage for that metadata behavior",
-      "No getStreams, QuickJS transport, stream URL/header projection, audio-track enumeration/selection, provider grouping, fallback identity or expired-link refresh behavior changed"
+      "PluginRuntime, PluginManager, StreamRepository and positional getStreams transport are unchanged across the 21-commit delta.",
+      "SubtitleResponseDto/Subtitle add only optional label; url, language and subtitle-specific headers remain intact, and repository/stream mapping carries label additively.",
+      "Background trailer controller/pool changes are isolated to trailer ownership/handoff and do not alter provider stream selection.",
+      "BitrateAwareLoadControl override signatures remain source-compatible via optional ExoPlayer parameters; internal reflection is fail-soft under runCatching.",
+      "Dolby Vision bridge changes add internal conversion counters / packed JNI result handling and do not alter provider result ABI.",
+      "No audio-track enumeration/selection, provider grouping, same-addon refresh, stream URL/header or behaviorHints projection path changed.",
+      "NuvioTV upstream full debug build workflow 44343356067 succeeded on exact dev 67bbb3c3f3be."
     ],
     "runtime_reproof_required": true,
-    "runtime_reproof_reason": "Source ABI audit is current at 3ff5e2b41a9d; a fresh Android-TV Native Lab is still required to certify real current-client execution, audio-language parity and provider/source provenance.",
-    "audited_at": "2026-11-17",
-    "note": "2026-11-17: exact current-source re-audit at dev 3ff5e2b41a9d. Since 5b371fcd0d7e, two commits change only TmdbMetadataService person-filmography filtering for talk-show guest appearances plus tests; no configured provider/plugin/stream/player semantic path changed. getStreams, QuickJS transport, stream URL/header projection, audio-track enumeration/selection, provider grouping/fallback identity and expired-link same-addon refresh remain unchanged. Exact Android-TV Native Lab proof remains required."
+    "runtime_reproof_reason": "Source ABI audit is current at 67bbb3c3f3be; fresh Android-TV Native Lab remains required for decoded playback, audio-language parity, subtitle-label rendering and provider/source provenance.",
+    "audited_at": "2026-11-18",
+    "note": "2026-11-18 exact source re-audit at NuvioTV dev 67bbb3c3f3be. Across 21 commits / 58 files since 3ff5e2b41a9d, PluginRuntime, PluginManager, StreamRepository and getStreams transport are unchanged. Subtitle DTO/domain changes only add optional label while preserving url/lang/headers; StreamMapper and SubtitleRepository map that label additively. Player deltas add background-trailer handoff, fail-soft runtime buffer overrides and Dolby Vision diagnostics; no audio-track enumeration/selection or provider stream/header ownership path changed. Upstream full debug build workflow 44343356067 succeeded on this exact head. Source ABI is compatible; exact Android-TV Native Lab decoded playback/audio-language proof remains required."
   },
   "notes": [
     "NuvioTV source contract re-audited on 2026-11-16 at 2c853c1786743822c5ec7932e855529e0c731221.",
@@ -84,7 +87,8 @@
     "2026-11-17 upstream audit: dev fc5c10c3d2d5 adds media-server functionality outside provider/plugin/player contract paths; no provider ABI promotion is inferred and exact TV Native Lab remains mandatory.",
     "2026-11-17 safe-head audit: dev 03705cdd1dcf changes only activity/media-server sync/UI/translations; provider/plugin/player contract paths remain unchanged and exact TV Native proof remains mandatory.",
     "2026-11-17 current-head audit: dev 5b371fcd0d7e changes ratings/tracking plus subtitle-menu language lookup caching only; provider/plugin transport, audio selection and provider ownership contracts are unchanged; exact TV Native proof remains mandatory.",
-    "2026-11-17 current-head audit: dev 3ff5e2b41a9d changes only TMDB person-filmography talk-show guest filtering plus tests; provider/plugin/player transport, audio selection and provider ownership contracts are unchanged; exact TV Native proof remains mandatory."
+    "2026-11-17 current-head audit: dev 3ff5e2b41a9d changes only TMDB person-filmography talk-show guest filtering plus tests; provider/plugin/player transport, audio selection and provider ownership contracts are unchanged; exact TV Native proof remains mandatory.",
+    "2026-11-18 current-head audit: dev 67bbb3c3f3be adds optional subtitle labels plus trailer/buffer/Dolby Vision reader changes. Provider getStreams/QuickJS/stream/header/audio-selection contracts remain source-compatible; upstream full debug build is green, while exact Android-TV Native Lab decoded playback/audio-language proof remains mandatory."
   ],
   "media_safety_authority": "scripts/provider_patches/stream_output_sanitizer_v12.py",
   "historical_direct_media_promotion": {
