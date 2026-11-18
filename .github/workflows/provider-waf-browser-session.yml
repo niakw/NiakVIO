@@ -124,6 +124,7 @@ jobs:
         run: |
           python tests/provider_waf_tailscale_exit_contract_test.py
           python tests/waf_residential_profile_merge_test.py
+          python tests/waf_transport_provenance_test.py
           python tests/residential_provider_replay_selection_test.py
           python tests/provider_offline_residential_replay_authority_test.py
           python tests/residential_provider_replay_summary_test.py
@@ -301,6 +302,18 @@ jobs:
         if: ${{ always() && env.NIAKVIO_RESIDENTIAL_EXIT_ACTIVE == '1' }}
         shell: bash
         run: sudo tailscale set --exit-node= || true
+
+      - name: Stamp current WAF evidence with executed provider JS hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/stamp_waf_transport_provenance.py \
+            --input automation/provider-waf-browser-session-latest.json \
+            --output /tmp/provider-waf-stamped.json \
+            --repo-root . \
+            --source-sha "$GITHUB_SHA" \
+            --run-id "$GITHUB_RUN_ID"
+          mv /tmp/provider-waf-stamped.json automation/provider-waf-browser-session-latest.json
 
       - name: Merge targeted refresh into complete WAF evidence ledger
         if: ${{ env.TARGET_PROVIDERS != '' }}
