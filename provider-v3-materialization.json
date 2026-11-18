@@ -1,8 +1,8 @@
 {
   "schemaVersion": 3,
-  "sourceSha": "93171d3becd3332222676df3f9e0129c22a9956d",
+  "sourceSha": "2fb287e4e355a1ec8f5c14b8fb1617444a6b4ae3",
   "context": "main",
-  "generation": "130f0a3e06742d5135b2453e5f20da73a2aab8381772716e799a4142693aedd7",
+  "generation": "0bd1ea85caac724b6a17f893f12380797b1b870f465f94fced99f35ec17c1baf",
   "providerCount": 76,
   "expectedProviderCount": 76,
   "providers": [
@@ -5448,9 +5448,10 @@
     },
     {
       "provider": "meowtv",
-      "file": "providers/meowtv--nuvio--6e46650c4b7fa712.js",
-      "sha256": "6e46650c4b7fa7120e393d4b30f7065896e9010f7056b67b505fab34568d88dd",
-      "providerDataSha256": "e7ce5180d831b17905b66ab442a71cbf9b65f479aa9fc2e9b0a8a30657c31170",
+      "entryAuthority": "global-manifest",
+      "file": "providers/meowtv--nuvio--76c6d6a23a05a2ab.js",
+      "sha256": "76c6d6a23a05a2ab7c858ee172b6698b5db0b575c68139d6aad524baa7942933",
+      "providerDataSha256": "6ec60dbfe7d378277447114ad7c31749810434f0a67c6bfd42dc594755e3ba17",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -5471,7 +5472,109 @@
         "PROVIDER.MEOWTV.CONFIG.V1"
       ],
       "coreCount": 14,
-      "applied": [],
+      "applied": [
+        {
+          "type": "provider_lego",
+          "path": "scripts/provider_patches/ticketed_encrypted_api_runtime_v1.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.GENERIC.TICKETED_ENCRYPTED.API.V1"
+        },
+        {
+          "type": "provider_stream_output_cap",
+          "path": "scripts/provider_patches/ticketed_encrypted_api_runtime_v1.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.GENERIC.TICKETED_ENCRYPTED.API.V1",
+          "cap": 40,
+          "optionKeys": [
+            "maxStreams"
+          ],
+          "renderedConfigRewrites": 0
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
+          "phase": "discovery",
+          "scope": "global_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_runtime_dispatch_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_runtime_dispatch"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_facts_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_facts"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_identity_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_identity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_presentation"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_score_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_score"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_telemetry_v1.py",
+          "phase": "discovery",
+          "scope": "global_telemetry"
+        }
+      ],
       "deviceSpecificJs": false,
       "devices": [
         "tv",
@@ -5480,15 +5583,30 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false,
-      "staticAuthorityReconciledProviders": [
-        "meowtv"
-      ],
-      "materializationRecoveredFromExactPublishedBytes": true,
+      "securityHardening": {
+        "changed": false,
+        "alreadyHardened": false,
+        "literalDecodeChanges": 0,
+        "hostnameChanges": 0,
+        "percentDecodeChanges": 0,
+        "htmlEntityDecodeReorders": 0,
+        "consoleSinkChanges": 0,
+        "consoleShadow": false
+      },
+      "byteValidation": {
+        "tool": "raw-bytes",
+        "toolVersion": "raw-v1",
+        "phase": "provider-byte-stability-v1",
+        "sourceSha256": "76c6d6a23a05a2ab7c858ee172b6698b5db0b575c68139d6aad524baa7942933",
+        "fixedPointVerified": true
+      },
+      "staticAuthorityReconciledProviders": [],
+      "domainSubstitutionReconciledProviders": [],
       "minimizer": {
         "enabled": true,
-        "savedBytes": 0,
-        "transformedLines": 0,
-        "skippedReason": "published-byte-recovery"
+        "savedBytes": 38178,
+        "transformedLines": 6660,
+        "skippedReason": ""
       }
     },
     {
@@ -11197,6 +11315,7 @@
     "internet-archive",
     "kidraz",
     "latestmovies",
+    "meowtv",
     "moiflix",
     "moviebite",
     "movish",
@@ -11277,6 +11396,7 @@
     "internet-archive",
     "kidraz",
     "latestmovies",
+    "meowtv",
     "moiflix",
     "moviebite",
     "movish",
