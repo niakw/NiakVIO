@@ -19,6 +19,7 @@ STATUS_META = {
     "FULL OK": ("🟢", "all declared lanes have retained verified playback evidence; carried rows were not revalidated on this census SHA"),
     "PARTIAL OK": ("🟡", "at least one lane has retained verified playback evidence; carried rows were not revalidated on this census SHA"),
     "CANDIDATE OK": ("🟦", "an unpublished repair/reconstruction candidate was live/playback verified, but current published bytes have not reproduced it yet"),
+    "PROOF REFRESH REQUIRED": ("🔹", "current bytes return playable-looking streams without contradiction, but strict decoded/native playback proof is not fresh enough for FULL/PARTIAL certification"),
     "ROUTE PROVEN": ("🟪", "live provider routes are qualified for the declared lanes, but terminal media is not currently verified"),
     "NO PROOF": ("🔵", "search/lookup ran but no content-specific chain was reached; keep rotating the corpus"),
     "CHAIN REACHED": ("🟣", "content/detail/episode/player chain was reached, but no terminal media is verified yet"),
@@ -57,9 +58,10 @@ NETWORK_BROKEN_STAGES = {
     "provider_network_exception",
     "timeout",
 }
+PROOF_REFRESH_STAGES = {"provider_returned_streams"}
 
 HEALTHY_STATES = {"FULL OK", "PARTIAL OK"}
-NON_ACTIONABLE_STATES = {"DISABLED"}
+NON_ACTIONABLE_STATES = {"DISABLED", "PROOF REFRESH REQUIRED"}
 ENVIRONMENT_ONLY_STATES = {"HARNESS MISMATCH", "CLIENT TRANSPORT GAP", "HARNESS/ENV BLOCKED", "PROVIDER WAF/ANTIBOT"}
 
 # These fields belong to one concrete WAF/residential overlay run. They must
@@ -484,6 +486,12 @@ def provider_state(
     if has_candidate:
         return "CANDIDATE OK"
 
+    # Raw/playable-looking streams on every current lane are not evidence of a
+    # broken provider implementation. Until strict decoder/native proof is
+    # current they remain non-FULL, but Repair must not rewrite those bytes.
+    if stages and stages.issubset(PROOF_REFRESH_STAGES):
+        return "PROOF REFRESH REQUIRED"
+
     # A clean HTTP/runtime success with zero streams is a catalogue miss, not a
     # broken provider when we have never proved a matching work. If a retained
     # winning fixture was replayed and also stopped matching, that is the exact
@@ -702,6 +710,13 @@ def _carried_non_green_status(carried: dict[str, Any], provider: str, waf_browse
         if route:
             return "ROUTE PROVEN"
         return "NO PROOF"
+    if "provider_returned_streams" in issue and not any(
+        value in issue for value in (
+            "provider_returned_wrong_content", "provider_network_http_error",
+            "provider_network_exception", "timeout",
+        )
+    ):
+        return "PROOF REFRESH REQUIRED"
     if any(value in issue for value in HARNESS_INFRA_STAGES):
         return "HARNESS/ENV BLOCKED"
     if any(value in issue for value in JS_BROKEN_STAGES):
@@ -750,6 +765,7 @@ def _action(status: str) -> str:
         "FULL OK": "protect + replay retained proof",
         "PARTIAL OK": "protect green lanes; BRAIN checks missing lanes",
         "CANDIDATE OK": "replay candidate proof against current bytes; publish only after current verified media",
+        "PROOF REFRESH REQUIRED": "refresh strict decoded/native playback proof and census authority; do not mutate provider bytes",
         "ROUTE PROVEN": "replay qualified route fixtures and finish terminal extraction/validation",
         "NO PROOF": "continue corpus proof search; BRAIN checks",
         "CHAIN REACHED": "finish terminal extractor/validation; do not promote before verified media",
@@ -1072,6 +1088,7 @@ def render(
         "FULL OK",
         "PARTIAL OK",
         "CANDIDATE OK",
+        "PROOF REFRESH REQUIRED",
         "ROUTE PROVEN",
         "NO PROOF",
         "CHAIN REACHED",
