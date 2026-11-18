@@ -4525,3 +4525,8 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 
 - `presentStreamCandidate` supplies computed `languageTracks` and `originalLanguage`, but the next `normalizeStreamCandidate` and `toRuntimeStream` projections previously discarded both. This could remove selected-language presentation metadata even when the HLS master track rows survived.
 - Canonical candidate normalization and the worker/mobile/desktop/TV runtime projection now preserve only the observed/computed track rows and original language, with a presentation-to-runtime regression to protect this exact handoff. They do not synthesize native audio renditions or claim selectable-player proof.
+
+## 2026-11-18 — Empty audioTracks no longer shadows discovered HLS master renditions
+
+- Follow-up regression: canonical `normalizeStreamCandidate` initially used nullish fallback for audioTracks. An explicit empty `audioTracks: []` incorrectly prevented using populated `hlsMasterAudioTracks`, despite the actual HLS master having multiple language renditions. New `firstNonEmptyTrackArray` selects the first non-empty observed track array (primary list wins if populated), otherwise preserves a declared empty array without fabricating tracks.
+- Added regression for empty primary and available arrays as well as snake_case HLS master inputs. This preserves metadata across Core/adapter projections but does not itself qualify Nuvio native playback or selectable alternate audio.

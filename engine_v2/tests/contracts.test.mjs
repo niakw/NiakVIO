@@ -140,6 +140,17 @@ assert.equal(normalizeStreamCandidate({
   audioTracks: [{ language: "ja" }],
   hlsMasterAudioTracks: masterAudioTracks,
 }).audioTracks[0].language, "ja");
+assert.deepEqual(normalizeStreamCandidate({
+  url: "https://media.example/empty-primary.m3u8",
+  audioTracks: [],
+  hlsMasterAudioTracks: masterAudioTracks,
+}).audioTracks, masterAudioTracks, "empty primary audio arrays must not shadow the observed HLS master tracks");
+assert.deepEqual(normalizeStreamCandidate({
+  url: "https://media.example/empty-alias.m3u8",
+  audioTracks: [],
+  availableAudioTracks: [],
+  hls_master_audio_tracks: masterAudioTracks,
+}).audioTracks, masterAudioTracks);
 
 const nested = normalizeStreamCandidate({
   url: {

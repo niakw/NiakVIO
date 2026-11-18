@@ -111,7 +111,7 @@ export function normalizeStreamCandidate(raw = {}, context = {}) {
     videoInfo: clonePortable(raw.videoInfo ?? raw.video_info),
     audioInfo: clonePortable(raw.audioInfo ?? raw.audio_info),
     videoTracks: clonePortable(raw.videoTracks ?? raw.video_tracks),
-    audioTracks: clonePortable(raw.audioTracks ?? raw.audio_tracks ?? raw.availableAudioTracks ?? raw.available_audio_tracks ?? raw.hlsMasterAudioTracks ?? raw.hls_master_audio_tracks),
+    audioTracks: clonePortable(firstNonEmptyTrackArray(raw.audioTracks, raw.audio_tracks, raw.availableAudioTracks, raw.available_audio_tracks, raw.hlsMasterAudioTracks, raw.hls_master_audio_tracks)),
     audioLanguages: cloneStringOrArray(raw.audioLanguages ?? raw.audio_languages),
     hlsMasterAudioTracks: clonePortable(raw.hlsMasterAudioTracks ?? raw.hls_master_audio_tracks),
     hlsMasterAudioTrackLanguages: cloneStringOrArray(raw.hlsMasterAudioTrackLanguages ?? raw.hls_master_audio_track_languages),
@@ -239,6 +239,15 @@ function mergePlainObjects(...sources) {
     }
   }
   return out;
+}
+
+function firstNonEmptyTrackArray(...values) {
+  // A provider may explicitly return audioTracks: [] before the HLS master
+  // probe fills hlsMasterAudioTracks. Empty primary arrays are not proof of
+  // a single audio rendition; retain the first actually populated track list.
+  return values.find((value) => Array.isArray(value) && value.length > 0)
+    ?? values.find((value) => Array.isArray(value))
+    ?? null;
 }
 
 function cloneStringOrArray(value) {
