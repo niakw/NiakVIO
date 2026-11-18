@@ -29,6 +29,37 @@ def requires_transport_differential(live: dict) -> bool:
             and live.get('preflight_playable') == 0)
 
 
+def requires_proof_refresh(live: dict) -> bool:
+    """Do not mutate a provider whose exact current baseline is already playable.
+
+    This is not FULL/decoded publication proof. It only says provider-local
+    synthesis is the wrong next action: refresh native/decoded proof and census
+    authority instead of spending model budget on working extraction bytes.
+    """
+    if not isinstance(live, dict):
+        return False
+    if live.get('fixture_selection_complete') is not True:
+        return False
+    if str(live.get('preflight_status') or '').strip().casefold() != 'healthy':
+        return False
+    playable = live.get('preflight_playable')
+    fixtures = live.get('fixture_evidence')
+    if type(playable) is not int or playable <= 0:
+        return False
+    if not isinstance(fixtures, list) or not 0 < len(fixtures) <= 8:
+        return False
+    total = 0
+    for row in fixtures:
+        if not isinstance(row, dict) or row.get('streamCountsObserved') is False:
+            return False
+        returned, current_playable = row.get('streamsReturned'), row.get('streamsPlayable')
+        if (type(returned) is not int or type(current_playable) is not int
+                or not 0 < current_playable <= returned <= 100000):
+            return False
+        total += current_playable
+    return total == playable
+
+
 def should_replan(evaluation: dict, attempt: int, limit: int) -> bool:
     return (
         not int(evaluation.get('acceptedProviderCount') or 0)
@@ -128,19 +159,28 @@ def main() -> int:
     if live.get('provider') != args.provider or live.get('sourceSha') != source_sha:
         raise ValueError('live provider evidence must match exact current source')
     network_blocked = requires_transport_differential(live)
-    if live.get('http_script_shell_only') is True or network_blocked:
-        # Never spend LLM repair tokens when the current exact-SHA preflight
-        # cannot reach content at all. This is a transport/harness observation,
-        # not a code failure or a finite retry-count rule. Preserve the debt.
+    proof_refresh = requires_proof_refresh(live)
+    if live.get('http_script_shell_only') is True or network_blocked or proof_refresh:
+        # Never spend LLM repair tokens when current exact-SHA evidence either
+        # cannot reach content or already reaches playable media on every
+        # required fixture. The latter needs proof/census refresh, not a
+        # provider-local rewrite.
         reason = ('http_script_shell_requires_content_evidence'
                   if live.get('http_script_shell_only') is True
-                  else 'network_blocked_requires_transport_differential')
+                  else ('network_blocked_requires_transport_differential'
+                        if network_blocked
+                        else 'current_baseline_playable_requires_proof_refresh'))
         (out / 'diagnostics.json').write_text(json.dumps({'rows': [{'scopeTrace': [{
             'scope': 'provider_bloc', 'outcome': 'abstain', 'reason': reason,
         }]}]}))
         (out / 'evaluation.json').write_text(json.dumps({
             'currentSha': source_sha, 'candidateCount': 0, 'acceptedProviderCount': 0,
             'rows': [], 'attempts': [], 'publicationAuthority': False,
+            'proofRefreshRequired': proof_refresh,
+            'baselineCurrentPlayable': proof_refresh,
+            'baselinePlayableStreams': int(live.get('preflight_playable') or 0)
+                if proof_refresh else 0,
+            'unavailableEvidenceReason': reason,
         }))
         for name in ('mutations.json', 'accepted.json'):
             (out / name).write_text(json.dumps({'schemaVersion': 1, 'sourceNiakvioSha': source_sha,
