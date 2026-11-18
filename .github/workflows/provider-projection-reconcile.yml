@@ -211,7 +211,7 @@ jobs:
             --source manifest.json \
             --vf-source vf/manifest.json \
             --output manifest-hub46.json
-          python scripts/prune_unreferenced_providers.py
+          python scripts/prune_unreferenced_providers.py --prune-provider-bases
 
       - name: Prove projection fixed point
         if: steps.drift.outputs.count != '0'

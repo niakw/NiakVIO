@@ -4706,3 +4706,11 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 
 - Provider Disabled Lifecycle run 44232860391 failed before executing the new lifecycle logic because the importlib-based contract test loaded `disable_active_wrong_content_from_current_census.py` without `scripts/` on Python's module path; its sibling import of `reactivate_disabled_from_current_census` therefore failed.
 - The script now self-registers its own directory on `sys.path`, matching other repository scripts that support both CLI and importlib test execution. No lifecycle semantics changed in this follow-up.
+
+
+## 2026-11-18 — ProviderBase rolling generation retention aligned with published provider bundles
+
+- Audit found that `providers/*.js` already obeyed the 10-generation rolling ledger, while several `provider-bases/*.js` families retained 20–22 content-addressed generations. ProviderBase is a reconstruction input and must be bounded without conflating it with the public provider-bundle history.
+- `prune_unreferenced_providers.py` now supports explicit `--prune-provider-bases`. ProviderBase uses its own `provider-bases/.generation-retention.json` ledger and the same default window of 10 distinct generations. The current `PROVENANCE.json:base_filename` is hard-protected; a missing authoritative base fails closed. Re-referenced bases become a fresh occurrence, and security revocation still overrides retention for non-authoritative artifacts.
+- ProviderBase pruning is opt-in by transaction ownership. Projection Reconcile and Provider v3 Reconstruct All enable it because both stage `provider-bases/` atomically. Domain Refresh deliberately does not, preserving its domain-only no-ProviderBase-mutation contract.
+- Added regression coverage for 1→11 ProviderBase generations, provider-only no-op behavior, rolling eviction, rollback/re-reference, separate ledger policy and security revocation.

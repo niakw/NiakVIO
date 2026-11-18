@@ -168,8 +168,9 @@ def git_first_seen_batch(root: Path, relatives: set[str]) -> dict[str, int]:
         return {}
     marker = "__NIAKVIO_COMMIT_TS__"
     try:
+        history_roots = sorted({Path(value).parts[0] for value in wanted if Path(value).parts})
         result = subprocess.run(
-            ["git", "log", "--diff-filter=A", f"--format={marker}%ct", "--name-only", "--", "providers"],
+            ["git", "log", "--diff-filter=A", f"--format={marker}%ct", "--name-only", "--", *history_roots],
             cwd=root,
             text=True,
             capture_output=True,
@@ -243,10 +244,16 @@ def load_ledger(path: Path) -> dict:
     }
 
 
-def write_ledger(path: Path, ledger: dict, retention_generations: int) -> None:
+def write_ledger(
+    path: Path,
+    ledger: dict,
+    retention_generations: int,
+    *,
+    policy: str = "rolling-content-addressed-provider-generations",
+) -> None:
     payload = {
         "schema_version": 2,
-        "policy": "rolling-content-addressed-provider-generations",
+        "policy": policy,
         "retention_generations": retention_generations,
         "next_sequence": int(ledger.get("next_sequence") or 1),
         "order": {
@@ -296,6 +303,11 @@ def main() -> int:
         type=int,
         default=DEFAULT_RETENTION_GENERATIONS,
     )
+    parser.add_argument(
+        "--prune-provider-bases",
+        action="store_true",
+        help="also retain only the latest content-addressed ProviderBase generations",
+    )
     parser.add_argument("--root", type=Path, default=ROOT, help=argparse.SUPPRESS)
     args = parser.parse_args()
     if args.retention_generations < 1:
@@ -333,6 +345,7 @@ def main() -> int:
             raise SystemExit(f"Invalid provider-lkg.json; refusing to prune: {exc}")
 
     protected_generated = set(protected)
+    authoritative_base_paths: set[str] = set()
     provenance_path = root / "PROVENANCE.json"
     if provenance_path.is_file():
         try:
@@ -343,13 +356,25 @@ def main() -> int:
                     retain_existing_recorded_provider_path(root, protected, record.get("published_filename"))
                     retain_existing_recorded_provider_path(root, protected_generated, record.get("published_filename"))
                     base = normalize_generated_path(record.get("base_filename"))
-                    if base and (root / base).is_file():
-                        protected_generated.add(base)
+                    if base and base.startswith("provider-bases/"):
+                        authoritative_base_paths.add(base)
+                        if (root / base).is_file():
+                            protected_generated.add(base)
         except json.JSONDecodeError as exc:
             raise SystemExit(f"Invalid PROVENANCE.json; refusing to prune: {exc}")
 
     protected_generated.update(protected)
     providers_dir.mkdir(parents=True, exist_ok=True)
+    if args.prune_provider_bases:
+        missing_bases = sorted(
+            relative for relative in authoritative_base_paths
+            if not (root / relative).is_file()
+        )
+        if missing_bases:
+            preview = "\n- ".join(missing_bases[:20])
+            raise SystemExit(
+                "Authoritative ProviderBase files are missing; refusing to prune:\n- " + preview
+            )
 
     revoked = load_security_revocations(root)
     revoked_protected = sorted(revoked & protected_generated)
@@ -424,8 +449,80 @@ def main() -> int:
         if relative not in existing_after and not (args.dry_run and relative in removed):
             previous_referenced.pop(relative, None)
 
+    base_removed: list[str] = []
+    base_retained_overflow: list[str] = []
+    base_provider_count = 0
+    base_ledger_path = root / "provider-bases" / RETENTION_LEDGER
+    if args.prune_provider_bases:
+        bases_dir = root / "provider-bases"
+        bases_dir.mkdir(parents=True, exist_ok=True)
+        base_ledger = load_ledger(base_ledger_path)
+        base_order = base_ledger.setdefault("order", {})
+        base_previous_referenced = base_ledger.setdefault("referenced", {})
+        base_protected = {
+            relative for relative in protected_generated
+            if relative.startswith("provider-bases/")
+        }
+        existing_bases_by_provider: dict[str, list[str]] = {}
+        for path in sorted(bases_dir.glob("*.js")):
+            if not path.is_file() or not HASHED_PROVIDER_RE.match(path.name):
+                continue
+            relative = path.relative_to(root).as_posix()
+            key = provider_key(relative)
+            if key:
+                existing_bases_by_provider.setdefault(key, []).append(relative)
+        base_provider_count = len(existing_bases_by_provider)
+        bootstrap_missing_order(root, existing_bases_by_provider, base_order)
+
+        for key, paths in existing_bases_by_provider.items():
+            values = base_order.setdefault(key, [])
+            for relative in paths:
+                is_referenced = relative in base_protected
+                was_referenced = bool(base_previous_referenced.get(relative, False))
+                if is_referenced and not was_referenced and relative in values:
+                    values.remove(relative)
+                    values.append(relative)
+                base_previous_referenced[relative] = is_referenced
+
+        for key, paths in existing_bases_by_provider.items():
+            values = [value for value in base_order.get(key, []) if value in paths]
+            while len(values) > args.retention_generations:
+                removable = next((value for value in values if value not in base_protected), None)
+                if removable is None:
+                    base_retained_overflow.extend(values[:-args.retention_generations])
+                    break
+                values.remove(removable)
+                base_removed.append(removable)
+                base_previous_referenced.pop(removable, None)
+                if not args.dry_run:
+                    (root / removable).unlink(missing_ok=True)
+            base_order[key] = values
+
+        bases_after = {
+            path.relative_to(root).as_posix()
+            for path in bases_dir.glob("*.js")
+            if path.is_file() and HASHED_PROVIDER_RE.match(path.name)
+        }
+        for key in list(base_order):
+            base_order[key] = [
+                value for value in base_order[key]
+                if value in bases_after or (args.dry_run and value in base_removed)
+            ]
+            if not base_order[key]:
+                base_order.pop(key, None)
+        for relative in list(base_previous_referenced):
+            if relative not in bases_after and not (args.dry_run and relative in base_removed):
+                base_previous_referenced.pop(relative, None)
+
     if not args.dry_run:
         write_ledger(ledger_path, ledger, args.retention_generations)
+        if args.prune_provider_bases:
+            write_ledger(
+                base_ledger_path,
+                base_ledger,
+                args.retention_generations,
+                policy="rolling-content-addressed-providerbase-generations",
+            )
 
     mode = "would_remove" if args.dry_run else "removed"
     print(
@@ -434,12 +531,17 @@ def main() -> int:
         f"protected={len(protected)}, providers={len(existing_by_provider)}, "
         f"retention_generations={args.retention_generations}, "
         f"{mode}={len(removed)}, security_revoked={len(security_removed)}, "
-        f"protected_overflow={len(set(retained_overflow))}"
+        f"protected_overflow={len(set(retained_overflow))}, "
+        f"provider_bases={'on' if args.prune_provider_bases else 'off'}, "
+        f"base_providers={base_provider_count}, base_{mode}={len(base_removed)}, "
+        f"base_protected_overflow={len(set(base_retained_overflow))}"
     )
     for relative in security_removed:
         print(f"- SECURITY_REVOKED {relative}")
     for relative in removed:
         print(f"- {relative}")
+    for relative in base_removed:
+        print(f"- PROVIDER_BASE {relative}")
     return 0
 
 

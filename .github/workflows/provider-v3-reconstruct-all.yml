@@ -186,7 +186,7 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/materialize_provider_v3_all.py
-          python scripts/prune_unreferenced_providers.py
+          python scripts/prune_unreferenced_providers.py --prune-provider-bases
           python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
           python scripts/assert_active_provider_live_coverage.py
           python scripts/verify_provider_v3_reverse_rebuild.py

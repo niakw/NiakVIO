@@ -8,21 +8,31 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 SCRIPT = REPO / "scripts" / "prune_unreferenced_providers.py"
-WORKFLOW = (REPO / ".github/workflows/sync.yml").read_text(encoding="utf-8")
+FINALIZER = (REPO / ".github/workflows/release-finalize.yml").read_text(encoding="utf-8")
+RECONCILE = (REPO / ".github/workflows/provider-projection-reconcile.yml").read_text(encoding="utf-8")
+RECONSTRUCT = (REPO / ".github/workflows/provider-v3-reconstruct-all.yml").read_text(encoding="utf-8")
+DOMAIN_REFRESH = (REPO / ".github/workflows/domain-refresh.yml").read_text(encoding="utf-8")
 
-assert WORKFLOW.count("git add -A providers") == 1, (
-    "ARCHI2 must stage provider additions/deletions exactly once in its atomic publication transaction"
+for name, workflow in (("reconcile", RECONCILE), ("reconstruct", RECONSTRUCT)):
+    assert "prune_unreferenced_providers.py --prune-provider-bases" in workflow, name
+    assert "provider-bases" in workflow, name
+assert "prune_unreferenced_providers.py --prune-provider-bases" not in DOMAIN_REFRESH, (
+    "Domain Refresh is domain-only and must not own ProviderBase retention mutations"
 )
-assert WORKFLOW.rfind("python scripts/prune_unreferenced_providers.py") < WORKFLOW.index("git add -A providers"), (
-    "the final provider prune must complete before the atomic provider tree is staged"
-)
-assert "provider_catalog.json" in WORKFLOW, "provider pruning must publish with the canonical catalog transaction"
+assert "git diff --exit-code -- scripts/provider_patches provider-bases provider-type-policy.json" in DOMAIN_REFRESH
 
 
 def generation(root: Path, number: int) -> Path:
     digest = f"{number:016x}"
     path = root / "providers" / f"movix--nuvio--{digest}.js"
     path.write_text(f"module.exports = {{ generation: {number} }};\n", encoding="utf-8")
+    return path
+
+
+def base_generation(root: Path, number: int) -> Path:
+    digest = f"{number:016x}"
+    path = root / "provider-bases" / f"movix--base--{digest}.js"
+    path.write_text(f"module.exports = {{ baseGeneration: {number} }};\n", encoding="utf-8")
     return path
 
 
@@ -42,13 +52,11 @@ def write_current(root: Path, path: Path) -> None:
     )
 
 
-def run_pruner(root: Path) -> None:
-    subprocess.run(
-        ["python3", str(SCRIPT), "--root", str(root), "--retention-generations", "10"],
-        text=True,
-        capture_output=True,
-        check=True,
-    )
+def run_pruner(root: Path, *, provider_bases: bool = False) -> None:
+    command = ["python3", str(SCRIPT), "--root", str(root), "--retention-generations", "10"]
+    if provider_bases:
+        command.append("--prune-provider-bases")
+    subprocess.run(command, text=True, capture_output=True, check=True)
 
 
 with tempfile.TemporaryDirectory() as tmp:
@@ -130,6 +138,68 @@ with tempfile.TemporaryDirectory() as tmp:
 print("ARCHI2 rolling provider generation retention test passed")
 
 
+# ProviderBase has an independent rolling window. It is opt-in so domain-only
+# transactions cannot mutate reconstruction inputs.
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    providers = root / "providers"
+    bases = root / "provider-bases"
+    providers.mkdir()
+    bases.mkdir()
+    current_provider = providers / "movix--nuvio--aaaaaaaaaaaaaaaa.js"
+    current_provider.write_text("module.exports={};\n", encoding="utf-8")
+    current_provider_rel = relative(current_provider, root)
+    (root / "manifest.json").write_text(
+        json.dumps({"scrapers": [{"url": current_provider_rel}]}),
+        encoding="utf-8",
+    )
+
+    base_gens: dict[int, Path] = {}
+    for number in range(1, 12):
+        base_gens[number] = base_generation(root, number)
+        (root / "PROVENANCE.json").write_text(
+            json.dumps({"providers": {"movix": {
+                "published_filename": current_provider_rel,
+                "base_filename": relative(base_gens[number], root),
+            }}}),
+            encoding="utf-8",
+        )
+        if number == 11:
+            # Default provider-only cleanup must not cross the ProviderBase boundary.
+            run_pruner(root)
+            assert base_gens[1].exists()
+        run_pruner(root, provider_bases=True)
+
+    assert not base_gens[1].exists(), "11th ProviderBase generation must evict oldest unprotected base"
+    assert all(base_gens[n].exists() for n in range(2, 12))
+    assert len(list(bases.glob("movix--base--*.js"))) == 10
+
+    base_gens[12] = base_generation(root, 12)
+    (root / "PROVENANCE.json").write_text(
+        json.dumps({"providers": {"movix": {
+            "published_filename": current_provider_rel,
+            "base_filename": relative(base_gens[5], root),
+        }}}),
+        encoding="utf-8",
+    )
+    run_pruner(root, provider_bases=True)
+    (root / "PROVENANCE.json").write_text(
+        json.dumps({"providers": {"movix": {
+            "published_filename": current_provider_rel,
+            "base_filename": relative(base_gens[12], root),
+        }}}),
+        encoding="utf-8",
+    )
+    run_pruner(root, provider_bases=True)
+    assert base_gens[5].exists(), "re-referenced ProviderBase must become a fresh occurrence"
+    assert not base_gens[2].exists(), "oldest unprotected ProviderBase must be evicted"
+
+    base_ledger = json.loads((bases / ".generation-retention.json").read_text(encoding="utf-8"))
+    assert base_ledger["retention_generations"] == 10
+    assert base_ledger["policy"] == "rolling-content-addressed-providerbase-generations"
+    assert len(base_ledger["order"]["movix"]) == 10
+    assert relative(base_gens[12], root) in base_ledger["order"]["movix"]
+
 # Security revocation overrides the rolling window but never authoritative state.
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
@@ -158,7 +228,7 @@ with tempfile.TemporaryDirectory() as tmp:
         ]}),
         encoding="utf-8",
     )
-    run_pruner(root)
+    run_pruner(root, provider_bases=True)
     assert current.exists()
     assert not old.exists(), "unreferenced security-revoked provider must be removed immediately"
     assert not old_base.exists(), "unreferenced security-revoked ProviderBase must be removed immediately"
