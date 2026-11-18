@@ -290,6 +290,19 @@ def allowed_by_host_pattern(hostname: str, cfg: dict[str, Any]) -> bool:
     return False
 
 
+def _versioned_brand_stem(value: str) -> str:
+    """Return a stable brand stem only for explicit trailing MMYY-like revisions.
+
+    This is intentionally narrow: exactly four trailing digits and a long
+    alphanumeric stem. It lets recurring address generations such as
+    1jour1film0626 -> 1jour1film1126 remain same-brand without treating unrelated
+    redirect destinations as provider authority.
+    """
+    token = compact(value)
+    match = re.fullmatch(r"(.{6,}?)(\d{4})", token)
+    return match.group(1) if match else ""
+
+
 def same_brand(provider_id: str, candidate: str, cfg: dict[str, Any]) -> bool:
     hostname = host(candidate)
     if not hostname:
@@ -298,7 +311,16 @@ def same_brand(provider_id: str, candidate: str, cfg: dict[str, Any]) -> bool:
         return True
     labels = [compact(part) for part in hostname.split(".") if part]
     aliases = aliases_for(provider_id, cfg)
-    return any(alias in label or label in alias for alias in aliases for label in labels if len(label) >= 3)
+    if any(alias in label or label in alias for alias in aliases for label in labels if len(label) >= 3):
+        return True
+    # Some providers encode a rolling month/year revision in the hostname. The
+    # stable alphanumeric stem is accepted only when BOTH sides carry a four-digit
+    # suffix. Cross-brand redirects remain rejected.
+    alias_stems = {_versioned_brand_stem(alias) for alias in aliases}
+    alias_stems.discard("")
+    label_stems = {_versioned_brand_stem(label) for label in labels}
+    label_stems.discard("")
+    return bool(alias_stems & label_stems)
 
 
 def _decode_search_redirect(url: str) -> str:
