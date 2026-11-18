@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from collections import Counter
 from pathlib import Path
 from typing import Any, Iterable
@@ -33,6 +34,55 @@ REVIEWED_FALSE_POSITIVES = {
         "scripts/provider_patches/global_media_type_resolution_v1.py",
     ): "TMDB response field names movie_results/tv_results are schema keys, not credentials or secrets.",
 }
+
+# DeepSource SCT-A000 sometimes flags a *reference* to a GitHub Actions runtime
+# secret/output as though its value were hardcoded. Review only the exact line
+# reported by the scanner and only these syntactic reference forms. A literal
+# assignment, a different variable, or a future finding on another line remains
+# release-blocking.
+WORKFLOW_RUNTIME_REFERENCE_PATTERNS = (
+    re.compile(r"\$\{\{\s*secrets\.[A-Z0-9_]+\s*\}\}"),
+    re.compile(r"\$\{(?:TMDB_API_KEY|TMDB_ACCESS_TOKEN)(?::-[^}]*)?\}"),
+    re.compile(r"\$(?:ACTIONS_ID_TOKEN_REQUEST_TOKEN|ACTIONS_ID_TOKEN_REQUEST_URL|OIDC_TOKEN)\b"),
+    re.compile(r"\$\{\{\s*steps\.[A-Za-z0-9_-]+\.outputs\.[A-Za-z0-9_-]+\s*\}\}"),
+)
+
+
+def reviewed_false_positive_reason(
+    row: dict[str, Any],
+    checkout: Path,
+) -> str | None:
+    key = (row["source"], row["rule"], row["path"])
+    exact = REVIEWED_FALSE_POSITIVES.get(key)
+    if exact:
+        return exact
+
+    if (
+        row.get("source") != "deepsource"
+        or row.get("rule") != "SCT-A000"
+        or not str(row.get("path") or "").startswith(".github/workflows/")
+    ):
+        return None
+    try:
+        line_number = int(row.get("line") or 0)
+    except (TypeError, ValueError):
+        return None
+    if line_number < 1:
+        return None
+    path = checkout / str(row["path"])
+    try:
+        source_lines = path.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeError):
+        return None
+    if line_number > len(source_lines):
+        return None
+    source_line = source_lines[line_number - 1]
+    if any(pattern.search(source_line) for pattern in WORKFLOW_RUNTIME_REFERENCE_PATTERNS):
+        return (
+            "Scanner points to a GitHub Actions runtime secret/output reference on the exact "
+            "reported line; no credential value is hardcoded."
+        )
+    return None
 
 
 def load_json(path: Path, default: Any) -> Any:
@@ -183,8 +233,7 @@ def main() -> int:
                 row["scope"] = "stale_external_source"
         scoped[row["scope"]] += 1
         sources[row["source"]] += 1
-        key = (row["source"], row["rule"], row["path"])
-        reason = REVIEWED_FALSE_POSITIVES.get(key)
+        reason = reviewed_false_positive_reason(row, checkout)
         if reason and row["scope"] == "maintained":
             row["review"] = "false_positive"
             row["review_reason"] = reason

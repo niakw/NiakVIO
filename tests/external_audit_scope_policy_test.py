@@ -36,12 +36,30 @@ with tempfile.TemporaryDirectory(prefix="niakvio-external-source-") as temp:
     (checkout / "scripts").mkdir()
     (checkout / ".github/workflows").mkdir(parents=True)
     (checkout / "scripts/live.py").write_text("def live(): return 1\n", encoding="utf-8")
-    (checkout / ".github/workflows/live.yml").write_text("name: Live\n", encoding="utf-8")
+    (checkout / ".github/workflows/live.yml").write_text(
+        """name: Live
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  BAD_TOKEN: "secret-literal"
+""",
+        encoding="utf-8",
+    )
     (audit / "sonar/issues.json").write_text(json.dumps({"issues": [
         {"component": "scripts/live.py", "rule": "python:S3776", "message": "live complexity"},
     ]}), encoding="utf-8")
     (audit / "deepsource/findings.json").write_text(json.dumps([
-        {"path": "./.github/workflows/live.yml", "shortcode": "SCT-A000", "message": "live candidate"},
+        {
+            "path": "./.github/workflows/live.yml",
+            "beginLine": 3,
+            "shortcode": "SCT-A000",
+            "message": "runtime secret reference",
+        },
+        {
+            "path": "./.github/workflows/live.yml",
+            "beginLine": 4,
+            "shortcode": "SCT-A000",
+            "message": "actual literal must remain blocking",
+        },
         {"path": "./.github/workflows/deleted.yml", "shortcode": "SCT-A000", "message": "retired workflow"},
         {"path": "provider-disabled/archived--nuvio--old.js", "shortcode": "SCT-A000", "message": "disabled bundle"},
         {"path": "providers/active--nuvio--generated.js", "shortcode": "SCT-A000", "message": "derived bundle"},
@@ -58,16 +76,25 @@ with tempfile.TemporaryDirectory(prefix="niakvio-external-source-") as temp:
     assert completed.returncode != 0
     assert "external audit has 2 unresolved maintained-source findings" in completed.stderr, completed.stderr
     result = json.loads((audit / "maintained-source.json").read_text(encoding="utf-8"))
-    assert result["raw_findings"] == 7
+    assert result["raw_findings"] == 8
     assert result["maintained_unresolved_count"] == 2
-    assert result["maintained_reviewed_count"] == 0
+    assert result["maintained_reviewed_count"] == 1
     assert result["by_scope"] == {
-        "maintained": 2, "stale_external_source": 2,
+        "maintained": 3, "stale_external_source": 2,
         "generated": 2, "evidence": 1,
     }, result["by_scope"]
     assert {row["path"] for row in result["maintained_unresolved"]} == {
         "scripts/live.py", ".github/workflows/live.yml",
     }
+    reviewed = result["maintained_reviewed"]
+    assert len(reviewed) == 1
+    assert reviewed[0]["path"] == ".github/workflows/live.yml"
+    assert reviewed[0]["line"] == 3
+    assert "runtime secret/output reference" in reviewed[0]["review_reason"]
+    assert any(
+        row["path"] == ".github/workflows/live.yml" and row["line"] == 4
+        for row in result["maintained_unresolved"]
+    )
     assert "exact-SHA snapshot freshness remains strict" in result["policy"]["stale_external_source"]
 assert "scripts/external_audit/validate_snapshot.py" in (
     ROOT / ".github/workflows/external-code-audit.yml"
