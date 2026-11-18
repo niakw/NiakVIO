@@ -28,19 +28,20 @@ function b64(value) {
   return Buffer.from(String(value || ''), 'utf8').toString('base64url');
 }
 
-function runGeneric(name, expected, logical, title) {
+function runGeneric(name, expected, logical, title, host = 'cdn.vidmoly.me') {
   const file = path.join(tmp, name + '.log');
   fs.writeFileSync(
     file,
     'FIELD_NATIVE_ROW client=mobile fixture=interstellar provider64=' + b64(expected) +
       ' index=0 title64=' + b64(title) +
       ' name64=' + b64(title) +
-      ' logical_provider64=' + b64(logical) + '\n'
+      ' logical_provider64=' + b64(logical) +
+      ' host64=' + b64(host) + '\n'
   );
   return spawnSync(process.execPath, [GATE, '--client', 'mobile', file], { encoding: 'utf8' });
 }
 
-function runIos(name, expected, logical, title) {
+function runIos(name, expected, logical, title, host = 'cdn.vidmoly.me') {
   const file = path.join(tmp, name + '.log');
   fs.writeFileSync(
     file,
@@ -50,6 +51,7 @@ function runIos(name, expected, logical, title) {
       logicalProvider: logical,
       title,
       name: title,
+      host,
     }) + '\n'
   );
   return spawnSync(process.execPath, [GATE, '--client', 'ios', file], { encoding: 'utf8' });
@@ -68,12 +70,26 @@ try {
   assert.equal(verified.status, 0, verified.stdout + verified.stderr);
   assert.match(verified.stdout, /status=verified/);
   assert.match(verified.stdout, /external_witnesses=1/);
+  assert.match(verified.stdout, /terminal_host_witnesses=1/);
+
+  const missingHost = runGeneric('missing-host', 'purstream', 'purstream', 'Purstream · Vidmoly - 1080p', '');
+  assert.equal(missingHost.status, 3, missingHost.stdout + missingHost.stderr);
+  assert.match(missingHost.stderr, /no_real_external_terminal_host_witness/);
+
+  const ownerHostOnly = runGeneric('owner-host-only', 'purstream', 'purstream', 'Purstream · Vidmoly - 1080p', 'cdn.purstream.example');
+  assert.equal(ownerHostOnly.status, 3, ownerHostOnly.stdout + ownerHostOnly.stderr);
+  assert.match(ownerHostOnly.stderr, /no_real_external_terminal_host_witness/);
 
   const iosMismatch = runIos('ios-mismatch', 'purstream', 'other-provider', 'Purstream · Vidmoly - 1080p');
   assert.equal(iosMismatch.status, 4, iosMismatch.stdout + iosMismatch.stderr);
 
   const iosVerified = runIos('ios-verified', 'purstream', 'purstream', 'Purstream · Vidmoly - 1080p');
   assert.equal(iosVerified.status, 0, iosVerified.stdout + iosVerified.stderr);
+  assert.match(iosVerified.stdout, /terminal_host_witnesses=1/);
+
+  const iosMissingHost = runIos('ios-missing-host', 'purstream', 'purstream', 'Purstream · Vidmoly - 1080p', '');
+  assert.equal(iosMissingHost.status, 3, iosMissingHost.stdout + iosMissingHost.stderr);
+  assert.match(iosMissingHost.stderr, /no_real_external_terminal_host_witness/);
 
   console.log('native provider provenance gate tests passed');
 } finally {
