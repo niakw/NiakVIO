@@ -26,6 +26,9 @@ assert ".proxy(Proxy.NO_PROXY)" in java
 assert ".dns(new IPv4FirstDns())" in java
 assert ".followRedirects(true)" in java
 assert ".followSslRedirects(true)" in java
+assert "response.peekBody(262144)" in java
+assert 'outcome = "okhttp_jvm_http_error";' in java
+assert "script|style|noscript|template" in java
 assert "instanceof Inet4Address ? 0 : 1" in java
 assert "nuvio-tv-okhttp-jvm" in source
 assert "okHttpJvmProfile" in source

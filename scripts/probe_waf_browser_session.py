@@ -374,12 +374,32 @@ def browser_binary() -> str:
 
 
 def classify_dom(dom: str) -> str:
+    """Ignore challenge marker words embedded in scripts or styles."""
     lower = str(dom or "").lower()
-    if any(marker in lower for marker in CHALLENGE_MARKERS):
+    clean = re.sub(r"<!--[\s\S]*?-->", " ", lower)
+    clean = re.sub(
+        r"<(script|style|noscript|template)\b[^>]*>[\s\S]*?</\1\s*>",
+        " ", clean,
+    )
+    title_match = re.search(r"<title\b[^>]*>([\s\S]*?)</title\s*>", clean)
+    title = re.sub(r"<[^>]+>", " ", title_match.group(1)) if title_match else ""
+    text = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", clean)).strip()
+    title_challenge = any(
+        word in title for word in (
+            "just a moment", "checking your browser", "verify you are human", "attention required"
+        )
+    )
+    visible_challenge = len(text) < 2000 and any(
+        word in text for word in (
+            "checking your browser", "verify you are human",
+            "checking if the site connection is secure",
+        )
+    )
+    structural_challenge = len(text) < 500 and any(
+        word in clean for word in ("challenge-platform", "cf-browser-verification")
+    )
+    if title_challenge or visible_challenge or structural_challenge:
         return "browser_challenge_persisted"
-    visible = re.sub(r'<(script|style)\b[^>]*>[\s\S]*?</\1\s*>', ' ', lower)
-    text = re.sub(r"<[^>]+>", " ", visible)
-    text = re.sub(r"\s+", " ", text).strip()
     if len(text) < 80:
         return "browser_inconclusive"
     return "browser_content_reached"
@@ -563,12 +583,12 @@ def probe_tv_direct_http(
             status_text = str(proc.stdout or "").strip()
             status = int(status_text) if status_text.isdigit() else 0
             classified = classify_dom(body)
-            if classified == "browser_content_reached":
-                outcome = "direct_http_content_reached"
-            elif classified == "browser_challenge_persisted":
+            if classified == "browser_challenge_persisted":
                 outcome = "direct_http_challenge_persisted"
-            elif proc.returncode != 0:
-                outcome = "direct_http_error"
+            elif proc.returncode != 0 or not 200 <= status < 400:
+                outcome = "direct_http_http_error" if status >= 400 else "direct_http_error"
+            elif classified == "browser_content_reached":
+                outcome = "direct_http_content_reached"
             else:
                 outcome = "direct_http_inconclusive"
             attempt_rows.append({

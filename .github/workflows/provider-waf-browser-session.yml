@@ -122,6 +122,7 @@ jobs:
 
       - name: Validate Tailscale residential-exit diagnostic contract
         run: |
+          python tests/waf_exit_route_attestation_test.py
           python tests/provider_waf_tailscale_exit_contract_test.py
           python tests/waf_residential_profile_merge_test.py
           python tests/waf_transport_provenance_test.py
@@ -201,6 +202,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          proof_path="$(mktemp /tmp/niakvio-exit-proof.XXXXXX)"
+          route_verified=0
+          trap 'rm -f "$proof_path"; if [ "$route_verified" != "1" ]; then sudo tailscale set --exit-node= >/dev/null 2>&1 || true; fi' EXIT
+          python scripts/verify_waf_exit_route.py baseline --state "$proof_path"
           selected=0
           for attempt in 1 2 3 4 5; do
             if sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false >/dev/null 2>&1; then
@@ -213,6 +218,11 @@ jobs:
             echo "Private exit node could not be selected; verify exit-node advertisement/approval and tag:niakvio-ci -> autogroup:internet policy." >&2
             exit 1
           fi
+          if ! python scripts/verify_waf_exit_route.py verify --state "$proof_path"; then
+            echo "failure_reason=exit-egress-unverified" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          route_verified=1
           echo "NIAKVIO_RESIDENTIAL_EXIT_ACTIVE=1" >> "$GITHUB_ENV"
 
       - name: Reprobe WAF lanes through private residential exit
@@ -252,7 +262,7 @@ jobs:
             if [ "${{ steps.tailscale_connect.outcome }}" = "failure" ]; then
               reason="tailscale-connect-failed"
             elif [ "${{ steps.select_residential_exit.outcome }}" = "failure" ]; then
-              reason="exit-node-unavailable"
+              reason="${{ steps.select_residential_exit.outputs.failure_reason || 'exit-node-unavailable' }}"
             elif [ "${{ steps.residential_probe.outcome }}" = "failure" ]; then
               reason="residential-probe-failed"
             fi

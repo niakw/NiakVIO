@@ -43,12 +43,28 @@ public final class WafOkHttpProbe {
     }
 
     private static String classify(String body) {
-        String lower = body == null ? "" : body.toLowerCase();
-        for (String marker : CHALLENGE_MARKERS) {
-            if (lower.contains(marker)) return "okhttp_jvm_challenge_persisted";
-        }
-        String text = lower.replaceAll("<[^>]+>", " ").replaceAll("\\s+", " ").trim();
-        if (text.length() < 80) return "okhttp_jvm_inconclusive";
+        // Challenge JavaScript shipped by a normal site is not a challenge page.
+        String lower = body == null ? "" : body.toLowerCase(java.util.Locale.ROOT);
+        String clean = lower
+            .replaceAll("(?s)<!--[\\s\\S]*?-->", " ")
+            .replaceAll("(?s)<(script|style|noscript|template)\\b[^>]*>[\\s\\S]*?</\\1\\s*>", " ");
+        java.util.regex.Matcher match = java.util.regex.Pattern
+            .compile("(?s)<title\\b[^>]*>(.*?)</title\\s*>").matcher(clean);
+        String title = match.find() ? match.group(1).replaceAll("<[^>]+>", " ") : "";
+        String visible = clean.replaceAll("<[^>]+>", " ").replaceAll("\\s+", " ").trim();
+        boolean titleChallenge = title.contains("just a moment")
+            || title.contains("checking your browser")
+            || title.contains("verify you are human")
+            || title.contains("attention required");
+        boolean visibleChallenge = visible.length() < 2000
+            && (visible.contains("checking your browser")
+                || visible.contains("verify you are human")
+                || visible.contains("checking if the site connection is secure"));
+        boolean structuralChallenge = visible.length() < 500
+            && (clean.contains("challenge-platform") || clean.contains("cf-browser-verification"));
+        if (titleChallenge || visibleChallenge || structuralChallenge)
+            return "okhttp_jvm_challenge_persisted";
+        if (visible.length() < 80) return "okhttp_jvm_inconclusive";
         return "okhttp_jvm_content_reached";
     }
 
@@ -84,8 +100,13 @@ public final class WafOkHttpProbe {
             String error = "";
             try (Response response = client.newCall(request).execute()) {
                 status = response.code();
-                String body = response.body() == null ? "" : response.body().string();
+                // Never allocate or retain an entire media body for diagnostics.
+                String body = response.body() == null ? "" : response.peekBody(262144).string();
                 outcome = classify(body);
+                if ((status < 200 || status >= 400)
+                    && !"okhttp_jvm_challenge_persisted".equals(outcome)) {
+                    outcome = "okhttp_jvm_http_error";
+                }
             } catch (java.net.SocketTimeoutException timeoutError) {
                 outcome = "okhttp_jvm_timeout";
                 error = timeoutError.getClass().getSimpleName();

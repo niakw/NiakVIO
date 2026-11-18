@@ -1,3 +1,10 @@
+## 2026-11-19 — WAF client classification and Tailscale exit proof (pending CI)
+
+- The two no-anime manifests (no-anime/manifest.json and vf-no-anime/manifest.json) are user-confirmed features. Keep both. Only the legacy Hub46 aliases are candidates for later deprecation after migration; neither has been deleted.
+- Generic WAF diagnostic correction: strip non-rendered script/style/template content before classifying challenge HTML (Chromium/libcurl and NuvioTV-policy JVM OkHttp). Block HTTP errors from becoming successful content evidence and cap Java body read to 256 KiB. Regression tests added.
+- Private Tailscale exit: an accepted tailscale set command did not independently establish different network egress. Added a non-proxied before/after public IPv4 attestation plus selected-node status, temp file deleted without identity in logs/artifacts, and fail-closed unavailable marking when no route proof. Different public IP is NOT proof of residential ownership, Android native TLS, DNS leak safety or playable media.
+- Tests/CI/WAF replay on the new SHA remain to be inspected; no provider repaired or media playback demonstrated.
+
 ## 2026-11-18 — DNS Globalping quota is NOT provider WAF/proof; residential WAF independent
 
 - Exact Domain Refresh workflow [44413226821](https://github.com/niakw/NiakVIO/actions/runs/44413226821) completed **SUCCESS**. The observable DNS phase ended `DNS preflight complete: {"DNS API LIMIT REACH":75}`; `75/75` attempted published identities were inconclusive, not blocked domains or verified reachability. Generic `rotateDnsObservationOrder` changes the first tested cohort each UTC day when quota becomes available, but **does not refill or bypass the account-wide Globalping API limit**. Daily DNS coverage remains **0 confirmed for this run**.
