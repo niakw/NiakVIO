@@ -6,6 +6,9 @@ ROOT = Path(__file__).resolve().parents[1]
 assert not (ROOT / ".github/workflows/temp-release-finalize-recovery.yml").exists(), "retired temporary release bypass returned"
 assert not (ROOT / ".github/triggers/temp-release-finalize-recovery.json").exists(), "retired temporary release trigger returned"
 workflow = (ROOT / ".github" / "workflows" / "release-finalize.yml").read_text(encoding="utf-8")
+assert "group: niakvio-release-finalizer-main" in workflow
+assert "cancel-in-progress: true" in workflow, "release lane must cancel superseded Finalizers so latest accepted SHA can run"
+assert "cancel-in-progress: false" not in workflow, "release lane claims latest-wins and may not queue obsolete 90-minute Finalizers"
 assert "NUVIO_SKIP_CLIENT_UPSTREAM_GUARD" not in workflow, "release finalizer may not bypass current Nuvio upstream freshness"
 runtime_step = workflow.index("- name: Validate current Nuvio métier ABI and projection authority")
 upstream_guard = workflow.index(

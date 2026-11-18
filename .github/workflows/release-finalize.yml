@@ -198,11 +198,13 @@ permissions:
   actions: write
 
 concurrency:
-  # Latest-wins only inside the release lane. Domain/Projection have their own
-  # queues; publication remains protected by exact-head/drift gates and atomic
-  # fast-forward push, so one lane cannot silently erase another pending lane.
+  # Latest-wins only inside the release lane. A newer executable release SHA
+  # supersedes an older in-flight Finalizer; keeping both alive can strand the
+  # accepted HEAD behind a 90-minute obsolete rebuild. Domain/Projection retain
+  # their own queue semantics. Exact-head/drift gates plus atomic fast-forward
+  # publication still prevent a cancelled/superseded run from publishing.
   group: niakvio-release-finalizer-main
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   finalize:

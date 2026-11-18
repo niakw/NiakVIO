@@ -4770,3 +4770,11 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Exact SEC CodeQL run `44282931916` and SEC Final Gate `44283954476` succeeded on `6b4d216` after the 76-provider Finalizer timeout fix.
 - Stale-category retirement run `44283954234` failed twice with the exact known test-only alert #2531 still open after GitHub accepted deletion of its obsolete analysis configuration. The second attempt again spent the deletion window and reached the same post-delete state, so this is no longer classified as executable-main drift or a current-source CodeQL failure.
 - The repository already records that direct dismissal/create-request attempts for #2531 returned GitHub HTTP 422. Do not mask the alert or add a generic dismissal. The remaining security task is to reconcile/retire the historical analysis category through a same-configuration proof or another GitHub-supported exact-alert mechanism while preserving the current split scope:core/provider-bases scans.
+
+
+## 2026-11-18 — Release Finalizer concurrency made truly latest-wins
+
+- After the supplementary-hub authority correction advanced main from `6b4d216` to `5ef53d3`, the obsolete 90-minute Finalizer on `6b4d216` kept running and the exact new Finalizer remained pending because `release-finalize.yml` declared `cancel-in-progress: false` while its own comment claimed latest-wins behavior.
+- This is a harness/orchestration defect: executable main drift guarantees the older Finalizer cannot be the accepted publisher, so allowing it to consume the full release slot only delays validation of the true HEAD.
+- The release lane now uses `cancel-in-progress: true`. Domain/Projection keep their independent queue semantics. Exact-SHA checkout, executable-drift rejection and atomic fast-forward publication remain the publication safety boundary.
+- `tests/release_finalizer_projection_transaction_test.py` now locks the release-lane concurrency contract so the comment and executable workflow cannot diverge again.
