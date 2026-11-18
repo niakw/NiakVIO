@@ -161,6 +161,10 @@ def main() -> int:
     root = Path(args.root)
 
     rows = [*sonar_rows(root), *deepsource_rows(root), *codescene_rows(root)]
+    # The audit is checked out under <repository>/audit/ai-external.
+    # Obsolete scanner paths stay in raw evidence, but are not defects in the
+    # exact source tree. Snapshot freshness is a separate strict gate.
+    checkout = root.resolve().parents[1]
     unresolved: list[dict[str, Any]] = []
     reviewed: list[dict[str, Any]] = []
     scoped = Counter()
@@ -168,6 +172,15 @@ def main() -> int:
 
     for row in rows:
         row["scope"] = scope(row["path"])
+        if row["scope"] == "maintained":
+            relative = Path(row["path"])
+            if (
+                not row["path"]
+                or relative.is_absolute()
+                or ".." in relative.parts
+                or not (checkout / relative).is_file()
+            ):
+                row["scope"] = "stale_external_source"
         scoped[row["scope"]] += 1
         sources[row["source"]] += 1
         key = (row["source"], row["rule"], row["path"])
@@ -192,6 +205,7 @@ def main() -> int:
             "generated_provider_js": "raw evidence retained; security gated by exact-byte publication tests",
             "historical": "archive/reference only",
             "evidence": "diagnostic/reference only",
+            "stale_external_source": "scanner path absent from checked-out source; raw evidence retained and exact-SHA snapshot freshness remains strict",
             "maintained": "release blocking unless corrected or exact reviewed false positive",
         },
     }

@@ -244,6 +244,7 @@ jobs:
       - name: Validate workflow architecture contracts
         run: |
           python3 tests/workflow_security_policy_test.py
+          python3 tests/external_audit_scope_policy_test.py
           python3 tests/retire_stale_codeql_2531_test.py
           python3 tests/retire_stale_codeql_2531_policy_test.py
           python3 tests/delete_stale_codeql_configuration_test.py
