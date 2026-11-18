@@ -209,3 +209,21 @@ for marker in (
     assert marker in workflow, f"missing same-transaction authority freshness contract: {marker}"
 
 print("pending onboarding proof remains isolated from canonical active freshness")
+
+# The sharded canonical status must not outrun raw schema-v6 exact-byte proof:
+# on the SAME production commit, persist full selected-lane observations and a
+# summary bound to this runId/SOURCE_SHA. Pending onboarding proof stays isolated.
+canonical_status_copy = workflow.index("cp /tmp/provider-census-status.json automation/provider-census-status.json")
+full_evidence_copy = workflow.index('cp /tmp/provider-census-sharded.json "automation/current-bytes-full-provider-census-${run_id}.json"')
+current_summary = workflow.index("python scripts/summarize_current_census.py", full_evidence_copy)
+latest_summary = workflow.index("automation/current-bytes-full-provider-census-latest-summary.json", current_summary)
+canonical_stage = workflow.index('"automation/current-bytes-full-provider-census-${run_id}.json"', latest_summary)
+canonical_push = workflow.index("git push origin HEAD:main", canonical_stage)
+assert canonical_status_copy < full_evidence_copy < current_summary < latest_summary < canonical_stage < canonical_push
+guard = workflow.rfind('if [ "$ALLOW_PENDING_TARGETS" != "true" ]; then', 0, full_evidence_copy)
+assert guard > canonical_status_copy, "pending/onboarding observations must not become canonical current-byte proof"
+summary_block = workflow[current_summary:latest_summary]
+assert '--report "automation/current-bytes-full-provider-census-${run_id}.json"' in summary_block
+assert "--state automation/provider-census-status.json" in summary_block
+assert '--run-id "$run_id" --sha "$SOURCE_SHA"' in summary_block
+assert "FIELD_SHARDED_CURRENT_BYTES_EVIDENCE_PUBLISHED" in workflow

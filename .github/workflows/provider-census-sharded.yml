@@ -679,6 +679,20 @@ jobs:
               --status automation/provider-census-status.json \
               --output PROVIDER_CENSUS_STATUS.md
             echo "FIELD_SHARDED_CENSUS_STATUS_RENDER source=canonical-merged-state"
+            # Sharded merged rows are a complete schema-v6 record of this run's
+            # selected provider/lane probes. Persist raw + matching summary in
+            # the SAME commit as canonical status so lifecycle does not consume
+            # a status runId without its exact-byte evidence. This is not an
+            # all-provider FULL claim: summary keeps testedProviderCount and scope.
+            # Pending onboarding probes must never become production authority.
+            cp /tmp/provider-census-sharded.json "automation/current-bytes-full-provider-census-${run_id}.json"
+            python scripts/summarize_current_census.py \
+              --report "automation/current-bytes-full-provider-census-${run_id}.json" \
+              --state automation/provider-census-status.json \
+              --output "automation/current-bytes-full-provider-census-${run_id}-summary.json" \
+              --run-id "$run_id" --sha "$SOURCE_SHA"
+            cp "automation/current-bytes-full-provider-census-${run_id}-summary.json" automation/current-bytes-full-provider-census-latest-summary.json
+            echo "FIELD_SHARDED_CURRENT_BYTES_EVIDENCE_PUBLISHED run=$run_id source=$SOURCE_SHA scope=$CENSUS_SCOPE pending=false"
           fi
           verified="$(python - <<'PY'
           import json
@@ -700,6 +714,9 @@ jobs:
           else
             git add \
               "automation/provider-census-sharded-${run_id}.json" \
+              "automation/current-bytes-full-provider-census-${run_id}.json" \
+              "automation/current-bytes-full-provider-census-${run_id}-summary.json" \
+              automation/current-bytes-full-provider-census-latest-summary.json \
               automation/provider-census-status.json \
               automation/provider-repair-batch-plan-latest.json \
               automation/provider-census-proof-history.json \
