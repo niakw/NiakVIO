@@ -125,6 +125,45 @@ jobs:
               raise SystemExit('Imported hosted negatives cannot claim positive or current proof authority')
           PY
           python brain-llm/scripts/import_public_docs.py --niakvio-root . --config brain-llm/config/document_sources.json --output local-output/hosted-check/documents.jsonl
+          # Check the same public memory RAG inputs consumed by real FORCE.
+          # Private ChatGPT transcripts remain in the separate authenticated
+          # Brain private-guidance workflow; never fetch them in this public lane.
+          python - <<'PY'
+          import json, os
+          from niakvio_brain_llm.contracts import RepairRequest
+          from niakvio_brain_llm.document_memory import DocumentStore
+          from niakvio_brain_llm.planner import BrainPlanner
+          from niakvio_brain_llm.retrieval import ExperienceStore
+          root = 'local-output/hosted-check/'
+          store = ExperienceStore.from_jsonl(root+'experience.jsonl')
+          documents = DocumentStore.from_jsonl(root+'documents.jsonl')
+          assert store.rows and documents.rows, 'existing historical memory is empty'
+          assert not any(row.get('private_memory') is True for row in documents.rows), (
+              'public Brain sandbox unexpectedly loaded private conversations'
+          )
+          provider = os.environ['TARGET_PROVIDER']
+          req = RepairRequest(
+              provider_id=provider,
+              failure_class='route_proven_gap',
+              allowed_mutations=['provider_bloc'],
+              provider_context={'runtimeMutationSource': (
+                  'function getStreams(){ const streams=[]; return streams; }'
+              )},
+          )
+          experiences, docs, prior, policy, _ = BrainPlanner(
+              object(), store=store, documents=documents,
+          )._prepare(req, compact_force=True)
+          history = [x for x in experiences if x.get('result') == 'validated']
+          negatives = [x for x in experiences if x.get('source') == 'hosted-executed-negative']
+          assert history, 'historical strategy RAG did not reach FORCE preparation'
+          assert all(x.get('proof_authority') is False for x in negatives)
+          print('FIELD_BRAIN_HOSTED_RAG source_sha='+os.environ['GITHUB_SHA']
+                +' historical_docs='+str(len(documents.rows))
+                +' experience_rows='+str(len(store.rows))
+                +' retrieved_history='+str(len(history))
+                +' retrieved_executed_negatives='+str(len(negatives))
+                +' private_content=false publication_authority=false')
+          PY
       - name: Validate existing local-Brain sandbox and identity contracts
         shell: bash
         run: |
