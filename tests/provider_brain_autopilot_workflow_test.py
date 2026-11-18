@@ -60,10 +60,10 @@ assert "contents: write" not in autopilot
 assert "git add " not in autopilot
 assert "git push origin HEAD:main" not in autopilot
 
-assert phase.get("phase") == "niakvio_metier_certification", phase
+assert phase.get("phase") == "brain_repair_pilot", phase
 assert phase.get("automatic_brain_repair") is False, phase
 assert phase.get("automatic_brain_learning") is False, phase
-assert phase.get("checkpoint_required_before_brain") is True, phase
+assert phase.get("checkpoint_required_before_brain") is False, phase
 assert "automation/execution-phase.json" in autopilot
 assert "FIELD_PROVIDER_AUTOPILOT_PHASE_GATE" in autopilot
 assert 'FAST=""' in autopilot
