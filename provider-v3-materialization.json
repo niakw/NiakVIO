@@ -1,6 +1,6 @@
 {
   "schemaVersion": 3,
-  "sourceSha": "1b39274be58a91d73f8d14791f32a2e633cf9c0a",
+  "sourceSha": "f3b8c8d98bc4a2b02f2aab0d899b565f4c1fdb15",
   "context": "workspace",
   "generation": "2b711ce25c71e5313f66ac68f123e390983e6677d1074c486624fc36d7cc66bd",
   "providerCount": 75,
@@ -4490,7 +4490,6 @@
     },
     {
       "provider": "hindmoviez",
-      "entryAuthority": "global-manifest",
       "file": "providers/hindmoviez--nuvio--9b11436b920e0c43.js",
       "sha256": "9b11436b920e0c43acbbdc4e63ac4828deae8fdba1628a5bd79561f60aaaedc6",
       "providerDataSha256": "1c4c650a0e09790eb9c0fbd11e1e809fc7cfe9878809e4bcbc0c19f13091dce0",
@@ -4614,16 +4613,6 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false,
-      "securityHardening": {
-        "changed": false,
-        "alreadyHardened": false,
-        "literalDecodeChanges": 0,
-        "hostnameChanges": 0,
-        "percentDecodeChanges": 0,
-        "htmlEntityDecodeReorders": 0,
-        "consoleSinkChanges": 0,
-        "consoleShadow": false
-      },
       "byteValidation": {
         "tool": "raw-bytes",
         "toolVersion": "raw-v1",
@@ -4631,8 +4620,6 @@
         "sourceSha256": "885c56ccf6703f440a7fe4b54589ef47dac0998f0b82b86103bb857e9810d258",
         "fixedPointVerified": true
       },
-      "staticAuthorityReconciledProviders": [],
-      "domainSubstitutionReconciledProviders": [],
       "minimizer": {
         "enabled": false,
         "savedBytes": 0,
@@ -5735,7 +5722,6 @@
     },
     {
       "provider": "movix-fr",
-      "entryAuthority": "france-only-catalog",
       "file": "providers/movix-fr--nuvio--f8e161c1b2fc6920.js",
       "sha256": "f8e161c1b2fc6920228e811dd9d958a9fe77e21e1123611b5d6dd95e35679cf8",
       "providerDataSha256": "88ae624a66732e432028d4c99080bb6bf320f9eb3d47da6c76e85280d1a6005e",
@@ -5852,16 +5838,6 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false,
-      "securityHardening": {
-        "changed": false,
-        "alreadyHardened": false,
-        "literalDecodeChanges": 0,
-        "hostnameChanges": 0,
-        "percentDecodeChanges": 0,
-        "htmlEntityDecodeReorders": 0,
-        "consoleSinkChanges": 0,
-        "consoleShadow": false
-      },
       "byteValidation": {
         "tool": "raw-bytes",
         "toolVersion": "raw-v1",
@@ -5869,18 +5845,19 @@
         "sourceSha256": "0ea1cc8522a8ad60cc38d8bc25e81622854ff4d5d672aeda23e04940d0d634ca",
         "fixedPointVerified": true
       },
-      "staticAuthorityReconciledProviders": [],
-      "domainSubstitutionReconciledProviders": [],
       "minimizer": {
         "enabled": false,
         "savedBytes": 0,
         "transformedLines": 0,
         "skippedReason": "final-stage-only"
-      }
+      },
+      "staticAuthorityReconciledProviders": [
+        "movix-fr"
+      ],
+      "materializationReboundFromExactPublishedBytes": true
     },
     {
       "provider": "mugiwarastream",
-      "entryAuthority": "global-manifest",
       "file": "providers/mugiwarastream--nuvio--6e29429e73f62192.js",
       "sha256": "6e29429e73f62192c7a8ce941583f5b078bff5e61df67d5be300483bc01988db",
       "providerDataSha256": "da5ef97475974b47f82061b999823d14383f0fc2d06cc574c13cc22c09f311d4",
@@ -6011,16 +5988,6 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false,
-      "securityHardening": {
-        "changed": false,
-        "alreadyHardened": false,
-        "literalDecodeChanges": 0,
-        "hostnameChanges": 0,
-        "percentDecodeChanges": 0,
-        "htmlEntityDecodeReorders": 0,
-        "consoleSinkChanges": 0,
-        "consoleShadow": false
-      },
       "byteValidation": {
         "tool": "raw-bytes",
         "toolVersion": "raw-v1",
@@ -6028,8 +5995,6 @@
         "sourceSha256": "8de2ba7bb25b352b5e7214f9d06ea89229908dea3b6919aca1e35b18e515b68c",
         "fixedPointVerified": true
       },
-      "staticAuthorityReconciledProviders": [],
-      "domainSubstitutionReconciledProviders": [],
       "minimizer": {
         "enabled": false,
         "savedBytes": 0,
@@ -10237,9 +10202,51 @@
   "staticKnowledgeFile": "automation/provider-v3-static-knowledge.json",
   "staticKnowledgeProviderCount": 109,
   "targetedPublicationFixedPointProviders": [
+    "67movies",
+    "anidb",
+    "aniflix-uno",
+    "anikototv",
+    "animejlprovider",
+    "arrowtv",
+    "boredflix",
+    "castle",
+    "cinegram",
+    "cinemabz",
+    "corsflix",
+    "documentary-area",
+    "emnexmovies",
+    "flixer",
+    "flixhq",
+    "french-manga",
+    "fsharetv",
+    "hexa",
     "hindmoviez",
-    "movix-fr",
-    "mugiwarastream"
+    "ihavenotv",
+    "internet-archive",
+    "latestmovies",
+    "meowtv",
+    "moviebite",
+    "movish",
+    "mugiwarastream",
+    "neko-sama",
+    "neonflix",
+    "overlook",
+    "papadustream",
+    "primewire",
+    "pstream",
+    "purstream",
+    "rarefilmm",
+    "reanime-to",
+    "rivestream-app",
+    "rivestream-ru",
+    "sekai",
+    "shuttletv",
+    "streamzo",
+    "videasy",
+    "vidlink",
+    "vuflix",
+    "watch-cartoon-online",
+    "watchott"
   ],
   "targetedPublicationComplete": true,
   "targetedPublicationReconciledProviders": [
@@ -10273,18 +10280,5 @@
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
-  ],
-  "lifecycleScopeReconciled": true,
-  "lifecycleReconciledArchivedProviders": [],
-  "domainAuthorityOnlyUpdate": true,
-  "domainAuthorityUpdatedProviders": [
-    "hindmoviez",
-    "movix-fr",
-    "mugiwarastream"
-  ],
-  "targetedMaterializedProviders": [
-    "hindmoviez",
-    "movix-fr",
-    "mugiwarastream"
   ]
 }

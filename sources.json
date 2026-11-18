@@ -2,7 +2,7 @@
   "schema_version": 69,
   "repository": {
     "name": "NiakVIO",
-    "manifest_version": "5.21.160",
+    "manifest_version": "5.21.161",
     "description": "NiakVIO-owned provider catalogue and routing policy. ProviderBase, structured DATA, owned Lego, official address discovery and validated runtime observations are the operational sources of truth. External provider repositories are not required for ordinary reconstruction or playback."
   },
   "selection_policy": {
@@ -128,7 +128,7 @@
     "external_provider_repository_required": false,
     "route_learning_owner": "NiakVIO"
   },
-  "manifest_version": "5.21.160",
+  "manifest_version": "5.21.161",
   "nuvio_client_compatibility": {
     "schema_version": 1,
     "policy": "accepted_ref may advance automatically only when hard and semantic runtime contract checks remain unchanged",
@@ -168,52 +168,55 @@
       },
       "nuvio-desktop": {
         "contract_ref": "c0eb7bfa7c74820bd189a63a48ae364af8bb3058",
-        "accepted_ref": "c0eb7bfa7c74820bd189a63a48ae364af8bb3058",
-        "accepted_at": "2026-11-17",
-        "acceptance": "contract-reaudited-controller-ui-player-head"
+        "accepted_ref": "029fcf0dea3852513f0e5aa3768d2a5e880bd015",
+        "accepted_at": "2026-11-18T19:12:04.870938+00:00",
+        "acceptance": "automatic-contract-safe-advance",
+        "changed_file_count": 27,
+        "observed_sensitive_changed_files": [],
+        "unrelated_changed_files": [
+          ".github/workflows/android-release.yml",
+          ".github/workflows/update-store-source.yml",
+          "composeApp/src/commonMain/composeResources/values/strings.xml",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/DownloadsDestinations.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/EpisodeRatingsAlignment.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/ImdbEpisodeRatingsRepository.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/MetaDetailsScreen.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/SeriesGraphApi.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadActionSheet.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadArtwork.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadDisplay.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadRows.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadSpeeds.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadWatchStatus.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadsRepository.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadsScreen.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/settings/SettingsComponents.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/settings/SettingsScreen.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/tmdb/TmdbMetadataService.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/trakt/TraktLibraryRepository.kt",
+          "composeApp/src/commonTest/kotlin/com/nuvio/app/features/details/EpisodeRatingsAlignmentTest.kt",
+          "composeApp/src/commonTest/kotlin/com/nuvio/app/features/tmdb/TmdbMetadataServiceTest.kt",
+          "composeApp/src/desktopMain/kotlin/com/nuvio/app/ClickableHandCursor.kt",
+          "composeApp/src/desktopMain/kotlin/com/nuvio/app/Main.kt",
+          "composeApp/src/desktopMain/native/linux/player_bridge.cpp",
+          "iosApp/Configuration/Version.xcconfig",
+          "store-beta.json"
+        ]
       },
       "nuvio-tv": {
         "contract_ref": "67bbb3c3f3be2235e3abb7fda9c4670f97df8448",
-        "accepted_ref": "67bbb3c3f3be2235e3abb7fda9c4670f97df8448",
-        "accepted_at": "2026-11-18T17:10:00+00:00",
-        "acceptance": "source-contract-reaudited-native-runtime-pending",
-        "changed_file_count": 58,
-        "observed_sensitive_changed_files": [
-          "app/src/main/java/com/nuvio/tv/core/player/BackgroundTrailerController.kt",
-          "app/src/main/java/com/nuvio/tv/core/player/BitrateAwareLoadControl.kt",
-          "app/src/main/java/com/nuvio/tv/core/player/DolbyVisionExtractorsFactory.kt",
-          "app/src/main/java/com/nuvio/tv/core/player/DoviBridge.kt",
-          "app/src/main/java/com/nuvio/tv/core/player/TrailerPlayerPool.kt",
-          "app/src/main/java/com/nuvio/tv/data/remote/dto/SubtitleResponseDto.kt",
-          "app/src/main/java/com/nuvio/tv/domain/model/Subtitle.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/player/NuvioExoPlayerPerformanceHelper.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/player/PlayerRuntimeControllerInitialization.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/player/SubtitleSelectionOverlay.kt"
-        ],
+        "accepted_ref": "15286b68c48b1afc5632aa309ed3d4afc3b5a4d7",
+        "accepted_at": "2026-11-18T19:12:04.870938+00:00",
+        "acceptance": "automatic-contract-safe-advance",
+        "changed_file_count": 6,
+        "observed_sensitive_changed_files": [],
         "unrelated_changed_files": [
-          "app/src/main/java/com/nuvio/tv/core/tmdb/TmdbMetadataService.kt",
-          "app/src/main/java/com/nuvio/tv/data/local/LayoutPreferenceDataStore.kt",
-          "app/src/main/java/com/nuvio/tv/data/local/TmdbSettingsDataStore.kt",
-          "app/src/main/java/com/nuvio/tv/data/mapper/MetaMapper.kt",
-          "app/src/main/java/com/nuvio/tv/data/remote/api/TmdbApi.kt",
-          "app/src/main/java/com/nuvio/tv/data/remote/dto/MetaResponseDto.kt",
-          "app/src/main/java/com/nuvio/tv/domain/model/Meta.kt",
-          "app/src/main/java/com/nuvio/tv/domain/model/TmdbSettings.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/detail/EpisodesSection.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/detail/MetaDetailsScreen.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/detail/MetaDetailsUiState.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/detail/MetaDetailsViewModel.kt",
+          "app/src/main/java/com/nuvio/tv/domain/model/FocusedPosterTrailerPlaybackTarget.kt",
           "app/src/main/java/com/nuvio/tv/ui/screens/home/ModernHomeContent.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/home/ModernHomePresentation.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/settings/LayoutDetailSettings.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/settings/LayoutSettingsViewModel.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/settings/TmdbSettingsScreen.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/settings/TmdbSettingsViewModel.kt",
-          "app/src/main/java/com/nuvio/tv/ui/util/SmoothDownscaleTransformation.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/home/ModernHomeRows.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/settings/LayoutCardSettings.kt",
           "app/src/main/res/values-pl/strings.xml",
-          "app/src/main/res/values/strings.xml",
-          "app/src/test/java/com/nuvio/tv/data/mapper/MetaMapperTest.kt",
-          "app/src/test/java/com/nuvio/tv/ui/screens/home/ModernHomeIdentityRelocationTest.kt"
+          "app/src/main/res/values/strings.xml"
         ]
       }
     }
