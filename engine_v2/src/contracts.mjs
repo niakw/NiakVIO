@@ -29,7 +29,7 @@ export function normalizeResolveRequest(input = {}) {
   if (!DEVICES.includes(device)) throw new Error(`unsupported device: ${device}`);
   if (!tmdbId && !title) throw new Error("tmdbId or title is required");
 
-  const season = toPositiveIntOrNull(input.season);
+  const season = toNonNegativeIntOrNull(input.season);
   const episode = toPositiveIntOrNull(input.episode);
   if ((mediaType === "tv" || mediaType === "anime") && (season == null || episode == null)) {
     throw new Error(`${mediaType} requests require season and episode`);
@@ -349,6 +349,13 @@ function normalizeDurationMinutes(value) {
 function normalizeStringList(value) {
   const list = Array.isArray(value) ? value : value == null ? [] : [value];
   return [...new Set(list.map(textOrNull).filter(Boolean).map((v) => v.toLowerCase()))];
+}
+
+function toNonNegativeIntOrNull(value) {
+  if (value == null || value === "") return null;
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 0) throw new Error(`expected non-negative integer, got ${value}`);
+  return parsed;
 }
 
 function toPositiveIntOrNull(value) {

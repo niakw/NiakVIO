@@ -4507,3 +4507,10 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 
 - `.github/workflows/core-stream-metadata-contract.yml` lacked execution of `engine_v2/tests/contracts.test.mjs` despite canonical Core normalization being a transport authority for stream/audio provenance. It now triggers for `engine_v2/src/contracts.mjs`, its own regression test and the presentation test, and executes both Node contract tests in CI.
 - This adds repeatable code-level non-regression, not device-track proof. Keep native iOS multi-audio witness and multi-client playback certification as separate requirements.
+
+
+## 2026-11-18 — Canonical Core request accepts Season 0 without weakening episode identity
+
+- `engine_v2/src/contracts.mjs::normalizeResolveRequest` incorrectly validated both `season` and `episode` using a positive-only integer helper. This rejected `season:0`, so S00E01 could not pass the canonical Core request boundary. It did not prove what caused any older Spartacus misroute, but it was an independently demonstrable contract defect.
+- Season now uses its own non-negative integer validator while episodes/year retain their positive-only semantics. `adaptRequestForDevice` already uses nullish coalescing and thus preserves the literal `0` in `getStreams` arguments. Added TV/anime S00E01 and invalid-negative/episode-zero regression tests in `engine_v2/tests/contracts.test.mjs`.
+- The Core Stream Metadata workflow added earlier exercises these engine v2 contracts; native player identity, TMDB mapping and exact episode/subtitle playback remain separate release proof.

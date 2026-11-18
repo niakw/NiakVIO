@@ -50,6 +50,23 @@ const anime = adaptRequestForDevice({
 }, "mobile");
 assert.deepEqual(anime.args, ["95479", "anime", 1, 1]);
 
+// Season zero is a real specials identity: preserve S00E01 all the way to getStreams.
+const specials = adaptRequestForDevice({
+  tmdbId: "1396", mediaType: "tv", season: 0, episode: 1,
+}, "tv");
+assert.equal(specials.canonical.season, 0);
+assert.deepEqual(specials.args, ["1396", "tv", 0, 1]);
+const animeSpecials = adaptRequestForDevice({
+  tmdbId: "95479", mediaType: "anime", season: "0", episode: "1",
+}, "mobile");
+assert.deepEqual(animeSpecials.args, ["95479", "anime", 0, 1]);
+assert.throws(() => normalizeResolveRequest({
+  title: "Example", mediaType: "tv", season: -1, episode: 1,
+}), /non-negative integer/);
+assert.throws(() => normalizeResolveRequest({
+  title: "Example", mediaType: "tv", season: 0, episode: 0,
+}), /positive integer/);
+
 const interstellar = adaptRequestForDevice({
   tmdbId: "157336",
   mediaType: "movie",
