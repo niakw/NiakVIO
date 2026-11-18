@@ -197,6 +197,9 @@ assert "every curated direct probe fails" in domain_refresh["direct_failure_sear
 assert "two consecutive runs" in domain_refresh["search_fallback_publication_contract"]
 assert domain_refresh["reachable_direct_prevents_search_fallback"] is True
 assert domain_refresh["operator_pin_prevents_search_fallback"] is True
+assert domain_refresh["supplementary_is_publication_authority"] is False
+assert "cannot suppress explicit direct authority" in domain_refresh["supplementary_role_contract"]
+assert domain_refresh["operator_fallback_roles"] == ["fallback", "secondary", "backup"]
 assert machine["route_recognition"]["provider_scope_authority"] == "scripts/current_provider_scope.py:projection_runtime_visible_provider_ids"
 assert machine["route_recognition"]["global_publication_authority"] == "manifest.json"
 assert machine["route_recognition"]["france_only_publication_authority"] == "provider_catalog.json projections general=false,vf=true"

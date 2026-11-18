@@ -53,6 +53,8 @@ def _safe_authoritative_candidate(
     row: dict[str, Any],
 ) -> bool:
     source_type = str(row.get("source_type") or "").strip().casefold()
+    if hubresolver.source_role_is_supplementary(row):
+        return False
     url = _candidate_url(row)
     hostname = hubresolver.host(url)
     if source_type not in ALLOWED_SOURCE_TYPES:
@@ -115,7 +117,11 @@ def _explicit_current_direct_candidate(cfg: dict[str, Any]) -> dict[str, Any] | 
     source = str(cfg.get("hub") or "").strip()
     if not source:
         for row in cfg.get("sources") or []:
-            if isinstance(row, dict) and str(row.get("type") or "").casefold() in ALLOWED_SOURCE_TYPES:
+            if (
+                isinstance(row, dict)
+                and str(row.get("type") or "").casefold() in ALLOWED_SOURCE_TYPES
+                and not hubresolver.source_role_is_supplementary(row)
+            ):
                 source = str(row.get("url") or "").strip()
                 if source:
                     break
@@ -279,6 +285,8 @@ def _redirect_candidates_from_source_observations(
         if hubresolver.host(final_url) in source_hosts:
             continue
         source_role = str(observation.get("source_role") or "primary").strip().casefold()
+        if hubresolver.source_role_is_supplementary({"role": source_role}):
+            continue
         output.append({
             "url": final_url,
             "label": "authoritative source redirect destination",
@@ -287,7 +295,7 @@ def _redirect_candidates_from_source_observations(
             "source": source_url,
             "source_role": source_role,
             "source_priority": int(observation.get("source_priority") or 0),
-            "source_fallback": source_role in {"fallback", "secondary", "backup"},
+            "source_fallback": hubresolver.source_role_is_fallback({"role": source_role}),
             "source_redirect": True,
         })
     return output
@@ -392,8 +400,10 @@ def resolve_authoritative_hub_domain(
             break
 
     current_url = _candidate_url(explicit_current or {})
-    # A fallback hub/channel is consulted only when no primary/supplementary
-    # address source produced a usable current candidate. This keeps secondary
+    # A fallback hub/channel is consulted only when no primary authoritative
+    # address source produced a usable current candidate. Supplementary/reference
+    # sources are discovery hints and can never become publication authority.
+    # This keeps secondary
     # authorities from silently overriding a still-live primary source merely
     # because their link label or Telegram post scores higher.
     primary_live_candidates = [

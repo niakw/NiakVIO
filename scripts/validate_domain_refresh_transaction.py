@@ -331,16 +331,30 @@ def selected_source_is_authoritative(
 ) -> bool:
     """Accept global authority types or narrowly registry-authorized public feeds."""
     source_type = str(item.get("selected_source_type") or "").strip().casefold()
+    selected_source = str(item.get("selected_source") or "").strip().rstrip("/").casefold()
+    registry_row = before_registry.get(provider_id) or {}
+    configured_sources = [
+        source
+        for source in registry_row.get("sources") or []
+        if isinstance(source, dict)
+        and str(source.get("type") or "").strip().casefold() == source_type
+        and str(source.get("url") or "").strip().rstrip("/").casefold() == selected_source
+    ]
+    if any(
+        str(source.get("role") or source.get("source_role") or "primary").strip().casefold()
+        in {"supplementary", "reference", "informational", "discovery"}
+        for source in configured_sources
+    ):
+        return False
+
     if source_type in AUTHORITY_TYPES:
         return True
     if source_type not in REGISTRY_SCOPED_AUTHORITY_TYPES:
         return False
-
-    selected_source = str(item.get("selected_source") or "").strip().rstrip("/").casefold()
     if not selected_source:
         return False
-    registry_row = before_registry.get(provider_id) or {}
-    for source in registry_row.get("sources") or []:
+
+    for source in configured_sources:
         if not isinstance(source, dict):
             continue
         configured_type = str(source.get("type") or "").strip().casefold()

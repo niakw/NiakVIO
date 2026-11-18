@@ -1081,6 +1081,21 @@ def _candidate_identity(candidate: dict[str, Any]) -> str:
     return str(candidate.get("url") or "").rstrip("/")
 
 
+NON_AUTHORITATIVE_SOURCE_ROLES = {"supplementary", "reference", "informational", "discovery"}
+
+
+def source_role_value(source: dict[str, Any]) -> str:
+    return str(source.get("role") or source.get("source_role") or "primary").strip().casefold()
+
+
+def source_role_is_supplementary(source: dict[str, Any]) -> bool:
+    return source_role_value(source) in NON_AUTHORITATIVE_SOURCE_ROLES
+
+
+def source_role_is_fallback(source: dict[str, Any]) -> bool:
+    return source_role_value(source) in {"fallback", "secondary", "backup"} | NON_AUTHORITATIVE_SOURCE_ROLES
+
+
 def has_authoritative_hub_source(cfg: dict[str, Any]) -> bool:
     """A live declared hub/channel/redirect supersedes direct/history/search authority."""
     removed_states = {"removed", "dead", "retired", "graveyard", "compromised"}
@@ -1091,6 +1106,7 @@ def has_authoritative_hub_source(cfg: dict[str, Any]) -> bool:
     return any(
         isinstance(source, dict)
         and str(source.get("type") or "").strip().casefold() in {"hub", "telegram_public", "redirect"}
+        and not source_role_is_supplementary(source)
         and str(source.get("source_status") or source.get("status") or "").strip().casefold() not in removed_states
         and is_http_url(source.get("url"))
         for source in (cfg.get("sources") or [])
@@ -1347,8 +1363,8 @@ def gather_candidates(provider_id: str, cfg: dict[str, Any], history_row: dict[s
                     merged_values.append(value)
             source_cfg[field] = merged_values
 
-        source_role = str(source.get("role") or source.get("source_role") or "primary").strip().casefold()
-        source_fallback = source_role in {"fallback", "secondary", "backup"}
+        source_role = source_role_value(source)
+        source_fallback = source_role_is_fallback(source)
         base_priority = int(source.get("priority") or 50)
         try:
             status, final, document, _headers = fetch(url, timeout)

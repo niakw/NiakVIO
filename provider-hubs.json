@@ -5061,7 +5061,7 @@
       "direct": "https://sadisflix-officiel.cfd",
       "telegram": null,
       "api": null,
-      "source": "provider_onboarding_workflow",
+      "source": "provider_onboarding_workflow+curated_multi_hub_2026-11-18",
       "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
       "aliases": [
         "sadisflix"
@@ -5076,6 +5076,24 @@
         "\"SadisFlix\" official domain"
       ],
       "sources": [
+        {
+          "type": "hub",
+          "url": "https://sadis.wiki/",
+          "priority": 85,
+          "role": "supplementary",
+          "resolver": "official_outbound",
+          "purpose": "Supplementary current-address discovery reference; never publication authority by itself",
+          "evidence": "current-public-address-hub-2026-11-18"
+        },
+        {
+          "type": "telegram_public",
+          "url": "https://t.me/s/sadisflix_officiel",
+          "priority": 80,
+          "role": "supplementary",
+          "resolver": "latest_telegram_domain",
+          "purpose": "Supplementary address-channel discovery; terminal must be independently authorized before publication",
+          "evidence": "curated-provider-inventory"
+        },
         {
           "type": "search",
           "query": "\"SadisFlix\" official domain",

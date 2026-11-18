@@ -383,6 +383,27 @@ direct_seed = resolver._seed_known_candidates(direct_authority_cfg, authority_hi
 assert [row['source_type'] for row in direct_seed] == ['curated_direct']
 assert all(row['source_type'] != 'history_lkg' for row in direct_seed)
 
+# A community/reference hub is useful fallback discovery but is not publication
+# authority and must never suppress an explicit current direct candidate.
+supplementary_authority_cfg = {
+    'hub': None,
+    'sources': [{
+        'type': 'hub',
+        'url': 'https://index.example/',
+        'priority': 130,
+        'role': 'supplementary',
+    }],
+    'direct_candidates': ['https://direct.example/'],
+    'direct_fallback': 'https://direct.example/',
+}
+assert resolver.source_role_is_supplementary(supplementary_authority_cfg['sources'][0])
+assert resolver.source_role_is_fallback(supplementary_authority_cfg['sources'][0])
+assert not resolver.has_authoritative_hub_source(supplementary_authority_cfg)
+assert resolver.has_authoritative_direct_source(supplementary_authority_cfg)
+supplementary_seed = resolver._seed_known_candidates(supplementary_authority_cfg, authority_history)
+assert [row['url'] for row in supplementary_seed] == ['https://direct.example']
+assert all(row['source_type'] == 'curated_direct' for row in supplementary_seed)
+
 fallback_authority_cfg = {
     'hub': None,
     'sources': [],

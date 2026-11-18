@@ -1,5 +1,5 @@
 {
-  "schema_version": 27,
+  "schema_version": 28,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -264,7 +264,15 @@
     "direct_failure_search_fallback": "bounded automatic discovery only after every curated direct probe fails",
     "search_fallback_publication_contract": "runtime-valid same-brand terminal repeated on at least two consecutive runs",
     "reachable_direct_prevents_search_fallback": true,
-    "operator_pin_prevents_search_fallback": true
+    "operator_pin_prevents_search_fallback": true,
+    "supplementary_is_publication_authority": false,
+    "supplementary_role_contract": "discovery-only fallback-order evidence; cannot suppress explicit direct authority or publish a terminal",
+    "operator_fallback_roles": [
+      "fallback",
+      "secondary",
+      "backup"
+    ],
+    "operator_fallback_role_contract": "authoritative address sources ordered after primary; still subject to provider identity and transaction guards"
   },
   "routine_workflow": {
     "path": ".github/workflows/sync.yml",

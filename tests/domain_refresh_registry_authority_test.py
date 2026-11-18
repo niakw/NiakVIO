@@ -29,6 +29,39 @@ registry = {
 
 assert selected_source_is_authoritative(provider_id, item, registry) is True
 
+# The same configured source is deliberately non-authoritative when its role is
+# supplementary/reference-only. This is the fail-closed boundary for community
+# indexes imported as fallback discovery.
+supplementary_registry = {
+    provider_id: {
+        "sources": [{
+            "type": "telegram_public",
+            "url": "https://t.me/s/hindmoviez/1975",
+            "priority": 100,
+            "role": "supplementary",
+            "purpose": "Authoritative address reference",
+        }]
+    }
+}
+assert selected_source_is_authoritative(provider_id, item, supplementary_registry) is False
+supplementary_hub_item = {
+    "selected_source_type": "hub",
+    "selected_source": "https://community-index.example/hindmoviez",
+}
+supplementary_hub_registry = {
+    provider_id: {
+        "sources": [{
+            "type": "hub",
+            "url": "https://community-index.example/hindmoviez",
+            "role": "supplementary",
+            "purpose": "Community address discovery reference",
+        }]
+    }
+}
+assert selected_source_is_authoritative(
+    provider_id, supplementary_hub_item, supplementary_hub_registry
+) is False
+
 # Same source type is not enough: arbitrary/community feeds stay fail-closed.
 unconfigured = {
     provider_id: {

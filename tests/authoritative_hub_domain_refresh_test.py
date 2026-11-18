@@ -164,6 +164,58 @@ assert refresh.has_domain_refresh_source(direct_cfg, "quick") is True
 assert refresh.has_domain_refresh_source({"search_queries": ["demo"]}, "quick") is False
 assert refresh.has_domain_refresh_source({"search_queries": ["demo"]}, "deep") is True
 
+# A high-scoring community/reference hub remains useful discovery evidence, but
+# cannot replace a declared direct address or become Domain publication
+# authority by itself.
+supp_direct = "https://sadisflix-current.example/"
+supp_hub = "https://community-index.example/sadisflix"
+supp_new = "https://sadisflix-new.example"
+supp_cfg = {
+    "hub": None,
+    "aliases": ["sadisflix"],
+    "direct_candidates": [supp_direct],
+    "allowed_terminal_hosts": ["sadisflix-current.example", "sadisflix-new.example"],
+    "sources": [{
+        "type": "hub",
+        "url": supp_hub,
+        "priority": 140,
+        "role": "supplementary",
+        "resolver": "official_outbound",
+    }],
+}
+calls = []
+original_fetch = resolver.fetch
+
+def fake_supplementary_fetch(url: str, timeout: float = 10.0):
+    calls.append(url)
+    if url.rstrip("/") == supp_direct.rstrip("/"):
+        return (200, supp_direct, "<html></html>", {"Content-Type": "text/html"})
+    if url == supp_hub:
+        return (
+            200,
+            supp_hub,
+            f'<html><body><a href="{supp_new}/">Sadisflix current address</a></body></html>',
+            {"Content-Type": "text/html"},
+        )
+    raise AssertionError(f"unexpected supplementary fetch: {url}")
+
+try:
+    resolver.fetch = fake_supplementary_fetch
+    supp_item = refresh.resolve_authoritative_hub_domain(
+        "sadisflix", supp_cfg, {}, "quick", 0.2
+    )
+finally:
+    resolver.fetch = original_fetch
+
+assert supp_direct.rstrip("/") in {url.rstrip("/") for url in calls}, calls
+assert supp_hub in calls, calls
+assert supp_item["status"] == "hub_unresolved", supp_item
+assert not supp_item.get("official_site"), supp_item
+assert all(
+    row.get("source_role") != "supplementary"
+    for row in supp_item.get("site_candidates") or []
+), supp_item
+
 # Regression: a direct-only provider whose address is actually unreachable may
 # use search as a bounded discovery fallback in quick/scheduled mode. A plain
 # search result cannot publish on first sighting: it must validate as the same
