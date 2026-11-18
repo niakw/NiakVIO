@@ -4627,3 +4627,21 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
   artifacts and repair-batch evidence as non-executable evidence, so an exact
   Finalizer is not invalidated merely because its own/current census was
   persisted.
+
+
+## 2026-11-18 — First current-census lifecycle execution reached HindMoviez reactivation
+
+- Provider Disabled Lifecycle run \`44224340809\` on \`99ca7992\` executed the new
+  generic rule against the real repository and reported
+  \`eligible=1 applied=1 ... providers=hindmoviez\`. The first lifecycle pass
+  reached \`active=77 disabled=32 pending=31\`, and production authority
+  classification applied no new disable.
+- The run did not publish that workspace transition because the subsequent
+  synthetic \`production_active_provider_freshness_test.py\` had an invalid
+  negative assertion: its fixture also carried a valid independent offline
+  exact-byte contract, so invalidating only the new census ledger correctly
+  fell back to \`offline-contract-exact-byte\`. The test now calls
+  \`exact_disabled_reactivation\` directly for that negative case instead of
+  asserting that every other production proof disappears.
+- This is a test-oracle correction only; HindMoviez still requires the rerun to
+  commit/move the exact bytes on main before it can be called reactivated.

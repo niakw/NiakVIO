@@ -14,6 +14,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from provider_production_freshness import (
     ProductionFreshnessAuthority,
     artifact_digest,
+    exact_disabled_reactivation,
     declared_lanes,
     load,
 )
@@ -180,9 +181,9 @@ with tempfile.TemporaryDirectory(prefix="niakvio-freshness-scope-") as tmp:
     (root / "automation/provider-disabled-reactivation-ledger.json").write_text(
         json.dumps(ledger), encoding="utf-8"
     )
-    drifted = ProductionFreshnessAuthority(root)
-    allowed, proof_authority = drifted.authorize(global_row, "global")
-    assert not allowed, proof_authority
+    assert not exact_disabled_reactivation(
+        ledger["providers"]["demo"], {"movie"}, digest
+    ), "drifted current-census reactivation proof was accepted"
 
 print(
     "Production active providers require shared byte-bound all-scope FULL OK or exact-byte "
