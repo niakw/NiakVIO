@@ -101,6 +101,9 @@ assert "if day >= purge_day and not hold_archival_for_unverified_auto_off(reason
 assert '"archiveHoldReason": "independent_negative_proof_pending"' in lifecycle_source
 assert "active providers missing from materialization ledger" in lifecycle_source
 assert "reconcile_materialization_from_active_bundles(apply=True)" in lifecycle_source
+assert "reconcile_provider_base_store_metadata(" in lifecycle_source
+assert "base_store.provider_base_store_metadata(" in lifecycle_source
+assert "PROVENANCE.json" in workflow
 assert "visible providers missing from materialization ledger" not in lifecycle_source
 assert "materialization_ids == active_union" in workflow
 assert "materialization_ids == runtime_visible_ids" not in workflow

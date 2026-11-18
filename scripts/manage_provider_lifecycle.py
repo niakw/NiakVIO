@@ -26,6 +26,7 @@ from typing import Any
 from generate_language_manifests import france_only_catalog_rows
 from current_provider_scope import pending_provider_ids
 from provider_materialization_generation import materialization_generation
+import provider_base_store as base_store
 
 ROOT = Path(__file__).resolve().parents[1]
 ACTIVE_DIR = ROOT / "providers"
@@ -38,6 +39,7 @@ ARCHIVE_BASE_DIR = ARCHIVE_DIR / "provider-bases"
 STATE_PATH = ROOT / "automation/provider-disabled-lifecycle.json"
 STATIC_KNOWLEDGE_PATH = ROOT / "automation/provider-v3-static-knowledge.json"
 MATERIALIZATION_PATH = ROOT / "provider-v3-materialization.json"
+PROVENANCE_PATH = ROOT / "PROVENANCE.json"
 RETENTION_DAYS = 7
 
 # Historical auto-off decisions could have been inferred solely from missing
@@ -420,6 +422,60 @@ def reconcile_materialization_report(
     return {"providerCount": len(rows), "removed": removed, "generation": doc["generation"]}
 
 
+def reconcile_provider_base_store_metadata(
+    active_ids: set[str],
+    *,
+    apply: bool,
+) -> dict[str, int]:
+    """Keep PROVENANCE ProviderBase-store cardinality bound to active authority.
+
+    Lifecycle can move an exact provider/base family between active and disabled
+    storage without rebuilding ProviderBase bytes. The ProviderBase metadata is
+    still release authority, so its counts must follow the post-lifecycle
+    Global+France active projection in the same atomic transaction.
+    """
+    provenance = load_json(PROVENANCE_PATH)
+    rows = provenance.get("providers")
+    if not isinstance(rows, dict):
+        raise RuntimeError("PROVENANCE providers map is invalid")
+
+    clean = 0
+    bases: set[str] = set()
+    for pid in sorted(active_ids):
+        row = rows.get(pid)
+        if not isinstance(row, dict):
+            raise RuntimeError(f"{pid}: active provider missing provenance row")
+        relative = str(row.get("base_filename") or "").strip()
+        if not relative.startswith("provider-bases/"):
+            raise RuntimeError(f"{pid}: active ProviderBase is outside provider-bases/: {relative}")
+        if apply:
+            path, _digest = base_store.resolve_base(pid, row, require=True)
+            assert path is not None
+            if path.parent.resolve() != ACTIVE_BASE_DIR.resolve():
+                raise RuntimeError(f"{pid}: active ProviderBase resolved outside active store: {path}")
+        bases.add(relative)
+        if base_store.is_clean_reconstructed(row):
+            clean += 1
+
+    previous = provenance.get("provider_base_store")
+    metadata = base_store.provider_base_store_metadata(
+        provider_count=len(active_ids),
+        unique_base_count=len(bases),
+        clean_reconstructed=clean,
+        reconstruction_required=len(active_ids) - clean,
+        previous_store=previous if isinstance(previous, dict) else None,
+    )
+    if apply:
+        provenance["provider_base_store"] = metadata
+        dump_json(PROVENANCE_PATH, provenance)
+    return {
+        "providerCount": len(active_ids),
+        "uniqueBaseCount": len(bases),
+        "cleanReconstructed": clean,
+        "reconstructionRequired": len(active_ids) - clean,
+    }
+
+
 def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dict[str, Any]:
     if root.resolve() != ROOT.resolve():
         raise RuntimeError("alternate root is not supported by repository lifecycle apply")
@@ -553,6 +609,10 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
             static_provider_count=int(static_result["providerCount"]),
             apply=True,
         )
+        provider_base_store_result = reconcile_provider_base_store_metadata(
+            active_ids,
+            apply=True,
+        )
         state["updatedAt"] = day.isoformat()
         dump_json(STATE_PATH, state)
 
@@ -561,6 +621,10 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
         materialization_result = reconcile_materialization_report(
             active_ids,
             static_provider_count=int(static_result["providerCount"]),
+            apply=False,
+        )
+        provider_base_store_result = reconcile_provider_base_store_metadata(
+            active_ids,
             apply=False,
         )
 
@@ -583,6 +647,9 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
         "materializationProviderCount": int(materialization_result["providerCount"]),
         "materializationRemoved": list(materialization_result["removed"]),
         "materializationGeneration": str(materialization_result["generation"]),
+        "providerBaseStoreProviderCount": int(provider_base_store_result["providerCount"]),
+        "providerBaseStoreCleanReconstructed": int(provider_base_store_result["cleanReconstructed"]),
+        "providerBaseStoreReconstructionRequired": int(provider_base_store_result["reconstructionRequired"]),
     }
 
 

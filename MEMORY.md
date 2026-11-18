@@ -4733,3 +4733,11 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - ProviderBase rolling-retention logic is now promoted into the release transaction, not left as a Projection-only maintenance behavior.
 - `release-finalize.yml` opts into `--prune-provider-bases`, stages `provider-bases/` atomically and permits those paths in its generation allowlist. Changes to the pruner/tests also trigger both Finalizer and Projection Reconcile.
 - Workflow contracts now require Finalizer, Projection Reconcile and full Provider-v3 reconstruction to own ProviderBase pruning; Domain Refresh remains explicitly excluded because it is domain-only.
+
+
+## 2026-11-18 — Lifecycle now atomically reconciles ProviderBase-store metadata
+
+- Finalizer run `44240779229` on `45d6b7fb` failed at `provider_clean_reconstruction_contract_test.py` because `PROVENANCE.json.provider_base_store.provider_count` still reflected the pre-lifecycle active projection after provider families had moved between `providers/` and `provider-disabled/`.
+- Root cause was transaction ownership: `manage_provider_lifecycle.py` already reconciled manifests, static knowledge and executable materialization, but never rebound the ProviderBase-store metadata block. The release test was correct and remains strict.
+- Lifecycle now recomputes ProviderBase-store cardinality/clean counts from the post-transition Global+France active identity set, validates every active base against the active `provider-bases/` store during apply, writes the canonical metadata through `provider_base_store_metadata`, and stages `PROVENANCE.json` in the same lifecycle commit.
+- Dry-run computes the same cardinality without requiring hypothetical file moves. This is control-plane consistency only; no provider is promoted and no playback proof changes.

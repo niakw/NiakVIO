@@ -189,7 +189,7 @@ jobs:
             automation/provider-disabled-reactivation-ledger.json \
             automation/provider-disabled-current-census-reactivation-latest.json \
             automation/provider-active-wrong-content-disable-latest.json \
-            automation/provider-v3-static-knowledge.json provider-v3-materialization.json \
+            automation/provider-v3-static-knowledge.json provider-v3-materialization.json PROVENANCE.json \
             provider-overrides.json provider-hubs.json providers provider-disabled provider-bases provider-old
           if git diff --cached --quiet; then
             echo PROVIDER_LIFECYCLE_NO_CHANGE
