@@ -57,6 +57,13 @@ def negative_history(directory: Path) -> dict[str, int]:
             and row.get("executionObserved") is True
             and row.get("materializedMutationObserved") is True
         ]
+        # An exact-current healthy/playable baseline is not provider failure
+        # evidence at all. Keep it out of source synthesis until proof/census
+        # freshness catches up, otherwise stale repairQueue state can repeatedly
+        # spend model budget trying to alter working bytes.
+        if "current_baseline_playable_requires_proof_refresh" in reasons:
+            debt[provider] = 300
+            continue
         # The hosted experiment may generate a syntactically valid but
         # behaviorally unchanged nested block. This is *actual* negative
         # materialization/replay evidence and must outrank a later model
