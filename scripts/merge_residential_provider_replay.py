@@ -46,6 +46,7 @@ def summarize(replay: dict[str, Any]) -> dict[str, Any]:
         })
         rows.append({
             "provider":provider,
+            "providerArtifactSha256":str(row.get("provider_artifact_sha256") or "").strip().casefold(),
             "lane":str(row.get("semantic_type") or row.get("lane") or "").strip().casefold(),
             "status":str(row.get("status") or ""),
             "debugStage":str(row.get("debug_stage") or ""),
@@ -62,6 +63,7 @@ def summarize(replay: dict[str, Any]) -> dict[str, Any]:
     return {
         "available":True,
         "profile":"tailscale-residential-exit",
+        "providerBundleDigestAuthority":"executed-global-vf-published-bytes",
         "providerCount":len(providers),
         "providers":providers,
         "rawProviders":sorted({str(v).strip().casefold() for v in replay.get("raw_providers") or [] if str(v).strip()}),
