@@ -1,19 +1,20 @@
 {
   "schemaVersion": 1,
-  "runId": "44378050729",
-  "triggerSha": "05fba42a5e660c0965e364dc642ebabbea7e02b4",
+  "runId": "44385017428",
+  "triggerSha": "0124d1e7bf83281d79d9ef7a63b82e5e2a2fca0b",
   "providerCount": 111,
-  "fullOkCount": 5,
-  "partialOkCount": 0,
+  "fullOkCount": 3,
+  "partialOkCount": 2,
   "operationalOkCount": 5,
   "fullOkProviders": [
     "castle",
     "internet-archive",
-    "meowtv",
-    "neko-sama",
     "webflix"
   ],
-  "partialOkProviders": [],
+  "partialOkProviders": [
+    "hindmoviez",
+    "meowtv"
+  ],
   "brainQueue": [
     "1jour1film0626",
     "67movies",
@@ -47,7 +48,6 @@
     "fullanime",
     "hexa",
     "hianime",
-    "hindmoviez",
     "ihavenotv",
     "kidraz",
     "latestmovies",
@@ -84,16 +84,16 @@
   ],
   "statusCounts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 23,
+    "CHAIN REACHED": 21,
     "DISABLED": 36,
-    "FULL OK": 5,
+    "FULL OK": 3,
     "HARNESS MISMATCH": 3,
     "HARNESS/ENV BLOCKED": 17,
-    "NO PROOF": 11,
-    "PROOF REFRESH REQUIRED": 4,
-    "PROVIDER JS BROKEN": 1,
-    "PROVIDER NETWORK BLOCKED": 5,
-    "REGRESSION PROVIDER": 5
+    "NO PROOF": 10,
+    "PARTIAL OK": 2,
+    "PROOF REFRESH REQUIRED": 5,
+    "PROVIDER NETWORK BLOCKED": 9,
+    "REGRESSION PROVIDER": 4
   },
   "executionModel": "8-shard-horizontal-census"
 }
