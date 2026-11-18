@@ -19,6 +19,9 @@ if (!patch.includes('season:C((o&&o.season)!=null?o.season:(a[2]!=null?a[2]:x.se
 if (!patch.includes('episode:C((o&&o.episode)!=null?o.episode:(a[3]!=null?a[3]:x.episode),1,false)')) {
   throw new Error('HindMoviez runtime must keep episode coordinates positive');
 }
+if (patch.includes('trim()}\\nfunction C')) {
+  throw new Error('HindMoviez runtime helper separator must be a real newline, not a literal \\n token in generated JavaScript');
+}
 
 const movieFile = 'The.Colony.AKA.Tides.2021.480p.BluRay.Hindi.English.Esubs.mkv';
 const movie = streamIdentity({

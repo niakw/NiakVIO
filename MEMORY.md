@@ -4653,3 +4653,10 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Cohort audit used the current Global+France active episodic set: 70 active TV/anime providers, 12 declared active provider Lego files, and HindMoviez was the only active Lego matching the unsafe S00 truthiness patterns. No broad provider rewrite was justified.
 - HindMoviez now validates coordinates explicitly: season accepts integer `>= 0`, episode requires integer `> 0`, both with fallback 1 only for invalid/missing values. Added provider-specific static regression alongside the existing global active-Lego S00 gate.
 - This source fix does not itself promote HindMoviez playback or prove an S00 terminal stream. It must be rematerialized into current content-addressed provider bytes, the exact bytes inspected, and the Workflow Gate/finalizer rerun. Provider bundle retention remains a rolling 10-generation window in `providers/.generation-retention.json`; the prior generated HindMoviez bundle remains rollback history unless evicted by normal rolling retention/security policy.
+
+
+## 2026-11-18 — HindMoviez S00 first materialization rejected; escaped-newline defect corrected
+
+- Targeted Regression Recovery run `44226271619` correctly failed before publication while materializing HindMoviez from `ae941153`: generated `provider.js` contained the literal characters `\\n` between the new coordinate helper functions, producing Node syntax error at the raw-artifact byte validator.
+- The S00 coordinate logic itself remains the intended fix; only the wrapper separator was malformed. Replaced the escaped token with an actual source newline and added a provider-targeted guard against this exact generated-JS separator defect.
+- No broken HindMoviez bytes were published: `provider_byte_stability.py` failed closed before the candidate could be reconciled. A new materialization/reconcile run is required before claiming the S00 fix reached executable provider bytes.
