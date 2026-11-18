@@ -3,18 +3,15 @@
   "sourceRunId": "44315581793",
   "sourceTriggerSha": "7c5942d66e014e57e5c6e2474083cfe4eda15b15",
   "unresolvedProviderCount": 72,
-  "dynamicVariantProviderCount": 6,
+  "dynamicVariantProviderCount": 5,
   "dynamicVariantProviders": [
     "hindmoviez",
     "meowtv",
-    "movish",
     "nakios",
     "papadustream",
     "stigstream"
   ],
-  "lifecycleSuppressedDynamicProviders": [
-    "animevostfr"
-  ],
+  "lifecycleSuppressedDynamicProviders": [],
   "dynamicVariantCurrentObservedProviders": [
     "1jour1film0626",
     "4khdhub",
@@ -37,6 +34,7 @@
     "anisama",
     "arrowtv",
     "boredflix",
+    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -64,11 +62,13 @@
     "hianime",
     "hindmoviez",
     "ihavenotv",
+    "internet-archive",
     "kehflix",
     "kidraz",
     "kurage",
     "latestmovies",
     "mallumv",
+    "meowtv",
     "moiflix",
     "moviebite",
     "moviebox",
@@ -79,6 +79,7 @@
     "movy",
     "mugiwarastream",
     "nakios",
+    "neko-sama",
     "neobam",
     "neonflix",
     "overlook",
@@ -115,13 +116,14 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
+    "webflix",
     "wookafr",
     "yflix",
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": true,
+  "dynamicVariantFallbackUsed": false,
   "groupCount": 12,
   "executionModel": {
     "default": "family/signature batch",
@@ -205,9 +207,7 @@
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [
-        "movish"
-      ],
+      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -311,53 +311,26 @@
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "chain",
-        "lookup"
-      ],
-      "dominantIssues": [
-        "network_zero_result",
-        "provider_returned_streams"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 3,
-      "providers": [
-        "frenchstream",
-        "mugiwarastream",
-        "streamzo"
-      ],
-      "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-inconclusive",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "not-applicable",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
         "lookup",
         "none"
       ],
       "dominantIssues": [
+        "network_zero_result",
+        "provider_returned_streams",
         "waf_challenge"
       ],
       "harnessTransportClasses": [
         "residential-exit-inconclusive"
       ],
-      "transportSignature": "residential-exit-inconclusive",
-      "providerCount": 2,
+      "transportSignature": "not-applicable",
+      "providerCount": 4,
       "providers": [
         "french-anime",
-        "moiflix"
+        "frenchstream",
+        "mugiwarastream",
+        "streamzo"
       ],
-      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
+      "action": "residential full-provider replay disproved transport ownership; learn a provider-side request/route strategy before mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -394,12 +367,12 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|api_stream_resolver|harness:native-policy-reachable",
-      "repairScope": "harness-compatibility",
+      "groupId": "learning|api_stream_resolver|runtime:api_stream_resolver",
+      "repairScope": "learning",
       "runtimeFamilies": [
         "api_stream_resolver"
       ],
-      "runtimeFamilySignature": "not-applicable",
+      "runtimeFamilySignature": "api_stream_resolver",
       "capabilityStrategy": "api_stream_resolver",
       "evidenceDepths": [
         "none"
@@ -410,12 +383,12 @@
       "harnessTransportClasses": [
         "native-policy-reachable"
       ],
-      "transportSignature": "native-policy-reachable",
+      "transportSignature": "not-applicable",
       "providerCount": 1,
       "providers": [
         "movy"
       ],
-      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
+      "action": "residential full-provider replay disproved transport ownership; learn a provider-side request/route strategy before mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -474,6 +447,36 @@
         "purstream"
       ],
       "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "route-to-terminal|mixed_embed_resolver|runtime:mixed_embed_resolver",
+      "repairScope": "route-to-terminal",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "mixed_embed_resolver",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-inconclusive"
+      ],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "moiflix"
+      ],
+      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
