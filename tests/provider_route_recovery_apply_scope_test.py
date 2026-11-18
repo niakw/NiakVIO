@@ -28,7 +28,7 @@ bad_count["providerCount"] = len(ids) + 1
 try:
     apply_report.validate_report_scope(bad_count)
 except SystemExit as exc:
-    assert "expected_current_active" in str(exc), exc
+    assert "expected_projection_active" in str(exc), exc
 else:
     raise AssertionError("stale provider count must fail")
 
