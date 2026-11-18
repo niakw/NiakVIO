@@ -250,16 +250,16 @@ assert "HI" in source_language_evidence["displayBadges"], source_language_eviden
 assert "lang-hi" in source_language_evidence["badgeIds"], source_language_evidence
 assert "vo" not in source_language_evidence["badgeIds"], source_language_evidence
 
-# A provider with one manifest content language may use it as a factual fallback
-# only when the stream itself exposes no language. Kehflix declares exactly FR.
+# Provider catalogue language is capability/discovery metadata, not terminal
+# audio evidence. A sparse Kehflix row must therefore remain language-unknown.
 manifest_fallback = run(
     "module.exports={getStreams:async()=>[{name:'Kehflix',url:'https://x.example/a.m3u8',quality:'720p'}]};\n",
     "kehflix",
     "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))",
 )
-assert manifest_fallback["language"].lower() == "fr", manifest_fallback
-assert "French" in manifest_fallback["description"], manifest_fallback
-assert "lang-fr" in manifest_fallback["badgeIds"], manifest_fallback
+assert manifest_fallback["language"] is None, manifest_fallback
+assert "French" not in manifest_fallback["description"], manifest_fallback
+assert "lang-fr" not in manifest_fallback["badgeIds"], manifest_fallback
 
 # ISO-639 legacy alias FRE remains normalized to French.
 fre_alias = run(
