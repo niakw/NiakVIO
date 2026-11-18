@@ -24,7 +24,10 @@ on:
       - 'tests/global_telemetry_contract_test.py'
       - 'tests/global_core_runtime_ownership_test.py'
       - 'tests/core_media_policy_test.py'
+      - 'engine_v2/src/contracts.mjs'
+      - 'engine_v2/tests/contracts.test.mjs'
       - 'engine_v2/src/stream-presentation.mjs'
+      - 'engine_v2/tests/stream-presentation.test.mjs'
       - 'scripts/nuvio_client_lab.cjs'
       - 'tests/core_runtime_nonregression_contract_test.py'
       - 'tests/special_season_zero_identity_test.py'
@@ -72,6 +75,10 @@ jobs:
         run: python3 tests/global_stream_metadata_preservation_contract_test.py
       - name: Validate Core stream presentation pipeline
         run: python3 tests/global_stream_presentation_pipeline_test.py
+      - name: Validate canonical multi-audio stream transport and presentation
+        run: |
+          node engine_v2/tests/contracts.test.mjs
+          node engine_v2/tests/stream-presentation.test.mjs
       - name: Validate cross-client stream identity and external player identity
         run: |
           python3 tests/global_stream_identity_test.py
