@@ -11638,7 +11638,8 @@
         "anime"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": []
+        "disabledPlatforms": [],
+        "enabled": false
       },
       "learned_routes": [
         "/seed?mediaId={tmdbId}",
@@ -11682,6 +11683,33 @@
           "year",
           "imdbId"
         ]
+      },
+      "route_data_state": "off",
+      "activation_eligible": false,
+      "wrong_content_disable_proof": {
+        "provider": "movy",
+        "scope": "global",
+        "proofAuthority": "current-census-exact-byte-wrong-content-v1",
+        "sourceKind": "current-bytes-census",
+        "sourceRunId": "44360457366",
+        "sourceSha": "963bfa194191913dceeb46d591c73b4bc8b41469",
+        "providerArtifactSha256": "66c4187eda282cd23f6719fde03e1e05ca1239119dc1ee40a9ebd983e4d6093b",
+        "declaredLanes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "contradictoryLanes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "identityContradictionCount": 3,
+        "wrongContent": true,
+        "testedThisRun": true,
+        "disableReason": "auto_off_current_wrong_content",
+        "repairRequired": true,
+        "directProviderMutationAuthority": false
       }
     },
     "arrowtv": {
