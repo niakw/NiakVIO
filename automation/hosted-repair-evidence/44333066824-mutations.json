@@ -1,0 +1,72 @@
+{
+  "brainLlmSha": "abac5fda47dea6a4565d28634a9e6ce1f2bebbb5",
+  "minConfidence": 0.8,
+  "privateContentRetained": false,
+  "proofAuthority": false,
+  "providerCount": 1,
+  "providerMutationContentRetained": true,
+  "publicationAuthority": false,
+  "rows": [
+    {
+      "candidateOrdinal": 1,
+      "confidence": 0.96,
+      "failureClass": "chain-terminal-gap",
+      "mechanismFamily": "streamzo",
+      "mutationContextFingerprint": "4ad81c94f0082dc845ae5c4c9e5b7dc4d4b145a1dcf755a28b89e43ee14e39b0",
+      "mutationFingerprint": "6e37b753613e127437ac8f46ecdd989a9500e8356ec57530ab4b50c3875c61d1",
+      "mutations": [
+        {
+          "family": "streamzo",
+          "find": "return r||",
+          "operation": "upsert",
+          "replace": "if(r){var s=r.headers.get('content-type');if(s&&s.startsWith('video/')){return r;}}return ",
+          "scope": "provider_bloc"
+        }
+      ],
+      "providerId": "streamzo",
+      "repairFamily": {
+        "archetype": "chain-terminal-gap:dom-selector-container",
+        "failure": "chain-terminal-gap",
+        "key": "83cd919990911ba1ebe590f4758d105d45441b947b4bb9f41e6ce8f4c2c9a18e",
+        "mediaTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ],
+        "signals": [
+          "class-prefix-family",
+          "nested-anchor-html",
+          "provider-http-2xx",
+          "response-html",
+          "response-json"
+        ],
+        "sourceTopologies": [
+          "html-download",
+          "html-player",
+          "json-api"
+        ],
+        "stages": [
+          "provider-returned-streams",
+          "provider-returned-streams\u00d73"
+        ],
+        "status": "regression-provider-js",
+        "version": 2
+      },
+      "strategy": "terminal-media-extractor-with-playback-validation",
+      "targetLayer": "provider",
+      "tests": [
+        "replay_proven_chain_to_terminal_media",
+        "validate_media_signature_duration_and_identity"
+      ]
+    }
+  ],
+  "sandboxMutationAuthority": true,
+  "schemaVersion": 1,
+  "sourceNiakvioSha": "ff09a0d8f8052b798142b7d90fe99484c04623b0"
+}

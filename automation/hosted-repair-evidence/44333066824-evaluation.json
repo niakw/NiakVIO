@@ -1,0 +1,5656 @@
+{
+  "currentSha": "ff09a0d8f8052b798142b7d90fe99484c04623b0",
+  "rows": [
+    {
+      "provider": "streamzo",
+      "accepted": false,
+      "executionObserved": true,
+      "materializedMutationObserved": true,
+      "baselineBundleSha256": "fc51a8fce01ded1ef879707a847d8362f03d1e95df070aff55388b9ecd687558",
+      "candidateBundleSha256": "ba0dfc57b0078f2aa24e93727f567fc799c39906364ab81d249847cf7bcbc1a2",
+      "reason": "decoded_repair_fixture_regression:95479",
+      "mutationFingerprint": "6e37b753613e127437ac8f46ecdd989a9500e8356ec57530ab4b50c3875c61d1",
+      "mutationSummary": [
+        {
+          "scope": "provider_bloc",
+          "operation": "upsert",
+          "family": "streamzo"
+        }
+      ],
+      "baseline": {
+        "status": "healthy",
+        "score": 100,
+        "streamsPlayable": 2,
+        "streamsReturned": 2,
+        "identityContradictions": 0,
+        "providerRequests": 24,
+        "providerHttpStatuses": [
+          200,
+          206,
+          403
+        ],
+        "variantCoverage": {
+          "qualityHeights": [
+            480,
+            1080
+          ],
+          "maxPlayableHeight": 1080,
+          "audioLanguages": [
+            "fr",
+            "ja"
+          ],
+          "reachableHosts": [
+            "prx-1356-ant-w.vmpx.online",
+            "u14.vidzy.org"
+          ],
+          "announcedPlayerCandidates": 64,
+          "announcedVariantCandidates": 88,
+          "exploredPlayerRequests": 16,
+          "fanoutStates": [
+            "explored-not-resolved",
+            "returned-subset"
+          ],
+          "announcedQualityHeights": [
+            360,
+            480,
+            720,
+            1080,
+            2160
+          ]
+        },
+        "invocationDiagnostics": [
+          {
+            "fixture": "Interstellar",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 3,
+            "errorCode": ""
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 3,
+            "errorCode": ""
+          },
+          {
+            "fixture": "Hell Mode S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 2,
+            "errorCode": ""
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "streams",
+            "streamCount": 2,
+            "providerObservations": 16,
+            "errorCode": ""
+          }
+        ],
+        "fixtureCoverage": [
+          {
+            "fixture": "Interstellar",
+            "category": "movie",
+            "status": "no_streams",
+            "streamsPlayable": 0,
+            "streamsReturned": 0,
+            "tmdbId": "157336",
+            "season": null,
+            "episode": null,
+            "expectedDurationSeconds": 10140,
+            "decodedMediaControls": 0,
+            "decodedMediaProbes": []
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "category": "tv",
+            "status": "no_streams",
+            "streamsPlayable": 0,
+            "streamsReturned": 0,
+            "tmdbId": "1396",
+            "season": 1,
+            "episode": 1,
+            "expectedDurationSeconds": 3480,
+            "decodedMediaControls": 0,
+            "decodedMediaProbes": []
+          },
+          {
+            "fixture": "Hell Mode S01E01",
+            "category": "anime",
+            "status": "no_streams",
+            "streamsPlayable": 0,
+            "streamsReturned": 0,
+            "tmdbId": "280049",
+            "season": 1,
+            "episode": 1,
+            "expectedDurationSeconds": 1440,
+            "decodedMediaControls": 0,
+            "decodedMediaProbes": []
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "category": "anime",
+            "status": "healthy",
+            "streamsPlayable": 2,
+            "streamsReturned": 2,
+            "tmdbId": "95479",
+            "season": 1,
+            "episode": 1,
+            "expectedDurationSeconds": 1440,
+            "decodedMediaControls": 0,
+            "decodedMediaProbes": [
+              {
+                "playback_verified": true,
+                "payload_verified": true,
+                "direct_signature_verified": false,
+                "variant_reachable": true,
+                "segment_reachable": true,
+                "audio_manifest_reachable": true,
+                "audio_segment_reachable": null,
+                "duration_identity_authoritative": true,
+                "duration_identity_mismatch": false,
+                "short_vod_preview": false,
+                "kind": "hls",
+                "http_status": 200,
+                "bytes_sampled": 1239,
+                "media_duration_seconds": 1435.053,
+                "expected_duration_seconds": 1440,
+                "content_identity_status": "match",
+                "content_identity_reason": "fixture_duration_match",
+                "category": "playable",
+                "host": "prx-1356-ant-w.vmpx.online",
+                "mediaDecode": {
+                  "attempted": false,
+                  "outcome": "unavailable",
+                  "framesDecoded": 0
+                },
+                "identityBasis": "duration_only",
+                "passedMediaControl": false
+              },
+              {
+                "playback_verified": true,
+                "payload_verified": true,
+                "direct_signature_verified": false,
+                "variant_reachable": true,
+                "segment_reachable": true,
+                "audio_manifest_reachable": true,
+                "audio_segment_reachable": null,
+                "duration_identity_authoritative": false,
+                "duration_identity_mismatch": false,
+                "short_vod_preview": false,
+                "kind": "hls",
+                "http_status": 206,
+                "bytes_sampled": 176,
+                "media_duration_seconds": null,
+                "expected_duration_seconds": 1440,
+                "content_identity_status": "unknown",
+                "content_identity_reason": "insufficient_identity_metadata",
+                "category": "playable",
+                "host": "u14.vidzy.org",
+                "mediaDecode": {
+                  "attempted": false,
+                  "outcome": "unavailable",
+                  "framesDecoded": 0
+                },
+                "identityBasis": "unknown",
+                "passedMediaControl": false
+              }
+            ]
+          }
+        ],
+        "networkTrace": [
+          {
+            "fixture": "Interstellar",
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "apiJson",
+              "tmdb",
+              "canonicalResolution",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "se9ed5ca1ac6391c6",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r1",
+            "response_ref": "r1",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "adult",
+                  "type": "boolean"
+                },
+                {
+                  "path": "backdrop_path",
+                  "type": "string"
+                },
+                {
+                  "path": "belongs_to_collection",
+                  "type": "null"
+                },
+                {
+                  "path": "budget",
+                  "type": "number"
+                },
+                {
+                  "path": "genres",
+                  "type": "array"
+                },
+                {
+                  "path": "genres[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "genres[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "homepage",
+                  "type": "string"
+                },
+                {
+                  "path": "id",
+                  "type": "number"
+                },
+                {
+                  "path": "imdb_id",
+                  "type": "string"
+                },
+                {
+                  "path": "origin_country",
+                  "type": "array"
+                },
+                {
+                  "path": "original_language",
+                  "type": "string"
+                },
+                {
+                  "path": "original_title",
+                  "type": "string"
+                },
+                {
+                  "path": "overview",
+                  "type": "string"
+                },
+                {
+                  "path": "popularity",
+                  "type": "number"
+                },
+                {
+                  "path": "poster_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies",
+                  "type": "array"
+                },
+                {
+                  "path": "production_companies[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "production_companies[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "production_countries",
+                  "type": "array"
+                },
+                {
+                  "path": "production_countries[].iso_3166_1",
+                  "type": "string"
+                },
+                {
+                  "path": "production_countries[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "release_date",
+                  "type": "string"
+                },
+                {
+                  "path": "revenue",
+                  "type": "number"
+                },
+                {
+                  "path": "runtime",
+                  "type": "number"
+                },
+                {
+                  "path": "softcore",
+                  "type": "boolean"
+                },
+                {
+                  "path": "spoken_languages",
+                  "type": "array"
+                },
+                {
+                  "path": "spoken_languages[].english_name",
+                  "type": "string"
+                },
+                {
+                  "path": "spoken_languages[].iso_639_1",
+                  "type": "string"
+                },
+                {
+                  "path": "spoken_languages[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "status",
+                  "type": "string"
+                },
+                {
+                  "path": "tagline",
+                  "type": "string"
+                },
+                {
+                  "path": "title",
+                  "type": "string"
+                },
+                {
+                  "path": "video",
+                  "type": "boolean"
+                },
+                {
+                  "path": "vote_average",
+                  "type": "number"
+                },
+                {
+                  "path": "vote_count",
+                  "type": "number"
+                },
+                {
+                  "path": "alternative_titles",
+                  "type": "object"
+                },
+                {
+                  "path": "alternative_titles.titles",
+                  "type": "array"
+                },
+                {
+                  "path": "alternative_titles.titles[].iso_3166_1",
+                  "type": "string"
+                },
+                {
+                  "path": "alternative_titles.titles[].title",
+                  "type": "string"
+                },
+                {
+                  "path": "alternative_titles.titles[].type",
+                  "type": "string"
+                },
+                {
+                  "path": "external_ids",
+                  "type": "object"
+                },
+                {
+                  "path": "external_ids.imdb_id",
+                  "type": "string"
+                },
+                {
+                  "path": "external_ids.wikidata_id",
+                  "type": "string"
+                },
+                {
+                  "path": "external_ids.facebook_id",
+                  "type": "string"
+                },
+                {
+                  "path": "external_ids.instagram_id",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [
+              1080
+            ],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "response",
+              "jsonReq",
+              "suggest",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "se9ed5ca1ac6391c6",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "referer_ref": "r3",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "query",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions",
+                  "type": "array"
+                },
+                {
+                  "path": "suggestions[].backdrop",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].categorie",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].href",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "suggestions[].kind",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].poster",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].quality",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].resolution",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].slug",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].synopsis",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].titre",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].tmdb_rating",
+                  "type": "number"
+                },
+                {
+                  "path": "suggestions[].tmdb_runtime",
+                  "type": "number"
+                },
+                {
+                  "path": "suggestions[].year",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 7,
+            "announcedQualityHeights": [
+              720,
+              1080,
+              2160
+            ],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "response",
+              "text",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "se9ed5ca1ac6391c6",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r4",
+            "response_ref": "r4",
+            "referer_ref": "r3",
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                },
+                {
+                  "tag": "a",
+                  "attributes": [
+                    "class",
+                    "data-film-id",
+                    "data-film-slug",
+                    "href",
+                    "rel",
+                    "target"
+                  ]
+                },
+                {
+                  "tag": "button",
+                  "attributes": [
+                    "aria-controls",
+                    "aria-expanded",
+                    "aria-label",
+                    "aria-pressed",
+                    "class",
+                    "data-embed",
+                    "data-film-id",
+                    "data-iframe-sandbox",
+                    "data-react",
+                    "data-slug",
+                    "id",
+                    "style",
+                    "title",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [],
+              "player_markup": {
+                "rows": [
+                  {
+                    "tag": "button",
+                    "value_kinds": {
+                      "data-embed": "absolute_url"
+                    },
+                    "count": 1,
+                    "distinct_values": 1,
+                    "value_shapes": {
+                      "data-embed": {
+                        "kind": "other",
+                        "origin": "cross_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "data-embed": [
+                        "r5"
+                      ]
+                    },
+                    "address_refs_truncated": false
+                  },
+                  {
+                    "tag": "a",
+                    "value_kinds": {
+                      "href": "relative_url"
+                    },
+                    "count": 50,
+                    "distinct_values": 41,
+                    "value_shapes": {
+                      "href": {
+                        "kind": "other",
+                        "origin": "same_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "href": [
+                        "r3",
+                        "r6",
+                        "r7",
+                        "r8",
+                        "r9",
+                        "r10",
+                        "r11",
+                        "r12",
+                        "r13",
+                        "r14",
+                        "r15",
+                        "r16",
+                        "r17",
+                        "r18",
+                        "r19",
+                        "r20"
+                      ]
+                    },
+                    "address_refs_truncated": true
+                  },
+                  {
+                    "tag": "input",
+                    "value_kinds": {
+                      "value": "empty"
+                    },
+                    "count": 3,
+                    "distinct_values": 1,
+                    "value_shapes": {
+                      "value": {
+                        "kind": "unknown",
+                        "origin": "unknown"
+                      }
+                    },
+                    "address_refs": {},
+                    "address_refs_truncated": false
+                  },
+                  {
+                    "tag": "a",
+                    "value_kinds": {
+                      "href": "absolute_url"
+                    },
+                    "count": 1,
+                    "distinct_values": 1,
+                    "value_shapes": {
+                      "href": {
+                        "kind": "embed_route",
+                        "origin": "cross_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "href": [
+                        "r21"
+                      ]
+                    },
+                    "address_refs_truncated": false
+                  }
+                ],
+                "sampled_chars": 34051,
+                "truncated": true
+              },
+              "inline_fields": [
+                {
+                  "name": "name",
+                  "type": "string",
+                  "key_syntax": "quoted"
+                },
+                {
+                  "name": "description",
+                  "type": "string",
+                  "key_syntax": "quoted"
+                },
+                {
+                  "name": "image",
+                  "type": "string",
+                  "key_syntax": "quoted"
+                },
+                {
+                  "name": "genre",
+                  "type": "string",
+                  "key_syntax": "quoted"
+                },
+                {
+                  "name": "datePublished",
+                  "type": "string",
+                  "key_syntax": "quoted"
+                },
+                {
+                  "name": "director",
+                  "type": "object",
+                  "key_syntax": "quoted"
+                },
+                {
+                  "name": "duration",
+                  "type": "string",
+                  "key_syntax": "quoted"
+                },
+                {
+                  "name": "url",
+                  "type": "string",
+                  "key_syntax": "quoted"
+                },
+                {
+                  "name": "videoQuality",
+                  "type": "string",
+                  "key_syntax": "quoted"
+                },
+                {
+                  "name": "aggregateRating",
+                  "type": "object",
+                  "key_syntax": "quoted"
+                },
+                {
+                  "name": "ratingValue",
+                  "type": "string",
+                  "key_syntax": "quoted"
+                },
+                {
+                  "name": "bestRating",
+                  "type": "string",
+                  "key_syntax": "quoted"
+                }
+              ],
+              "script_resources": [
+                {
+                  "kind": "absolute_url",
+                  "role": "other_script",
+                  "location": "src_attribute"
+                },
+                {
+                  "kind": "root_relative_url",
+                  "role": "other_script",
+                  "location": "src_attribute"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "html",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "content_lookup",
+            "host": "vidfast.pro",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 6,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "response",
+              "text",
+              "resolveEmbed",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "se9ed5ca1ac6391c6",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r5",
+            "response_ref": "r22",
+            "referer_ref": "r4",
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "async",
+                    "data-website-id",
+                    "defer",
+                    "nomodule",
+                    "src",
+                    "type"
+                  ]
+                },
+                {
+                  "tag": "button",
+                  "attributes": [
+                    "class",
+                    "style"
+                  ]
+                },
+                {
+                  "tag": "video",
+                  "attributes": [
+                    "class",
+                    "playsinline",
+                    "preload",
+                    "webkit-playsinline",
+                    "x-webkit-airplay"
+                  ]
+                },
+                {
+                  "tag": "a",
+                  "attributes": [
+                    "v"
+                  ]
+                }
+              ],
+              "variables": [
+                "t",
+                "e",
+                "r",
+                "n",
+                "o",
+                "i",
+                "u",
+                "f",
+                "tt",
+                "it",
+                "a",
+                "v",
+                "l",
+                "y",
+                "h",
+                "s"
+              ],
+              "player_markup": {
+                "rows": [
+                  {
+                    "tag": "input",
+                    "value_kinds": {
+                      "data-index": "other",
+                      "value": "other"
+                    },
+                    "count": 2,
+                    "distinct_values": 2,
+                    "value_shapes": {
+                      "data-index": {
+                        "kind": "unknown",
+                        "origin": "unknown"
+                      },
+                      "value": {
+                        "kind": "unknown",
+                        "origin": "unknown"
+                      }
+                    },
+                    "address_refs": {},
+                    "address_refs_truncated": false
+                  }
+                ],
+                "sampled_chars": 131072,
+                "truncated": true
+              },
+              "inline_fields": [
+                {
+                  "name": "Int8Array",
+                  "type": "number",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "Uint8Array",
+                  "type": "number",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "Uint8ClampedArray",
+                  "type": "number",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "Int16Array",
+                  "type": "number",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "Uint16Array",
+                  "type": "number",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "Int32Array",
+                  "type": "number",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "Uint32Array",
+                  "type": "number",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "Float32Array",
+                  "type": "number",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "Float64Array",
+                  "type": "number",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "BigInt64Array",
+                  "type": "number",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "BigUint64Array",
+                  "type": "number",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "CSSRuleList",
+                  "type": "number",
+                  "key_syntax": "bare"
+                }
+              ],
+              "script_resources": [
+                {
+                  "kind": "root_relative_url",
+                  "role": "chunk",
+                  "location": "src_attribute"
+                },
+                {
+                  "kind": "root_relative_url",
+                  "role": "other_script",
+                  "location": "src_attribute"
+                },
+                {
+                  "kind": "absolute_url",
+                  "role": "other_script",
+                  "location": "src_attribute"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "html",
+              "url_relation": "cross_origin",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "apiJson",
+              "tmdb",
+              "canonicalResolution",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s0abd57e28b53a374",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r1",
+            "response_ref": "r1",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "adult",
+                  "type": "boolean"
+                },
+                {
+                  "path": "backdrop_path",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by",
+                  "type": "array"
+                },
+                {
+                  "path": "created_by[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "created_by[].credit_id",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by[].original_name",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by[].gender",
+                  "type": "number"
+                },
+                {
+                  "path": "created_by[].profile_path",
+                  "type": "string"
+                },
+                {
+                  "path": "episode_run_time",
+                  "type": "array"
+                },
+                {
+                  "path": "first_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "genres",
+                  "type": "array"
+                },
+                {
+                  "path": "genres[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "genres[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "homepage",
+                  "type": "string"
+                },
+                {
+                  "path": "id",
+                  "type": "number"
+                },
+                {
+                  "path": "in_production",
+                  "type": "boolean"
+                },
+                {
+                  "path": "languages",
+                  "type": "array"
+                },
+                {
+                  "path": "last_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air",
+                  "type": "object"
+                },
+                {
+                  "path": "last_episode_to_air.id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.name",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.overview",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.vote_average",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.vote_count",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.episode_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.episode_type",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.production_code",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.runtime",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.season_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.show_id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.still_path",
+                  "type": "string"
+                },
+                {
+                  "path": "name",
+                  "type": "string"
+                },
+                {
+                  "path": "next_episode_to_air",
+                  "type": "null"
+                },
+                {
+                  "path": "networks",
+                  "type": "array"
+                },
+                {
+                  "path": "networks[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "networks[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "number_of_episodes",
+                  "type": "number"
+                },
+                {
+                  "path": "number_of_seasons",
+                  "type": "number"
+                },
+                {
+                  "path": "origin_country",
+                  "type": "array"
+                },
+                {
+                  "path": "original_language",
+                  "type": "string"
+                },
+                {
+                  "path": "original_name",
+                  "type": "string"
+                },
+                {
+                  "path": "overview",
+                  "type": "string"
+                },
+                {
+                  "path": "popularity",
+                  "type": "number"
+                },
+                {
+                  "path": "poster_path",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [
+              720,
+              1080
+            ],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "response",
+              "jsonReq",
+              "suggest",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s0abd57e28b53a374",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "referer_ref": "r3",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "query",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions",
+                  "type": "array"
+                },
+                {
+                  "path": "suggestions[].backdrop",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].categorie",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].content_type",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].episode_count",
+                  "type": "number"
+                },
+                {
+                  "path": "suggestions[].episode_total",
+                  "type": "number"
+                },
+                {
+                  "path": "suggestions[].episodes_label",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].href",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "suggestions[].kind",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].poster",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].quality",
+                  "type": "null"
+                },
+                {
+                  "path": "suggestions[].resolution",
+                  "type": "null"
+                },
+                {
+                  "path": "suggestions[].slug",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].synopsis",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].titre",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].tmdb_rating",
+                  "type": "number"
+                },
+                {
+                  "path": "suggestions[].tmdb_runtime",
+                  "type": "null"
+                },
+                {
+                  "path": "suggestions[].year",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 64,
+            "announcedQualityHeights": [
+              1080
+            ],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "response",
+              "text",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s0abd57e28b53a374",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r4",
+            "response_ref": "r4",
+            "referer_ref": "r3",
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                },
+                {
+                  "tag": "a",
+                  "attributes": [
+                    "class",
+                    "data-series-id",
+                    "data-series-slug",
+                    "href",
+                    "rel",
+                    "target"
+                  ]
+                },
+                {
+                  "tag": "button",
+                  "attributes": [
+                    "aria-controls",
+                    "aria-expanded",
+                    "aria-label",
+                    "aria-pressed",
+                    "class",
+                    "data-ep",
+                    "data-ep-id",
+                    "data-iframe-sandbox",
+                    "data-lang",
+                    "data-player-kind",
+                    "data-react",
+                    "data-season",
+                    "data-src",
+                    "id",
+                    "title",
+                    "type"
+                  ]
+                },
+                {
+                  "tag": "select",
+                  "attributes": [
+                    "aria-label",
+                    "id"
+                  ]
+                },
+                {
+                  "tag": "option",
+                  "attributes": [
+                    "value"
+                  ]
+                }
+              ],
+              "variables": [],
+              "player_markup": {
+                "rows": [
+                  {
+                    "tag": "button",
+                    "value_kinds": {
+                      "data-src": "absolute_url"
+                    },
+                    "count": 63,
+                    "distinct_values": 63,
+                    "value_shapes": {
+                      "data-src": {
+                        "kind": "embed_route",
+                        "origin": "cross_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "data-src": [
+                        "r5",
+                        "r6",
+                        "r7",
+                        "r8",
+                        "r9",
+                        "r10",
+                        "r11",
+                        "r12",
+                        "r13",
+                        "r14",
+                        "r15",
+                        "r16",
+                        "r17",
+                        "r18",
+                        "r19",
+                        "r20"
+                      ]
+                    },
+                    "address_refs_truncated": true
+                  },
+                  {
+                    "tag": "button",
+                    "value_kinds": {
+                      "data-src": "relative_url"
+                    },
+                    "count": 8,
+                    "distinct_values": 8,
+                    "value_shapes": {
+                      "data-src": {
+                        "kind": "embed_route",
+                        "origin": "same_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "data-src": [
+                        "r21",
+                        "r22",
+                        "r23",
+                        "r24",
+                        "r25",
+                        "r26",
+                        "r27",
+                        "r28"
+                      ]
+                    },
+                    "address_refs_truncated": false
+                  },
+                  {
+                    "tag": "option",
+                    "value_kinds": {
+                      "value": "other"
+                    },
+                    "count": 5,
+                    "distinct_values": 5,
+                    "value_shapes": {
+                      "value": {
+                        "kind": "unknown",
+                        "origin": "unknown"
+                      }
+                    },
+                    "address_refs": {},
+                    "address_refs_truncated": false
+                  },
+                  {
+                    "tag": "a",
+                    "value_kinds": {
+                      "href": "relative_url"
+                    },
+                    "count": 43,
+                    "distinct_values": 35,
+                    "value_shapes": {
+                      "href": {
+                        "kind": "other",
+                        "origin": "same_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "href": [
+                        "r3",
+                        "r29",
+                        "r30",
+                        "r31",
+                        "r32",
+                        "r33",
+                        "r34",
+                        "r35",
+                        "r36",
+                        "r37",
+                        "r38",
+                        "r39",
+                        "r40",
+                        "r41",
+                        "r42",
+                        "r43"
+                      ]
+                    },
+                    "address_refs_truncated": true
+                  },
+                  {
+                    "tag": "input",
+                    "value_kinds": {
+                      "value": "empty"
+                    },
+                    "count": 3,
+                    "distinct_values": 1,
+                    "value_shapes": {
+                      "value": {
+                        "kind": "unknown",
+                        "origin": "unknown"
+                      }
+                    },
+                    "address_refs": {},
+                    "address_refs_truncated": false
+                  },
+                  {
+                    "tag": "a",
+                    "value_kinds": {
+                      "href": "absolute_url"
+                    },
+                    "count": 1,
+                    "distinct_values": 1,
+                    "value_shapes": {
+                      "href": {
+                        "kind": "embed_route",
+                        "origin": "cross_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "href": [
+                        "r44"
+                      ]
+                    },
+                    "address_refs_truncated": false
+                  }
+                ],
+                "sampled_chars": 95161,
+                "truncated": true
+              },
+              "inline_fields": [],
+              "script_resources": [
+                {
+                  "kind": "absolute_url",
+                  "role": "other_script",
+                  "location": "src_attribute"
+                },
+                {
+                  "kind": "root_relative_url",
+                  "role": "other_script",
+                  "location": "src_attribute"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "html",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "player",
+            "host": "fsvid.lol",
+            "method": "GET",
+            "status": 403,
+            "ok": false,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "response",
+              "text",
+              "resolveEmbed",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s0abd57e28b53a374",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r5",
+            "response_ref": "r5",
+            "referer_ref": "r4",
+            "responseStructure": null,
+            "httpObservation": {
+              "content_kind": "html",
+              "url_relation": "same_url",
+              "body_state": "complete",
+              "page_signal": "access_denied_text",
+              "sampled_bytes": 915
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Hell Mode S01E01",
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "apiJson",
+              "tmdb",
+              "canonicalResolution",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s655ffadcb62e6dc4",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r1",
+            "response_ref": "r1",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "adult",
+                  "type": "boolean"
+                },
+                {
+                  "path": "backdrop_path",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by",
+                  "type": "array"
+                },
+                {
+                  "path": "episode_run_time",
+                  "type": "array"
+                },
+                {
+                  "path": "first_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "genres",
+                  "type": "array"
+                },
+                {
+                  "path": "genres[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "genres[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "homepage",
+                  "type": "string"
+                },
+                {
+                  "path": "id",
+                  "type": "number"
+                },
+                {
+                  "path": "in_production",
+                  "type": "boolean"
+                },
+                {
+                  "path": "languages",
+                  "type": "array"
+                },
+                {
+                  "path": "last_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air",
+                  "type": "object"
+                },
+                {
+                  "path": "last_episode_to_air.id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.name",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.overview",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.vote_average",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.vote_count",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.episode_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.episode_type",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.production_code",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.runtime",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.season_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.show_id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.still_path",
+                  "type": "string"
+                },
+                {
+                  "path": "name",
+                  "type": "string"
+                },
+                {
+                  "path": "next_episode_to_air",
+                  "type": "null"
+                },
+                {
+                  "path": "networks",
+                  "type": "array"
+                },
+                {
+                  "path": "networks[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "networks[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "number_of_episodes",
+                  "type": "number"
+                },
+                {
+                  "path": "number_of_seasons",
+                  "type": "number"
+                },
+                {
+                  "path": "origin_country",
+                  "type": "array"
+                },
+                {
+                  "path": "original_language",
+                  "type": "string"
+                },
+                {
+                  "path": "original_name",
+                  "type": "string"
+                },
+                {
+                  "path": "overview",
+                  "type": "string"
+                },
+                {
+                  "path": "popularity",
+                  "type": "number"
+                },
+                {
+                  "path": "poster_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies",
+                  "type": "array"
+                },
+                {
+                  "path": "production_companies[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "production_companies[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "production_countries",
+                  "type": "array"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Hell Mode S01E01",
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "response",
+              "jsonReq",
+              "suggest",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s655ffadcb62e6dc4",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "referer_ref": "r3",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "query",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions",
+                  "type": "array"
+                },
+                {
+                  "path": "suggestions[].backdrop",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].categorie",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].content_type",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].episode_count",
+                  "type": "number"
+                },
+                {
+                  "path": "suggestions[].episode_total",
+                  "type": "number"
+                },
+                {
+                  "path": "suggestions[].episodes_label",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].href",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "suggestions[].kind",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].poster",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].quality",
+                  "type": "null"
+                },
+                {
+                  "path": "suggestions[].resolution",
+                  "type": "null"
+                },
+                {
+                  "path": "suggestions[].slug",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].synopsis",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].titre",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].tmdb_rating",
+                  "type": "number"
+                },
+                {
+                  "path": "suggestions[].tmdb_runtime",
+                  "type": "null"
+                },
+                {
+                  "path": "suggestions[].year",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Hell Mode S01E01",
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 18,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "response",
+              "text",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s655ffadcb62e6dc4",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r4",
+            "response_ref": "r4",
+            "referer_ref": "r3",
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                },
+                {
+                  "tag": "a",
+                  "attributes": [
+                    "class",
+                    "data-series-id",
+                    "data-series-slug",
+                    "href",
+                    "rel",
+                    "target"
+                  ]
+                },
+                {
+                  "tag": "button",
+                  "attributes": [
+                    "aria-controls",
+                    "aria-expanded",
+                    "aria-label",
+                    "aria-pressed",
+                    "class",
+                    "data-ep",
+                    "data-ep-id",
+                    "data-iframe-sandbox",
+                    "data-lang",
+                    "data-player-kind",
+                    "data-react",
+                    "data-season",
+                    "data-src",
+                    "id",
+                    "title",
+                    "type"
+                  ]
+                },
+                {
+                  "tag": "select",
+                  "attributes": [
+                    "aria-label",
+                    "id"
+                  ]
+                },
+                {
+                  "tag": "option",
+                  "attributes": [
+                    "value"
+                  ]
+                }
+              ],
+              "variables": [],
+              "player_markup": {
+                "rows": [
+                  {
+                    "tag": "button",
+                    "value_kinds": {
+                      "data-src": "absolute_url"
+                    },
+                    "count": 13,
+                    "distinct_values": 13,
+                    "value_shapes": {
+                      "data-src": {
+                        "kind": "embed_route",
+                        "origin": "cross_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "data-src": [
+                        "r5",
+                        "r6",
+                        "r7",
+                        "r8",
+                        "r9",
+                        "r10",
+                        "r11",
+                        "r12",
+                        "r13",
+                        "r14",
+                        "r15",
+                        "r16",
+                        "r17"
+                      ]
+                    },
+                    "address_refs_truncated": false
+                  },
+                  {
+                    "tag": "option",
+                    "value_kinds": {
+                      "value": "other"
+                    },
+                    "count": 2,
+                    "distinct_values": 2,
+                    "value_shapes": {
+                      "value": {
+                        "kind": "unknown",
+                        "origin": "unknown"
+                      }
+                    },
+                    "address_refs": {},
+                    "address_refs_truncated": false
+                  },
+                  {
+                    "tag": "a",
+                    "value_kinds": {
+                      "href": "relative_url"
+                    },
+                    "count": 43,
+                    "distinct_values": 35,
+                    "value_shapes": {
+                      "href": {
+                        "kind": "other",
+                        "origin": "same_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "href": [
+                        "r3",
+                        "r18",
+                        "r19",
+                        "r20",
+                        "r21",
+                        "r22",
+                        "r23",
+                        "r24",
+                        "r25",
+                        "r26",
+                        "r27",
+                        "r28",
+                        "r29",
+                        "r30",
+                        "r31",
+                        "r32"
+                      ]
+                    },
+                    "address_refs_truncated": true
+                  },
+                  {
+                    "tag": "input",
+                    "value_kinds": {
+                      "value": "empty"
+                    },
+                    "count": 3,
+                    "distinct_values": 1,
+                    "value_shapes": {
+                      "value": {
+                        "kind": "unknown",
+                        "origin": "unknown"
+                      }
+                    },
+                    "address_refs": {},
+                    "address_refs_truncated": false
+                  },
+                  {
+                    "tag": "a",
+                    "value_kinds": {
+                      "href": "absolute_url"
+                    },
+                    "count": 1,
+                    "distinct_values": 1,
+                    "value_shapes": {
+                      "href": {
+                        "kind": "embed_route",
+                        "origin": "cross_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "href": [
+                        "r33"
+                      ]
+                    },
+                    "address_refs_truncated": false
+                  }
+                ],
+                "sampled_chars": 50208,
+                "truncated": true
+              },
+              "inline_fields": [],
+              "script_resources": [
+                {
+                  "kind": "absolute_url",
+                  "role": "other_script",
+                  "location": "src_attribute"
+                },
+                {
+                  "kind": "root_relative_url",
+                  "role": "other_script",
+                  "location": "src_attribute"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "html",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "apiJson",
+              "tmdb",
+              "canonicalResolution",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "sa599c31d48797942",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r1",
+            "response_ref": "r1",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "adult",
+                  "type": "boolean"
+                },
+                {
+                  "path": "backdrop_path",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by",
+                  "type": "array"
+                },
+                {
+                  "path": "episode_run_time",
+                  "type": "array"
+                },
+                {
+                  "path": "first_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "genres",
+                  "type": "array"
+                },
+                {
+                  "path": "genres[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "genres[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "homepage",
+                  "type": "string"
+                },
+                {
+                  "path": "id",
+                  "type": "number"
+                },
+                {
+                  "path": "in_production",
+                  "type": "boolean"
+                },
+                {
+                  "path": "languages",
+                  "type": "array"
+                },
+                {
+                  "path": "last_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air",
+                  "type": "object"
+                },
+                {
+                  "path": "last_episode_to_air.id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.name",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.overview",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.vote_average",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.vote_count",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.episode_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.episode_type",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.production_code",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.runtime",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.season_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.show_id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.still_path",
+                  "type": "string"
+                },
+                {
+                  "path": "name",
+                  "type": "string"
+                },
+                {
+                  "path": "next_episode_to_air",
+                  "type": "null"
+                },
+                {
+                  "path": "networks",
+                  "type": "array"
+                },
+                {
+                  "path": "networks[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "networks[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "number_of_episodes",
+                  "type": "number"
+                },
+                {
+                  "path": "number_of_seasons",
+                  "type": "number"
+                },
+                {
+                  "path": "origin_country",
+                  "type": "array"
+                },
+                {
+                  "path": "original_language",
+                  "type": "string"
+                },
+                {
+                  "path": "original_name",
+                  "type": "string"
+                },
+                {
+                  "path": "overview",
+                  "type": "string"
+                },
+                {
+                  "path": "popularity",
+                  "type": "number"
+                },
+                {
+                  "path": "poster_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies",
+                  "type": "array"
+                },
+                {
+                  "path": "production_companies[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "production_companies[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "production_countries",
+                  "type": "array"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [
+              1080
+            ],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "response",
+              "jsonReq",
+              "suggest",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "sa599c31d48797942",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "referer_ref": "r3",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "query",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions",
+                  "type": "array"
+                },
+                {
+                  "path": "suggestions[].backdrop",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].categorie",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].href",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "suggestions[].kind",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].poster",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].quality",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].resolution",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].slug",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].synopsis",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].titre",
+                  "type": "string"
+                },
+                {
+                  "path": "suggestions[].tmdb_rating",
+                  "type": "number"
+                },
+                {
+                  "path": "suggestions[].tmdb_runtime",
+                  "type": "number"
+                },
+                {
+                  "path": "suggestions[].year",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 64,
+            "announcedQualityHeights": [
+              720,
+              1080
+            ],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "response",
+              "text",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "sa599c31d48797942",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r4",
+            "response_ref": "r4",
+            "referer_ref": "r3",
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "data-cf-beacon",
+                    "src"
+                  ]
+                },
+                {
+                  "tag": "a",
+                  "attributes": [
+                    "class",
+                    "href",
+                    "rel",
+                    "target"
+                  ]
+                },
+                {
+                  "tag": "button",
+                  "attributes": [
+                    "aria-controls",
+                    "aria-expanded",
+                    "aria-label",
+                    "aria-pressed",
+                    "class",
+                    "data-ep",
+                    "data-ep-id",
+                    "data-iframe-sandbox",
+                    "data-lang",
+                    "data-player-kind",
+                    "data-react",
+                    "data-season",
+                    "data-src",
+                    "id",
+                    "title",
+                    "type"
+                  ]
+                },
+                {
+                  "tag": "select",
+                  "attributes": [
+                    "aria-label",
+                    "id"
+                  ]
+                },
+                {
+                  "tag": "option",
+                  "attributes": [
+                    "value"
+                  ]
+                }
+              ],
+              "variables": [],
+              "player_markup": {
+                "rows": [
+                  {
+                    "tag": "button",
+                    "value_kinds": {
+                      "data-src": "absolute_url"
+                    },
+                    "count": 93,
+                    "distinct_values": 93,
+                    "value_shapes": {
+                      "data-src": {
+                        "kind": "embed_route",
+                        "origin": "cross_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "data-src": [
+                        "r5",
+                        "r6",
+                        "r7",
+                        "r8",
+                        "r9",
+                        "r10",
+                        "r11",
+                        "r12",
+                        "r13",
+                        "r14",
+                        "r15",
+                        "r16",
+                        "r17",
+                        "r18",
+                        "r19",
+                        "r20"
+                      ]
+                    },
+                    "address_refs_truncated": true
+                  },
+                  {
+                    "tag": "button",
+                    "value_kinds": {
+                      "data-src": "relative_url"
+                    },
+                    "count": 1,
+                    "distinct_values": 1,
+                    "value_shapes": {
+                      "data-src": {
+                        "kind": "embed_route",
+                        "origin": "same_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "data-src": [
+                        "r21"
+                      ]
+                    },
+                    "address_refs_truncated": false
+                  },
+                  {
+                    "tag": "option",
+                    "value_kinds": {
+                      "value": "other"
+                    },
+                    "count": 3,
+                    "distinct_values": 3,
+                    "value_shapes": {
+                      "value": {
+                        "kind": "unknown",
+                        "origin": "unknown"
+                      }
+                    },
+                    "address_refs": {},
+                    "address_refs_truncated": false
+                  },
+                  {
+                    "tag": "a",
+                    "value_kinds": {
+                      "href": "relative_url"
+                    },
+                    "count": 43,
+                    "distinct_values": 35,
+                    "value_shapes": {
+                      "href": {
+                        "kind": "other",
+                        "origin": "same_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "href": [
+                        "r3",
+                        "r22",
+                        "r23",
+                        "r24",
+                        "r25",
+                        "r26",
+                        "r27",
+                        "r28",
+                        "r29",
+                        "r30",
+                        "r31",
+                        "r32",
+                        "r33",
+                        "r34",
+                        "r35",
+                        "r36"
+                      ]
+                    },
+                    "address_refs_truncated": true
+                  },
+                  {
+                    "tag": "input",
+                    "value_kinds": {
+                      "value": "empty"
+                    },
+                    "count": 3,
+                    "distinct_values": 1,
+                    "value_shapes": {
+                      "value": {
+                        "kind": "unknown",
+                        "origin": "unknown"
+                      }
+                    },
+                    "address_refs": {},
+                    "address_refs_truncated": false
+                  },
+                  {
+                    "tag": "a",
+                    "value_kinds": {
+                      "href": "absolute_url"
+                    },
+                    "count": 1,
+                    "distinct_values": 1,
+                    "value_shapes": {
+                      "href": {
+                        "kind": "embed_route",
+                        "origin": "cross_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "href": [
+                        "r37"
+                      ]
+                    },
+                    "address_refs_truncated": false
+                  }
+                ],
+                "sampled_chars": 131072,
+                "truncated": true
+              },
+              "inline_fields": [],
+              "script_resources": [
+                {
+                  "kind": "absolute_url",
+                  "role": "other_script",
+                  "location": "src_attribute"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "html",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "player",
+            "host": "ansembed.net",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 7,
+            "announcedQualityHeights": [
+              720
+            ],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "response",
+              "text",
+              "resolveEmbed",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "sa599c31d48797942",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r5",
+            "response_ref": "r5",
+            "referer_ref": "r4",
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                },
+                {
+                  "tag": "a",
+                  "attributes": [
+                    "aria-label",
+                    "class",
+                    "href",
+                    "id",
+                    "onclick",
+                    "title"
+                  ]
+                },
+                {
+                  "tag": "button",
+                  "attributes": [
+                    "aria-label",
+                    "class",
+                    "data-seek",
+                    "id",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "dLang",
+                "uL",
+                "downloadLabel",
+                "directLink",
+                "ear",
+                "usr_id",
+                "file_id",
+                "file_id_clone",
+                "file_code",
+                "moly_sid",
+                "molyReferer",
+                "d",
+                "expires",
+                "name",
+                "ca",
+                "i"
+              ],
+              "player_markup": {
+                "rows": [
+                  {
+                    "tag": "a",
+                    "value_kinds": {
+                      "href": "other"
+                    },
+                    "count": 1,
+                    "distinct_values": 1,
+                    "value_shapes": {
+                      "href": {
+                        "kind": "unknown",
+                        "origin": "unknown"
+                      }
+                    },
+                    "address_refs": {},
+                    "address_refs_truncated": false
+                  }
+                ],
+                "sampled_chars": 72988,
+                "truncated": false
+              },
+              "inline_fields": [
+                {
+                  "name": "en",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "tr",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "de",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "fr",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "ru",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "ar",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "es",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "pt",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "url",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "cache",
+                  "type": "boolean",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "plugins",
+                  "type": "object",
+                  "key_syntax": "quoted"
+                },
+                {
+                  "name": "ping",
+                  "type": "object",
+                  "key_syntax": "quoted"
+                }
+              ],
+              "script_resources": [
+                {
+                  "kind": "root_relative_url",
+                  "role": "other_script",
+                  "location": "src_attribute"
+                },
+                {
+                  "kind": "absolute_url",
+                  "role": "other_script",
+                  "location": "src_attribute"
+                },
+                {
+                  "kind": "protocol_relative_url",
+                  "role": "other_script",
+                  "location": "src_attribute"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "html",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "prx-1356-ant-w.vmpx.online",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "_crawlDirectMedia",
+              "resolveEmbed",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "sa599c31d48797942",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r38",
+            "response_ref": "r38",
+            "referer_ref": "r5",
+            "responseStructure": null,
+            "httpObservation": {
+              "content_kind": "media",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "player",
+            "host": "vidzy.live",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 13,
+            "announcedQualityHeights": [
+              360,
+              480,
+              1080
+            ],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "response",
+              "text",
+              "resolveEmbed",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "sa599c31d48797942",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r6",
+            "response_ref": "r6",
+            "referer_ref": "r4",
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "src"
+                  ]
+                },
+                {
+                  "tag": "a",
+                  "attributes": [
+                    "class",
+                    "href",
+                    "id",
+                    "rel",
+                    "target",
+                    "title"
+                  ]
+                },
+                {
+                  "tag": "button",
+                  "attributes": [
+                    "aria-label",
+                    "class",
+                    "data-i",
+                    "data-r",
+                    "id",
+                    "style",
+                    "tabindex",
+                    "title"
+                  ]
+                }
+              ],
+              "variables": [
+                "isFs",
+                "initH",
+                "h",
+                "t",
+                "e",
+                "a",
+                "d",
+                "cw",
+                "c",
+                "wg",
+                "g",
+                "ft",
+                "ao",
+                "ca",
+                "cc",
+                "cx"
+              ],
+              "player_markup": {
+                "rows": [
+                  {
+                    "tag": "iframe",
+                    "value_kinds": {
+                      "src": "absolute_url"
+                    },
+                    "count": 2,
+                    "distinct_values": 1,
+                    "value_shapes": {
+                      "src": {
+                        "kind": "embed_route",
+                        "origin": "cross_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "src": [
+                        "r39"
+                      ]
+                    },
+                    "address_refs_truncated": false
+                  },
+                  {
+                    "tag": "a",
+                    "value_kinds": {
+                      "href": "absolute_url"
+                    },
+                    "count": 1,
+                    "distinct_values": 1,
+                    "value_shapes": {
+                      "href": {
+                        "kind": "page_extension",
+                        "origin": "same_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "href": [
+                        "r40"
+                      ]
+                    },
+                    "address_refs_truncated": false
+                  },
+                  {
+                    "tag": "a",
+                    "value_kinds": {
+                      "href": "absolute_url"
+                    },
+                    "count": 1,
+                    "distinct_values": 1,
+                    "value_shapes": {
+                      "href": {
+                        "kind": "other",
+                        "origin": "cross_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "href": [
+                        "r41"
+                      ]
+                    },
+                    "address_refs_truncated": false
+                  },
+                  {
+                    "tag": "a",
+                    "value_kinds": {
+                      "href": "relative_url"
+                    },
+                    "count": 1,
+                    "distinct_values": 1,
+                    "value_shapes": {
+                      "href": {
+                        "kind": "other",
+                        "origin": "same_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "href": [
+                        "r42"
+                      ]
+                    },
+                    "address_refs_truncated": false
+                  }
+                ],
+                "sampled_chars": 131072,
+                "truncated": true
+              },
+              "inline_fields": [
+                {
+                  "name": "action",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "type",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "cast",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "menu",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "lock",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "unlock",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "play",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "pause",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "prev",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "next",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "pp_play",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "pp_pause",
+                  "type": "string",
+                  "key_syntax": "bare"
+                }
+              ],
+              "script_resources": [
+                {
+                  "kind": "root_relative_url",
+                  "role": "other_script",
+                  "location": "src_attribute"
+                },
+                {
+                  "kind": "absolute_url",
+                  "role": "other_script",
+                  "location": "src_attribute"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "html",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "s1.fsvid.lol",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "_crawlDirectMedia",
+              "resolveEmbed",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "sa599c31d48797942",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r43",
+            "response_ref": "r43",
+            "referer_ref": "r6",
+            "responseStructure": null,
+            "httpObservation": {
+              "content_kind": "media",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "u14.vidzy.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "_crawlDirectMedia",
+              "resolveEmbed",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "sa599c31d48797942",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r44",
+            "response_ref": "r44",
+            "referer_ref": "r6",
+            "responseStructure": null,
+            "httpObservation": {
+              "content_kind": "media",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "media",
+            "host": "prx-1356-ant-w.vmpx.online",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "probeResolved",
+              "probe",
+              "checkItem",
+              "wrap"
+            ],
+            "mediaObservation": {
+              "signature": "hls",
+              "durationSeconds": null,
+              "bytesSampled": 1239,
+              "readState": "complete",
+              "cancelState": "complete"
+            },
+            "address_scope": "sa599c31d48797942",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r38",
+            "response_ref": "r38",
+            "referer_ref": "r5",
+            "responseStructure": null,
+            "httpObservation": {
+              "content_kind": "media",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "media",
+            "host": "s1.fsvid.lol",
+            "method": "GET",
+            "status": 206,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "probeResolved",
+              "probe",
+              "checkItem",
+              "wrap"
+            ],
+            "mediaObservation": {
+              "signature": "hls",
+              "durationSeconds": null,
+              "bytesSampled": 347,
+              "readState": "complete",
+              "cancelState": "complete"
+            },
+            "address_scope": "sa599c31d48797942",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r43",
+            "response_ref": "r43",
+            "referer_ref": "r6",
+            "responseStructure": null,
+            "httpObservation": {
+              "content_kind": "media",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "media",
+            "host": "u14.vidzy.org",
+            "method": "GET",
+            "status": 206,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "probeResolved",
+              "probe",
+              "checkItem",
+              "wrap"
+            ],
+            "mediaObservation": {
+              "signature": "hls",
+              "durationSeconds": null,
+              "bytesSampled": 176,
+              "readState": "complete",
+              "cancelState": "complete"
+            },
+            "address_scope": "sa599c31d48797942",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r44",
+            "response_ref": "r44",
+            "referer_ref": "r6",
+            "responseStructure": null,
+            "httpObservation": {
+              "content_kind": "media",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "player",
+            "host": "ansembed.net",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 7,
+            "announcedQualityHeights": [
+              720
+            ],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "playerPageTitle",
+              "mismatch",
+              "wrap",
+              "invokeNativeWithBudget"
+            ],
+            "mediaObservation": null,
+            "address_scope": "sa599c31d48797942",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r5",
+            "response_ref": "r5",
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "crossorigin",
+                    "data-cf-beacon",
+                    "integrity",
+                    "src",
+                    "type"
+                  ]
+                },
+                {
+                  "tag": "a",
+                  "attributes": [
+                    "aria-label",
+                    "class",
+                    "href",
+                    "id",
+                    "onclick",
+                    "title"
+                  ]
+                },
+                {
+                  "tag": "button",
+                  "attributes": [
+                    "aria-label",
+                    "class",
+                    "data-seek",
+                    "type"
+                  ]
+                }
+              ],
+              "variables": [
+                "labels",
+                "language",
+                "label",
+                "text",
+                "button",
+                "ear",
+                "usr_id",
+                "file_id",
+                "file_id_clone",
+                "file_code",
+                "moly_sid",
+                "molyReferer",
+                "d",
+                "expires",
+                "name",
+                "ca"
+              ],
+              "player_markup": {
+                "rows": [
+                  {
+                    "tag": "a",
+                    "value_kinds": {
+                      "href": "other"
+                    },
+                    "count": 1,
+                    "distinct_values": 1,
+                    "value_shapes": {
+                      "href": {
+                        "kind": "unknown",
+                        "origin": "unknown"
+                      }
+                    },
+                    "address_refs": {},
+                    "address_refs_truncated": false
+                  }
+                ],
+                "sampled_chars": 61874,
+                "truncated": false
+              },
+              "inline_fields": [
+                {
+                  "name": "en",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "tr",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "de",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "fr",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "ru",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "ar",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "es",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "pt",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "url",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "cache",
+                  "type": "boolean",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "plugins",
+                  "type": "object",
+                  "key_syntax": "quoted"
+                },
+                {
+                  "name": "ping",
+                  "type": "object",
+                  "key_syntax": "quoted"
+                }
+              ],
+              "script_resources": [
+                {
+                  "kind": "root_relative_url",
+                  "role": "other_script",
+                  "location": "src_attribute"
+                },
+                {
+                  "kind": "absolute_url",
+                  "role": "other_script",
+                  "location": "src_attribute"
+                },
+                {
+                  "kind": "protocol_relative_url",
+                  "role": "other_script",
+                  "location": "src_attribute"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "html",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "player",
+            "host": "vidzy.live",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 13,
+            "announcedQualityHeights": [
+              360,
+              480,
+              1080
+            ],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "playerPageTitle",
+              "mismatch",
+              "wrap",
+              "invokeNativeWithBudget"
+            ],
+            "mediaObservation": null,
+            "address_scope": "sa599c31d48797942",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r6",
+            "response_ref": "r6",
+            "responseStructure": {
+              "kind": "html",
+              "tags": [
+                {
+                  "tag": "script",
+                  "attributes": [
+                    "src"
+                  ]
+                },
+                {
+                  "tag": "a",
+                  "attributes": [
+                    "class",
+                    "href",
+                    "id",
+                    "rel",
+                    "target",
+                    "title"
+                  ]
+                },
+                {
+                  "tag": "button",
+                  "attributes": [
+                    "aria-label",
+                    "class",
+                    "data-i",
+                    "data-r",
+                    "id",
+                    "style",
+                    "tabindex",
+                    "title"
+                  ]
+                }
+              ],
+              "variables": [
+                "isFs",
+                "initH",
+                "h",
+                "t",
+                "e",
+                "a",
+                "d",
+                "cw",
+                "c",
+                "wg",
+                "g",
+                "ft",
+                "ao",
+                "ca",
+                "cc",
+                "cx"
+              ],
+              "player_markup": {
+                "rows": [
+                  {
+                    "tag": "iframe",
+                    "value_kinds": {
+                      "src": "absolute_url"
+                    },
+                    "count": 2,
+                    "distinct_values": 1,
+                    "value_shapes": {
+                      "src": {
+                        "kind": "embed_route",
+                        "origin": "cross_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "src": [
+                        "r39"
+                      ]
+                    },
+                    "address_refs_truncated": false
+                  },
+                  {
+                    "tag": "a",
+                    "value_kinds": {
+                      "href": "absolute_url"
+                    },
+                    "count": 1,
+                    "distinct_values": 1,
+                    "value_shapes": {
+                      "href": {
+                        "kind": "page_extension",
+                        "origin": "same_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "href": [
+                        "r40"
+                      ]
+                    },
+                    "address_refs_truncated": false
+                  },
+                  {
+                    "tag": "a",
+                    "value_kinds": {
+                      "href": "absolute_url"
+                    },
+                    "count": 1,
+                    "distinct_values": 1,
+                    "value_shapes": {
+                      "href": {
+                        "kind": "other",
+                        "origin": "cross_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "href": [
+                        "r41"
+                      ]
+                    },
+                    "address_refs_truncated": false
+                  },
+                  {
+                    "tag": "a",
+                    "value_kinds": {
+                      "href": "relative_url"
+                    },
+                    "count": 1,
+                    "distinct_values": 1,
+                    "value_shapes": {
+                      "href": {
+                        "kind": "other",
+                        "origin": "same_origin"
+                      }
+                    },
+                    "address_refs": {
+                      "href": [
+                        "r42"
+                      ]
+                    },
+                    "address_refs_truncated": false
+                  }
+                ],
+                "sampled_chars": 131072,
+                "truncated": true
+              },
+              "inline_fields": [
+                {
+                  "name": "action",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "type",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "cast",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "menu",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "lock",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "unlock",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "play",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "pause",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "prev",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "next",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "pp_play",
+                  "type": "string",
+                  "key_syntax": "bare"
+                },
+                {
+                  "name": "pp_pause",
+                  "type": "string",
+                  "key_syntax": "bare"
+                }
+              ],
+              "script_resources": [
+                {
+                  "kind": "absolute_url",
+                  "role": "other_script",
+                  "location": "src_attribute"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "html",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "episode",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "apiJson",
+              "coreGetTmdbData",
+              "coreTmdb",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "sa599c31d48797942",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r45",
+            "response_ref": "r45",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "id",
+                  "type": "number"
+                },
+                {
+                  "path": "air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "crew",
+                  "type": "array"
+                },
+                {
+                  "path": "crew[].job",
+                  "type": "string"
+                },
+                {
+                  "path": "crew[].department",
+                  "type": "string"
+                },
+                {
+                  "path": "crew[].credit_id",
+                  "type": "string"
+                },
+                {
+                  "path": "crew[].adult",
+                  "type": "boolean"
+                },
+                {
+                  "path": "crew[].gender",
+                  "type": "number"
+                },
+                {
+                  "path": "crew[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "crew[].known_for_department",
+                  "type": "string"
+                },
+                {
+                  "path": "crew[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "crew[].original_name",
+                  "type": "string"
+                },
+                {
+                  "path": "crew[].popularity",
+                  "type": "number"
+                },
+                {
+                  "path": "crew[].profile_path",
+                  "type": "null"
+                },
+                {
+                  "path": "episode_number",
+                  "type": "number"
+                },
+                {
+                  "path": "episode_type",
+                  "type": "string"
+                },
+                {
+                  "path": "guest_stars",
+                  "type": "array"
+                },
+                {
+                  "path": "guest_stars[].character",
+                  "type": "string"
+                },
+                {
+                  "path": "guest_stars[].credit_id",
+                  "type": "string"
+                },
+                {
+                  "path": "guest_stars[].order",
+                  "type": "number"
+                },
+                {
+                  "path": "guest_stars[].adult",
+                  "type": "boolean"
+                },
+                {
+                  "path": "guest_stars[].gender",
+                  "type": "number"
+                },
+                {
+                  "path": "guest_stars[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "guest_stars[].known_for_department",
+                  "type": "string"
+                },
+                {
+                  "path": "guest_stars[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "guest_stars[].original_name",
+                  "type": "string"
+                },
+                {
+                  "path": "guest_stars[].popularity",
+                  "type": "number"
+                },
+                {
+                  "path": "guest_stars[].profile_path",
+                  "type": "string"
+                },
+                {
+                  "path": "name",
+                  "type": "string"
+                },
+                {
+                  "path": "overview",
+                  "type": "string"
+                },
+                {
+                  "path": "production_code",
+                  "type": "string"
+                },
+                {
+                  "path": "runtime",
+                  "type": "number"
+                },
+                {
+                  "path": "season_number",
+                  "type": "number"
+                },
+                {
+                  "path": "still_path",
+                  "type": "string"
+                },
+                {
+                  "path": "vote_average",
+                  "type": "number"
+                },
+                {
+                  "path": "vote_count",
+                  "type": "number"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "prx-1356-ant-w.vmpx.online",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 4,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "fetchText",
+              "inspectHls",
+              "remoteCheck",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "sa599c31d48797942",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r38",
+            "response_ref": "r38",
+            "referer_ref": "r5",
+            "responseStructure": {
+              "kind": "text"
+            },
+            "httpObservation": {
+              "content_kind": "media",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "prx-1356-ant-w.vmpx.online",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "fetchText",
+              "inspectHls",
+              "remoteCheck",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "sa599c31d48797942",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r46",
+            "response_ref": "r46",
+            "referer_ref": "r5",
+            "responseStructure": {
+              "kind": "text"
+            },
+            "httpObservation": {
+              "content_kind": "media",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "u14.vidzy.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "fetchText",
+              "inspectHls",
+              "remoteCheck",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "sa599c31d48797942",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r44",
+            "response_ref": "r44",
+            "referer_ref": "r6",
+            "responseStructure": {
+              "kind": "text"
+            },
+            "httpObservation": {
+              "content_kind": "media",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "u14.vidzy.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "fetchText",
+              "inspectHls",
+              "remoteCheck",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "sa599c31d48797942",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r47",
+            "response_ref": "r47",
+            "referer_ref": "r6",
+            "responseStructure": {
+              "kind": "text"
+            },
+            "httpObservation": {
+              "content_kind": "media",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          }
+        ]
+      },
+      "candidate": {
+        "status": "no_streams",
+        "score": 100,
+        "streamsPlayable": 0,
+        "streamsReturned": 0,
+        "identityContradictions": 0,
+        "providerRequests": 8,
+        "providerHttpStatuses": [
+          200
+        ],
+        "variantCoverage": {
+          "qualityHeights": [],
+          "maxPlayableHeight": 0,
+          "audioLanguages": [],
+          "reachableHosts": [],
+          "announcedPlayerCandidates": 0,
+          "announcedVariantCandidates": 0,
+          "exploredPlayerRequests": 0,
+          "fanoutStates": [
+            "not-observed"
+          ],
+          "announcedQualityHeights": []
+        },
+        "invocationDiagnostics": [
+          {
+            "fixture": "Interstellar",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 3,
+            "errorCode": ""
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 1,
+            "errorCode": ""
+          },
+          {
+            "fixture": "Hell Mode S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 2,
+            "errorCode": ""
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "name": "positional_with_settings",
+            "inferredMode": "positional",
+            "result": "empty",
+            "streamCount": 0,
+            "providerObservations": 2,
+            "errorCode": ""
+          }
+        ],
+        "fixtureCoverage": [
+          {
+            "fixture": "Interstellar",
+            "category": "movie",
+            "status": "no_streams",
+            "streamsPlayable": 0,
+            "streamsReturned": 0,
+            "tmdbId": "157336",
+            "season": null,
+            "episode": null,
+            "expectedDurationSeconds": 10140,
+            "decodedMediaControls": 0,
+            "decodedMediaProbes": []
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "category": "tv",
+            "status": "no_streams",
+            "streamsPlayable": 0,
+            "streamsReturned": 0,
+            "tmdbId": "1396",
+            "season": 1,
+            "episode": 1,
+            "expectedDurationSeconds": 3480,
+            "decodedMediaControls": 0,
+            "decodedMediaProbes": []
+          },
+          {
+            "fixture": "Hell Mode S01E01",
+            "category": "anime",
+            "status": "no_streams",
+            "streamsPlayable": 0,
+            "streamsReturned": 0,
+            "tmdbId": "280049",
+            "season": 1,
+            "episode": 1,
+            "expectedDurationSeconds": 1440,
+            "decodedMediaControls": 0,
+            "decodedMediaProbes": []
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "category": "anime",
+            "status": "no_streams",
+            "streamsPlayable": 0,
+            "streamsReturned": 0,
+            "tmdbId": "95479",
+            "season": 1,
+            "episode": 1,
+            "expectedDurationSeconds": 1440,
+            "decodedMediaControls": 0,
+            "decodedMediaProbes": []
+          }
+        ],
+        "networkTrace": [
+          {
+            "fixture": "Interstellar",
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "apiJson",
+              "tmdb",
+              "canonicalResolution",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s766de4c93356676e",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r1",
+            "response_ref": "r1",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "adult",
+                  "type": "boolean"
+                },
+                {
+                  "path": "backdrop_path",
+                  "type": "string"
+                },
+                {
+                  "path": "belongs_to_collection",
+                  "type": "null"
+                },
+                {
+                  "path": "budget",
+                  "type": "number"
+                },
+                {
+                  "path": "genres",
+                  "type": "array"
+                },
+                {
+                  "path": "genres[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "genres[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "homepage",
+                  "type": "string"
+                },
+                {
+                  "path": "id",
+                  "type": "number"
+                },
+                {
+                  "path": "imdb_id",
+                  "type": "string"
+                },
+                {
+                  "path": "origin_country",
+                  "type": "array"
+                },
+                {
+                  "path": "original_language",
+                  "type": "string"
+                },
+                {
+                  "path": "original_title",
+                  "type": "string"
+                },
+                {
+                  "path": "overview",
+                  "type": "string"
+                },
+                {
+                  "path": "popularity",
+                  "type": "number"
+                },
+                {
+                  "path": "poster_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies",
+                  "type": "array"
+                },
+                {
+                  "path": "production_companies[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "production_companies[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "production_countries",
+                  "type": "array"
+                },
+                {
+                  "path": "production_countries[].iso_3166_1",
+                  "type": "string"
+                },
+                {
+                  "path": "production_countries[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "release_date",
+                  "type": "string"
+                },
+                {
+                  "path": "revenue",
+                  "type": "number"
+                },
+                {
+                  "path": "runtime",
+                  "type": "number"
+                },
+                {
+                  "path": "softcore",
+                  "type": "boolean"
+                },
+                {
+                  "path": "spoken_languages",
+                  "type": "array"
+                },
+                {
+                  "path": "spoken_languages[].english_name",
+                  "type": "string"
+                },
+                {
+                  "path": "spoken_languages[].iso_639_1",
+                  "type": "string"
+                },
+                {
+                  "path": "spoken_languages[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "status",
+                  "type": "string"
+                },
+                {
+                  "path": "tagline",
+                  "type": "string"
+                },
+                {
+                  "path": "title",
+                  "type": "string"
+                },
+                {
+                  "path": "video",
+                  "type": "boolean"
+                },
+                {
+                  "path": "vote_average",
+                  "type": "number"
+                },
+                {
+                  "path": "vote_count",
+                  "type": "number"
+                },
+                {
+                  "path": "alternative_titles",
+                  "type": "object"
+                },
+                {
+                  "path": "alternative_titles.titles",
+                  "type": "array"
+                },
+                {
+                  "path": "alternative_titles.titles[].iso_3166_1",
+                  "type": "string"
+                },
+                {
+                  "path": "alternative_titles.titles[].title",
+                  "type": "string"
+                },
+                {
+                  "path": "alternative_titles.titles[].type",
+                  "type": "string"
+                },
+                {
+                  "path": "external_ids",
+                  "type": "object"
+                },
+                {
+                  "path": "external_ids.imdb_id",
+                  "type": "string"
+                },
+                {
+                  "path": "external_ids.wikidata_id",
+                  "type": "string"
+                },
+                {
+                  "path": "external_ids.facebook_id",
+                  "type": "string"
+                },
+                {
+                  "path": "external_ids.instagram_id",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "response",
+              "jsonReq",
+              "suggest",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s766de4c93356676e",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "referer_ref": "r3",
+            "responseStructure": null,
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "response",
+              "jsonReq",
+              "suggest",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s766de4c93356676e",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r4",
+            "response_ref": "r4",
+            "referer_ref": "r3",
+            "responseStructure": null,
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Interstellar",
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "response",
+              "jsonReq",
+              "suggest",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s766de4c93356676e",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r5",
+            "response_ref": "r5",
+            "referer_ref": "r3",
+            "responseStructure": null,
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "apiJson",
+              "tmdb",
+              "canonicalResolution",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s1ba70794223d33a4",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r1",
+            "response_ref": "r1",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "adult",
+                  "type": "boolean"
+                },
+                {
+                  "path": "backdrop_path",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by",
+                  "type": "array"
+                },
+                {
+                  "path": "created_by[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "created_by[].credit_id",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by[].original_name",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by[].gender",
+                  "type": "number"
+                },
+                {
+                  "path": "created_by[].profile_path",
+                  "type": "string"
+                },
+                {
+                  "path": "episode_run_time",
+                  "type": "array"
+                },
+                {
+                  "path": "first_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "genres",
+                  "type": "array"
+                },
+                {
+                  "path": "genres[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "genres[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "homepage",
+                  "type": "string"
+                },
+                {
+                  "path": "id",
+                  "type": "number"
+                },
+                {
+                  "path": "in_production",
+                  "type": "boolean"
+                },
+                {
+                  "path": "languages",
+                  "type": "array"
+                },
+                {
+                  "path": "last_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air",
+                  "type": "object"
+                },
+                {
+                  "path": "last_episode_to_air.id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.name",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.overview",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.vote_average",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.vote_count",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.episode_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.episode_type",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.production_code",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.runtime",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.season_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.show_id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.still_path",
+                  "type": "string"
+                },
+                {
+                  "path": "name",
+                  "type": "string"
+                },
+                {
+                  "path": "next_episode_to_air",
+                  "type": "null"
+                },
+                {
+                  "path": "networks",
+                  "type": "array"
+                },
+                {
+                  "path": "networks[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "networks[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "number_of_episodes",
+                  "type": "number"
+                },
+                {
+                  "path": "number_of_seasons",
+                  "type": "number"
+                },
+                {
+                  "path": "origin_country",
+                  "type": "array"
+                },
+                {
+                  "path": "original_language",
+                  "type": "string"
+                },
+                {
+                  "path": "original_name",
+                  "type": "string"
+                },
+                {
+                  "path": "overview",
+                  "type": "string"
+                },
+                {
+                  "path": "popularity",
+                  "type": "number"
+                },
+                {
+                  "path": "poster_path",
+                  "type": "string"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Breaking Bad S01E01",
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "response",
+              "jsonReq",
+              "suggest",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s1ba70794223d33a4",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "referer_ref": "r3",
+            "responseStructure": null,
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Hell Mode S01E01",
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "apiJson",
+              "tmdb",
+              "canonicalResolution",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s93882feab1cafa3e",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r1",
+            "response_ref": "r1",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "adult",
+                  "type": "boolean"
+                },
+                {
+                  "path": "backdrop_path",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by",
+                  "type": "array"
+                },
+                {
+                  "path": "episode_run_time",
+                  "type": "array"
+                },
+                {
+                  "path": "first_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "genres",
+                  "type": "array"
+                },
+                {
+                  "path": "genres[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "genres[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "homepage",
+                  "type": "string"
+                },
+                {
+                  "path": "id",
+                  "type": "number"
+                },
+                {
+                  "path": "in_production",
+                  "type": "boolean"
+                },
+                {
+                  "path": "languages",
+                  "type": "array"
+                },
+                {
+                  "path": "last_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air",
+                  "type": "object"
+                },
+                {
+                  "path": "last_episode_to_air.id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.name",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.overview",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.vote_average",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.vote_count",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.episode_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.episode_type",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.production_code",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.runtime",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.season_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.show_id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.still_path",
+                  "type": "string"
+                },
+                {
+                  "path": "name",
+                  "type": "string"
+                },
+                {
+                  "path": "next_episode_to_air",
+                  "type": "null"
+                },
+                {
+                  "path": "networks",
+                  "type": "array"
+                },
+                {
+                  "path": "networks[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "networks[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "number_of_episodes",
+                  "type": "number"
+                },
+                {
+                  "path": "number_of_seasons",
+                  "type": "number"
+                },
+                {
+                  "path": "origin_country",
+                  "type": "array"
+                },
+                {
+                  "path": "original_language",
+                  "type": "string"
+                },
+                {
+                  "path": "original_name",
+                  "type": "string"
+                },
+                {
+                  "path": "overview",
+                  "type": "string"
+                },
+                {
+                  "path": "popularity",
+                  "type": "number"
+                },
+                {
+                  "path": "poster_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies",
+                  "type": "array"
+                },
+                {
+                  "path": "production_companies[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "production_companies[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "production_countries",
+                  "type": "array"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Hell Mode S01E01",
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "response",
+              "jsonReq",
+              "suggest",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s93882feab1cafa3e",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "referer_ref": "r3",
+            "responseStructure": null,
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Hell Mode S01E01",
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "response",
+              "jsonReq",
+              "suggest",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s93882feab1cafa3e",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r4",
+            "response_ref": "r4",
+            "referer_ref": "r3",
+            "responseStructure": null,
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "apiJson",
+              "tmdb",
+              "canonicalResolution",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s6106d8927016d4ba",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r1",
+            "response_ref": "r1",
+            "responseStructure": {
+              "kind": "json",
+              "fields": [
+                {
+                  "path": "adult",
+                  "type": "boolean"
+                },
+                {
+                  "path": "backdrop_path",
+                  "type": "string"
+                },
+                {
+                  "path": "created_by",
+                  "type": "array"
+                },
+                {
+                  "path": "episode_run_time",
+                  "type": "array"
+                },
+                {
+                  "path": "first_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "genres",
+                  "type": "array"
+                },
+                {
+                  "path": "genres[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "genres[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "homepage",
+                  "type": "string"
+                },
+                {
+                  "path": "id",
+                  "type": "number"
+                },
+                {
+                  "path": "in_production",
+                  "type": "boolean"
+                },
+                {
+                  "path": "languages",
+                  "type": "array"
+                },
+                {
+                  "path": "last_air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air",
+                  "type": "object"
+                },
+                {
+                  "path": "last_episode_to_air.id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.name",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.overview",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.vote_average",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.vote_count",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.air_date",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.episode_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.episode_type",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.production_code",
+                  "type": "string"
+                },
+                {
+                  "path": "last_episode_to_air.runtime",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.season_number",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.show_id",
+                  "type": "number"
+                },
+                {
+                  "path": "last_episode_to_air.still_path",
+                  "type": "string"
+                },
+                {
+                  "path": "name",
+                  "type": "string"
+                },
+                {
+                  "path": "next_episode_to_air",
+                  "type": "null"
+                },
+                {
+                  "path": "networks",
+                  "type": "array"
+                },
+                {
+                  "path": "networks[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "networks[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "networks[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "number_of_episodes",
+                  "type": "number"
+                },
+                {
+                  "path": "number_of_seasons",
+                  "type": "number"
+                },
+                {
+                  "path": "origin_country",
+                  "type": "array"
+                },
+                {
+                  "path": "original_language",
+                  "type": "string"
+                },
+                {
+                  "path": "original_name",
+                  "type": "string"
+                },
+                {
+                  "path": "overview",
+                  "type": "string"
+                },
+                {
+                  "path": "popularity",
+                  "type": "number"
+                },
+                {
+                  "path": "poster_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies",
+                  "type": "array"
+                },
+                {
+                  "path": "production_companies[].id",
+                  "type": "number"
+                },
+                {
+                  "path": "production_companies[].logo_path",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].name",
+                  "type": "string"
+                },
+                {
+                  "path": "production_companies[].origin_country",
+                  "type": "string"
+                },
+                {
+                  "path": "production_countries",
+                  "type": "array"
+                }
+              ]
+            },
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "response",
+              "jsonReq",
+              "suggest",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s6106d8927016d4ba",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r2",
+            "response_ref": "r2",
+            "referer_ref": "r3",
+            "responseStructure": null,
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          },
+          {
+            "fixture": "Jujutsu Kaisen S01E01",
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "status": 200,
+            "ok": true,
+            "errorCode": "",
+            "announcedPlayerCandidates": 0,
+            "announcedQualityHeights": [],
+            "providerFunctions": [
+              "compatFetch",
+              "wrapped",
+              "_fetch",
+              "response",
+              "jsonReq",
+              "suggest",
+              "resolve",
+              "wrap"
+            ],
+            "mediaObservation": null,
+            "address_scope": "s6106d8927016d4ba",
+            "address_refs_truncated": false,
+            "address_trace_truncated": false,
+            "request_ref": "r4",
+            "response_ref": "r4",
+            "referer_ref": "r3",
+            "responseStructure": null,
+            "httpObservation": {
+              "content_kind": "json",
+              "url_relation": "same_url",
+              "body_state": "not_sampled",
+              "page_signal": "unknown",
+              "sampled_bytes": 0
+            },
+            "observedMediaProbe": null,
+            "readerUserAgentProbe": {}
+          }
+        ]
+      }
+    }
+  ],
+  "publicationAuthority": false
+}
