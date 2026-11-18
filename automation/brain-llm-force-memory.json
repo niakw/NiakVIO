@@ -238,6 +238,93 @@
       "sourceBrainLlmSha": "122a7d58de6b036282728fd6a0814a8efd39aabf"
     },
     {
+      "providerId": "anikototv",
+      "mutationFingerprint": "2f256b00abe73d390c9d4e8395aa966d8a95ffc0eac016033e47997025a19f75",
+      "mutationContextFingerprint": "33df3d3709f597de506f41291944274487c083873afa606d1c3bfa43fe6778ea",
+      "failures": 2,
+      "consecutiveFailures": 2,
+      "successes": 0,
+      "executionObserved": true,
+      "materializedMutationObserved": true,
+      "lastOutcome": "rejected",
+      "lastReason": "decoded_repair_no_new_fixture_control",
+      "lastMutationSummary": [
+        {
+          "scope": "provider_bloc",
+          "operation": "upsert",
+          "family": "tmdb_direct_api"
+        }
+      ],
+      "repairFamily": {
+        "version": 2,
+        "key": "3d41033886e9ee6dcd07f2b297bd85eeb51403b7dda3ef64c6f46340f0b069fd",
+        "failure": "route-proven-gap",
+        "status": "regression-provider",
+        "archetype": "route-proven-gap:route-parser",
+        "mediaTypes": [
+          "anime"
+        ],
+        "signals": [
+          "provider-http-2xx",
+          "response-json"
+        ],
+        "stages": [
+          "provider-network-http-error"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ]
+      },
+      "mechanismFamily": "tmdb-direct-api",
+      "lastBaselineCoverage": {
+        "streamsReturned": 0,
+        "streamsPlayable": 0,
+        "identityContradictions": 0,
+        "qualityHeights": [],
+        "announcedQualityHeights": [],
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 0,
+        "announcedVariantCandidates": 0,
+        "exploredPlayerRequests": 0,
+        "reachableHostCount": 0,
+        "fanoutStates": [
+          "not-observed"
+        ]
+      },
+      "lastCandidateCoverage": {
+        "streamsReturned": 0,
+        "streamsPlayable": 0,
+        "identityContradictions": 0,
+        "qualityHeights": [],
+        "announcedQualityHeights": [],
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 0,
+        "announcedVariantCandidates": 0,
+        "exploredPlayerRequests": 0,
+        "reachableHostCount": 0,
+        "fanoutStates": [
+          "not-observed"
+        ]
+      },
+      "lastCoverageDelta": {
+        "streamsReturned": 0,
+        "streamsPlayable": 0,
+        "identityContradictions": 0,
+        "maxPlayableHeight": 0,
+        "announcedPlayerCandidates": 0,
+        "announcedVariantCandidates": 0,
+        "exploredPlayerRequests": 0,
+        "reachableHostCount": 0,
+        "qualityHeightCount": 0
+      },
+      "lastCurrentSha": "b09a15b21bb3674193733ee56b76a8146ffd79ea",
+      "sourceNiakvioSha": "b09a15b21bb3674193733ee56b76a8146ffd79ea",
+      "sourceBrainLlmSha": "d67a27d67df2b28d7719fbe53e491368b349b5aa"
+    },
+    {
       "providerId": "4khdhub",
       "mutationFingerprint": "0e510acd00e164425464415cc1f032f15ea04753acb5df5f2b4a82b605178837",
       "mutationContextFingerprint": "3cdcd4797ee827218b7e293295551a69a089806a512afdba7e5d4bb9145d57f6",
@@ -1331,93 +1418,6 @@
       "sourceBrainLlmSha": "a164269b3bd29de473c64cb6bd5732ebaa76f088",
       "executionObserved": false,
       "executionAuditReason": "legacy_bloc_missing_materialization_proof"
-    },
-    {
-      "providerId": "anikototv",
-      "mutationFingerprint": "2f256b00abe73d390c9d4e8395aa966d8a95ffc0eac016033e47997025a19f75",
-      "mutationContextFingerprint": "33df3d3709f597de506f41291944274487c083873afa606d1c3bfa43fe6778ea",
-      "failures": 1,
-      "consecutiveFailures": 1,
-      "successes": 0,
-      "executionObserved": true,
-      "materializedMutationObserved": true,
-      "lastOutcome": "rejected",
-      "lastReason": "decoded_repair_no_new_fixture_control",
-      "lastMutationSummary": [
-        {
-          "scope": "provider_bloc",
-          "operation": "upsert",
-          "family": "tmdb_direct_api"
-        }
-      ],
-      "repairFamily": {
-        "version": 2,
-        "key": "3d41033886e9ee6dcd07f2b297bd85eeb51403b7dda3ef64c6f46340f0b069fd",
-        "failure": "route-proven-gap",
-        "status": "regression-provider",
-        "archetype": "route-proven-gap:route-parser",
-        "mediaTypes": [
-          "anime"
-        ],
-        "signals": [
-          "provider-http-2xx",
-          "response-json"
-        ],
-        "stages": [
-          "provider-network-http-error"
-        ],
-        "mutationSurfaces": [
-          "provider-bloc",
-          "provider-data",
-          "provider-js",
-          "provider-patch"
-        ]
-      },
-      "mechanismFamily": "tmdb-direct-api",
-      "lastBaselineCoverage": {
-        "streamsReturned": 0,
-        "streamsPlayable": 0,
-        "identityContradictions": 0,
-        "qualityHeights": [],
-        "announcedQualityHeights": [],
-        "maxPlayableHeight": 0,
-        "announcedPlayerCandidates": 0,
-        "announcedVariantCandidates": 0,
-        "exploredPlayerRequests": 0,
-        "reachableHostCount": 0,
-        "fanoutStates": [
-          "not-observed"
-        ]
-      },
-      "lastCandidateCoverage": {
-        "streamsReturned": 0,
-        "streamsPlayable": 0,
-        "identityContradictions": 0,
-        "qualityHeights": [],
-        "announcedQualityHeights": [],
-        "maxPlayableHeight": 0,
-        "announcedPlayerCandidates": 0,
-        "announcedVariantCandidates": 0,
-        "exploredPlayerRequests": 0,
-        "reachableHostCount": 0,
-        "fanoutStates": [
-          "not-observed"
-        ]
-      },
-      "lastCoverageDelta": {
-        "streamsReturned": 0,
-        "streamsPlayable": 0,
-        "identityContradictions": 0,
-        "maxPlayableHeight": 0,
-        "announcedPlayerCandidates": 0,
-        "announcedVariantCandidates": 0,
-        "exploredPlayerRequests": 0,
-        "reachableHostCount": 0,
-        "qualityHeightCount": 0
-      },
-      "lastCurrentSha": "373c470ccc8670e286e82cdf265e4dc600fe668a",
-      "sourceNiakvioSha": "373c470ccc8670e286e82cdf265e4dc600fe668a",
-      "sourceBrainLlmSha": "d67a27d67df2b28d7719fbe53e491368b349b5aa"
     },
     {
       "providerId": "animesultra",
