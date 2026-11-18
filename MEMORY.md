@@ -4748,3 +4748,10 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - The first real lifecycle transition after the cardinality fix produced `fd2f953d`: counts correctly moved from 77 to 76, but the new helper assigned the canonical metadata dict wholesale and therefore dropped enrichment fields owned by the canonical ProviderBase materializer.
 - This intermediate PROVENANCE-only transition is superseded. The next source commit restores the exact pre-transition PROVENANCE blob from `9386c0a6` and changes lifecycle reconciliation to update the existing `provider_base_store` dictionary in place. Canonical count/scope fields are refreshed while materialization/runtime/sanitizer enrichment remains intact.
 - The lifecycle contract now rejects a wholesale `provenance["provider_base_store"] = metadata` replacement. A new lifecycle run must produce the 76-provider metadata transition again before Finalizer proof is accepted.
+
+
+## 2026-11-18 — Release Finalizer timeout aligned with current 76-provider validation cost
+
+- Exact Finalizer run `44268169509` on `b9462440564abbf85f09ec6f2a85d3e33458b91a` passed exact-SHA/preflight and the full Nuvio métier/projection authority gate, rebuilt all 76 active providers, reached the Provider v3 minimizer fixed point, regenerated Hub46, and pruned 28 obsolete provider bundle generations with the rolling 10-generation policy.
+- The run was then cancelled by the job's hard `timeout-minutes: 40` while the post-prune exact materialization verification was finishing (all 76 providers had reached the second materialization pass). No release commit/push, native certification dispatch, or post-finalization census occurred.
+- This is a harness-capacity defect, not a provider failure. The Finalizer timeout is raised to 90 minutes so the existing fail-closed validation chain can complete without deleting checks or weakening byte/projection validation. A fresh exact Finalizer on the resulting main SHA is required before release acceptance.
