@@ -120,6 +120,7 @@ assert "git push origin HEAD:main" in static_fixed
 assert "FIELD_PROVIDER_STATIC_AUTHORITY_PUBLISHED" in static_fixed
 gate=(ROOT/".github/workflows/github-actions-gate.yml").read_text(encoding="utf-8")
 release=(ROOT/".github/workflows/release-finalize.yml").read_text(encoding="utf-8")
+assert "python tests/provider_materialization_generation_contract_test.py" in wf, "projection must validate canonical generation before rebuilding providers"
 assert "python3 tests/provider_projection_reconcile_workflow_test.py" in gate
 for token in (
     "'.github/workflows/provider-projection-reconcile.yml'",

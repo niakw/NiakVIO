@@ -4576,3 +4576,9 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 ## 2026-11-18 — Projection Reconcile trigger closes canonical generation dependency
 
 - Follow-up to the targeted reconciler migration: `.github/workflows/provider-projection-reconcile.yml` now explicitly watches `scripts/provider_materialization_generation.py` and `scripts/reconcile_targeted_provider_publication.py`, matching the strengthened workflow contract test. A future change to either generation authority therefore schedules a projection fixed-point transaction instead of relying on a later census to discover stale bytes.
+
+
+## 2026-11-18 — Projection Reconcile validates canonical generation before provider rebuild
+
+- The real `3d03163b` Workflow Gate caught a stale generation import while Projection Reconcile was already rebuilding providers. To move that failure to the responsible transaction boundary, Projection Reconcile now runs `tests/provider_materialization_generation_contract_test.py` during its drift/preflight phase, before the first provider is rematerialized.
+- The workflow contract test requires this early gate. This intentionally causes the in-flight pre-fix projection to self-supersede once, but prevents future 76-provider rebuilds from running behind a broken generation writer.

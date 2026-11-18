@@ -124,6 +124,7 @@ jobs:
           set -euo pipefail
           python -m py_compile scripts/detect_provider_projection_drift.py scripts/materialize_provider_v3_one.py scripts/reconcile_targeted_provider_publication.py scripts/reindex_provider_publication_fingerprints.py
           python tests/provider_projection_drift_detector_test.py
+          python tests/provider_materialization_generation_contract_test.py
           python tests/publication_contract_fingerprint_test.py
           python tests/provider_publication_fingerprint_union_test.py
           python tests/provider_projection_reconcile_workflow_test.py
