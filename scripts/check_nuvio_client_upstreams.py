@@ -281,6 +281,15 @@ def compare(
     with tempfile.TemporaryDirectory(prefix="niakvio-client-drift-") as tmp:
         work = Path(tmp)
         run_git(["init", "--quiet"], cwd=work)
+        # Git fetch may spawn detached maintenance/gc in a freshly-created
+        # repository. TemporaryDirectory can then race that background writer
+        # while removing .git and fail with ENOTEMPTY. This drift probe is
+        # read-only, so disable all automatic repository maintenance locally;
+        # unexpected cleanup failures must still propagate rather than being
+        # reclassified as network uncertainty.
+        run_git(["config", "maintenance.auto", "false"], cwd=work)
+        run_git(["config", "maintenance.autoDetach", "false"], cwd=work)
+        run_git(["config", "gc.auto", "0"], cwd=work)
         run_git(["remote", "add", "origin", repo_url(repository)], cwd=work)
         remote_branch = f"refs/heads/{branch}"
         local_branch = "refs/remotes/origin/niakvio-client-check"

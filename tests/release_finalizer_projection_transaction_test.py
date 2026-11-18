@@ -11,9 +11,13 @@ assert "cancel-in-progress: true" in workflow, "release lane must cancel superse
 assert "cancel-in-progress: false" not in workflow, "release lane claims latest-wins and may not queue obsolete 90-minute Finalizers"
 assert "NUVIO_SKIP_CLIENT_UPSTREAM_GUARD" not in workflow, "release finalizer may not bypass current Nuvio upstream freshness"
 runtime_step = workflow.index("- name: Validate current Nuvio métier ABI and projection authority")
+upstream_guard_test = workflow.index(
+    "python3 tests/nuvio_client_upstream_drift_guard_test.py",
+    runtime_step,
+)
 upstream_guard = workflow.index(
     'python3 scripts/check_nuvio_client_upstreams.py --output "$RUNNER_TEMP/nuvio-client-upstream-status.json"',
-    runtime_step,
+    upstream_guard_test,
 )
 runtime_render = workflow.index("python3 scripts/render_platform_runtime_contracts.py", upstream_guard)
 runtime_gate = workflow.index("python3 scripts/runtime_contract_gate.py", runtime_render)
@@ -77,7 +81,7 @@ sync3_check = workflow.index("python3 scripts/sync_manifest_projection_rows.py -
 final_reconcile = workflow.index("python3 scripts/reconcile_active_provider_publication.py", sync3_check)
 
 assert reapply < sync < sync_check < reconcile < materialize < sync2 < sync2_check < second_reconcile < validate
-assert runtime_step < upstream_guard < runtime_render < runtime_gate < runtime_matrix < runtime_policy < portable_gate < clean_base
+assert runtime_step < upstream_guard_test < upstream_guard < runtime_render < runtime_gate < runtime_matrix < runtime_policy < portable_gate < clean_base
 assert portable_gate < metier_docs < metier_plans < cardinality < semantic_transport < multiplicity < season_zero < five_labs < native_scope
 assert native_scope < native_transport < native_corpus < native_evidence < native_floor < native_codegen < native_pipeline < native_ios_audio < native_multi_audio < native_provenance < branding_provenance < domain_registry < presentation < metadata < score < hls_facts < hls_integrity < hls_presentation < multi_variant < telemetry < core_ownership < step
 assert release_types < reapply2 < minimize2 < minimize2_check < sync3 < sync3_check < final_reconcile
@@ -143,6 +147,7 @@ for required in (
     "'tests/delete_stale_codeql_configuration_test.py'",
     "'.github/workflows/external-code-audit.yml'",
     "'scripts/check_nuvio_client_upstreams.py'",
+    "'tests/nuvio_client_upstream_drift_guard_test.py'",
     "'scripts/runtime_contract_gate.py'",
     "'scripts/materialize_provider_base_v3_store.py'",
     "'scripts/materialize_provider_v3_one.py'",

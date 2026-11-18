@@ -4798,3 +4798,11 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 
 - The release projection transaction contract now explicitly requires `tests/provider_v3_workflow_ownership_test.py` to remain in Finalizer trigger coverage. This prevents the trigger fix itself from silently regressing later.
 - This is the last planned harness-only adjustment before freezing main for exact release finalization; further main movement now requires a demonstrated failing gate or publication defect.
+
+
+## 2026-11-18 — Nuvio upstream drift temp Git maintenance race fixed at the release gate
+
+- Exact Finalizer run `44290175160` on `164889d018f2ef3a0c74cfd3bed796e858a52fc0` failed before provider rematerialization in the current Nuvio upstream guard with `OSError: [Errno 39] Directory not empty: .../.git` while disposing a temporary blobless client repository.
+- This is a release-harness cleanup race, not provider/Core/client semantic evidence. The drift probe now disables repository-local automatic Git maintenance, detached maintenance and auto-gc before any fetch; unexpected cleanup errors remain fail-closed and are not reclassified as transport uncertainty.
+- `tests/nuvio_client_upstream_drift_guard_test.py` locks those maintenance controls. The Finalizer now executes that local regression before live upstream inspection, and changes to the regression itself are part of Finalizer push-trigger coverage.
+- A fresh exact Finalizer with `post_census=true` is required after this harness commit; no provider is promoted, disabled, or declared playable by this change.

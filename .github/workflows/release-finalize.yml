@@ -185,6 +185,7 @@ on:
       - 'tests/delete_stale_codeql_configuration_test.py'
       - '.github/workflows/external-code-audit.yml'
       - 'scripts/check_nuvio_client_upstreams.py'
+      - 'tests/nuvio_client_upstream_drift_guard_test.py'
       - 'scripts/runtime_contract_gate.py'
       - 'scripts/nuvio_runtime_compatibility.py'
       - 'scripts/validate_platform_runtime_policy.py'
@@ -286,7 +287,9 @@ jobs:
           python3 tests/provider_static_authority_france_only_test.py
           # A release may only certify the stored ABI after proving that the
           # official client branches are still reachable and have no unreviewed
-          # contract/semantic drift from the accepted refs.
+          # contract/semantic drift from the accepted refs. Run the local guard
+          # contract first so cleanup/harness regressions fail before network I/O.
+          python3 tests/nuvio_client_upstream_drift_guard_test.py
           python3 scripts/check_nuvio_client_upstreams.py --output "$RUNNER_TEMP/nuvio-client-upstream-status.json"
           python3 scripts/render_platform_runtime_contracts.py
           python3 scripts/render_platform_runtime_contracts.py --check

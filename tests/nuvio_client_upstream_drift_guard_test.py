@@ -116,6 +116,9 @@ def main() -> int:
     assert "parallel-git-ls-remote-plus-blobless-deep-history-diff" in source
     assert '"--filter=blob:none"' in source
     assert '"--depth=1024"' in source
+    assert '["config", "maintenance.auto", "false"]' in source
+    assert '["config", "maintenance.autoDetach", "false"]' in source
+    assert '["config", "gc.auto", "0"]' in source
     assert "changed_tree_paths(work" in source
     assert "patch_files = [name for name in files if path_matches(name, patch_rules)]" in source
     assert "COMPATIBILITY_MATRIX" in source
