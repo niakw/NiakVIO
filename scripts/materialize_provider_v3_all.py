@@ -43,6 +43,7 @@ from provider_patch_blocks import owned_span, validate_managed_fixes  # noqa: E4
 from provider_byte_stability import verify_bytes  # noqa: E402
 from provider_v3_minimizer import minimize_text, validate_transform  # noqa: E402
 from current_provider_scope import projection_active_provider_ids  # noqa: E402
+from provider_materialization_generation import materialization_generation  # noqa: E402
 
 DEFAULT_SOURCE_MANIFEST = ROOT / "manifest.json"
 DEFAULT_SOURCE_CATALOG = ROOT / "provider_catalog.json"
@@ -738,7 +739,6 @@ def materialize_all(
 
     output_dir.mkdir(parents=True, exist_ok=True)
     report_rows: list[dict[str, Any]] = []
-    aggregate = hashlib.sha256()
     validation_workers = materialization_validation_concurrency(len(rows))
     pending_validation: list[dict[str, Any]] = []
     print(
@@ -908,8 +908,6 @@ def materialize_all(
             elif authority_name != "global-manifest":
                 raise ValueError(f"{provider_id}: unknown materialization authority {authority_name!r}")
 
-            aggregate.update(provider_id.encode("utf-8"))
-            aggregate.update(bytes.fromhex(digest))
             data = pending["data"]
             fix_ids = pending["fix_ids"]
             core_ids = pending["core_ids"]
@@ -945,7 +943,7 @@ def materialize_all(
     finally:
         validation_pool.shutdown(wait=True, cancel_futures=True)
 
-    generation = aggregate.hexdigest()
+    generation = materialization_generation(report_rows)
     manifest["version"] = str(manifest.get("version") or "0")
     manifest["description"] = (
         "NiakVIO Provider v3 production artifacts. One Provider JS per provider/version "

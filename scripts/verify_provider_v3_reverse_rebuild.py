@@ -18,6 +18,7 @@ from current_provider_scope import projection_active_provider_count, projection_
 
 from materialize_provider_v3_all import materialize_all
 from provider_v3_minimizer import minimize_provider_text
+from provider_materialization_generation import materialization_generation
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = ROOT / "provider-v3-materialization.json"
@@ -28,6 +29,15 @@ EXPECTED_PROVIDER_COUNT = projection_active_provider_count()
 
 def sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def final_publication_bytes(raw: bytes) -> bytes:
+    """Apply the exact publication minimizer and prove its fixed point."""
+    minimized = minimize_provider_text(raw.decode("utf-8", errors="strict")).encode("utf-8")
+    second = minimize_provider_text(minimized.decode("utf-8", errors="strict")).encode("utf-8")
+    if second != minimized:
+        raise ValueError("NiakVIO minimizer is not a fixed point")
+    return minimized
 
 
 def main() -> int:
@@ -111,12 +121,8 @@ def main() -> int:
         rebuilt_rows = rebuilt.get("providers") or []
         if rebuilt.get("providerCount") != EXPECTED_PROVIDER_COUNT or len(rebuilt_rows) != EXPECTED_PROVIDER_COUNT:
             raise SystemExit("reverse rebuild did not reconstruct the full active provider catalogue")
-        if rebuilt.get("generation") != expected.get("generation"):
-            raise SystemExit(
-                f"generation mismatch expected={expected.get('generation')} actual={rebuilt.get('generation')}"
-            )
-
         actual_by_id = {str(row["provider"]).casefold(): row for row in rebuilt_rows}
+        published_rows: list[dict[str, str]] = []
         expected_by_id = {
             str(row["provider"]).casefold(): row
             for row in (expected.get("providers") or [])
@@ -134,14 +140,28 @@ def main() -> int:
             raw = rebuilt_file.read_bytes()
             raw_digest = sha256_bytes(raw)
             if raw_digest != str(actual.get("sha256") or ""):
-                raise SystemExit(f"{provider_id}: rebuilt report digest mismatch")
-            if raw_digest != str(expected_row.get("sha256") or ""):
-                raise SystemExit(f"{provider_id}: canonical workspace digest mismatch")
+                raise SystemExit(f"{provider_id}: rebuilt workspace report digest mismatch")
+            if str(actual.get("providerDataSha256") or "") != str(expected_row.get("providerDataSha256") or ""):
+                raise SystemExit(f"{provider_id}: structured Provider DATA digest mismatch")
 
-            minimized = minimize_provider_text(raw.decode("utf-8", errors="strict")).encode("utf-8")
-            second = minimize_provider_text(minimized.decode("utf-8", errors="strict")).encode("utf-8")
-            if second != minimized:
-                raise SystemExit(f"{provider_id}: NiakVIO minimizer is not a fixed point")
+            try:
+                published = final_publication_bytes(raw)
+            except ValueError as exc:
+                raise SystemExit(f"{provider_id}: {exc}") from exc
+            published_digest = sha256_bytes(published)
+            if published_digest != str(expected_row.get("sha256") or ""):
+                raise SystemExit(f"{provider_id}: final published byte digest mismatch")
+            expected_file = Path(str(expected_row.get("file") or "")).name
+            if expected_file and published_digest[:16] not in expected_file:
+                raise SystemExit(f"{provider_id}: content-addressed published filename mismatch")
+            published_rows.append({"provider": provider_id, "sha256": published_digest})
+
+    published_generation = materialization_generation(published_rows)
+    if published_generation != expected.get("generation"):
+        raise SystemExit(
+            f"published generation mismatch expected={expected.get('generation')} "
+            f"actual={published_generation}"
+        )
 
     print(
         "PROVIDER_V3_REVERSE_REBUILD_OK "
