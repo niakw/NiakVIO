@@ -187,6 +187,7 @@ assert not loop.requires_transport_differential({'preflight_status':'runtime_err
 # provider-local mutation even when an older census says REGRESSION.
 playable_live={
     'preflight_status':'healthy', 'preflight_playable':2,
+    'preflight_identity_contradictions':0,
     'fixture_selection_complete':True,
     'fixture_evidence':[
         {'fixture':'Movie','streamsReturned':1,'streamsPlayable':1},
@@ -197,6 +198,7 @@ assert loop.requires_proof_refresh(playable_live)
 for invalid in (
     {**playable_live, 'preflight_status':'no_streams'},
     {**playable_live, 'preflight_playable':1},
+    {**playable_live, 'preflight_identity_contradictions':1},
     {**playable_live, 'fixture_selection_complete':False},
     {**playable_live, 'fixture_evidence':[
         {'fixture':'Movie','streamsReturned':1,'streamsPlayable':1},
