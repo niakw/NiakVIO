@@ -734,4 +734,5 @@ offline_latest = latest_mod.merge(merged_latest, {
 assert offline_latest["residentialProviderReplay"]["lastAttempt"]["replayedProviders"] == []
 assert offline_latest["residentialProviderReplay"]["lastAttempt"]["available"] is False
 assert offline_latest["residentialProviderReplay"]["providerCount"] == 2
+assert offline_latest["residentialProviderReplay"]["lastAttempt"]["verifiedProviders"] == []
 assert mod.merge_transport(stale_replay_baseline, offline_latest)["repairQueue"] == ["stale"]

@@ -125,16 +125,45 @@ def _rebuild_replay(
         "rows": rows,
     })
 
-    if isinstance(cur, dict):
-        # A merged diagnostic ledger retains older replay rows by design.
-        # Preserve which providers were ACTUALLY replayed in this attempt:
-        # WAF seed refresh is not proof of a fresh provider runtime replay.
-        base["lastAttempt"] = {
-            "available": cur.get("available") is True,
-            "providerCount": len(cur_providers),
+    # The targeted merge supplied the actual current-run scope. Its retained
+    # replay rows may include 40+ older providers, even for a three-provider run.
+    fresh_run = current.get("freshRunReceipt")
+    fresh_run = fresh_run if isinstance(fresh_run, dict) else {}
+    attempt = cur.get("lastAttempt")
+    if isinstance(attempt, dict):
+        attempt = copy.deepcopy(attempt)
+        if fresh_run and (
+            str(attempt.get("runId") or "") != str(fresh_run.get("runId") or "")
+            or str(attempt.get("sourceNiakvioSha") or "") != str(fresh_run.get("sourceNiakvioSha") or "")
+        ):
+            attempt = None
+    if not isinstance(attempt, dict):
+        if fresh_run:
+            selected = [
+                row for row in cur_rows
+                if isinstance(row.get("residentialReplayReceipt"), dict)
+                and str(row["residentialReplayReceipt"].get("runId") or "") == str(fresh_run.get("runId") or "")
+                and str(row["residentialReplayReceipt"].get("sourceNiakvioSha") or "")
+                == str(fresh_run.get("sourceNiakvioSha") or "")
+            ]
+        else:
+            # Legacy direct-unmerged observations remain diagnostic-only.
+            selected = cur_rows if cur.get("available") is True else []
+        selected_ids = sorted({_pid(row) for row in selected})
+        attempt = {
+            "available": cur.get("available") is True and bool(selected_ids),
+            "providerCount": len(selected_ids),
             "refreshedProviders": sorted(refreshed),
-            "replayedProviders": sorted(cur_providers) if cur.get("available") is True else [],
+            "replayedProviders": selected_ids,
+            "rawProviders": sorted({_pid(row) for row in selected if int(row.get("raw") or 0) > 0}),
+            "playableProviders": sorted({_pid(row) for row in selected if int(row.get("playable") or 0) > 0}),
+            "verifiedProviders": sorted({_pid(row) for row in selected if int(row.get("verified") or 0) > 0}),
+            "sourceNiakvioSha": str(fresh_run.get("sourceNiakvioSha") or ""),
+            "runId": str(fresh_run.get("runId") or ""),
+            "proofAuthority": False,
+            "publicationAuthority": False,
         }
+    base["lastAttempt"] = attempt
     return base
 
 
@@ -158,7 +187,11 @@ def merge(previous: dict[str, Any], current: dict[str, Any]) -> dict[str, Any]:
     out["rows"] = rows
     out["targetCount"] = len(rows)
     out["counts"] = dict(sorted(counts.items()))
-    out["lastRefreshProviderFilter"] = sorted(refreshed)
+    out["lastRefreshProviderFilter"] = (
+        sorted({str(value or "").strip().casefold() for value in current.get("lastRefreshProviderFilter") or [] if str(value or "").strip()})
+        if isinstance(current.get("lastRefreshProviderFilter"), list)
+        else sorted(refreshed)
+    )
 
     prev_res = previous.get("residentialExitNodeEvidence")
     cur_res = current.get("residentialExitNodeEvidence")

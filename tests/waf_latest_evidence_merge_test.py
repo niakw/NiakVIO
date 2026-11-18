@@ -116,4 +116,39 @@ assert demo2["residentialExitNodeProfile"]["outcome"] == "browser_challenge_pers
 assert merged2["residentialProviderReplay"]["verifiedProviders"] == []
 assert merged2["residentialProviderReplay"]["lastAttempt"]["available"] is True
 
-print("WAF latest evidence merge contract passed")
+new_run = {
+    "schemaVersion": 1,
+    "freshRunReceipt": {"sourceNiakvioSha": "c" * 40, "runId": "44423214248"},
+    "lastRefreshProviderFilter": ["target"],
+    "rows": [
+        {"provider": "target", "lane": "movie", "outcome": "browser_content_reached"},
+        {"provider": "keep", "lane": "movie", "outcome": "browser_content_reached"},
+    ],
+    "residentialProviderReplay": {
+        "available": True,
+        "rows": [
+            {"provider": "target", "lane": "movie", "verified": 0, "raw": 0, "playable": 0},
+            {"provider": "keep", "lane": "movie", "verified": 1, "raw": 1, "playable": 1},
+        ],
+        "lastAttempt": {
+            "available": True, "providerCount": 1,
+            "refreshedProviders": ["target"], "replayedProviders": ["target"],
+            "verifiedProviders": [],
+            "sourceNiakvioSha": "c" * 40, "runId": "44423214248",
+            "proofAuthority": False,
+        },
+    },
+}
+scoped = module.merge({}, new_run)
+assert scoped["residentialProviderReplay"]["verifiedProviders"] == ["keep"]
+assert scoped["residentialProviderReplay"]["lastAttempt"]["verifiedProviders"] == []
+assert scoped["residentialProviderReplay"]["lastAttempt"]["replayedProviders"] == ["target"]
+assert scoped["residentialProviderReplay"]["lastAttempt"]["providerCount"] == 1
+assert scoped["lastRefreshProviderFilter"] == ["target"], scoped
+mismatched = module.merge({}, {
+    **new_run,
+    "freshRunReceipt": {"sourceNiakvioSha": "d" * 40, "runId": "44423214249"},
+})
+assert mismatched["residentialProviderReplay"]["lastAttempt"]["replayedProviders"] == []
+assert mismatched["residentialProviderReplay"]["lastAttempt"]["verifiedProviders"] == []
+print("WAF latest scoped replay freshness contract passed")

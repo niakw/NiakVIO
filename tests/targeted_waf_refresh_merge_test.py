@@ -45,4 +45,36 @@ assert rby[("target","movie")]["raw"]==2
 assert replay["providers"]==["keep","target"]
 assert replay["playableProviders"]==["keep","target"]
 assert replay["verifiedProviders"]==["keep","target"]
-print("targeted WAF ledger merge contract passed")
+assert replay["lastAttempt"]["replayedProviders"] == ["target"]
+assert replay["lastAttempt"]["verifiedProviders"] == ["target"]
+assert replay["lastAttempt"]["providerCount"] == 1
+assert replay["lastAttempt"]["byteMatchedProviders"] == []
+
+new_run = mod.merge(
+    base,
+    {
+        **refresh,
+        "freshRunReceipt": {"sourceNiakvioSha": "a" * 40, "runId": "44423214248"},
+        "residentialProviderReplay": {
+            "available": True,
+            "rows": [{
+                "provider": "target", "lane": "movie", "raw": 0,
+                "playable": 0, "verified": 0,
+                "providerArtifactSha256": "b" * 64,
+                "residentialReplayReceipt": {
+                    "sourceNiakvioSha": "a" * 40,
+                    "runId": "44423214248",
+                    "providerBundleSha256": "b" * 64,
+                },
+            }],
+        },
+    },
+    {"target"},
+)
+assert new_run["residentialProviderReplay"]["verifiedProviders"] == ["keep"]
+current = new_run["residentialProviderReplay"]["lastAttempt"]
+assert current["replayedProviders"] == ["target"], current
+assert current["verifiedProviders"] == [], current
+assert current["byteMatchedProviders"] == ["target"], current
+assert current["runId"] == "44423214248", current
+print("targeted WAF historical versus fresh replay contract passed")

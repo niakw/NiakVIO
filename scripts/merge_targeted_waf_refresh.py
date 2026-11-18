@@ -31,6 +31,62 @@ def merge_rows(base_rows: list[Any], refresh_rows: list[Any], targets: set[str])
     return out
 
 
+
+def current_attempt_summary(refresh: dict[str, Any], targets: set[str]) -> dict[str, Any]:
+    """Describe ONLY full provider replays executed by this targeted run.
+
+    The durable history may retain many previous rows; it must not turn them
+    into same-run evidence or permit Brain promotion.
+    """
+    summary = refresh.get("residentialProviderReplay")
+    summary = summary if isinstance(summary, dict) else {}
+    rows = [
+        row for row in summary.get("rows") or []
+        if isinstance(row, dict) and provider_id(row) in targets
+    ]
+    run = refresh.get("freshRunReceipt")
+    run = run if isinstance(run, dict) else {}
+    run_id = str(run.get("runId") or "")
+    source_sha = str(run.get("sourceNiakvioSha") or "")
+    ids = sorted({provider_id(row) for row in rows if provider_id(row)})
+    available = summary.get("available") is True and bool(ids)
+
+    def matching(field: str) -> list[str]:
+        if not available:
+            return []
+        return sorted({
+            provider_id(row) for row in rows
+            if provider_id(row) and int(row.get(field) or 0) > 0
+        })
+
+    matched = []
+    if available and run_id and source_sha:
+        for row in rows:
+            receipt = row.get("residentialReplayReceipt")
+            digest = str(row.get("providerArtifactSha256") or "")
+            if (
+                isinstance(receipt, dict)
+                and digest and digest == str(receipt.get("providerBundleSha256") or "")
+                and str(receipt.get("runId") or "") == run_id
+                and str(receipt.get("sourceNiakvioSha") or "") == source_sha
+            ):
+                matched.append(provider_id(row))
+    return {
+        "available": available,
+        "providerCount": len(ids) if available else 0,
+        "refreshedProviders": sorted(targets),
+        "replayedProviders": ids if available else [],
+        "rawProviders": matching("raw"),
+        "playableProviders": matching("playable"),
+        "verifiedProviders": matching("verified"),
+        "byteMatchedProviders": sorted(set(matched)),
+        "sourceNiakvioSha": source_sha,
+        "runId": run_id,
+        "proofAuthority": False,
+        "publicationAuthority": False,
+    }
+
+
 def replay_summary(base: dict[str, Any], refresh: dict[str, Any], targets: set[str]) -> dict[str, Any]:
     base_replay = base.get("residentialProviderReplay")
     if not isinstance(base_replay, dict):
@@ -68,6 +124,7 @@ def replay_summary(base: dict[str, Any], refresh: dict[str, Any], targets: set[s
         provider_id(row) for row in rows
         if provider_id(row) and int(row.get("contradictions") or 0) > 0
     })
+    out["lastAttempt"] = current_attempt_summary(refresh, targets)
     out.update({
         "providerCount": len(providers),
         "providers": providers,

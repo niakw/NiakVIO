@@ -1,3 +1,9 @@
+## 2026-11-19 — WAF full-run evidence and historical/current replay separation (CI pending)
+
+- Real WAF run 44423214248 SUCCESS on e1417622044256827a55eafd86532fad21040e29. Java OkHttp selftest and four native manifest staging tests passed. Tailscale public IPv4 actually changed after exit selection. Full residential JS replay: 3 providers, 0 playable, 0 verified. Sekai is still zero before provider network, AnimeOnsen is runtime WAF blocked, Vostfree is currently disabled.
+- Evidence pipeline defect: current durable WAF latest retained 44 old provider rows (including a historical Vostfree verified result) and wrongly labelled 42 as last-attempt replayed providers although the run tested only three. Generic fix: targeted merge records actual fresh provider IDs and zero/positive media outcomes independently of retained history; durable merge trusts the scoped summary only for matching source/run receipts and preserves history as diagnostic data. Same-run bundle digest matches are explicit. Tests cover stale positive, source/run mismatch, and census safe handling. No provider byte repair or playable media claim.
+- Historical Hub46 transport aliases still not migrated; Global/VF and no-anime/VF-no-anime remain preserved.
+
 ## 2026-11-19 — Executable native/OkHttp harness regressions wired to explicit WAF lane
 
 - WAF workflow now runs all-four-manifest native staging regression and a compiled JVM OkHttp classifier self-test (real Java code, not only textual assertions) before network/replay. This is an explicit workflow; commit alone will not trigger it until the dedicated WAF trigger is updated.
