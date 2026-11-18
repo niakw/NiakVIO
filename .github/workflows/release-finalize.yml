@@ -20,6 +20,9 @@ on:
       - 'tests/release_finalizer_projection_transaction_test.py'
       - 'scripts/domain_refresh_publication_drift_gate.py'
       - 'tests/domain_refresh_publication_drift_gate_test.py'
+      - 'scripts/resolve_provider_hubs.py'
+      - 'tests/provider_hub_registry_test.py'
+      - 'tests/global_provider_branding_test.py'
       # Core/ProviderBase edits must reach published bundles, not stop at source tests.
       - 'scripts/provider_patches/**'
       - 'scripts/add_provider.py'
@@ -308,6 +311,8 @@ jobs:
           python3 tests/native_ios_multi_audio_gate_test.py
           node tests/native_multi_audio_coverage_gate_test.cjs
           node tests/native_provider_provenance_gate_test.cjs
+          python3 tests/global_provider_branding_test.py
+          python3 tests/provider_hub_registry_test.py
           python3 tests/global_stream_presentation_test.py
           python3 tests/global_stream_metadata_preservation_contract_test.py
           python3 tests/global_stream_presentation_pipeline_test.py
