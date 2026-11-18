@@ -5,13 +5,47 @@
   "browserExecutable": "google-chrome",
   "targetCount": 53,
   "providerFilter": [],
-  "attemptsPerTarget": 2,
-  "clientProfileMatrixEnabled": false,
+  "attemptsPerTarget": 1,
+  "clientProfileMatrixEnabled": true,
   "clientProfiles": [
     {
       "id": "github-default-browser",
       "transportApproximation": "GitHub-hosted Chromium",
       "userAgent": "browser-default"
+    },
+    {
+      "id": "nuvio-tv-ua-browser",
+      "transportApproximation": "GitHub-hosted Chromium with audited NuvioTV default UA only",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "nativeContract": {
+        "httpStack": "OkHttp",
+        "proxyPolicy": "Proxy.NO_PROXY",
+        "dnsPolicy": "IPv4FirstDns",
+        "redirects": "HTTP+SSL enabled"
+      }
+    },
+    {
+      "id": "nuvio-tv-okhttp-jvm",
+      "transportApproximation": "GitHub JVM OkHttp 4.12.0 with audited NuvioTV PluginRuntime policy",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "nativeContractApproximation": {
+        "httpStack": "OkHttp 4.12.0",
+        "proxyPolicy": "Proxy.NO_PROXY",
+        "dnsPolicy": "IPv4FirstDns",
+        "redirects": "HTTP+SSL enabled",
+        "tlsRuntime": "GitHub JVM, not Android device"
+      }
+    },
+    {
+      "id": "nuvio-tv-direct-http-approx",
+      "transportApproximation": "GitHub libcurl with IPv4, NO_PROXY, redirects and audited NuvioTV UA",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "nativeContractApproximation": {
+        "httpStack": "libcurl-not-OkHttp",
+        "proxyPolicy": "NO_PROXY",
+        "dnsPolicy": "IPv4 only",
+        "redirects": "enabled"
+      }
     }
   ],
   "limitations": [
@@ -2351,7 +2385,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 10149,
+      "durationMs": 7843,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -2708,7 +2742,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 52688,
+      "durationMs": 52820,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_timeout",
@@ -2832,10 +2866,10 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 52658,
+      "durationMs": 52764,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
-        "outcome": "browser_timeout",
+        "outcome": "browser_challenge_persisted",
         "attemptCount": 1,
         "clientProfileMatrix": [
           {
@@ -2845,7 +2879,7 @@
           },
           {
             "profile": "nuvio-tv-ua-browser",
-            "outcome": "browser_timeout",
+            "outcome": "browser_challenge_persisted",
             "attemptCount": 1
           }
         ],
@@ -3123,7 +3157,7 @@
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 12507,
+      "durationMs": 10036,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -3260,7 +3294,7 @@
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 9422,
+      "durationMs": 11262,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -3397,7 +3431,7 @@
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 8568,
+      "durationMs": 9253,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -6722,34 +6756,126 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": false,
-      "providerCount": 0,
+      "available": true,
+      "providerCount": 43,
       "refreshedProviders": [
         "1jour1film0626",
+        "allwish",
         "aniflix-uno",
         "animejlprovider",
         "animeonsen",
         "animesalt",
+        "animesultra",
+        "animevost-fr",
         "arrowtv",
         "chillflix",
         "cinegram",
         "cinetimes",
-        "dulourd"
+        "coflix",
+        "corsflix",
+        "dulourd",
+        "fexini",
+        "film-a-revoir",
+        "flemmix",
+        "franime",
+        "french-anime",
+        "fullanime",
+        "kehflix",
+        "mallumv",
+        "moiflix",
+        "moviebox",
+        "moviesmod",
+        "movy",
+        "skstream",
+        "vidfast",
+        "vidrock",
+        "voirserie",
+        "vostfree",
+        "waveanime",
+        "yflix"
       ],
-      "replayedProviders": []
+      "replayedProviders": [
+        "1jour1film0626",
+        "67movies",
+        "allwish",
+        "anime-ultime",
+        "animeonsen",
+        "animesalt",
+        "animesultra",
+        "animevost-fr",
+        "arrowtv",
+        "boredflix",
+        "chillflix",
+        "cinegram",
+        "cinemabz",
+        "cinetimes",
+        "coflix",
+        "corsflix",
+        "dulourd",
+        "emnexmovies",
+        "fexini",
+        "film-a-revoir",
+        "flemmix",
+        "flixer",
+        "franime",
+        "french-anime",
+        "fullanime",
+        "latestmovies",
+        "mallumv",
+        "moiflix",
+        "moviebox",
+        "moviesmod",
+        "movish",
+        "movy",
+        "neonflix",
+        "primewire",
+        "shuttletv",
+        "skstream",
+        "vidfast",
+        "voirserie",
+        "vostfree",
+        "vuflix",
+        "watch-cartoon-online",
+        "waveanime",
+        "yflix"
+      ]
     }
   },
   "lastRefreshProviderFilter": [
     "1jour1film0626",
+    "allwish",
     "aniflix-uno",
     "animejlprovider",
     "animeonsen",
     "animesalt",
+    "animesultra",
+    "animevost-fr",
     "arrowtv",
     "chillflix",
     "cinegram",
     "cinetimes",
-    "dulourd"
+    "coflix",
+    "corsflix",
+    "dulourd",
+    "fexini",
+    "film-a-revoir",
+    "flemmix",
+    "franime",
+    "french-anime",
+    "fullanime",
+    "kehflix",
+    "mallumv",
+    "moiflix",
+    "moviebox",
+    "moviesmod",
+    "movy",
+    "skstream",
+    "vidfast",
+    "vidrock",
+    "voirserie",
+    "vostfree",
+    "waveanime",
+    "yflix"
   ],
   "residentialExitNodeLastAttempt": {
     "enabled": true,
