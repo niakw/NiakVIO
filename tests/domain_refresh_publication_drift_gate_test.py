@@ -23,6 +23,8 @@ safe=[
     "A\tautomation/current-bytes-full-provider-census-44221592944.json",
     "A\tautomation/current-bytes-full-provider-census-44221592944-summary.json",
     "A\tautomation/provider-repair-batch-plan-44221592944.json",
+    "M\tautomation/provider-repair-batch-refined-latest.json",
+    "M\tautomation/provider-targeted-regression-recovery-latest.json",
     "M\tautomation/brain-llm-force-memory.json",
     "A\tautomation/hosted-repair-evidence/42364560525.json",
     "A\tautomation/hosted-repair-evidence/42364560525-evaluation.json",

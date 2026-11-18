@@ -45,6 +45,8 @@ SAFE_FILES = {
     # Census publications are generated evidence, never provider source DATA.
     "automation/provider-census-proof-history.json",
     "automation/provider-repair-batch-plan-latest.json",
+    "automation/provider-repair-batch-refined-latest.json",
+    "automation/provider-targeted-regression-recovery-latest.json",
     "automation/provider-waf-browser-session-latest.json",
     "automation/provider-onboarding-pending-census-latest.json",
     "automation/provider-onboarding-pending-status-latest.json",

@@ -4660,3 +4660,11 @@ Measured clean V3 oracle #43539920416 showed a **provider transport differential
 - Targeted Regression Recovery run `44226271619` correctly failed before publication while materializing HindMoviez from `ae941153`: generated `provider.js` contained the literal characters `\\n` between the new coordinate helper functions, producing Node syntax error at the raw-artifact byte validator.
 - The S00 coordinate logic itself remains the intended fix; only the wrapper separator was malformed. Replaced the escaped token with an actual source newline and added a provider-targeted guard against this exact generated-JS separator defect.
 - No broken HindMoviez bytes were published: `provider_byte_stability.py` failed closed before the candidate could be reconciled. A new materialization/reconcile run is required before claiming the S00 fix reached executable provider bytes.
+
+
+## 2026-11-18 — Projection publication drift gate accepts targeted-recovery evidence-only updates
+
+- Projection Reconcile run `44226525944` on `53651d95` successfully materialized valid HindMoviez candidate bytes (`2ca614eff7fcd6ef`) but then self-aborted because main advanced with `automation/provider-repair-batch-refined-latest.json` and `automation/provider-targeted-regression-recovery-latest.json`. The shared publication drift gate incorrectly classified those persisted evidence snapshots as executable/provider-authority drift.
+- Consumer audit shows these two files are generated recovery verdict/refinement inputs for later execution-plan/Repair orchestration; they are not ProviderBase/Core/provider CONFIG materialization inputs and do not mutate published bytes by themselves. The Brain phase remains separately gated.
+- Added both exact paths to the evidence-only rebase allowlist and to the drift-gate regression fixture. The gate remains fail-closed for provider-overrides, provider bytes, Core/workflow changes and non-whitelisted automation authority DATA.
+- This closes publication churn only; it does not promote any provider playback result. HindMoviez candidate bytes still require successful reconcile publication and exact-byte validation.
