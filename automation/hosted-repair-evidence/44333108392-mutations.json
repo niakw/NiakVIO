@@ -1,0 +1,72 @@
+{
+  "brainLlmSha": "abac5fda47dea6a4565d28634a9e6ce1f2bebbb5",
+  "minConfidence": 0.8,
+  "privateContentRetained": false,
+  "proofAuthority": false,
+  "providerCount": 1,
+  "providerMutationContentRetained": true,
+  "publicationAuthority": false,
+  "rows": [
+    {
+      "candidateOrdinal": 1,
+      "confidence": 0.96,
+      "failureClass": "chain-terminal-gap",
+      "mechanismFamily": "streamzo",
+      "mutationContextFingerprint": "4ad81c94f0082dc845ae5c4c9e5b7dc4d4b145a1dcf755a28b89e43ee14e39b0",
+      "mutationFingerprint": "f84749c5fd4426c5d7cd276aa0f14f72a237fab34e575bca48990af17ba66700",
+      "mutations": [
+        {
+          "family": "streamzo",
+          "find": "function hdr(ref,accept){var h={\"User-Agent\":c.ua,\"Accept\":accept||\"text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8\",\"Accept-Language\":\"fr-FR,fr;q=0.9,en;q=0.7\"};if(ref)h.Referer=ref;return h}",
+          "operation": "upsert",
+          "replace": "function hdr(ref,accept){var h={\"User-Agent\":c.ua,\"Accept\":accept||\"text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8\",\"Accept-Language\":\"fr-FR,fr;q=0.9,en;q=0.7\"};if(ref)h.Referer=ref;return h;}",
+          "scope": "provider_bloc"
+        }
+      ],
+      "providerId": "streamzo",
+      "repairFamily": {
+        "archetype": "chain-terminal-gap:dom-selector-container",
+        "failure": "chain-terminal-gap",
+        "key": "83cd919990911ba1ebe590f4758d105d45441b947b4bb9f41e6ce8f4c2c9a18e",
+        "mediaTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "mutationSurfaces": [
+          "provider-bloc",
+          "provider-data",
+          "provider-js",
+          "provider-patch"
+        ],
+        "signals": [
+          "class-prefix-family",
+          "nested-anchor-html",
+          "provider-http-2xx",
+          "response-html",
+          "response-json"
+        ],
+        "sourceTopologies": [
+          "html-download",
+          "html-player",
+          "json-api"
+        ],
+        "stages": [
+          "provider-returned-streams",
+          "provider-returned-streams\u00d73"
+        ],
+        "status": "regression-provider-js",
+        "version": 2
+      },
+      "strategy": "terminal-media-extractor-with-playback-validation",
+      "targetLayer": "provider",
+      "tests": [
+        "replay_proven_chain_to_terminal_media",
+        "validate_media_signature_duration_and_identity"
+      ]
+    }
+  ],
+  "sandboxMutationAuthority": true,
+  "schemaVersion": 1,
+  "sourceNiakvioSha": "6bb9d3dbbbb8830f450061e34cfe1dfa3566faa9"
+}
