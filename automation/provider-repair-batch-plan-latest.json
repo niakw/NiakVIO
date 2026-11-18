@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44385017428",
-  "sourceTriggerSha": "0124d1e7bf83281d79d9ef7a63b82e5e2a2fca0b",
+  "sourceRunId": "44393870924",
+  "sourceTriggerSha": "7a80500fe6d1378492ac62c354fe85b4c620a2ee",
   "unresolvedProviderCount": 68,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -127,7 +127,7 @@
     "zone-telechargement"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 10,
+  "groupCount": 11,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -163,7 +163,7 @@
         "residential-exit-native-reachable"
       ],
       "transportSignature": "not-applicable",
-      "providerCount": 41,
+      "providerCount": 39,
       "providers": [
         "1jour1film0626",
         "anikototv",
@@ -183,7 +183,6 @@
         "flixer",
         "franime",
         "frembed",
-        "frenchstream",
         "fullanime",
         "hexa",
         "hianime",
@@ -196,7 +195,6 @@
         "neonflix",
         "overlook",
         "pstream",
-        "sadisflix",
         "showbox",
         "skstream",
         "voirserie",
@@ -283,16 +281,18 @@
       ],
       "dominantIssues": [
         "network_http_error",
-        "network_zero_result"
+        "network_zero_result",
+        "timeout"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 5,
+      "providerCount": 6,
       "providers": [
         "67movies",
         "corsflix",
         "nakios",
         "primewire",
+        "sadisflix",
         "shuttletv"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
@@ -394,8 +394,8 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "transport|html_scraper|runtime:sitemap-script-family",
-      "repairScope": "transport",
+      "groupId": "learning|html_scraper|runtime:sitemap-script-family",
+      "repairScope": "learning",
       "runtimeFamilies": [
         "sitemap-script-family"
       ],
@@ -405,7 +405,7 @@
         "lookup"
       ],
       "dominantIssues": [
-        "network_http_error"
+        "network_zero_result"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
@@ -413,7 +413,35 @@
       "providers": [
         "sekai"
       ],
-      "action": "refresh transport authority before provider-local code changes",
+      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+      "repairScope": "learning",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "mixed_embed_resolver",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "frenchstream"
+      ],
+      "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -433,7 +461,7 @@
         "chain"
       ],
       "dominantIssues": [
-        "timeout"
+        "none"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
