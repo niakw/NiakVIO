@@ -16,10 +16,16 @@ import subprocess
 import time
 from pathlib import Path
 
-ENDPOINTS = ("https://checkip.amazonaws.com/", "https://ipv4.icanhazip.com/")
+ENDPOINTS = (
+    "https://checkip.amazonaws.com/",
+    "https://api.ipify.org/",
+    # Direct-IP HTTPS fallback avoids making route attestation depend entirely
+    # on the runner's current DNS resolver after Tailscale route selection.
+    "https://1.1.1.1/cdn-cgi/trace",
+)
 TAILSCALE_SET_TIMEOUT_SECONDS = 12
 TAILSCALE_CLEAR_TIMEOUT_SECONDS = 8
-PUBLIC_IP_COMMAND_TIMEOUT_SECONDS = 10
+PUBLIC_IP_COMMAND_TIMEOUT_SECONDS = 8
 
 
 def _set_exit_route(*args: str, timeout: int) -> bool:
@@ -57,17 +63,32 @@ def clear_exit_node() -> None:
         raise RuntimeError("Tailscale exit route cleanup unavailable")
 
 
-def observed_public_ipv4() -> str:
-    """Resolve public IPv4 through a killable child process.
+def _extract_public_ipv4(body: str) -> str:
+    lines = [line.strip() for line in str(body or "").splitlines() if line.strip()]
+    candidates = []
+    for line in lines:
+        if line.casefold().startswith("ip="):
+            candidates.append(line.split("=", 1)[1].strip())
+        elif "=" not in line:
+            candidates.append(line)
+    for value in candidates:
+        try:
+            return str(ipaddress.IPv4Address(value[:64]))
+        except ValueError:
+            continue
+    raise ValueError("response does not contain a public IPv4")
 
-    Python's socket timeout does not reliably bound a blocked system DNS lookup.
-    The curl process therefore has both its own network deadline and an outer
-    subprocess deadline so native Labs cannot spend an hour in egress attestation.
+
+def observed_public_ipv4() -> str:
+    """Return the first independently observed public IPv4 with hard deadlines.
+
+    Exact equality across separate public-IP services is intentionally not required:
+    GitHub-hosted runners can traverse rotating NAT egress. Route proof instead
+    combines a changed public IPv4 with Tailscale's active ExitNodeStatus.
     """
     curl = shutil.which("curl")
     if not curl:
         raise RuntimeError("public IPv4 probe unavailable")
-    seen = []
     for url in ENDPOINTS:
         try:
             proc = subprocess.run(
@@ -77,11 +98,11 @@ def observed_public_ipv4() -> str:
                     "--noproxy", "*",
                     "--location",
                     "--max-redirs", "2",
-                    "--connect-timeout", "4",
-                    "--max-time", "8",
+                    "--connect-timeout", "3",
+                    "--max-time", "6",
                     "--silent",
                     "--show-error",
-                    "--user-agent", "NiakVIO-egress-attestation/2",
+                    "--user-agent", "NiakVIO-egress-attestation/3",
                     url,
                 ],
                 capture_output=True,
@@ -91,14 +112,13 @@ def observed_public_ipv4() -> str:
             )
             if proc.returncode != 0:
                 continue
-            raw = str(proc.stdout or "").strip().splitlines()[0][:64]
-            ipaddress.IPv4Address(raw)
-            seen.append(raw)
-        except (OSError, ValueError, UnicodeError, IndexError, subprocess.TimeoutExpired):
+            try:
+                return _extract_public_ipv4(proc.stdout)
+            except ValueError:
+                continue
+        except (OSError, UnicodeError, subprocess.TimeoutExpired):
             continue
-    if not seen or len(set(seen)) != 1:
-        raise RuntimeError("public IPv4 cannot be independently established")
-    return seen[0]
+    raise RuntimeError("public IPv4 cannot be independently established")
 
 
 def exit_status() -> dict:
