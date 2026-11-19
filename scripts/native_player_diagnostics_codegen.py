@@ -301,7 +301,7 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
                         onControllerReady = { controller -> controllerRef.set(controller) },
                         onSnapshot = { snapshot ->
                             snapshotRef.set(snapshot)
-                            if ((snapshot.isEnded || (!snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L))) &&
+                            if ((snapshot.isEnded || (!snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || (snapshot.videoWidth > 0 && snapshot.videoHeight > 0)))) &&
                                 terminalStateRef.compareAndSet(null, "success")
                             ) {
                                 terminal.countDown()
@@ -361,7 +361,7 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
             val result = when {
                 terminalState == "success" && shortMedia -> NativePlayerProbe("short_media", "nuvio-mobile-production", "", "", 0, "duration_identity", host, durationSeconds)
                 terminalState == "success" && snapshot?.isEnded == true -> NativePlayerProbe("ended", "nuvio-mobile-production", "", "", 0, "none", host, durationSeconds)
-                terminalState == "success" && snapshot != null && !snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L) ->
+                terminalState == "success" && snapshot != null && !snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || (snapshot.videoWidth > 0 && snapshot.videoHeight > 0)) ->
                     NativePlayerProbe("ready", "nuvio-mobile-production", "", "", 0, "none", host, durationSeconds)
                 else -> NativePlayerProbe("timeout", "nuvio-mobile-production", "PlatformPlayerSurface", "READER_TIMEOUT", 0, "timeout", host, durationSeconds)
             }
