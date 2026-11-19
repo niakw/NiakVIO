@@ -84,7 +84,19 @@ def main() -> None:
             raise ValueError("candidate source bytes diverged")
         if not args.client_root:
             raise ValueError("official client checkout required")
-        asset = Path(args.client_root).resolve() / "app/src/androidTest/assets/niakvio" / f"p{index:03d}.js"
+        # The native stage filters to NIAKVIO_PROVIDER_SCOPE_MATRIX *before*
+        # assigning pNNN.js indexes. The single-provider candidate must be p000.
+        scope_raw = os.environ.get("NIAKVIO_PROVIDER_SCOPE_MATRIX", "").strip()
+        if not scope_raw:
+            raise ValueError("candidate requires exact native provider scope")
+        scope_path = Path(scope_raw).resolve()
+        scope_path.relative_to(ROOT)
+        scope = json.loads(scope_path.read_text(encoding="utf-8"))
+        stage_ids = [str(v.get("manifestId") or v.get("provider") or "").strip().lower()
+                     for v in scope.get("rows") or [] if isinstance(v, dict)]
+        if stage_ids != [provider] or int(scope.get("providerCount") or 0) != 1:
+            raise ValueError("candidate staging scope must contain exactly the requested provider")
+        asset = Path(args.client_root).resolve() / "app/src/androidTest/assets/niakvio/p000.js"
         if not asset.is_file() or sha256(asset) != candidate_sha:
             raise ValueError("candidate bytes not actually staged in official NuvioTV test")
         proof["officialTvTestAssetByteMatched"] = True
