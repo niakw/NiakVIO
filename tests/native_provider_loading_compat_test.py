@@ -70,6 +70,22 @@ with tempfile.TemporaryDirectory() as raw_tmp:
         assert "executePlugin(" not in rewritten, client
         app_gate = "officialPluginManager.enabledScrapers.first().any" in rewritten
         assert app_gate == (client == "tv"), client
+        if client == "tv":
+            for expected in (
+                "appPluginsEnabled = officialPluginManager.pluginsEnabled.first()",
+                "appSupportedType = loadedScraper.supportsType(requestMediaType)",
+                "scraper_disabled_locally",
+                "plugins_globally_disabled",
+                "unsupported_media_type",
+                "not_selected_by_app",
+                "supported_type=$appSupportedType",
+                "runtime_enabled=${loadedScraper.enabled}",
+                "request_type=$requestMediaType",
+            ):
+                assert expected in rewritten, (client, expected)
+        else:
+            assert "scraper_disabled_locally" not in rewritten
+
         assert ("FIELD_NATIVE_PROVIDER_APP_SELECTION client=tv" in rewritten) == (client == "tv")
         assert ("emptyList<com.nuvio.tv.domain.model.LocalScraperResult>()" in rewritten) == (client == "tv")
 
