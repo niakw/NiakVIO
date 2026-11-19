@@ -181,6 +181,15 @@ jobs:
           python tests/provider_non_regression_incremental_scope_test.py
           python -m py_compile scripts/audit_provider_quick_yield.py scripts/render_provider_census_status.py scripts/update_provider_census_proof_history.py scripts/rotating_corpus.py
 
+      - name: Verify pinned Brain imports executed native negative as prior only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git submodule update --init --depth 1 brain-llm
+          test "$(git -C brain-llm rev-parse HEAD)" = "$(python -c 'import json;print(json.load(open("automation/brain-pinned-source.json"))["sha"])')"
+          python brain-llm/scripts/import_public_niakvio.py --niakvio-root . --output "$RUNNER_TEMP/brain-native-negative-experiences.jsonl"
+          python tests/brain_native_bridge_negative_import_contract_test.py "$RUNNER_TEMP/brain-native-negative-experiences.jsonl"
+
       - name: Build exact four-version ledger
         shell: bash
         run: |
