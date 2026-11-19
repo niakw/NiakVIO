@@ -198,6 +198,7 @@ jobs:
           python3 niakvio/tests/native_residential_transport_targeted_workflow_test.py
           python3 niakvio/tests/waf_exit_route_attestation_test.py
           python3 niakvio/tests/runner_dns_preservation_test.py
+          python3 niakvio/tests/native_tv_tmdb_build_capability_test.py
 
       - name: Build exact targeted provider scope
         if: ${{ matrix.provider != 'declared-type' }}
