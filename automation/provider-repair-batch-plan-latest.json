@@ -156,8 +156,13 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
+        "browser-profile-only",
         "github-all-transports-challenged",
-        "no-transport-evidence"
+        "native-policy-reachable",
+        "no-transport-evidence",
+        "residential-exit-all-challenged",
+        "residential-exit-browser-reachable",
+        "residential-exit-native-reachable"
       ],
       "transportSignature": "not-applicable",
       "providerCount": 42,
