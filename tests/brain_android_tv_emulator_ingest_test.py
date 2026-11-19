@@ -13,7 +13,7 @@ assert spec and spec.loader
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 
-def report(provider="demo", *, selected=True, returned=0, complete=False):
+def report(provider="demo", *, selected=True, returned=0, complete=False, one_shot=False):
     return {
         "schemaVersion": 5, "evidenceComplete": complete,
         "officialClientSha": "c" * 40,
@@ -37,6 +37,15 @@ def report(provider="demo", *, selected=True, returned=0, complete=False):
             "nativePlaybackAuthority": False, "providerJsMutationAllowed": False,
             "headers": {"Authorization": "SECRET"},
         }],
+        "prePlayerMediaRootTransitions": ([{
+            "client": "tv", "provider": provider, "fixture": "jujutsu-kaisen-s01e01",
+            "requestType": "anime", "source": "plugin-runtime-fetch-sequence",
+            "kind": "hls", "pattern": "same_media_root_2xx_then_403",
+            "phase": "provider-runtime-pre-player",
+            "proofAuthority": False, "publicationAuthority": False,
+            "nativePlaybackAuthority": False, "providerJsMutationAllowed": False,
+            "url": "https://signed.example/master.m3u8?token=SECRET",
+        }] if one_shot else []),
         "quickJsDiagnostics": [
             {"client": "tv", "provider": provider, "fixture": "jujutsu-kaisen-s01e01",
              "requestType": "anime", "phase": "call", "category": "none", "count": 0},
@@ -84,6 +93,7 @@ with tempfile.TemporaryDirectory() as folder:
     assert x["nativeHardTimeoutMs"] == 25000
     assert x["nativeExtractionZeroObserved"] is True
     assert x["nativeExtractionPositiveObserved"] is False
+    assert x["sameMediaRootSuccessThenForbidden"] is False
     assert x["quickJsErrors"] == ["reference_error"]
     assert x["quickJsPhases"] == ["call", "result", "error"]
     assert x["playerStates"] == []
@@ -96,6 +106,15 @@ with tempfile.TemporaryDirectory() as folder:
     wire = json.dumps(a)
     for forbidden in ("PRIVATE", "Bearer", "SECRET", "Cookie", "https://", "rawError"):
         assert forbidden not in wire, forbidden
+
+    one_shot = mod.sanitized_rows(report(one_shot=True))[0]
+    assert one_shot["sameMediaRootSuccessThenForbidden"] is True
+    one_shot_wire = json.dumps(one_shot)
+    for forbidden in ("signed.example", "SECRET", "token=", "https://"):
+        assert forbidden not in one_shot_wire
+    forged_one_shot = report(one_shot=True)
+    forged_one_shot["prePlayerMediaRootTransitions"][0]["providerJsMutationAllowed"] = True
+    assert mod.sanitized_rows(forged_one_shot)[0]["sameMediaRootSuccessThenForbidden"] is False
 
     assert mod.merge(a, [report()], source_root=root,
                      source_sha=sha, run_id="1001")["observationCount"] == 1
