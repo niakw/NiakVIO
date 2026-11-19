@@ -173,7 +173,8 @@ assert 'stalled=str(summary.get("brainNoProgressReason")' not in workflow
 assert '-f architecture_force="$requeue_force"' in workflow
 assert "print('true' if d.get('architectureForce') is True else 'false')" in workflow
 assert 'publish_proposal="false"' in workflow
-assert '-f publish_proposal="$publish_proposal"' in workflow
+assert 'PUBLISH_PROPOSAL="$publish_proposal"' in workflow
+assert '-f publish_proposal="$PUBLISH_PROPOSAL"' in dispatcher
 assert 'args+=(-f architecture_force=true)' in workflow
 assert 'architecture_force=$force_mode' in workflow
 assert 'publish_proposal=$publish_proposal' in workflow
