@@ -25,7 +25,16 @@ for workflow in (TV, ANDROID):
     assert "prebuild_native_android_reader_suite.sh" in workflow
     assert "NIAKVIO_SKIP_ANDROID_PREBUILD: \"1\"" in workflow
 
-assert "matrix:" not in TV
+assert "projection: global" in TV
+assert "projection: vf" in TV
+assert "manifest: manifest.json" in TV
+assert "manifest: vf/manifest.json" in TV
+assert "NIAKVIO_TARGET_MANIFEST: ${{ matrix.manifest }}" in TV
+# Projection matrices must not fragment the expensive Android AVD caches.
+for line in TV.splitlines():
+    if "key: avd-v5-" in line:
+        assert "matrix.projection" not in line
+        assert "matrix.manifest" not in line
 assert "Execute rotating movie TV anime in one TV boot" in TV
 assert "Execute rotating movie TV anime in one Mobile Android boot" in ANDROID
 
