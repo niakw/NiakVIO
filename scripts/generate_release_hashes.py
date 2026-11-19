@@ -40,6 +40,13 @@ IGNORED_FILES = {
     # regenerated on every routine refresh. The canonical deep health report,
     # manifests, provider bytes and provenance remain release-hashed.
     "refresh-health-report.json",
+    # WAF/census state is durable operational evidence, not immutable release
+    # input. These files are versioned in Git and consumed by Repair/Learning,
+    # but routine transport refreshes must not invalidate published checksums.
+    "PROVIDER_CENSUS_STATUS.md",
+    "automation/provider-census-status.json",
+    "automation/provider-repair-batch-plan-latest.json",
+    "automation/provider-waf-browser-session-latest.json",
 }
 IGNORED_PREFIXES = (
     ".github/ci-status/",
