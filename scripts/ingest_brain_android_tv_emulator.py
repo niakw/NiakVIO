@@ -23,6 +23,7 @@ IDENT = re.compile(r"[a-z0-9][a-z0-9_-]{0,95}")
 FIXTURE = re.compile(r"[a-z0-9][a-z0-9-]{0,95}")
 LANES = {"movie", "tv", "anime"}
 QUICKJS_PHASES = {"call", "result", "error", "missing_export"}
+TV_PROMISE_STATUSES = {"bridge_ok", "promise_delivery_gap", "baseline_failed"}
 QUICKJS_CLASSES = {
     "none", "reference_error", "type_error", "syntax_error", "timeout",
     "network_error", "http_error", "unspecified_js_exception",
@@ -94,7 +95,7 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
         if key not in samples:
             samples[key] = {
                 "provider": key[0], "fixture": fixture, "requestType": lane,
-                "appSelected": None, "quickJsPhases": [],
+                "appSelected": None, "tvPromiseControl": "not_observed", "quickJsPhases": [],
                 "quickJsErrors": [], "quickJsReturned": 0,
                 "nativeExtractionZeroObserved": False,
                 "nativeExtractionPositiveObserved": False,
@@ -166,6 +167,26 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
         if failure in PLAYER_FAILURES and failure not in row["playerFailureClasses"]:
             row["playerFailureClasses"].append(failure)
 
+    # Synthetic control status is fixture-scoped test-harness diagnostics,
+    # not proof of any actual media URL, episode or provider correction.
+    controls: dict[str, str] = {}
+    for item in (report.get("quickJsPromiseControls") or [])[:32]:
+        if not isinstance(item, dict):
+            continue
+        fixture = safe_id(item.get("fixture"), FIXTURE)
+        status = str(item.get("status") or "")
+        if (item.get("client") != "tv" or not fixture or status not in TV_PROMISE_STATUSES):
+            continue
+        if any(item.get(key) is not False for key in (
+            "proofAuthority", "publicationAuthority", "nativePlaybackAuthority",
+            "providerJsMutationAllowed",
+        )):
+            continue
+        controls[fixture] = status
+    for row in samples.values():
+        if row["appSelected"] is True:
+            row["tvPromiseControl"] = controls.get(row["fixture"], "not_observed")
+
     # An extracted QuickJS/media marker without a matching official app
     # selection cannot prove the provider was eligible or executed. Preserve
     # legitimate excluded-client observations only as client selection facts.
@@ -215,6 +236,8 @@ def merge(previous: dict[str, Any], reports: list[dict[str, Any]], *,
                 if record.get("manifestScope") in {"manifest.json", "vf/manifest.json"} else "",
             "appSelected": record.get("appSelected")
                 if type(record.get("appSelected")) is bool else None,
+            "tvPromiseControl": record.get("tvPromiseControl")
+                if record.get("tvPromiseControl") in TV_PROMISE_STATUSES else "not_observed",
             "quickJsPhases": [x for x in (record.get("quickJsPhases") or [])
                               if x in QUICKJS_PHASES][:4],
             "quickJsErrors": [x for x in (record.get("quickJsErrors") or [])
