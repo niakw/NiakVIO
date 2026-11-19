@@ -186,6 +186,47 @@ with tempfile.TemporaryDirectory() as tmp:
         assert "a" in pinned["providers"],pinned
         assert "b" not in pinned["providers"] and "c" not in pinned["providers"],pinned
         assert "family-html" in pinned["pinnedFamilies"],pinned
+
+
+        thousand=[f"scale-{index:04d}" for index in range(1000)]
+        scale_groups=[]
+        scale_rows={}
+        for family_index in range(20):
+            members=thousand[family_index*50:(family_index+1)*50]
+            scale_groups.append({
+                "groupId":f"scale-family-{family_index:02d}",
+                "capabilityStrategy":f"strategy_{family_index:02d}",
+                "providers":members,
+            })
+            for provider in members:
+                scale_rows[provider]={
+                    "provider":provider,
+                    "status":"CHAIN REACHED",
+                    "evidenceDepth":["movie=chain_reached"],
+                }
+        scale_plan={"sourceRunId":"scale-r1","groups":scale_groups}
+        bounded=mod.repair_wave_frontier(
+            thousand,
+            plan=scale_plan,
+            rows=scale_rows,
+            pressure={},
+            trusted_strategies=set(),
+        )
+        assert len(bounded["providers"])==20,bounded
+        assert len(bounded["deferred"])==980,bounded
+        assert len(bounded["frontierFamilies"])==20,bounded
+
+        one_trusted=mod.repair_wave_frontier(
+            thousand,
+            plan=scale_plan,
+            rows=scale_rows,
+            pressure={},
+            trusted_strategies={"strategy-00"},
+        )
+        # One trusted 50-provider family fans out while the other 19 families
+        # still contribute exactly one oracle: 50 + 19 = 69 providers.
+        assert len(one_trusted["providers"])==69,len(one_trusted["providers"])
+        assert len(one_trusted["deferred"])==931,len(one_trusted["deferred"])
     finally:
         mod.STATUS,mod.BATCH_PLAN,mod.REPAIR_MEMORY,mod.OVERRIDES,mod.BRAIN_POLICY=(
             old_status,old_plan,old_memory,old_overrides,old_policy
