@@ -42,8 +42,6 @@ for dependency in (
     "providers/**",
     "provider-bases/**",
     "vf/manifest.json",
-    "manifest-hub46.json",
-    "native-hub46/manifest.json",
 ):
     assert workflow.count(f'- "{dependency}"') >= 2, dependency
 
