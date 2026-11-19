@@ -142,6 +142,13 @@ assert 'git diff --quiet "$GITHUB_SHA" "$remote_main"' in early
 assert ".github/workflows/provider-fast-repair.yml" in early
 assert workflow.index("Requeue stale executable source before expensive Repair") < workflow.index("Install locked Node tooling")
 assert workflow.index("Requeue stale executable source before expensive Repair") < workflow.index("Run provider-local Brain Repair")
+dispatcher = (ROOT / "scripts/dispatch_learning_family_cohorts.sh").read_text(encoding="utf-8")
+assert "plan_learning_family_dispatch.py" in dispatcher
+assert "MAX_COHORTS" in dispatcher
+assert "FIELD_PROVIDER_FAST_REPAIR_LEARNING_PARALLEL" in dispatcher
+assert "target_providers=\"$cohort_filter\"" in dispatcher
+assert "dispatch_learning_family_cohorts.sh" in workflow
+assert "MAX_COHORTS=8" in workflow
 # A stale result has only negative experiment-memory authority. Requeued runs
 # can import it solely from a same-repo, same-workflow, unchanged runtime and
 # provider byte lineage; this never imports or publishes stale provider bytes.
