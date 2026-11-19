@@ -1,14 +1,15 @@
 {
   "schemaVersion": 1,
   "requestedAt": "2026-11-19",
-  "sourceSha": "0251d7dae8dd4b2e4d51ca2f2cb52862f64c09a9",
   "device": "tv",
   "targetProviders": [
     "french-manga"
   ],
   "targetFixture": "jujutsu-kaisen-s01e01",
   "residentialExit": false,
-  "reason": "Current-byte Android TV validation of the shared HLS proof handoff. Historical native evidence used French-Manga f18a1c3a with HLS integrity v18 and no cached Core master reuse. Current French-Manga 458b2df260ba6488 carries Core media proof into HLS integrity v19. Require returned stream, decoded video and audio, and correct episode identity.",
-  "requestVersion": 24,
-  "retryCause": "Historical signed HLS master was fetched successfully once and the identical root later returned 403. Current bytes use coreHlsProof in nativeFirstSegmentProof to reuse the first master body instead of refetching it. Prove this on official Android TV."
+  "reason": "Diagnostic-only candidate: rematerialize shared ProviderBase native two-host hedge v27 in isolated official NuvioTV test assets, assert exact candidate JS SHA. No publication, no positive Brain/device proof, no attempt to skip native media validation.",
+  "requestVersion": 25,
+  "retryCause": "Official TV 44610510286 got alternate HLS master 200 after slow embed 522, but published Core 25s request budget returned 0 streams. Ephemeral A/B must test the new shared two-origin bounded hedge before considering publication.",
+  "sourceImplementationSha": "8f0b01193952e4f15faa37abf14e666825e6cf35",
+  "candidateRematerialize": true
 }
