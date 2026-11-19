@@ -90,17 +90,18 @@ with tempfile.TemporaryDirectory(prefix="niakvio-native-target-matrix-") as dire
     assert "status=TARGETED_UNOBSERVED" in not_started.stdout
     assert "TARGETED_CATALOG_MISS=0" in not_started.stdout
 
-    # A genuine executed 0-stream return still retains the sampled-catalogue
-    # uncertainty label, distinct from missing execution and technical error.
+    # A genuine executed 0-stream return is still an unattributed zero:
+    # search miss, player extraction failure and Core media filtering differ.
     log.write_text(
         "FIELD_NATIVE_PROVIDER_BEGIN client=tv provider=FRENCH-MANGA request_type=anime\n"
         "FIELD_NATIVE_RESULT client=tv provider=FRENCH-MANGA request_type=anime count=0\n",
         encoding="utf-8",
     )
-    catalog_zero = run(["--target-fixture", "jujutsu-kaisen-s01e01"])
-    assert catalog_zero.returncode == 0, (catalog_zero.stdout, catalog_zero.stderr)
-    assert "status=TARGETED_CATALOG_MISS" in catalog_zero.stdout
-    assert "TARGETED_UNOBSERVED=0" in catalog_zero.stdout
+    unexplained_zero = run(["--target-fixture", "jujutsu-kaisen-s01e01"])
+    assert unexplained_zero.returncode == 0, (unexplained_zero.stdout, unexplained_zero.stderr)
+    assert "status=TARGETED_ZERO_UNATTRIBUTED" in unexplained_zero.stdout
+    assert "TARGETED_UNOBSERVED=0" in unexplained_zero.stdout
+    assert "TARGETED_CATALOG_MISS=0" in unexplained_zero.stdout
 
     log.write_text(
         "FIELD_NATIVE_PROVIDER_BEGIN client=tv provider=FRENCH-MANGA request_type=anime\n"
