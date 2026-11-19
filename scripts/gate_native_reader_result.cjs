@@ -46,6 +46,10 @@ for (const file of logs) {
       loadDurationMs: Math.max(0, Number(f.load_duration_ms || 0) || 0),
       mediaDataType: Number.isFinite(Number(f.media_data_type)) ? Number(f.media_data_type) : -1,
       trackType: Number.isFinite(Number(f.track_type)) ? Number(f.track_type) : -1,
+      videoWidth: Number.isInteger(Number(f.video_width)) && Number(f.video_width) > 0
+        ? Math.min(16384, Number(f.video_width)) : 0,
+      videoHeight: Number.isInteger(Number(f.video_height)) && Number(f.video_height) > 0
+        ? Math.min(16384, Number(f.video_height)) : 0,
     };
     row.failureClass = readerFailureClass(row);
     row.signature = readerSignature(row);
