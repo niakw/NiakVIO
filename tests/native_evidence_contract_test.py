@@ -231,6 +231,7 @@ assert "TYPE" in native_corpus and "AUDIO" in native_corpus
 assert 'androidx.test.uiautomator:uiautomator:2.3.0' in native_corpus
 
 assert "PlatformPlayerSurface(" in desktop_player
+assert "production_surface=true" in desktop_player
 assert "probeDesktopProductionPlayer" in desktop_player
 assert "sourceHeaders = headers.orEmpty()" in desktop_player
 assert "DEFAULT_PR_STREAM_LIMIT = 2" in desktop_player
@@ -279,7 +280,8 @@ for required in (
 
 # Smoke acceptance is allowed to keep ordinary provider/evidence/player outcomes as
 # diagnostics, but it must never claim success from an entry/setup attempt. Only a
-# terminal FIELD_NATIVE_PLAYER row from a *-production engine can satisfy reach.
+# terminal FIELD_NATIVE_PLAYER row from the production surface can satisfy reach only
+# when it proves ready/ended playback; errors/timeouts/short-media remain diagnostic.
 for required in (
     "FIELD_NATIVE_PLAYER ",
     "-production$",
@@ -287,6 +289,9 @@ for required in (
     "NO_LAUNCH_INTENT",
     "production_player_never_reached",
     "FIELD_NATIVE_PLAYER_REACH_GATE",
+    "production_playback_never_verified",
+    "playback_verified=",
+    "production_surface",
 ):
     assert required in player_reach_gate, required
 assert "FIELD_NATIVE_PLAYER_BEGIN" not in player_reach_gate
