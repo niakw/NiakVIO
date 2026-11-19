@@ -137,4 +137,30 @@ assert workflow.index("verify_waf_exit_route.py baseline") < connect_tailnet
 assert 'rm -f "${NIAKVIO_NATIVE_DNS_STATE:-}" "${NIAKVIO_NATIVE_EGRESS_STATE:-}"' in workflow
 assert "for attempt in 1 2 3 4 5" not in workflow
 
+# Transient candidate runs must never contaminate the published-device evidence.
+helper = (ROOT / "scripts/prepare_native_candidate_remat.py").read_text(encoding="utf-8")
+for needle in (
+    "NIAKVIO_PROVIDER_NATIVE_PLAYER_HEDGE_V27",
+    "candidateJsSha256",
+    "publishedBaselineJsSha256",
+    "officialTvTestAssetByteMatched",
+    "productionPlaybackVerified",
+    "publicationAllowed",
+    "generatedByBrain",
+    "sha256(asset) != candidate_sha",
+):
+    assert needle in helper, needle
+assert "candidate_rematerialize:" in workflow
+assert "candidateRematerialize" in workflow
+assert "candidate native replay requires TV, one active provider and an exact fixture" in workflow
+assert "matrix.candidateRematerialize == true" in workflow
+assert "scripts/prepare_native_candidate_remat.py --verify-staging" in workflow
+assert workflow.index("Rematerialize isolated ProviderBase candidate for official TV test") < workflow.index("Checkout accepted official client and stage corpus once")
+assert workflow.index("Checkout accepted official client and stage corpus once") < workflow.index("Verify candidate bytes in official TV instrumentation assets")
+assert "always() && matrix.candidateRematerialize != true" in workflow
+assert "name: native-candidate-" in workflow
+assert "niakvio/automation/native-candidate-remat-proof.json" in workflow
+assert workflow.count("name: native-corpus-${{ matrix.device }}-") == 1
+assert "native-hub46" not in workflow
+
 print("native targeted residential transport workflow contract passed")
