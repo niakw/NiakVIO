@@ -11,19 +11,19 @@ from current_provider_scope import projection_active_provider_count, projection_
 validation = json.loads((ROOT / "VALIDATION.json").read_text(encoding="utf-8"))
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 corpus = json.loads((ROOT / ".github/triggers/rotating-popular-corpus.json").read_text(encoding="utf-8"))
-native = json.loads((ROOT / "native-hub46/manifest.json").read_text(encoding="utf-8"))
 candidate_workflow = (ROOT / ".github/workflows/release-candidate-validation.yml").read_text(encoding="utf-8")
 finalizer_workflow = (ROOT / ".github/workflows/release-finalize.yml").read_text(encoding="utf-8")
 
 assert validation["release"] == manifest["version"]
 assert projection_visible_provider_count() >= len(manifest.get("scrapers") or [])
-native_ids = {
-    str(row.get("id") or "").strip().casefold().replace("_", "-")
-    for row in native.get("scrapers") or []
-    if isinstance(row, dict) and str(row.get("id") or "").strip()
-}
-assert len(native_ids) == projection_active_provider_count()
-assert native_ids == projection_active_provider_ids()
+assert validation["catalogue"]["native_transport_manifests"] == ["manifest.json", "vf/manifest.json"]
+assert validation["catalogue"]["consumer_manifests"] == [
+    "manifest.json", "vf/manifest.json", "no-anime/manifest.json", "vf-no-anime/manifest.json"
+]
+assert validation["native_transport"]["manifests"] == ["manifest.json", "vf/manifest.json"]
+assert validation["native_transport"]["synthetic_union_is_publication_authority"] is False
+assert projection_active_provider_ids()
+assert len(projection_active_provider_ids()) == projection_active_provider_count()
 assert set(validation["native_sampling"]["global_lists"]) == {"movie", "tv", "anime"}
 assert set(corpus.get("lists") or {}) == {"movie", "tv", "anime"}
 for lane in ("movie", "tv", "anime"):
@@ -37,16 +37,16 @@ assert certification["status"] == "pending_current_projection_union_five_native_
 assert certification["requires_five_native_platforms"] is True
 assert certification["requires_projection_union_coverage"] is True
 assert certification["requires_fixed_point_and_reverse_rebuild"] is True
-assert certification["requires_immutable_pinned_native_transport"] is True
+assert certification["requires_sha_pinned_canonical_manifest_transport"] is True
 assert certification["requires_exact_final_release_sha_native_labs"] is True
 assert certification["requires_current_nuvio_client_refs"] is True
 assert certification["native_proof_transitive_between_clients"] is False
 assert certification["post_finalization_native_certification_workflow"] == ".github/workflows/release-candidate-validation.yml"
-assert certification["requires_final_native_hub46_manifest_regeneration"] is True
+assert certification["requires_canonical_manifest_matrix"] is True
 assert validation["nuvio_runtime_contract"]["subtitle_specific_headers_preserved"] is True
 
 # Final certification is post-finalization and SHA-bound. The finalizer dispatches
-# the permanent five-platform validation stack only after the pinned release is
+# the permanent five-platform validation stack only after the SHA-bound canonical release is
 # on main; the validation workflow refuses to certify a different main revision.
 assert "expected_sha:" in candidate_workflow
 assert "FIELD_RELEASE_CERTIFICATION_SHA_BOUND" in candidate_workflow
