@@ -193,3 +193,9 @@
 - This was a stale harness dependency, not a missing production-client repair. `prepare_native_corpus_client.py mobile` already invokes the canonical `native_client_test_bootstrap.enable_mobile_device_tests()`, which owns test-only device source-set/runner/dependency setup, libc++ packaging collision handling and the device-test-only Sentry auto-init metadata while leaving production manifests/network/player behavior unchanged.
 - The duplicate hardener call is removed. `native_android_lab_transport_test.py` now guards the canonical bootstrap directly and asserts the retired hardener remains absent; targeted workflow contracts also forbid reintroducing it.
 - No player, residential egress or ExoPlayer/libmpv result was produced by run 44444134848 because failure occurred before the exit-selection/emulator steps. The same HINDMOVIEZ/Purstream/Papadustream request is retriggered as requestVersion 3.
+
+
+### 2026-11-19 — Targeted native Lab reuses canonical clean AVD caches
+- The targeted native workflow was still keying Mobile/TV emulator snapshots by accepted-client and NiakVIO commit SHAs (avd-v2), forcing identical clean system images to rebuild for routine provider/harness commits and making same-request provider jobs race through redundant AVD creation.
+- Targeted Mobile/TV now follows the validated canonical reader policy: stable avd-v5 keys depend only on runner/system-image/profile, cache the matching ~/.android/debug.keystore, and prime adb before emulator work. Exact Nuvio client bytes are still checked out separately per run, and the Mobile suite removes a cached debug app before installing the exact candidate.
+- This is Lab efficiency/state hygiene only; it does not change Nuvio production runtime, provider bytes, residential routing or playback evidence authority. RequestVersion 3 remains pinned to its original SHA and is not treated as validation of this cache optimization.

@@ -58,6 +58,12 @@ assert "manifest-hub46.json" not in workflow
 assert "native-hub46/manifest.json" not in workflow
 assert workflow.count('--manifest "$NIAKVIO_TARGET_MANIFEST"') == 3
 assert "matrix.manifest" in workflow and "matrix.projection" in workflow
+assert "Prime Android adb server" in workflow
+assert "prime_android_lab_adb.sh" in workflow
+assert "avd-v5-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2" in workflow
+assert "avd-v5-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p" in workflow
+assert "~/.android/debug.keystore" in workflow
+assert "avd-v2-" not in workflow
 assert "harden_nuvio_mobile_device_test.py" not in workflow
 assert "prepare_native_corpus_client.py mobile" in workflow
 

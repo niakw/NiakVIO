@@ -317,7 +317,11 @@ jobs:
             ls -l /dev/kvm || true
           fi
 
-      - name: Restore Mobile AVD snapshot
+      - name: Prime Android adb server
+        if: matrix.device != 'desktop'
+        run: bash niakvio/scripts/prime_android_lab_adb.sh
+
+      - name: Restore Mobile AVD snapshot and matching debug signing key
         if: matrix.device == 'mobile'
         id: avd-cache-mobile
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
@@ -325,7 +329,8 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-v2-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2-${{ needs.resolve.outputs.mobile_sha }}-${{ github.sha }}
+            ~/.android/debug.keystore
+          key: avd-v5-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2
 
       - name: Create Mobile AVD snapshot on cache miss
         if: matrix.device == 'mobile' && steps.avd-cache-mobile.outputs.cache-hit != 'true'
@@ -343,7 +348,7 @@ jobs:
           disable-animations: false
           script: echo "Generated clean Mobile AVD snapshot."
 
-      - name: Restore TV AVD snapshot
+      - name: Restore TV AVD snapshot and matching debug signing key
         if: matrix.device == 'tv'
         id: avd-cache-tv
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
@@ -351,7 +356,8 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-v2-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p-${{ needs.resolve.outputs.tv_sha }}-${{ github.sha }}
+            ~/.android/debug.keystore
+          key: avd-v5-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p
 
       - name: Create TV AVD snapshot on cache miss
         if: matrix.device == 'tv' && steps.avd-cache-tv.outputs.cache-hit != 'true'
