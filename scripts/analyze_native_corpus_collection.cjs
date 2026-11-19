@@ -72,7 +72,21 @@ for (const log of logs) {
       playerTerminals.get(key).add(playerKey);
       const state = String(f.state || 'unknown').toLowerCase();
       const failureStage = String(f.failure_stage || 'none').toLowerCase();
-      if ((state === 'ready' || state === 'ended') && (failureStage === 'none' || failureStage === '')) {
+      // READY (and a plausible duration) is not decoded video. The former
+      // collection gate counted it as media_verified even when the stricter
+      // production-player gate correctly rejected 0x0 video formats. Keep the
+      // two gates consistent and refuse a synthetic/non-production surface.
+      const isProduction = f.production_surface === 'true' ||
+        /-production$/i.test(String(f.engine || ''));
+      const videoWidth = Number(f.video_width || 0);
+      const videoHeight = Number(f.video_height || 0);
+      if (
+        isProduction &&
+        (state === 'ready' || state === 'ended') &&
+        (failureStage === 'none' || failureStage === '') &&
+        Number.isFinite(videoWidth) && Number.isFinite(videoHeight) &&
+        videoWidth > 0 && videoHeight > 0
+      ) {
         if (!mediaVerified.has(key)) mediaVerified.set(key, new Set());
         mediaVerified.get(key).add(playerKey);
       }
