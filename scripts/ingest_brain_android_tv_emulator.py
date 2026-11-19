@@ -34,7 +34,10 @@ PLAYER_STATES = {
 }
 PLAYER_FAILURES = {
     "healthy", "http_access", "playback_runtime_setup", "playback_player_error",
-    "playback_decoder", "duration_identity", "terminal_media_gap",
+    "playback_decoder", "playback_video_format_unverified",
+    "playback_http_access", "playback_http_gone", "playback_rate_limited",
+    "playback_http_upstream", "playback_timeout", "playback_parser",
+    "duration_identity", "terminal_media_gap",
     "runtime_contract_drift", "media_extraction_gap", "client_runtime_error",
 }
 MAX_REPORT_BYTES = 2 * 1024 * 1024
