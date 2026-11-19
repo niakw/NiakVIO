@@ -104,7 +104,14 @@ def merge_summary(
         for provider in (safe_provider(x) for x in summary.get("learnHandoffProviders") or [])
         if provider
     }
-    learn_owned = explicit_handoff or (deferred | remaining)
+    # Fast Repair schema v2 owns the exact Learning handoff boundary. An empty
+    # explicit list is meaningful: unresolved siblings may be intentionally
+    # unvisited by the causal-family frontier and must not be reclassified as
+    # Learning debt merely because they remain in the Repair queue.
+    if fast_summary and "learnHandoffProviders" in summary:
+        learn_owned = explicit_handoff
+    else:
+        learn_owned = deferred | remaining
     lost = lost_lanes(summary)
     attempts = max(0, min(int(summary.get("maxAttemptsPerTask") or 0), 20))
 
