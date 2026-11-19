@@ -18,8 +18,9 @@ js = r"""
 const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const crawler = JSON.parse(process.env.CRAWL_CODE);
-function make(native, slowHost, fastHost) {
+function make(native, slowHost, fastHost, blockingNativeBridge=false) {
   const requests = [];
+  const starts = [];
   const f = {
     _spv187PrioritizedPlayerRoutes: x => x,
     _crawlEligible: () => true,
@@ -44,8 +45,17 @@ function make(native, slowHost, fastHost) {
     _dedupeStreamRows: rows => [...new Map(rows.map(x=>[x.url,x])).values()],
     _fetch: async u => {
       requests.push(u);
+      starts.push({url:u,at:Date.now()});
       if (u.includes('slow.example')) {
-        await new Promise(r=>setTimeout(r,150));
+        if (blockingNativeBridge) {
+          // Official NuvioTV's async fetch() calls a synchronous
+          // __native_fetch -> OkHttp Call.execute() before its first await.
+          // The JS thread cannot schedule its second worker meanwhile.
+          const until=Date.now()+150;
+          while (Date.now()<until) {}
+        } else {
+          await new Promise(r=>setTimeout(r,150));
+        }
         throw new Error('http_522');
       }
       await new Promise(r=>setTimeout(r,8));
@@ -57,7 +67,7 @@ function make(native, slowHost, fastHost) {
     : {};
   vm.createContext(f);
   f.testCrawl=vm.runInContext(crawler+';_crawlDirectMedia;',f);
-  return {f, requests};
+  return {f, requests, starts};
 }
 (async()=>{
  const slow='https://slow.example/embed/bad',fast='https://fast.example/e/good';
@@ -76,7 +86,15 @@ function make(native, slowHost, fastHost) {
  const same=await c.f.testCrawl([slow,'https://slow.example/e/other'],'https://example.org',2);
  assert.equal(same.length,0);
  assert.ok(Date.now()-startC>=140,'same-host URLs never fast-hedge');
- console.log('provider native mixed-host hedge control passed: media=1, bounded=2, sequential-preserved=true');
+ const d=make(true,slow,fast,true),startD=Date.now();
+ const bridged=await d.f.testCrawl([slow,fast],'https://example.org',2);
+ const actualMs=Date.now()-startD;
+ assert.equal(bridged.length,1,'sync transport can still return late direct media');
+ assert.ok(actualMs>=140,'sync native bridge cannot turn Promise.all into HTTP parallelism: '+actualMs);
+ assert.equal(d.requests.length,2,'no hidden duplicate requests under sync native bridge');
+ assert.ok(d.starts[1].at-d.starts[0].at>=140,
+    'the fast second host must not start before a blocking native 522 completes');
+ console.log('provider native hedge contract passed: async-fixture-fast=true, sync-android-tv-parallel=false, bounded=2');
 })().catch(e=>{console.error(e);process.exitCode=1});
 """
 # Pass source through stdin to avoid env/code quoting for the dynamic function.
