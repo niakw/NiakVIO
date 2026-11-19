@@ -78,7 +78,11 @@ assert "matrix.residential == true" in workflow
 assert "matrix.device == 'mobile' && matrix.provider != 'declared-type'" in workflow
 assert "manifest-hub46.json" not in workflow
 assert "native-hub46/manifest.json" not in workflow
-assert workflow.count('--manifest "$NIAKVIO_TARGET_MANIFEST"') == 3
+# TV now prepares the official TMDB BuildConfig capability before the
+# usual Desktop/Mobile/TV staging; all four calls must preserve the same
+# canonical Global/VF projection, not a retired hub46 route.
+assert workflow.count('--manifest "$NIAKVIO_TARGET_MANIFEST"') == 4
+assert 'prepare_native_tv_tmdb_contract.py --repo-root niakvio --client-root nuvio-tv' in workflow
 assert "matrix.manifest" in workflow and "matrix.projection" in workflow
 assert "Prime Android adb server" in workflow
 assert "prime_android_lab_adb.sh" in workflow
