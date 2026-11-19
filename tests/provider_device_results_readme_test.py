@@ -6,6 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = ROOT / "scripts" / "update_provider_device_results.py"
+SYNC_PATH = ROOT / ".github" / "workflows" / "provider-results-readme-sync.yml"
 
 spec = importlib.util.spec_from_file_location("provider_device_results", MODULE_PATH)
 assert spec and spec.loader
@@ -13,6 +14,10 @@ module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
 source = MODULE_PATH.read_text(encoding="utf-8")
+sync = SYNC_PATH.read_text(encoding="utf-8")
+assert "- NATIVE - Device Corpus Tests" in sync
+assert "github.event.workflow_run.name == 'NATIVE - Device Corpus Tests'" in sync
+assert '"native-corpus-*-$RUN_ID"' in sync
 active_body = source.split("def active_providers() -> list[dict[str, Any]]:", 1)[1].split("\ndef provider_proof_summary", 1)[0]
 assert "projection_active_provider_rows()" in active_body
 assert 'load_json(ROOT / "manifest.json"' not in active_body

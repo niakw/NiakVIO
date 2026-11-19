@@ -225,3 +225,8 @@
 - `LEARN - Native Reader Sync` now listens to completed trusted-main `NATIVE - Device Corpus Tests` runs, downloads the targeted `native-corpus-*-$RUN_ID` artifacts, and merges complete diagnoses into the existing reader backlog / learning-only memory. Manual exact-run import remains supported for full Labs.
 - Cancelled/skipped runs are not auto-imported. Runs that fail before producing a diagnosis are skipped automatically rather than manufacturing evidence. The existing fail-closed merge still refuses incomplete evidence and never grants production/provider mutation authority from a client transport observation alone.
 - Native residential request v5 replays `animeonsen` + `sekai` on Desktop/Mobile/TV with the focused Jujutsu Kaisen fixture so the resulting real-client evidence survives into Brain learning instead of remaining a transient CI log.
+
+
+### 2026-11-19 — Targeted native successes join retained device proof
+- `OPS - Provider README Sync` now listens to `NATIVE - Device Corpus Tests` in addition to the full native reader workflows and downloads `native-corpus-*-$RUN_ID` diagnostics.
+- The existing `update_provider_device_results.py` trust policy remains unchanged: only complete `*brain.json` observations at player layer with `failureClass=healthy` become retained device proof. Targeted failures/incomplete evidence therefore feed Learning but cannot become a positive README/device result.

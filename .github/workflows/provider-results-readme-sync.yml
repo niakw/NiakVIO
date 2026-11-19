@@ -6,6 +6,7 @@ on:
       - NATIVE - Android Reader
       - NATIVE - iOS Reader
       - NATIVE - Desktop Reader
+      - NATIVE - Device Corpus Tests
     types: [completed]
   push:
     branches: [main]
@@ -37,7 +38,7 @@ jobs:
     permissions:
       contents: write
       actions: read
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion != 'cancelled' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.head_branch == 'main' && (github.event.workflow_run.name == 'NATIVE - Android Reader' || github.event.workflow_run.name == 'NATIVE - iOS Reader' || github.event.workflow_run.name == 'NATIVE - Desktop Reader')) }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion != 'cancelled' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.head_branch == 'main' && (github.event.workflow_run.name == 'NATIVE - Android Reader' || github.event.workflow_run.name == 'NATIVE - iOS Reader' || github.event.workflow_run.name == 'NATIVE - Desktop Reader' || github.event.workflow_run.name == 'NATIVE - Device Corpus Tests')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -73,7 +74,7 @@ jobs:
           echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
 
       - name: Download exact positive-evidence diagnostics
-        if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && (github.event.workflow_run.name == 'NATIVE - Android Reader' || github.event.workflow_run.name == 'NATIVE - iOS Reader' || github.event.workflow_run.name == 'NATIVE - Desktop Reader')) }}
+        if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && (github.event.workflow_run.name == 'NATIVE - Android Reader' || github.event.workflow_run.name == 'NATIVE - iOS Reader' || github.event.workflow_run.name == 'NATIVE - Desktop Reader' || github.event.workflow_run.name == 'NATIVE - Device Corpus Tests')) }}
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ steps.source.outputs.run_id }}
@@ -86,7 +87,8 @@ jobs:
             "native-tv-route-*-$RUN_ID" \
             "native-mobile-android-*-$RUN_ID" \
             "native-mobile-ios-*-$RUN_ID" \
-            "native-desktop-reader-*-$RUN_ID"; do
+            "native-desktop-reader-*-$RUN_ID" \
+            "native-corpus-*-$RUN_ID"; do
             gh run download "$RUN_ID" --pattern "$pattern" --dir provider-results-input || true
           done
           mapfile -t DIAGNOSTICS < <(find provider-results-input -type f -name '*brain.json' -print | sort)
