@@ -1,0 +1,159 @@
+name: BRAIN - Replay archived official TV evidence
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/brain-replay-archived-tv-evidence.yml']
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Completed official TV run to reparse from archived logs
+        required: true
+        type: string
+        default: '44567912230'
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: brain-android-tv-evidence-main
+  cancel-in-progress: false
+
+jobs:
+  replay:
+    if: ${{ github.repository == 'niakw/NiakVIO' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ARCHIVE_RUN_ID: ${{ inputs.run_id || '44567912230' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+      - name: Verify archived run provenance
+        id: origin
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$ARCHIVE_RUN_ID" =~ ^[0-9]{8,20}$ ]]
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$ARCHIVE_RUN_ID" > "$RUNNER_TEMP/origin.json"
+          jq -e --arg repo "$GITHUB_REPOSITORY" '
+            .name == "NATIVE - Device Corpus Tests"
+            and .path == ".github/workflows/native-corpus-device-targeted.yml"
+            and .head_branch == "main"
+            and .head_repository.full_name == $repo
+            and .status == "completed"
+            and (.conclusion == "success" or .conclusion == "failure")
+            and (.head_sha | test("^[0-9a-f]{40}$"))
+          ' "$RUNNER_TEMP/origin.json" > /dev/null
+          echo "source_sha=$(jq -r '.head_sha' "$RUNNER_TEMP/origin.json")" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ steps.origin.outputs.source_sha }}
+          path: tested-source
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: niakw/NiakVIO-Brain-LLM
+          ref: main
+          path: brain
+          persist-credentials: false
+      - name: Verify diagnostic contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts --no-audit --no-fund
+          node engine_v2/tests/native-reader-diagnosis.test.mjs
+          python3 tests/brain_android_tv_emulator_ingest_test.py
+      - name: Replay existing raw logs through trusted current diagnosis
+        shell: bash
+        env:
+          SOURCE_SHA: ${{ steps.origin.outputs.source_sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/tv-archive" "$RUNNER_TEMP/tv-reparsed"
+          gh run download "$ARCHIVE_RUN_ID" --repo "$GITHUB_REPOSITORY" --pattern 'native-corpus-tv-*' --dir "$RUNNER_TEMP/tv-archive"
+          mapfile -d '' logs < <(find "$RUNNER_TEMP/tv-archive" -type f -name 'tv-native-corpus-*.log' -print0)
+          (( ${#logs[@]} > 0 && ${#logs[@]} <= 8 ))
+          number=0
+          for log in "${logs[@]}"; do
+            original="${log%.log}-brain.json"
+            [[ -s "$original" ]]
+            official_client_sha="$(jq -r '.officialClientSha // empty' "$original")"
+            client_args=()
+            if [[ "$official_client_sha" =~ ^[0-9a-f]{40}$ ]]; then
+              client_args=(--official-client-sha "$official_client_sha")
+            elif [[ -n "$official_client_sha" ]]; then
+              exit 3
+            fi
+            node engine_v2/scripts/diagnose-native-reader.mjs --output "$RUNNER_TEMP/tv-reparsed/replay-$number-brain.json" "${client_args[@]}" "$log"
+            number=$((number+1))
+          done
+          python3 - "$RUNNER_TEMP/tv-reparsed" "$ARCHIVE_RUN_ID" <<'PY'
+          import json, pathlib, sys
+          rows = [row for p in pathlib.Path(sys.argv[1]).glob('*-brain.json')
+                  for row in (json.loads(p.read_text()).get('prePlayerMediaRootTransitions') or [])]
+          matches = [x for x in rows if x.get('source') == 'plugin-runtime-fetch-sequence'
+                     and x.get('pattern') == 'same_media_root_2xx_then_403'
+                     and x.get('providerJsMutationAllowed') is False
+                     and x.get('publicationAuthority') is False]
+          if not matches:
+              raise SystemExit('no sanitized HLS transition recovered from raw native logs')
+          if sys.argv[2] == '44567912230' and not any(
+              x.get('provider') == 'french-manga'
+              and x.get('fixture') == 'jujutsu-kaisen-s01e01' for x in matches):
+              raise SystemExit('French-Manga original HLS 200->403 was not recovered')
+          print('FIELD_BRAIN_TV_REPLAY recovered_signatures=%s' % len(matches))
+          PY
+          python3 scripts/ingest_brain_android_tv_emulator.py --reports "$RUNNER_TEMP/tv-reparsed" --source-root tested-source --source-sha "$SOURCE_SHA" --run-id "$ARCHIVE_RUN_ID" --ledger automation/brain-android-tv-emulator-history.json
+          cp automation/brain-android-tv-emulator-history.json tested-source/automation/brain-android-tv-emulator-history.json
+          PYTHONPATH=brain/src python3 brain/scripts/route_android_tv_emulator_feedback.py --niakvio-root tested-source --source-sha "$SOURCE_SHA" --run-id "$ARCHIVE_RUN_ID" --output "$RUNNER_TEMP/tv-replayed-brain-route.json"
+          python3 - "$RUNNER_TEMP/tv-replayed-brain-route.json" "$ARCHIVE_RUN_ID" <<'PY'
+          import json, pathlib, sys
+          result = json.loads(pathlib.Path(sys.argv[1]).read_text())
+          assert result['routeCount'] > 0
+          assert all(result[k] is False for k in ('modelExecuted','proofAuthority','publicationAuthority','nativePlaybackAuthority','providerMutationAuthority'))
+          if sys.argv[2] == '44567912230':
+              assert any(x['provider']=='french-manga' and x['targetLayer']=='core'
+                         and x['strategy']=='reuse_successful_hls_root_across_core_validation'
+                         for x in result['routes']), 'Brain lost Core owner signal'
+          print('FIELD_BRAIN_TV_REPLAY_ROUTED routes=%d authority=diagnostic_only' % result['routeCount'])
+          PY
+      - name: Upload sanitized routing only
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: brain-tv-archive-route-${{ github.run_id }}
+          path: ${{ runner.temp }}/tv-replayed-brain-route.json
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Persist only sanitized exact-source diagnostic history
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add automation/brain-android-tv-emulator-history.json
+          if git diff --cached --quiet; then
+            echo "FIELD_BRAIN_TV_REPLAY_PERSIST unchanged=true"
+            exit 0
+          fi
+          git commit -m "ci(brain): replay archived TV HLS transition into causal history"
+          for attempt in 1 2 3; do
+            git fetch --quiet origin main
+            git rebase origin/main
+            if git push origin HEAD:main; then
+              echo "FIELD_BRAIN_TV_REPLAY_PERSIST committed=true sha=$(git rev-parse HEAD)"
+              exit 0
+            fi
+          done
+          exit 1
