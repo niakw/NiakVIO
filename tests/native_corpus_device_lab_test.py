@@ -299,8 +299,13 @@ assert canonical_active_ids == projection_active_provider_ids(), (
     len(canonical_active_ids), projection_active_provider_count()
 )
 assert len(canonical_active_ids) == projection_active_provider_count()
-assert "manifest: manifest.json" in targeted_runtime
-assert "manifest: vf/manifest.json" in targeted_runtime
+# Targeted runtime resolves each explicit provider to its canonical owning
+# projection dynamically. The declared-type fallback deliberately exercises
+# both canonical manifests.
+assert "from native_manifest_projection import active_provider_manifest" in targeted_runtime
+assert '"manifest": "manifest.json"' in targeted_runtime
+assert '"manifest": "vf/manifest.json"' in targeted_runtime
+assert 'NIAKVIO_TARGET_MANIFEST: ${{ matrix.manifest }}' in targeted_runtime
 assert "manifest-hub46.json" not in targeted_runtime
 assert "native-hub46/manifest.json" not in targeted_runtime
 
