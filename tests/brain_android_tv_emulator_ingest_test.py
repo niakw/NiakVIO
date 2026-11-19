@@ -197,7 +197,7 @@ faked = json.loads(json.dumps(tv_terminal))
 faked["terminalTransportDiagnostics"][0]["httpStatus"] = 200
 assert mod.sanitized_rows(faked)[0]["independentTerminalHttpStatuses"] == []
 faked = json.loads(json.dumps(tv_terminal))
-faked["observations"][1]["playerVideoFormatObserved"] = True
+faked["observations"][0]["playerVideoFormatObserved"] = True
 assert mod.sanitized_rows(faked)[0]["playerVideoFormatUnverified"] is False
 faked = report(selected=False)
 faked["terminalTransportDiagnostics"] = tv_terminal["terminalTransportDiagnostics"]
