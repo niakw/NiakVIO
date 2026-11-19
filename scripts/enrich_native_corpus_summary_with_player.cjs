@@ -86,6 +86,13 @@ for (const file of listFiles(inputDir)) {
       durationSeconds: Number(f.duration_seconds || 0) || null, host: decode(f.host64),
       errorClass: decode(f.error_class64), errorCode: decode(f.error_code64),
       exceptionChain: decode(f.exception_chain64), responseHeaderNames: decode(f.response_header_names64),
+      // Do not drop decoded video format when enriching the official reader
+      // summary. Omitting these fields reclassifies a real 1280x720 READY
+      // control as unverified (the decoder gate itself remains fail-closed).
+      videoWidth: Number.isInteger(Number(f.video_width)) && Number(f.video_width) > 0
+        ? Math.min(16384, Number(f.video_width)) : 0,
+      videoHeight: Number.isInteger(Number(f.video_height)) && Number(f.video_height) > 0
+        ? Math.min(16384, Number(f.video_height)) : 0,
     };
     row.failureClass = readerFailureClass(row);
     row.signature = readerSignature(row);
