@@ -46,16 +46,21 @@ def run_merge(
 
 sync_text = SYNC.read_text(encoding="utf-8")
 canonical_text = CANONICAL.read_text(encoding="utf-8")
-# Reader evidence import is explicit and exact-run scoped. Native TV, Mobile
-# Android, Mobile iOS and Desktop publish independent artifacts; the sync job
-# imports one selected completed run instead of coupling Labs through workflow_run.
+# Full reader evidence remains manually importable by exact run. Targeted native
+# client diagnostics are additionally imported automatically from the trusted
+# main-only Device Corpus workflow so one-off transport/player evidence is not lost.
 assert "workflow_dispatch:" in sync_text
 assert "Exact completed native reader run ID to import manually" in sync_text
-assert "workflow_run:" not in sync_text
+assert "workflow_run:" in sync_text
+assert 'workflows: ["NATIVE - Device Corpus Tests"]' in sync_text
+assert "github.event.workflow_run.head_repository.full_name == github.repository" in sync_text
+assert "github.event.workflow_run.head_branch == 'main'" in sync_text
 assert '"native-tv-full-$RUN_ID"' in sync_text
 assert '"native-mobile-android-full-$RUN_ID"' in sync_text
 assert '"native-mobile-ios-full-$RUN_ID"' in sync_text
 assert '"native-desktop-full-*-$RUN_ID"' in sync_text
+assert '"native-corpus-*-$RUN_ID"' in sync_text
+assert "steps.diagnoses.outputs.has_diagnostics == 'true'" in sync_text
 assert "merge_native_reader_backlog.py" in sync_text
 assert "--previous-state reader-learning-input/latest.json" in sync_text
 assert "--state reader-learning-output/latest.json" in sync_text

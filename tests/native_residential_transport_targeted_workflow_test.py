@@ -39,6 +39,11 @@ required = (
     "targeted native provider cohort is capped at 8",
     "native-corpus-${{ matrix.device }}-${{ matrix.provider }}-${{ matrix.projection }}-${{ matrix.fixture }}-${{ github.run_id }}",
     "inputs.device == 'all' && inputs.target_providers == '' && inputs.target_fixture == ''",
+    "Diagnose sanitized targeted native evidence for Brain",
+    "engine_v2/scripts/diagnose-native-reader.mjs",
+    "FIELD_NATIVE_TARGETED_BRAIN_DIAGNOSIS",
+    "${{ matrix.device }}-native-corpus-*-brain.json",
+    "retention-days: 8",
 )
 for needle in required:
     assert needle in workflow, needle
@@ -72,5 +77,9 @@ assert "harden_nuvio_mobile_device_test.py" not in workflow
 assert "prepare_native_corpus_client.py mobile" in workflow
 assert 'FIXTURES=("${NIAKVIO_TARGET_FIXTURE}")' in workflow
 assert '"fixture": target_fixture or "all"' in workflow
+clear_exit = workflow.index("Clear native residential exit")
+brain_diag = workflow.index("Diagnose sanitized targeted native evidence for Brain")
+upload = workflow.index("Upload sanitized native corpus logs")
+assert clear_exit < brain_diag < upload
 
 print("native targeted residential transport workflow contract passed")

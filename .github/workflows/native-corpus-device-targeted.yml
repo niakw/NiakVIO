@@ -489,13 +489,37 @@ jobs:
         shell: bash
         run: sudo tailscale set --exit-node= || true
 
+      - name: Diagnose sanitized targeted native evidence for Brain
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          logs=("$GITHUB_WORKSPACE/${{ matrix.device }}-native-corpus-"*.log)
+          if [ "${#logs[@]}" -eq 0 ]; then
+            echo "FIELD_NATIVE_TARGETED_BRAIN_DIAGNOSIS client=${{ matrix.device }} provider=${{ matrix.provider }} files=0 status=no_logs"
+            exit 0
+          fi
+          diagnosed=0
+          for log in "${logs[@]}"; do
+            base="$(basename "$log" .log)"
+            out="$GITHUB_WORKSPACE/${base}-brain.json"
+            node niakvio/engine_v2/scripts/diagnose-native-reader.mjs --output "$out" "$log"
+            diagnosed=$((diagnosed + 1))
+          done
+          echo "FIELD_NATIVE_TARGETED_BRAIN_DIAGNOSIS client=${{ matrix.device }} provider=${{ matrix.provider }} files=$diagnosed status=written"
+
       - name: Upload sanitized native corpus logs
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: native-corpus-${{ matrix.device }}-${{ matrix.provider }}-${{ matrix.projection }}-${{ matrix.fixture }}-${{ github.run_id }}
-          path: ${{ matrix.device }}-native-corpus-*.log
-          retention-days: 1
+          path: |
+            ${{ matrix.device }}-native-corpus-*.log
+            ${{ matrix.device }}-native-corpus-*-brain.json
+            ${{ matrix.device }}-native-frontend-*.log
+            native-evidence/${{ matrix.device }}/**
+          retention-days: 8
           if-no-files-found: warn
 
   cross-runtime-gate:
