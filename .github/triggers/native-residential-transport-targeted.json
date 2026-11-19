@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
   "requestedAt": "2026-11-19",
-  "sourceSha": "7ea46e83e0d6d0b9b6e668e51ae0c849337c5ce9",
+  "sourceSha": "ff000f8ec6792b226fcc1e6b6efff4ef42739bbc",
   "device": "tv",
   "targetProviders": [
     "french-manga"
   ],
   "targetFixture": "jujutsu-kaisen-s01e01",
   "residentialExit": false,
-  "reason": "Brain-first official NuvioTV French-Manga JJK S01E01 replay after fixing generated test-only Hilt PluginRuntime accessor and EntryPoint de-dup: prove immediate vs awaited Promise delivery, official app selection, extracted streams, decoded playback if any. Do not patch provider or alter manifests.",
-  "requestVersion": 18,
-  "retryCause": "Earlier 44535496646 failed before native execution because finalize_native_tv_test_entrypoint expected old PluginManager EntryPoint without new pluginRuntime method; source and debug Hilt accessor now synchronized, generated Kotlin regression added."
+  "reason": "Re-run source-pinned official NuvioTV French-Manga after restoring Brain diagnostics for 2 extracted HLS, independent HTTP 403 and READY without decoded video/audio. Verify exact current instrumenter -> native player -> redacted report -> Brain feedback; do not change provider JS or declare FULL without decoded identity/video.",
+  "requestVersion": 19,
+  "retryCause": "Prior real run 44537074209 showed 2 streams, no verified video format/audio and independent HLS probe HTTP403; older reports dropped source-pinned extraction count/terminal HTTP, current generic bridge now retains both. Reprove on exact main."
 }
