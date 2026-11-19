@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "requestVersion": 9,
+  "requestVersion": 10,
   "requestedAt": "2026-11-19",
   "targetProviders": [
     "animeonsen",
@@ -8,7 +8,7 @@
     "sekai"
   ],
   "reuseExistingEvidence": false,
-  "reason": "Validate WAF client matrix after adding audited Desktop/JVM OkHttp system-proxy profile alongside NuvioTV/Android NO_PROXY profile; attested Tailscale egress plus full provider replay remain required before any provider conclusion.",
-  "cohort": "waf-tv-desktop-client-differential-2026-11-19",
-  "sourceSha": "69bdb5cd8986165d47caad5ed6e1f5361e9e144c"
+  "reason": "Regression validation after fixing stale transport overlay selection for authority-rediscovery providers; refresh TV/Desktop/browser/residential evidence without granting Repair authority.",
+  "cohort": "waf-authority-overlay-refresh-2026-11-19",
+  "sourceSha": "a69298ea86ae21b96be4555ae3d7dba6b5fb3cf8"
 }

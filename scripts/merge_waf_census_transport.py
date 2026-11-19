@@ -348,14 +348,22 @@ def merge_transport(
 
     authority_refreshed = _refresh_authority_rows(providers, authority_status)
 
+    # Refresh transport evidence from the provider's semantic status, not only
+    # from environmentQueue. That queue deliberately excludes authority-blocked
+    # identities, but fresh WAF/client evidence must still replace stale
+    # transport labels while authority rediscovery remains fail-closed.
     baseline_environment = {
-        str(value or "").strip().casefold()
-        for value in [
-            *((baseline.get("environmentQueue") or baseline.get("harnessQueue") or [])),
-            *((baseline.get("targetedTransportBlockedQueue") or [])),
-        ]
-        if str(value or "").strip()
+        str(row.get("provider") or "").strip().casefold()
+        for row in providers
+        if isinstance(row, dict)
+        and str(row.get("status") or "") in census.ENVIRONMENT_ONLY_STATES
+        and str(row.get("provider") or "").strip()
     }
+    baseline_environment.update({
+        str(value or "").strip().casefold()
+        for value in (baseline.get("targetedTransportBlockedQueue") or [])
+        if str(value or "").strip()
+    })
     waf_providers = {
         str(row.get("provider") or "").strip().casefold()
         for row in waf.get("rows") or []
@@ -639,11 +647,17 @@ def merge_transport(
                 status = census.browser_harness_status(waf, provider)
                 row["status"] = status
                 row["color"] = census.STATUS_META[status][0]
-                row["action"] = census._harness_action(status, diagnostic["classification"])
+                authority_allowed = row.get("authorityRepairEligible") is not False
+                row["action"] = (
+                    census._harness_action(status, diagnostic["classification"])
+                    if authority_allowed
+                    else census._authority_action(status, diagnostic["classification"], row)
+                )
                 row["brainCheckRequired"] = True
+                row["statusRepairEligible"] = census.is_repair_eligible_status(status)
                 row["repairEligible"] = False
                 # Narrow transport diagnostics are not provider playback probes.
-                row["testedThisRun"] = bool(row.get("testedThisRun", False)) and False
+                row["testedThisRun"] = False
         changed.append(provider)
 
     # Membership authority is preserved. Transport diagnostics may move a member

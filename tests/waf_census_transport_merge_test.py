@@ -146,6 +146,63 @@ assert merged["harnessEvidenceSha"] == "waf-sha"
 assert merged["harnessTransportUpdatedProviders"] == ["all-blocked", "browser-only"]
 
 
+# Authority rediscovery intentionally excludes a provider from environmentQueue,
+# but that must not freeze an old transport diagnosis forever. Fresh WAF/client
+# evidence still refreshes status/class while authority remains fail-closed.
+authority_blocked_baseline = {
+    "repairQueue": [],
+    "environmentQueue": [],
+    "harnessQueue": [],
+    "authorityBlockedQueue": ["authority-waf"],
+    "authorityRediscoveryQueue": ["authority-waf"],
+    "symptomaticProviders": ["authority-waf"],
+    "brainQueue": ["authority-waf"],
+    "providers": [{
+        "provider": "authority-waf",
+        "status": "HARNESS/ENV BLOCKED",
+        "color": "🟫",
+        "dominantIssue": "provider_waf_challenge",
+        "authorityRepairEligible": False,
+        "authorityAction": "REDISCOVER_SEARCH",
+        "authorityClass": "unproven-direct-candidate",
+        "authorityConfidence": "low",
+        "authorityReasons": ["direct_candidate_unproven", "search_supplement_only"],
+        "statusRepairEligible": False,
+        "repairEligible": False,
+        "brainCheckRequired": True,
+        "testedThisRun": True,
+        "harnessTransportClass": "github-all-transports-challenged",
+    }],
+}
+authority_blocked_waf = {
+    "rows": [{
+        "provider": "authority-waf",
+        "lane": "anime",
+        "outcome": "browser_content_reached",
+        "clientProfileMatrix": [{
+            "profile": "nuvio-tv-ua-browser",
+            "outcome": "browser_content_reached",
+        }],
+        "directHttpProfile": {"outcome": "direct_http_inconclusive"},
+        "okHttpJvmProfile": {"outcome": "okhttp_jvm_inconclusive"},
+        "desktopOkHttpJvmProfile": {"outcome": "okhttp_jvm_inconclusive"},
+    }],
+}
+authority_blocked = mod.merge_transport(authority_blocked_baseline, authority_blocked_waf)
+authority_row = authority_blocked["providers"][0]
+assert authority_row["status"] == "HARNESS MISMATCH", authority_row
+assert authority_row["harnessTransportClass"] == "browser-profile-only", authority_row
+assert authority_row["authorityRepairEligible"] is False, authority_row
+assert authority_row["authorityAction"] == "REDISCOVER_SEARCH", authority_row
+assert authority_row["repairEligible"] is False, authority_row
+assert authority_row["testedThisRun"] is False, authority_row
+assert "rediscovery required before Repair" in authority_row["action"], authority_row
+assert authority_blocked["environmentQueue"] == [], authority_blocked
+assert authority_blocked["harnessQueue"] == [], authority_blocked
+assert authority_blocked["authorityRediscoveryQueue"] == ["authority-waf"], authority_blocked
+assert authority_blocked["harnessTransportUpdatedProviders"] == ["authority-waf"], authority_blocked
+
+
 # Same-census targeted WAF gating is a first-class transport queue even when
 # the semantic provider status is still ROUTE/CHAIN proven.
 targeted_baseline = {
