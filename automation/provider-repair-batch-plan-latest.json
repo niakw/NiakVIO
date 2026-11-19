@@ -126,7 +126,7 @@
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": true,
+  "dynamicVariantFallbackUsed": false,
   "groupCount": 10,
   "executionModel": {
     "default": "family/signature batch",
@@ -155,6 +155,7 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
+        "browser-profile-only",
         "github-all-transports-challenged",
         "native-policy-reachable",
         "no-transport-evidence",

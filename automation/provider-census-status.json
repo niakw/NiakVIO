@@ -573,9 +573,9 @@
       "evidenceDepth": [
         "anime=none"
       ],
-      "harnessTransportClass": "residential-exit-browser-reachable",
+      "harnessTransportClass": "browser-profile-only",
       "harnessTransportEvidence": [
-        "anime: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, desktop-okhttp=unknown, direct=unknown, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_inconclusive, residential-desktop-okhttp=okhttp_jvm_inconclusive, residential-direct=direct_http_inconclusive"
+        "anime: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_inconclusive, desktop-okhttp=okhttp_jvm_inconclusive, direct=direct_http_inconclusive, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_inconclusive, residential-desktop-okhttp=okhttp_jvm_inconclusive, residential-direct=direct_http_inconclusive"
       ],
       "authorityRepairEligible": false,
       "authorityAction": "REDISCOVER_SEARCH",
@@ -595,7 +595,11 @@
       "statusRepairEligible": false,
       "repairEligible": false,
       "testedThisRun": false,
-      "providerArtifactSha256": "c1b744ca9c7cc482e91a31a293d9ae7a8e3ca5c0143d7dbad006ff51fa3fe2ad"
+      "providerArtifactSha256": "c1b744ca9c7cc482e91a31a293d9ae7a8e3ca5c0143d7dbad006ff51fa3fe2ad",
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_waf_challenge, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "animesalt",
@@ -3664,7 +3668,12 @@
       "statusRepairEligible": false,
       "repairEligible": false,
       "testedThisRun": true,
-      "providerArtifactSha256": "e6879dd8a031e1b8abf0fcf43cc3cd08f1a3190ed321568ce3f8006049841ed0"
+      "providerArtifactSha256": "e6879dd8a031e1b8abf0fcf43cc3cd08f1a3190ed321568ce3f8006049841ed0",
+      "residentialProviderReplayClass": "playable-unverified",
+      "residentialProviderReplayEvidence": [
+        "movie: status=playable_unverified, stage=provider_returned_streams, raw=1, playable=1, verified=0, identitySafe=true",
+        "tv: status=playable_unverified, stage=provider_returned_streams, raw=1, playable=1, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "rarefilmm",
@@ -5708,8 +5717,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "44490043760-sharded-waf",
-  "harnessEvidenceSha": "4fcf996f4cd27a3ecd465094f8b7af9dfebea5e2",
+  "harnessEvidenceRunId": "44494433206-waf-transport",
+  "harnessEvidenceSha": "1dabf105fd5ca92a84832c94b13af851c61fe1fa",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
@@ -5738,7 +5747,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 2,
+    "matchedProviderLanes": 3,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -5749,10 +5758,9 @@
   },
   "residentialExitNodeLastAttempt": {
     "enabled": true,
-    "available": false,
+    "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 0,
-    "reason": "exit-egress-unverified",
+    "matchedProviderLanes": 3,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -5764,7 +5772,7 @@
   "residentialProviderReplay": {
     "available": true,
     "profile": "tailscale-residential-exit",
-    "providerCount": 44,
+    "providerCount": 45,
     "providers": [
       "1jour1film0626",
       "67movies",
@@ -5800,6 +5808,7 @@
       "movy",
       "neonflix",
       "primewire",
+      "purstream",
       "sekai",
       "shuttletv",
       "skstream",
@@ -5812,9 +5821,11 @@
       "yflix"
     ],
     "rawProviders": [
+      "purstream",
       "vostfree"
     ],
     "playableProviders": [
+      "purstream",
       "vostfree"
     ],
     "verifiedProviders": [
@@ -6003,6 +6014,7 @@
       },
       {
         "provider": "animeonsen",
+        "providerArtifactSha256": "c1b744ca9c7cc482e91a31a293d9ae7a8e3ca5c0143d7dbad006ff51fa3fe2ad",
         "lane": "anime",
         "status": "no_streams",
         "debugStage": "provider_waf_challenge",
@@ -6020,7 +6032,14 @@
         "playable": 0,
         "verified": 0,
         "contradictions": 0,
-        "identitySafe": true
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "12895e85a9e1daab9ca378adcddb6029cabe822e",
+          "providerBundleSha256": "c1b744ca9c7cc482e91a31a293d9ae7a8e3ca5c0143d7dbad006ff51fa3fe2ad",
+          "runId": "44494433206",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
       },
       {
         "provider": "animesalt",
@@ -7370,6 +7389,64 @@
         "identitySafe": true
       },
       {
+        "provider": "purstream",
+        "providerArtifactSha256": "e6879dd8a031e1b8abf0fcf43cc3cd08f1a3190ed321568ce3f8006049841ed0",
+        "lane": "movie",
+        "status": "playable_unverified",
+        "debugStage": "provider_returned_streams",
+        "sampleCount": 1,
+        "sampleDebugStages": [
+          "provider_returned_streams"
+        ],
+        "sampleStatuses": [
+          "playable_unverified"
+        ],
+        "sampleProgressStages": [
+          "chain_reached"
+        ],
+        "raw": 1,
+        "playable": 1,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "12895e85a9e1daab9ca378adcddb6029cabe822e",
+          "providerBundleSha256": "e6879dd8a031e1b8abf0fcf43cc3cd08f1a3190ed321568ce3f8006049841ed0",
+          "runId": "44494433206",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
+      },
+      {
+        "provider": "purstream",
+        "providerArtifactSha256": "e6879dd8a031e1b8abf0fcf43cc3cd08f1a3190ed321568ce3f8006049841ed0",
+        "lane": "tv",
+        "status": "playable_unverified",
+        "debugStage": "provider_returned_streams",
+        "sampleCount": 1,
+        "sampleDebugStages": [
+          "provider_returned_streams"
+        ],
+        "sampleStatuses": [
+          "playable_unverified"
+        ],
+        "sampleProgressStages": [
+          "chain_reached"
+        ],
+        "raw": 1,
+        "playable": 1,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "12895e85a9e1daab9ca378adcddb6029cabe822e",
+          "providerBundleSha256": "e6879dd8a031e1b8abf0fcf43cc3cd08f1a3190ed321568ce3f8006049841ed0",
+          "runId": "44494433206",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
+      },
+      {
         "provider": "sekai",
         "providerArtifactSha256": "2b380ed1d91b6bc505ef9084f012e52b94ac50e3f8bf0756ac232fb6ab51ad49",
         "lane": "anime",
@@ -7758,26 +7835,29 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": false,
-      "providerCount": 0,
+      "available": true,
+      "providerCount": 2,
       "refreshedProviders": [
-        "1jour1film0626",
-        "aniflix-uno",
-        "animejlprovider",
         "animeonsen",
-        "animesalt",
-        "arrowtv",
-        "chillflix",
-        "cinegram",
-        "cinetimes",
-        "dulourd"
+        "purstream"
       ],
-      "replayedProviders": [],
-      "rawProviders": [],
-      "playableProviders": [],
+      "replayedProviders": [
+        "animeonsen",
+        "purstream"
+      ],
+      "rawProviders": [
+        "purstream"
+      ],
+      "playableProviders": [
+        "purstream"
+      ],
       "verifiedProviders": [],
-      "sourceNiakvioSha": "",
-      "runId": "",
+      "byteMatchedProviders": [
+        "animeonsen",
+        "purstream"
+      ],
+      "sourceNiakvioSha": "12895e85a9e1daab9ca378adcddb6029cabe822e",
+      "runId": "44494433206",
       "proofAuthority": false,
       "publicationAuthority": false
     },
