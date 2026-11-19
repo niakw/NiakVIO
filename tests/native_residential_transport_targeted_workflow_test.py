@@ -148,6 +148,9 @@ for needle in (
     "publicationAllowed",
     "generatedByBrain",
     "sha256(asset) != candidate_sha",
+    "NIAKVIO_PROVIDER_SCOPE_MATRIX",
+    "app/src/androidTest/assets/niakvio/p000.js",
+    "candidate staging scope must contain exactly the requested provider",
 ):
     assert needle in helper, needle
 assert "candidate_rematerialize:" in workflow
