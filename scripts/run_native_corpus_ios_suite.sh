@@ -6,12 +6,7 @@ NIAKVIO_ROOT="${NIAKVIO_ROOT:-$WORKSPACE/niakvio}"
 NUVIO_MOBILE_ROOT="${NUVIO_MOBILE_ROOT:-$WORKSPACE/nuvio-mobile}"
 DERIVED="${NIAKVIO_IOS_DERIVED_DATA:-$WORKSPACE/ios-derived}"
 MANIFEST_URL="${NIAKVIO_MANIFEST_URL:?NIAKVIO_MANIFEST_URL is required}"
-if [[ -n "${NIAKVIO_PROVIDER_SCOPE_MATRIX:-}" && -f "${NIAKVIO_ROOT}/native-hub46/manifest.json" ]]; then
-  SOURCE_REPOSITORY="${GITHUB_REPOSITORY:-niakw/NiakVIO}"
-  SOURCE_SHA="${GITHUB_SHA:-$(git -C "$NIAKVIO_ROOT" rev-parse HEAD)}"
-  MANIFEST_URL="https://raw.githubusercontent.com/${SOURCE_REPOSITORY}/${SOURCE_SHA}/native-hub46/manifest.json"
-  echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=native-hub46/manifest.json providers=current-active authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"
-fi
+
 MODE="${NIAKVIO_IOS_LAB_MODE:-full}"
 TARGET_PROVIDER="${NIAKVIO_IOS_TARGET_PROVIDER:-}"
 SESSION_STATE="${NIAKVIO_IOS_SESSION_STATE:-$WORKSPACE/ios-learning-session.env}"
