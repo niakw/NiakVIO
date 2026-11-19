@@ -56,6 +56,22 @@ CASES = {
     ),
 }
 
+# Test-only source proves whether official QuickJS loses async results.
+# Never patch production Nuvio runtimes or use a synthetic result as media proof.
+tv_controls = canonical.tv_helpers(
+    "https://raw.githubusercontent.com/niakw/NiakVIO/main/manifest.json", []
+)
+assert "fun pluginRuntime(): com.nuvio.tv.core.plugin.PluginRuntime" in tv_controls
+assert "probeOfficialTvPromiseBridge(entryPoint.pluginRuntime())" in tv_controls
+assert "FIELD_NATIVE_TV_PROMISE_CONTROL client=tv sync_count=$syncCount async_count=$asyncCount" in tv_controls
+assert "await Promise.resolve(1)" in tv_controls
+assert "module.exports.getStreams = async function()" in tv_controls
+assert "test_only=true provider_media=false proof_authority=false" in tv_controls
+assert "https://example.invalid/runtime-control.mp4" in tv_controls
+assert "FIELD_NATIVE_TV_PROMISE_CONTROL_ERROR" in tv_controls
+assert "provider-mutation" not in tv_controls
+assert "NIAKVIO_PROVIDER_BASE_OWNED_V3" not in tv_controls
+
 with tempfile.TemporaryDirectory() as raw_tmp:
     tmp = Path(raw_tmp)
     for client, (source, expected) in CASES.items():
