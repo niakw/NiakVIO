@@ -779,6 +779,31 @@ def local_catalog_baseline_entries(root: Path = ROOT) -> list[dict[str, Any]]:
     return output
 
 
+def resolve_catalogue_learning_source(root: Path, entry: dict[str, Any]) -> tuple[Path, bool]:
+    """Resolve active or disabled *NiakVIO-owned* bytes for static learning only.
+
+    Disabled catalogue rows must survive Learning as disabled records, rather
+    than disappearing solely because they were moved to provider-disabled/.
+    Their archived JS may supply static discovery knowledge but must NEVER be
+    reused as an executable provider seed or publication authority.
+    """
+    filename = str(entry.get("filename") or "").strip()
+    enabled = entry.get("enabled") is not False
+    source = (root / filename).resolve()
+    try:
+        relative = source.relative_to(root.resolve())
+    except ValueError:
+        raise RuntimeError(f"catalogue provider path escapes checkout: {filename}") from None
+    parts = relative.parts
+    if not parts or parts[0] not in {"providers", "provider-disabled"}:
+        raise RuntimeError(f"catalogue provider has invalid owned directory: {filename}")
+    if enabled and parts[0] != "providers":
+        raise RuntimeError(f"active provider is archived outside providers/: {filename}")
+    if not source.is_file():
+        raise RuntimeError(f"catalogue provider file missing: {filename}")
+    return source, not enabled
+
+
 def reconstruction_manifest_entry(
     provider_id: str,
     entry: dict[str, Any],
@@ -1261,18 +1286,19 @@ def main() -> int:
         filename = entry.get("filename")
         if not provider_id or not isinstance(filename, str):
             continue
-        source_path = (ROOT / filename).resolve()
-        try:
-            source_path.relative_to((ROOT / "providers").resolve())
-        except ValueError:
-            continue
-        if not source_path.is_file() or exclusion_reason(entry, source_path.read_bytes(), exclusions):
-            continue
+        source_path, disabled_catalogue = resolve_catalogue_learning_source(ROOT, entry)
+        # Exclusions remain strict; a canonically excluded provider cannot
+        # silently vanish from the Learning stage or become executable again.
+        if exclusion_reason(entry, source_path.read_bytes(), exclusions):
+            raise RuntimeError(f"canonical provider excluded from Learning stage: {provider_id}")
         key = f"published:{provider_id}"
         if provider_id in seen_canonical_ids or key in known_keys:
             continue
         data = source_path.read_bytes()
-        validate_javascript(data, filename)
+        # Disabled bytes are a static knowledge oracle only. They are not
+        # parsed as executable legacy runtime and cannot become the next Base.
+        if not disabled_catalogue:
+            validate_javascript(data, filename)
         upstream_digest = hashlib.sha256(data).hexdigest()
         (
             seed,
@@ -1288,7 +1314,7 @@ def main() -> int:
             provenance_rows,
             overrides,
             clean_reconstruction=bool(args.clean_reconstruction),
-            force_clean_reconstruction=provider_id in forced_reconstruction_ids,
+            force_clean_reconstruction=disabled_catalogue or provider_id in forced_reconstruction_ids,
         )
         clean_seed_origin = code_origin in {
             "new-niakvio-clean-seed",
@@ -1319,7 +1345,7 @@ def main() -> int:
         ], check=True, capture_output=True, text=True)
         digest = hashlib.sha256(candidate_data).hexdigest()
         lkg_record = lkg_records.get(provider_id, {}) if isinstance(lkg_records, dict) else {}
-        is_registered_lkg = isinstance(lkg_record, dict) and lkg_record.get("sha256") == upstream_digest
+        is_registered_lkg = not disabled_catalogue and isinstance(lkg_record, dict) and lkg_record.get("sha256") == upstream_digest
         candidates.append({
             "key": key,
             "source": "published-baseline",
@@ -1348,7 +1374,10 @@ def main() -> int:
             "legacy_provider_js_executed_for_reconstruction": False,
             "local_patches": applied_patches,
             "stream_policy_markers": stream_policy_markers(entry, data, exclusions),
-            "baseline_origin": "published_manifest",
+            "baseline_origin": "disabled_catalogue_static_learning" if disabled_catalogue else "published_manifest",
+            "catalogue_disabled": disabled_catalogue,
+            "repair_allowed": not disabled_catalogue,
+            "publication_allowed": not disabled_catalogue,
             "bytes": len(candidate_data),
             "metadata": reconstruction_manifest_entry(provider_id, dict(entry), overrides),
             "baseline": True,
