@@ -345,7 +345,7 @@ def repository_helpers(client: str, manifest_url: str, blocked: list[str]) -> st
 '''
 
 
-def replace_official_execution(text: str, client: str) -> str:
+def replace_official_execution(text: str, client: str, candidate_execution_sha256: str = "") -> str:
     # Replace only the provider invocation itself. The native corpus may wrap that
     # invocation in withTimeout(...); keeping the outer wrapper preserves the
     # per-provider runtime budget while still routing execution through the
@@ -395,6 +395,43 @@ def replace_official_execution(text: str, client: str) -> str:
             "    }\n"
             "}"
         )
+        if candidate_execution_sha256:
+            # Do not claim the published PluginManager invocation executed a
+            # locally rematerialized candidate. It necessarily uses repository
+            # code. This opt-in diagnostic branch preserves the real manager's
+            # enable/type selection but exercises exact staged bytes via the
+            # SAME official NuvioTV PluginRuntime. It is not playback authority.
+            baseline_call = "officialPluginManager.executeScraper(loadedScraper, tmdbId, requestMediaType, season, episode)"
+            candidate_call = """run {
+                val candidateCode = code(provider.asset)
+                val candidateSha = java.security.MessageDigest.getInstance("SHA-256")
+                    .digest(candidateCode.toByteArray(Charsets.UTF_8))
+                    .joinToString("") { "%02x".format(it.toInt() and 0xff) }
+                val candidateExpectedSha = EXPECTED_SHA
+                if (candidateSha != candidateExpectedSha) {
+                    emit("FIELD_NATIVE_CANDIDATE_BYTE_MISMATCH client=tv provider64=${b64(provider.id)} expected=$candidateExpectedSha actual=$candidateSha")
+                    throw IllegalStateException("candidate asset byte mismatch")
+                }
+                emit("FIELD_NATIVE_CANDIDATE_RUNTIME_BYTE_CHECK client=tv provider64=${b64(provider.id)} sha256=$candidateSha matched=true runtime=official_plugin_runtime production_playback_authority=false")
+                val candidateRuntime = EntryPointAccessors.fromApplication(
+                    InstrumentationRegistry.getInstrumentation().targetContext.applicationContext,
+                    NiakvioPluginManagerEntryPoint::class.java,
+                ).pluginRuntime()
+                val candidateRows = candidateRuntime.executePlugin(
+                    code = candidateCode,
+                    tmdbId = tmdbId,
+                    mediaType = requestMediaType,
+                    season = season,
+                    episode = episode,
+                    scraperId = loadedScraper.id,
+                    scraperSettings = emptyMap(),
+                ).map { it.copy(provider = loadedScraper.name) }
+                emit("FIELD_NATIVE_CANDIDATE_RUNTIME_RESULT client=tv provider64=${b64(provider.id)} sha256=$candidateSha count=${candidateRows.size} authority=diagnostic_only")
+                candidateRows
+            }""".replace("EXPECTED_SHA", kotlin_string(candidate_execution_sha256))
+            if replacement.count(baseline_call) != 1:
+                raise SystemExit("native candidate oracle cannot locate unique official TV invocation")
+            replacement = replacement.replace(baseline_call, candidate_call, 1)
     else:
         code_expr = r"File\(root, provider\.asset\)\.readText\(\)" if client == "desktop" else r"code\(provider\.asset\)"
         pattern = re.compile(
@@ -422,8 +459,11 @@ def augment(
     manifest_url: str,
     host_platform: str,
     allow_local_lab_url: bool = False,
+    candidate_execution_sha256: str = "",
 ) -> None:
     parsed, manifest_transport = validate_manifest_url(manifest_url, allow_local_lab_url)
+    if candidate_execution_sha256 and (client != "tv" or re.fullmatch(r"[a-f0-9]{64}", candidate_execution_sha256) is None):
+        raise SystemExit("native local candidate oracle requires TV and exact SHA256")
     rows = load_manifest(manifest)
     blocked = excluded_ids(rows, client, host_platform)
     text = source.read_text(encoding="utf-8")
@@ -480,7 +520,7 @@ def augment(
     if text.count(loop_anchor) != 1:
         raise SystemExit(f"provider-loading route loop anchor count={text.count(loop_anchor)}")
     text = text.replace(loop_anchor, loop_replacement, 1)
-    text = replace_official_execution(text, client)
+    text = replace_official_execution(text, client, candidate_execution_sha256)
 
     source.write_text(text, encoding="utf-8")
     print(
@@ -496,6 +536,7 @@ def main() -> int:
     parser.add_argument("--manifest-url", required=True)
     parser.add_argument("--source", required=True)
     parser.add_argument("--platform", default="", help="desktop host: macos or windows")
+    parser.add_argument("--candidate-execution-sha256", default="", help="diagnostic TV runtime oracle for exact staged asset bytes, never playback proof")
     parser.add_argument(
         "--allow-local-lab-url",
         action="store_true",
@@ -512,6 +553,7 @@ def main() -> int:
         args.manifest_url,
         args.platform,
         allow_local_lab_url=args.allow_local_lab_url,
+        candidate_execution_sha256=args.candidate_execution_sha256,
     )
     return 0
 
