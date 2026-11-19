@@ -162,6 +162,10 @@ assert workflow.index("Rematerialize isolated ProviderBase candidate for officia
 assert workflow.index("Checkout accepted official client and stage corpus once") < workflow.index("Verify candidate bytes in official TV instrumentation assets")
 assert "always() && matrix.candidateRematerialize != true" in workflow
 assert "name: native-candidate-" in workflow
+assert 'NIAKVIO_MANIFEST_URL=https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}/${NIAKVIO_TARGET_MANIFEST}' in workflow
+assert 'NIAKVIO_ALLOW_LOCAL_MANIFEST=0' in workflow
+assert "published_manifest_https=true" in workflow
+assert "candidate_asset_local=true playback_authority=false" in workflow
 assert "niakvio/automation/native-candidate-remat-proof.json" in workflow
 assert workflow.count("name: native-corpus-${{ matrix.device }}-") == 1
 assert "native-hub46" not in workflow
