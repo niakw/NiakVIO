@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Offline Egress gate regression: no residential label without changed route."""
 import importlib.util
+import io
+from contextlib import redirect_stdout
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -11,12 +13,13 @@ assert spec and spec.loader
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 selected = {"BackendState": "Running", "ExitNodeStatus": {"ID": "redacted", "Online": True}}
-mod.attest("198.51.100.11", "203.0.113.22", selected)
+mod.attest("8.8.4.4", "9.9.9.9", selected)
 for before, after, status in (
-    ("198.51.100.11", "198.51.100.11", selected),
-    ("198.51.100.11", "203.0.113.22", {"BackendState": "Running"}),
-    ("198.51.100.11", "203.0.113.22", {"BackendState": "Stopped", "ExitNodeStatus": {"ID": "x"}}),
-    ("198.51.100.11", "203.0.113.22", {"BackendState": "Running", "ExitNodeStatus": {"ID": "x", "Online": False}}),
+    ("8.8.4.4", "8.8.4.4", selected),
+    ("8.8.4.4", "9.9.9.9", {"BackendState": "Running"}),
+    ("8.8.4.4", "9.9.9.9", {"BackendState": "Stopped", "ExitNodeStatus": {"ID": "x"}}),
+    ("8.8.4.4", "9.9.9.9", {"BackendState": "Running", "ExitNodeStatus": {"ID": "x", "Online": False}}),
+    ("8.8.4.4", "10.0.0.1", selected),
 ):
     try:
         mod.attest(before, after, status)
@@ -28,11 +31,20 @@ assert all(x.startswith("https://") for x in mod.ENDPOINTS)
 source = script.read_text(encoding="utf-8")
 assert "ProxyHandler({})" not in source
 assert '"--ipv4"' in source and '"--noproxy", "*"' in source
+assert '"--fail"' in source
+assert "FIELD_WAF_EXIT_ENDPOINT" in source
 assert '"--max-time", "6"' in source
 assert "https://1.1.1.1/cdn-cgi/trace" in source
 assert mod.PUBLIC_IP_COMMAND_TIMEOUT_SECONDS <= 10
-assert mod._extract_public_ipv4("203.0.113.22\n") == "203.0.113.22"
-assert mod._extract_public_ipv4("fl=1\nip=203.0.113.23\nts=1\n") == "203.0.113.23"
+assert mod._extract_public_ipv4("9.9.9.9\n") == "9.9.9.9"
+assert mod._extract_public_ipv4("fl=1\nip=9.9.9.10\nts=1\n") == "9.9.9.10"
+for not_public in ("10.0.0.1", "100.64.0.1", "127.0.0.1", "198.51.100.2", "203.0.113.4"):
+    try:
+        mod._extract_public_ipv4("ip=" + not_public + "\n")
+    except ValueError:
+        pass
+    else:
+        raise AssertionError(f"non-public address accepted: {not_public}")
 assert mod.TAILSCALE_SET_TIMEOUT_SECONDS <= 15
 assert mod.TAILSCALE_CLEAR_TIMEOUT_SECONDS <= 10
 assert "pre_tailnet=true" in source
@@ -51,14 +63,19 @@ try:
     ip_calls = []
     responses = [
         SimpleNamespace(returncode=0, stdout="not-an-ip\n", stderr=""),
-        SimpleNamespace(returncode=0, stdout="203.0.113.22\n", stderr=""),
+        SimpleNamespace(returncode=0, stdout="9.9.9.9\n", stderr=""),
     ]
     def fake_ip_run(args, **kwargs):
         ip_calls.append((list(args), kwargs.get("timeout")))
         return responses.pop(0)
     mod.subprocess.run = fake_ip_run
-    assert mod.observed_public_ipv4() == "203.0.113.22"
+    safe_trace = io.StringIO()
+    with redirect_stdout(safe_trace):
+        assert mod.observed_public_ipv4() == "9.9.9.9"
     assert len(ip_calls) == 2
+    assert "result=no_public_ipv4" in safe_trace.getvalue()
+    assert "result=public_ipv4" in safe_trace.getvalue()
+    assert "9.9.9.9" not in safe_trace.getvalue()
     assert all(timeout == mod.PUBLIC_IP_COMMAND_TIMEOUT_SECONDS for _, timeout in ip_calls)
     assert all("--max-time" in args and "--noproxy" in args for args, _ in ip_calls)
 finally:
@@ -72,7 +89,7 @@ original_observed = mod.observed_public_ipv4
 original_sleep = mod.time.sleep
 try:
     mod.exit_status = lambda: selected
-    observations = [RuntimeError("public IPv4 cannot be independently established"), "198.51.100.11", "203.0.113.44"]
+    observations = [RuntimeError("public IPv4 cannot be independently established"), "8.8.4.4", "9.9.9.11"]
     def fake_observed():
         value = observations.pop(0)
         if isinstance(value, Exception):
@@ -81,7 +98,7 @@ try:
     sleeps = []
     mod.observed_public_ipv4 = fake_observed
     mod.time.sleep = lambda value: sleeps.append(value)
-    assert mod.verify_converged_exit("198.51.100.11", attempts=3) == "203.0.113.44"
+    assert mod.verify_converged_exit("8.8.4.4", attempts=3) == "9.9.9.11"
     assert sleeps == [2, 4], sleeps
 finally:
     mod.exit_status = original_status
@@ -96,7 +113,7 @@ try:
     mod.observed_public_ipv4 = lambda: (_ for _ in ()).throw(RuntimeError("public IPv4 cannot be independently established"))
     mod.time.sleep = lambda _: None
     try:
-        mod.verify_converged_exit("198.51.100.11", attempts=3)
+        mod.verify_converged_exit("8.8.4.4", attempts=3)
     except RuntimeError as error:
         assert "no observable public internet" in str(error)
     else:
