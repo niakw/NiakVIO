@@ -184,7 +184,7 @@ try {
   const noReaderLines = noMedia.filter((line) =>
     !line.startsWith('FIELD_NATIVE_PLAYER ') &&
     !line.startsWith('FIELD_NATIVE_PLAYER_BEGIN '));
-  fs.writeFileSync(noReaderLog, noReaderLines.join('\\n') + '\\n');
+  fs.writeFileSync(noReaderLog, noReaderLines.join('\n') + '\n');
   const noReaderRun = spawnSync(process.execPath,
     [script, '--output', noReaderOutput, noReaderLog],
     { cwd: root, encoding: 'utf8' });
@@ -202,7 +202,7 @@ try {
   const unselectedLog = path.join(tmp, 'tv-quickjs-unselected.log');
   const unselectedOutput = path.join(tmp, 'tv-quickjs-unselected.json');
   fs.writeFileSync(unselectedLog, noReaderLines.filter((line) =>
-    !line.startsWith('FIELD_NATIVE_PROVIDER_APP_SELECTION ')).join('\\n') + '\\n');
+    !line.startsWith('FIELD_NATIVE_PROVIDER_APP_SELECTION ')).join('\n') + '\n');
   spawnSync(process.execPath, [script, '--output', unselectedOutput, unselectedLog],
     { cwd: root, encoding: 'utf8' });
   const unselectedData = JSON.parse(fs.readFileSync(unselectedOutput, 'utf8'));
