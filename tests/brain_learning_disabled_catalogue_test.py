@@ -61,7 +61,8 @@ with tempfile.TemporaryDirectory() as folder:
     assert row["upstream_code_executed"] is False
     assert row["candidate_code_origin"] == "new-niakvio-clean-seed"
     data = (stage / row["local_path"]).read_bytes()
-    assert data != path.read_bytes()  # path above is enabled example, distinct by design
+    archived_source, _ = mod.resolve_catalogue_learning_source(ROOT, by_id[disabled_ids[0]])
+    assert data != archived_source.read_bytes(), "archived JS was re-used as executable seed"
     assert b"NIAKVIO_PROVIDER_BASE_OWNED_V3" in data
 
 print(f"Brain Learning disabled catalogue preservation passed: disabled={len(disabled_ids)}")
