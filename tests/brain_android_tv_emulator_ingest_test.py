@@ -125,4 +125,9 @@ assert "github.event.workflow_run.head_branch == 'main'" in feedback_workflow
 assert "tested-source" in feedback_workflow
 assert "ingest_brain_android_tv_emulator.py" in feedback_workflow
 assert "automation/brain-android-tv-emulator-history.json" in feedback_workflow
+assert "route_android_tv_emulator_feedback.py" in feedback_workflow
+assert "--source-sha \"$NATIVE_SOURCE_SHA\"" in feedback_workflow
+assert "--run-id \"$NATIVE_RUN_ID\"" in feedback_workflow
+assert "brain-tv-route-" in feedback_workflow
+assert "persist-credentials: false" in feedback_workflow
 print("Brain Android TV emulator exact-SHA feedback and privacy contract passed")
