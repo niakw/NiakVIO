@@ -137,6 +137,7 @@ def select(
     status: dict[str, Any],
     explicit_providers: list[str] | None = None,
     offline_transport_allowed: set[str] | None = None,
+    restrict_to_explicit: bool = False,
 ) -> list[str]:
     residential = (
         report.get("residentialExitNodeEvidence")
@@ -169,11 +170,17 @@ def select(
             for row in rows
             if row.get("authorityRepairEligible") is not False
         } | transport_allowed
-        # An explicit transport qualification is itself the symptom request.
-        # Allow the named current provider to full-replay through residential
-        # transport even when canonical status is FULL/PARTIAL/ROUTE, while
-        # still respecting current provider/address authority.
-        providers.update(explicit & authority_allowed)
+        # The explicit cohort does NOT grant authority to disabled providers.
+        # In a targeted diagnostic, restrict the actual replay to this bounded
+        # set: otherwise we execute extra providers then silently discard their
+        # rows during the targeted ledger merge.
+        explicit_allowed = explicit & authority_allowed
+        if restrict_to_explicit:
+            providers = explicit_allowed
+        else:
+            providers.update(explicit_allowed)
+    elif restrict_to_explicit:
+        raise ValueError("restrict-to-explicit requires at least one named provider")
 
     return sorted(providers)
 
@@ -184,6 +191,7 @@ def main() -> int:
     ap.add_argument("--status", type=Path, required=True)
     ap.add_argument("--output", type=Path, required=True)
     ap.add_argument("--providers", default="", help="Optional comma-separated explicit current providers to full-replay regardless of canonical status")
+    ap.add_argument("--restrict-to-explicit", action="store_true", help="Only execute currently authorized explicitly named providers")
     ap.add_argument("--manifest", type=Path, default=ROOT / "manifest.json")
     ap.add_argument("--vf-manifest", type=Path, default=ROOT / "vf/manifest.json")
     ap.add_argument("--overrides", type=Path, default=ROOT / "provider-overrides.json")
@@ -194,7 +202,10 @@ def main() -> int:
     offline_allowed = offline_live_unverified_transport_authority(
         ROOT, load(args.manifest), load(args.vf_manifest), load(args.overrides), load(args.activation)
     ) if args.activation.exists() else set()
-    providers = select(load(args.waf), load(args.status), explicit, offline_allowed)
+    providers = select(
+        load(args.waf), load(args.status), explicit, offline_allowed,
+        restrict_to_explicit=args.restrict_to_explicit,
+    )
     payload = {
         "schemaVersion": 2,
         "selection": "current-census-harness-network-residential-full-replay",
@@ -202,6 +213,8 @@ def main() -> int:
         "providers": providers,
         "providerCount": len(providers),
         "explicitProviders": explicit,
+        "selectionMode": "explicit-authorized-only" if args.restrict_to_explicit else "eligible-plus-explicit",
+        "excludedExplicitProviders": sorted(set(canon(v) for v in explicit) - set(providers)),
         "offlineLiveUnverifiedTransportAuthority": sorted(offline_allowed),
     }
     args.output.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")

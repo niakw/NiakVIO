@@ -287,6 +287,7 @@ jobs:
             --waf automation/provider-waf-browser-session-latest.json \
             --status automation/provider-census-status.json \
             --providers "${TARGET_PROVIDERS:-}" \
+            ${TARGET_PROVIDERS:+--restrict-to-explicit} \
             --output /tmp/residential-provider-replay-targets.json
           count="$(python - <<'PY'
           import json
