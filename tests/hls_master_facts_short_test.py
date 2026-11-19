@@ -104,7 +104,7 @@ require(process.argv[2]);
   if(row.resolution!==null||row.width!=null||row.height!=null)throw new Error('adaptive master leaked fixed dimensions '+JSON.stringify(row));
   if(row.hlsMasterMaxQuality!=='720p'||row.hlsMasterMaxResolution!=='1440x720')throw new Error('max capability missing '+JSON.stringify(row));
   if(Number(row.hlsMasterVariantCount)!==2||!Array.isArray(row.hlsMasterVariantMatrix)||row.hlsMasterVariantMatrix.length!==2)throw new Error('variant matrix missing '+JSON.stringify(row));
-  const low=row.hlsMasterVariantMatrix.find(x=>x.quality==='540p');
+  const low=row.hlsMasterVariantMatrix.find(x=>x.quality==='480p');
   const high=row.hlsMasterVariantMatrix.find(x=>x.quality==='720p');
   if(!low||low.audioLanguages.join(',')!=='hi')throw new Error('low rendition audio group flattened '+JSON.stringify(row));
   if(!high||high.audioLanguages.slice().sort().join(',')!=='en,es,fr,hi')throw new Error('high rendition audio group flattened '+JSON.stringify(row));
