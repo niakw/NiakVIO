@@ -133,6 +133,53 @@ try {
     assert.equal(selectionData.policy.clientSelectionDiagnosticLearningAllowed, false);
   }
 
+  // A real native zero-stream result is not a provider-JS fix instruction.
+  // The transient QuickJS diagnostic contributes one sanitized, non-authorizing
+  // observation to the Brain backlog, even when there is no media player.
+  const jsLog = path.join(tmp, 'tv-quickjs-zero.log');
+  const jsOutput = path.join(tmp, 'tv-quickjs-zero.json');
+  const noMedia = common
+    .filter((line) => !line.includes(`provider64=${b64('MOVIESDRIVE')}`) ||
+      (!line.startsWith('FIELD_NATIVE_PLAYER ') &&
+       !line.startsWith('FIELD_NATIVE_PLAYER_BEGIN ')))
+    .map((line) => line.includes(`provider64=${b64('MOVIESDRIVE')}`) &&
+      line.startsWith('FIELD_NATIVE_RESULT ')
+      ? line.replace('count=2', 'count=0')
+      : line);
+  const resultAt = noMedia.findIndex((line) => line.startsWith('FIELD_NATIVE_RESULT ') &&
+    line.includes(`provider64=${b64('MOVIESDRIVE')}`));
+  assert.ok(resultAt >= 0);
+  noMedia.splice(resultAt, 0,
+    `FIELD_NATIVE_QUICKJS_DIAGNOSTIC client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} phase=call category=none request_type=movie count=0`,
+    `FIELD_NATIVE_QUICKJS_DIAGNOSTIC client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} phase=result category=none request_type=movie count=0`,
+    `FIELD_NATIVE_QUICKJS_DIAGNOSTIC client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} phase=error category=reference_error request_type=movie count=0`,
+    `FIELD_NATIVE_QUICKJS_DIAGNOSTIC client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} phase=error category=https://secret.example/token=PRIVATE request_type=movie count=0`,
+  );
+  fs.writeFileSync(jsLog, noMedia.join('\n') + '\n');
+  const jsRun = spawnSync(process.execPath, [script, '--output', jsOutput, jsLog], {
+    cwd: root, encoding: 'utf8',
+  });
+  const jsData = JSON.parse(fs.readFileSync(jsOutput, 'utf8'));
+  assert.equal(jsData.quickJsDiagnosticObserved, 3);
+  assert.equal(jsData.quickJsDiagnostics[0].phase, 'call');
+  assert.equal(jsData.quickJsDiagnostics[1].phase, 'result');
+  assert.equal(jsData.quickJsDiagnostics[2].category, 'reference_error');
+  assert.equal(jsData.policy.quickJsDiagnosticProviderMutationAllowed, false);
+  assert.doesNotMatch(JSON.stringify(jsData.quickJsDiagnostics), /secret\.example|PRIVATE/);
+  if (jsData.evidenceComplete) {
+    assert.equal(jsRun.status, 0, jsRun.stderr + jsRun.stdout);
+    assert.equal(jsData.quickJsUnverifiedObserved, 2);
+    assert.equal(jsData.policy.quickJsDiagnosticLearningAllowed, true);
+    assert.ok(jsData.observations.some((x) =>
+      x.failureClass === 'native_quickjs_zero_stream' &&
+      x.observationLayer === 'native_quickjs' &&
+      x.providerMutationEligible === false
+    ));
+  } else {
+    assert.equal(jsData.quickJsUnverifiedObserved, 0);
+    assert.equal(jsData.policy.quickJsDiagnosticLearningAllowed, false);
+  }
+
   // A provider can fail after repository installation but before any execution/
   // reader route. Complete loading/network/traversal evidence makes this actionable
   // repository/Core evidence, not an incomplete lab.
