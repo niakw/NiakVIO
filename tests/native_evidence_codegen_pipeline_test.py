@@ -79,7 +79,9 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         "audio_track_languages64=${b64(reader.audioTrackLanguages)}",
         "audio_track_count=${transport.audioTrackCount}",
         "audio_track_languages64=${b64(transport.audioTrackLanguages)}",
-        "audio_track_languages64=${b64(transport.audioTrackLanguages)}",
+        "subtitle_track_count=${reader.subtitleTrackCount}",
+        "video_height=${reader.videoHeight}",
+        "subtitle_variant_matrix64=${b64(transport.subtitleVariantMatrix)}",
     ):
         assert required in tv_out, required
     assert tv_out.count("FIELD_NATIVE_PLAYER_ENTRY client=tv") == 1
@@ -141,10 +143,14 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         'MainActivity::class.java.name',
         "PlayerEngineController",
         "getAudioTracks()",
+        "getSubtitleTracks()",
         "logical_provider64=${b64(row.provider)}",
         "audio_track_count=${reader.audioTrackCount}",
         "audio_track_languages64=${b64(reader.audioTrackLanguages)}",
         "audio_track_count=${transport.audioTrackCount}",
+        "subtitle_track_count=${reader.subtitleTrackCount}",
+        "video_height=${reader.videoHeight}",
+        "audio_variant_matrix64=${b64(transport.audioVariantMatrix)}",
     ):
         assert required in mobile_out, required
     assert mobile_out.count("FIELD_NATIVE_PLAYER_ENTRY client=mobile") == 1

@@ -25,7 +25,7 @@ PLAYER_REACH_GATE = ROOT / "scripts/gate_native_player_reached.cjs"
 
 
 def source(client: str) -> str:
-    return f'''package example\n\nimport android.util.Log\nimport androidx.test.platform.app.InstrumentationRegistry\nimport org.junit.Test\n\nclass Sample {{\n    private fun b64(v: Any?) = ""\n    private fun hostOnly(v: String) = ""\n    private fun probeTransport(url: String, headers: Map<String,String>?) = TODO()\n\n    @Test\n    fun run() {{\n        val fixtureSlug = "sinners"\n        val provider = object {{ val id = "MOVIESDRIVE" }}\n        val rows = emptyList<dynamic>()\n                rows.firstOrNull()?.let {{ row ->\n                    val probe = probeTransport(row.url, row.headers)\n                    emit("FIELD_NATIVE_TRANSPORT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} audio_track_count=${{probe.audioTrackCount}} audio_track_languages64=${{b64(probe.audioTrackLanguages)}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")\n                }}\n    }}\n    private fun emit(v: String) {{}}\n}}\n'''
+    return f'''package example\n\nimport android.util.Log\nimport androidx.test.platform.app.InstrumentationRegistry\nimport org.junit.Test\n\nclass Sample {{\n    private fun b64(v: Any?) = ""\n    private fun hostOnly(v: String) = ""\n    private fun probeTransport(url: String, headers: Map<String,String>?) = TODO()\n\n    @Test\n    fun run() {{\n        val fixtureSlug = "sinners"\n        val provider = object {{ val id = "MOVIESDRIVE" }}\n        val rows = emptyList<dynamic>()\n                rows.firstOrNull()?.let {{ row ->\n                    val probe = probeTransport(row.url, row.headers)\n                    emit("FIELD_NATIVE_TRANSPORT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} audio_track_count=${{probe.audioTrackCount}} audio_track_languages64=${{b64(probe.audioTrackLanguages)}} subtitle_track_count=${{probe.subtitleTrackCount}} subtitle_track_languages64=${{b64(probe.subtitleTrackLanguages)}} audio_variant_matrix64=${{b64(probe.audioVariantMatrix)}} subtitle_variant_matrix64=${{b64(probe.subtitleVariantMatrix)}} variant_heights64=${{b64(probe.variantHeights)}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")\n                }}\n    }}\n    private fun emit(v: String) {{}}\n}}\n'''
 
 
 tv_generated = mod.augment_android_test(source("tv"), client="tv", expected_duration_minutes=137, max_player_probes=3)
@@ -49,7 +49,13 @@ assert 'By.clazz("android.widget.RadioButton")' in tv
 assert "val audioTracks = probeTvAudioTracks" in tv
 assert "track.contentDescription" in tv
 assert "audio_track_count=${reader.audioTrackCount}" in tv
+assert "subtitle_track_count=${reader.subtitleTrackCount}" in tv
+assert "video_height=${reader.videoHeight}" in tv
+assert "R.string.cd_subtitles" in tv
+assert "R.string.subtitle_built_in" in tv
+assert "diagnostics.videoResolution" in tv
 assert "audio_track_count=${transport.audioTrackCount}" in tv
+assert "subtitle_variant_matrix64=${b64(transport.subtitleVariantMatrix)}" in tv
 
 # Production Nuvio receives the provider output. Any sanitation/normalization after
 # that belongs to Nuvio itself and is deliberately not reimplemented by the lab.
@@ -86,7 +92,12 @@ assert "getLaunchIntentForPackage(context.packageName)" not in mobile
 assert "PlayerEngineController" in mobile
 assert "controllerRef.set(controller)" in mobile
 assert "getAudioTracks()" in mobile
+assert "getSubtitleTracks()" in mobile
+assert "controllerRef.get()?.playbackEngine?.name" in mobile
+assert "snapshot?.videoHeight" in mobile
 assert "audio_track_count=${reader.audioTrackCount}" in mobile
+assert "subtitle_track_count=${reader.subtitleTrackCount}" in mobile
+assert "video_height=${reader.videoHeight}" in mobile
 assert "audio_track_languages64=${b64(reader.audioTrackLanguages)}" in mobile
 assert "audio_track_count=${transport.audioTrackCount}" in mobile
 assert "audio_track_languages64=${b64(transport.audioTrackLanguages)}" in mobile

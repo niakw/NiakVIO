@@ -40,6 +40,7 @@ import kotlinx.coroutines.withTimeout
 
 MOBILE_IMPORTS = """import androidx.activity.compose.setContent
 import com.nuvio.app.MainActivity
+import com.nuvio.app.features.player.AndroidPlaybackEngine
 import com.nuvio.app.features.player.PlatformPlayerSurface
 import com.nuvio.app.features.player.PlayerEngineController
 import com.nuvio.app.features.player.PlayerPlaybackSnapshot
@@ -64,6 +65,11 @@ PROBE_MODEL = r'''
         val trackType: Int = -1,
         val audioTrackCount: Int = -1,
         val audioTrackLanguages: String = "",
+        val subtitleTrackCount: Int = -1,
+        val subtitleTrackLanguages: String = "",
+        val subtitleTrackLabels: String = "",
+        val videoWidth: Int = 0,
+        val videoHeight: Int = 0,
     )
 
     private val niakvioPlayerProbeLock = Any()
@@ -113,6 +119,48 @@ TV_HELPERS = PROBE_MODEL + r'''
         }
     }
 
+    private data class TvSubtitleTrackProbe(
+        val count: Int = -1,
+        val languages: String = "",
+        val labels: String = "",
+    )
+
+    private fun probeTvIntegratedSubtitleTracks(
+        instrumentation: android.app.Instrumentation,
+        context: android.content.Context,
+    ): TvSubtitleTrackProbe {
+        return try {
+            val device = UiDevice.getInstance(instrumentation)
+            device.pressDPadCenter()
+            val controlLabel = context.getString(R.string.cd_subtitles)
+            val button = device.wait(Until.findObject(By.desc(controlLabel)), 2500L)
+                ?: return TvSubtitleTrackProbe()
+            button.click()
+            device.waitForIdle()
+            Thread.sleep(350L)
+            val builtIn = context.getString(R.string.subtitle_built_in)
+            val internalNodes = device.findObjects(By.text(builtIn))
+            val radioRows = device.findObjects(By.clazz("android.widget.RadioButton"))
+            val candidates = radioRows.mapNotNull { track ->
+                sequenceOf(track.text, track.contentDescription)
+                    .map { it?.trim().orEmpty() }
+                    .firstOrNull {
+                        it.isNotBlank() &&
+                            !it.equals(builtIn, ignoreCase = true) &&
+                            !it.equals(context.getString(R.string.subtitle_none), ignoreCase = true)
+                    }
+            }.distinct()
+            device.pressBack()
+            TvSubtitleTrackProbe(
+                count = internalNodes.size,
+                languages = candidates.joinToString(","),
+                labels = candidates.joinToString(" | "),
+            )
+        } catch (_: Throwable) {
+            TvSubtitleTrackProbe()
+        }
+    }
+
     private fun probeNativePlayer(
         url: String,
         headers: Map<String, String>?,
@@ -156,6 +204,10 @@ TV_HELPERS = PROBE_MODEL + r'''
                 }
             }
             val durationSeconds = diagnostics.durationMs.takeIf { it > 0L }?.div(1000.0)
+            val dimensions = Regex("""(\\d{2,5})x(\\d{2,5})""")
+                .find(diagnostics.videoResolution.orEmpty())
+            val videoWidth = dimensions?.groupValues?.getOrNull(1)?.toIntOrNull() ?: 0
+            val videoHeight = dimensions?.groupValues?.getOrNull(2)?.toIntOrNull() ?: 0
             val expected = expectedDurationMinutes.takeIf { it > 0 }?.times(60.0)
             val shortMedia = durationSeconds != null && (
                 durationSeconds < 60.0 || (expected != null && durationSeconds / expected < 0.55)
@@ -170,9 +222,15 @@ TV_HELPERS = PROBE_MODEL + r'''
             }
             if (result.state == "ready" || result.state == "short_media") {
                 val audioTracks = probeTvAudioTracks(instrumentation, context)
+                val subtitleTracks = probeTvIntegratedSubtitleTracks(instrumentation, context)
                 result.copy(
                     audioTrackCount = audioTracks.count,
                     audioTrackLanguages = audioTracks.languages,
+                    subtitleTrackCount = subtitleTracks.count,
+                    subtitleTrackLanguages = subtitleTracks.languages,
+                    subtitleTrackLabels = subtitleTracks.labels,
+                    videoWidth = videoWidth,
+                    videoHeight = videoHeight,
                 )
             } else result
         } catch (error: kotlinx.coroutines.TimeoutCancellationException) {
@@ -236,6 +294,7 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
                         initialPositionMs = 0L,
                         initialPositionRequestKey = "niakvio-native-reader",
                         resizeMode = PlayerResizeMode.Fit,
+                        playbackEngine = null,
                         useNativeController = true,
                         onInitialPositionHandled = { _, _ -> },
                         onControllerReady = { controller -> controllerRef.set(controller) },
@@ -265,17 +324,31 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
             val snapshot = snapshotRef.get()
             var audioTracks = runCatching { controllerRef.get()?.getAudioTracks().orEmpty() }
                 .getOrDefault(emptyList())
-            if (terminalState == "success" && audioTracks.isEmpty()) {
+            var subtitleTracks = runCatching { controllerRef.get()?.getSubtitleTracks().orEmpty() }
+                .getOrDefault(emptyList())
+            if (terminalState == "success" && (audioTracks.isEmpty() || subtitleTracks.isEmpty())) {
                 repeat(8) {
-                    if (audioTracks.isNotEmpty()) return@repeat
+                    if (audioTracks.isNotEmpty() && subtitleTracks.isNotEmpty()) return@repeat
                     Thread.sleep(125L)
-                    audioTracks = runCatching { controllerRef.get()?.getAudioTracks().orEmpty() }
-                        .getOrDefault(emptyList())
+                    if (audioTracks.isEmpty()) {
+                        audioTracks = runCatching { controllerRef.get()?.getAudioTracks().orEmpty() }
+                            .getOrDefault(emptyList())
+                    }
+                    if (subtitleTracks.isEmpty()) {
+                        subtitleTracks = runCatching { controllerRef.get()?.getSubtitleTracks().orEmpty() }
+                            .getOrDefault(emptyList())
+                    }
                 }
             }
             val audioLanguages = audioTracks.mapNotNull { track ->
                 track.language?.trim()?.takeIf { it.isNotBlank() && !it.equals("und", ignoreCase = true) }
             }.distinct().joinToString(",")
+            val subtitleLanguages = subtitleTracks.mapNotNull { track ->
+                track.language?.trim()?.takeIf { it.isNotBlank() && !it.equals("und", ignoreCase = true) }
+            }.distinct().joinToString(",")
+            val subtitleLabels = subtitleTracks.mapNotNull { track ->
+                track.label.trim().takeIf { it.isNotBlank() }
+            }.distinct().joinToString(" | ")
             if (terminalState == "error" && !error.isNullOrBlank()) {
                 return NativePlayerProbe("error", "nuvio-mobile-production", "PlatformPlayerSurface", sanitizeDiag(error), 0, "player", host, null)
             }
@@ -292,8 +365,14 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
                 else -> NativePlayerProbe("timeout", "nuvio-mobile-production", "PlatformPlayerSurface", "READER_TIMEOUT", 0, "timeout", host, durationSeconds)
             }
             result.copy(
+                engine = controllerRef.get()?.playbackEngine?.name ?: result.engine,
                 audioTrackCount = audioTracks.size,
                 audioTrackLanguages = audioLanguages,
+                subtitleTrackCount = subtitleTracks.size,
+                subtitleTrackLanguages = subtitleLanguages,
+                subtitleTrackLabels = subtitleLabels,
+                videoWidth = snapshot?.videoWidth ?: 0,
+                videoHeight = snapshot?.videoHeight ?: 0,
             )
         } catch (error: Throwable) {
             val chain = generateSequence(error) { it.cause }
@@ -320,7 +399,7 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
 
 OLD_ANDROID_PROBE_BLOCK = '''                rows.firstOrNull()?.let { row ->
                     val probe = probeTransport(row.url, row.headers)
-                    emit("FIELD_NATIVE_TRANSPORT client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} state=${probe.state} kind=${probe.kind} status=${probe.status} content_type64=${b64(probe.contentType)} extm3u=${probe.extm3u} audio_track_count=${probe.audioTrackCount} audio_track_languages64=${b64(probe.audioTrackLanguages)} duration_seconds=${probe.durationSeconds ?: 0.0} host64=${b64(probe.host)} media_hint64=${b64(probe.mediaHint)}")
+                    emit("FIELD_NATIVE_TRANSPORT client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} state=${probe.state} kind=${probe.kind} status=${probe.status} content_type64=${b64(probe.contentType)} extm3u=${probe.extm3u} audio_track_count=${probe.audioTrackCount} audio_track_languages64=${b64(probe.audioTrackLanguages)} subtitle_track_count=${probe.subtitleTrackCount} subtitle_track_languages64=${b64(probe.subtitleTrackLanguages)} audio_variant_matrix64=${b64(probe.audioVariantMatrix)} subtitle_variant_matrix64=${b64(probe.subtitleVariantMatrix)} variant_heights64=${b64(probe.variantHeights)} duration_seconds=${probe.durationSeconds ?: 0.0} host64=${b64(probe.host)} media_hint64=${b64(probe.mediaHint)}")
                 }
 '''
 
@@ -330,9 +409,9 @@ NEW_ANDROID_PROBE_BLOCK = '''                rows.take(__MAX_PROBES__).forEachIn
                     // signed/one-shot URL and manufacture a false failure.
                     emit("FIELD_NATIVE_PLAYER_BEGIN client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index entry=nuvio-production-player")
                     val reader = probeNativePlayer(row.url, row.headers, row.type, __EXPECTED_MINUTES__)
-                    emit("FIELD_NATIVE_PLAYER client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index state=${reader.state} engine=${reader.engine} http_status=${reader.httpStatus} failure_stage=${reader.failureStage} duration_seconds=${reader.durationSeconds ?: 0.0} host64=${b64(reader.host)} error_class64=${b64(reader.errorClass)} error_code64=${b64(reader.errorCode)} exception_chain64=${b64(reader.exceptionChain)} response_header_names64=${b64(reader.responseHeaderNames)} load_bytes=${reader.loadBytes} load_duration_ms=${reader.loadDurationMs} media_data_type=${reader.mediaDataType} track_type=${reader.trackType} audio_track_count=${reader.audioTrackCount} audio_track_languages64=${b64(reader.audioTrackLanguages)}")
+                    emit("FIELD_NATIVE_PLAYER client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index state=${reader.state} engine=${reader.engine} advertised_quality64=${b64(row.quality)} http_status=${reader.httpStatus} failure_stage=${reader.failureStage} duration_seconds=${reader.durationSeconds ?: 0.0} video_width=${reader.videoWidth} video_height=${reader.videoHeight} host64=${b64(reader.host)} error_class64=${b64(reader.errorClass)} error_code64=${b64(reader.errorCode)} exception_chain64=${b64(reader.exceptionChain)} response_header_names64=${b64(reader.responseHeaderNames)} load_bytes=${reader.loadBytes} load_duration_ms=${reader.loadDurationMs} media_data_type=${reader.mediaDataType} track_type=${reader.trackType} audio_track_count=${reader.audioTrackCount} audio_track_languages64=${b64(reader.audioTrackLanguages)} subtitle_track_count=${reader.subtitleTrackCount} subtitle_track_languages64=${b64(reader.subtitleTrackLanguages)} subtitle_track_labels64=${b64(reader.subtitleTrackLabels)}")
                     val transport = probeTransport(row.url, row.headers)
-                    emit("FIELD_NATIVE_TRANSPORT client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index state=${transport.state} kind=${transport.kind} status=${transport.status} content_type64=${b64(transport.contentType)} extm3u=${transport.extm3u} audio_track_count=${transport.audioTrackCount} audio_track_languages64=${b64(transport.audioTrackLanguages)} duration_seconds=${transport.durationSeconds ?: 0.0} host64=${b64(transport.host)} media_hint64=${b64(transport.mediaHint)}")
+                    emit("FIELD_NATIVE_TRANSPORT client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index state=${transport.state} kind=${transport.kind} status=${transport.status} content_type64=${b64(transport.contentType)} extm3u=${transport.extm3u} audio_track_count=${transport.audioTrackCount} audio_track_languages64=${b64(transport.audioTrackLanguages)} subtitle_track_count=${transport.subtitleTrackCount} subtitle_track_languages64=${b64(transport.subtitleTrackLanguages)} audio_variant_matrix64=${b64(transport.audioVariantMatrix)} subtitle_variant_matrix64=${b64(transport.subtitleVariantMatrix)} variant_heights64=${b64(transport.variantHeights)} duration_seconds=${transport.durationSeconds ?: 0.0} host64=${b64(transport.host)} media_hint64=${b64(transport.mediaHint)}")
                 }
 '''
 

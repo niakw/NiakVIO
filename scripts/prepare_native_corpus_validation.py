@@ -117,6 +117,11 @@ TRANSPORT_HELPERS = r'''
         val mediaHint: String,
         val audioTrackCount: Int = 0,
         val audioTrackLanguages: String = "",
+        val subtitleTrackCount: Int = 0,
+        val subtitleTrackLanguages: String = "",
+        val audioVariantMatrix: String = "",
+        val subtitleVariantMatrix: String = "",
+        val variantHeights: String = "",
     )
 
     data class LogoProbe(
@@ -217,34 +222,99 @@ TRANSPORT_HELPERS = r'''
         return ""
     }
 
-    private fun hlsAudioRows(body: String): List<String> =
-        body.lineSequence()
-            .map { it.trim() }
-            .filter { line ->
-                line.startsWith("#EXT-X-MEDIA", ignoreCase = true) &&
-                    Regex("(?:^|,)\\s*TYPE\\s*=\\s*AUDIO(?:,|$)", RegexOption.IGNORE_CASE)
-                        .containsMatchIn(line.substringAfter(':', line))
-            }
-            .distinct()
-            .toList()
+    private data class HlsVariantGroups(
+        val height: Int,
+        val audioGroup: String,
+        val subtitleGroup: String,
+        val captionsGroup: String,
+    )
 
-    private fun hlsAudioTrackCount(body: String): Int = hlsAudioRows(body).size
+    private data class HlsTrackTopology(
+        val audioTrackCount: Int = 0,
+        val audioTrackLanguages: String = "",
+        val subtitleTrackCount: Int = 0,
+        val subtitleTrackLanguages: String = "",
+        val audioVariantMatrix: String = "",
+        val subtitleVariantMatrix: String = "",
+        val variantHeights: String = "",
+    )
 
-    private fun hlsAudioTrackLanguages(body: String): String =
-        hlsAudioRows(body)
-            .mapNotNull { line ->
-                val attrs = line.substringAfter(':', line)
-                Regex("""(?:^|,)\\s*LANGUAGE\\s*=\\s*"?([^",]+)"?""", RegexOption.IGNORE_CASE)
-                    .find(attrs)
-                    ?.groupValues
-                    ?.getOrNull(1)
-                    ?.trim()
-                    ?.replace('_', '-')
-                    ?.lowercase()
-                    ?.takeIf { it.isNotBlank() && it != "und" }
+    private fun hlsAttribute(attrs: String, name: String): String {
+        val key = Regex.escape(name)
+        val match = Regex(
+            """(?:^|,)\\s*${key}\\s*=\\s*(?:"([^"]*)"|([^,\\s]*))""",
+            RegexOption.IGNORE_CASE,
+        ).find(attrs) ?: return ""
+        return (match.groupValues.getOrNull(1)?.takeIf { it.isNotBlank() }
+            ?: match.groupValues.getOrNull(2).orEmpty()).trim()
+    }
+
+    private fun normalizeHlsLanguage(value: String): String {
+        val raw = value.trim().lowercase().replace('_', '-')
+        if (raw.isBlank() || raw == "und") return ""
+        val first = raw.substringBefore('-')
+        val aliases = mapOf(
+            "eng" to "en", "english" to "en", "anglais" to "en",
+            "fra" to "fr", "fre" to "fr", "french" to "fr", "français" to "fr", "francais" to "fr",
+            "hin" to "hi", "hindi" to "hi",
+            "spa" to "es", "spanish" to "es", "español" to "es", "espanol" to "es",
+            "jpn" to "ja", "japanese" to "ja", "japonais" to "ja",
+            "kor" to "ko", "korean" to "ko", "coréen" to "ko", "coreen" to "ko",
+            "deu" to "de", "ger" to "de", "german" to "de",
+            "ita" to "it", "italian" to "it", "por" to "pt", "portuguese" to "pt",
+            "ara" to "ar", "arabic" to "ar", "rus" to "ru", "russian" to "ru",
+            "zho" to "zh", "chi" to "zh", "chinese" to "zh",
+        )
+        return aliases[raw] ?: aliases[first] ?: first.takeIf { it.length in 2..3 }.orEmpty()
+    }
+
+    private fun hlsTrackTopology(body: String): HlsTrackTopology {
+        val audioGroups = linkedMapOf<String, MutableList<String>>()
+        val textGroups = linkedMapOf<String, MutableList<String>>()
+        val variants = mutableListOf<HlsVariantGroups>()
+        val lines = body.lineSequence().map { it.trim() }.toList()
+        fun addGroup(target: MutableMap<String, MutableList<String>>, group: String, language: String) {
+            if (group.isBlank() || language.isBlank()) return
+            target.getOrPut(group) { mutableListOf() }.apply { if (language !in this) add(language) }
+        }
+        lines.forEach { line ->
+            if (!line.startsWith("#EXT-X-MEDIA", ignoreCase = true)) return@forEach
+            val attrs = line.substringAfter(':', line)
+            val type = hlsAttribute(attrs, "TYPE").uppercase()
+            val group = hlsAttribute(attrs, "GROUP-ID")
+            val language = normalizeHlsLanguage(hlsAttribute(attrs, "LANGUAGE").ifBlank { hlsAttribute(attrs, "NAME") })
+            when (type) {
+                "AUDIO" -> addGroup(audioGroups, group, language)
+                "SUBTITLES", "CLOSED-CAPTIONS" -> addGroup(textGroups, group, language)
             }
-            .distinct()
-            .joinToString(",")
+        }
+        lines.forEach { line ->
+            if (!line.startsWith("#EXT-X-STREAM-INF", ignoreCase = true)) return@forEach
+            val attrs = line.substringAfter(':', line)
+            val height = Regex("""RESOLUTION\\s*=\\s*\\d{2,5}\\s*[xX]\\s*(\\d{2,5})""", RegexOption.IGNORE_CASE)
+                .find(attrs)?.groupValues?.getOrNull(1)?.toIntOrNull() ?: 0
+            variants += HlsVariantGroups(
+                height,
+                hlsAttribute(attrs, "AUDIO"),
+                hlsAttribute(attrs, "SUBTITLES"),
+                hlsAttribute(attrs, "CLOSED-CAPTIONS").takeUnless { it.equals("NONE", ignoreCase = true) }.orEmpty(),
+            )
+        }
+        fun union(groups: Map<String, List<String>>): List<String> = groups.values.flatten().filter { it.isNotBlank() }.distinct()
+        fun matrix(selector: (HlsVariantGroups) -> List<String>): String =
+            variants.filter { it.height > 0 }.joinToString(";") { variant ->
+                "${variant.height}:" + selector(variant).filter { it.isNotBlank() }.distinct().joinToString("|")
+            }
+        val audioUnion = union(audioGroups)
+        val subtitleUnion = union(textGroups)
+        return HlsTrackTopology(
+            audioUnion.size, audioUnion.joinToString(","),
+            subtitleUnion.size, subtitleUnion.joinToString(","),
+            matrix { audioGroups[it.audioGroup].orEmpty() },
+            matrix { (textGroups[it.subtitleGroup].orEmpty() + textGroups[it.captionsGroup].orEmpty()).distinct() },
+            variants.map { it.height }.filter { it > 0 }.distinct().joinToString(","),
+        )
+    }
 
     private fun hlsDuration(body: String): Double? {
         var total = 0.0
@@ -280,10 +350,16 @@ TRANSPORT_HELPERS = r'''
                             if (childStatus in 200..299 && childBody.trimStart().startsWith("#EXTM3U", ignoreCase = true)) duration = hlsDuration(childBody)
                         }
                     }
+                    val topology = hlsTrackTopology(body)
                     TransportProbe(
                         "ok", "hls", status, contentType, true, duration, host, hint,
-                        audioTrackCount = hlsAudioTrackCount(body),
-                        audioTrackLanguages = hlsAudioTrackLanguages(body),
+                        audioTrackCount = topology.audioTrackCount,
+                        audioTrackLanguages = topology.audioTrackLanguages,
+                        subtitleTrackCount = topology.subtitleTrackCount,
+                        subtitleTrackLanguages = topology.subtitleTrackLanguages,
+                        audioVariantMatrix = topology.audioVariantMatrix,
+                        subtitleVariantMatrix = topology.subtitleVariantMatrix,
+                        variantHeights = topology.variantHeights,
                     )
                 }
             } else if (contentType.contains("text/html", ignoreCase = true) || body.trimStart().startsWith("<!doctype html", ignoreCase = true) || body.trimStart().startsWith("<html", ignoreCase = true)) {
@@ -364,7 +440,7 @@ class NiakvioNativeCorpusDesktopTest {{
                 }}
                 rows.firstOrNull()?.let {{ row ->
                     val probe = probeTransport(row.url, row.headers)
-                    emit("FIELD_NATIVE_TRANSPORT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} audio_track_count=${{probe.audioTrackCount}} audio_track_languages64=${{b64(probe.audioTrackLanguages)}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")
+                    emit("FIELD_NATIVE_TRANSPORT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} audio_track_count=${{probe.audioTrackCount}} audio_track_languages64=${{b64(probe.audioTrackLanguages)}} subtitle_track_count=${{probe.subtitleTrackCount}} subtitle_track_languages64=${{b64(probe.subtitleTrackLanguages)}} audio_variant_matrix64=${{b64(probe.audioVariantMatrix)}} subtitle_variant_matrix64=${{b64(probe.subtitleVariantMatrix)}} variant_heights64=${{b64(probe.variantHeights)}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")
                 }}
             }} catch (error: Throwable) {{
                 errors += provider.id + ":" + (error.message ?: error::class.simpleName.orEmpty())
@@ -492,7 +568,7 @@ class {klass} {{
                 }}
                 rows.firstOrNull()?.let {{ row ->
                     val probe = probeTransport(row.url, row.headers)
-                    emit("FIELD_NATIVE_TRANSPORT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} audio_track_count=${{probe.audioTrackCount}} audio_track_languages64=${{b64(probe.audioTrackLanguages)}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")
+                    emit("FIELD_NATIVE_TRANSPORT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} audio_track_count=${{probe.audioTrackCount}} audio_track_languages64=${{b64(probe.audioTrackLanguages)}} subtitle_track_count=${{probe.subtitleTrackCount}} subtitle_track_languages64=${{b64(probe.subtitleTrackLanguages)}} audio_variant_matrix64=${{b64(probe.audioVariantMatrix)}} subtitle_variant_matrix64=${{b64(probe.subtitleVariantMatrix)}} variant_heights64=${{b64(probe.variantHeights)}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")
                 }}
             }} catch (error: Throwable) {{
                 errors += provider.id + ":" + (error.message ?: error::class.simpleName.orEmpty())

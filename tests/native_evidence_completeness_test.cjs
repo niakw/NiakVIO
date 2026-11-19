@@ -126,7 +126,70 @@ try {
   assert.equal(preservedAssessment.stats.multiAudioExpected, 1);
   assert.equal(preservedAssessment.stats.multiAudioVerified, 1);
 
-  console.log('native evidence completeness execution-floor and multi-audio tests passed');
+  const variantLowCoherent = writeLog(tmp, 'variant-low-coherent.log', baseEvidence([
+    'FIELD_NATIVE_PROVIDER_BEGIN client=tv fixture=sinners-2025 provider=test request_type=movie',
+    'FIELD_NATIVE_RESULT client=tv fixture=sinners-2025 provider=test request_type=movie returned=1',
+    'FIELD_NATIVE_PLAYER_BEGIN client=tv fixture=sinners-2025 provider=test request_type=movie index=0',
+    'FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider=test request_type=movie index=0 state=ready advertised_quality64=QWRhcHRpdmU video_height=540 audio_track_count=1 audio_track_languages64=aGk subtitle_track_count=1 subtitle_track_languages64=ZnI',
+    'FIELD_NATIVE_TRANSPORT client=tv fixture=sinners-2025 provider=test request_type=movie index=0 state=ok kind=hls audio_track_count=4 audio_track_languages64=aGksZW4sZnIsZXM subtitle_track_count=2 subtitle_track_languages64=ZnIsZW4 audio_variant_matrix64=NTQwOmhpOzcyMDpoaXxlbnxmcnxlcw subtitle_variant_matrix64=NTQwOmZyOzcyMDpmcnxlbg',
+  ], [
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=provider-loading',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=provider-result',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=player-start',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=player-result',
+  ]));
+  const variantLowAssessment = assessNativeEvidence([variantLowCoherent]);
+  assert.equal(variantLowAssessment.complete, true, JSON.stringify(variantLowAssessment.problems));
+
+  const variantHighCollapsed = writeLog(tmp, 'variant-high-collapsed.log', baseEvidence([
+    'FIELD_NATIVE_PROVIDER_BEGIN client=tv fixture=sinners-2025 provider=test request_type=movie',
+    'FIELD_NATIVE_RESULT client=tv fixture=sinners-2025 provider=test request_type=movie returned=1',
+    'FIELD_NATIVE_PLAYER_BEGIN client=tv fixture=sinners-2025 provider=test request_type=movie index=0',
+    'FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider=test request_type=movie index=0 state=ready advertised_quality64=QWRhcHRpdmU video_height=720 audio_track_count=1 audio_track_languages64=aGk subtitle_track_count=1 subtitle_track_languages64=ZnI',
+    'FIELD_NATIVE_TRANSPORT client=tv fixture=sinners-2025 provider=test request_type=movie index=0 state=ok kind=hls audio_track_count=4 audio_track_languages64=aGksZW4sZnIsZXM subtitle_track_count=2 subtitle_track_languages64=ZnIsZW4 audio_variant_matrix64=NTQwOmhpOzcyMDpoaXxlbnxmcnxlcw subtitle_variant_matrix64=NTQwOmZyOzcyMDpmcnxlbg',
+  ], [
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=provider-loading',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=provider-result',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=player-start',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=player-result',
+  ]));
+  const variantHighAssessment = assessNativeEvidence([variantHighCollapsed]);
+  assert.equal(variantHighAssessment.complete, false);
+  assert.ok(variantHighAssessment.problems.some((row) => row.startsWith('multi_audio_player_collapsed:')));
+  assert.ok(variantHighAssessment.problems.some((row) => row.startsWith('integrated_subtitle_player_collapsed:')));
+
+  const fixed4kMismatch = writeLog(tmp, 'fixed-4k-mismatch.log', baseEvidence([
+    'FIELD_NATIVE_PROVIDER_BEGIN client=tv fixture=sinners-2025 provider=test request_type=movie',
+    'FIELD_NATIVE_RESULT client=tv fixture=sinners-2025 provider=test request_type=movie returned=1',
+    'FIELD_NATIVE_PLAYER_BEGIN client=tv fixture=sinners-2025 provider=test request_type=movie index=0',
+    'FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider=test request_type=movie index=0 state=ready advertised_quality64=MjE2MHA video_height=720 audio_track_count=1 subtitle_track_count=0',
+    'FIELD_NATIVE_TRANSPORT client=tv fixture=sinners-2025 provider=test request_type=movie index=0 state=ok kind=hls audio_track_count=1 subtitle_track_count=0',
+  ], [
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=provider-loading',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=provider-result',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=player-start',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=player-result',
+  ]));
+  const fixed4kAssessment = assessNativeEvidence([fixed4kMismatch]);
+  assert.equal(fixed4kAssessment.complete, false);
+  assert.ok(fixed4kAssessment.problems.some((row) => row.startsWith('fixed_quality_player_mismatch:')));
+
+  const adaptive720 = writeLog(tmp, 'adaptive-720.log', baseEvidence([
+    'FIELD_NATIVE_PROVIDER_BEGIN client=tv fixture=sinners-2025 provider=test request_type=movie',
+    'FIELD_NATIVE_RESULT client=tv fixture=sinners-2025 provider=test request_type=movie returned=1',
+    'FIELD_NATIVE_PLAYER_BEGIN client=tv fixture=sinners-2025 provider=test request_type=movie index=0',
+    'FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider=test request_type=movie index=0 state=ready advertised_quality64=QWRhcHRpdmU video_height=720 audio_track_count=1 subtitle_track_count=0',
+    'FIELD_NATIVE_TRANSPORT client=tv fixture=sinners-2025 provider=test request_type=movie index=0 state=ok kind=hls audio_track_count=1 subtitle_track_count=0',
+  ], [
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=provider-loading',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=provider-result',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=player-start',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=player-result',
+  ]));
+  const adaptiveAssessment = assessNativeEvidence([adaptive720]);
+  assert.equal(adaptiveAssessment.complete, true, JSON.stringify(adaptiveAssessment.problems));
+
+  console.log('native evidence completeness execution-floor, quality and variant track tests passed');
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });
 }

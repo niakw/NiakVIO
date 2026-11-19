@@ -143,3 +143,10 @@
 - Integrated HLS subtitle renditions remain separate from external/addon subtitles and carry `source=integrated`, `sourceName=Intégré` in technical metadata. They must be shown by Nuvio as integrated tracks, not as subtitle-addon rows.
 - Regression fixture now models the representative split: 540p -> Hindi only; 720p -> Hindi/English/French/Spanish, with different subtitle groups. This is Core/runtime correction, not a provider-specific override.
 - Still required after this commit: rematerialize affected provider bundles, run targeted HLS tests + non-regression, then strengthen Native Labs to compare actual selected engine/resolution/audio/subtitles for ExoPlayer and libmpv before calling playback metadata coherent.
+
+
+### 2026-11-19 — Native Lab compares selected HLS variant, not master-wide unions
+- The Android Native Lab transport probe now records a per-height HLS track topology for AUDIO and integrated SUBTITLES/CLOSED-CAPTIONS groups instead of only the union of all `#EXT-X-MEDIA` rows.
+- Production-player evidence now carries actual rendered video dimensions plus internal audio/subtitle observations. NuvioMobile reads `PlayerEngineController.getAudioTracks()/getSubtitleTracks()`, the controller's actual playback engine and `PlayerPlaybackSnapshot.videoWidth/videoHeight`. NuvioTV reads `LastPlaybackDiagnostics.videoResolution` and its production audio/subtitle overlays; built-in subtitle rows are counted through the existing `subtitle_built_in` source.
+- `native_evidence_completeness.cjs` resolves expected audio/subtitle languages from the variant matching the player's actual video height. A 540p Hindi-only selection no longer fails because another 720p rendition exposes four languages; the 720p rendition still fails if the player exposes only Hindi. Fixed quality labels also fail when actual selected height is below their quality bucket, while `Adaptive` may legitimately select a lower rendition.
+- This closes a validation bug discovered by field comparison of ExoPlayer vs libmpv. Explicit same-URL two-engine certification remains the next validation step.

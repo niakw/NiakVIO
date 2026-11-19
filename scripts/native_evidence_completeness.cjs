@@ -54,6 +54,42 @@ function audioLanguages(value64) {
   )];
 }
 
+function trackLanguages(value64) { return audioLanguages(value64); }
+
+function parseVariantMatrix(value64) {
+  const out = new Map();
+  for (const part of decode(value64).split(';')) {
+    const [heightRaw, langsRaw = ''] = part.split(':', 2);
+    const height = Number(heightRaw);
+    if (!Number.isFinite(height) || height <= 0) continue;
+    out.set(height, [...new Set(langsRaw.split('|').map(normalizeAudioLanguage).filter(Boolean))]);
+  }
+  return out;
+}
+
+function expectedVariantLanguages(matrix, actualHeight) {
+  if (!(matrix instanceof Map) || matrix.size === 0 || !Number.isFinite(actualHeight) || actualHeight <= 0) return null;
+  if (matrix.has(actualHeight)) return matrix.get(actualHeight) || [];
+  const candidates = [...matrix.keys()]
+    .map((height) => ({ height, delta: Math.abs(height - actualHeight) }))
+    .sort((a, b) => a.delta - b.delta);
+  if (!candidates.length || candidates[0].delta > 16) return null;
+  return matrix.get(candidates[0].height) || [];
+}
+
+function fixedQualityMinimumHeight(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (!raw || raw === 'adaptive' || raw === 'auto' || raw === 'unknown' || raw === 'inconnue') return null;
+  if (/\b(?:2160p|4k|uhd)\b/.test(raw)) return 2000;
+  if (/\b1440p\b/.test(raw)) return 1350;
+  if (/\b1080p\b/.test(raw)) return 900;
+  if (/\b720p\b/.test(raw)) return 650;
+  if (/\b576p\b/.test(raw)) return 550;
+  if (/\b480p\b/.test(raw)) return 450;
+  if (/\b360p\b/.test(raw)) return 300;
+  return null;
+}
+
 function languageEquivalent(expected, observed) {
   if (expected === observed) return true;
   return expected.split('-', 1)[0] === observed.split('-', 1)[0];
@@ -146,8 +182,17 @@ function assessNativeEvidence(logPaths) {
   const playersTerminal = new Map();
   const playerAudioTracks = new Map();
   const playerAudioLanguages = new Map();
+  const playerSubtitleTracks = new Map();
+  const playerSubtitleLanguages = new Map();
+  const playerVideoHeights = new Map();
+  const playerAdvertisedQuality = new Map();
+  const playerStates = new Map();
   const transportAudioTracks = new Map();
   const transportAudioLanguages = new Map();
+  const transportSubtitleTracks = new Map();
+  const transportSubtitleLanguages = new Map();
+  const transportAudioVariantMatrix = new Map();
+  const transportSubtitleVariantMatrix = new Map();
   const httpRequests = new Map();
   const httpTerminal = new Map();
   const repositoryHttpRequests = new Map();
@@ -282,12 +327,13 @@ function assessNativeEvidence(logPaths) {
             Number(f.audio_track_count),
           );
         }
-        if (Object.prototype.hasOwnProperty.call(f, 'audio_track_languages64')) {
-          playerAudioLanguages.set(
-            mediaProbeKey(client, fixture, provider, f.index),
-            audioLanguages(f.audio_track_languages64),
-          );
-        }
+        const mediaKey = mediaProbeKey(client, fixture, provider, f.index);
+        playerStates.set(mediaKey, String(f.state || '').toLowerCase());
+        if (Object.prototype.hasOwnProperty.call(f, 'audio_track_languages64')) playerAudioLanguages.set(mediaKey, audioLanguages(f.audio_track_languages64));
+        if (Object.prototype.hasOwnProperty.call(f, 'subtitle_track_count')) playerSubtitleTracks.set(mediaKey, Number(f.subtitle_track_count));
+        if (Object.prototype.hasOwnProperty.call(f, 'subtitle_track_languages64')) playerSubtitleLanguages.set(mediaKey, trackLanguages(f.subtitle_track_languages64));
+        if (Object.prototype.hasOwnProperty.call(f, 'video_height')) playerVideoHeights.set(mediaKey, Number(f.video_height));
+        if (Object.prototype.hasOwnProperty.call(f, 'advertised_quality64')) playerAdvertisedQuality.set(mediaKey, decode(f.advertised_quality64));
         const scope = ensureScope(scopes, client, fixture);
         scope.playerResults += 1;
         fileScopeKeys.add(scopeKey(client, fixture));
@@ -299,12 +345,12 @@ function assessNativeEvidence(logPaths) {
             Number(f.audio_track_count),
           );
         }
-        if (Object.prototype.hasOwnProperty.call(f, 'audio_track_languages64')) {
-          transportAudioLanguages.set(
-            mediaProbeKey(client, fixture, provider, f.index),
-            audioLanguages(f.audio_track_languages64),
-          );
-        }
+        const mediaKey = mediaProbeKey(client, fixture, provider, f.index);
+        if (Object.prototype.hasOwnProperty.call(f, 'audio_track_languages64')) transportAudioLanguages.set(mediaKey, audioLanguages(f.audio_track_languages64));
+        if (Object.prototype.hasOwnProperty.call(f, 'subtitle_track_count')) transportSubtitleTracks.set(mediaKey, Number(f.subtitle_track_count));
+        if (Object.prototype.hasOwnProperty.call(f, 'subtitle_track_languages64')) transportSubtitleLanguages.set(mediaKey, trackLanguages(f.subtitle_track_languages64));
+        if (Object.prototype.hasOwnProperty.call(f, 'audio_variant_matrix64')) transportAudioVariantMatrix.set(mediaKey, parseVariantMatrix(f.audio_variant_matrix64));
+        if (Object.prototype.hasOwnProperty.call(f, 'subtitle_variant_matrix64')) transportSubtitleVariantMatrix.set(mediaKey, parseVariantMatrix(f.subtitle_variant_matrix64));
         fileScopeKeys.add(scopeKey(client, fixture));
       } else if (line.startsWith('FIELD_NATIVE_HTTP_REQUEST ')) {
         const provider = providerName(f);
@@ -413,33 +459,82 @@ function assessNativeEvidence(logPaths) {
   let multiAudioVerified = 0;
   let multiAudioLanguageExpected = 0;
   let multiAudioLanguageVerified = 0;
-  for (const [key, expected] of transportAudioTracks) {
-    if (!Number.isFinite(expected) || expected < 2) continue;
-    multiAudioExpected += 1;
-    const observed = playerAudioTracks.get(key);
+  let integratedSubtitleExpected = 0;
+  let integratedSubtitleVerified = 0;
+  let fixedQualityExpected = 0;
+  let fixedQualityVerified = 0;
+
+  const mediaKeys = new Set([
+    ...transportAudioTracks.keys(),
+    ...transportSubtitleTracks.keys(),
+    ...playerVideoHeights.keys(),
+    ...playerAdvertisedQuality.keys(),
+  ]);
+  for (const key of mediaKeys) {
     const label = key.replace(/\u0000/g, ':');
-    if (!Number.isFinite(observed) || observed < 0) {
-      problems.push(`multi_audio_player_observation_missing:${label}:master=${expected}`);
-    } else if (observed < 2) {
-      problems.push(`multi_audio_player_collapsed:${label}:master=${expected}:player=${observed}`);
-    } else {
-      multiAudioVerified += 1;
+    const state = playerStates.get(key) || '';
+    const actualHeight = Number(playerVideoHeights.get(key) || 0);
+    const advertisedQuality = playerAdvertisedQuality.get(key) || '';
+    const minimumHeight = fixedQualityMinimumHeight(advertisedQuality);
+    if (minimumHeight != null && ['ready', 'ended'].includes(state)) {
+      fixedQualityExpected += 1;
+      if (!Number.isFinite(actualHeight) || actualHeight <= 0) {
+        problems.push(`fixed_quality_player_observation_missing:${label}:advertised=${advertisedQuality}`);
+      } else if (actualHeight < minimumHeight) {
+        problems.push(`fixed_quality_player_mismatch:${label}:advertised=${advertisedQuality}:height=${actualHeight}`);
+      } else {
+        fixedQualityVerified += 1;
+      }
     }
 
-    const expectedLanguages = transportAudioLanguages.get(key) || [];
-    if (expectedLanguages.length < 2) continue;
-    multiAudioLanguageExpected += 1;
-    const observedLanguages = playerAudioLanguages.get(key) || [];
-    if (observedLanguages.length < 2) {
-      problems.push(
-        `multi_audio_language_observation_missing:${label}:master=${expectedLanguages.join(',')}:player=${observedLanguages.join(',') || 'none'}`
-      );
-    } else if (!languageCoverage(expectedLanguages, observedLanguages)) {
-      problems.push(
-        `multi_audio_language_collapsed:${label}:master=${expectedLanguages.join(',')}:player=${observedLanguages.join(',')}`
-      );
-    } else {
-      multiAudioLanguageVerified += 1;
+    const variantAudioLanguages = expectedVariantLanguages(transportAudioVariantMatrix.get(key), actualHeight);
+    const expectedAudioLanguages = variantAudioLanguages != null
+      ? variantAudioLanguages
+      : (transportAudioLanguages.get(key) || []);
+    const fallbackAudioCount = Number(transportAudioTracks.get(key));
+    const expectedAudioCount = expectedAudioLanguages.length || (Number.isFinite(fallbackAudioCount) ? fallbackAudioCount : 0);
+    if (expectedAudioCount >= 2) {
+      multiAudioExpected += 1;
+      const observed = playerAudioTracks.get(key);
+      if (!Number.isFinite(observed) || observed < 0) {
+        problems.push(`multi_audio_player_observation_missing:${label}:expected=${expectedAudioCount}:height=${actualHeight || 0}`);
+      } else if (observed < expectedAudioCount) {
+        problems.push(`multi_audio_player_collapsed:${label}:expected=${expectedAudioCount}:player=${observed}:height=${actualHeight || 0}`);
+      } else {
+        multiAudioVerified += 1;
+      }
+      if (expectedAudioLanguages.length >= 2) {
+        multiAudioLanguageExpected += 1;
+        const observedLanguages = playerAudioLanguages.get(key) || [];
+        if (observedLanguages.length < 2) {
+          problems.push(`multi_audio_language_observation_missing:${label}:expected=${expectedAudioLanguages.join(',')}:player=${observedLanguages.join(',') || 'none'}:height=${actualHeight || 0}`);
+        } else if (!languageCoverage(expectedAudioLanguages, observedLanguages)) {
+          problems.push(`multi_audio_language_collapsed:${label}:expected=${expectedAudioLanguages.join(',')}:player=${observedLanguages.join(',')}:height=${actualHeight || 0}`);
+        } else {
+          multiAudioLanguageVerified += 1;
+        }
+      }
+    }
+
+    const variantSubtitleLanguages = expectedVariantLanguages(transportSubtitleVariantMatrix.get(key), actualHeight);
+    const expectedSubtitleLanguages = variantSubtitleLanguages != null
+      ? variantSubtitleLanguages
+      : (transportSubtitleLanguages.get(key) || []);
+    const fallbackSubtitleCount = Number(transportSubtitleTracks.get(key));
+    const expectedSubtitleCount = expectedSubtitleLanguages.length || (Number.isFinite(fallbackSubtitleCount) ? fallbackSubtitleCount : 0);
+    if (expectedSubtitleCount > 0) {
+      integratedSubtitleExpected += 1;
+      const observedCount = playerSubtitleTracks.get(key);
+      const observedLanguages = playerSubtitleLanguages.get(key) || [];
+      if (!Number.isFinite(observedCount) || observedCount < 0) {
+        problems.push(`integrated_subtitle_player_observation_missing:${label}:expected=${expectedSubtitleCount}`);
+      } else if (observedCount < expectedSubtitleCount) {
+        problems.push(`integrated_subtitle_player_collapsed:${label}:expected=${expectedSubtitleCount}:player=${observedCount}:height=${actualHeight || 0}`);
+      } else if (expectedSubtitleLanguages.length > 0 && observedLanguages.length > 0 && !languageCoverage(expectedSubtitleLanguages, observedLanguages)) {
+        problems.push(`integrated_subtitle_language_collapsed:${label}:expected=${expectedSubtitleLanguages.join(',')}:player=${observedLanguages.join(',')}:height=${actualHeight || 0}`);
+      } else {
+        integratedSubtitleVerified += 1;
+      }
     }
   }
 
@@ -483,6 +578,10 @@ function assessNativeEvidence(logPaths) {
       multiAudioVerified,
       multiAudioLanguageExpected,
       multiAudioLanguageVerified,
+      integratedSubtitleExpected,
+      integratedSubtitleVerified,
+      fixedQualityExpected,
+      fixedQualityVerified,
       httpRequests: [...httpRequests.values()].reduce((a, b) => a + b, 0),
       frontendErrors,
     },
