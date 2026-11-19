@@ -219,16 +219,16 @@ with tempfile.TemporaryDirectory(prefix="niakvio-tv-hilt-regression-") as temp:
     }
 """
     generated = (
-        "package com.nuvio.tv.core.plugin\\n"
-        "import dagger.hilt.EntryPoint\\n"
-        "import dagger.hilt.InstallIn\\n"
-        "import dagger.hilt.components.SingletonComponent\\n"
-        "import dagger.hilt.android.EntryPointAccessors\\n"
-        "class GeneratedNativeCorpus {\\n"
+        "package com.nuvio.tv.core.plugin\n"
+        "import dagger.hilt.EntryPoint\n"
+        "import dagger.hilt.InstallIn\n"
+        "import dagger.hilt.components.SingletonComponent\n"
+        "import dagger.hilt.android.EntryPointAccessors\n"
+        "class GeneratedNativeCorpus {\n"
         + tv_helpers("https://raw.githubusercontent.com/niakw/NiakVIO/main/manifest.json", [])
         + nested_settings
-        + "    val playerAccessor = NiakvioPlayerSettingsEntryPoint::class.java\\n"
-        + "}\\n"
+        + "    val playerAccessor = NiakvioPlayerSettingsEntryPoint::class.java\n"
+        + "}\n"
     )
     source.write_text(generated, encoding="utf-8")
     finalize_tv_hilt(source)
@@ -246,7 +246,7 @@ with tempfile.TemporaryDirectory(prefix="niakvio-tv-hilt-regression-") as temp:
     # compile against the exact debug-only Hilt bridge, never an old method set.
     source.write_text(
         generated.replace(
-            "        fun pluginRuntime(): com.nuvio.tv.core.plugin.PluginRuntime\\n", ""
+            "        fun pluginRuntime(): com.nuvio.tv.core.plugin.PluginRuntime\n", ""
         ),
         encoding="utf-8",
     )
