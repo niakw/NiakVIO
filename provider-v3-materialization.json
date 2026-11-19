@@ -2,10 +2,10 @@
   "schemaVersion": 3,
   "sourceSha": "a23f9696473979309d25f123bb592763feecf9f9",
   "context": "workspace",
-  "generation": "a496a2b1bcb77e53af0ae2065dfd8f8e1af1fda6389766bad3f8930dcbadd00f",
-  "providerCount": 75,
-  "activeProviderIdentityCount": 75,
-  "expectedProviderCount": 75,
+  "generation": "cd00a6ac155869fe39450a5fc92ba84aee86bcd1caced177726a5666fa914444",
+  "providerCount": 74,
+  "activeProviderIdentityCount": 74,
+  "expectedProviderCount": 74,
   "byteValidationConcurrency": 4,
   "providers": [
     {
@@ -7870,152 +7870,6 @@
       "materializationReboundFromExactPublishedBytes": true
     },
     {
-      "provider": "sekai",
-      "file": "providers/sekai--nuvio--2b380ed1d91b6bc5.js",
-      "sha256": "2b380ed1d91b6bc505ef9084f012e52b94ac50e3f8bf0756ac232fb6ab51ad49",
-      "providerDataSha256": "0b4e1b5660ba426bb5ca1fba17eb327c55637f035817435833465c9d98e79ad0",
-      "baseStrippedGeneratedCore": false,
-      "fixIds": [
-        "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
-        "CORE.HLS_RUNTIME_INTEGRITY.V1",
-        "CORE.MEDIA_ENRICHMENT.V1",
-        "CORE.MEDIA_TYPE_RESOLUTION.V1",
-        "CORE.PROVIDER_BRANDING.V1",
-        "CORE.PROVIDER_RUNTIME_DISPATCH.V1",
-        "CORE.PROVIDER_SECURITY_BOUNDARY.V1",
-        "CORE.RUNTIME_COMPAT.V1",
-        "CORE.RUNTIME_MEDIA_SAFETY.V4",
-        "CORE.STREAM_FACTS.V1",
-        "CORE.STREAM_IDENTITY.V1",
-        "CORE.STREAM_PRESENTATION.V1",
-        "CORE.STREAM_SANITIZER.V6",
-        "CORE.STREAM_SCORE.V1",
-        "CORE.TELEMETRY.V1",
-        "PROVIDER.SEKAI.CONFIG.V1",
-        "PROVIDER.SEKAI.RUNTIME.V1"
-      ],
-      "coreCount": 15,
-      "applied": [
-        {
-          "type": "provider_lego",
-          "path": "scripts/provider_patches/sekai_runtime_v1.py",
-          "phase": "discovery",
-          "scope": "PROVIDER.SEKAI.RUNTIME.V1"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
-          "phase": "discovery",
-          "scope": "global_catalogue_resolution"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_enrichment"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery",
-          "scope": "global_playback_integrity"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
-          "phase": "discovery",
-          "scope": "global_playback_integrity"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
-          "phase": "discovery",
-          "scope": "global_runtime_compat"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_provider_runtime_dispatch_v1.py",
-          "phase": "discovery",
-          "scope": "global_provider_runtime_dispatch"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_facts_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_facts"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
-          "phase": "discovery",
-          "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_identity_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_identity"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_presentation"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
-          "phase": "discovery",
-          "scope": "global_runtime_media_safety"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_provider_branding_v1.py",
-          "phase": "discovery",
-          "scope": "global_provider_branding"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_score_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_score"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_telemetry_v1.py",
-          "phase": "discovery",
-          "scope": "global_telemetry"
-        }
-      ],
-      "deviceSpecificJs": false,
-      "devices": [
-        "tv",
-        "mobile",
-        "desktop"
-      ],
-      "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false,
-      "byteValidation": {
-        "tool": "raw-bytes",
-        "toolVersion": "raw-v1",
-        "phase": "provider-byte-stability-v1",
-        "sourceSha256": "f4d430188ca0e9b64d680b72767bc04df02cba961d3f43516a4fedeff79af628",
-        "fixedPointVerified": true
-      },
-      "minimizer": {
-        "enabled": false,
-        "savedBytes": 0,
-        "transformedLines": 0,
-        "skippedReason": "final-stage-only"
-      }
-    },
-    {
       "provider": "showbox",
       "file": "providers/showbox--nuvio--ac98f6d33336ef72.js",
       "sha256": "ac98f6d33336ef7298c218bd78e80262c4831161718b09649de92aa98209939d",
@@ -10280,5 +10134,7 @@
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
-  ]
+  ],
+  "lifecycleScopeReconciled": true,
+  "lifecycleReconciledArchivedProviders": []
 }

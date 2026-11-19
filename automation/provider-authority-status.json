@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "authority": "provider-authority-arbiter-v1",
-  "censusStatusSource": "/tmp/provider-census-preauthority.json",
-  "productionFreshnessStatusSource": "/tmp/provider-census-current-freshness.json",
+  "censusStatusSource": "/home/runner/work/NiakVIO/NiakVIO/automation/provider-census-status.json",
+  "productionFreshnessStatusSource": "persisted-all-scope",
   "policy": {
     "searchRole": "historical-supplement-only",
     "futureHubSearchDefault": false,
@@ -39,7 +39,6 @@
     "primewire",
     "purstream",
     "sadisflix",
-    "sekai",
     "shuttletv",
     "streamzo",
     "webflix"
@@ -134,6 +133,7 @@
     "rivestream",
     "rivestream-app",
     "rivestream-ru",
+    "sekai",
     "sflix",
     "showbox",
     "skstream",
@@ -1666,20 +1666,14 @@
     },
     {
       "provider": "sekai",
-      "action": "KEEP_DIRECT",
-      "repairEligible": true,
-      "confidence": "medium",
-      "authorityClass": "direct",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
-        "curated_direct",
-        "existing_positive_route_prior",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:REGRESSION PROVIDER JS"
-      ],
-      "productionFreshnessAuthorized": false,
-      "productionProofAuthority": "no-current-byte-production-proof"
+        "already_disabled"
+      ]
     },
     {
       "provider": "sflix",
