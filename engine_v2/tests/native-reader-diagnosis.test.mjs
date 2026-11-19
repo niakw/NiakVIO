@@ -189,7 +189,14 @@ try {
     [script, '--output', noReaderOutput, noReaderLog],
     { cwd: root, encoding: 'utf8' });
   const noReaderData = JSON.parse(fs.readFileSync(noReaderOutput, 'utf8'));
-  assert.equal(noReaderData.evidenceComplete, false);
+  // Full trace capture can be complete even if no video player exists.
+  // This field is diagnostic completeness, NEVER proof of media playback.
+  assert.equal(noReaderData.evidenceComplete, true);
+  assert.equal(noReaderData.readerObserved, 0);
+  assert.equal(noReaderData.readerHealthy, 0);
+  assert.equal(noReaderData.policy.productionWritesAllowed, false);
+  assert.equal(noReaderData.policy.publicationAllowed, false);
+  assert.equal(noReaderData.policy.quickJsDiagnosticProviderMutationAllowed, false);
   assert.equal(noReaderData.quickJsUnverifiedObserved, 2,
     JSON.stringify({
       app: noReaderData.appSelectionObservations?.length,
