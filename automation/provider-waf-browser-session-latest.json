@@ -714,13 +714,11 @@
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_challenge_persisted",
-          "exitCode": 0
+          "outcome": "browser_timeout"
         },
         {
           "attempt": 2,
-          "outcome": "browser_challenge_persisted",
-          "exitCode": 0
+          "outcome": "browser_timeout"
         }
       ],
       "ordinarySessionReused": true,
@@ -728,18 +726,16 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_challenge_persisted",
+          "outcome": "browser_timeout",
           "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_challenge_persisted",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             },
             {
               "attempt": 2,
-              "outcome": "browser_challenge_persisted",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             }
           ],
           "ordinarySessionReused": true
@@ -851,7 +847,7 @@
       ],
       "transportDiagnosis": "browser_content_native_unproven",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 19518,
+      "durationMs": 73001,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -889,16 +885,16 @@
         ]
       },
       "transportReceipt": {
-        "sourceNiakvioSha": "d1a1730ff120bad629297e78cab0aed41755cf49",
+        "sourceNiakvioSha": "149b7c4df6ac6632db4f2601af85eb2ff5636778",
         "providerBundleSha256": "c1b744ca9c7cc482e91a31a293d9ae7a8e3ca5c0143d7dbad006ff51fa3fe2ad",
-        "runId": "44445635550",
+        "runId": "44451624192",
         "proofAuthority": false,
         "publicationAuthority": false
       },
       "residentialReceipt": {
-        "sourceNiakvioSha": "d1a1730ff120bad629297e78cab0aed41755cf49",
+        "sourceNiakvioSha": "149b7c4df6ac6632db4f2601af85eb2ff5636778",
         "providerBundleSha256": "c1b744ca9c7cc482e91a31a293d9ae7a8e3ca5c0143d7dbad006ff51fa3fe2ad",
-        "runId": "44445635550",
+        "runId": "44451624192",
         "proofAuthority": false,
         "publicationAuthority": false
       }
@@ -3943,12 +3939,15 @@
       "seedKind": "metadata-homepage",
       "seedRoute": null,
       "outcome": "browser_content_reached",
-      "attemptCount": 1,
+      "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_content_reached",
-          "exitCode": 0
+          "outcome": "browser_timeout"
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_timeout"
         }
       ],
       "ordinarySessionReused": true,
@@ -3956,13 +3955,16 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_content_reached",
-          "attemptCount": 1,
+          "outcome": "browser_timeout",
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_content_reached",
-              "exitCode": 0
+              "outcome": "browser_timeout"
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_timeout"
             }
           ],
           "ordinarySessionReused": true
@@ -4054,7 +4056,6 @@
         "exitCode": 0
       },
       "contentProfiles": [
-        "github-default-browser",
         "nuvio-tv-ua-browser",
         "nuvio-tv-direct-http-approx",
         "nuvio-tv-okhttp-jvm",
@@ -4062,21 +4063,21 @@
       ],
       "transportDiagnosis": "content_reached_cross_transport",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 23997,
+      "durationMs": 72026,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
-        "attemptCount": 2,
+        "attemptCount": 1,
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
             "outcome": "browser_content_reached",
-            "attemptCount": 2
+            "attemptCount": 1
           },
           {
             "profile": "nuvio-tv-ua-browser",
             "outcome": "browser_content_reached",
-            "attemptCount": 2
+            "attemptCount": 1
           }
         ],
         "directHttpProfile": {
@@ -4103,16 +4104,16 @@
         ]
       },
       "transportReceipt": {
-        "sourceNiakvioSha": "d1a1730ff120bad629297e78cab0aed41755cf49",
+        "sourceNiakvioSha": "149b7c4df6ac6632db4f2601af85eb2ff5636778",
         "providerBundleSha256": "2b380ed1d91b6bc505ef9084f012e52b94ac50e3f8bf0756ac232fb6ab51ad49",
-        "runId": "44445635550",
+        "runId": "44451624192",
         "proofAuthority": false,
         "publicationAuthority": false
       },
       "residentialReceipt": {
-        "sourceNiakvioSha": "d1a1730ff120bad629297e78cab0aed41755cf49",
+        "sourceNiakvioSha": "149b7c4df6ac6632db4f2601af85eb2ff5636778",
         "providerBundleSha256": "2b380ed1d91b6bc505ef9084f012e52b94ac50e3f8bf0756ac232fb6ab51ad49",
-        "runId": "44445635550",
+        "runId": "44451624192",
         "proofAuthority": false,
         "publicationAuthority": false
       }
@@ -5526,7 +5527,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 4,
+    "matchedProviderLanes": 2,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -7148,15 +7149,17 @@
         "providerArtifactSha256": "2b380ed1d91b6bc505ef9084f012e52b94ac50e3f8bf0756ac232fb6ab51ad49",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_zero_before_provider_network",
+        "debugStage": "provider_network_zero_result",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_zero_before_provider_network"
+          "provider_network_http_error",
+          "provider_network_zero_result"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
+          "lookup_only",
           "none"
         ],
         "raw": 0,
@@ -7165,9 +7168,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "d1a1730ff120bad629297e78cab0aed41755cf49",
+          "sourceNiakvioSha": "149b7c4df6ac6632db4f2601af85eb2ff5636778",
           "providerBundleSha256": "2b380ed1d91b6bc505ef9084f012e52b94ac50e3f8bf0756ac232fb6ab51ad49",
-          "runId": "44445635550",
+          "runId": "44451624192",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7533,7 +7536,6 @@
       "available": true,
       "providerCount": 1,
       "refreshedProviders": [
-        "allwish",
         "animeonsen",
         "sekai"
       ],
@@ -7546,15 +7548,14 @@
       "byteMatchedProviders": [
         "sekai"
       ],
-      "sourceNiakvioSha": "d1a1730ff120bad629297e78cab0aed41755cf49",
-      "runId": "44445635550",
+      "sourceNiakvioSha": "149b7c4df6ac6632db4f2601af85eb2ff5636778",
+      "runId": "44451624192",
       "proofAuthority": false,
       "publicationAuthority": false
     },
     "providerBundleDigestAuthority": "executed-global-vf-published-bytes"
   },
   "lastRefreshProviderFilter": [
-    "allwish",
     "animeonsen",
     "sekai"
   ],
@@ -7562,7 +7563,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 4,
+    "matchedProviderLanes": 2,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -7572,9 +7573,9 @@
     }
   },
   "freshRunReceipt": {
-    "sourceNiakvioSha": "d1a1730ff120bad629297e78cab0aed41755cf49",
-    "runId": "44445635550",
-    "providerCount": 3,
+    "sourceNiakvioSha": "149b7c4df6ac6632db4f2601af85eb2ff5636778",
+    "runId": "44451624192",
+    "providerCount": 2,
     "proofAuthority": false,
     "publicationAuthority": false
   }

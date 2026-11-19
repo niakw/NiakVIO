@@ -3702,7 +3702,7 @@
       "testedThisRun": true,
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+        "anime: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
       ]
     },
     {
@@ -5637,16 +5637,9 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "44445635550-waf-transport",
-  "harnessEvidenceSha": "d1a1730ff120bad629297e78cab0aed41755cf49",
-  "authorityRefreshedProviders": [
-    "animeonsen",
-    "film-a-revoir",
-    "french-anime",
-    "moiflix",
-    "skstream",
-    "voirserie"
-  ],
+  "harnessEvidenceRunId": "44451624192-waf-transport",
+  "harnessEvidenceSha": "149b7c4df6ac6632db4f2601af85eb2ff5636778",
+  "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
     "aniflix-uno",
@@ -5672,7 +5665,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 4,
+    "matchedProviderLanes": 2,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -7294,15 +7287,17 @@
         "providerArtifactSha256": "2b380ed1d91b6bc505ef9084f012e52b94ac50e3f8bf0756ac232fb6ab51ad49",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_zero_before_provider_network",
+        "debugStage": "provider_network_zero_result",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_zero_before_provider_network"
+          "provider_network_http_error",
+          "provider_network_zero_result"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
+          "lookup_only",
           "none"
         ],
         "raw": 0,
@@ -7311,9 +7306,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "d1a1730ff120bad629297e78cab0aed41755cf49",
+          "sourceNiakvioSha": "149b7c4df6ac6632db4f2601af85eb2ff5636778",
           "providerBundleSha256": "2b380ed1d91b6bc505ef9084f012e52b94ac50e3f8bf0756ac232fb6ab51ad49",
-          "runId": "44445635550",
+          "runId": "44451624192",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7679,7 +7674,6 @@
       "available": true,
       "providerCount": 1,
       "refreshedProviders": [
-        "allwish",
         "animeonsen",
         "sekai"
       ],
@@ -7692,8 +7686,8 @@
       "byteMatchedProviders": [
         "sekai"
       ],
-      "sourceNiakvioSha": "d1a1730ff120bad629297e78cab0aed41755cf49",
-      "runId": "44445635550",
+      "sourceNiakvioSha": "149b7c4df6ac6632db4f2601af85eb2ff5636778",
+      "runId": "44451624192",
       "proofAuthority": false,
       "publicationAuthority": false
     },
