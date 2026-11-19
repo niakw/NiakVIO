@@ -65,7 +65,7 @@ collection_analyzer = COLLECTION_ANALYZER.read_text(encoding="utf-8")
 summarizer = SUMMARIZER.read_text(encoding="utf-8")
 corpus = json.loads(CORPUS.read_text(encoding="utf-8"))
 manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-native_manifest = json.loads((ROOT / "native-hub46/manifest.json").read_text(encoding="utf-8"))
+vf_manifest = json.loads((ROOT / "vf/manifest.json").read_text(encoding="utf-8"))
 
 acceptance = corpus.get("native_reader_acceptance") or {}
 assert acceptance.get("provider_scope") == "declared-type"
@@ -112,7 +112,7 @@ for workflow in (tv_reader, mobile_android, mobile_ios, desktop_reader):
     assert "workflow_dispatch:" in workflow
     assert "\n  schedule:" in workflow and "cron:" in workflow
 
-assert "matrix:" not in tv_reader
+assert "projection: global" in tv_reader and "projection: vf" in tv_reader
 assert tv_reader.count("tv-route-reader:") == 1
 assert "NIAKVIO_TARGET_FIXTURES=$ROTATED_FIXTURES" in tv_reader
 assert "NIAKVIO_TV_PRIORITY_APPEND: \"1\"" in tv_reader
@@ -124,7 +124,7 @@ assert '--streams "$STREAM_SCOPE"' in tv_suite
 assert 'STREAM_SCOPE="$PRIMARY_STREAM_SCOPE"' in tv_suite
 assert 'STREAM_SCOPE="$REGRESSION_STREAM_SCOPE"' in tv_suite
 assert "--streams all" in tv_reader.split("\n  mobile-android-reader:", 1)[1]
-assert "native-tv-full-${{ github.run_id }}" in tv_reader
+assert "native-tv-full-${{ matrix.projection }}-${{ github.run_id }}" in tv_reader
 
 def artifact_block(workflow: str, marker: str) -> str:
     start = workflow.index(marker)
@@ -132,10 +132,10 @@ def artifact_block(workflow: str, marker: str) -> str:
     return workflow[start:] if end < 0 else workflow[start:end]
 
 for workflow, marker in (
-    (tv_reader, 'name: native-tv-full-${{ github.run_id }}'),
-    (mobile_android, 'name: native-mobile-android-full-${{ github.run_id }}'),
-    (mobile_ios, "name: native-mobile-ios-${{ inputs.mode == 'only' && 'only' || 'full' }}-${{ github.run_id }}"),
-    (desktop_reader, 'name: native-desktop-full-${{ matrix.os_name }}-${{ github.run_id }}'),
+    (tv_reader, 'name: native-tv-full-${{ matrix.projection }}-${{ github.run_id }}'),
+    (mobile_android, 'name: native-mobile-android-full-${{ matrix.projection }}-${{ github.run_id }}'),
+    (mobile_ios, "name: native-mobile-ios-${{ inputs.mode == 'only' && 'only' || 'full' }}-${{ matrix.projection }}-${{ github.run_id }}"),
+    (desktop_reader, 'name: native-desktop-full-${{ matrix.os_name }}-${{ matrix.projection }}-${{ github.run_id }}'),
 ):
     assert "retention-days: 8" in artifact_block(workflow, marker), marker
 
@@ -144,7 +144,7 @@ assert "mobile-android-reader:" in mobile_android
 assert "name: NATIVE - Android Reader" in mobile_android
 assert "resolve_tv:" in mobile_android and "resolve_mobile:" in mobile_android
 assert "NuvioMedia/NuvioMobile.git" in mobile_android
-assert "native-mobile-android-full-${{ github.run_id }}" in mobile_android
+assert "native-mobile-android-full-${{ matrix.projection }}-${{ github.run_id }}" in mobile_android
 
 assert "mobile-ios-reader:" in mobile_ios
 assert "runs-on: xcode-27" in mobile_ios
@@ -184,7 +184,7 @@ assert "rows.take(40)" in prepare_ios
 assert "provider_hard_timeout_ms=" in (ROOT / "scripts/prepare_native_corpus_validation.py").read_text(encoding="utf-8")
 assert 'execute = "PluginRuntime().executePlugin"' in (ROOT / "scripts/prepare_native_corpus_validation.py").read_text(encoding="utf-8")
 assert "analyze_native_ios_results.py" in mobile_ios
-assert "native-mobile-ios-${{ inputs.mode == 'only' && 'only' || 'full' }}-${{ github.run_id }}" in mobile_ios
+assert "native-mobile-ios-${{ inputs.mode == 'only' && 'only' || 'full' }}-${{ matrix.projection }}-${{ github.run_id }}" in mobile_ios
 
 prepare_ios_tree = ast.parse(prepare_ios)
 fixture_list_function = next(
@@ -261,10 +261,10 @@ for suite_path in (
     ROOT / "scripts/run_native_corpus_desktop_suite.sh",
 ):
     suite_text = suite_path.read_text(encoding="utf-8")
-    assert 'TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-native-hub46/manifest.json}"' in suite_text, suite_path
-    assert 'TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"' not in suite_text, suite_path
+    assert 'TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"' in suite_text, suite_path
+    assert "native-hub46/manifest.json" not in suite_text, suite_path
 
-assert '( "$TARGET_MANIFEST" = "manifest.json" || "$TARGET_MANIFEST" = "native-hub46/manifest.json" )' in tv_suite
+assert 'if [[ "$TARGET_MANIFEST" = "manifest.json" && "$TV_PRIORITY_APPEND" = "1" ]]' in tv_suite
 
 for suite, client in ((mobile_suite,"MOBILE"),(tv_suite,"TV")):
     assert 'for fixture in "${FIXTURES[@]}"' in suite, client
@@ -289,19 +289,24 @@ for row in manifest.get("scrapers",[]):
         stageable.append(pid)
 assert len(stageable) == visible_provider_count(), (len(stageable), visible_provider_count())
 
-native_ids={
+canonical_active_ids={
     str(row.get("id") or "").strip().casefold().replace("_","-")
-    for row in native_manifest.get("scrapers",[])
+    for doc in (manifest, vf_manifest)
+    for row in doc.get("scrapers",[])
     if isinstance(row,dict) and row.get("enabled") is True
 }
-assert native_ids == projection_active_provider_ids(), (
-    len(native_ids), projection_active_provider_count()
+assert canonical_active_ids == projection_active_provider_ids(), (
+    len(canonical_active_ids), projection_active_provider_count()
 )
-assert len(native_ids) == projection_active_provider_count()
+assert len(canonical_active_ids) == projection_active_provider_count()
+assert "manifest: manifest.json" in targeted_runtime
+assert "manifest: vf/manifest.json" in targeted_runtime
+assert "manifest-hub46.json" not in targeted_runtime
+assert "native-hub46/manifest.json" not in targeted_runtime
 
 print(
     "native device lab contract passed: "
-    f"global_visible_staging={len(stageable)} native_active_union={len(native_ids)} type_bounded_1_1_1=true rotating_fixtures=true "
+    f"global_visible_staging={len(stageable)} native_active_union={len(canonical_active_ids)} type_bounded_1_1_1=true rotating_fixtures=true "
     "tv_single_job=true android_tv_mobile_combined=true mobile_ios_separate=true "
     "brain_decoupled=true desktop_native=true targeted_manual=true"
 )
