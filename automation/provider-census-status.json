@@ -1,8 +1,54 @@
 {
   "schemaVersion": 3,
-  "runId": "44509152891-retest",
-  "triggerSha": "8914d3868a4f3be5cfddeab247129f68866dc85c",
+  "runId": "44509646250-retest",
+  "triggerSha": "33579f5622927e5fd22f6dd614925f8d3af18a1e",
   "providers": [
+    {
+      "provider": "nakios",
+      "status": "PROVIDER JS BROKEN",
+      "underlyingStatus": "",
+      "color": "🟠",
+      "declaredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [],
+      "latestLaneVerdicts": [
+        "movie=playable_unverified/provider_returned_streams",
+        "tv=no_streams/provider_network_zero_result"
+      ],
+      "dominantIssue": "provider_returned_streams, provider_network_zero_result",
+      "searchProgress": [
+        "movie: 1 works tested / 0 retained misses / 3 retained chain hits",
+        "tv: 4 works tested / 14 retained misses / 5 retained chain hits"
+      ],
+      "evidenceDepth": [
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": true,
+      "authorityAction": "KEEP_ROUTE_AUTHORITY",
+      "authorityClass": "hub-or-redirect",
+      "authorityConfidence": "high",
+      "authorityReasons": [
+        "authoritative_route_source",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:PROVIDER JS BROKEN"
+      ],
+      "authorityKnown": true,
+      "onboardingRuntimePlanState": "",
+      "action": "repair + retest; BRAIN checks",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
+      "testedThisRun": true
+    },
     {
       "provider": "french-manga",
       "status": "CANDIDATE OK",
@@ -50,7 +96,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "sadisflix",
@@ -3162,53 +3208,6 @@
       "providerArtifactSha256": "680198ac4792e29b64e449bd0690236d25891edb7285bc7aaf09130d47e73fe7"
     },
     {
-      "provider": "nakios",
-      "status": "PROVIDER JS BROKEN",
-      "underlyingStatus": "",
-      "color": "🟠",
-      "declaredLanes": [
-        "movie",
-        "tv"
-      ],
-      "currentVerifiedLanes": [],
-      "historicalProof": [],
-      "candidateProof": [],
-      "routeProof": [],
-      "latestLaneVerdicts": [
-        "movie=playable_unverified/provider_returned_streams",
-        "tv=no_streams/provider_network_zero_result"
-      ],
-      "dominantIssue": "provider_returned_streams, provider_network_zero_result",
-      "searchProgress": [
-        "movie: 2 works tested / 0 retained misses / 3 retained chain hits",
-        "tv: 8 works tested / 15 retained misses / 5 retained chain hits"
-      ],
-      "evidenceDepth": [
-        "movie=chain_reached",
-        "tv=chain_reached"
-      ],
-      "harnessTransportClass": "not-applicable",
-      "harnessTransportEvidence": [],
-      "authorityRepairEligible": true,
-      "authorityAction": "KEEP_ROUTE_AUTHORITY",
-      "authorityClass": "hub-or-redirect",
-      "authorityConfidence": "high",
-      "authorityReasons": [
-        "authoritative_route_source",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER JS BROKEN"
-      ],
-      "authorityKnown": true,
-      "onboardingRuntimePlanState": "",
-      "action": "repair + retest; BRAIN checks",
-      "brainCheckRequired": true,
-      "statusRepairEligible": true,
-      "repairEligible": true,
-      "testedThisRun": false,
-      "providerArtifactSha256": "44a76a3806b27a3c44624c51f0a2e9a4467644ff9e076759f79df3ff3b106bdd"
-    },
-    {
       "provider": "neko-sama",
       "status": "PROOF REFRESH REQUIRED",
       "underlyingStatus": "",
@@ -5711,8 +5710,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "44509152891-retest-transport",
-  "harnessEvidenceSha": "8914d3868a4f3be5cfddeab247129f68866dc85c",
+  "harnessEvidenceRunId": "44509646250-retest-transport",
+  "harnessEvidenceSha": "33579f5622927e5fd22f6dd614925f8d3af18a1e",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
