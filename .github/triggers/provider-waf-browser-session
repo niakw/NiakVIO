@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "requestVersion": 16,
+  "requestVersion": 17,
   "requestedAt": "2026-11-19",
   "targetProviders": [
     "animeonsen",
-    "sekai"
+    "purstream"
   ],
   "reuseExistingEvidence": false,
-  "reason": "Fresh two-provider WAF differential after explicit Maven dependency pin, IPv4-global proof guard, bounded DNS/HTTP/TLS diagnostics and current strict replay matching.",
-  "cohort": "waf-sekai-animeonsen-egress-classification-2026-11-19",
-  "sourceSha": "c546ee33a36912fc60c185a8bb5fa1bfcddbdcfb"
+  "reason": "Rerun strict live WAF transport using only currently active provider IDs: AnimeOnsen challenged anime, Purstream source/stream-positive control; Sekai now disabled and excluded.",
+  "cohort": "waf-current-active-challenge-versus-positive-control-2026-11-19",
+  "sourceSha": "29e6f21cad531a63ecb138626fb9d84264440757"
 }
