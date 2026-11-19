@@ -12,12 +12,14 @@ Provider health is deliberately separated from catalogue sampling:
 - FULL: every declared lane returned at least one stream on the sampled work;
 - PARTIAL: at least one lane is positive and at least one other lane has a
   technical/error outcome that needs targeted repair;
-- RESAMPLE: every still-unproved lane ended cleanly with zero streams. This is
-  catalogue uncertainty, not a repair verdict; another work must be sampled;
+- RESAMPLE: every still-unproved lane ended cleanly with zero streams. A bare
+  zero result gives no causal stage: catalogue miss, player failure and Core
+  post-validation dropout are distinct hypotheses; resample or diagnose;
 - ZERO: no lane has positive proof and at least one lane has a technical/error
   outcome. It needs individual diagnosis/repair.
 
-A clean zero-stream result must therefore never be silently folded into ZERO.
+A clean zero-stream result must therefore never be silently folded into ZERO,
+or mislabeled as a proven catalogue miss without independent stage evidence.
 """
 from __future__ import annotations
 
@@ -33,7 +35,7 @@ from rotating_corpus import canonical_lane, fixture_by_slug
 ROOT = Path(__file__).resolve().parents[1]
 TYPES = ("movie", "tv", "anime")
 FIELD_RE = re.compile(r"([A-Za-z0-9_]+)=([^\s]+)")
-OUTCOME_PRIORITY = {"unobserved": 0, "catalog_miss": 1, "technical_error": 2, "positive": 3}
+OUTCOME_PRIORITY = {"unobserved": 0, "catalog_miss": 1, "unattributed_zero": 1, "technical_error": 2, "positive": 3}
 
 
 def fields(line: str) -> dict[str, str]:
@@ -113,7 +115,7 @@ def provider_status(lane_outcomes: dict[str, str]) -> str:
         return "FULL"
     positive = sum(value == "positive" for value in values)
     unresolved = [value for value in values if value != "positive"]
-    if unresolved and all(value == "catalog_miss" for value in unresolved):
+    if unresolved and all(value in {"catalog_miss", "unattributed_zero"} for value in unresolved):
         return "RESAMPLE"
     if positive:
         return "PARTIAL"
@@ -135,7 +137,7 @@ def parse_ios_result(line: str) -> tuple[str, str, str] | None:
     if not provider or media_type not in TYPES:
         return None
     if state == "completed":
-        outcome = "positive" if count > 0 else "catalog_miss"
+        outcome = "positive" if count > 0 else "unattributed_zero"
     else:
         outcome = "technical_error"
     return provider, media_type, outcome
@@ -298,7 +300,7 @@ def main() -> int:
                 if client == args.client and provider and media_type:
                     r = route(provider, media_type)
                     count = int(f.get("count") or 0)
-                    outcome = "positive" if count > 0 else "catalog_miss"
+                    outcome = "positive" if count > 0 else "unattributed_zero"
                     if r[0] in provider_ids:
                         completed.add(r)
                         lane_outcomes[r] = merge_outcome(lane_outcomes[r], outcome)
@@ -352,7 +354,8 @@ def main() -> int:
                 "TARGETED_UNOBSERVED" if "unobserved" in values
                 else "TARGETED_CANDIDATE" if "positive" in values
                 else "TARGETED_TECHNICAL" if "technical_error" in values
-                else "TARGETED_CATALOG_MISS"
+                else "TARGETED_CATALOG_MISS" if values and all(value == "catalog_miss" for value in values)
+                else "TARGETED_ZERO_UNATTRIBUTED"
             )
         else:
             status = provider_status(outcomes)
@@ -369,7 +372,8 @@ def main() -> int:
         f"INCOMPLETE={status_counts['INCOMPLETE']} TARGETED_UNOBSERVED={status_counts['TARGETED_UNOBSERVED']} "
         f"TARGETED_CANDIDATE={status_counts['TARGETED_CANDIDATE']} "
         f"TARGETED_TECHNICAL={status_counts['TARGETED_TECHNICAL']} "
-        f"TARGETED_CATALOG_MISS={status_counts['TARGETED_CATALOG_MISS']}"
+        f"TARGETED_CATALOG_MISS={status_counts['TARGETED_CATALOG_MISS']} "
+        f"TARGETED_ZERO_UNATTRIBUTED={status_counts['TARGETED_ZERO_UNATTRIBUTED']}"
     )
 
     for provider in missing_providers[:120]:
