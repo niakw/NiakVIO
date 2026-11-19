@@ -236,6 +236,27 @@ assert mod.classify_dom(
     '<html><div class="challenge-platform">checking your browser</div></html>'
 ) == "browser_challenge_persisted"
 assert mod.classify_dom('<html><script>' + ('var a0x="opaque";' * 100) + '</script></html>') == 'browser_inconclusive'
+
+assert mod.diagnose_transport_profiles(
+    [{"outcome": "browser_content_reached"}],
+    {"outcome": "direct_http_error"},
+    {"outcome": "okhttp_jvm_error", "attempts": [{"error": "SSLHandshakeException"}]},
+) == "native_client_tls_differential"
+assert mod.diagnose_transport_profiles(
+    [{"outcome": "browser_content_reached"}],
+    {"outcome": "direct_http_content_reached"},
+    {"outcome": "okhttp_jvm_content_reached", "attempts": []},
+) == "content_reached_cross_transport"
+assert mod.diagnose_transport_profiles(
+    [{"outcome": "browser_challenge_persisted"}],
+    {"outcome": "direct_http_challenge_persisted"},
+    {"outcome": "okhttp_jvm_challenge_persisted", "attempts": []},
+) == "waf_persisted_cross_transport"
+assert mod.diagnose_transport_profiles(
+    [{"outcome": "browser_content_reached"}],
+    {"outcome": "direct_http_content_reached"},
+    {"outcome": "okhttp_jvm_challenge_persisted", "attempts": []},
+) == "native_client_waf_differential"
 assert mod.probe_target(allwish, "", timeout=5, virtual_time_ms=1000)["outcome"] == "browser_unavailable"
 vostfree = next(row for row in targets if row["provider"] == "vostfree")
 assert vostfree["method"] == "GET", vostfree
@@ -299,6 +320,7 @@ assert len(matrix["clientProfileMatrix"])==2,matrix
 assert matrix["clientProfileMatrix"][0]["outcome"]=="browser_challenge_persisted",matrix
 assert matrix["clientProfileMatrix"][1]["outcome"]=="browser_content_reached",matrix
 assert matrix["nativeTvTransportStillUnproven"] is True
+assert "transportDiagnosis" in matrix
 assert any(
     any(str(value).startswith("--user-agent="+mod.NUVIO_TV_WINDOWS_UA) for value in call[0][0])
     for call in matrix_calls
