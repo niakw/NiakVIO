@@ -1,30 +1,58 @@
 {
   "authority": "historical-exact-bundle-diagnostics-only",
-  "observationCount": 3,
+  "observationCount": 4,
   "proofAuthority": false,
   "providerCount": 2,
   "publicationAuthority": false,
   "rows": [
     {
-      "debugStage": "provider_network_zero_result",
+      "debugStage": "provider_returned_streams",
       "fixture": {
         "episode": 1,
-        "mediaType": "tv",
+        "mediaType": "anime",
         "season": 1,
-        "tmdbId": "100088"
+        "tmdbId": "95479"
       },
-      "identityReasons": [],
-      "lane": "tv",
+      "identityReasons": [
+        "duration_incomplete_hls",
+        "insufficient_identity_metadata"
+      ],
+      "lane": "anime",
       "nativePlaybackAuthority": false,
-      "playable": 0,
+      "playable": 2,
       "proofAuthority": false,
-      "provider": "nakios",
-      "providerArtifactSha256": "44a76a3806b27a3c44624c51f0a2e9a4467644ff9e076759f79df3ff3b106bdd",
+      "provider": "french-manga",
+      "providerArtifactSha256": "f18a1c3a2352c0a3fed0b094cf517cea251125c39e70fa6da319cde869e21c4e",
       "publicationAuthority": false,
-      "raw": 0,
-      "sourceCensusRunId": "44509646250-retest",
-      "sourceNiakvioSha": "33579f5622927e5fd22f6dd614925f8d3af18a1e",
-      "status": "no_streams",
+      "raw": 2,
+      "sourceCensusRunId": "44510538929-retest",
+      "sourceNiakvioSha": "09d14fc78e6760da0d089bac7b30953f68a53d1f",
+      "status": "playable_unverified",
+      "verified": 0
+    },
+    {
+      "debugStage": "provider_returned_streams",
+      "fixture": {
+        "episode": 1,
+        "mediaType": "anime",
+        "season": 1,
+        "tmdbId": "95479"
+      },
+      "identityReasons": [
+        "duration_incomplete_hls",
+        "insufficient_identity_metadata"
+      ],
+      "lane": "anime",
+      "nativePlaybackAuthority": false,
+      "playable": 2,
+      "proofAuthority": false,
+      "provider": "french-manga",
+      "providerArtifactSha256": "f18a1c3a2352c0a3fed0b094cf517cea251125c39e70fa6da319cde869e21c4e",
+      "publicationAuthority": false,
+      "raw": 2,
+      "sourceCensusRunId": "44509152891-retest",
+      "sourceNiakvioSha": "8914d3868a4f3be5cfddeab247129f68866dc85c",
+      "status": "playable_unverified",
       "verified": 0
     },
     {
@@ -53,28 +81,25 @@
       "verified": 0
     },
     {
-      "debugStage": "provider_returned_streams",
+      "debugStage": "provider_network_zero_result",
       "fixture": {
         "episode": 1,
-        "mediaType": "anime",
+        "mediaType": "tv",
         "season": 1,
-        "tmdbId": "95479"
+        "tmdbId": "100088"
       },
-      "identityReasons": [
-        "duration_incomplete_hls",
-        "insufficient_identity_metadata"
-      ],
-      "lane": "anime",
+      "identityReasons": [],
+      "lane": "tv",
       "nativePlaybackAuthority": false,
-      "playable": 2,
+      "playable": 0,
       "proofAuthority": false,
-      "provider": "french-manga",
-      "providerArtifactSha256": "f18a1c3a2352c0a3fed0b094cf517cea251125c39e70fa6da319cde869e21c4e",
+      "provider": "nakios",
+      "providerArtifactSha256": "44a76a3806b27a3c44624c51f0a2e9a4467644ff9e076759f79df3ff3b106bdd",
       "publicationAuthority": false,
-      "raw": 2,
-      "sourceCensusRunId": "44509152891-retest",
-      "sourceNiakvioSha": "8914d3868a4f3be5cfddeab247129f68866dc85c",
-      "status": "playable_unverified",
+      "raw": 0,
+      "sourceCensusRunId": "44509646250-retest",
+      "sourceNiakvioSha": "33579f5622927e5fd22f6dd614925f8d3af18a1e",
+      "status": "no_streams",
       "verified": 0
     }
   ],
