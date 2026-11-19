@@ -24,6 +24,7 @@ REQUIRED_BLOCKER_IDS = {
     "repository-http-evidence-gap-after-instrumentation-disable",
     "actions-log-blob-not-ready",
     "tv-uiautomator-audit-whitelist-drift",
+    "residential-macos-magicdns-bootstrap-order",
 }
 
 

@@ -85,9 +85,17 @@ assert 'test "$(uname -s)" = "Darwin"' in workflow
 assert 'restage_native_corpus_client.py desktop --fixture "$fixture"' not in workflow
 assert '--provider "$NIAKVIO_TARGET_PROVIDER" --manifest "$NIAKVIO_TARGET_MANIFEST"' in workflow
 assert '"fixture": target_fixture or "all"' in workflow
+connect_tailnet = workflow.index("Connect native client host to Tailscale")
+setup_jdk = workflow.index("Set up JDK")
+checkout_client = workflow.index("Checkout accepted official client and stage corpus once")
+setup_gradle = workflow.index("Set up Gradle runtime")
+attest_exit = workflow.index("Select and attest residential exit immediately before native runtime")
+desktop_runtime = workflow.index("Execute focused provider in official macOS Desktop runtime")
 clear_exit = workflow.index("Clear native residential exit")
 brain_diag = workflow.index("Diagnose sanitized targeted native evidence for Brain")
 upload = workflow.index("Upload sanitized native corpus logs")
+assert setup_jdk < checkout_client < setup_gradle < connect_tailnet < attest_exit < desktop_runtime < clear_exit
 assert clear_exit < brain_diag < upload
+assert workflow.count("Connect native client host to Tailscale") == 1
 
 print("native targeted residential transport workflow contract passed")

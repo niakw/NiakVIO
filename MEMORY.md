@@ -251,3 +251,11 @@
 - This is a harness contract drift, not a provider/WAF/player failure. The generated TV diagnostics already import `UiDevice`, `By` and `Until`, and the canonical bootstrap already adds UIAutomator as test-only plumbing; an older native run `44307300810` had established that requirement.
 - `automation/native-human-ux-policy.json` v8 now allows that exact `androidTestImplementation` line for TV and records blocker `tv-uiautomator-audit-whitelist-drift` as resolved. The audit remains fail-closed for every other Gradle addition and no production Nuvio runtime, manifest, network, player or OS behavior is changed.
 - Run `44448665900` TV results remain invalid/no-runtime; they must be replayed on a SHA containing this policy correction before any TV conclusion.
+
+
+### 2026-11-19 — Residential Tailscale connection moved to the real-client runtime boundary
+- Native targeted run `44448665900` proved the new macOS Desktop jobs reached a real `macos-15-arm64` runner and connected Tailscale, but both failed before Nuvio checkout at `actions/setup-java`: `getaddrinfo ENOTFOUND api.adoptium.net`.
+- The pinned Tailscale action configures macOS system DNS after connection. Connecting before JDK/Node/client/Gradle bootstrap therefore contaminated unrelated CI dependency resolution even though the daemon args include `--accept-dns=false`.
+- The targeted workflow now performs all toolchain, official-client checkout, Gradle/native bridge and AVD bootstrap on the normal GitHub runner network; it connects Tailscale only immediately before residential exit selection/independent egress attestation and official client execution.
+- This is a harness-ordering fix, not a DNS bypass: the actual native runtime remains behind the attested residential exit and no Nuvio/player/provider/OS network policy is relaxed. Blocker `residential-macos-magicdns-bootstrap-order` is persisted in native human-UX policy v9 so this ordering is not regressed.
+- The two Desktop results from run `44448665900` remain pre-runtime failures and are not valid provider/WAF/player evidence.

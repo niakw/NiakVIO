@@ -1,5 +1,5 @@
 {
-  "version": 8,
+  "version": 9,
   "mode": "human-ux-observation-only",
   "purpose": "Native labs reproduce the real Nuvio user path and observe launch, stream selection, player opening and playback failures without repairing Nuvio, the OS or the lab environment to improve outcomes.",
   "immutable_principles": [
@@ -233,6 +233,15 @@
         "resolution": "Add only the exact UIAutomator androidTest dependency already emitted by native_client_test_bootstrap.py to the TV allowed_gradle_additions policy. No Nuvio runtime, manifest, network, player or OS behavior is changed.",
         "evidence_run": "44448665900",
         "never_repeat": "Keep native_client_test_bootstrap.py test-only TV dependencies and automation/native-human-ux-policy.json allowed_gradle_additions in one contract; never remove UIAutomator while generated TV diagnostics import UiDevice/By/Until."
+      },
+      {
+        "id": "residential-macos-magicdns-bootstrap-order",
+        "status": "resolved",
+        "signature": "actions/setup-java getaddrinfo ENOTFOUND api.adoptium.net after Tailscale macOS connection",
+        "cause": "The targeted residential workflow connected Tailscale before toolchain/client bootstrap. The pinned Tailscale GitHub Action configures macOS system DNS after connection, so setup-java could no longer resolve api.adoptium.net. This happened before any Nuvio client/provider/player execution.",
+        "resolution": "Keep JDK, Node, official client checkout, Gradle/native bridge and Android AVD bootstrap on the normal GitHub runner network. Connect Tailscale only at the native-runtime boundary, immediately before independent residential-exit selection/attestation.",
+        "evidence_run": "44448665900",
+        "never_repeat": "Do not connect the residential tailnet before dependency/toolchain/client bootstrap; do not mask this by overriding the tested client's DNS or disabling residential egress attestation."
       }
     ]
   },

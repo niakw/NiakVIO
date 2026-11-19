@@ -268,16 +268,6 @@ jobs:
           esac
           printf 'TS_ACTION_TAG=%s\n' "$normalized" >> "$GITHUB_ENV"
 
-      - name: Connect native client host to Tailscale
-        if: ${{ matrix.residential == true }}
-        uses: tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c
-        with:
-          oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
-          audience: ${{ env.TS_AUDIENCE }}
-          tags: ${{ env.TS_ACTION_TAG }}
-          version: '1.94.2'
-          args: --accept-dns=false
-
       - name: Set up JDK
         uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
         with:
@@ -411,9 +401,21 @@ jobs:
           script: echo "Generated clean TV AVD snapshot."
 
       # Keep repository checkout, dependency/cache setup and AVD snapshot creation on
-      # the normal GitHub runner network. The residential exit is evidence for the
-      # native client transport only; routing CI bootstrap traffic through it can
-      # create unrelated Git/Gradle failures and yields no provider evidence.
+      # the normal GitHub runner network. On macOS the Tailscale action configures
+      # system DNS after connection even when the daemon receives --accept-dns=false,
+      # so connecting earlier can break unrelated dependency resolution. Establish
+      # the tailnet only at the native-runtime boundary, then independently attest
+      # the requested residential exit before the official client executes.
+      - name: Connect native client host to Tailscale
+        if: ${{ matrix.residential == true }}
+        uses: tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c
+        with:
+          oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ env.TS_AUDIENCE }}
+          tags: ${{ env.TS_ACTION_TAG }}
+          version: '1.94.2'
+          args: --accept-dns=false
+
       - name: Select and attest residential exit immediately before native runtime
         if: ${{ matrix.residential == true }}
         shell: bash
