@@ -143,6 +143,7 @@ def main() -> int:
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--corpus", type=Path, required=True)
     parser.add_argument("--scope-matrix", type=Path, default=None)
+    parser.add_argument("--target-fixture", action="append", default=[], help="Explicit focused fixture, additive; absent means all declared lanes")
     parser.add_argument("logs", nargs="+", type=Path)
     args = parser.parse_args()
 
@@ -191,6 +192,27 @@ def main() -> int:
         for media_type in TYPES:
             if media_type in declared:
                 expected.add(route(provider, media_type))
+
+    # Explicit targeted fixture(s) must cover only their selected lane(s).
+    # The default full-catalogue mode keeps every enabled/declared route.
+    target_lanes: set[str] = set()
+    for slug in args.target_fixture:
+        lane = fixture_lane(slug, fixture_by_type)
+        if lane not in TYPES:
+            raise SystemExit(f"unknown targeted native fixture lane: {slug}")
+        target_lanes.add(lane)
+    if target_lanes:
+        expected = {(provider, lane) for provider, lane in expected if lane in target_lanes}
+        eligible_providers = {provider for provider, _ in expected}
+        if scope_ids is not None:
+            incompatible = sorted(scope_ids - eligible_providers)
+            if incompatible:
+                raise SystemExit(
+                    "targeted native scope declares no requested fixture lane: "
+                    + ",".join(incompatible)
+                )
+        else:
+            provider_ids &= eligible_providers
 
     if scope_ids is not None:
         missing_scope = sorted(scope_ids - provider_ids)
@@ -307,7 +329,7 @@ def main() -> int:
     state = "passed" if not missing_begin and not missing_end and not missing_providers and not unexpected else "failed"
     print(
         "FIELD_NATIVE_DECLARED_MATRIX "
-        f"state={state} client={args.client} providers={len(provider_ids)} disabled={len(disabled_ids)} "
+        f"state={state} client={args.client} mode={'targeted' if target_lanes else 'full'} providers={len(provider_ids)} disabled={len(disabled_ids)} "
         f"routes={len(expected)} movie={counts['movie']} tv={counts['tv']} anime={counts['anime']} "
         f"begun={len(begun & expected)} completed={len(completed & expected)} "
         f"missing_providers={len(missing_providers)} missing_begin={len(missing_begin)} "
