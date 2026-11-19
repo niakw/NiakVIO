@@ -29,6 +29,8 @@ required = (
     "Enable targeted Mobile same-source engine differential",
     "NIAKVIO_NATIVE_COMPARE_ENGINES=1",
     "FIELD_NATIVE_ENGINE_COMPARE_MODE enabled=true",
+    "NIAKVIO_NATIVE_PLAYER_GATE_BLOCKING=1",
+    "FIELD_NATIVE_PLAYER_GATE_MODE blocking=true requirement=production_playback_verified",
     "native_manifest_projection import active_provider_manifest",
     '"manifest": "manifest.json"',
     '"manifest": "vf/manifest.json"',
