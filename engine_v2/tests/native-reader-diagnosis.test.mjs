@@ -525,8 +525,8 @@ try {
   fs.writeFileSync(oneShotLog, [
     ...common.slice(0, -1),
     `FIELD_NATIVE_PROVIDER_BEGIN client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} request_type=movie route_mode=declared`,
-    'D/PluginRuntime: Fetch result: 200  url=https://signed.example/master.m3u8?token=SECRET bodyLen=120 bodyPreview=#EXTM3U',
-    'D/PluginRuntime: Fetch result: 403  url=https://signed.example/master.m3u8?token=SECRET bodyLen=12 bodyPreview=forbidden',
+    'D/PluginRuntime: Fetch result: 200 OK url=https://signed.example/master.m3u8?token=SECRET bodyLen=120 bodyPreview=#EXTM3U',
+    'D/PluginRuntime: Fetch result: 403 Forbidden url=https://signed.example/master.m3u8?token=SECRET bodyLen=12 bodyPreview=forbidden',
     `FIELD_NATIVE_RESULT client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} request_type=movie route_mode=declared enabled=true duration_ms=24 count=0`,
     'FIELD_NATIVE_CORPUS_END client=tv fixture=sinners-2025 errors=0',
   ].join('\n') + '\n');

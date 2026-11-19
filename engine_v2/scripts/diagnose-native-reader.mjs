@@ -163,7 +163,9 @@ for (const file of logPaths) {
     }
 
     if (activeProviderRoute) {
-      const match = /Fetch result:\s*([0-9]{3})\s+url=(\S+)/.exec(raw);
+      // Preserve the HTTP reason phrase emitted by official PluginRuntime (200 OK / 403 Forbidden).
+      // Former code only parsed status+url and silently lost real native causal evidence.
+      const match = /Fetch result:\s*([0-9]{3})(?:\s+[A-Za-z-]+){0,3}\s+url=(\S+)/.exec(raw);
       if (match) {
         const status = Number(match[1]);
         const url = String(match[2] || '');

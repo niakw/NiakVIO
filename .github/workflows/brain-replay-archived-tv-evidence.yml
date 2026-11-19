@@ -67,6 +67,7 @@ jobs:
           ref: main
           path: brain
           persist-credentials: false
+      # Re-run archived exact-source evidence after the status-reason parser fix.
       - name: Verify diagnostic contracts
         shell: bash
         run: |
