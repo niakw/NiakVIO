@@ -82,6 +82,57 @@ try {
   assert.match(data.privacy, /No raw URLs/);
   assert.match(run.stdout, /FIELD_NATIVE_READER_BRAIN evidence_complete=true/);
 
+  // Real NuvioTV UI selection is different from directly invoking the
+  // installed JS. An omitted provider belongs to client/plugin state or the
+  // manifest media-type gate, not a provider extraction repair.
+  const selectionLog = path.join(tmp, 'native-tv-app-selection.log');
+  const selectionOutput = path.join(tmp, 'native-tv-app-selection.json');
+  const selectionFixture = common
+    .filter((line) => !line.includes(`provider64=${b64('MOVIESDRIVE')}`) ||
+      (!line.startsWith('FIELD_NATIVE_PLAYER ') &&
+       !line.startsWith('FIELD_NATIVE_PLAYER_BEGIN ')))
+    .map((line) => line.includes(`provider64=${b64('MOVIESDRIVE')}`) &&
+      line.startsWith('FIELD_NATIVE_RESULT ')
+      ? line.replace('count=2', 'count=0')
+      : line);
+  selectionFixture.splice(
+    selectionFixture.findIndex((line) => line.startsWith('FIELD_NATIVE_RESULT ') &&
+      line.includes(`provider64=${b64('MOVIESDRIVE')}`)),
+    0,
+    `FIELD_NATIVE_PROVIDER_APP_SELECTION client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} eligible=false plugins_enabled=true runtime_enabled=false manifest_enabled=true supported_type=true request_type=movie reason=scraper_disabled_locally`,
+  );
+  selectionFixture.push(
+    `FIELD_NATIVE_PROVIDER_APP_SELECTION client=tv fixture=sinners-2025 provider64=${b64('PURSTREAM')} eligible=true plugins_enabled=true runtime_enabled=true supported_type=true request_type=movie`,
+    `FIELD_NATIVE_PROVIDER_APP_SELECTION client=tv fixture=sinners-2025 provider64=${b64('PURSTREAM')} eligible=false request_type=movie reason=https://private.example/?token=SHOULD_NOT_PERSIST`,
+  );
+  fs.writeFileSync(selectionLog, selectionFixture.join('\n') + '\n');
+  const selected = spawnSync(process.execPath, [script, '--output', selectionOutput, selectionLog], {
+    cwd: root, encoding: 'utf8',
+  });
+  const selectionData = JSON.parse(fs.readFileSync(selectionOutput, 'utf8'));
+  assert.equal(selectionData.appSelectionObserved, 2);
+  assert.equal(selectionData.appSelectionObservations[0].provider, 'moviesdrive');
+  assert.equal(selectionData.appSelectionObservations[0].eligible, false);
+  assert.equal(selectionData.appSelectionObservations[0].runtimeEnabled, false);
+  assert.equal(selectionData.appSelectionObservations[1].eligible, true);
+  assert.equal(selectionData.appSelectionObservations[0].proofAuthority, false);
+  assert.equal(selectionData.policy.clientSelectionProviderJsMutationAllowed, false);
+  assert.doesNotMatch(JSON.stringify(selectionData.appSelectionObservations), /private\.example|SHOULD_NOT_PERSIST/);
+  // An incomplete corpus may describe an app-selection observation, but must
+  // never turn it into accepted Brain issue memory or a repair candidate.
+  if (selectionData.evidenceComplete) {
+    assert.equal(selected.status, 0, selected.stderr + selected.stdout);
+    assert.equal(selectionData.appSelectionFailures, 1);
+    assert.equal(selectionData.appSelectionIssues[0].failureClass, 'client_scraper_disabled_locally');
+    assert.equal(selectionData.appSelectionIssues[0].providerJsMutationAllowed, false);
+    assert.equal(selectionData.appSelectionIssues[0].coreOrManifestProposalAllowed, false);
+    assert.equal(selectionData.policy.repositoryLearningAllowed, false);
+    assert.equal(selectionData.providerLoadActionableFailures, 0);
+  } else {
+    assert.equal(selectionData.appSelectionIssues.length, 0);
+    assert.equal(selectionData.policy.clientSelectionDiagnosticLearningAllowed, false);
+  }
+
   // A provider can fail after repository installation but before any execution/
   // reader route. Complete loading/network/traversal evidence makes this actionable
   // repository/Core evidence, not an incomplete lab.
