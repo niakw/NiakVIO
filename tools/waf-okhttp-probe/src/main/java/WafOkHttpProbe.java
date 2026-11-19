@@ -97,7 +97,10 @@ public final class WafOkHttpProbe {
         }
         String url = args[0];
         int attempts = Math.max(1, Math.min(3, Integer.parseInt(args[1])));
-        int timeout = Math.max(2, Math.min(30, Integer.parseInt(args[2])));
+        String profile = System.getenv().getOrDefault("NIAKVIO_WAF_OKHTTP_PROFILE", "nuvio-tv-okhttp-jvm").trim();
+        String proxyMode = System.getenv().getOrDefault("NIAKVIO_WAF_PROXY_MODE", "no-proxy").trim();
+        int profileMaxTimeout = Math.max(2, Math.min(60, Integer.parseInt(System.getenv().getOrDefault("NIAKVIO_WAF_MAX_TIMEOUT_SECONDS", "30"))));
+        int timeout = Math.max(2, Math.min(profileMaxTimeout, Integer.parseInt(args[2])));
         String userAgent = args[3];
         Map<String, String> requestHeaders = new LinkedHashMap<>();
         for (int index = 4; index < args.length; index++) {
@@ -110,15 +113,23 @@ public final class WafOkHttpProbe {
             requestHeaders.put(name, value.length() > 500 ? value.substring(0, 500) : value);
         }
 
-        OkHttpClient client = new OkHttpClient.Builder()
+        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
             .dns(new IPv4FirstDns())
             .connectTimeout(timeout, TimeUnit.SECONDS)
             .readTimeout(timeout, TimeUnit.SECONDS)
             .writeTimeout(timeout, TimeUnit.SECONDS)
             .followRedirects(true)
-            .followSslRedirects(true)
-            .proxy(Proxy.NO_PROXY)
-            .build();
+            .followSslRedirects(true);
+        final String proxyPolicy;
+        if ("no-proxy".equals(proxyMode)) {
+            clientBuilder.proxy(Proxy.NO_PROXY);
+            proxyPolicy = "Proxy.NO_PROXY";
+        } else if ("system".equals(proxyMode)) {
+            proxyPolicy = "JVM/system default";
+        } else {
+            throw new IllegalArgumentException("unsupported NIAKVIO_WAF_PROXY_MODE");
+        }
+        OkHttpClient client = clientBuilder.build();
 
         List<String> attemptJson = new ArrayList<>();
         String finalOutcome = "okhttp_jvm_error";
@@ -163,14 +174,14 @@ public final class WafOkHttpProbe {
 
         System.out.println(
             "NIAKVIO_WAF_OKHTTP={" +
-            "\"profile\":\"nuvio-tv-okhttp-jvm\"," +
-            "\"transportApproximation\":\"GitHub JVM OkHttp 4.12.0 with NuvioTV PluginRuntime network policy\"," +
+            "\"profile\":\"" + esc(profile) + "\"," +
+            "\"transportApproximation\":\"GitHub JVM OkHttp 4.12.0 audited Nuvio client transport profile\"," +
             "\"outcome\":\"" + esc(finalOutcome) + "\"," +
             "\"attemptCount\":" + attemptJson.size() + "," +
             "\"attempts\":[" + String.join(",", attemptJson) + "]," +
             "\"nativeContractApproximation\":{" +
               "\"httpStack\":\"OkHttp 4.12.0\"," +
-              "\"proxyPolicy\":\"Proxy.NO_PROXY\"," +
+              "\"proxyPolicy\":\"" + esc(proxyPolicy) + "\"," +
               "\"dnsPolicy\":\"IPv4FirstDns\"," +
               "\"redirects\":\"HTTP+SSL enabled\"," +
               "\"tlsRuntime\":\"GitHub JVM, not Android Conscrypt/device TLS\"," +

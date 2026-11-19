@@ -50,6 +50,7 @@ def _profile_summary(row: dict[str, Any]) -> dict[str, Any]:
         "clientProfileMatrix": matrix,
         "directHttpProfile": one("directHttpProfile"),
         "okHttpJvmProfile": one("okHttpJvmProfile"),
+        "desktopOkHttpJvmProfile": one("desktopOkHttpJvmProfile"),
         "contentProfiles": [
             str(value)
             for value in row.get("contentProfiles") or []

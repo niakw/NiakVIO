@@ -22,14 +22,17 @@ workflow = WORKFLOW.read_text(encoding="utf-8")
 source = PY.read_text(encoding="utf-8")
 
 assert "<version>4.12.0</version>" in pom
-assert ".proxy(Proxy.NO_PROXY)" in java
+assert "clientBuilder.proxy(Proxy.NO_PROXY)" in java
+assert '"system".equals(proxyMode)' in java
+assert "NIAKVIO_WAF_OKHTTP_PROFILE" in java
+assert "NIAKVIO_WAF_PROXY_MODE" in java
 assert ".dns(new IPv4FirstDns())" in java
 assert ".followRedirects(true)" in java
 assert ".followSslRedirects(true)" in java
 assert "SAFE_REQUEST_HEADERS" in java
 assert 'name.equals("accept-encoding")' in java
 assert "requestBuilder.header(header.getKey(), header.getValue())" in java
-assert "Math.min(30, Integer.parseInt(args[2]))" in java
+assert "Math.min(profileMaxTimeout, Integer.parseInt(args[2]))" in java
 assert "response.peekBody(262144)" in java
 assert 'outcome = "okhttp_jvm_http_error";' in java
 assert "script|style|noscript|template" in java
@@ -64,6 +67,7 @@ target = {
 original_which = mod.shutil.which
 original_run = mod.subprocess.run
 commands = []
+environments = []
 try:
     mod.shutil.which = lambda name: "/usr/bin/java" if name == "java" else original_which(name)
     payload = (
@@ -73,6 +77,7 @@ try:
     )
     def fake_run(*args, **kwargs):
         commands.append(args[0])
+        environments.append(kwargs.get("env") or {})
         return SimpleNamespace(returncode=0, stdout=payload, stderr="")
     mod.subprocess.run = fake_run
     row = mod.probe_tv_okhttp_jvm(
@@ -92,6 +97,9 @@ assert row["nativeContractApproximation"]["proxyPolicy"] == "Proxy.NO_PROXY", ro
 assert row["nativeContractApproximation"]["dnsPolicy"] == "IPv4FirstDns", row
 assert row["requestHeaderNames"] == ["accept-language", "origin", "referer"], row
 assert commands, commands
+assert environments[0]["NIAKVIO_WAF_OKHTTP_PROFILE"] == "nuvio-tv-okhttp-jvm"
+assert environments[0]["NIAKVIO_WAF_PROXY_MODE"] == "no-proxy"
+assert environments[0]["NIAKVIO_WAF_MAX_TIMEOUT_SECONDS"] == "30"
 joined = "\n".join(str(value) for value in commands[0])
 assert "referer: https://catalog.example/" in joined
 assert "origin: https://catalog.example" in joined
@@ -99,4 +107,38 @@ assert "accept-language: fr-FR,fr" in joined
 for secret in ("Authorization", "Bearer must-never-leave-python", "Cookie", "session=must-never-leave-python", "Accept-Encoding"):
     assert secret not in joined, (secret, joined)
 
-print("NuvioTV-policy OkHttp WAF diagnostic contract passed")
+desktop_commands = []
+desktop_envs = []
+original_which = mod.shutil.which
+original_run = mod.subprocess.run
+try:
+    mod.shutil.which = lambda name: "/usr/bin/java" if name == "java" else original_which(name)
+    desktop_payload = (
+        'NIAKVIO_WAF_OKHTTP={"profile":"nuvio-desktop-okhttp-jvm",'
+        '"outcome":"okhttp_jvm_content_reached","attemptCount":1,'
+        '"attempts":[{"attempt":1,"outcome":"okhttp_jvm_content_reached","status":200}],'
+        '"nativeContractApproximation":{"proxyPolicy":"JVM/system default"}}\n'
+    )
+    def fake_desktop_run(*args, **kwargs):
+        desktop_commands.append(args[0])
+        desktop_envs.append(kwargs.get("env") or {})
+        return SimpleNamespace(returncode=0, stdout=desktop_payload, stderr="")
+    mod.subprocess.run = fake_desktop_run
+    desktop = mod.probe_desktop_okhttp_jvm(
+        target,
+        timeout=55,
+        attempts=1,
+        classpath="classes:deps/*",
+    )
+finally:
+    mod.subprocess.run = original_run
+    mod.shutil.which = original_which
+
+assert desktop["profile"] == "nuvio-desktop-okhttp-jvm", desktop
+assert desktop["outcome"] == "okhttp_jvm_content_reached", desktop
+assert desktop["nativeContractApproximation"]["proxyPolicy"] == "JVM/system default", desktop
+assert desktop_envs[0]["NIAKVIO_WAF_PROXY_MODE"] == "system"
+assert desktop_envs[0]["NIAKVIO_WAF_MAX_TIMEOUT_SECONDS"] == "60"
+assert "55" in desktop_commands[0], desktop_commands
+
+print("Nuvio TV/Desktop OkHttp WAF diagnostic contract passed")

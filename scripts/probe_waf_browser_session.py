@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import concurrent.futures
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -427,6 +428,84 @@ def classify_dom(dom: str) -> str:
     return "browser_content_reached"
 
 
+def _probe_okhttp_jvm(
+    target: dict[str, Any],
+    *,
+    timeout: int,
+    attempts: int,
+    classpath: str | None,
+    profile: str,
+    proxy_mode: str,
+    max_timeout: int,
+    transport_approximation: str,
+    tls_runtime: str,
+) -> dict[str, Any]:
+    """Exercise an audited Nuvio JVM/OkHttp transport profile.
+
+    The Java helper independently reapplies the strict non-secret header allowlist.
+    This is transport evidence only: it is not target-device TLS or playback proof.
+    """
+    java = shutil.which("java")
+    cp = str(classpath or "").strip()
+    request_headers = safe_request_headers({"request_headers": target.get("requestHeaders")})
+    effective_user_agent = request_headers.get("user-agent", NUVIO_TV_WINDOWS_UA)
+    max_timeout = max(2, min(int(max_timeout), 60))
+    effective_timeout = max(2, min(int(timeout), max_timeout))
+    proxy_label = "Proxy.NO_PROXY" if proxy_mode == "no-proxy" else "JVM/system default"
+    base = {
+        "profile": profile,
+        "transportApproximation": transport_approximation,
+        "userAgent": effective_user_agent,
+        "requestHeaderNames": sorted(request_headers),
+        "nativeContractApproximation": {
+            "httpStack": "OkHttp 4.12.0",
+            "proxyPolicy": proxy_label,
+            "dnsPolicy": "IPv4FirstDns",
+            "redirects": "HTTP+SSL enabled",
+            "timeouts": f"{max_timeout}s profile maximum",
+            "tlsRuntime": tls_runtime,
+        },
+    }
+    if not java or not cp:
+        return {**base, "outcome": "okhttp_jvm_unavailable", "attemptCount": 0, "attempts": []}
+    cmd = [
+        java, "-cp", cp, "WafOkHttpProbe",
+        str(target.get("url") or ""),
+        str(max(1, min(int(attempts), 3))),
+        str(effective_timeout),
+        NUVIO_TV_WINDOWS_UA,
+    ]
+    for name, value in sorted(request_headers.items()):
+        cmd.append(f"{name}: {value}")
+    child_env = os.environ.copy()
+    child_env.update({
+        "NIAKVIO_WAF_OKHTTP_PROFILE": profile,
+        "NIAKVIO_WAF_PROXY_MODE": proxy_mode,
+        "NIAKVIO_WAF_MAX_TIMEOUT_SECONDS": str(max_timeout),
+    })
+    try:
+        proc = subprocess.run(
+            cmd, capture_output=True, text=True,
+            timeout=max(8, effective_timeout * max(1, min(int(attempts), 3)) + 8),
+            check=False, env=child_env,
+        )
+    except subprocess.TimeoutExpired:
+        return {**base, "outcome": "okhttp_jvm_timeout", "attemptCount": 0, "attempts": []}
+    except Exception as exc:
+        return {**base, "outcome": "okhttp_jvm_error", "attemptCount": 0, "attempts": [], "error": type(exc).__name__}
+    marker = "NIAKVIO_WAF_OKHTTP="
+    rows = [line[len(marker):] for line in str(proc.stdout or "").splitlines() if line.startswith(marker)]
+    if not rows:
+        return {**base, "outcome": "okhttp_jvm_error", "attemptCount": 0, "attempts": [], "exitCode": int(proc.returncode), "error": "missing_protocol_result"}
+    try:
+        payload = json.loads(rows[-1])
+    except json.JSONDecodeError:
+        return {**base, "outcome": "okhttp_jvm_error", "attemptCount": 0, "attempts": [], "exitCode": int(proc.returncode), "error": "invalid_protocol_result"}
+    if not isinstance(payload, dict):
+        payload = {}
+    return {**base, **payload, "exitCode": int(proc.returncode)}
+
+
 def probe_tv_okhttp_jvm(
     target: dict[str, Any],
     *,
@@ -434,107 +513,33 @@ def probe_tv_okhttp_jvm(
     attempts: int,
     classpath: str | None,
 ) -> dict[str, Any]:
-    """Exercise NuvioTV's audited PluginRuntime transport policy via JVM OkHttp.
-
-    Replays only the provider request headers that passed the strict non-secret
-    allowlist. The Java probe applies the same allowlist again. This remains
-    harness transport evidence, never Android-device or playback authority.
-    """
-    java = shutil.which("java")
-    cp = str(classpath or "").strip()
-    request_headers = safe_request_headers({"request_headers": target.get("requestHeaders")})
-    effective_user_agent = request_headers.get("user-agent", NUVIO_TV_WINDOWS_UA)
-    base = {
-        "profile": "nuvio-tv-okhttp-jvm",
-        "transportApproximation": (
-            "GitHub JVM OkHttp 4.12.0 with NuvioTV PluginRuntime policy; "
+    return _probe_okhttp_jvm(
+        target, timeout=timeout, attempts=attempts, classpath=classpath,
+        profile="nuvio-tv-okhttp-jvm", proxy_mode="no-proxy", max_timeout=30,
+        transport_approximation=(
+            "GitHub JVM OkHttp 4.12.0 with audited NuvioTV PluginRuntime policy; "
             "not Android device TLS/IP"
         ),
-        "userAgent": effective_user_agent,
-        "requestHeaderNames": sorted(request_headers),
-        "nativeContractApproximation": {
-            "httpStack": "OkHttp 4.12.0",
-            "proxyPolicy": "Proxy.NO_PROXY",
-            "dnsPolicy": "IPv4FirstDns",
-            "redirects": "HTTP+SSL enabled",
-            "timeouts": "30s maximum, matching audited PluginRuntime",
-            "tlsRuntime": "GitHub JVM, not Android device",
-        },
-    }
-    if not java or not cp:
-        return {
-            **base,
-            "outcome": "okhttp_jvm_unavailable",
-            "attemptCount": 0,
-            "attempts": [],
-        }
-    cmd = [
-        java,
-        "-cp", cp,
-        "WafOkHttpProbe",
-        str(target.get("url") or ""),
-        str(max(1, min(int(attempts), 3))),
-        str(max(2, min(int(timeout), 30))),
-        NUVIO_TV_WINDOWS_UA,
-    ]
-    for name, value in sorted(request_headers.items()):
-        cmd.append(f"{name}: {value}")
-    try:
-        proc = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=max(8, min(int(timeout), 30) * max(1, min(int(attempts), 3)) + 8),
-            check=False,
-        )
-    except subprocess.TimeoutExpired:
-        return {
-            **base,
-            "outcome": "okhttp_jvm_timeout",
-            "attemptCount": 0,
-            "attempts": [],
-        }
-    except Exception as exc:
-        return {
-            **base,
-            "outcome": "okhttp_jvm_error",
-            "attemptCount": 0,
-            "attempts": [],
-            "error": type(exc).__name__,
-        }
-    marker = "NIAKVIO_WAF_OKHTTP="
-    rows = [
-        line[len(marker):]
-        for line in str(proc.stdout or "").splitlines()
-        if line.startswith(marker)
-    ]
-    if not rows:
-        return {
-            **base,
-            "outcome": "okhttp_jvm_error",
-            "attemptCount": 0,
-            "attempts": [],
-            "exitCode": int(proc.returncode),
-            "error": "missing_protocol_result",
-        }
-    try:
-        payload = json.loads(rows[-1])
-    except json.JSONDecodeError:
-        return {
-            **base,
-            "outcome": "okhttp_jvm_error",
-            "attemptCount": 0,
-            "attempts": [],
-            "exitCode": int(proc.returncode),
-            "error": "invalid_protocol_result",
-        }
-    if not isinstance(payload, dict):
-        payload = {}
-    return {
-        **base,
-        **payload,
-        "exitCode": int(proc.returncode),
-    }
+        tls_runtime="GitHub JVM, not Android device",
+    )
+
+
+def probe_desktop_okhttp_jvm(
+    target: dict[str, Any],
+    *,
+    timeout: int,
+    attempts: int,
+    classpath: str | None,
+) -> dict[str, Any]:
+    return _probe_okhttp_jvm(
+        target, timeout=timeout, attempts=attempts, classpath=classpath,
+        profile="nuvio-desktop-okhttp-jvm", proxy_mode="system", max_timeout=60,
+        transport_approximation=(
+            "GitHub JVM OkHttp 4.12.0 with audited Nuvio Desktop JVM transport policy; "
+            "not target OS/device network environment"
+        ),
+        tls_runtime="GitHub JVM; same JVM transport family, not target OS/device TLS",
+    )
 
 def probe_tv_direct_http(
     target: dict[str, Any],
@@ -664,48 +669,45 @@ def diagnose_transport_profiles(
     browser_profiles: list[dict[str, Any]],
     direct_profile: dict[str, Any] | None,
     okhttp_profile: dict[str, Any] | None,
+    desktop_okhttp_profile: dict[str, Any] | None = None,
 ) -> str:
-    """Classify transport differentials without promoting them to playback proof."""
-    browser_outcomes = {
-        str(row.get("outcome") or "")
-        for row in browser_profiles
-        if isinstance(row, dict)
-    }
+    """Classify client/network differentials without promoting them to playback proof."""
+    browser_outcomes = {str(row.get("outcome") or "") for row in browser_profiles if isinstance(row, dict)}
     browser_content = "browser_content_reached" in browser_outcomes
     browser_challenge = "browser_challenge_persisted" in browser_outcomes
     direct_outcome = str((direct_profile or {}).get("outcome") or "")
-    okhttp_outcome = str((okhttp_profile or {}).get("outcome") or "")
-    okhttp_errors = {
-        str((okhttp_profile or {}).get("error") or ""),
-        *{
-            str(row.get("error") or "")
-            for row in (okhttp_profile or {}).get("attempts") or []
-            if isinstance(row, dict)
-        },
-    }
-    tls_error = any(
-        marker in value
-        for value in okhttp_errors
-        for marker in ("SSLHandshakeException", "SSLProtocolException", "CertPathValidatorException")
-    )
-
-    if browser_content and tls_error:
+    tv_outcome = str((okhttp_profile or {}).get("outcome") or "")
+    desktop_outcome = str((desktop_okhttp_profile or {}).get("outcome") or "")
+    def errors(profile: dict[str, Any] | None) -> set[str]:
+        return {
+            str((profile or {}).get("error") or ""),
+            *{str(row.get("error") or "") for row in (profile or {}).get("attempts") or [] if isinstance(row, dict)},
+        }
+    tls_markers = ("SSLHandshakeException", "SSLProtocolException", "CertPathValidatorException")
+    tv_tls = any(marker in value for value in errors(okhttp_profile) for marker in tls_markers)
+    desktop_tls = any(marker in value for value in errors(desktop_okhttp_profile) for marker in tls_markers)
+    if desktop_outcome == "okhttp_jvm_content_reached" and tv_outcome == "okhttp_jvm_challenge_persisted":
+        return "tv_waf_desktop_content_differential"
+    if tv_outcome == "okhttp_jvm_content_reached" and desktop_outcome == "okhttp_jvm_challenge_persisted":
+        return "desktop_waf_tv_content_differential"
+    if desktop_outcome == "okhttp_jvm_content_reached" and tv_outcome in {"okhttp_jvm_error","okhttp_jvm_timeout","okhttp_jvm_http_error"}:
+        return "tv_transport_desktop_content_differential"
+    if tv_outcome == "okhttp_jvm_content_reached" and desktop_outcome in {"okhttp_jvm_error","okhttp_jvm_timeout","okhttp_jvm_http_error"}:
+        return "desktop_transport_tv_content_differential"
+    if browser_content and (tv_tls or desktop_tls):
         return "native_client_tls_differential"
-    if browser_content and okhttp_outcome == "okhttp_jvm_challenge_persisted":
+    if browser_content and tv_outcome == "okhttp_jvm_challenge_persisted" and (not desktop_outcome or desktop_outcome == "okhttp_jvm_challenge_persisted"):
         return "native_client_waf_differential"
-    if browser_content and okhttp_outcome == "okhttp_jvm_content_reached":
-        if direct_outcome == "direct_http_content_reached":
-            return "content_reached_cross_transport"
-        return "browser_and_okhttp_content_reached"
-    if browser_content and okhttp_outcome in {
-        "okhttp_jvm_error", "okhttp_jvm_timeout", "okhttp_jvm_http_error",
-    }:
+    native_content = "okhttp_jvm_content_reached" in {tv_outcome, desktop_outcome}
+    if browser_content and native_content:
+        return "content_reached_cross_transport" if direct_outcome == "direct_http_content_reached" else "browser_and_okhttp_content_reached"
+    if browser_content and (tv_outcome in {"okhttp_jvm_error","okhttp_jvm_timeout","okhttp_jvm_http_error"} or desktop_outcome in {"okhttp_jvm_error","okhttp_jvm_timeout","okhttp_jvm_http_error"}):
         return "native_client_transport_differential"
     if browser_content:
         return "browser_content_native_unproven"
-    if browser_challenge and okhttp_outcome == "okhttp_jvm_challenge_persisted":
+    if browser_challenge and tv_outcome == "okhttp_jvm_challenge_persisted" and (not desktop_outcome or desktop_outcome == "okhttp_jvm_challenge_persisted"):
         return "waf_persisted_cross_transport"
-    if okhttp_outcome == "okhttp_jvm_content_reached":
+    if native_content:
         return "okhttp_content_browser_unproven"
     if browser_challenge:
         return "browser_waf_persisted"
@@ -813,6 +815,7 @@ def probe_target(
 
     direct_profile: dict[str, Any] | None = None
     okhttp_profile: dict[str, Any] | None = None
+    desktop_okhttp_profile: dict[str, Any] | None = None
     if client_profile_matrix:
         direct_profile = probe_tv_direct_http(
             target,
@@ -820,6 +823,12 @@ def probe_target(
             attempts=attempt_limit,
         )
         okhttp_profile = probe_tv_okhttp_jvm(
+            target,
+            timeout=timeout,
+            attempts=attempt_limit,
+            classpath=okhttp_classpath,
+        )
+        desktop_okhttp_profile = probe_desktop_okhttp_jvm(
             target,
             timeout=timeout,
             attempts=attempt_limit,
@@ -843,6 +852,12 @@ def probe_target(
     )
     if okhttp_content_reached:
         content_profiles.append("nuvio-tv-okhttp-jvm")
+    desktop_okhttp_content_reached = (
+        isinstance(desktop_okhttp_profile, dict)
+        and str(desktop_okhttp_profile.get("outcome") or "") == "okhttp_jvm_content_reached"
+    )
+    if desktop_okhttp_content_reached:
+        content_profiles.append("nuvio-desktop-okhttp-jvm")
     profile_outcomes = [str(row.get("outcome") or "") for row in profile_rows]
     if content_profiles:
         final_outcome = "browser_content_reached"
@@ -865,11 +880,13 @@ def probe_target(
         "clientProfileMatrix": profile_rows,
         "directHttpProfile": direct_profile,
         "okHttpJvmProfile": okhttp_profile,
+        "desktopOkHttpJvmProfile": desktop_okhttp_profile,
         "contentProfiles": content_profiles,
         "transportDiagnosis": diagnose_transport_profiles(
             profile_rows,
             direct_profile,
             okhttp_profile,
+            desktop_okhttp_profile,
         ),
         "nativeTvTransportStillUnproven": True,
         "durationMs": round((time.monotonic()-started)*1000),

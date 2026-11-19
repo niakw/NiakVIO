@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "requestVersion": 8,
+  "requestVersion": 9,
   "requestedAt": "2026-11-19",
   "targetProviders": [
-    "sekai",
     "animeonsen",
-    "vostfree"
+    "allwish",
+    "sekai"
   ],
   "reuseExistingEvidence": false,
-  "reason": "Regression after WAF targeted selector restrict-to-explicit authorized provider cohort, current-only runtime receipts and census same-run byte-matched promotion gate. Real GitHub/attested Tailscale browser/JVM/JS replay; disabled or authority-ineligible providers must not enter runtime replay. No WAF browser HTML -> playable claim.",
-  "cohort": "brain-first-same-run-byte-scoped-waf-client-validation-2026-11-19",
+  "reason": "Validate WAF client matrix after adding audited Desktop/JVM OkHttp system-proxy profile alongside NuvioTV/Android NO_PROXY profile; attested Tailscale egress plus full provider replay remain required before any provider conclusion.",
+  "cohort": "waf-tv-desktop-client-differential-2026-11-19",
   "sourceSha": "69bdb5cd8986165d47caad5ed6e1f5361e9e144c"
 }

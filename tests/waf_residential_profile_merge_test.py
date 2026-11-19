@@ -40,6 +40,7 @@ residential={
         ],
         "directHttpProfile":{"profile":"nuvio-tv-direct-http-approx","outcome":"direct_http_content_reached","attempts":[{"status":200}]},
         "okHttpJvmProfile":{"profile":"nuvio-tv-okhttp-jvm","outcome":"okhttp_jvm_content_reached","attempts":[{"status":200}]},
+        "desktopOkHttpJvmProfile":{"profile":"nuvio-desktop-okhttp-jvm","outcome":"okhttp_jvm_content_reached","attempts":[{"status":200}]},
         "privateExitNodeName":"must-never-survive",
         "publicIp":"203.0.113.123",
     }]
@@ -49,6 +50,7 @@ row=merged["rows"][0]
 profile=row["residentialExitNodeProfile"]
 assert profile["profile"]=="tailscale-residential-exit",profile
 assert profile["okHttpJvmProfile"]["outcome"]=="okhttp_jvm_content_reached",profile
+assert profile["desktopOkHttpJvmProfile"]["outcome"]=="okhttp_jvm_content_reached",profile
 serialized=repr(merged)
 assert "must-never-survive" not in serialized
 assert "203.0.113.123" not in serialized

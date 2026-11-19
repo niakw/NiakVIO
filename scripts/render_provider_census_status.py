@@ -199,7 +199,9 @@ def harness_transport_diagnostic(
     for row in rows:
         lane = str(row.get("lane") or "unknown").strip().casefold() or "unknown"
         okhttp = row.get("okHttpJvmProfile") if isinstance(row.get("okHttpJvmProfile"), dict) else {}
+        desktop_okhttp = row.get("desktopOkHttpJvmProfile") if isinstance(row.get("desktopOkHttpJvmProfile"), dict) else {}
         okhttp_outcome = str(okhttp.get("outcome") or "")
+        desktop_okhttp_outcome = str(desktop_okhttp.get("outcome") or "")
         matrix = row.get("clientProfileMatrix") if isinstance(row.get("clientProfileMatrix"), list) else []
         tv_browser = next(
             (
@@ -214,17 +216,17 @@ def harness_transport_diagnostic(
         direct = row.get("directHttpProfile") if isinstance(row.get("directHttpProfile"), dict) else {}
         direct_outcome = str(direct.get("outcome") or "")
 
-        if okhttp_outcome == "okhttp_jvm_content_reached":
+        if "okhttp_jvm_content_reached" in {okhttp_outcome, desktop_okhttp_outcome}:
             native_reached = True
             all_challenged = False
-        elif okhttp_outcome == "okhttp_jvm_inconclusive":
+        elif "okhttp_jvm_inconclusive" in {okhttp_outcome, desktop_okhttp_outcome}:
             native_inconclusive = True
             all_challenged = False
 
         if default_outcome == "browser_content_reached" or tv_browser_outcome == "browser_content_reached":
             github_browser_reached = True
             all_challenged = False
-            if okhttp_outcome != "okhttp_jvm_content_reached":
+            if "okhttp_jvm_content_reached" not in {okhttp_outcome, desktop_okhttp_outcome}:
                 browser_only = True
 
         if direct_outcome == "direct_http_content_reached":
@@ -259,6 +261,12 @@ def harness_transport_diagnostic(
                 else {}
             )
             residential_okhttp_outcome = str(residential_okhttp.get("outcome") or "")
+            residential_desktop_okhttp = (
+                residential.get("desktopOkHttpJvmProfile")
+                if isinstance(residential.get("desktopOkHttpJvmProfile"), dict)
+                else {}
+            )
+            residential_desktop_okhttp_outcome = str(residential_desktop_okhttp.get("outcome") or "")
             residential_direct = (
                 residential.get("directHttpProfile")
                 if isinstance(residential.get("directHttpProfile"), dict)
@@ -266,7 +274,7 @@ def harness_transport_diagnostic(
             )
             residential_direct_outcome = str(residential_direct.get("outcome") or "")
 
-            if residential_okhttp_outcome == "okhttp_jvm_content_reached":
+            if "okhttp_jvm_content_reached" in {residential_okhttp_outcome, residential_desktop_okhttp_outcome}:
                 residential_native_reached = True
                 residential_all_challenged = False
             if (
@@ -280,6 +288,7 @@ def harness_transport_diagnostic(
                 residential_default,
                 residential_tv_outcome,
                 residential_okhttp_outcome,
+                residential_desktop_okhttp_outcome,
                 residential_direct_outcome,
             }
             if any(
@@ -297,6 +306,7 @@ def harness_transport_diagnostic(
                 f", residential-browser={residential_default or 'unknown'}, "
                 f"residential-tv-browser={residential_tv_outcome or 'unknown'}, "
                 f"residential-okhttp={residential_okhttp_outcome or 'unknown'}, "
+                f"residential-desktop-okhttp={residential_desktop_okhttp_outcome or 'unknown'}, "
                 f"residential-direct={residential_direct_outcome or 'unknown'}"
             )
 
@@ -304,6 +314,7 @@ def harness_transport_diagnostic(
             f"{lane}: browser={default_outcome or 'unknown'}, "
             f"tv-browser={tv_browser_outcome or 'unknown'}, "
             f"okhttp={okhttp_outcome or 'unknown'}, "
+            f"desktop-okhttp={desktop_okhttp_outcome or 'unknown'}, "
             f"direct={direct_outcome or 'unknown'}"
             f"{residential_parts}"
         )

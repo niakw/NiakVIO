@@ -122,10 +122,12 @@ def network_differential(waf: dict[str, Any], provider: str) -> dict[str, Any]:
         lane = str(row.get("lane") or "unknown").strip().casefold() or "unknown"
         direct = row.get("directHttpProfile") if isinstance(row.get("directHttpProfile"), dict) else {}
         okhttp = row.get("okHttpJvmProfile") if isinstance(row.get("okHttpJvmProfile"), dict) else {}
+        desktop_okhttp = row.get("desktopOkHttpJvmProfile") if isinstance(row.get("desktopOkHttpJvmProfile"), dict) else {}
         g_direct = str(direct.get("outcome") or "")
         g_okhttp = str(okhttp.get("outcome") or "")
+        g_desktop_okhttp = str(desktop_okhttp.get("outcome") or "")
         g_browser = str(row.get("outcome") or "")
-        if g_direct == "direct_http_content_reached" or g_okhttp == "okhttp_jvm_content_reached":
+        if g_direct == "direct_http_content_reached" or g_okhttp == "okhttp_jvm_content_reached" or g_desktop_okhttp == "okhttp_jvm_content_reached":
             github_native = True
         if g_browser == "browser_content_reached":
             github_browser = True
@@ -134,18 +136,21 @@ def network_differential(waf: dict[str, Any], provider: str) -> dict[str, Any]:
         r_browser = ""
         r_direct = ""
         r_okhttp = ""
+        r_desktop_okhttp = ""
         if residential:
             residential_present = True
             r_browser = str(residential.get("outcome") or "")
             r_direct_row = residential.get("directHttpProfile") if isinstance(residential.get("directHttpProfile"), dict) else {}
             r_okhttp_row = residential.get("okHttpJvmProfile") if isinstance(residential.get("okHttpJvmProfile"), dict) else {}
+            r_desktop_okhttp_row = residential.get("desktopOkHttpJvmProfile") if isinstance(residential.get("desktopOkHttpJvmProfile"), dict) else {}
             r_direct = str(r_direct_row.get("outcome") or "")
             r_okhttp = str(r_okhttp_row.get("outcome") or "")
-            if r_direct == "direct_http_content_reached" or r_okhttp == "okhttp_jvm_content_reached":
+            r_desktop_okhttp = str(r_desktop_okhttp_row.get("outcome") or "")
+            if r_direct == "direct_http_content_reached" or r_okhttp == "okhttp_jvm_content_reached" or r_desktop_okhttp == "okhttp_jvm_content_reached":
                 residential_native = True
             if r_browser == "browser_content_reached":
                 residential_browser = True
-            blocked_values = [value for value in (r_browser, r_direct, r_okhttp) if value]
+            blocked_values = [value for value in (r_browser, r_direct, r_okhttp, r_desktop_okhttp) if value]
             if blocked_values and all(
                 ("challenge_persisted" in value) or value.endswith("_timeout") or value.endswith("_error")
                 for value in blocked_values
@@ -154,9 +159,9 @@ def network_differential(waf: dict[str, Any], provider: str) -> dict[str, Any]:
 
         evidence.append(
             f"{lane}: github-browser={g_browser or 'unknown'}, "
-            f"github-okhttp={g_okhttp or 'unknown'}, github-direct={g_direct or 'unknown'}, "
-            f"residential-browser={r_browser or 'unavailable'}, "
-            f"residential-okhttp={r_okhttp or 'unavailable'}, "
+            f"github-okhttp={g_okhttp or 'unknown'}, github-desktop-okhttp={g_desktop_okhttp or 'unknown'}, "
+            f"github-direct={g_direct or 'unknown'}, residential-browser={r_browser or 'unavailable'}, "
+            f"residential-okhttp={r_okhttp or 'unavailable'}, residential-desktop-okhttp={r_desktop_okhttp or 'unavailable'}, "
             f"residential-direct={r_direct or 'unavailable'}"
         )
 

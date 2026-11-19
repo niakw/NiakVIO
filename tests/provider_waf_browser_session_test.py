@@ -257,6 +257,18 @@ assert mod.diagnose_transport_profiles(
     {"outcome": "direct_http_content_reached"},
     {"outcome": "okhttp_jvm_challenge_persisted", "attempts": []},
 ) == "native_client_waf_differential"
+assert mod.diagnose_transport_profiles(
+    [{"outcome": "browser_content_reached"}],
+    {"outcome": "direct_http_content_reached"},
+    {"outcome": "okhttp_jvm_challenge_persisted", "attempts": []},
+    {"outcome": "okhttp_jvm_content_reached", "attempts": []},
+) == "tv_waf_desktop_content_differential"
+assert mod.diagnose_transport_profiles(
+    [{"outcome": "browser_content_reached"}],
+    {"outcome": "direct_http_content_reached"},
+    {"outcome": "okhttp_jvm_content_reached", "attempts": []},
+    {"outcome": "okhttp_jvm_error", "attempts": [{"error": "ConnectException"}]},
+) == "desktop_transport_tv_content_differential"
 assert mod.probe_target(allwish, "", timeout=5, virtual_time_ms=1000)["outcome"] == "browser_unavailable"
 vostfree = next(row for row in targets if row["provider"] == "vostfree")
 assert vostfree["method"] == "GET", vostfree
@@ -320,6 +332,7 @@ assert len(matrix["clientProfileMatrix"])==2,matrix
 assert matrix["clientProfileMatrix"][0]["outcome"]=="browser_challenge_persisted",matrix
 assert matrix["clientProfileMatrix"][1]["outcome"]=="browser_content_reached",matrix
 assert matrix["nativeTvTransportStillUnproven"] is True
+assert "desktopOkHttpJvmProfile" in matrix
 assert "transportDiagnosis" in matrix
 assert any(
     any(str(value).startswith("--user-agent="+mod.NUVIO_TV_WINDOWS_UA) for value in call[0][0])
