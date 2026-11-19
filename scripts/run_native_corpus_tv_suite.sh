@@ -188,6 +188,18 @@ for fixture in "${FIXTURES[@]}"; do
   kill "$LOGCAT_PID" 2>/dev/null || true
   wait "$LOGCAT_PID" 2>/dev/null || true
 
+  # The normal logcat filter records only explicit structured native markers.
+  # Official PluginRuntime instead prints JavaScript console to dynamic tags
+  # "Plugin:<repo-id>:<provider>". A bounded end-of-fixture dump is read
+  # transiently and immediately reduced to enum-only evidence: never store
+  # or echo the raw Android log, signed URLs, headers, or stack traces.
+  if [[ -n "${TARGET_PROVIDER:-}" ]]; then
+    timeout --signal=TERM --kill-after=3s 15s adb logcat -d -v brief 2>/dev/null \
+      | python3 -u "${NIAKVIO}/scripts/sanitize_native_plugin_console.py" \
+          --client tv --provider "$TARGET_PROVIDER" --fixture "$fixture" >> "$LOG" \
+      || echo "FIELD_NATIVE_QUICKJS_DIAGNOSTIC_SUMMARY client=tv fixture=$fixture events=0 status=collector_failed raw_content_logged=false" >> "$LOG"
+  fi
+
   echo "FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=tv" | tee -a "$LOG"
   cat "$FRONT_LOG" >> "$LOG" 2>/dev/null || true
 
