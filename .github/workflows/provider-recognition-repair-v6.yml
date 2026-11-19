@@ -412,10 +412,12 @@ jobs:
           import json,os
           from pathlib import Path
           d=json.loads(Path("automation/provider-waf-browser-session-latest.json").read_text(encoding="utf-8"))
-          residential=d.get("residentialExitNodeEvidence") if isinstance(d.get("residentialExitNodeEvidence"),dict) else {}
+          historical=d.get("residentialExitNodeEvidence") if isinstance(d.get("residentialExitNodeEvidence"),dict) else {}
+          current=d.get("residentialExitNodeLastAttempt") if isinstance(d.get("residentialExitNodeLastAttempt"),dict) else historical
           replay=d.get("residentialProviderReplay") if isinstance(d.get("residentialProviderReplay"),dict) else {}
+          replay_attempt=replay.get("lastAttempt") if isinstance(replay.get("lastAttempt"),dict) else replay
           rows=d.get("rows") if isinstance(d.get("rows"),list) else []
-          print("true" if rows and residential.get("available") is True and replay.get("available") is True else "false")
+          print("true" if rows and current.get("available") is True and replay_attempt.get("available") is True else "false")
           PY
           )"
           if [ "$mode" = "none" ] && [ "$evidence_ok" = "true" ]; then
