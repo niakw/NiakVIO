@@ -180,4 +180,31 @@ assert "niakvio/automation/native-candidate-remat-proof.json" in workflow
 assert workflow.count("name: native-corpus-${{ matrix.device }}-") == 1
 assert "native-hub46" not in workflow
 
+# Staging alone is not execution: the official manager downloads the published
+# repository bytes. Candidate runs instead require a separate SHA-attested
+# real-PluginRuntime oracle, explicitly denied production playback authority.
+assert "NIAKVIO_NATIVE_CANDIDATE_SHA256=$CANDIDATE_SHA" in workflow
+assert 'proof["officialTvTestAssetByteMatched"] is True' in workflow
+assert workflow.index("Verify candidate bytes in official TV instrumentation assets") < workflow.index("Set up Gradle runtime")
+tv_suite = (ROOT / "scripts/run_native_corpus_tv_suite.sh").read_text(encoding="utf-8")
+tv_loader = (ROOT / "scripts/augment_native_provider_loading.py").read_text(encoding="utf-8")
+for needle in (
+    "--candidate-execution-sha256",
+    "NIAKVIO_NATIVE_CANDIDATE_SHA256",
+    "FIELD_NATIVE_CANDIDATE_ORACLE_FAILED",
+    "FIELD_NATIVE_CANDIDATE_ORACLE_OBSERVED",
+    "production_playback_authority=false",
+):
+    assert needle in tv_suite, needle
+for needle in (
+    "candidate_execution_sha256",
+    "native local candidate oracle requires TV and exact SHA256",
+    "FIELD_NATIVE_CANDIDATE_RUNTIME_BYTE_CHECK",
+    "FIELD_NATIVE_CANDIDATE_RUNTIME_RESULT",
+    "officialPluginManager.executeScraper(loadedScraper",
+    "candidateRuntime.executePlugin(",
+    "authority=diagnostic_only",
+):
+    assert needle in tv_loader, needle
+
 print("native targeted residential transport workflow contract passed")
