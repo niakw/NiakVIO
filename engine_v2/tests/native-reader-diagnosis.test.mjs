@@ -353,18 +353,24 @@ try {
   // printed a result/error. It is NOT a zero stream or proof of provider fault.
   const hardTimeoutLog = path.join(tmp, 'tv-hard-timeout.log');
   const hardTimeoutOutput = path.join(tmp, 'tv-hard-timeout.json');
-  fs.writeFileSync(hardTimeoutLog, [
-    ...common,
+  const timeoutProvider64 = b64('MOVIESDRIVE');
+  const hardBase = common.filter((line) =>
+    !(line.startsWith('FIELD_NATIVE_RESULT ') &&
+      line.includes(`provider64=${timeoutProvider64}`)) &&
+    !(line.startsWith('FIELD_NATIVE_PLAYER ') &&
+      line.includes(`provider64=${timeoutProvider64}`)) &&
+    !(line.startsWith('FIELD_NATIVE_PLAYER_BEGIN ') &&
+      line.includes(`provider64=${timeoutProvider64}`))
+  );
+  const beginIndex = hardBase.findIndex((line) =>
+    line.startsWith('FIELD_NATIVE_PROVIDER_BEGIN ') &&
+    line.includes(`provider64=${timeoutProvider64}`));
+  assert.ok(beginIndex >= 0);
+  hardBase.splice(beginIndex + 1, 0,
     'FIELD_NATIVE_ERROR client=tv fixture=sinners-2025 provider64='
-      + b64('MOVIESDRIVE') + ' request_type=movie route_mode=declared duration_ms=25000 error64='
-      + b64('provider_hard_timeout_ms=25000'),
-    'FIELD_NATIVE_ERROR client=tv fixture=sinners-2025 provider64='
-      + b64('MOVIESDRIVE') + ' request_type=movie route_mode=declared duration_ms=25000 error64='
-      + b64('Bearer SECRET https://private.example'),
-    'FIELD_NATIVE_ERROR client=desktop fixture=sinners-2025 provider64='
-      + b64('MOVIESDRIVE') + ' request_type=movie route_mode=declared duration_ms=25000 error64='
-      + b64('provider_hard_timeout_ms=25000'),
-  ].join('\n') + '\n');
+      + timeoutProvider64 + ' request_type=movie route_mode=declared duration_ms=25000 error64='
+      + b64('provider_hard_timeout_ms=25000'));
+  fs.writeFileSync(hardTimeoutLog, hardBase.join('\n') + '\n');
   const timed = spawnSync(process.execPath, [script, '--output', hardTimeoutOutput, hardTimeoutLog], { cwd: root, encoding: 'utf8' });
   assert.equal(timed.status, 0, timed.stderr + timed.stdout);
   const timedData = JSON.parse(fs.readFileSync(hardTimeoutOutput, 'utf8'));
