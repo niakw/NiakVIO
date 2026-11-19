@@ -368,7 +368,9 @@ try {
   assert.equal(promiseData.quickJsPromiseControls[1].status, 'bridge_ok');
   assert.equal(promiseData.quickJsPromiseControls[0].proofAuthority, false);
   assert.equal(promiseData.quickJsPromiseControls[0].providerJsMutationAllowed, false);
-  assert.doesNotMatch(JSON.stringify(promiseData.quickJsPromiseControls), /private\\.example|SECRET|https:\\/\\//);
+  for (const secret of ['private.example', 'SECRET', 'https://']) {
+    assert.equal(JSON.stringify(promiseData.quickJsPromiseControls).includes(secret), false);
+  }
 
   const incomplete = path.join(tmp, 'incomplete.log');
   const incompleteOutput = path.join(tmp, 'incomplete.json');
