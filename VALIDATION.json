@@ -1,5 +1,5 @@
 {
-  "schema_version": 85,
+  "schema_version": 86,
   "release": "dynamic",
   "release_authority": "manifest.json:version",
   "candidate_track": "main",
@@ -17,11 +17,19 @@
     "historical_archive_provider_objects": 50,
     "historical_archive_authority": "provider-old/",
     "native_lab_scope_authority": "scripts/current_provider_scope.py:projection_active_provider_ids",
-    "native_transport_source": "manifest-hub46.json",
-    "native_transport_manifest": "native-hub46/manifest.json",
     "disabled_and_pending_rows_remain_auditable": true,
     "availability_active_scope_authority": "scripts/current_provider_scope.py:projection_active_provider_ids",
-    "availability_report_scope_authority": "scripts/current_provider_scope.py:projection_visible_provider_ids"
+    "availability_report_scope_authority": "scripts/current_provider_scope.py:projection_visible_provider_ids",
+    "native_transport_manifests": [
+      "manifest.json",
+      "vf/manifest.json"
+    ],
+    "consumer_manifests": [
+      "manifest.json",
+      "vf/manifest.json",
+      "no-anime/manifest.json",
+      "vf-no-anime/manifest.json"
+    ]
   },
   "native_sampling": {
     "authority": ".github/triggers/rotating-popular-corpus.json",
@@ -49,14 +57,20 @@
     "DesktopWindows"
   ],
   "native_transport": {
-    "source_builder": "scripts/generate_hub46_manifest.py",
-    "pinned_builder": "scripts/build_hub46_native_manifest.py",
-    "scope": "Global+France active projection union",
-    "provider_bytes_pinned_to_immutable_sha": true,
-    "provider_urls_are_absolute": true,
-    "legacy_hub46_matrix_is_current_scope_authority": false,
+    "manifests": [
+      "manifest.json",
+      "vf/manifest.json"
+    ],
+    "consumer_variants": [
+      "no-anime/manifest.json",
+      "vf-no-anime/manifest.json"
+    ],
+    "scope": "Global and France projections execute independently; active authority is their union",
+    "manifest_urls_pinned_to_exact_release_sha": true,
+    "provider_urls_resolve_relative_to_manifest": true,
+    "synthetic_union_is_publication_authority": false,
     "coverage_gate": "scripts/gate_native_declared_provider_matrix.py",
-    "current_status": "derived-from-current-projections"
+    "current_status": "canonical-projection-matrix"
   },
   "native_prebuild_cache": {
     "enabled_for_future_runs": true,
@@ -79,8 +93,6 @@
     "python_compile_scripts": true,
     "provider_core_runtime_ownership": true,
     "desktop_runtime_without_host_timers": true,
-    "native_projection_union_transport": true,
-    "native_pinned_blob_integrity": true,
     "native_adaptive_catalog_contract": true,
     "domain_refresh_transaction_v2_contract": true,
     "route_override_schema": true,
@@ -89,7 +101,9 @@
     "reverse_rebuild_required": true,
     "release_integrity_required": true,
     "clean_provider_base_matches_current_common_source": true,
-    "common_provider_source_migrations_validation_only": true
+    "common_provider_source_migrations_validation_only": true,
+    "native_canonical_projection_transport": true,
+    "native_sha_pinned_manifest_integrity": true
   },
   "domain_refresh": {
     "authority": "scripts/domain_refresh_transaction_v2.py",
@@ -161,12 +175,10 @@
     "release_candidate_waits_for_security_final_gate": true,
     "requires_npm_audit_high": true,
     "requires_fixed_point_and_reverse_rebuild": true,
-    "requires_immutable_pinned_native_transport": true,
     "requires_exact_final_release_sha_native_labs": true,
     "requires_current_nuvio_client_refs": true,
     "native_proof_transitive_between_clients": false,
     "post_finalization_native_certification_workflow": ".github/workflows/release-candidate-validation.yml",
-    "requires_final_native_hub46_manifest_regeneration": true,
     "requires_clean_provider_base_current_source": true,
     "requires_common_source_migration_fixed_point": true,
     "requires_multi_audio_witness_per_native_platform": true,
@@ -186,7 +198,9 @@
     "requires_multi_audio_language_witness_per_native_platform": true,
     "requires_provider_source_provenance_witness_per_native_platform": true,
     "provider_source_provenance_rule": "every sampled native stream row must retain logical provider ownership equal to the scraper that produced it, and each exact-final-SHA platform must observe at least one visible V13 external-source provenance label without reassigning provider ownership",
-    "provider_source_provenance_gate": "scripts/gate_native_provider_provenance.cjs"
+    "provider_source_provenance_gate": "scripts/gate_native_provider_provenance.cjs",
+    "requires_sha_pinned_canonical_manifest_transport": true,
+    "requires_canonical_manifest_matrix": true
   },
   "limitations": [
     "A CI IP can be blocked while a residential IP works.",
