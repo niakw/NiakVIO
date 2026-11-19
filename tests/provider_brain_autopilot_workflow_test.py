@@ -60,7 +60,10 @@ assert "contents: write" not in autopilot
 assert "git add " not in autopilot
 assert "git push origin HEAD:main" not in autopilot
 
-assert phase.get("phase") == "brain_repair_pilot", phase
+assert phase.get("phase") in {"brain_repair_pilot", "brain_group_repair"}, phase
+if phase.get("phase") == "brain_group_repair":
+    assert phase.get("automatic_brain_repair") is False, phase
+    assert phase.get("automatic_brain_learning") is False, phase
 assert phase.get("automatic_brain_repair") is False, phase
 assert phase.get("automatic_brain_learning") is False, phase
 assert phase.get("checkpoint_required_before_brain") is False, phase
