@@ -432,7 +432,8 @@ try {
   ].join('\n') + '\n');
   const terminalRun = spawnSync(process.execPath,
     [script, '--output', terminalOutput, terminalLog],
-    { cwd: root, encoding: 'utf8' });
+    { cwd: root, encoding: 'utf8',
+      env: { ...process.env, NIAKVIO_BRAIN_NONBLOCKING: '1' } });
   assert.equal(terminalRun.status, 0, terminalRun.stderr + terminalRun.stdout);
   const terminal = JSON.parse(fs.readFileSync(terminalOutput, 'utf8'));
   assert.equal(terminal.terminalTransportDiagnosticObserved, 1);
