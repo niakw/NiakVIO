@@ -1,3 +1,9 @@
+## 2026-11-19 — Brain submodule source pin synchronized after native negative-learning validation
+
+- Parent NiakVIO gitlink `brain-llm` advanced from `8fda35132437f9647a352a45496fcd33f229516f` to Brain main `5cd5d0ba5c77434263b7086a19beb5eed272ee7c` by `43fa43888de992fcc61d3238e459caba6bb1d301`. Independent [Brain LLM CI 44627649182](https://github.com/niakw/NiakVIO-Brain-LLM/actions/runs/44627649182) and [read-only security inventory 44627648797](https://github.com/niakw/NiakVIO-Brain-LLM/actions/runs/44627648797) both SUCCESS on that exact SHA. This removes stale submodule inspection divergence; NiakVIO in-tree integration and native playback are still separately gated.
+- New `automation/brain-pinned-source.json` records the exact source/CI/security provenance; `tests/brain_submodule_exact_pin_test.py` asserts Git index gitlink equality and non-authoritative repair count, and runs in Provider Non-Regression on subsequent changes. Existing Brain main has 194 commits beyond the old 8fda pin; this is a version pairing, not proof of a fixed provider.
+- Purstream Android TV strict published-byte test `44627471661` is source pinned at `09f193e2` and remains the next terminal-media proof target. **0 newly validated repairs**.
+
 ## 2026-11-19 — Native TV blocking fetch invalidates JS-only hedge (0 repairs)
 
 - Official NuvioTV candidate run [44620517326](https://github.com/niakw/NiakVIO/actions/runs/44620517326): source NiakVIO `eba7e214`, client `ff7fbd74`, French-Manga Jujutsu Kaisen S01E01. Rematerialized ProviderBase V27 candidate SHA-256 `143b238ece021e653b639b99401e813264b98fc3479e5a35fb279926b928f8f2` matched official Android TV `p000.js` test asset; app repository stayed SHA-pinned HTTPS. The candidate executed but returned **0 streams in 25,659 ms**, no player or video/audio/episode decode. First embed produced HTTP 522 after ~20s; alternate embed and HLS 200 occurred only afterward. No new accepted repair, no provider JS publication.
