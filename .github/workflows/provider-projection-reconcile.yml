@@ -210,6 +210,7 @@ jobs:
           }
           python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
           python scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest.before.json"
+          python scripts/native_manifest_projection.py validate
           python scripts/prune_unreferenced_providers.py --prune-provider-bases
 
       - name: Prove projection fixed point
@@ -274,6 +275,9 @@ jobs:
           PROVIDER_SHA="$(git rev-parse HEAD)"
           echo "provider_sha=$PROVIDER_SHA" >> "$GITHUB_OUTPUT"
 
+          python scripts/native_manifest_projection.py validate
+          python tests/native_hub46_manifest_test.py
+          python tests/native_hub46_transport_manifest_test.py
           python tests/release_projection_scope_test.py
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
@@ -281,10 +285,10 @@ jobs:
 
           git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
           git diff --cached --quiet && {
-            echo "Projection publication produced no final pin/integrity delta." >&2
+            echo "Projection publication produced no final integrity delta." >&2
             exit 1
           }
-          git commit -m "chore(providers): seal reconciled projection publication"
+          git commit -m "chore(providers): finalize reconciled projection publication"
 
       - name: Publish exact reconciled projection
         if: steps.drift.outputs.count != '0'
@@ -316,6 +320,7 @@ jobs:
                 echo "FIELD_PROVIDER_PROJECTION_PUBLISH_BLOCKED reason=merge_conflict" >&2
                 exit 1
               }
+              python scripts/native_manifest_projection.py validate
               python scripts/generate_release_hashes.py
               python scripts/validate_release_integrity.py
               python tests/release_hash_scope_test.py
@@ -393,6 +398,7 @@ jobs:
           # workflows. Projection publication therefore owns explicit exact-head
           # handoff to census, CORE Quick and the final security gate.
           BASE_SHA="$(git rev-parse HEAD)"
+          python scripts/native_manifest_projection.py validate
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
           python tests/release_hash_scope_test.py
