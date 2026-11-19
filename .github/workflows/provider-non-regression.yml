@@ -115,6 +115,7 @@ jobs:
           set -euo pipefail
           python tests/workflow_security_policy_test.py
           python tests/provider_non_regression_contract_test.py
+          python tests/brain_submodule_exact_pin_test.py
           python tests/provider_html_filter_security_test.py --published
           python tests/provider_bulk_spa_route_discovery_test.py
           python tests/provider_materialization_byte_validation_contract_test.py
