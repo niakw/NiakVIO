@@ -3954,7 +3954,7 @@
       "providerArtifactSha256": "be7898d0cd10d8cb6df2804720ef1fa927abc1114e1a4d9cf4eb06a67f70f1a0",
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
       ]
     },
     {
@@ -5710,8 +5710,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "44425027154-waf-transport",
-  "harnessEvidenceSha": "09ec05f3b9f53641fe6c1779dd7ab1d2a73c434c",
+  "harnessEvidenceRunId": "44425754944-waf-transport",
+  "harnessEvidenceSha": "df7c8004bf2321a89ea90e46801ce1e29b622024",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "french-anime",
@@ -7323,17 +7323,15 @@
         "providerArtifactSha256": "be7898d0cd10d8cb6df2804720ef1fa927abc1114e1a4d9cf4eb06a67f70f1a0",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
+        "debugStage": "provider_zero_before_provider_network",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_network_http_error",
-          "provider_network_zero_result"
+          "provider_zero_before_provider_network"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
-          "lookup_only",
           "none"
         ],
         "raw": 0,
@@ -7342,9 +7340,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "09ec05f3b9f53641fe6c1779dd7ab1d2a73c434c",
+          "sourceNiakvioSha": "df7c8004bf2321a89ea90e46801ce1e29b622024",
           "providerBundleSha256": "be7898d0cd10d8cb6df2804720ef1fa927abc1114e1a4d9cf4eb06a67f70f1a0",
-          "runId": "44425027154",
+          "runId": "44425754944",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7723,8 +7721,8 @@
       "byteMatchedProviders": [
         "sekai"
       ],
-      "sourceNiakvioSha": "09ec05f3b9f53641fe6c1779dd7ab1d2a73c434c",
-      "runId": "44425027154",
+      "sourceNiakvioSha": "df7c8004bf2321a89ea90e46801ce1e29b622024",
+      "runId": "44425754944",
       "proofAuthority": false,
       "publicationAuthority": false
     },
