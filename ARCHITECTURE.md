@@ -1,3 +1,11 @@
+## 2026-11-19 — Distinguish targeted Android harness deadlines from official provider runtime failures
+
+The native Android corpus normally keeps a 25-second per-provider timeout for throughput, but this is a **test-owned Future.get wall-clock cutoff**, not the official NuvioTV PluginManager scraper timeout. An emulator may fail at 25s while a later embed fallback finishes network I/O. Example: French-Manga/Jujutsu S01E01 native run 44561795894 selected an enabled provider, fetched TMDB/search/episode APIs (200), saw an initial iframe HTTP 522 after 20s, then an alternate embed 200 and HLS master playlist 200 approximately half a second after the harness reported a 25s timeout. A 200 playlist after cancellation does not by itself prove that a returned stream or decoded video reached the app.
+
+For exactly scoped native Android/TV provider diagnosis the targeted workflow sets NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS=60000, and prepare_native_corpus_validation.py validates 5000..60000 before generating an instrumented Future.get. All ordinary declared-type corpus runs retain the 25000ms budget. Invalid overrides fail closed; no silent min-clamping, no universal all-provider extension. The selected actual provider remains active in the canonical manifest, no provider JS mutation, and no reader/identity proof is granted from the timeout change.
+
+Required acceptance: source-pinned current official client and provider JS SHA, returned correct media (not a late orphaned HTTP request), actual player video dimensions/decoded frames and selected audio, correct film/S/E and protected stream headers, regression across normal 25s fixture. Diagnostic HLS response timing and a separate HTTP probe do not replace player success. Tests in tests/native_runtime_settlement_contract_test.py. The four production manifests including no-anime variants remain unchanged.
+
 ## 2026-11-19 — Three independent provenance axes in native TV and Brain diagnostics
 
 A provider JS SHA256, a NiakVIO commit and the official Nuvio client commit are different source identities. Bind all three alongside the fixture and native run ID when examining a platform-specific network/playback fix. Never infer an old accepted NuvioTV commit contains fixes later merged in official dev, or infer a user-installed TV APK from an emulator checkout.
