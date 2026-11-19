@@ -252,7 +252,15 @@ jobs:
             echo "FIELD_BRAIN_FAST_STALE_PRIOR skipped=true reason=source-not-ancestor"
             exit 0
           fi
-          if ! git diff --quiet "$prior_sha" "$GITHUB_SHA" --             providers provider-bases provider-v3-materialization.json             provider-overrides.json scripts engine_v2 provider-v3-quick-yield.json; then
+          # Historical negatives are prior-only, even when the shared ProviderBase
+          # *generator source* changed. If providers/ and provider-bases/ were
+          # not rematerialized, the previously executed provider JS is identical.
+          # Do not discard an exact negative just because a source-only guard
+          # or test was added; still reject drift in any other executable script.
+          if ! git diff --quiet "$prior_sha" "$GITHUB_SHA" -- \
+               providers provider-bases provider-v3-materialization.json \
+               provider-overrides.json engine_v2 provider-v3-quick-yield.json \
+               scripts ':(exclude)scripts/provider_base_store.py'; then
             echo "FIELD_BRAIN_FAST_STALE_PRIOR skipped=true reason=executable-or-provider-byte-drift"
             exit 0
           fi
