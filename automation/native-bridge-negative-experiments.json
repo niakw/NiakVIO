@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "role": "brain-native-bridge-negative-experiments",
+  "experiments": [
+    {
+      "id": "tv-french-manga-44620517326-v27",
+      "provider": "french-manga",
+      "fixture": "jujutsu-kaisen-s01e01",
+      "requestType": "anime",
+      "runId": "44620517326",
+      "sourceNiakvioSha": "eba7e21471d02d6c6d3fcd15aac6b238e4bffdd5",
+      "officialClientSha": "ff7fbd747955a1a6108ac23c296b79ad851a14b1",
+      "candidateJsSha256": "143b238ece021e653b639b99401e813264b98fc3479e5a35fb279926b928f8f2",
+      "baselineJsSha256": "458b2df260ba648853fc8112127270e7be9554b57b5b4ee1311a4ce2b4a726dd",
+      "mechanism": "providerbase_v27_js_promise_hedge",
+      "result": "rejected_executed_no_improvement",
+      "evidence": {
+        "candidateByteMatched": true,
+        "publishedManifestShaPinnedHttps": true,
+        "runtimeIsOfficialNuvioTV": true,
+        "officialBridgeBlockingCallExecute": true,
+        "nativeRequestSequentialObserved": true,
+        "firstSourceHttpStatus": 522,
+        "returnedStreamCount": 0,
+        "providerDurationMs": 25659,
+        "playerReached": false,
+        "decodedMediaVerified": false
+      },
+      "owner": "client-network-bridge-and-providerbase-strategy",
+      "failureClass": "synchronous_native_fetch_no_parallelism",
+      "symptomFamilies": [
+        "android_tv_only_zero_streams",
+        "http_522_then_empty",
+        "js_promise_hedge_no_parallelism"
+      ],
+      "avoid": [
+        "repeat_promise_all_hedge_without_async_host_capability",
+        "count_master_http_200_as_playback",
+        "attribute_522_to_provider_js_without_owner_trace"
+      ],
+      "nextStrategy": "require_nonblocking_native_fetch_capability_or_evidence_backed_origin_priority",
+      "proofAuthority": false,
+      "publicationAuthority": false,
+      "providerMutationAuthority": false,
+      "lesson": "Official NuvioTV QuickJS fetch awaits a synchronous __native_fetch host callback that invokes OkHttp Call.execute. JS Promise.all cannot start the alternate host before a blocking 522 ends. A two-host Node async timer simulation is not native concurrency proof. Generated candidate bytes were staged and executed, but no stream, player or decoded audio/video was reached."
+    }
+  ]
+}
