@@ -49,6 +49,7 @@ jobs:
     outputs:
       mobile_sha: ${{ steps.refs.outputs.mobile_sha }}
       mobile_drift_status: ${{ steps.refs.outputs.mobile_drift_status }}
+      manifest_matrix: ${{ steps.manifests.outputs.matrix }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -66,6 +67,36 @@ jobs:
         run: |
           set -euo pipefail
           python3 scripts/resolve_nuvio_lab_heads.py             --report health-output/nuvio-client-upstream-status.json             --clients nuvio-mobile             --github-output "$GITHUB_OUTPUT"             --output health-output/nuvio-mobile-ios-lab-head.json
+      - id: manifests
+        name: Resolve canonical NiakVIO manifest projection
+        shell: bash
+        env:
+          INPUT_MODE: ${{ inputs.mode || 'full' }}
+          INPUT_PROVIDER: ${{ inputs.provider || '' }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          import os
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, str((Path.cwd() / "scripts").resolve()))
+          from native_manifest_projection import active_provider_manifest
+          mode = (os.environ.get("INPUT_MODE") or "full").strip().lower()
+          provider = (os.environ.get("INPUT_PROVIDER") or "").strip()
+          if mode == "only":
+              if not provider:
+                  raise SystemExit("ONLY mode requires an exact provider id")
+              manifest = active_provider_manifest(provider)
+              projection = "global" if manifest == "manifest.json" else "vf"
+              include = [{"projection": projection, "manifest": manifest}]
+          else:
+              include = [
+                  {"projection": "global", "manifest": "manifest.json"},
+                  {"projection": "vf", "manifest": "vf/manifest.json"},
+              ]
+          print("matrix=" + json.dumps({"include": include}, separators=(",", ":")))
+          PY
       - name: Publish Mobile iOS runtime context
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
@@ -81,8 +112,11 @@ jobs:
     needs: resolve
     runs-on: xcode-27
     timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.resolve.outputs.manifest_matrix) }}
     env:
-      NIAKVIO_MANIFEST_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/native-hub46/manifest.json
+      NIAKVIO_MANIFEST_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/${{ matrix.manifest }}
       DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
       GRADLE_OPTS: -Dfile.encoding=UTF-8
       NUVIO_GRADLE_JVMARGS: -Xmx4608M -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=768M
@@ -132,7 +166,7 @@ jobs:
             nuvio-mobile/build/ios-derived-full-debug
             nuvio-mobile/build/ios-ipa
             ios-derived
-          key: native-prebuild-v2-ios-${{ runner.os }}-${{ needs.resolve.outputs.mobile_sha }}-xcode27.1-${{ hashFiles('niakvio/scripts/prepare_native_ios_reader_acceptance.py', 'niakvio/scripts/run_native_corpus_ios_suite.sh', 'niakvio/native-hub46/manifest.json') }}
+          key: native-prebuild-v3-ios-${{ runner.os }}-${{ matrix.projection }}-${{ needs.resolve.outputs.mobile_sha }}-xcode27.1-${{ hashFiles('niakvio/scripts/prepare_native_ios_reader_acceptance.py', 'niakvio/scripts/run_native_corpus_ios_suite.sh', 'niakvio/manifest.json', 'niakvio/vf/manifest.json') }}
       - name: Build official unsigned device IPA before Lab instrumentation
         if: ${{ github.event_name == 'schedule' || inputs.mode != 'only' }}
         shell: bash
@@ -152,7 +186,7 @@ jobs:
         if: ${{ inputs.mode != 'only' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: native-mobile-ios-device-ipa-full-${{ github.run_id }}
+          name: native-mobile-ios-device-ipa-full-${{ matrix.projection }}-${{ github.run_id }}
           path: nuvio-mobile/build/ios-ipa/*.ipa
           retention-days: 8
           if-no-files-found: error
@@ -192,7 +226,7 @@ jobs:
           set -euo pipefail
           python3 niakvio/scripts/gate_native_declared_provider_matrix.py \
             --client ios \
-            --manifest niakvio/native-hub46/manifest.json \
+            --manifest "niakvio/${{ matrix.manifest }}" \
             --corpus niakvio/.github/triggers/nuvio-client-lab.json \
             "$GITHUB_WORKSPACE/mobile-ios-native-corpus.log"
       - name: Require iOS multi-audio release witness
@@ -227,7 +261,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: native-mobile-ios-${{ inputs.mode == 'only' && 'only' || 'full' }}-${{ github.run_id }}
+          name: native-mobile-ios-${{ inputs.mode == 'only' && 'only' || 'full' }}-${{ matrix.projection }}-${{ github.run_id }}
           path: |
             mobile-ios-native-corpus*.log
             mobile-ios-diagnostics/mobile-ios-route-*-brain.json
