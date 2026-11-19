@@ -174,7 +174,7 @@ global_hls = cfg["playback_integrity_policy"]["hls_runtime_options"]
 assert global_hls["inspect_master_facts"] is True, global_hls
 assert global_hls["drop_unprobed_hls_after_budget"] is True, global_hls
 assert int(global_hls["native_probe_max_rows"]) == 8, global_hls
-assert "variant-coherence-v18" in generated({"inspect_master_facts": True}), "variant-coherent HLS revision missing"
+assert "variant-coherence-v19-core-proof-handoff" in generated({"inspect_master_facts": True}), "variant-coherent HLS revision missing"
 play = providers["playimdb"]["core_options"]["hls_runtime_integrity"]
 assert play["probe_all_urls"] is True and play["fail_closed_unknown"] is True, play
 
