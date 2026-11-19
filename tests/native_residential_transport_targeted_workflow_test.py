@@ -141,6 +141,11 @@ assert "for attempt in 1 2 3 4 5" not in workflow
 helper = (ROOT / "scripts/prepare_native_candidate_remat.py").read_text(encoding="utf-8")
 for needle in (
     "NIAKVIO_PROVIDER_NATIVE_PLAYER_HEDGE_V27",
+    "NIAKVIO_HLS_TS_WRAPPED_AAC_RENDITION_V20",
+    "NIAKVIO_PROVIDER_NATIVE_FETCH_CAPABILITY_GATE_V28",
+    "requiredCoreMarker",
+    "unsupported source-owned native candidate marker",
+    "candidate did not materialize required source-owned Core marker",
     "candidateJsSha256",
     "publishedBaselineJsSha256",
     "officialTvTestAssetByteMatched",
@@ -154,6 +159,11 @@ for needle in (
 ):
     assert needle in helper, needle
 assert "candidate_rematerialize:" in workflow
+assert "candidate_required_marker:" in workflow
+assert "candidateRequiredMarker" in workflow
+assert "candidate marker without isolated candidate materialization" in workflow
+assert workflow.count('--required-marker "$NIAKVIO_CANDIDATE_REQUIRED_MARKER"') == 2
+assert workflow.count('NIAKVIO_CANDIDATE_REQUIRED_MARKER: ${{ matrix.candidateRequiredMarker }}') == 2
 assert "candidateRematerialize" in workflow
 assert "candidate native replay requires TV, one active provider and an exact fixture" in workflow
 assert "matrix.candidateRematerialize == true" in workflow
