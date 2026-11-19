@@ -60,6 +60,7 @@ jobs:
           set -euo pipefail
           python -m py_compile scripts/run_provider_retest.py scripts/render_provider_census_status.py scripts/merge_waf_census_transport.py
           python tests/provider_retest_scope_test.py
+          python tests/provider_retest_brain_evidence_test.py
           python tests/provider_census_status_markdown_test.py
           python tests/waf_census_transport_merge_test.py
           python tests/provider_census_waf_proof_monotonicity_test.py
@@ -106,6 +107,7 @@ jobs:
           name: provider-retest-${{ github.run_id }}
           path: |
             automation/provider-retest-latest.json
+            automation/provider-retest-brain-evidence-latest.json
             automation/provider-retest-targets-latest.json
             automation/provider-census-status.json
             automation/provider-census-proof-history.json
@@ -129,6 +131,7 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add automation/provider-retest-brain-evidence-latest.json
           git add PROVIDER_CENSUS_STATUS.md             automation/provider-census-status.json             automation/provider-census-proof-history.json             automation/provider-repair-batch-plan-latest.json             automation/provider-retest-latest.json             automation/provider-retest-targets-latest.json
           if git diff --cached --quiet; then
             echo "Retest evidence already current"
