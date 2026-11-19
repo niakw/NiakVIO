@@ -147,6 +147,10 @@ def reader_source(source: str, client: str, expected_duration_minutes: int | flo
         client=client,
         expected_duration_minutes=expected_duration_minutes,
         max_player_probes=probes,
+        compare_engines=(
+            client == "mobile"
+            and os.environ.get("NIAKVIO_NATIVE_COMPARE_ENGINES", "0").strip() == "1"
+        ),
     )
     output = reader_source_finalizer.finalize_source(output, client)
     if scope != "all":

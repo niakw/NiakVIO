@@ -215,6 +215,14 @@ jobs:
           print(f"FIELD_NATIVE_TARGET_SCOPE provider={actual} providers=1")
           PY
 
+      - name: Enable targeted Mobile same-source engine differential
+        if: ${{ matrix.device == 'mobile' && matrix.provider != 'declared-type' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "NIAKVIO_NATIVE_COMPARE_ENGINES=1" >> "$GITHUB_ENV"
+          echo "FIELD_NATIVE_ENGINE_COMPARE_MODE enabled=true client=mobile provider=${{ matrix.provider }} authority=diagnostic-post-auto"
+
       - name: Require configured residential exit
         if: ${{ matrix.residential == true }}
         shell: bash

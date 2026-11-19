@@ -249,6 +249,7 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
         headers: Map<String, String>?,
         streamType: String?,
         expectedDurationMinutes: Int,
+        forcedEngine: AndroidPlaybackEngine? = null,
     ): NativePlayerProbe = synchronized(niakvioPlayerProbeLock) {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val context = instrumentation.targetContext
@@ -294,7 +295,7 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
                         initialPositionMs = 0L,
                         initialPositionRequestKey = "niakvio-native-reader",
                         resizeMode = PlayerResizeMode.Fit,
-                        playbackEngine = null,
+                        playbackEngine = forcedEngine,
                         useNativeController = true,
                         onInitialPositionHandled = { _, _ -> },
                         onControllerReady = { controller -> controllerRef.set(controller) },
@@ -403,6 +404,22 @@ OLD_ANDROID_PROBE_BLOCK = '''                rows.firstOrNull()?.let { row ->
                 }
 '''
 
+
+MOBILE_ENGINE_COMPARE_BLOCK = '''                    // Targeted diagnostic only: after the normal production/Auto
+                    // attempt, replay the exact same row through each official Android
+                    // engine. This never replaces acceptance and remains non-authoritative
+                    // for short-lived/single-use URLs consumed by the first playback.
+                    val exoReader = probeNativePlayer(
+                        row.url, row.headers, row.type, __EXPECTED_MINUTES__,
+                        AndroidPlaybackEngine.ExoPlayer,
+                    )
+                    val libmpvReader = probeNativePlayer(
+                        row.url, row.headers, row.type, __EXPECTED_MINUTES__,
+                        AndroidPlaybackEngine.Libmpv,
+                    )
+                    emit("FIELD_NATIVE_ENGINE_COMPARE client=mobile fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index same_source=true comparison_order=post_auto exo_state=${exoReader.state} exo_engine=${exoReader.engine} exo_video_width=${exoReader.videoWidth} exo_video_height=${exoReader.videoHeight} exo_audio_track_count=${exoReader.audioTrackCount} exo_audio_track_languages64=${b64(exoReader.audioTrackLanguages)} exo_subtitle_track_count=${exoReader.subtitleTrackCount} exo_subtitle_track_languages64=${b64(exoReader.subtitleTrackLanguages)} libmpv_state=${libmpvReader.state} libmpv_engine=${libmpvReader.engine} libmpv_video_width=${libmpvReader.videoWidth} libmpv_video_height=${libmpvReader.videoHeight} libmpv_audio_track_count=${libmpvReader.audioTrackCount} libmpv_audio_track_languages64=${b64(libmpvReader.audioTrackLanguages)} libmpv_subtitle_track_count=${libmpvReader.subtitleTrackCount} libmpv_subtitle_track_languages64=${b64(libmpvReader.subtitleTrackLanguages)}")
+'''
+
 NEW_ANDROID_PROBE_BLOCK = '''                rows.take(__MAX_PROBES__).forEachIndexed { index, row ->
                     // Human UX contract: Nuvio's production player is the first
                     // consumer. A diagnostic GET before playback can consume a
@@ -410,7 +427,7 @@ NEW_ANDROID_PROBE_BLOCK = '''                rows.take(__MAX_PROBES__).forEachIn
                     emit("FIELD_NATIVE_PLAYER_BEGIN client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index entry=nuvio-production-player")
                     val reader = probeNativePlayer(row.url, row.headers, row.type, __EXPECTED_MINUTES__)
                     emit("FIELD_NATIVE_PLAYER client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index state=${reader.state} engine=${reader.engine} advertised_quality64=${b64(row.quality)} http_status=${reader.httpStatus} failure_stage=${reader.failureStage} duration_seconds=${reader.durationSeconds ?: 0.0} video_width=${reader.videoWidth} video_height=${reader.videoHeight} host64=${b64(reader.host)} error_class64=${b64(reader.errorClass)} error_code64=${b64(reader.errorCode)} exception_chain64=${b64(reader.exceptionChain)} response_header_names64=${b64(reader.responseHeaderNames)} load_bytes=${reader.loadBytes} load_duration_ms=${reader.loadDurationMs} media_data_type=${reader.mediaDataType} track_type=${reader.trackType} audio_track_count=${reader.audioTrackCount} audio_track_languages64=${b64(reader.audioTrackLanguages)} subtitle_track_count=${reader.subtitleTrackCount} subtitle_track_languages64=${b64(reader.subtitleTrackLanguages)} subtitle_track_labels64=${b64(reader.subtitleTrackLabels)}")
-                    val transport = probeTransport(row.url, row.headers)
+__ENGINE_COMPARE_BLOCK__                    val transport = probeTransport(row.url, row.headers)
                     emit("FIELD_NATIVE_TRANSPORT client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index state=${transport.state} kind=${transport.kind} status=${transport.status} content_type64=${b64(transport.contentType)} extm3u=${transport.extm3u} audio_track_count=${transport.audioTrackCount} audio_track_languages64=${b64(transport.audioTrackLanguages)} subtitle_track_count=${transport.subtitleTrackCount} subtitle_track_languages64=${b64(transport.subtitleTrackLanguages)} audio_variant_matrix64=${b64(transport.audioVariantMatrix)} subtitle_variant_matrix64=${b64(transport.subtitleVariantMatrix)} variant_heights64=${b64(transport.variantHeights)} duration_seconds=${transport.durationSeconds ?: 0.0} host64=${b64(transport.host)} media_hint64=${b64(transport.mediaHint)}")
                 }
 '''
@@ -422,6 +439,7 @@ def augment_android_test(
     client: str,
     expected_duration_minutes: int | float | None = None,
     max_player_probes: int = 1,
+    compare_engines: bool = False,
 ) -> str:
     if client not in {"mobile", "tv"}:
         raise ValueError(f"unsupported Android client: {client}")
@@ -440,10 +458,12 @@ def augment_android_test(
     old = OLD_ANDROID_PROBE_BLOCK.replace("__CLIENT__", client)
     if source.count(old) != 1:
         raise ValueError(f"transport probe anchor missing for {client}: count={source.count(old)}")
+    engine_compare = MOBILE_ENGINE_COMPARE_BLOCK if client == "mobile" and compare_engines else ""
     new = (
         NEW_ANDROID_PROBE_BLOCK.replace("__CLIENT__", client)
         .replace("__MAX_PROBES__", str(max_player_probes))
         .replace("__EXPECTED_MINUTES__", str(expected))
+        .replace("__ENGINE_COMPARE_BLOCK__", engine_compare)
     )
     return source.replace(old, new, 1)
 

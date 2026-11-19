@@ -348,6 +348,7 @@ def prepare_mobile(workspace: Path, fixture: dict, provider: str | None, player_
         client="mobile",
         expected_duration_minutes=fixture.get("expectedDurationMinutes"),
         max_player_probes=player_probes,
+        compare_engines=os.environ.get("NIAKVIO_NATIVE_COMPARE_ENGINES", "0").strip() == "1",
     )
     target = mobile / "composeApp/src/androidDeviceTest/kotlin/com/nuvio/app/features/plugins/NiakvioNativeCorpusMobileTest.kt"
     target.parent.mkdir(parents=True, exist_ok=True)

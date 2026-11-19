@@ -18,6 +18,9 @@ required = (
     'sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false',
     "FIELD_NATIVE_RESIDENTIAL_EXIT active=true",
     "native-target-provider-scope.json",
+    "Enable targeted Mobile same-source engine differential",
+    "NIAKVIO_NATIVE_COMPARE_ENGINES=1",
+    "FIELD_NATIVE_ENGINE_COMPARE_MODE enabled=true",
     "native_manifest_projection import active_provider_manifest",
     '"manifest": "manifest.json"',
     '"manifest": "vf/manifest.json"',
@@ -47,6 +50,7 @@ assert exit_node < desktop_runtime < mobile_runtime < tv_runtime
 
 assert "continue-on-error: true" not in workflow[connect:exit_node], "native residential connection must fail closed"
 assert "matrix.residential == true" in workflow
+assert "matrix.device == 'mobile' && matrix.provider != 'declared-type'" in workflow
 assert "manifest-hub46.json" not in workflow
 assert "native-hub46/manifest.json" not in workflow
 assert workflow.count('--manifest "$NIAKVIO_TARGET_MANIFEST"') == 3

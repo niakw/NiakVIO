@@ -70,9 +70,20 @@ assert reader_call < transport_call
 
 mobile_generated = mod.augment_android_test(source("mobile"), client="mobile", expected_duration_minutes=137, max_player_probes=2)
 mobile = finalizer.finalize_source(mobile_generated, "mobile")
+mobile_compare_generated = mod.augment_android_test(
+    source("mobile"),
+    client="mobile",
+    expected_duration_minutes=137,
+    max_player_probes=1,
+    compare_engines=True,
+)
+mobile_compare = finalizer.finalize_source(mobile_compare_generated, "mobile")
 assert "com.nuvio.app.MainActivity" in mobile
 assert "PlatformPlayerSurface" in mobile
 assert "nuvio-mobile-production" in mobile
+assert "forcedEngine: AndroidPlaybackEngine? = null" in mobile
+assert "playbackEngine = forcedEngine" in mobile
+assert "FIELD_NATIVE_ENGINE_COMPARE" not in mobile
 assert "rows.take(2)" in mobile
 assert "probeNativePlayer(row.url, row.headers, row.type, 137)" in mobile
 assert "ExoPlayer.Builder" not in mobile
@@ -104,6 +115,17 @@ assert "audio_track_languages64=${b64(transport.audioTrackLanguages)}" in mobile
 assert "FIELD_NATIVE_PLAYER_ENTRY client=mobile" in mobile
 assert "FIELD_NATIVE_PLAYER_BEGIN client=mobile" not in mobile
 assert mobile.index("val reader = probeNativePlayer(row.url, row.headers, row.type, 137)") < mobile.index("val transport = probeTransport(row.url, row.headers)")
+assert "FIELD_NATIVE_ENGINE_COMPARE client=mobile" in mobile_compare
+assert "AndroidPlaybackEngine.ExoPlayer" in mobile_compare
+assert "AndroidPlaybackEngine.Libmpv" in mobile_compare
+assert "same_source=true" in mobile_compare
+assert "comparison_order=post_auto" in mobile_compare
+auto_call = mobile_compare.index("val reader = probeNativePlayer(row.url, row.headers, row.type, 137)")
+exo_call = mobile_compare.index("val exoReader = probeNativePlayer(")
+libmpv_call = mobile_compare.index("val libmpvReader = probeNativePlayer(")
+compare_emit = mobile_compare.index("FIELD_NATIVE_ENGINE_COMPARE client=mobile")
+compare_transport = mobile_compare.index("val transport = probeTransport(row.url, row.headers)")
+assert auto_call < exo_call < libmpv_call < compare_emit < compare_transport
 
 
 def complete_reach_evidence(lines: list[str]) -> list[str]:

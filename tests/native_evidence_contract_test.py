@@ -164,6 +164,11 @@ for required in (
     "PlatformPlayerSurface",
     "nuvio-tv-production",
     "nuvio-mobile-production",
+    "forcedEngine: AndroidPlaybackEngine? = null",
+    "playbackEngine = forcedEngine",
+    "FIELD_NATIVE_ENGINE_COMPARE client=mobile",
+    "AndroidPlaybackEngine.ExoPlayer",
+    "AndroidPlaybackEngine.Libmpv",
 ):
     assert required in android_player, required
 for forbidden in (

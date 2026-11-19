@@ -220,6 +220,7 @@ def main() -> int:
             client="mobile",
             expected_duration_minutes=fixture.get("expectedDurationMinutes"),
             max_player_probes=probes,
+            compare_engines=os.environ.get("NIAKVIO_NATIVE_COMPARE_ENGINES", "0").strip() == "1",
         )
         source = reader_source_finalizer.finalize_source(source, "mobile")
     else:
