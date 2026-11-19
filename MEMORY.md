@@ -1,3 +1,10 @@
+## 2026-11-19 — WAF helper build and residential egress proof failures isolated
+
+- Real replay on source `7ee068998`: WAF run `44453924052` failed before any network probe because Maven attempted unresolved default `maven-resources-plugin:3.4.0`. The helper POM now pins resolvable `3.3.1` (`f63a09ea`) with a regression assertion (`87980cb2`).
+- Native run `44453924161` no longer hung in residential attestation, proving the wall-clock bounds work, but all six jobs failed before official client execution: macOS Desktop could not establish baseline public IP; Linux Android selected Tailscale successfully but could not establish post-exit public IP. These are harness/egress-proof failures, not provider failures.
+- Public-IP proof now tries bounded independent endpoints in order and adds direct-IP Cloudflare trace (`https://1.1.1.1/cdn-cgi/trace`) so DNS failure does not erase route evidence. It accepts the first syntactically valid IPv4 instead of requiring separate services to return an identical address, because GitHub runner NAT can rotate between requests. Route authority remains fail-closed: active Tailscale ExitNodeStatus plus changed pre/post public IPv4 are still mandatory. Tests cover raw-IP and Cloudflare `ip=` parsing and endpoint fallback (`1fc38216`, `29afa166`).
+- No provider/network success is claimed from these changes. A fresh WAF and strict native-client replay is required.
+
 ## 2026-11-19 — Native client qualification now requires verified production playback
 
 - Audited the native smoke gate and found two proof weaknesses: a production-player error counted as a pass, while Mobile can expose the actual selected engine name (ExoPlayer/libmpv) and therefore evade suffix-only production detection.
