@@ -18,6 +18,10 @@ assert gate.provider_status({"movie": "positive", "tv": "catalog_miss"}) == "RES
 assert gate.provider_status({"movie": "catalog_miss", "tv": "catalog_miss"}) == "RESAMPLE"
 assert gate.provider_status({"movie": "technical_error", "tv": "catalog_miss"}) == "ZERO"
 assert gate.provider_status({"movie": "technical_error", "tv": "technical_error"}) == "ZERO"
+assert gate.provider_status({"movie": "unobserved"}) == "INCOMPLETE"
+assert gate.provider_status({"movie": "unobserved", "tv": "catalog_miss"}) == "INCOMPLETE"
+assert gate.provider_status({"movie": "positive", "tv": "unobserved"}) == "INCOMPLETE"
+assert gate.provider_status({}) == "INCOMPLETE"
 
 # A later positive sample proves the lane and wins over an earlier clean miss or
 # transient technical error for capability classification.
