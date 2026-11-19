@@ -428,7 +428,7 @@ Les Labs consomment les clients officiels tels quels. Une erreur upstream de com
 
 <br>
 
-L’acceptation native dérive son dénominateur provider de `scripts/current_provider_scope.py:projection_active_provider_ids` : l’union exécutable active **Global + France-only**. Les lignes disabled-lifecycle et bulk-pending restent visibles comme état de maintenance/staging mais ne sont pas exécutées par les cinq Labs. `automation/evidence/hub-lab-matrix-46.json` reste une preuve historique ; `native-hub46/manifest.json` conserve son ancien nom de chemin mais est reconstruit comme transport immuable de l’union courante.
+L’acceptation native dérive son dénominateur provider de `scripts/current_provider_scope.py:projection_active_provider_ids` : l’union exécutable active **Global + France-only**. Les lignes disabled-lifecycle et bulk-pending restent visibles comme état de maintenance/staging mais ne sont pas exécutées par les cinq Labs. `automation/evidence/hub-lab-matrix-46.json` reste une preuve historique. Les Labs natifs exécutent directement les projections de production réelles : `manifest.json` (Global) et `vf/manifest.json` (France). Les variantes `no-anime` restent des sous-ensembles fonctionnels publiés et sont validées sans doubler les coûteuses exécutions appareil.
 
 Le corpus Lab ordinaire est adaptatif. `.github/triggers/rotating-popular-corpus.json` possède trois réserves globales récentes — **movie, TV et anime**. Une campagne native démarre avec **1 film + 1 épisode TV + 1 épisode anime**. Un provider/lane n’avance qu’après un résultat propre `0 streams`. Une preuve positive arrête la rotation ; une erreur runtime/load/timeout/transport/player/identité s’arrête et reste visible.
 
