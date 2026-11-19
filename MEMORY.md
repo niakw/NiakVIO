@@ -205,3 +205,9 @@
 - Explicit WAF cohorts previously forced WAF_ATTEMPTS=1 even though the ordinary-browser probe supports and tests profile reuse across attempts. A first navigation landing on a normal anti-bot interstitial could therefore be persisted as a targeted challenge without observing whether the same ordinary session reaches content on its second load.
 - Targeted cohorts now use two attempts, reusing the same ordinary browser profile. This is not a challenge solver: there is still no CAPTCHA/Turnstile interaction, clearance-cookie fabrication/export, stealth patching or body/cookie persistence. It only distinguishes first-load challenge from same-session persistence.
 - A fresh AnimeOnsen/Allwish/Sekai qualification is requested on the current transport/client matrix. Browser/JVM/libcurl/residential reachability remains transport evidence only and cannot grant provider execution, terminal stream or decoded-playback success.
+
+
+### 2026-11-19 — Native HLS v18 contract aligned across focused gates
+- CORE.HLS_RUNTIME_INTEGRITY.V1 already publishes `variant-coherence-v18`, but `native_hls_integrity_budget_test.py`, `native_hls_short_vod_regression_test.py` and the legacy `upgrade_hls_master_facts_v1.py` verifier still required the superseded `native-audio-terminal-proof-v17` marker.
+- The stale assertions are aligned to v18 without weakening segment validation, native probe budgets, short-VOD rejection, per-variant audio/subtitle topology, or terminal media proof.
+- This addresses the Quick Gate failure observed in run 44445635484. Real client/player validation remains separate and is not inferred from this contract correction.
