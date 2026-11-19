@@ -264,8 +264,10 @@ def merge(previous: dict[str, Any], reports: list[dict[str, Any]], *,
             "tvPromiseControl": record.get("tvPromiseControl")
                 if record.get("tvPromiseControl") in TV_PROMISE_STATUSES else "not_observed",
             "nativeHardTimeoutObserved": record.get("nativeHardTimeoutObserved") is True,
-            "nativeHardTimeoutMs": safe_count(record.get("nativeHardTimeoutMs"))
-                if record.get("nativeHardTimeoutObserved") is True else 0,
+            "nativeHardTimeoutMs": min(180000, max(0, record.get("nativeHardTimeoutMs")))
+                if record.get("nativeHardTimeoutObserved") is True
+                and type(record.get("nativeHardTimeoutMs")) is int
+                and record.get("nativeHardTimeoutMs") >= 1000 else 0,
             "quickJsPhases": [x for x in (record.get("quickJsPhases") or [])
                               if x in QUICKJS_PHASES][:4],
             "quickJsErrors": [x for x in (record.get("quickJsErrors") or [])
