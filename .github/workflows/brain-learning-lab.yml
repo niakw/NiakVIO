@@ -574,6 +574,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p brain-sandbox/health-output
+          python tests/brain_learning_disabled_catalogue_test.py
           if [ "$FAST_HANDOFF" = "true" ] && [ -n "${FAST_HANDOFF_PROVIDER_FILTER:-}" ]; then
             # The targeted builder owns cleanup of its stage. Keep all targeted
             # stage work inside the wall-clock bound; an unbounded rm -rf here
