@@ -235,6 +235,12 @@ def main() -> int:
             "--run", run_id,
             "--output", "automation/provider-retest-brain-evidence-latest.json",
         )
+        run(
+            sys.executable,
+            "scripts/merge_retest_brain_evidence_history.py",
+            "--latest", "automation/provider-retest-brain-evidence-latest.json",
+            "--history", "automation/provider-retest-brain-evidence-history.json",
+        )
 
     refreshed = load(STATUS)
     by_provider = {
