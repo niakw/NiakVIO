@@ -21,6 +21,7 @@ PLUGIN_ENTRYPOINT = re.compile(
     r"    @InstallIn\(SingletonComponent::class\)\n"
     r"    interface NiakvioPluginManagerEntryPoint \{\n"
     r"        fun pluginManager\(\): PluginManager\n"
+    r"        fun pluginRuntime\(\): com\.nuvio\.tv\.core\.plugin\.PluginRuntime\n"
     r"    \}\n",
     re.MULTILINE,
 )
