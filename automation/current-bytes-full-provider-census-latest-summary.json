@@ -2,7 +2,7 @@
   "acceptanceBasis": "aggregate-operational-state-including-carried-evidence",
   "acceptanceReached": false,
   "acceptanceTarget": 84,
-  "acceptedPlayableProviderCount": 7,
+  "acceptedPlayableProviderCount": 8,
   "acceptedPlayableProviders": [
     "cinematheque-de-bretagne",
     "kurage",
@@ -10,6 +10,7 @@
     "neko-sama",
     "papadustream",
     "purstream",
+    "topcartoons",
     "zone-streaming"
   ],
   "brainQueue": [
@@ -88,12 +89,11 @@
   ],
   "debugStageCounts": {
     "provider_network_exception": 10,
-    "provider_network_http_error": 43,
-    "provider_network_zero_result": 62,
-    "provider_returned_streams": 10,
-    "provider_returned_wrong_content": 1,
-    "provider_waf_challenge": 54,
-    "timeout": 19
+    "provider_network_http_error": 42,
+    "provider_network_zero_result": 67,
+    "provider_returned_streams": 11,
+    "provider_waf_challenge": 53,
+    "timeout": 16
   },
   "debugStageProviders": {
     "provider_network_exception": [
@@ -120,12 +120,10 @@
       "playimdb",
       "rivestream-app",
       "rivestream-ru",
-      "sekai",
       "showbox",
       "shuttletv",
       "vidfast",
       "voiranime-homes",
-      "voiranime-rip",
       "watchott",
       "wookafr",
       "youtitou"
@@ -134,13 +132,13 @@
       "4khdhub",
       "allanime",
       "allwish",
-      "anidb",
       "animevost-fr",
       "animevostfr",
       "boredflix",
       "cinemabz",
       "fawesome",
       "flixer",
+      "frembed",
       "frenchstream",
       "fsharetv",
       "hexa",
@@ -157,9 +155,12 @@
       "playimdb",
       "primewire",
       "pstream",
+      "sekai",
+      "skstream",
       "topcartoons",
       "uhdmovies",
       "vidlink",
+      "voiranime-rip",
       "watchott",
       "zone-streaming"
     ],
@@ -170,10 +171,8 @@
       "neko-sama",
       "papadustream",
       "purstream",
+      "topcartoons",
       "zone-streaming"
-    ],
-    "provider_returned_wrong_content": [
-      "topcartoons"
     ],
     "provider_waf_challenge": [
       "1jour1film0626",
@@ -198,7 +197,6 @@
       "movish",
       "movy",
       "rarefilmm",
-      "reanime-to",
       "skstream",
       "stigstream",
       "voirserie",
@@ -208,17 +206,16 @@
       "zone-telechargement"
     ],
     "timeout": [
+      "anidb",
       "anime-sama",
       "anisama",
       "flixhq",
-      "frembed",
       "french-manga",
       "hianime",
-      "movish",
       "movix-fr",
       "nakios",
+      "reanime-to",
       "sadisflix",
-      "showbox",
       "vuflix",
       "zone-streaming"
     ]
@@ -254,16 +251,16 @@
     "streamzo"
   ],
   "providerCount": 111,
-  "runId": 44609268223,
+  "runId": 44630718083,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 21,
+    "CHAIN REACHED": 22,
     "DISABLED": 37,
     "FULL OK": 5,
     "HARNESS MISMATCH": 5,
-    "HARNESS/ENV BLOCKED": 15,
+    "HARNESS/ENV BLOCKED": 14,
     "NO PROOF": 9,
     "PARTIAL OK": 1,
     "PROOF REFRESH REQUIRED": 5,
@@ -271,11 +268,11 @@
     "REGRESSION PROVIDER": 4
   },
   "testedProviderCount": 103,
-  "triggerSha": "0251d7dae8dd4b2e4d51ca2f2cb52862f64c09a9",
-  "verifiedProviderCount": 0,
-  "verifiedProviders": [],
-  "wrongContentProviderCount": 1,
-  "wrongContentProviders": [
-    "topcartoons"
-  ]
+  "triggerSha": "e49b118064eaa30f89b99bd08f6eeeb1168e2102",
+  "verifiedProviderCount": 1,
+  "verifiedProviders": [
+    "kurage"
+  ],
+  "wrongContentProviderCount": 0,
+  "wrongContentProviders": []
 }
