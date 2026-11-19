@@ -12,10 +12,48 @@ import ipaddress
 import json
 import os
 import subprocess
+import time
 import urllib.request
 from pathlib import Path
 
 ENDPOINTS = ("https://checkip.amazonaws.com/", "https://ipv4.icanhazip.com/")
+TAILSCALE_SET_TIMEOUT_SECONDS = 12
+TAILSCALE_CLEAR_TIMEOUT_SECONDS = 8
+
+
+def _set_exit_route(*args: str, timeout: int) -> bool:
+    try:
+        proc = subprocess.run(
+            ["sudo", "tailscale", "set", *args],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=timeout,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        return False
+    return proc.returncode == 0
+
+
+def select_exit_node(exit_node: str, attempts: int = 3) -> None:
+    node = str(exit_node or "").strip()
+    if not node:
+        raise RuntimeError("exit node is not configured")
+    for attempt in range(1, max(1, attempts) + 1):
+        if _set_exit_route(
+            f"--exit-node={node}",
+            "--exit-node-allow-lan-access=false",
+            timeout=TAILSCALE_SET_TIMEOUT_SECONDS,
+        ):
+            return
+        if attempt < attempts:
+            time.sleep(min(attempt * 2, 4))
+    raise RuntimeError("Tailscale exit route selection unavailable")
+
+
+def clear_exit_node() -> None:
+    if not _set_exit_route("--exit-node=", timeout=TAILSCALE_CLEAR_TIMEOUT_SECONDS):
+        raise RuntimeError("Tailscale exit route cleanup unavailable")
 
 
 def observed_public_ipv4() -> str:
@@ -65,20 +103,32 @@ def attest(before: str, after: str, status: dict) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("phase", choices=("baseline", "verify"))
-    parser.add_argument("--state", type=Path, required=True)
+    parser.add_argument("phase", choices=("baseline", "select", "verify", "clear"))
+    parser.add_argument("--state", type=Path)
+    parser.add_argument("--exit-node", default="")
+    parser.add_argument("--attempts", type=int, default=3)
     args = parser.parse_args()
     try:
         if args.phase == "baseline":
+            if args.state is None:
+                raise RuntimeError("baseline state path missing")
             current = observed_public_ipv4()
             fd = os.open(args.state, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
             with os.fdopen(fd, "w", encoding="ascii") as handle:
                 handle.write(current + "\n")
             os.chmod(args.state, 0o600)
             print("FIELD_WAF_EXIT_EGRESS phase=baseline observed=true")
-        else:
+        elif args.phase == "select":
+            select_exit_node(args.exit_node, attempts=max(1, min(args.attempts, 5)))
+            print("FIELD_WAF_EXIT_SELECTION selected=true bounded=true")
+        elif args.phase == "verify":
+            if args.state is None:
+                raise RuntimeError("verify state path missing")
             attest(args.state.read_text(encoding="ascii").strip(), observed_public_ipv4(), exit_status())
             print("FIELD_WAF_EXIT_EGRESS phase=residential changed=true selected=true")
+        else:
+            clear_exit_node()
+            print("FIELD_WAF_EXIT_SELECTION cleared=true bounded=true")
     except (RuntimeError, OSError, ValueError, subprocess.TimeoutExpired):
         print("FIELD_WAF_EXIT_EGRESS attested=false reason=verification-unavailable")
         return 1

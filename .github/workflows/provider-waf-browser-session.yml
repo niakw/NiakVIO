@@ -212,17 +212,9 @@ jobs:
           set -euo pipefail
           proof_path="$(mktemp /tmp/niakvio-exit-proof.XXXXXX)"
           route_verified=0
-          trap 'rm -f "$proof_path"; if [ "$route_verified" != "1" ]; then sudo tailscale set --exit-node= >/dev/null 2>&1 || true; fi' EXIT
+          trap 'rm -f "$proof_path"; if [ "$route_verified" != "1" ]; then python scripts/verify_waf_exit_route.py clear >/dev/null 2>&1 || true; fi' EXIT
           python scripts/verify_waf_exit_route.py baseline --state "$proof_path"
-          selected=0
-          for attempt in 1 2 3 4 5; do
-            if sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false >/dev/null 2>&1; then
-              selected=1
-              break
-            fi
-            sleep "$((attempt * 2))"
-          done
-          if [ "$selected" -ne 1 ]; then
+          if ! python scripts/verify_waf_exit_route.py select --exit-node "$TS_EXIT_NODE" --attempts 3; then
             echo "Private exit node could not be selected; verify exit-node advertisement/approval and tag:niakvio-ci -> autogroup:internet policy." >&2
             exit 1
           fi
@@ -320,7 +312,7 @@ jobs:
       - name: Clear private exit-node routing
         if: ${{ always() && env.NIAKVIO_RESIDENTIAL_EXIT_ACTIVE == '1' }}
         shell: bash
-        run: sudo tailscale set --exit-node= || true
+        run: python scripts/verify_waf_exit_route.py clear || true
 
       - name: Stamp current WAF evidence with executed provider JS hashes
         shell: bash

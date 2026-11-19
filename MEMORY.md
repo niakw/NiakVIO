@@ -259,3 +259,10 @@
 - The targeted workflow now performs all toolchain, official-client checkout, Gradle/native bridge and AVD bootstrap on the normal GitHub runner network; it connects Tailscale only immediately before residential exit selection/independent egress attestation and official client execution.
 - This is a harness-ordering fix, not a DNS bypass: the actual native runtime remains behind the attested residential exit and no Nuvio/player/provider/OS network policy is relaxed. Blocker `residential-macos-magicdns-bootstrap-order` is persisted in native human-UX policy v9 so this ordering is not regressed.
 - The two Desktop results from run `44448665900` remain pre-runtime failures and are not valid provider/WAF/player evidence.
+
+
+### 2026-11-19 — Residential exit selection/cleanup is now timeout-bounded in WAF and native lanes
+- The real-client v6 Mobile jobs spent an unexpectedly long interval inside residential exit attestation. Independent public-IP probes were already bounded, but the raw `sudo tailscale set --exit-node=...` command itself had no timeout and could suspend a job before any provider/client evidence.
+- `verify_waf_exit_route.py` now owns bounded exit selection (12 s per attempt, max 3 in current workflows) and bounded cleanup (8 s), while retaining the existing independent pre/post public IPv4 comparison plus Tailscale `ExitNodeStatus` verification.
+- Both `NATIVE - Device Corpus Tests` and `Provider WAF Browser Session Diagnostics` use the same bounded selector/cleanup. Failure remains fail-closed: no attested route means no residential/native success claim.
+- The native workflow contract test was also corrected to the new intended order `toolchain/client/AVD bootstrap -> Tailscale connect -> exit attestation -> real client`; its obsolete pre-bootstrap-connect assertion was removed.

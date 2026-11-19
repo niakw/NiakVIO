@@ -64,7 +64,7 @@ required=[
     "oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}",
     "audience: ${{ env.TS_AUDIENCE }}",
     "args: --accept-dns=false",
-    'sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false',
+    'scripts/verify_waf_exit_route.py select --exit-node "$TS_EXIT_NODE" --attempts 3',
     "tag:niakvio-ci -> autogroup:internet policy",
     "id: tailscale_connect",
     "continue-on-error: true",
@@ -74,6 +74,7 @@ required=[
     "id: residential_probe",
     "scripts/verify_waf_exit_route.py baseline",
     "scripts/verify_waf_exit_route.py verify",
+    "scripts/verify_waf_exit_route.py clear",
     "failure_reason=exit-egress-unverified",
     "--unavailable-reason \"$reason\"",
     "tailscale-connect-failed",
@@ -93,6 +94,7 @@ required=[
 for needle in required:
     assert needle in wf, f"missing Tailscale WAF contract: {needle}"
 
+assert "for attempt in 1 2 3 4 5" not in wf
 for forbidden in (
     "oauth-secret:",
     "ifconfig.me",

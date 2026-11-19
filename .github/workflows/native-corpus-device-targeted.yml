@@ -423,17 +423,9 @@ jobs:
           set -euo pipefail
           proof_path="$(mktemp /tmp/niakvio-native-exit-proof.XXXXXX)"
           route_verified=0
-          trap 'rm -f "$proof_path"; if [ "$route_verified" != "1" ]; then sudo tailscale set --exit-node= >/dev/null 2>&1 || true; fi' EXIT
+          trap 'rm -f "$proof_path"; if [ "$route_verified" != "1" ]; then python3 niakvio/scripts/verify_waf_exit_route.py clear >/dev/null 2>&1 || true; fi' EXIT
           python3 niakvio/scripts/verify_waf_exit_route.py baseline --state "$proof_path"
-          selected=0
-          for attempt in 1 2 3 4 5; do
-            if sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false >/dev/null 2>&1; then
-              selected=1
-              break
-            fi
-            sleep "$((attempt * 2))"
-          done
-          test "$selected" -eq 1
+          python3 niakvio/scripts/verify_waf_exit_route.py select --exit-node "$TS_EXIT_NODE" --attempts 3
           python3 niakvio/scripts/verify_waf_exit_route.py verify --state "$proof_path"
           route_verified=1
           echo "NIAKVIO_NATIVE_RESIDENTIAL_EXIT_ACTIVE=1" >> "$GITHUB_ENV"
@@ -484,7 +476,7 @@ jobs:
       - name: Clear native residential exit
         if: ${{ always() && env.NIAKVIO_NATIVE_RESIDENTIAL_EXIT_ACTIVE == '1' }}
         shell: bash
-        run: sudo tailscale set --exit-node= || true
+        run: python3 niakvio/scripts/verify_waf_exit_route.py clear || true
 
       - name: Diagnose sanitized targeted native evidence for Brain
         if: always()

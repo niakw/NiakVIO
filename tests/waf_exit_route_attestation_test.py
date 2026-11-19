@@ -2,6 +2,7 @@
 """Offline Egress gate regression: no residential label without changed route."""
 import importlib.util
 from pathlib import Path
+from types import SimpleNamespace
 
 root = Path(__file__).resolve().parents[1]
 script = root / "scripts/verify_waf_exit_route.py"
@@ -24,5 +25,30 @@ for before, after, status in (
     else:
         raise AssertionError("unverified route accepted")
 assert all(x.startswith("https://") for x in mod.ENDPOINTS)
-assert "ProxyHandler({})" in script.read_text(encoding="utf-8")
+source = script.read_text(encoding="utf-8")
+assert "ProxyHandler({})" in source
+assert mod.TAILSCALE_SET_TIMEOUT_SECONDS <= 15
+assert mod.TAILSCALE_CLEAR_TIMEOUT_SECONDS <= 10
+
+calls = []
+original_run = mod.subprocess.run
+original_sleep = mod.time.sleep
+try:
+    def fake_run(args, **kwargs):
+        calls.append((list(args), kwargs.get("timeout")))
+        return SimpleNamespace(returncode=0, stdout="")
+
+    mod.subprocess.run = fake_run
+    mod.time.sleep = lambda _: None
+    mod.select_exit_node("redacted-exit", attempts=1)
+    mod.clear_exit_node()
+finally:
+    mod.subprocess.run = original_run
+    mod.time.sleep = original_sleep
+
+assert calls[0][0][:3] == ["sudo", "tailscale", "set"]
+assert "--exit-node=redacted-exit" in calls[0][0]
+assert calls[0][1] == mod.TAILSCALE_SET_TIMEOUT_SECONDS
+assert calls[1][0][-1] == "--exit-node="
+assert calls[1][1] == mod.TAILSCALE_CLEAR_TIMEOUT_SECONDS
 print("WAF independent egress attestation contract passed")

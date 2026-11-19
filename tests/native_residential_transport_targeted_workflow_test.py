@@ -18,7 +18,7 @@ required = (
     "Select and attest residential exit immediately before native runtime",
     "scripts/verify_waf_exit_route.py baseline",
     "scripts/verify_waf_exit_route.py verify",
-    'sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false',
+    'scripts/verify_waf_exit_route.py select --exit-node "$TS_EXIT_NODE" --attempts 3',
     "FIELD_NATIVE_RESIDENTIAL_EXIT active=true egress_attested=true",
     "FIELD_NATIVE_RESIDENTIAL_DNS tailscale_accept_dns=false resolver_equivalence=unverified",
     "native-target-provider-scope.json",
@@ -56,8 +56,8 @@ tv_snapshot = workflow.index("Create TV AVD snapshot on cache miss")
 desktop_runtime = workflow.index("Execute focused provider in official macOS Desktop runtime")
 mobile_runtime = workflow.index("Execute six works across every provider in isolated Mobile emulator")
 tv_runtime = workflow.index("Execute six works across every provider in isolated Android TV emulator")
-assert connect < prepare < mobile_snapshot < exit_node
-assert connect < prepare < tv_snapshot < exit_node
+assert prepare < mobile_snapshot < connect < exit_node
+assert prepare < tv_snapshot < connect < exit_node
 assert exit_node < desktop_runtime < mobile_runtime < tv_runtime
 
 assert "continue-on-error: true" not in workflow[connect:exit_node], "native residential connection must fail closed"
@@ -97,5 +97,7 @@ upload = workflow.index("Upload sanitized native corpus logs")
 assert setup_jdk < checkout_client < setup_gradle < connect_tailnet < attest_exit < desktop_runtime < clear_exit
 assert clear_exit < brain_diag < upload
 assert workflow.count("Connect native client host to Tailscale") == 1
+assert "verify_waf_exit_route.py clear || true" in workflow
+assert "for attempt in 1 2 3 4 5" not in workflow
 
 print("native targeted residential transport workflow contract passed")
