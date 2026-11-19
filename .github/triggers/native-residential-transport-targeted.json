@@ -1,15 +1,14 @@
 {
   "schemaVersion": 1,
   "requestedAt": "2026-11-19",
-  "sourceSha": "65d5ba20fe4e42a508c2a6c551c86f639957afd4",
-  "device": "all",
+  "sourceSha": "605070688e4ce2b498d4f7181b663f186ae758ba",
+  "device": "mobile",
   "targetProviders": [
-    "animeonsen",
     "sekai"
   ],
   "targetFixture": "jujutsu-kaisen-s01e01",
   "residentialExit": true,
-  "reason": "Run the accepted official Desktop, Mobile and Android TV clients against fresh WAF-ambiguous active providers through independently attested residential egress; Mobile also records same-source Auto -> ExoPlayer -> libmpv evidence.",
-  "requestVersion": 10,
-  "retryCause": "Replay after DNS-resilient residential egress attestation and strict official-client playback qualification (production_surface + ready/ended required)."
+  "reason": "One official NuvioMobile targeted residential diagnostic on current exact provider bytes, with public-only egress attestation and privacy-safe endpoint failure classification before production playback.",
+  "requestVersion": 11,
+  "retryCause": "Separate DNS, TLS, connect and no-public-exit failures in Linux mobile before expanding to Desktop/TV; remain fail-closed if no route proof."
 }
