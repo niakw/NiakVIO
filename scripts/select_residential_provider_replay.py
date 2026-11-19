@@ -18,12 +18,16 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
 from current_provider_scope import projection_active_provider_ids
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = SCRIPT_DIR.parent
 OFFLINE_MODE = "bulk_offline_contract_live_unverified"
 
 ELIGIBLE_STATUSES = {

@@ -10,6 +10,8 @@ spec=importlib.util.spec_from_file_location("select_residential",path)
 assert spec and spec.loader
 mod=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
+assert mod.SCRIPT_DIR == ROOT / "scripts"
+assert str(mod.SCRIPT_DIR) in mod.sys.path
 
 report={
     "residentialExitNodeEvidence":{"available":True},

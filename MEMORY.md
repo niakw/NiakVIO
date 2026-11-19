@@ -1,3 +1,8 @@
+## 2026-11-19 — Residential replay selector import contract fixed
+
+- WAF run 44453550952 proved the new browser/egress contracts but failed before Tailscale because `select_residential_provider_replay.py` imported sibling `current_provider_scope` only under direct-script sys.path semantics. Importlib-based contract tests could not resolve it.
+- The selector now installs its own scripts directory deterministically before the sibling import and derives ROOT from that directory. This is a pipeline/testability fix only; provider bytes and Repair authority are unchanged.
+
 ## 2026-11-19 — Native residential egress attestation hard-bounded
 
 - Targeted native run 44451624563 exposed a harness stall before the official Desktop client: macOS jobs remained in residential exit attestation far beyond the intended subprocess limits. The responsible layer is harness/network attestation, not provider code.
