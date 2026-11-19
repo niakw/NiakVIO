@@ -1,8 +1,56 @@
 {
   "schemaVersion": 3,
-  "runId": "44498512688-retest",
-  "triggerSha": "136f3287d4aa665128a85440fc7094a2e3b274f1",
+  "runId": "44499407680-retest",
+  "triggerSha": "673482ba6a6dee0524ed712a2aa271f342052920",
   "providers": [
+    {
+      "provider": "sadisflix",
+      "status": "REGRESSION PROVIDER",
+      "underlyingStatus": "",
+      "color": "🔴",
+      "declaredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [
+        "movie: The Colony"
+      ],
+      "candidateProof": [],
+      "routeProof": [],
+      "latestLaneVerdicts": [
+        "movie=playable_unverified/provider_returned_streams",
+        "tv=timeout"
+      ],
+      "dominantIssue": "provider_returned_streams, timeout",
+      "searchProgress": [
+        "movie: 2 works tested / 0 retained misses / 1 retained chain hit",
+        "tv: 3 works tested / 0 retained misses / 1 retained chain hit"
+      ],
+      "evidenceDepth": [
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": true,
+      "authorityAction": "KEEP_ROUTE_AUTHORITY",
+      "authorityClass": "hub-or-redirect",
+      "authorityConfidence": "high",
+      "authorityReasons": [
+        "authoritative_route_source",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:REGRESSION PROVIDER"
+      ],
+      "authorityKnown": true,
+      "onboardingRuntimePlanState": "",
+      "action": "re-run retained proof + verify upstream/provider state",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
+      "testedThisRun": true
+    },
     {
       "provider": "french-manga",
       "status": "CANDIDATE OK",
@@ -50,7 +98,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "1jour1film0626",
@@ -3867,55 +3915,6 @@
       "providerArtifactSha256": "1fe4adf6562c1d86d7048de5645fac3176274b0ccd6e3d19c0cf63b63095bd70"
     },
     {
-      "provider": "sadisflix",
-      "status": "REGRESSION PROVIDER",
-      "underlyingStatus": "",
-      "color": "🔴",
-      "declaredLanes": [
-        "movie",
-        "tv"
-      ],
-      "currentVerifiedLanes": [],
-      "historicalProof": [
-        "movie: The Colony"
-      ],
-      "candidateProof": [],
-      "routeProof": [],
-      "latestLaneVerdicts": [
-        "movie=playable_unverified/provider_returned_streams",
-        "tv=timeout"
-      ],
-      "dominantIssue": "provider_returned_streams, timeout",
-      "searchProgress": [
-        "movie: 2 works tested / 0 retained misses / 1 retained chain hit",
-        "tv: 3 works tested / 0 retained misses / 1 retained chain hit"
-      ],
-      "evidenceDepth": [
-        "movie=chain_reached",
-        "tv=chain_reached"
-      ],
-      "harnessTransportClass": "not-applicable",
-      "harnessTransportEvidence": [],
-      "authorityRepairEligible": true,
-      "authorityAction": "KEEP_ROUTE_AUTHORITY",
-      "authorityClass": "hub-or-redirect",
-      "authorityConfidence": "high",
-      "authorityReasons": [
-        "authoritative_route_source",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:REGRESSION PROVIDER"
-      ],
-      "authorityKnown": true,
-      "onboardingRuntimePlanState": "",
-      "action": "re-run retained proof + verify upstream/provider state",
-      "brainCheckRequired": true,
-      "statusRepairEligible": true,
-      "repairEligible": true,
-      "testedThisRun": false,
-      "providerArtifactSha256": "abfd1ce22ebd5e99b3dee1806b96eac2483c02e80c7c4966870aed2c5d46bc26"
-    },
-    {
       "provider": "sekai",
       "status": "DISABLED",
       "underlyingStatus": "DISABLED",
@@ -5712,8 +5711,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "44498512688-retest-transport",
-  "harnessEvidenceSha": "136f3287d4aa665128a85440fc7094a2e3b274f1",
+  "harnessEvidenceRunId": "44499407680-retest-transport",
+  "harnessEvidenceSha": "673482ba6a6dee0524ed712a2aa271f342052920",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
