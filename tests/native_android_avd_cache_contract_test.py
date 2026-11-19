@@ -52,7 +52,18 @@ for suite in (tv_suite, mobile_suite):
     assert 'live_logcat=true' in suite
     assert '> >(tee "$LOG") 2>&1 &' in suite
     assert '> >(tee "$FRONT_LOG") 2>&1 &' in suite
-    assert 'adb logcat -d' not in suite
+    if 'adb logcat -d' in suite:
+        # Live logcat remains the canonical stream; a single bounded
+        # post-fixture dump is permitted only for transient PluginRuntime
+        # console frames that use dynamic Android tags not in the live filter.
+        # Never persist/echo its raw output: it must pass directly to the
+        # privacy-safe enum-only sanitizer before reaching the evidence log.
+        assert suite is tv_suite
+        assert suite.count('adb logcat -d') == 1
+        assert 'timeout --signal=TERM --kill-after=3s 15s adb logcat -d -v brief' in suite
+        assert '| python3 -u "${NIAKVIO}/scripts/sanitize_native_plugin_console.py"' in suite
+        assert '--client tv --provider "$TARGET_PROVIDER" --fixture "$fixture" >> "$LOG"' in suite
+        assert 'raw_content_logged=false' in suite
 
 # TV owns its PluginManager path and therefore has only the declared-provider
 # matrix beyond the production smoke gate. Mobile additionally proves the real
