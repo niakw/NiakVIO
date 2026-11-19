@@ -75,7 +75,11 @@ def _extract_public_ipv4(body: str) -> str:
             candidates.append(line)
     for value in candidates:
         try:
-            return str(ipaddress.IPv4Address(value[:64]))
+            parsed = ipaddress.IPv4Address(value[:64])
+            # A private, loopback, documentation or CGNAT address cannot be
+            # evidence of an independently observable public internet route.
+            if parsed.is_global:
+                return str(parsed)
         except ValueError:
             continue
     raise ValueError("response does not contain a public IPv4")
@@ -91,12 +95,13 @@ def observed_public_ipv4() -> str:
     curl = shutil.which("curl")
     if not curl:
         raise RuntimeError("public IPv4 probe unavailable")
-    for url in ENDPOINTS:
+    for index, url in enumerate(ENDPOINTS, start=1):
         try:
             proc = subprocess.run(
                 [
                     curl,
                     "--ipv4",
+                    "--fail",
                     "--noproxy", "*",
                     "--location",
                     "--max-redirs", "2",
@@ -113,13 +118,27 @@ def observed_public_ipv4() -> str:
                 check=False,
             )
             if proc.returncode != 0:
+                failure = {
+                    6: "dns",
+                    7: "connect",
+                    22: "http",
+                    28: "timeout",
+                    35: "tls",
+                    60: "certificate",
+                }.get(proc.returncode, "transport")
+                print(f"FIELD_WAF_EXIT_ENDPOINT index={index} result={failure}")
                 continue
             try:
-                return _extract_public_ipv4(proc.stdout)
+                public_ip = _extract_public_ipv4(proc.stdout)
             except ValueError:
+                print(f"FIELD_WAF_EXIT_ENDPOINT index={index} result=no_public_ipv4")
                 continue
-        except (OSError, UnicodeError, subprocess.TimeoutExpired):
-            continue
+            print(f"FIELD_WAF_EXIT_ENDPOINT index={index} result=public_ipv4")
+            return public_ip
+        except subprocess.TimeoutExpired:
+            print(f"FIELD_WAF_EXIT_ENDPOINT index={index} result=deadline")
+        except (OSError, UnicodeError):
+            print(f"FIELD_WAF_EXIT_ENDPOINT index={index} result=command_error")
     raise RuntimeError("public IPv4 cannot be independently established")
 
 
@@ -148,8 +167,8 @@ def exit_route_health(status: dict) -> tuple[bool, bool, bool]:
 
 
 def attest(before: str, after: str, status: dict) -> None:
-    ipaddress.IPv4Address(before)
-    ipaddress.IPv4Address(after)
+    if not ipaddress.IPv4Address(before).is_global or not ipaddress.IPv4Address(after).is_global:
+        raise RuntimeError("public egress is not globally routable")
     backend_running, exit_present, exit_online = exit_route_health(status)
     if not backend_running or not exit_present:
         raise RuntimeError("selected Tailscale exit route absent")
