@@ -158,10 +158,10 @@ from finalize_native_tv_test_entrypoint import finalize as finalize_tv_entrypoin
 with tempfile.TemporaryDirectory(prefix="niakvio-tv-hilt-finalize-") as tmp:
     fixture_source = Path(tmp) / "NativeTvTest.kt"
     fixture_source.write_text(
-        "import dagger.hilt.EntryPoint\\n"
-        "import dagger.hilt.InstallIn\\n"
-        "import dagger.hilt.android.EntryPointAccessors\\n"
-        "import dagger.hilt.components.SingletonComponent\\n"
+        "import dagger.hilt.EntryPoint\n"
+        "import dagger.hilt.InstallIn\n"
+        "import dagger.hilt.android.EntryPointAccessors\n"
+        "import dagger.hilt.components.SingletonComponent\n"
         + tv_empty
         + """
     @EntryPoint
