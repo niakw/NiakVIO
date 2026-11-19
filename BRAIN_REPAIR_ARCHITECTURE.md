@@ -1,3 +1,7 @@
+## 2026-11-19 — Stop Fast wave rotation without causal gain
+
+After two completed waves, Fast Brain may continue solely on genuine new sandbox exploration frontier, an accepted durable program, or an executable untried Advisor fingerprint. A changed negative-memory file alone does not justify another expensive copy of the same profile. The bounded halt requires complete round audits; missing audits fail open for investigation rather than suppressing a potentially valid experiment. A halt transfers **visited** unresolved providers to independent Learning while unvisited siblings remain pending Repair. The execution evidence is still source-pinned, non-authoritative until independently decoded playback; this is an efficiency/correctness guard, not a repair or publication shortcut.
+
 ## 2026-11-18 — Quota-independent residential WAF transport and replay byte provenance
 
 NiakVIO's existing WAF diagnostic action already connects GitHub Actions through an explicitly authorized private Tailscale residential exit, avoiding dependence on NiakGH-MacBridge or Desktop Commander remote-call quotas. This is a network-differential oracle only: 200/HTML in Chromium, libcurl or JVM OkHttp is not a usable media stream, and an interactive WAF challenge/timeout cannot be silently marked as an application-provider defect. Before provider mutation, classify `provider_zero_before_provider_network`, provider-owned transport challenge, terminal extraction and media/identity independently. The exit node does not authorize access or solve challenges.

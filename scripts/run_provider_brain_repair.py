@@ -1167,6 +1167,31 @@ def experiment_rotation_decision(
     return "exhausted" if memory_advanced else "stalled"
 
 
+def repeated_wave_no_frontier(
+    *,
+    wave: int,
+    remaining_count: int,
+    accepted_count: int,
+    exploration_progress_count: int,
+    advisor_rotation_pending: bool,
+    observation_complete: bool,
+) -> bool:
+    """Avoid another costly wave when completed causal audits show no gain.
+
+    A new executed Advisor hypothesis may still rotate even with no sandbox
+    progress, and an absent/incomplete repair audit can never authorize this
+    early stop. This does not classify unvisited siblings as Learning debt.
+    """
+    return (
+        observation_complete
+        and wave >= 2
+        and remaining_count > 0
+        and accepted_count == 0
+        and exploration_progress_count == 0
+        and not advisor_rotation_pending
+    )
+
+
 def generic_unadvised_learning_handoff(
     brain_summary: dict[str, Any],
     accepted: list[dict[str, Any]],
@@ -1909,6 +1934,14 @@ def main() -> int:
 
                 processed_providers.update(batch)
                 repair_report = load(output / "repair-report.json", {})
+                round_audit = repair_report.get("rounds") if isinstance(repair_report, dict) else None
+                causal_progress_observed = isinstance(round_audit, list)
+                causal_progress_count = sum(
+                    len(round_row.get("exploration_progress") or [])
+                    for round_row in (round_audit or [])
+                    if isinstance(round_row, dict)
+                    and isinstance(round_row.get("exploration_progress"), list)
+                ) if causal_progress_observed else 0
                 health = load(output / "health-results.json", {})
                 accepted = accepted_rows(repair_report)
                 fixed = fixed_providers(health)
@@ -2003,6 +2036,8 @@ def main() -> int:
                     "providers": batch,
                     "healthConcurrency": batch_concurrency,
                     "acceptedCount": len(accepted),
+                    "causalProgressObserved": causal_progress_observed,
+                    "causalProgressCount": causal_progress_count,
                     "accepted": accepted,
                     "fixedInLab": sorted(fixed),
                     "harnessDifferentialProviders": sorted(harness_differential),
@@ -2087,6 +2122,8 @@ def main() -> int:
                 "trustedFamilyFanoutGroups": list(frontier.get("fanoutFamilies") or []),
                 "pinnedAdvisorFamilyGroups": list(frontier.get("pinnedFamilies") or []),
                 "acceptedCount": len(durable_accepted_this_wave),
+                "causalProgressCount": sum(int(row.get("causalProgressCount") or 0) for row in batch_reports),
+                "causalProgressObserved": bool(batch_reports) and all(row.get("causalProgressObserved") is True for row in batch_reports),
                 "rawLabAcceptedCount": len(accepted_this_wave),
                 "timeBudgetExhausted": time_budget_exhausted,
                 "fixedInLabCount": len(effective_fixed_this_wave),
@@ -2125,8 +2162,31 @@ def main() -> int:
                     flush=True,
                 )
 
+            stalled_frontier = repeated_wave_no_frontier(
+                wave=wave,
+                remaining_count=len(remaining),
+                accepted_count=len(durable_accepted_this_wave),
+                exploration_progress_count=sum(
+                    int(row.get("causalProgressCount") or 0) for row in batch_reports
+                ),
+                advisor_rotation_pending=bool(advisor_rotation_this_wave),
+                observation_complete=bool(batch_reports) and all(
+                    row.get("causalProgressObserved") is True for row in batch_reports
+                ),
+            )
             if advisor_rotation_this_wave and wave < waves:
                 decision = "rotate"
+            elif stalled_frontier:
+                # Updating negative-memory counters is not evidence of a new
+                # causal frontier. Let independent Learning invent a new Lego.
+                decision = "stalled"
+                print(
+                    "FIELD_PROVIDER_BRAIN_CAUSAL_FRONTIER_STALLED "
+                    f"wave={wave} remaining={len(remaining)} "
+                    "exploration_progress=0 advisor_rotation=false "
+                    "action=independent_learning",
+                    flush=True,
+                )
             else:
                 decision = experiment_rotation_decision(
                     accepted_count=len(durable_accepted_this_wave),
@@ -2161,7 +2221,9 @@ def main() -> int:
                         flush=True,
                     )
                 no_progress_reason = (
-                    "experiment_variants_exhausted"
+                    "causal_frontier_stalled_after_repeated_waves"
+                    if stalled_frontier
+                    else "experiment_variants_exhausted"
                     if decision == "exhausted"
                     else "no_new_repair_experiment"
                 )

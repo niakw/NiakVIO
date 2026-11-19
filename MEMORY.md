@@ -1,3 +1,9 @@
+## 2026-11-19 — Prevent repeated no-frontier Fast waves (P0)
+
+- Live Fast run `44602295350` on `20b9116e` completed 4/6 waves with **0 accepted repair**. Early first-wave sandbox exploration made progress but subsequent `adaptive_runtime_recovery` rounds often produced zero new causal frontier. The previous outer scheduler rotated whenever `brain-repair-memory.json` bytes changed, even when a completed wave produced no `exploration_progress`, accepted candidate or untried Advisor hypothesis.
+- Implemented an audit-driven no-frontier stop in `scripts/run_provider_brain_repair.py`: after >=2 completed waves, if all batch repair audits exist, no accepted repair, no newly recorded sandbox frontier, no pending independent Advisor rotation and unresolved providers remain, stop repeating Fast waves and hand actually visited unresolved providers to Learning. The policy **does not** stop the first experiment, genuine frontier gains, accepted mutations, missing audits or untried Advisor hypotheses; unvisited family siblings retain Repair status.
+- Regression `tests/provider_brain_causal_frontier_budget_test.py` and Fast workflow contract added. Commit/push is only an infrastructure hypothesis until the updated exact-SHA CI and a new targeted Fast run demonstrate the shorter fail-to-Learning boundary. No provider JS/manifests were changed and **0 provider repair** is claimed. A green CI alone does not prove playback.
+
 ## 2026-11-19 — Roadmap Brain-first orientée portes de sortie (réparation réelle, pas CI vert)
 
 - Après examen du Fast run 44602295350 : 10 sélectionnés, 4/6 vagues, 0 candidat accepté, 0 réparable validé, 5 progressions sandbox exploratoires et budget épuisé. Le contrôle actuel porte sur une source plus récente que ce run. Cette situation confirme que l'amplification de campagnes ne suffit pas ; résultat produit zéro.
