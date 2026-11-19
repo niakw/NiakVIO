@@ -88,9 +88,7 @@ def validate_manifest_paths(relative: str, *, nested: bool, allow_disabled: bool
     distinct, non-executable retention scope for providers that remain visible in
     catalogue projections while explicitly ``enabled: false``.  Never infer
     disabled state from the path itself: the row flag owns the transition and the
-    path must agree with it.  Active-only manifests (Hub46) set
-    ``allow_disabled=False`` so a disabled row cannot leak into execution scope.
-    """
+    path must agree with it. Callers may set ``allow_disabled=False`` for any\n    active-only diagnostic projection.\n    """
     errors: list[str] = []
     manifest = load(relative)
     manifest_dir = (ROOT / relative).parent.resolve()
