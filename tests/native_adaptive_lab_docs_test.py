@@ -16,7 +16,8 @@ assert "32 œuvres" in validation
 assert "1 movie + 1 TV + 1 anime" in validation
 assert "0 streams" in validation
 assert "clean miss" in validation
-assert "`manifest.json` puis `vf/manifest.json`" in validation\nassert "`no-anime/manifest.json`" in validation
+assert "`manifest.json` puis `vf/manifest.json`" in validation
+assert "`no-anime/manifest.json`" in validation
 assert "La liste des fixtures est centralisée dans `.github/triggers/nuvio-client-lab.json`" not in validation
 
 english = (ROOT / "README.md").read_text(encoding="utf-8")
