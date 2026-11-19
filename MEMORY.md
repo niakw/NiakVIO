@@ -288,3 +288,12 @@
 - WAF GitHub browser/OkHttp/direct evidence is measured before Tailscale; residential evidence only after exit attestation. Egress failures use phase-specific privacy-safe reasons and transient DNS/IP state is deleted.
 - No provider bytes, Core media code or manifests changed. `no-anime/manifest.json` and `vf-no-anime/manifest.json` remain supported product features.
 - Native request v8 replays `animeonsen` + `sekai` on Desktop/Mobile/TV; WAF request v12 replays the same cohort.
+
+
+## 2026-11-19 — Residential diagnostic execution authority separated from Repair mutation authority
+
+- WAF v12 run `44451624192` successfully proved the corrected network chain on exact SHA `149b7c4d`: GitHub profile before Tailscale, pre-tailnet public-egress baseline, Tailscale connection, selected residential exit with changed public egress, then residential browser/profile replay. Both targeted homepages reached content in Chromium.
+- Sekai additionally reached content through GitHub and residential libcurl plus TV/Desktop OkHttp profiles, but its full provider replay still returned zero streams with `provider_network_http_error/provider_network_zero_result`; WAF is therefore no longer the primary causal label for this case.
+- AnimeOnsen reached browser content on both networks but its native-like HTTP/OkHttp profiles remained inconclusive. It was accidentally omitted from the full residential provider replay because `select_residential_provider_replay.py` reused `authorityRepairEligible=false` (REDISCOVER_SEARCH) as an execution ban.
+- The selector now distinguishes authorities: automatic replay remains conservative, while an **explicitly targeted provider active in canonical Global/VF** may be executed read-only for transport diagnosis even if Repair mutation authority is withheld. Disabled providers are not enabled, provider bytes are not changed, and replay never grants Repair authority.
+- WAF request v13 is bounded to `animeonsen,sekai` to validate that both active providers are actually replayed under this corrected contract.

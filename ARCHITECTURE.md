@@ -981,3 +981,10 @@ doit les présenter comme source « Intégré » séparément des addons externe
 ### Oracle résidentiel : ordre réseau et DNS du client natif — 19 novembre 2026
 
 Ordre autoritatif : `bootstrap client/AVD -> baseline egress + snapshot DNS -> Tailscale connect -> restauration DNS pré-tailnet -> sélection/attestation exit -> client officiel -> preuve player -> nettoyage`. Le profil GitHub WAF est mesuré avant toute connexion Tailscale ; le profil résidentiel seulement après attestation. Une réussite HTTP/browser reste un diagnostic de transport, jamais une preuve de flux terminal ou de lecture.
+
+
+### Autorité d'exécution diagnostique ≠ autorité de mutation — 19 novembre 2026
+
+Un provider actif dans les projections canoniques Global/VF peut être exécuté en lecture seule par un oracle transport explicitement ciblé même lorsque `authorityRepairEligible=false`. Cette exécution sert uniquement à observer le comportement des bytes déjà publiés ; elle ne permet ni génération, ni application, ni matérialisation d'un patch. L'autorité de mutation Brain/Repair reste régie séparément par l'arbiter de domaine/lifecycle.
+
+La sélection automatique des replays résidentiels reste limitée aux états transport/environnement autorisés. L'exception ne s'applique qu'au cohort explicitement nommé et aux identités actuellement actives ; une identité disabled, absente ou pending n'acquiert aucune autorité par simple nomination. Toute promotion fonctionnelle exige toujours une preuve terminale exacte.

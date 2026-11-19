@@ -7,8 +7,11 @@ be extracted, or require POST/player/session behavior only the real provider
 runtime can reproduce. Once the private residential exit is confirmed active,
 replay every *current* provider whose census status is environment/network
 blocked and whose provider address/backend still has authority. Domain/lifecycle-
-blocked providers stay out of this transport queue. The replay itself remains
-the only functional authority.
+blocked providers stay out of the automatic transport queue. An explicitly
+targeted provider that is active in the canonical Global/VF projections may be
+executed read-only even when Repair mutation authority is withheld: diagnostic
+execution authority and mutation authority are deliberately separate. The replay
+itself remains the only functional authority and never grants mutation authority.
 """
 from __future__ import annotations
 
@@ -17,6 +20,8 @@ import hashlib
 import json
 from pathlib import Path
 from typing import Any
+
+from current_provider_scope import projection_active_provider_ids
 
 ROOT = Path(__file__).resolve().parents[1]
 OFFLINE_MODE = "bulk_offline_contract_live_unverified"
@@ -137,6 +142,7 @@ def select(
     status: dict[str, Any],
     explicit_providers: list[str] | None = None,
     offline_transport_allowed: set[str] | None = None,
+    active_transport_allowed: set[str] | None = None,
     restrict_to_explicit: bool = False,
 ) -> list[str]:
     residential = (
@@ -152,6 +158,7 @@ def select(
         if isinstance(row, dict) and str(row.get("provider") or "").strip()
     ]
     transport_allowed = {canon(value) for value in (offline_transport_allowed or set()) if canon(value)}
+    active_allowed = {canon(value) for value in (active_transport_allowed or set()) if canon(value)}
     providers = {
         canon(row.get("provider"))
         for row in rows
@@ -165,16 +172,18 @@ def select(
         if str(value or "").strip()
     }
     if explicit:
-        authority_allowed = {
+        repair_authority_allowed = {
             canon(row.get("provider"))
             for row in rows
             if row.get("authorityRepairEligible") is not False
-        } | transport_allowed
-        # The explicit cohort does NOT grant authority to disabled providers.
-        # In a targeted diagnostic, restrict the actual replay to this bounded
-        # set: otherwise we execute extra providers then silently discard their
-        # rows during the targeted ledger merge.
-        explicit_allowed = explicit & authority_allowed
+        }
+        # Read-only transport execution is not Repair authority. Explicitly
+        # targeted providers may run when they are active in canonical Global/VF
+        # even if mutation is withheld for REDISCOVER_SEARCH or another authority
+        # reason. Disabled identities remain excluded unless a separate exact-byte
+        # offline transport authority explicitly allows them.
+        diagnostic_allowed = repair_authority_allowed | active_allowed | transport_allowed
+        explicit_allowed = explicit & diagnostic_allowed
         if restrict_to_explicit:
             providers = explicit_allowed
         else:
@@ -202,8 +211,10 @@ def main() -> int:
     offline_allowed = offline_live_unverified_transport_authority(
         ROOT, load(args.manifest), load(args.vf_manifest), load(args.overrides), load(args.activation)
     ) if args.activation.exists() else set()
+    active_projection_allowed = projection_active_provider_ids(ROOT)
     providers = select(
         load(args.waf), load(args.status), explicit, offline_allowed,
+        active_projection_allowed,
         restrict_to_explicit=args.restrict_to_explicit,
     )
     payload = {
@@ -213,9 +224,11 @@ def main() -> int:
         "providers": providers,
         "providerCount": len(providers),
         "explicitProviders": explicit,
-        "selectionMode": "explicit-authorized-only" if args.restrict_to_explicit else "eligible-plus-explicit",
+        "selectionMode": "explicit-diagnostic-authority-only" if args.restrict_to_explicit else "eligible-plus-explicit",
         "excludedExplicitProviders": sorted(set(canon(v) for v in explicit) - set(providers)),
+        "explicitActiveProjectionProviders": sorted(set(canon(v) for v in explicit) & active_projection_allowed),
         "offlineLiveUnverifiedTransportAuthority": sorted(offline_allowed),
+        "transportReplayGrantsRepairAuthority": False,
     }
     args.output.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     print(f"FIELD_RESIDENTIAL_PROVIDER_REPLAY_SELECTION providers={len(providers)}")

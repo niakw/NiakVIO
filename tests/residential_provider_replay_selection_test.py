@@ -52,6 +52,23 @@ assert "authority-blocked" not in explicit
 bounded=mod.select(report,status,["route","green","authority-blocked","missing"],restrict_to_explicit=True)
 assert bounded==["green","route"],bounded
 assert "all-blocked" not in bounded
+
+# Explicit diagnostic execution authority is distinct from Repair mutation
+# authority. An active canonical provider may be full-replayed read-only even
+# while authorityRepairEligible remains false. Merely naming an inactive/missing
+# provider still grants nothing.
+active_bounded=mod.select(
+    report,status,["authority-blocked","missing"],
+    active_transport_allowed={"authority-blocked"},
+    restrict_to_explicit=True,
+)
+assert active_bounded==["authority-blocked"],active_bounded
+active_unbounded=mod.select(
+    report,status,["authority-blocked"],
+    active_transport_allowed={"authority-blocked"},
+)
+assert active_unbounded==["all-blocked","authority-blocked","client-gap","waf-only","yflix"],active_unbounded
+assert status["providers"][4]["authorityRepairEligible"] is False
 try:
     mod.select(report,status,restrict_to_explicit=True)
 except ValueError:
