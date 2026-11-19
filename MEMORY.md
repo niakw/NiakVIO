@@ -266,3 +266,11 @@
 - `verify_waf_exit_route.py` now owns bounded exit selection (12 s per attempt, max 3 in current workflows) and bounded cleanup (8 s), while retaining the existing independent pre/post public IPv4 comparison plus Tailscale `ExitNodeStatus` verification.
 - Both `NATIVE - Device Corpus Tests` and `Provider WAF Browser Session Diagnostics` use the same bounded selector/cleanup. Failure remains fail-closed: no attested route means no residential/native success claim.
 - The native workflow contract test was also corrected to the new intended order `toolchain/client/AVD bootstrap -> Tailscale connect -> exit attestation -> real client`; its obsolete pre-bootstrap-connect assertion was removed.
+
+
+### 2026-11-19 — Native/WAF residential baseline isolated from Tailscale macOS DNS override
+- Run `44450314927` proved a harness failure before provider execution: macOS connected to Tailscale, the pinned action logged `Setting system DNS server to 100.100.100.100` despite `--accept-dns=false`, then the public-egress baseline failed and no Desktop corpus log existed.
+- Residential proof now captures GitHub egress before tailnet connection. Native macOS also snapshots the pre-tailnet DNS/search policy, restores it after the action connects, verifies MagicDNS injection is gone and public resolution works, then selects/attests the exit and executes official Nuvio.
+- WAF GitHub browser/OkHttp/direct evidence is measured before Tailscale; residential evidence only after exit attestation. Egress failures use phase-specific privacy-safe reasons and transient DNS/IP state is deleted.
+- No provider bytes, Core media code or manifests changed. `no-anime/manifest.json` and `vf-no-anime/manifest.json` remain supported product features.
+- Native request v8 replays `animeonsen` + `sekai` on Desktop/Mobile/TV; WAF request v12 replays the same cohort.

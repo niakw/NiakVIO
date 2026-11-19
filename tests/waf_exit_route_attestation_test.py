@@ -29,6 +29,10 @@ source = script.read_text(encoding="utf-8")
 assert "ProxyHandler({})" in source
 assert mod.TAILSCALE_SET_TIMEOUT_SECONDS <= 15
 assert mod.TAILSCALE_CLEAR_TIMEOUT_SECONDS <= 10
+assert "pre_tailnet=true" in source
+assert "baseline-public-ip-unavailable" in source
+assert "post-exit-public-ip-unavailable" in source
+assert "egress-unchanged" in source
 
 calls = []
 original_run = mod.subprocess.run

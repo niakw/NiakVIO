@@ -1,14 +1,13 @@
 {
   "schemaVersion": 1,
-  "requestVersion": 11,
+  "requestVersion": 12,
   "requestedAt": "2026-11-19",
   "targetProviders": [
     "animeonsen",
-    "allwish",
     "sekai"
   ],
   "reuseExistingEvidence": false,
-  "reason": "Requalify current WAF/client transport on two ordinary same-session browser attempts after fixing targeted single-attempt false-persistence risk; retain JVM/libcurl/residential comparisons without granting provider Repair authority.",
-  "cohort": "waf-two-attempt-client-matrix-refresh-2026-11-19",
-  "sourceSha": "d3326ffc605014478dd92b2cf877721c0ab6409c"
+  "reason": "Requalify GitHub browser/OkHttp/direct transport before any Tailscale connection, then residential transport only after independent exit attestation.",
+  "cohort": "waf-pre-tailnet-baseline-client-matrix-2026-11-19",
+  "sourceSha": "89061a81e785e796601eba87461de5233361ffc7"
 }

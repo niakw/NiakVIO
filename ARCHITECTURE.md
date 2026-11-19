@@ -976,3 +976,8 @@ Les sous-titres HLS `TYPE=SUBTITLES` sont des pistes **intégrées au média**. 
 sont jamais injectés dans `subtitles` / la liste des addons de sous-titres. Leur
 métadonnée interne porte `source=integrated` et `sourceName=Intégré`; le client
 doit les présenter comme source « Intégré » séparément des addons externes.
+
+
+### Oracle résidentiel : ordre réseau et DNS du client natif — 19 novembre 2026
+
+Ordre autoritatif : `bootstrap client/AVD -> baseline egress + snapshot DNS -> Tailscale connect -> restauration DNS pré-tailnet -> sélection/attestation exit -> client officiel -> preuve player -> nettoyage`. Le profil GitHub WAF est mesuré avant toute connexion Tailscale ; le profil résidentiel seulement après attestation. Une réussite HTTP/browser reste un diagnostic de transport, jamais une preuve de flux terminal ou de lecture.

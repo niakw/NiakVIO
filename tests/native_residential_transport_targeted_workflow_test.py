@@ -15,12 +15,16 @@ required = (
     "TS_EXIT_NODE: ${{ secrets.TS_EXIT_NODE }}",
     "TS_TAG_NAME: ${{ secrets.TS_TAG_NAME }}",
     "tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c",
+    "Snapshot pre-Tailscale DNS policy and baseline egress",
+    "scripts/preserve_runner_dns.py snapshot",
+    "Restore pre-Tailscale DNS policy before native runtime",
+    "scripts/preserve_runner_dns.py restore",
     "Select and attest residential exit immediately before native runtime",
     "scripts/verify_waf_exit_route.py baseline",
     "scripts/verify_waf_exit_route.py verify",
     'scripts/verify_waf_exit_route.py select --exit-node "$TS_EXIT_NODE" --attempts 3',
     "FIELD_NATIVE_RESIDENTIAL_EXIT active=true egress_attested=true",
-    "FIELD_NATIVE_RESIDENTIAL_DNS tailscale_accept_dns=false resolver_equivalence=unverified",
+    "FIELD_NATIVE_RESIDENTIAL_DNS tailscale_accept_dns=false action_override_restored=true resolver_equivalence=runner_pre_tailnet",
     "native-target-provider-scope.json",
     "Enable targeted Mobile same-source engine differential",
     "NIAKVIO_NATIVE_COMPARE_ENGINES=1",
@@ -48,7 +52,9 @@ required = (
 for needle in required:
     assert needle in workflow, needle
 
+dns_snapshot = workflow.index("Snapshot pre-Tailscale DNS policy and baseline egress")
 connect = workflow.index("Connect native client host to Tailscale")
+dns_restore = workflow.index("Restore pre-Tailscale DNS policy before native runtime")
 exit_node = workflow.index("Select and attest residential exit immediately before native runtime")
 prepare = workflow.index("Checkout accepted official client and stage corpus once")
 mobile_snapshot = workflow.index("Create Mobile AVD snapshot on cache miss")
@@ -56,8 +62,8 @@ tv_snapshot = workflow.index("Create TV AVD snapshot on cache miss")
 desktop_runtime = workflow.index("Execute focused provider in official macOS Desktop runtime")
 mobile_runtime = workflow.index("Execute six works across every provider in isolated Mobile emulator")
 tv_runtime = workflow.index("Execute six works across every provider in isolated Android TV emulator")
-assert prepare < mobile_snapshot < connect < exit_node
-assert prepare < tv_snapshot < connect < exit_node
+assert prepare < mobile_snapshot < dns_snapshot < connect < dns_restore < exit_node
+assert prepare < tv_snapshot < dns_snapshot < connect < dns_restore < exit_node
 assert exit_node < desktop_runtime < mobile_runtime < tv_runtime
 
 assert "continue-on-error: true" not in workflow[connect:exit_node], "native residential connection must fail closed"
@@ -91,13 +97,16 @@ checkout_client = workflow.index("Checkout accepted official client and stage co
 setup_gradle = workflow.index("Set up Gradle runtime")
 attest_exit = workflow.index("Select and attest residential exit immediately before native runtime")
 desktop_runtime = workflow.index("Execute focused provider in official macOS Desktop runtime")
-clear_exit = workflow.index("Clear native residential exit")
+clear_exit = workflow.index("Clear native residential exit and transient network state")
 brain_diag = workflow.index("Diagnose sanitized targeted native evidence for Brain")
 upload = workflow.index("Upload sanitized native corpus logs")
-assert setup_jdk < checkout_client < setup_gradle < connect_tailnet < attest_exit < desktop_runtime < clear_exit
+assert setup_jdk < checkout_client < setup_gradle < dns_snapshot < connect_tailnet < dns_restore < attest_exit < desktop_runtime < clear_exit
 assert clear_exit < brain_diag < upload
 assert workflow.count("Connect native client host to Tailscale") == 1
 assert "verify_waf_exit_route.py clear || true" in workflow
+assert workflow.count("verify_waf_exit_route.py baseline") == 1
+assert workflow.index("verify_waf_exit_route.py baseline") < connect_tailnet
+assert 'rm -f "${NIAKVIO_NATIVE_DNS_STATE:-}" "${NIAKVIO_NATIVE_EGRESS_STATE:-}"' in workflow
 assert "for attempt in 1 2 3 4 5" not in workflow
 
 print("native targeted residential transport workflow contract passed")

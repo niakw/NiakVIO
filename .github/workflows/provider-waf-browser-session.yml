@@ -129,6 +129,7 @@ jobs:
       - name: Validate Tailscale residential-exit diagnostic contract
         run: |
           python tests/waf_exit_route_attestation_test.py
+          python tests/runner_dns_preservation_test.py
           python tests/provider_waf_tailscale_exit_contract_test.py
           python tests/waf_residential_profile_merge_test.py
           python tests/waf_transport_provenance_test.py
@@ -167,19 +168,6 @@ jobs:
           python -c 'import base64,json,os; token=os.environ.pop("OIDC_TOKEN"); parts=token.split("."); assert len(parts)>=2, "invalid GitHub OIDC token shape"; raw=parts[1]+"="*(-len(parts[1])%4); claims=json.loads(base64.urlsafe_b64decode(raw.encode()).decode()); allowed=("iss","sub","repository","repository_owner","repository_visibility","ref","ref_type","workflow","workflow_ref","job_workflow_ref","event_name"); safe={k:str(claims.get(k) or "") for k in allowed if claims.get(k) is not None}; print("FIELD_TAILSCALE_GITHUB_OIDC_CLAIMS "+json.dumps(safe,sort_keys=True))'
           unset response OIDC_TOKEN encoded_audience
 
-      - name: Connect ephemeral Tailscale diagnostic node
-        id: tailscale_connect
-        continue-on-error: true
-        timeout-minutes: 4
-        if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
-        uses: tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c
-        with:
-          oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
-          audience: ${{ env.TS_AUDIENCE }}
-          tags: ${{ env.TS_ACTION_TAG }}
-          version: '1.94.2'
-          args: --accept-dns=false
-
       - name: Reprobe persisted WAF lanes on GitHub-hosted network
         shell: bash
         run: |
@@ -203,22 +191,45 @@ jobs:
           printf 'FIELD_WAF_TARGET_COHORT providers=%s\n' "${TARGET_PROVIDERS:-all-current-waf}"
           "${args[@]}"
 
-      - name: Select private residential exit node
-        id: select_residential_exit
+      - name: Capture GitHub egress baseline before Tailscale
+        id: baseline_egress
         continue-on-error: true
-        if: ${{ steps.tailscale_connect.outcome == 'success' && env.TS_EXIT_NODE != '' }}
+        if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
         shell: bash
         run: |
           set -euo pipefail
-          proof_path="$(mktemp /tmp/niakvio-exit-proof.XXXXXX)"
+          state="$RUNNER_TEMP/niakvio-waf-exit-proof"
+          python scripts/verify_waf_exit_route.py baseline --state "$state"
+          echo "WAF_EGRESS_STATE=$state" >> "$GITHUB_ENV"
+
+      - name: Connect ephemeral Tailscale diagnostic node
+        id: tailscale_connect
+        continue-on-error: true
+        timeout-minutes: 4
+        if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
+        uses: tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c
+        with:
+          oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ env.TS_AUDIENCE }}
+          tags: ${{ env.TS_ACTION_TAG }}
+          version: '1.94.2'
+          args: --accept-dns=false
+
+      - name: Select private residential exit node
+        id: select_residential_exit
+        continue-on-error: true
+        if: ${{ steps.baseline_egress.outcome == 'success' && steps.tailscale_connect.outcome == 'success' && env.TS_EXIT_NODE != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "$WAF_EGRESS_STATE"
           route_verified=0
-          trap 'rm -f "$proof_path"; if [ "$route_verified" != "1" ]; then python scripts/verify_waf_exit_route.py clear >/dev/null 2>&1 || true; fi' EXIT
-          python scripts/verify_waf_exit_route.py baseline --state "$proof_path"
+          trap 'if [ "$route_verified" != "1" ]; then python scripts/verify_waf_exit_route.py clear >/dev/null 2>&1 || true; fi' EXIT
           if ! python scripts/verify_waf_exit_route.py select --exit-node "$TS_EXIT_NODE" --attempts 3; then
             echo "Private exit node could not be selected; verify exit-node advertisement/approval and tag:niakvio-ci -> autogroup:internet policy." >&2
             exit 1
           fi
-          if ! python scripts/verify_waf_exit_route.py verify --state "$proof_path"; then
+          if ! python scripts/verify_waf_exit_route.py verify --state "$WAF_EGRESS_STATE"; then
             echo "failure_reason=exit-egress-unverified" >> "$GITHUB_OUTPUT"
             exit 1
           fi
@@ -259,7 +270,9 @@ jobs:
               --output automation/provider-waf-browser-session-latest.json
           else
             reason="tailscale-unavailable"
-            if [ "${{ steps.tailscale_connect.outcome }}" = "failure" ]; then
+            if [ "${{ steps.baseline_egress.outcome }}" = "failure" ]; then
+              reason="baseline-egress-unavailable"
+            elif [ "${{ steps.tailscale_connect.outcome }}" = "failure" ]; then
               reason="tailscale-connect-failed"
             elif [ "${{ steps.select_residential_exit.outcome }}" = "failure" ]; then
               reason="${{ steps.select_residential_exit.outputs.failure_reason || 'exit-node-unavailable' }}"
@@ -309,10 +322,12 @@ jobs:
             --output /tmp/provider-waf-with-residential-replay.json
           mv /tmp/provider-waf-with-residential-replay.json automation/provider-waf-browser-session-latest.json
 
-      - name: Clear private exit-node routing
-        if: ${{ always() && env.NIAKVIO_RESIDENTIAL_EXIT_ACTIVE == '1' }}
+      - name: Clear private exit-node routing and transient egress state
+        if: ${{ always() && env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
         shell: bash
-        run: python scripts/verify_waf_exit_route.py clear || true
+        run: |
+          if [ "${NIAKVIO_RESIDENTIAL_EXIT_ACTIVE:-0}" = "1" ]; then python scripts/verify_waf_exit_route.py clear || true; fi
+          rm -f "${WAF_EGRESS_STATE:-}"
 
       - name: Stamp current WAF evidence with executed provider JS hashes
         shell: bash

@@ -66,6 +66,9 @@ required=[
     "args: --accept-dns=false",
     'scripts/verify_waf_exit_route.py select --exit-node "$TS_EXIT_NODE" --attempts 3',
     "tag:niakvio-ci -> autogroup:internet policy",
+    "Capture GitHub egress baseline before Tailscale",
+    "WAF_EGRESS_STATE=$state",
+    "baseline-egress-unavailable",
     "id: tailscale_connect",
     "continue-on-error: true",
     "timeout-minutes: 4",
@@ -109,11 +112,13 @@ for forbidden in (
     assert forbidden not in wf, f"privacy/security regression: {forbidden}"
 
 baseline=wf.index("Reprobe persisted WAF lanes on GitHub-hosted network")
+egress_baseline=wf.index("Capture GitHub egress baseline before Tailscale")
 connect=wf.index("Connect ephemeral Tailscale diagnostic node")
 activate=wf.index("Select private residential exit node")
 residential=wf.index("Reprobe WAF lanes through private residential exit")
 merge=wf.index("Merge residential exit evidence without node identity")
-assert connect < baseline < activate < residential < merge
+assert baseline < egress_baseline < connect < activate < residential < merge
+assert wf.count("verify_waf_exit_route.py baseline") == 1
 
 print("Tailscale residential WAF workflow contract passed")
 

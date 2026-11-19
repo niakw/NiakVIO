@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Validate Tailscale route selection by independent public IPv4 comparison.
 
-Only transient, restricted runner state contains the IP. Never persist public IP,
-exit-node name, cookies, body or tokens to build artifacts or provider evidence.
-A changed IP does not establish residential ownership or playable media.
+Capture the baseline before tailnet connection so Tailscale DNS/routing side
+effects cannot contaminate the GitHub-network reference point. Only transient,
+restricted runner state contains the IP; never persist IP or exit-node identity.
 """
 from __future__ import annotations
 
@@ -108,29 +108,34 @@ def main() -> int:
     parser.add_argument("--exit-node", default="")
     parser.add_argument("--attempts", type=int, default=3)
     args = parser.parse_args()
+    phase = args.phase
     try:
-        if args.phase == "baseline":
-            if args.state is None:
-                raise RuntimeError("baseline state path missing")
+        if phase == "baseline":
+            if args.state is None: raise RuntimeError("baseline state path missing")
             current = observed_public_ipv4()
             fd = os.open(args.state, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-            with os.fdopen(fd, "w", encoding="ascii") as handle:
-                handle.write(current + "\n")
+            with os.fdopen(fd, "w", encoding="ascii") as handle: handle.write(current + "\n")
             os.chmod(args.state, 0o600)
-            print("FIELD_WAF_EXIT_EGRESS phase=baseline observed=true")
-        elif args.phase == "select":
+            print("FIELD_WAF_EXIT_EGRESS phase=baseline observed=true pre_tailnet=true")
+        elif phase == "select":
             select_exit_node(args.exit_node, attempts=max(1, min(args.attempts, 5)))
             print("FIELD_WAF_EXIT_SELECTION selected=true bounded=true")
-        elif args.phase == "verify":
-            if args.state is None:
-                raise RuntimeError("verify state path missing")
-            attest(args.state.read_text(encoding="ascii").strip(), observed_public_ipv4(), exit_status())
+        elif phase == "verify":
+            if args.state is None: raise RuntimeError("verify state path missing")
+            before=args.state.read_text(encoding="ascii").strip(); after=observed_public_ipv4()
+            attest(before, after, exit_status())
             print("FIELD_WAF_EXIT_EGRESS phase=residential changed=true selected=true")
         else:
-            clear_exit_node()
-            print("FIELD_WAF_EXIT_SELECTION cleared=true bounded=true")
-    except (RuntimeError, OSError, ValueError, subprocess.TimeoutExpired):
-        print("FIELD_WAF_EXIT_EGRESS attested=false reason=verification-unavailable")
+            clear_exit_node(); print("FIELD_WAF_EXIT_SELECTION cleared=true bounded=true")
+    except (RuntimeError, OSError, ValueError, subprocess.TimeoutExpired) as error:
+        message=str(error).casefold()
+        if phase=="baseline": reason="baseline-public-ip-unavailable"
+        elif phase=="select": reason="exit-selection-unavailable"
+        elif "public ipv4" in message: reason="post-exit-public-ip-unavailable"
+        elif "unchanged" in message: reason="egress-unchanged"
+        elif "status" in message or "exit route" in message: reason="exit-status-unavailable"
+        else: reason="verification-unavailable"
+        print(f"FIELD_WAF_EXIT_EGRESS attested=false phase={phase} reason={reason}")
         return 1
     return 0
 

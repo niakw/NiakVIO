@@ -1,5 +1,5 @@
 {
-  "version": 9,
+  "version": 10,
   "mode": "human-ux-observation-only",
   "purpose": "Native labs reproduce the real Nuvio user path and observe launch, stream selection, player opening and playback failures without repairing Nuvio, the OS or the lab environment to improve outcomes.",
   "immutable_principles": [
@@ -242,6 +242,15 @@
         "resolution": "Keep JDK, Node, official client checkout, Gradle/native bridge and Android AVD bootstrap on the normal GitHub runner network. Connect Tailscale only at the native-runtime boundary, immediately before independent residential-exit selection/attestation.",
         "evidence_run": "44448665900",
         "never_repeat": "Do not connect the residential tailnet before dependency/toolchain/client bootstrap; do not mask this by overriding the tested client's DNS or disabling residential egress attestation."
+      },
+      {
+        "id": "native-macos-tailscale-action-dns-override-runtime-boundary",
+        "status": "resolved",
+        "signature": "Tailscale macOS action logs Setting system DNS server to 100.100.100.100 despite --accept-dns=false, then egress attestation fails before client runtime",
+        "cause": "The action wrapper mutates macOS system DNS independently of tailscaled accept-dns, contaminating a baseline captured after connection and the client runtime.",
+        "resolution": "Capture egress and DNS/search policy before tailnet; restore the exact pre-tailnet DNS policy after connection; verify resolver readiness; then select/attest the exit immediately before official Nuvio.",
+        "evidence_run": "44450314927",
+        "never_repeat": "Do not baseline after Tailscale connection and do not treat --accept-dns=false as proof that the action wrapper left macOS DNS unchanged."
       }
     ]
   },
@@ -325,7 +334,8 @@
     "add exactly one no-op method override to the exact stale NuvioDesktop commonTest fake controller when the production interface requires it, solely to restore test compilation",
     "use a debug signing configuration when hosted CI cannot access an official release signing key",
     "stage NiakVIO provider bundles as diagnostic test assets",
-    "add test code that invokes production Nuvio entry points only as component diagnostics, never as human-UX acceptance proof"
+    "add test code that invokes production Nuvio entry points only as component diagnostics, never as human-UX acceptance proof",
+    "restore the exact pre-Tailscale hosted-runner DNS/search-domain policy after an action-owned mutation, solely to preserve the pre-diagnostic network semantics"
   ],
   "forbidden_checkout_tokens": [
     "android.permission.INTERNET",
@@ -349,7 +359,7 @@
   "forbidden_behaviors": [
     "edit any production AndroidManifest.xml",
     "grant network or cleartext capabilities",
-    "change DNS, proxy, headers, redirects, cache policy or HTTP semantics",
+    "change DNS, proxy, headers, redirects, cache policy or HTTP semantics, except exact restoration of the pre-Tailscale hosted-runner DNS/search-domain policy after an action-owned mutation",
     "replace or wrap the production player with a friendlier lab player",
     "change decoder or playback settings to obtain a green result",
     "clear or rewrite the real user profile, plugin state or cache to hide failures",
