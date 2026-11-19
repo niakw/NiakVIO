@@ -495,6 +495,12 @@ jobs:
 
       - name: Execute six works across every provider in isolated Android TV emulator
         if: matrix.device == 'tv'
+        # Only a source-pinned, single-provider test may exceed the normal
+        # 25s corpus budget. This captures the already observed sequential
+        # embed fallback (522 after ~20s, HLS success after 26s) rather than
+        # declaring provider failure at an arbitrary harness deadline.
+        env:
+          NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: ${{ matrix.provider != 'declared-type' && '60000' || '' }}
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         with:
           api-level: 31
