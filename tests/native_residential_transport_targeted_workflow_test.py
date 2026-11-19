@@ -22,6 +22,7 @@ required = (
     "Select and attest residential exit immediately before native runtime",
     "scripts/verify_waf_exit_route.py baseline",
     "scripts/verify_waf_exit_route.py verify",
+    "tests/waf_exit_route_attestation_test.py",
     'scripts/verify_waf_exit_route.py select --exit-node "$TS_EXIT_NODE" --attempts 3',
     "FIELD_NATIVE_RESIDENTIAL_EXIT active=true egress_attested=true",
     "FIELD_NATIVE_RESIDENTIAL_DNS tailscale_accept_dns=false action_override_restored=true resolver_equivalence=runner_pre_tailnet",
