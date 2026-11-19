@@ -115,6 +115,10 @@ const appSelectionObservations = [];
 const quickJsDiagnostics = [];
 const quickJsPromiseControls = [];
 const nativeExecutionDiagnostics = [];
+const terminalTransportDiagnostics = [];
+const TERMINAL_TRANSPORT_KINDS = new Set(['hls', 'dash', 'video', 'html', 'unknown']);
+const TERMINAL_TRANSPORT_STATES = new Set(['dead', 'error']);
+
 const PROMISE_CONTROL_STATUSES = new Set(['bridge_ok', 'promise_delivery_gap', 'baseline_failed']);
 const QUICKJS_PHASES = new Set(['call', 'result', 'error', 'missing_export']);
 const QUICKJS_ERROR_CATEGORIES = new Set([
@@ -272,6 +276,37 @@ for (const file of logPaths) {
       });
     }
 
+    // Network probe is independent of the official player. Never claim that
+    // its status is a decoded playback failure, but preserve terminal HTTP
+    // errors as a source/run-bounded diagnosis (no media URL, host or headers).
+    const transportAt = raw.indexOf('FIELD_NATIVE_TRANSPORT ');
+    if (transportAt >= 0) {
+      const t = fields(raw.slice(transportAt).trim());
+      const provider = decode(t.provider64).trim().toLowerCase();
+      const fixture = String(t.fixture || '').trim().toLowerCase();
+      const requestType = String(t.request_type || '').trim().toLowerCase();
+      const status = Number(t.status);
+      const index = Number(t.index);
+      const state = String(t.state || '');
+      const kind = String(t.kind || '');
+      if (t.client === 'tv' && t.route_mode === 'declared'
+          && /^[a-z0-9][a-z0-9_-]{0,95}$/.test(provider)
+          && /^[a-z0-9][a-z0-9-]{0,95}$/.test(fixture)
+          && ['movie', 'tv', 'anime'].includes(requestType)
+          && TERMINAL_TRANSPORT_STATES.has(state)
+          && TERMINAL_TRANSPORT_KINDS.has(kind)
+          && Number.isInteger(index) && index >= 0 && index <= 40
+          && Number.isInteger(status) && status >= 400 && status <= 599) {
+        terminalTransportDiagnostics.push({
+          client: 'tv', fixture, provider, requestType, index,
+          source: 'independent-terminal-transport-probe',
+          state, kind, httpStatus: status,
+          proofAuthority: false, publicationAuthority: false,
+          nativePlaybackAuthority: false, providerJsMutationAllowed: false,
+        });
+      }
+    }
+
     const rowAt = raw.indexOf('FIELD_NATIVE_ROW ');
   if (rowAt >= 0) {
     const f = fields(raw.slice(rowAt).trim());
@@ -318,6 +353,12 @@ for (const file of logPaths) {
       loadDurationMs: Math.max(0, Number(f.load_duration_ms || 0) || 0),
       mediaDataType: Number.isFinite(Number(f.media_data_type)) ? Number(f.media_data_type) : -1,
       trackType: Number.isFinite(Number(f.track_type)) ? Number(f.track_type) : -1,
+      videoWidth: Number.isInteger(Number(f.video_width)) && Number(f.video_width) > 0
+        ? Math.min(16384, Number(f.video_width)) : 0,
+      videoHeight: Number.isInteger(Number(f.video_height)) && Number(f.video_height) > 0
+        ? Math.min(16384, Number(f.video_height)) : 0,
+      audioTrackCount: Number.isInteger(Number(f.audio_track_count))
+        ? Math.min(64, Math.max(-1, Number(f.audio_track_count))) : -1,
     };
     row.failureClass = readerFailureClass(row);
     row.failureDomain = readerFailureDomain(row);
@@ -553,6 +594,8 @@ const playerObservations = brainReaderRows.map((row) => ({
   providerMutationEligible: row.providerMutationEligible, failureStage: row.failureStage,
   httpStatus: row.httpStatus, errorCode: row.errorCode, host: row.host,
   durationSeconds: row.durationSeconds, loadBytes: row.loadBytes, loadDurationMs: row.loadDurationMs,
+  playerVideoFormatObserved: row.videoWidth > 0 && row.videoHeight > 0,
+  playerAudioTrackCount: row.audioTrackCount,
   observationLayer: 'player',
 }));
 const extractionObservations = providerExtractionFailures.map((row) => ({
@@ -752,6 +795,7 @@ const payload = {
   appSelectionFailures: appSelectionIssues.length,
   quickJsDiagnosticObserved: quickJsDiagnostics.length,
   nativeExecutionDiagnosticObserved: nativeExecutionDiagnostics.length,
+  terminalTransportDiagnosticObserved: terminalTransportDiagnostics.length,
   quickJsUnverifiedObserved: quickJsUnverifiedObservations.length,
   readerLoadErrorEvidence: brainReaderRows.filter((row) => row.loadDurationMs > 0 || row.loadBytes > 0 || row.httpStatus > 0).length,
   observations,
@@ -762,6 +806,7 @@ const payload = {
   quickJsDiagnostics,
   quickJsPromiseControls,
   nativeExecutionDiagnostics,
+  terminalTransportDiagnostics,
   quickJsUnverifiedObservations,
   appSelectionObservations,
   appSelectionIssues,
