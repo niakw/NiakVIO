@@ -112,3 +112,16 @@ This block is current structural observation, not executable route authority.
 - This evidence contradicts treating the legacy `coflix.wiki` Ajax path or a small fixed stream cap as a complete model of the current CoFlix player. It is input to Brain diagnosis only: the Brain must still generate the provider-owned correction and prove it on current bytes.
 
 The sanitized machine-readable projection is `automation/provider-current-structure-evidence.json`. It stores only the current host, route path, request key names, group counts and language labels; no raw page body, terminal URL, token or request value is retained.
+
+## Evidence block — 2026-11-19 French-Manga Desktop/Android-TV differential
+
+Purpose: preserve a current user-side client differential that synthetic provider-only probes did not explain.
+
+- **French-Manga — Jujutsu Kaisen S01E01**: on Nuvio Desktop macOS, the user observed **one stream that plays successfully**, with **French audio**. On Android TV, French-Manga did **not appear** in the visible stream list.
+- Independent official NuvioTV reproduction later showed that the provider is actually loaded, enabled, type-compatible and executed on Android TV. The provider route reached French-Manga search, episode API and player page; a signed FR HLS master returned HTTP 200 once, then the same master URL returned HTTP 403 on a second pre-player fetch. The provider consequently returned zero rows to the app and the production player was never reached. This makes manifest activation/filtering an unlikely owner for this exact TV failure.
+- The Desktop field result is positive playback evidence for that client/session, but it is not automatically exact-build/exact-JS publication authority. The Android-TV automated result is source-pinned and should be used to reproduce the Core duplicate-HLS-validation hypothesis.
+- **Sadisflix**: the user did not see Sadisflix in the stream results during the same testing session. The user did not specify the exact platform/content for that observation in this message; retain it as an unresolved field observation rather than inferring a provider failure. Sadisflix is VF-only in the current production projection, so repository/manifest selection must be checked before provider blame.
+- Cross-client invariant to learn: a provider can be healthy enough to return a decoded stream on one official client while a second client loses the same source before display. Brain diagnosis must distinguish provider extraction, Core pre-player validation, client projection and terminal player networking.
+
+This block is user/client evidence. It supplements but does not replace exact-byte Retest, native-device playback proof, identity validation, audio-track validation or non-regression.
+
