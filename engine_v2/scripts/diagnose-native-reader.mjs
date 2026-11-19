@@ -520,30 +520,43 @@ const extractionHealthyObservations = extractionHealthy.map((row) => ({
   requestType: row.requestType, routeMode: row.routeMode, returnedCount: row.count,
   observationLayer: 'extraction', state: 'non_empty', failureClass: 'healthy',
 }));
-const quickJsUnverifiedObservations = evidence.complete
-  ? quickJsDiagnostics.filter((row) => (
-      row.phase === 'error' || row.phase === 'missing_export'
-      || (row.phase === 'result' && row.count === 0)
-    )).map((row) => ({
-      client: row.client,
-      provider: row.provider,
-      fixture: row.fixture,
-      requestType: row.requestType,
-      observationLayer: 'native_quickjs',
-      state: row.phase,
-      failureClass: row.phase === 'missing_export' ? 'native_quickjs_missing_export'
-        : row.phase === 'error' ? 'native_quickjs_exception'
-        : 'native_quickjs_zero_stream',
-      failureDomain: 'client_provider_execution_unresolved',
-      providerMutationEligible: false,
-      category: row.category,
-      count: row.count,
-      routeMode: 'declared',
-      proofAuthority: false,
-      publicationAuthority: false,
-      nativePlaybackAuthority: false,
-    }))
-  : [];
+// No reader can be reached after a genuine zero-stream execution. Requiring
+// evidence.complete here discarded exactly the diagnostic needed to understand
+// why there was no media. Keep only matched official app-selection + execution
+// observations; this is hypothesis-only learning, never provider mutation or
+// successful-reader authority.
+const nativeSelectedRoutes = new Set(appSelectionObservations
+  .filter((row) => row.eligible === true)
+  .map((row) => [row.client, row.fixture, row.provider, row.requestType].join('\\0')));
+const nativeZeroRoutes = new Set(resultRows
+  .filter((row) => row.enabled === true && row.count === 0 && row.routeMode === 'declared')
+  .map((row) => [row.client, row.fixture, String(row.provider).toLowerCase(), row.requestType].join('\\0')));
+const quickJsUnverifiedObservations = quickJsDiagnostics.filter((row) => {
+  if (!(row.phase === 'error' || row.phase === 'missing_export'
+    || (row.phase === 'result' && row.count === 0))) return false;
+  const key = [row.client, row.fixture, row.provider, row.requestType].join('\\0');
+  return nativeSelectedRoutes.has(key) && nativeZeroRoutes.has(key);
+}).map((row) => ({
+  client: row.client,
+  provider: row.provider,
+  fixture: row.fixture,
+  requestType: row.requestType,
+  observationLayer: 'native_quickjs',
+  state: row.phase,
+  failureClass: row.phase === 'missing_export' ? 'native_quickjs_missing_export'
+    : row.phase === 'error' ? 'native_quickjs_exception'
+    : 'native_quickjs_zero_stream',
+  failureDomain: 'client_provider_execution_unresolved',
+  providerMutationEligible: false,
+  category: row.category,
+  count: row.count,
+  routeMode: 'declared',
+  diagnosticOnly: true,
+  nativeReaderEvidenceComplete: evidence.complete,
+  proofAuthority: false,
+  publicationAuthority: false,
+  nativePlaybackAuthority: false,
+}));
 const observations = [
   ...playerObservations, ...extractionObservations,
   ...systemicExtractionObservations, ...runtimeSentinelObservations,
@@ -711,7 +724,7 @@ const payload = {
     runtimeErrorSentinelLearningAllowed: false,
     repositoryLearningAllowed: evidence.complete && providerLoadObservations.length > 0,
     clientSelectionDiagnosticLearningAllowed: evidence.complete && appSelectionIssues.length > 0,
-    quickJsDiagnosticLearningAllowed: evidence.complete && quickJsUnverifiedObservations.length > 0,
+    quickJsDiagnosticLearningAllowed: quickJsUnverifiedObservations.length > 0,
     quickJsDiagnosticProviderMutationAllowed: false,
     clientSelectionProviderJsMutationAllowed: false,
     providerLoadJsMutationAllowed: false,
