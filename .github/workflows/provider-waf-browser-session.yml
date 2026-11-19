@@ -86,7 +86,9 @@ jobs:
           fi
           echo "TARGET_PROVIDERS=$target" >> "$GITHUB_ENV"
           if [ -n "$target" ]; then
-            echo "WAF_ATTEMPTS=1" >> "$GITHUB_ENV"
+            # A targeted qualification must still distinguish a first-load ordinary
+            # challenge from a challenge that persists in the same browser session.
+            echo "WAF_ATTEMPTS=2" >> "$GITHUB_ENV"
             echo "WAF_WORKERS=4" >> "$GITHUB_ENV"
           else
             echo "WAF_ATTEMPTS=2" >> "$GITHUB_ENV"

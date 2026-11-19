@@ -85,7 +85,7 @@ required=[
     "push-triggered WAF qualification requires targetProviders",
     "targeted WAF cohort is capped at 12",
     "FIELD_WAF_EXPLICIT_TARGETS",
-    "WAF_ATTEMPTS=1",
+    "WAF_ATTEMPTS=2",
     "WAF_WORKERS=4",
     "Merge targeted refresh into complete WAF evidence ledger",
     "scripts/merge_targeted_waf_refresh.py",

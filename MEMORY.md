@@ -199,3 +199,9 @@
 - The targeted native workflow was still keying Mobile/TV emulator snapshots by accepted-client and NiakVIO commit SHAs (avd-v2), forcing identical clean system images to rebuild for routine provider/harness commits and making same-request provider jobs race through redundant AVD creation.
 - Targeted Mobile/TV now follows the validated canonical reader policy: stable avd-v5 keys depend only on runner/system-image/profile, cache the matching ~/.android/debug.keystore, and prime adb before emulator work. Exact Nuvio client bytes are still checked out separately per run, and the Mobile suite removes a cached debug app before installing the exact candidate.
 - This is Lab efficiency/state hygiene only; it does not change Nuvio production runtime, provider bytes, residential routing or playback evidence authority. RequestVersion 3 remains pinned to its original SHA and is not treated as validation of this cache optimization.
+
+
+### 2026-11-19 — Targeted WAF qualification now requires same-session persistence
+- Explicit WAF cohorts previously forced WAF_ATTEMPTS=1 even though the ordinary-browser probe supports and tests profile reuse across attempts. A first navigation landing on a normal anti-bot interstitial could therefore be persisted as a targeted challenge without observing whether the same ordinary session reaches content on its second load.
+- Targeted cohorts now use two attempts, reusing the same ordinary browser profile. This is not a challenge solver: there is still no CAPTCHA/Turnstile interaction, clearance-cookie fabrication/export, stealth patching or body/cookie persistence. It only distinguishes first-load challenge from same-session persistence.
+- A fresh AnimeOnsen/Allwish/Sekai qualification is requested on the current transport/client matrix. Browser/JVM/libcurl/residential reachability remains transport evidence only and cannot grant provider execution, terminal stream or decoded-playback success.
