@@ -67,6 +67,38 @@ jobs:
             --run-id "$NATIVE_RUN_ID" \
             --ledger automation/brain-android-tv-emulator-history.json
 
+      - name: Checkout the Brain causal router (never run a model here)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: niakw/NiakVIO-Brain-LLM
+          ref: main
+          path: brain
+          persist-credentials: false
+
+      - name: Route the exact TV replay through Brain as diagnosis only
+        if: ${{ hashFiles('automation/brain-android-tv-emulator-history.json') != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp automation/brain-android-tv-emulator-history.json \
+            tested-source/automation/brain-android-tv-emulator-history.json
+          brain_sha="$(git -C brain rev-parse HEAD)"
+          echo "FIELD_BRAIN_ANDROID_TV_ROUTER_SHA sha=$brain_sha"
+          PYTHONPATH=brain/src python3 brain/scripts/route_android_tv_emulator_feedback.py \
+            --niakvio-root tested-source \
+            --source-sha "$NATIVE_SOURCE_SHA" \
+            --run-id "$NATIVE_RUN_ID" \
+            --output "$RUNNER_TEMP/brain-tv-route.json"
+
+      - name: Upload bounded Brain TV next-action plan
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: brain-tv-route-${{ github.event.workflow_run.id }}
+          path: ${{ runner.temp }}/brain-tv-route.json
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Persist non-authoritative Brain TV diagnostic memory on main
         shell: bash
         run: |
