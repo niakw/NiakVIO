@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
   "requestedAt": "2026-11-19",
-  "sourceSha": "71280c630bf753e7a160c9c1856c8d423b41f45c",
+  "sourceSha": "4fba66058e18e568b70c28cd4765773d15888c7b",
   "device": "tv",
   "targetProviders": [
     "french-manga"
   ],
   "targetFixture": "jujutsu-kaisen-s01e01",
   "residentialExit": false,
-  "reason": "Supersede old accepted-TV-head residential run by source-pinned official latest-head NuvioTV Android-TV native replay after upstream merged PR4672 (conditional HTTP2 after 403 with proxyHeaders). User Desktop FR-audio-positive but TV source invisible. Verify actual client SHA includes PR, provider loading/eligibility, HLS terminal video/audio dimensions and correct episode. No provider patch, manifest edits, or false FULL.",
-  "requestVersion": 22,
-  "retryCause": "Old targeted run pinned NuvioTV accepted_ref 1391e6bd, predating upstream HTTP2/403 fix and remained without decoded proof. New generic latest-client-head resolver has passed CORE 44559240557 on f805f95e; prioritize updated real client reader over another old-version comparison."
+  "reason": "2026-11-19 followup: actual official TV latest dev 253eaf6d source-pin run 44561795894 failed because NiakVIO harness forcibly cut French-Manga at 25s while lplaygo master HLS/FR audio arrived around 26s after vidzy 522 fallback. Retest same Jujutsu Kaisen S01E01 with bounded targeted Android harness budget 60000ms, ordinary corpus unchanged 25000ms. Require actual decoded video/audio tracks and identity, no direct provider edit or fake FULL.",
+  "requestVersion": 23,
+  "retryCause": "Prior failure confirmed provider selected, TMDB and episode API 200, vidzy embed 522, alternate lplaygo 200, HLS playlist response 200 ~1s after test-owned timeout. Correct harness before blaming provider. Keep all canonical/no-anime manifests unchanged."
 }
