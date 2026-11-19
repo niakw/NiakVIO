@@ -1,15 +1,14 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-09-29T08:31:00+02:00",
+  "requestedAt": "2026-11-19T09:39:00+01:00",
   "scope": "repair",
   "targetProviders": [
-    "allwish",
-    "vostfree"
+    "french-manga"
   ],
   "autoRepair": false,
-  "goal": "Refresh current-byte provider evidence for the two FORCE-cohort cases that Brain must not mutate from stale or transport-only proof.",
-  "retry": 14,
-  "reason": "brain-force-fresh-evidence-allwish-vostfree",
-  "sourceExpectation": "current main provider bytes only",
-  "executionExpectation": "RETEST exact allwish,vostfree only; persist observational census; no automatic Repair"
+  "goal": "First quick-win Brain candidate replay: execute exact current French-Manga JS against real anime fixtures and refresh current media/identity evidence before any Brain mutation or publication.",
+  "retry": 15,
+  "reason": "quick-win-first-french-manga-current-byte-verification",
+  "sourceExpectation": "current main exact provider JS SHA256 only; 4 canonical manifests preserved",
+  "executionExpectation": "RETEST French-Manga only; persist observational census; no Repair, no provider bytes, no automatic Brain Autopilot"
 }
