@@ -105,6 +105,92 @@ with tempfile.TemporaryDirectory() as tmp:
         stage1,escaped,{"bad"},source_wave=1
     )=={}
 
+# At 600-1000+ providers, Fast Repair must learn breadth-first by causal
+# family instead of spending the first wave on every sibling.
+with tempfile.TemporaryDirectory() as tmp:
+    old_status,old_plan,old_memory,old_overrides,old_policy=(
+        mod.STATUS,mod.BATCH_PLAN,mod.REPAIR_MEMORY,mod.OVERRIDES,mod.BRAIN_POLICY
+    )
+    try:
+        mod.STATUS=Path(tmp)/"status.json"
+        mod.BATCH_PLAN=Path(tmp)/"plan.json"
+        mod.REPAIR_MEMORY=Path(tmp)/"memory.json"
+        mod.OVERRIDES=Path(tmp)/"overrides.json"
+        mod.BRAIN_POLICY=Path(tmp)/"policy.json"
+        mod.STATUS.write_text(json.dumps({
+            "runId":"scale-r1",
+            "providers":[
+                {"provider":"a","status":"PROVIDER NETWORK BLOCKED","evidenceDepth":["movie=none"]},
+                {"provider":"b","status":"CHAIN REACHED","evidenceDepth":["movie=chain_reached"]},
+                {"provider":"c","status":"CANDIDATE OK","evidenceDepth":["movie=lookup_only"]},
+                {"provider":"d","status":"REGRESSION PROVIDER","evidenceDepth":["tv=chain_reached"]},
+                {"provider":"e","status":"NO PROOF","evidenceDepth":["tv=lookup_only"]},
+                {"provider":"solo","status":"NO PROOF","evidenceDepth":["anime=lookup_only"]},
+            ],
+            "repairQueue":["a","b","c","d","e","solo"],
+        }),encoding="utf-8")
+        mod.BATCH_PLAN.write_text(json.dumps({
+            "sourceRunId":"scale-r1",
+            "groups":[
+                {"groupId":"family-html","capabilityStrategy":"html_scraper","providers":["a","b","c"]},
+                {"groupId":"family-mixed","capabilityStrategy":"mixed_embed_resolver","providers":["d","e"]},
+            ],
+        }),encoding="utf-8")
+        mod.REPAIR_MEMORY.write_text(json.dumps({"entries":[]}),encoding="utf-8")
+        policy={
+            "skillMaturity":{"trustedSuccesses":3,"trustedProviders":2,"minimumConfidence":0.8},
+            "production":{"learnedSkillTransferPolicy":{
+                "maturity":"trusted","minimumConfidence":0.8,"minimumDistinctProviders":2
+            }},
+        }
+        mod.BRAIN_POLICY.write_text(json.dumps(policy),encoding="utf-8")
+        mod.OVERRIDES.write_text(json.dumps({"runtime_repair":{"learned_skills":{}}}),encoding="utf-8")
+
+        frontier=mod.repair_wave_frontier(["a","b","c","d","e","solo"])
+        assert frontier["providers"]==["c","d","solo"],frontier
+        assert set(frontier["deferred"])=={"a","b","e"},frontier
+        assert set(frontier["frontierFamilies"])=={
+            "family-html","family-mixed","provider-local:solo"
+        },frontier
+        assert frontier["fanoutFamilies"]==[],frontier
+
+        trusted={
+            "runtime_repair":{"learned_skills":{
+                "media:parser":{
+                    "validated":True,
+                    "maturity":"trusted",
+                    "confidence":1.0,
+                    "successCount":3,
+                    "providers":["p1","p2"],
+                    "capabilityStrategies":["html_scraper"],
+                }
+            }}
+        }
+        assert mod.trusted_transfer_capability_strategies(
+            trusted,policy
+        )=={"html-scraper"}
+
+        fanout=mod.repair_wave_frontier(
+            ["a","b","c","d","e","solo"],
+            trusted_strategies={"html-scraper"},
+        )
+        assert set(fanout["providers"])=={"a","b","c","d","solo"},fanout
+        assert fanout["deferred"]==["e"],fanout
+        assert fanout["fanoutFamilies"]==["family-html"],fanout
+
+        pinned=mod.repair_wave_frontier(
+            ["a","b","c","d","e"],
+            pinned={"a"},
+            trusted_strategies=set(),
+        )
+        assert "a" in pinned["providers"],pinned
+        assert "b" not in pinned["providers"] and "c" not in pinned["providers"],pinned
+        assert "family-html" in pinned["pinnedFamilies"],pinned
+    finally:
+        mod.STATUS,mod.BATCH_PLAN,mod.REPAIR_MEMORY,mod.OVERRIDES,mod.BRAIN_POLICY=(
+            old_status,old_plan,old_memory,old_overrides,old_policy
+        )
+
 assert mod.health_concurrency_for_batch(0,1)==1
 assert mod.health_concurrency_for_batch(0,3)==3
 assert mod.health_concurrency_for_batch(0,4)==4
@@ -585,6 +671,10 @@ for required in (
     "unvisitedProviders",
     "provider_attempt_pressure_map",
     "PROVIDER_BRAIN_PACKED_FAMILY_BATCHES_V1",
+    "FIELD_PROVIDER_BRAIN_FAMILY_FRONTIER",
+    "familyFrontierScheduling",
+    "trusted_transfer_capability_strategies",
+    "repair_wave_frontier",
     "PROVIDER_BRAIN_BATCH_CONCURRENCY_V1",
     "PROVIDER_BRAIN_GENERIC_MISS_TO_LEARNING_V1",
     "PROVIDER_BRAIN_UNEXECUTABLE_LLM_TO_LEARNING_V1",
