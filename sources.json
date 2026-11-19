@@ -179,14 +179,27 @@
       },
       "nuvio-tv": {
         "contract_ref": "67bbb3c3f3be2235e3abb7fda9c4670f97df8448",
-        "accepted_ref": "1391e6bdc2f27547c63dea28f92b272f8487645b",
-        "accepted_at": "2026-11-19T08:43:11.846952+00:00",
-        "acceptance": "automatic-contract-safe-advance",
-        "changed_file_count": 2,
-        "observed_sensitive_changed_files": [],
+        "accepted_ref": "253eaf6d4de85932e08124ca9dc83eff060091b0",
+        "accepted_at": "2026-11-19T18:38:15Z",
+        "acceptance": "manual-semantic-review-compatible-player-http2-403-retry",
+        "changed_file_count": 14,
+        "observed_sensitive_changed_files": [
+          "app/src/main/java/com/nuvio/tv/core/player/TrailerPlayerPool.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/player/PlayerPlaybackNetworking.kt"
+        ],
         "unrelated_changed_files": [
-          "app/src/main/java/com/nuvio/tv/ui/components/AvatarPickerGrid.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/profile/ProfileSelectionScreen.kt"
+          "app/src/main/java/com/nuvio/tv/data/local/TrailerSettingsDataStore.kt",
+          "app/src/main/java/com/nuvio/tv/data/trailer/InAppYouTubeExtractor.kt",
+          "app/src/main/java/com/nuvio/tv/data/trailer/TrailerPlaybackSource.kt",
+          "app/src/main/java/com/nuvio/tv/ui/components/TrailerPlayer.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/detail/MetaDetailsScreen.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/detail/MetaDetailsViewModel.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/settings/LayoutDetailSettings.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/settings/LayoutSettingsViewModel.kt",
+          "app/src/main/res/values-pl/strings.xml",
+          "app/src/main/res/values/strings.xml",
+          "app/src/test/java/com/nuvio/tv/data/trailer/TrailerSubtitleTest.kt",
+          "app/src/test/java/com/nuvio/tv/ui/screens/player/ProxyHeadersProtocolTest.kt"
         ]
       }
     }
