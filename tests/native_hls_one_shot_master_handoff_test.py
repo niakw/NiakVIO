@@ -40,7 +40,7 @@ source = hls.apply(source, options={
     "network_sample_bytes": 32768,
     "inspect_master_facts": True,
 })
-source = sanitizer.apply(source)
+source = sanitizer.apply(source, options={"probe_all_urls": True, "max_probes": 4, "probe_timeout_ms": 1800})
 
 assert "scoped-playback-context-v11-hls-proof-handoff" in source
 assert "variant-coherence-v19-core-proof-handoff" in source
