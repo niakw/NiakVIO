@@ -761,6 +761,15 @@ connect Tailscale -> select residential exit -> WAF/replay qualification
 
 Cleanup is fail-safe (`always()`), but it must occur after canonical execution.
 
+Targeted official-client experiments follow the same persistence rule as full Labs.
+Their sanitized client logs are converted by `diagnose-native-reader.mjs` into
+bounded `*brain.json` evidence. The trusted `LEARN - Native Reader Sync`
+workflow imports completed main-branch targeted runs into
+`brain-learning/proposals`. Incomplete evidence is retained only as diagnostic
+context and cannot authorize provider mutation; complete healthy/failure routes
+update reader backlog/learning memory with exact run provenance. This prevents a
+real Android/TV/Desktop transport result from being observed once and then lost
+before the next Brain decision.
 
 ### 6.3 Brain-generated runtime Blocs
 

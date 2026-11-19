@@ -218,3 +218,10 @@
 - This keeps transport/player investigations on the accepted official clients while avoiding unrelated corpus cost. The broad Global/VF certification path remains unchanged and still uses the full/default corpus when no target fixture is supplied.
 - Request v4 targets active `animeonsen` (VF) and `sekai` (Global) on Desktop, Mobile and Android TV through independently attested residential egress with `jujutsu-kaisen-s01e01`. Mobile additionally keeps the same-source Auto -> ExoPlayer -> libmpv differential. Disabled `allwish` is intentionally not resurrected for this test.
 - This request is diagnostic evidence, not provider mutation authority. A browser/HTTP/native transport success does not imply correct provider execution or playable/decoded media.
+
+
+### 2026-11-19 — Targeted native client evidence now persists into Brain memory
+- Targeted Desktop/Mobile/TV jobs now convert every available sanitized native corpus log into `*brain.json` with the same `diagnose-native-reader.mjs` used by full native Labs, retain the artifacts for 8 days, and include frontend/native-evidence context where produced.
+- `LEARN - Native Reader Sync` now listens to completed trusted-main `NATIVE - Device Corpus Tests` runs, downloads the targeted `native-corpus-*-$RUN_ID` artifacts, and merges complete diagnoses into the existing reader backlog / learning-only memory. Manual exact-run import remains supported for full Labs.
+- Cancelled/skipped runs are not auto-imported. Runs that fail before producing a diagnosis are skipped automatically rather than manufacturing evidence. The existing fail-closed merge still refuses incomplete evidence and never grants production/provider mutation authority from a client transport observation alone.
+- Native residential request v5 replays `animeonsen` + `sekai` on Desktop/Mobile/TV with the focused Jujutsu Kaisen fixture so the resulting real-client evidence survives into Brain learning instead of remaining a transient CI log.
