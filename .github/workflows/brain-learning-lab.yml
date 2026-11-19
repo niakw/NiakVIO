@@ -1394,6 +1394,13 @@ jobs:
             echo "published=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          if [ -s "$RUNNER_TEMP/brain-learning-existing.json" ] && [ -s brain-learning-input/previous.json ]; then
+            python scripts/merge_brain_learning_latest_memory.py \
+              --base brain-learning-input/previous.json \
+              --previous "$RUNNER_TEMP/brain-learning-existing.json" \
+              --current brain-learning-output/latest.json \
+              --output brain-learning-output/latest.json
+          fi
           if [ -s "$RUNNER_TEMP/brain-learning-existing-guidance.json" ]; then
             python scripts/merge_brain_llm_guidance_memory.py \
               --previous "$RUNNER_TEMP/brain-learning-existing-guidance.json" \
