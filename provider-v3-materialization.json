@@ -1,6 +1,6 @@
 {
   "schemaVersion": 3,
-  "sourceSha": "cdfb4eba94fb22d122a902320d9ca4fd69c05a51",
+  "sourceSha": "0028d8629385b9bcfca2fb58b2dfe6f0409d7bef",
   "context": "workspace",
   "generation": "cd00a6ac155869fe39450a5fc92ba84aee86bcd1caced177726a5666fa914444",
   "providerCount": 74,
@@ -4490,6 +4490,7 @@
     },
     {
       "provider": "hindmoviez",
+      "entryAuthority": "global-manifest",
       "file": "providers/hindmoviez--nuvio--1d758dfc1166cef6.js",
       "sha256": "1d758dfc1166cef6873d878ad0a5c4b94c37bcf8d68e29599833951bfb98ccb9",
       "providerDataSha256": "1c4c650a0e09790eb9c0fbd11e1e809fc7cfe9878809e4bcbc0c19f13091dce0",
@@ -4613,6 +4614,16 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false,
+      "securityHardening": {
+        "changed": false,
+        "alreadyHardened": false,
+        "literalDecodeChanges": 0,
+        "hostnameChanges": 0,
+        "percentDecodeChanges": 0,
+        "htmlEntityDecodeReorders": 0,
+        "consoleSinkChanges": 0,
+        "consoleShadow": false
+      },
       "byteValidation": {
         "tool": "raw-bytes",
         "toolVersion": "raw-v1",
@@ -4620,6 +4631,8 @@
         "sourceSha256": "ac97ac0a1abbaffd896aa3a476d3be791c7363d63d7ba3965c5f9509c0666c7e",
         "fixedPointVerified": true
       },
+      "staticAuthorityReconciledProviders": [],
+      "domainSubstitutionReconciledProviders": [],
       "minimizer": {
         "enabled": false,
         "savedBytes": 0,
@@ -5858,6 +5871,7 @@
     },
     {
       "provider": "mugiwarastream",
+      "entryAuthority": "global-manifest",
       "file": "providers/mugiwarastream--nuvio--680198ac4792e29b.js",
       "sha256": "680198ac4792e29b64e449bd0690236d25891edb7285bc7aaf09130d47e73fe7",
       "providerDataSha256": "da5ef97475974b47f82061b999823d14383f0fc2d06cc574c13cc22c09f311d4",
@@ -5988,6 +6002,16 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false,
+      "securityHardening": {
+        "changed": false,
+        "alreadyHardened": false,
+        "literalDecodeChanges": 0,
+        "hostnameChanges": 0,
+        "percentDecodeChanges": 0,
+        "htmlEntityDecodeReorders": 0,
+        "consoleSinkChanges": 0,
+        "consoleShadow": false
+      },
       "byteValidation": {
         "tool": "raw-bytes",
         "toolVersion": "raw-v1",
@@ -5995,6 +6019,8 @@
         "sourceSha256": "b44c4870e3e0bed435b6b8babf658802a75e457e85b91fd90b432e09296b1e7d",
         "fixedPointVerified": true
       },
+      "staticAuthorityReconciledProviders": [],
+      "domainSubstitutionReconciledProviders": [],
       "minimizer": {
         "enabled": false,
         "savedBytes": 0,
@@ -10056,50 +10082,8 @@
   "staticKnowledgeFile": "automation/provider-v3-static-knowledge.json",
   "staticKnowledgeProviderCount": 109,
   "targetedPublicationFixedPointProviders": [
-    "67movies",
-    "anidb",
-    "aniflix-uno",
-    "anikototv",
-    "animejlprovider",
-    "arrowtv",
-    "boredflix",
-    "castle",
-    "cinegram",
-    "cinemabz",
-    "corsflix",
-    "documentary-area",
-    "emnexmovies",
-    "flixer",
-    "flixhq",
-    "french-manga",
-    "fsharetv",
-    "hexa",
     "hindmoviez",
-    "ihavenotv",
-    "internet-archive",
-    "latestmovies",
-    "meowtv",
-    "moviebite",
-    "movish",
-    "mugiwarastream",
-    "neko-sama",
-    "neonflix",
-    "overlook",
-    "papadustream",
-    "primewire",
-    "pstream",
-    "purstream",
-    "rarefilmm",
-    "reanime-to",
-    "rivestream-app",
-    "rivestream-ru",
-    "shuttletv",
-    "streamzo",
-    "videasy",
-    "vidlink",
-    "vuflix",
-    "watch-cartoon-online",
-    "watchott"
+    "mugiwarastream"
   ],
   "targetedPublicationComplete": true,
   "targetedPublicationReconciledProviders": [
@@ -10135,5 +10119,14 @@
     "zone-telechargement"
   ],
   "lifecycleScopeReconciled": true,
-  "lifecycleReconciledArchivedProviders": []
+  "lifecycleReconciledArchivedProviders": [],
+  "domainAuthorityOnlyUpdate": true,
+  "domainAuthorityUpdatedProviders": [
+    "hindmoviez",
+    "mugiwarastream"
+  ],
+  "targetedMaterializedProviders": [
+    "hindmoviez",
+    "mugiwarastream"
+  ]
 }
