@@ -248,6 +248,7 @@ with tempfile.TemporaryDirectory() as tmp:
             old_status,old_plan,old_memory,old_overrides,old_policy
         )
 
+assert mod.META_GAP_FAILURE_FAMILIES["candidate_replay_gap"]=="candidate-replay"
 assert mod.health_concurrency_for_batch(0,1)==1
 assert mod.health_concurrency_for_batch(0,3)==3
 assert mod.health_concurrency_for_batch(0,4)==4
