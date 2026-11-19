@@ -141,5 +141,31 @@ with tempfile.TemporaryDirectory() as tmp:
     assert "FIELD_NATIVE_ENGINE_SIGNAL" in proc.stdout, proc.stdout
     assert "FIELD_NATIVE_CAPABILITY_SIGNAL" in proc.stdout, proc.stdout
     assert "FIELD_NATIVE_PLAYER_SUMMARY" in proc.stdout, proc.stdout
+    # A nominal TV READY with no actual video format is still not playback.
+    # Keep the production gate strict while proving that the enrichment layer
+    # carries real dimensions when observed (instead of dropping them).
+    noformat = root / "without-decoded-video"
+    noformat.mkdir()
+    (noformat / "desktop-native-corpus-synthetic.log").write_text(
+        "\\n".join(desktop) + "\\n"
+    )
+    (noformat / "tv-native-corpus-synthetic.log").write_text(
+        ("\\n".join(tv) + "\\n").replace(
+            "video_width=1280 video_height=720",
+            "video_width=0 video_height=0",
+        )
+    )
+    negative_output = noformat / "summary.json"
+    negative = subprocess.run(
+        ["node", str(SCRIPT), "--dir", str(noformat), "--output", str(negative_output)],
+        cwd=ROOT, text=True, capture_output=True,
+    )
+    assert negative.returncode == 0, negative.stdout + negative.stderr
+    missing = json.loads(negative_output.read_text())
+    assert missing["nativeReaderObserved"] == 3, missing
+    assert missing["nativeReaderHealthy"] == 0, missing
+    assert missing["readerFailureClasses"]["playback_video_format_unverified"] == 1, missing
+    assert missing["nativeReaderFailures"] == 3, missing
+
 
 print("native corpus suite summary tests passed")
