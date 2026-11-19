@@ -132,7 +132,16 @@ assert 'max_rounds="${vals[2]:-3}"' in fast
 assert "python tests/brain_exploration_chain_test.py" in fast
 fast_py = (ROOT / "scripts/run_provider_fast_repair.py").read_text(encoding="utf-8")
 assert 'parser.add_argument("--max-rounds-per-batch", type=int, default=3)' in fast_py
-assert '-f target_providers="$eligible_csv"' in fast
+# Fast delegates family-aware Learning dispatch to its isolated helper.
+# Require the actual target-provider handoff at that boundary, not a removed
+# inline workflow command from the previous serial implementation.
+assert 'ELIGIBLE_CSV="$eligible_csv"' in fast
+dispatch = (ROOT / "scripts/dispatch_learning_family_cohorts.sh").read_text(encoding="utf-8")
+assert 'gh workflow run brain-learning-lab.yml "${args[@]}"' in dispatch
+assert '-f target_providers="$cohort_filter"' in dispatch
+assert 'PUBLISH_PROPOSAL="${PUBLISH_PROPOSAL:-false}"' in dispatch
+assert 'MAX_COHORTS="${MAX_COHORTS:-8}"' in dispatch
+assert 'family_deferred=' in dispatch
 assert 'complete-cloud-convergence:' in learn
 assert 'FIELD_BRAIN_CLOUD_CONVERGENCE next=census' in learn
 assert '-f scope=unresolved -f persist=true' in learn

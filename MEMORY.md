@@ -1,3 +1,9 @@
+## 2026-11-19 — Core gate test adapted to actual family Learning dispatch
+
+- Current Core gate run `44612924705` failed its contract at `tests/provider_brain_autopilot_workflow_test.py:135`: it still required the obsolete inline `-f target_providers="$eligible_csv"` Fast command, while Fast already delegates to `scripts/dispatch_learning_family_cohorts.sh`. This was an **outdated test assertion**, not evidence of provider media failure.
+- The regression now verifies the exact Fast→family dispatcher environment and the downstream workflow command, scoped cohort filter, `publish_proposal=false` default, and 8-cohort bound. It does not relax runtime, stream, identity or publication gates.
+- The no-frontier rotation guard introduced at 149cf51e still needs exact-SHA CI and a fresh executable Fast run; no provider repair is claimed by this test update.
+
 ## 2026-11-19 — Prevent repeated no-frontier Fast waves (P0)
 
 - Live Fast run `44602295350` on `20b9116e` completed 4/6 waves with **0 accepted repair**. Early first-wave sandbox exploration made progress but subsequent `adaptive_runtime_recovery` rounds often produced zero new causal frontier. The previous outer scheduler rotated whenever `brain-repair-memory.json` bytes changed, even when a completed wave produced no `exploration_progress`, accepted candidate or untried Advisor hypothesis.
