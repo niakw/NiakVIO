@@ -90,10 +90,11 @@
   "debugStageCounts": {
     "provider_network_exception": 10,
     "provider_network_http_error": 42,
-    "provider_network_zero_result": 67,
+    "provider_network_zero_result": 66,
     "provider_returned_streams": 11,
-    "provider_waf_challenge": 53,
-    "timeout": 16
+    "provider_returned_wrong_content": 1,
+    "provider_waf_challenge": 54,
+    "timeout": 15
   },
   "debugStageProviders": {
     "provider_network_exception": [
@@ -126,7 +127,8 @@
       "voiranime-homes",
       "watchott",
       "wookafr",
-      "youtitou"
+      "youtitou",
+      "zone-streaming"
     ],
     "provider_network_zero_result": [
       "4khdhub",
@@ -147,6 +149,7 @@
       "mallumv",
       "moviebite",
       "moviebox",
+      "movish",
       "movix-fr",
       "nakios",
       "neobam",
@@ -155,9 +158,6 @@
       "playimdb",
       "primewire",
       "pstream",
-      "sekai",
-      "skstream",
-      "topcartoons",
       "uhdmovies",
       "vidlink",
       "voiranime-rip",
@@ -174,6 +174,9 @@
       "topcartoons",
       "zone-streaming"
     ],
+    "provider_returned_wrong_content": [
+      "topcartoons"
+    ],
     "provider_waf_challenge": [
       "1jour1film0626",
       "aniflix-uno",
@@ -188,15 +191,17 @@
       "fexini",
       "film-a-revoir",
       "flemmix",
+      "flixhq",
       "franime",
       "french-anime",
       "fullanime",
       "ihavenotv",
       "kehflix",
       "moviesmod",
-      "movish",
       "movy",
       "rarefilmm",
+      "reanime-to",
+      "sekai",
       "skstream",
       "stigstream",
       "voirserie",
@@ -212,12 +217,12 @@
       "flixhq",
       "french-manga",
       "hianime",
+      "movish",
       "movix-fr",
       "nakios",
-      "reanime-to",
       "sadisflix",
-      "vuflix",
-      "zone-streaming"
+      "showbox",
+      "vuflix"
     ]
   },
   "fullOkCount": 5,
@@ -251,28 +256,28 @@
     "streamzo"
   ],
   "providerCount": 111,
-  "runId": 44630718083,
+  "runId": 44632232400,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 22,
-    "DISABLED": 37,
+    "CHAIN REACHED": 23,
+    "DISABLED": 36,
     "FULL OK": 5,
     "HARNESS MISMATCH": 5,
     "HARNESS/ENV BLOCKED": 14,
     "NO PROOF": 9,
     "PARTIAL OK": 1,
-    "PROOF REFRESH REQUIRED": 5,
-    "PROVIDER NETWORK BLOCKED": 8,
+    "PROOF REFRESH REQUIRED": 6,
+    "PROVIDER NETWORK BLOCKED": 7,
     "REGRESSION PROVIDER": 4
   },
   "testedProviderCount": 103,
-  "triggerSha": "e49b118064eaa30f89b99bd08f6eeeb1168e2102",
-  "verifiedProviderCount": 1,
-  "verifiedProviders": [
-    "kurage"
-  ],
-  "wrongContentProviderCount": 0,
-  "wrongContentProviders": []
+  "triggerSha": "c4342eef2b63e2d7c0ec7c89aeb7ef74be3972ef",
+  "verifiedProviderCount": 0,
+  "verifiedProviders": [],
+  "wrongContentProviderCount": 1,
+  "wrongContentProviders": [
+    "topcartoons"
+  ]
 }
