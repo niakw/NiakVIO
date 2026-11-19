@@ -129,6 +129,9 @@ assert render.browser_harness_status(blocked,"allwish")=="HARNESS/ENV BLOCKED"
 fallback=merge.mark_residential_unavailable(baseline,reason="tailscale-connect-failed")
 assert fallback["residentialExitNodeEvidence"]["available"] is False
 assert fallback["residentialExitNodeEvidence"]["reason"]=="tailscale-connect-failed"
+dataplane=merge.mark_residential_unavailable(baseline,reason="exit-selected-public-internet-unavailable")
+assert dataplane["residentialExitNodeEvidence"]["available"] is False
+assert dataplane["residentialExitNodeEvidence"]["reason"]=="exit-selected-public-internet-unavailable"
 serialized_fallback=repr(fallback)
 assert "203.0.113.123" not in serialized_fallback
 assert render.harness_transport_diagnostic(fallback,"allwish")["classification"]=="github-all-transports-challenged"
