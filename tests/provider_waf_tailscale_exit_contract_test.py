@@ -78,7 +78,10 @@ required=[
     "scripts/verify_waf_exit_route.py baseline",
     "scripts/verify_waf_exit_route.py verify",
     "scripts/verify_waf_exit_route.py clear",
-    "failure_reason=exit-egress-unverified",
+    "failure_reason=$reason",
+    "exit-selected-public-internet-unavailable",
+    "exit-node-offline",
+    "post-exit-public-ip-unavailable",
     "--unavailable-reason \"$reason\"",
     "tailscale-connect-failed",
     "exit-node-unavailable",
@@ -148,6 +151,8 @@ assert "gh workflow run temp-current-bytes-full-provider-census.yml" in repair
 assert "gh workflow run provider-waf-browser-session.yml --ref main" not in temp
 assert "gh workflow run provider-waf-browser-session.yml --ref main" not in sharded
 assert "Prepare integrated Repair WAF/network qualification" in repair
+assert "residentialExitNodeLastAttempt" in repair
+assert 'replay.get("lastAttempt")' in repair
 assert "if: ${{ github.ref == 'refs/heads/main' }}" in wf
 
 assert "FIELD_REPAIR_SUPERSEDED_EARLY" in repair
