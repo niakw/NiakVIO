@@ -1,0 +1,89 @@
+name: BRAIN - Android TV Emulator Feedback
+
+on:
+  workflow_run:
+    workflows:
+      - NATIVE - Device Corpus Tests
+    types: [completed]
+
+permissions:
+  contents: write
+  actions: read
+
+# Serialize observation ledgers. The native TV emulator stays in its existing
+# Actions runner; the Brain receives a redacted, source-pinned transcript.
+concurrency:
+  group: brain-android-tv-evidence-main
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    if: ${{ github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.head_branch == 'main' && (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NATIVE_RUN_ID: ${{ github.event.workflow_run.id }}
+      NATIVE_SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - name: Checkout trusted current Brain control scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Checkout exact source executed by the native client
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          path: tested-source
+          persist-credentials: false
+
+      - name: Validate ingest and safe history contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/brain_android_tv_emulator_ingest_test.py
+
+      - name: Import only already-sanitized official TV native diagnostic JSON
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/official-tv-evidence"
+          if ! gh run download "$NATIVE_RUN_ID" --repo "$GITHUB_REPOSITORY" \
+              --pattern 'native-corpus-tv-*' \
+              --dir "$RUNNER_TEMP/official-tv-evidence"; then
+            echo "FIELD_BRAIN_ANDROID_TV_ARTIFACT status=not_found run=$NATIVE_RUN_ID"
+            exit 0
+          fi
+          if ! find "$RUNNER_TEMP/official-tv-evidence" -name '*-brain.json' -type f -print -quit | grep -q .; then
+            echo "FIELD_BRAIN_ANDROID_TV_ARTIFACT status=no_sanitized_reports run=$NATIVE_RUN_ID"
+            exit 0
+          fi
+          python3 scripts/ingest_brain_android_tv_emulator.py \
+            --reports "$RUNNER_TEMP/official-tv-evidence" \
+            --source-root tested-source \
+            --source-sha "$NATIVE_SOURCE_SHA" \
+            --run-id "$NATIVE_RUN_ID" \
+            --ledger automation/brain-android-tv-emulator-history.json
+
+      - name: Persist non-authoritative Brain TV diagnostic memory on main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ ! -f automation/brain-android-tv-emulator-history.json ]; then
+            echo "FIELD_BRAIN_ANDROID_TV_PERSIST status=no_diagnostic"
+            exit 0
+          fi
+          git add automation/brain-android-tv-emulator-history.json
+          if git diff --cached --quiet; then
+            echo "FIELD_BRAIN_ANDROID_TV_PERSIST status=no_new_observation"
+            exit 0
+          fi
+          git commit -m "ci(brain): retain exact-source Android TV emulator diagnostic evidence"
+          git fetch --quiet origin main
+          git rebase origin/main
+          git push origin HEAD:main
+          echo "FIELD_BRAIN_ANDROID_TV_PERSIST status=committed mutation_authority=false"
