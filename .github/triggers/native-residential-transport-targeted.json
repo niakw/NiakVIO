@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
   "requestedAt": "2026-11-19",
-  "sourceSha": "4fba66058e18e568b70c28cd4765773d15888c7b",
+  "sourceSha": "0251d7dae8dd4b2e4d51ca2f2cb52862f64c09a9",
   "device": "tv",
   "targetProviders": [
     "french-manga"
   ],
   "targetFixture": "jujutsu-kaisen-s01e01",
   "residentialExit": false,
-  "reason": "2026-11-19 followup: actual official TV latest dev 253eaf6d source-pin run 44561795894 failed because NiakVIO harness forcibly cut French-Manga at 25s while lplaygo master HLS/FR audio arrived around 26s after vidzy 522 fallback. Retest same Jujutsu Kaisen S01E01 with bounded targeted Android harness budget 60000ms, ordinary corpus unchanged 25000ms. Require actual decoded video/audio tracks and identity, no direct provider edit or fake FULL.",
-  "requestVersion": 23,
-  "retryCause": "Prior failure confirmed provider selected, TMDB and episode API 200, vidzy embed 522, alternate lplaygo 200, HLS playlist response 200 ~1s after test-owned timeout. Correct harness before blaming provider. Keep all canonical/no-anime manifests unchanged."
+  "reason": "Current-byte Android TV validation of the shared HLS proof handoff. Historical native evidence used French-Manga f18a1c3a with HLS integrity v18 and no cached Core master reuse. Current French-Manga 458b2df260ba6488 carries Core media proof into HLS integrity v19. Require returned stream, decoded video and audio, and correct episode identity.",
+  "requestVersion": 24,
+  "retryCause": "Historical signed HLS master was fetched successfully once and the identical root later returned 403. Current bytes use coreHlsProof in nativeFirstSegmentProof to reuse the first master body instead of refetching it. Prove this on official Android TV."
 }
