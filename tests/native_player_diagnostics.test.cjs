@@ -14,6 +14,9 @@ assert.equal(readerFailureClass({ state: 'ended' }), 'healthy');
 assert.equal(readerFailureClass({ client: 'tv', state: 'ready', videoWidth: 0, videoHeight: 0 }), 'playback_video_format_unverified');
 assert.equal(readerFailureClass({ client: 'tv', state: 'ended', videoWidth: 1920, videoHeight: 0 }), 'playback_video_format_unverified');
 assert.equal(readerFailureClass({ client: 'tv', state: 'ready', videoWidth: 1280, videoHeight: 720 }), 'healthy');
+assert.equal(readerFailureClass({ client: 'tv', state: 'ready', videoWidth: 1280, videoHeight: 720, httpStatus: 403 }), 'playback_http_access');
+assert.equal(readerFailureClass({ client: 'tv', state: 'ready', videoWidth: 1280, videoHeight: 720, failureStage: 'decoder' }), 'playback_decoder');
+
 assert.equal(readerFailureClass({ client: 'tv', state: 'ready' }), 'playback_video_format_unverified');
 assert.equal(readerFailureDomain({ client: 'tv', state: 'ready', videoWidth: 0, videoHeight: 0 }), 'unresolved_media');
 assert.equal(providerMutationEligible({ client: 'tv', state: 'ready', videoWidth: 0, videoHeight: 0 }), false);
