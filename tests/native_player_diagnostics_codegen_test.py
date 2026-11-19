@@ -220,11 +220,38 @@ assert strict_player_error.returncode == 4, (strict_player_error.stdout, strict_
 assert "production_playback_never_verified" in strict_player_error.stderr
 
 mobile_real_engine = reach_gate([
-    "FIELD_NATIVE_PLAYER client=mobile fixture=sinners provider64=x request_type=movie route_mode=declared index=0 state=ready engine=ExoPlayer production_surface=true http_status=0 failure_stage=none"
+    "FIELD_NATIVE_PLAYER client=mobile fixture=sinners provider64=x request_type=movie route_mode=declared index=0 state=ready engine=ExoPlayer production_surface=true http_status=0 failure_stage=none video_width=1920 video_height=1080"
 ], blocking=True)
 assert mobile_real_engine.returncode == 0, (mobile_real_engine.stdout, mobile_real_engine.stderr)
 assert "playback_verified=1" in mobile_real_engine.stdout
 assert "verified_clients=mobile:1" in mobile_real_engine.stdout
+
+# A READY/23-minute metadata snapshot was observed for French-Manga on
+# Android TV even though direct HLS transport answered 403 and no video
+# dimensions were recorded. A nonzero duration is NOT video-track proof.
+# Do not turn this native failure into a fake player/media FULL.
+tv_ready_unproven = reach_gate([
+    "FIELD_NATIVE_PLAYER client=tv fixture=jujutsu-kaisen-s01e01 "
+    "provider64=x request_type=anime route_mode=declared index=0 "
+    "state=ready engine=nuvio-tv-production production_surface=true "
+    "http_status=0 failure_stage=none duration_seconds=1435.007 "
+    "video_width=0 video_height=0 audio_track_count=0"
+], blocking=True)
+assert tv_ready_unproven.returncode == 4, (
+    tv_ready_unproven.stdout, tv_ready_unproven.stderr,
+)
+assert "production_playback_never_verified" in tv_ready_unproven.stderr
+assert "playback_verified=0" in tv_ready_unproven.stderr
+
+tv_ready_partial = reach_gate([
+    "FIELD_NATIVE_PLAYER client=tv fixture=jujutsu-kaisen-s01e01 "
+    "provider64=x request_type=anime route_mode=declared index=0 "
+    "state=ready engine=nuvio-tv-production production_surface=true "
+    "http_status=0 failure_stage=none duration_seconds=1435.007 "
+    "video_width=0 video_height=0 audio_track_count=0"
+])
+assert tv_ready_partial.returncode == 0
+assert "production_playback_never_verified" in tv_ready_partial.stderr
 
 short_media = reach_gate([
     "FIELD_NATIVE_PLAYER client=desktop fixture=sinners provider64=x request_type=movie route_mode=declared index=0 state=short_media engine=nuvio-desktop-production production_surface=true http_status=0 failure_stage=duration_identity"
