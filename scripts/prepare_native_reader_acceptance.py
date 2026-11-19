@@ -255,18 +255,10 @@ def main() -> int:
     args = parser.parse_args()
 
     workspace = Path(args.workspace).resolve()
-    # NATIVE_ANDROID_HUB46_MANIFEST_V1
-    # Scope ownership is global: historical workflows may still pass manifest.json,
-    # but a physical Hub-46 campaign must prepare the exact same terminal-name-safe
-    # repository consumed by the native suite.
-    requested_manifest = args.manifest
-    if (
-        requested_manifest in {"manifest.json", "native-hub46/manifest.json"}
-        and os.environ.get("NIAKVIO_PROVIDER_SCOPE_MATRIX", "").strip()
-        and (ROOT / "native-hub46/manifest.json").is_file()
-    ):
-        requested_manifest = "native-hub46/manifest.json"
-    manifest_path = client_prepare._manifest_path(requested_manifest).resolve()
+    # The caller-selected canonical projection is execution authority. Historical
+    # scope matrices may filter providers but must never redirect the client to a
+    # synthetic publication manifest.
+    manifest_path = client_prepare._manifest_path(args.manifest).resolve()
     maybe_verify_reader_repair_manifest(manifest_path)
     manifest = str(manifest_path.relative_to(ROOT))
     prepare(
