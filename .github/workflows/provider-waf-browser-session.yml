@@ -229,8 +229,17 @@ jobs:
             echo "Private exit node could not be selected; verify exit-node advertisement/approval and tag:niakvio-ci -> autogroup:internet policy." >&2
             exit 1
           fi
-          if ! python scripts/verify_waf_exit_route.py verify --state "$WAF_EGRESS_STATE"; then
-            echo "failure_reason=exit-egress-unverified" >> "$GITHUB_OUTPUT"
+          verify_log=""
+          if verify_log="$(python scripts/verify_waf_exit_route.py verify --state "$WAF_EGRESS_STATE" 2>&1)"; then
+            printf '%s\n' "$verify_log"
+          else
+            printf '%s\n' "$verify_log"
+            reason="$(printf '%s\n' "$verify_log" | sed -n 's/.*reason=\([a-z0-9-]*\).*/\1/p' | tail -n 1)"
+            case "$reason" in
+              exit-selected-public-internet-unavailable|exit-node-offline|exit-status-unavailable|egress-unchanged|post-exit-public-ip-unavailable) ;;
+              *) reason="exit-egress-unverified" ;;
+            esac
+            echo "failure_reason=$reason" >> "$GITHUB_OUTPUT"
             exit 1
           fi
           route_verified=1
