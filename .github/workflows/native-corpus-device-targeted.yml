@@ -18,6 +18,11 @@ on:
         required: false
         default: ""
         type: string
+      target_fixture:
+        description: Optional exact corpus fixture slug for focused native transport/player proof
+        required: false
+        default: ""
+        type: string
       residential_exit:
         description: Route the real native client through the configured private Tailscale exit
         required: false
@@ -58,6 +63,7 @@ jobs:
         env:
           INPUT_DEVICE: ${{ inputs.device || '' }}
           INPUT_TARGET_PROVIDERS: ${{ inputs.target_providers || '' }}
+          INPUT_TARGET_FIXTURE: ${{ inputs.target_fixture || '' }}
           INPUT_RESIDENTIAL_EXIT: ${{ inputs.residential_exit || false }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
@@ -75,6 +81,7 @@ jobs:
               for value in (os.environ.get("INPUT_TARGET_PROVIDERS") or "").split(",")
               if value.strip()
           ]
+          target_fixture = (os.environ.get("INPUT_TARGET_FIXTURE") or "").strip()
           residential = str(os.environ.get("INPUT_RESIDENTIAL_EXIT") or "").strip().lower() == "true"
 
           if event == "push":
@@ -86,6 +93,7 @@ jobs:
                   for value in payload.get("targetProviders") or []
                   if str(value or "").strip()
               })
+              target_fixture = str(payload.get("targetFixture") or "").strip()
               residential = payload.get("residentialExit") is True
 
           if device in {"desktop", "mobile", "tv"}:
@@ -99,6 +107,21 @@ jobs:
               raise SystemExit("targeted native provider cohort is capped at 8")
           if residential and not providers:
               raise SystemExit("residential native transport proof requires explicit target provider(s)")
+          if target_fixture:
+              lab = json.loads(Path(".github/triggers/nuvio-client-lab.json").read_text(encoding="utf-8"))
+              fixture_slugs = set()
+              stack = [lab]
+              while stack:
+                  value = stack.pop()
+                  if isinstance(value, dict):
+                      slug = value.get("slug")
+                      if isinstance(slug, str) and slug.strip():
+                          fixture_slugs.add(slug.strip())
+                      stack.extend(value.values())
+                  elif isinstance(value, list):
+                      stack.extend(value)
+              if target_fixture not in fixture_slugs:
+                  raise SystemExit(f"unknown native target fixture: {target_fixture}")
 
           sys.path.insert(0, str((Path.cwd() / "scripts").resolve()))
           from native_manifest_projection import active_provider_manifest
@@ -123,7 +146,7 @@ jobs:
           targets = [
               {
                   "device": selected_device,
-                  "fixture": "all",
+                  "fixture": target_fixture or "all",
                   "provider": spec["provider"],
                   "manifest": spec["manifest"],
                   "projection": spec["projection"],
@@ -161,6 +184,7 @@ jobs:
       TS_TAG_NAME: ${{ secrets.TS_TAG_NAME }}
       NIAKVIO_TARGET_PROVIDER: ${{ matrix.provider }}
       NIAKVIO_TARGET_MANIFEST: ${{ matrix.manifest }}
+      NIAKVIO_TARGET_FIXTURE: ${{ matrix.fixture }}
     steps:
       - name: Checkout exact Niakvio generation
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -408,7 +432,11 @@ jobs:
         shell: bash
         run: |
           set -u
-          FIXTURES=(interstellar mon-ninja-et-moi-3 breaking-bad-s01e01 revenant-s01e01 jujutsu-kaisen-s01e01 mushoku-tensei-s01e01)
+          if [ -n "${NIAKVIO_TARGET_FIXTURE:-}" ] && [ "${NIAKVIO_TARGET_FIXTURE}" != "all" ]; then
+            FIXTURES=("${NIAKVIO_TARGET_FIXTURE}")
+          else
+            FIXTURES=(interstellar mon-ninja-et-moi-3 breaking-bad-s01e01 revenant-s01e01 jujutsu-kaisen-s01e01 mushoku-tensei-s01e01)
+          fi
           STATUS=0
           for fixture in "${FIXTURES[@]}"; do
             echo "===== DESKTOP CORPUS FIXTURE: $fixture ====="
@@ -471,7 +499,7 @@ jobs:
           if-no-files-found: warn
 
   cross-runtime-gate:
-    if: ${{ always() && inputs.device == 'all' && inputs.target_providers == '' }}
+    if: ${{ always() && inputs.device == 'all' && inputs.target_providers == '' && inputs.target_fixture == '' }}
     needs: [native-corpus]
     runs-on: ubuntu-latest
     timeout-minutes: 10

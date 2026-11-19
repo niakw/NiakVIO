@@ -6,6 +6,7 @@ workflow = (ROOT / ".github/workflows/native-corpus-device-targeted.yml").read_t
 
 required = (
     "target_providers:",
+    "target_fixture:",
     "residential_exit:",
     ".github/triggers/native-residential-transport-targeted.json",
     "id-token: write",
@@ -30,11 +31,14 @@ required = (
     '--manifest "$NIAKVIO_TARGET_MANIFEST"',
     "NIAKVIO_PROVIDER_SCOPE_MATRIX=",
     "NIAKVIO_TARGET_PROVIDER=",
+    "NIAKVIO_TARGET_FIXTURE: ${{ matrix.fixture }}",
+    'target_fixture = str(payload.get("targetFixture") or "").strip()',
+    'raise SystemExit(f"unknown native target fixture: {target_fixture}")',
     'if residential and not providers:',
     'raise SystemExit("residential native transport proof requires explicit target provider(s)")',
     "targeted native provider cohort is capped at 8",
     "native-corpus-${{ matrix.device }}-${{ matrix.provider }}-${{ matrix.projection }}-${{ matrix.fixture }}-${{ github.run_id }}",
-    "inputs.device == 'all' && inputs.target_providers == ''",
+    "inputs.device == 'all' && inputs.target_providers == '' && inputs.target_fixture == ''",
 )
 for needle in required:
     assert needle in workflow, needle
@@ -66,5 +70,7 @@ assert "~/.android/debug.keystore" in workflow
 assert "avd-v2-" not in workflow
 assert "harden_nuvio_mobile_device_test.py" not in workflow
 assert "prepare_native_corpus_client.py mobile" in workflow
+assert 'FIXTURES=("${NIAKVIO_TARGET_FIXTURE}")' in workflow
+assert '"fixture": target_fixture or "all"' in workflow
 
 print("native targeted residential transport workflow contract passed")

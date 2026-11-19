@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "requestedAt": "2026-11-19",
-  "sourceSha": "0bb274528477fafedbf1ac047300687a52dc9043",
-  "device": "mobile",
+  "sourceSha": "a81da750252fe7b287dd5c36e7490b71ce69375c",
+  "device": "all",
   "targetProviders": [
-    "hindmoviez",
-    "purstream",
-    "papadustream"
+    "animeonsen",
+    "sekai"
   ],
+  "targetFixture": "jujutsu-kaisen-s01e01",
   "residentialExit": true,
-  "reason": "Validate targeted Mobile production player with independently attested residential egress and same-source Auto -> ExoPlayer -> libmpv differential on active HLS-capable providers.",
-  "requestVersion": 3,
-  "retryCause": "Retest after removing the retired duplicate Mobile hardener call; canonical native_client_test_bootstrap already owns test-only device-test packaging/Sentry setup."
+  "reason": "Run the accepted official Desktop, Mobile and Android TV clients against fresh WAF-ambiguous active providers through independently attested residential egress; Mobile also records same-source Auto -> ExoPlayer -> libmpv evidence.",
+  "requestVersion": 4,
+  "retryCause": "Replace the obsolete three-provider Mobile-only replay with a focused current-HEAD cross-client native transport/player differential after Hub46 retirement, WAF same-session calibration and HLS variant-coherence v18 alignment."
 }

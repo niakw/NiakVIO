@@ -211,3 +211,10 @@
 - CORE.HLS_RUNTIME_INTEGRITY.V1 already publishes `variant-coherence-v18`, but `native_hls_integrity_budget_test.py`, `native_hls_short_vod_regression_test.py` and the legacy `upgrade_hls_master_facts_v1.py` verifier still required the superseded `native-audio-terminal-proof-v17` marker.
 - The stale assertions are aligned to v18 without weakening segment validation, native probe budgets, short-VOD rejection, per-variant audio/subtitle topology, or terminal media proof.
 - This addresses the Quick Gate failure observed in run 44445635484. Real client/player validation remains separate and is not inferred from this contract correction.
+
+
+### 2026-11-19 — Targeted native client runner gains focused fixture scope
+- The real native residential workflow can now accept an exact `target_fixture` / trigger `targetFixture`, validates it against the corpus, carries it in the job matrix, and exports `NIAKVIO_TARGET_FIXTURE` to Mobile/TV. Desktop now honors the same focused fixture instead of always replaying six works.
+- This keeps transport/player investigations on the accepted official clients while avoiding unrelated corpus cost. The broad Global/VF certification path remains unchanged and still uses the full/default corpus when no target fixture is supplied.
+- Request v4 targets active `animeonsen` (VF) and `sekai` (Global) on Desktop, Mobile and Android TV through independently attested residential egress with `jujutsu-kaisen-s01e01`. Mobile additionally keeps the same-source Auto -> ExoPlayer -> libmpv differential. Disabled `allwish` is intentionally not resurrected for this test.
+- This request is diagnostic evidence, not provider mutation authority. A browser/HTTP/native transport success does not imply correct provider execution or playable/decoded media.
