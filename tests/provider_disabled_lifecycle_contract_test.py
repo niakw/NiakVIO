@@ -111,14 +111,7 @@ assert "materialization_ids == active_union" in workflow
 assert "materialization_ids == runtime_visible_ids" not in workflow
 assert "staticKnowledgeProviderCount" in workflow
 assert "rebuild_active_union_manifest()" in lifecycle_source
-assert 'from generate_hub46_manifest import build' in lifecycle_source
-hub46=json.loads((ROOT/"manifest-hub46.json").read_text(encoding="utf-8"))
-hub46_ids={
-    str(row.get("id") or "").strip().casefold().replace("_","-")
-    for row in hub46.get("scrapers") or [] if isinstance(row,dict)
-}
-assert hub46_ids == set(active), (len(hub46_ids),len(active))
-assert int((hub46.get("labScope") or {}).get("providerCount") or 0) == len(active)
+assert "Compatibility no-op: canonical Global/VF manifests are the execution authority." in lifecycle_source
 
 
 with tempfile.TemporaryDirectory(prefix="provider-lifecycle-prefix-") as tmp:

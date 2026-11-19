@@ -60,14 +60,6 @@ PROJECTION_MANIFESTS = (
     ROOT / "no-anime/manifest.json",
     ROOT / "vf-no-anime/manifest.json",
 )
-ACTIVE_UNION_MANIFEST = ROOT / "manifest-hub46.json"
-ACTIVE_ONLY_MANIFESTS = (
-    # The immutable native transport is rebound by release finalization to a
-    # committed provider-source SHA. Lifecycle may only remove stale rows here;
-    # it cannot safely invent URLs for reactivated paths before the transition
-    # commit exists.
-    ROOT / "native-hub46/manifest.json",
-)
 
 
 def cid(value: Any) -> str:
@@ -241,19 +233,8 @@ def update_active_only_manifest(path: Path, active_ids: set[str]) -> None:
 
 
 def rebuild_active_union_manifest() -> None:
-    """Rebuild the current Native-Lab source manifest from Global+France.
-
-    Filtering an older manifest cannot restore identities that were re-enabled
-    by this lifecycle transaction. The source manifest is therefore derived
-    afresh from current projections; the immutable native-hub transport remains
-    release-finalizer-owned because it must pin an already committed SHA.
-    """
-    from generate_hub46_manifest import build
-
-    global_doc = load_json(ROOT_MANIFEST)
-    vf_doc = load_json(ROOT / "vf/manifest.json")
-    payload = build(global_doc, vf_doc)
-    dump_json(ACTIVE_UNION_MANIFEST, payload)
+    """Compatibility no-op: canonical Global/VF manifests are the execution authority."""
+    return
 
 
 def update_provider_catalog(root_rows: dict[str, dict[str, Any]], archived: set[str]) -> None:
@@ -603,8 +584,6 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
         for path in PROJECTION_MANIFESTS:
             update_projection(path, by_id, archived_now)
         rebuild_active_union_manifest()
-        for path in ACTIVE_ONLY_MANIFESTS:
-            update_active_only_manifest(path, active_ids)
         update_provider_catalog(by_id, archived_now)
         static_result = reconcile_static_knowledge(runtime_visible_ids, apply=True)
         materialization_result = reconcile_materialization_report(

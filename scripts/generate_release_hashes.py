@@ -51,8 +51,6 @@ CORE_FILES = [
     "package-lock.json",
     "sources.json",
     "manifest.json",
-    "manifest-hub46.json",
-    "native-hub46/manifest.json",
     "vf/manifest.json",
     "no-anime/manifest.json",
     "vf-no-anime/manifest.json",

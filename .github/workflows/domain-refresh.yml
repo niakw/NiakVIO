@@ -307,17 +307,13 @@ jobs:
           python tests/release_auto_bump_test.py
           python scripts/finalize_provider_v3_minimizer.py --check
           python scripts/audit_provider_v3_static.py --domain-only
-          python scripts/generate_hub46_manifest.py \
-            --source manifest.json \
-            --vf-source vf/manifest.json \
-            --output manifest-hub46.json
           python scripts/prune_unreferenced_providers.py
 
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add \
             PROVENANCE.json provider-overrides.json provider-hubs.json provider-domain-history.json \
-            manifest.json manifest-hub46.json \
+            manifest.json \
             vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
             provider-v3-materialization.json providers/ \
             package.json package-lock.json sources.json provider_catalog.json nuvio-client-id-state.json \
@@ -334,20 +330,14 @@ jobs:
           PROVIDER_SHA="$(git rev-parse HEAD)"
           echo "$PROVIDER_SHA" > "$RUNNER_TEMP/domain-provider-sha"
 
-          python scripts/build_hub46_native_manifest.py \
-            --provider-sha "$PROVIDER_SHA" \
-            --source manifest-hub46.json \
-            --output native-hub46/manifest.json
-          python tests/native_hub46_manifest_test.py
-          python tests/native_hub46_transport_manifest_test.py
           python tests/release_projection_scope_test.py
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
           python tests/release_hash_scope_test.py
 
-          git add native-hub46/manifest.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
           git diff --cached --quiet && {
-            echo 'Pinned Hub46 transport produced no final publication diff' >&2
+            echo 'Release integrity materialization produced no final publication diff' >&2
             exit 1
           }
           git commit -m 'chore(domains): finalize Provider v3 domain transaction'
@@ -385,21 +375,14 @@ jobs:
             git diff --name-status --no-renames "$BASE_SHA" "$CURRENT_SHA" > "$RUNNER_TEMP/domain-remote-drift"
             if python scripts/domain_refresh_publication_drift_gate.py --drift-file "$RUNNER_TEMP/domain-remote-drift"; then
               if git rebase --onto "$CURRENT_SHA" "$BASE_SHA" HEAD; then
-                # Rebasing changes the first, provider-stage commit SHA.
-                # The native transport manifest pins that exact stage commit;
-                # rebuild the pin and all release hashes before atomic push.
+                # Rebasing changes commit identity but not canonical manifest transport.
+                # Rebuild release hashes against the rebased tree before atomic push.
                 PROVIDER_SHA="$(git rev-parse HEAD^)"
-                python scripts/build_hub46_native_manifest.py \
-                  --provider-sha "$PROVIDER_SHA" \
-                  --source manifest-hub46.json \
-                  --output native-hub46/manifest.json
                 python scripts/generate_release_hashes.py
-                python tests/native_hub46_manifest_test.py
-                python tests/native_hub46_transport_manifest_test.py
                 python scripts/reapply_published_overrides.py --check
                 python scripts/validate_release_integrity.py
                 python tests/release_hash_scope_test.py
-                git add native-hub46/manifest.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+                git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
                 git commit --amend --no-edit
                 BASE_SHA="$CURRENT_SHA"
                 FINAL_SHA="$(git rev-parse HEAD)"

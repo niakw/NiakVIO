@@ -124,21 +124,9 @@ for relative in ("vf/manifest.json", "no-anime/manifest.json", "vf-no-anime/mani
         f"{relative}: version drift {projection.get('version')!r} != {root_version!r}"
     )
 
-# The root manifest intentionally keeps disabled rows visible. Native/Hub Lab
-# projections are executable transports and therefore contain active rows only.
-for relative in ("manifest-hub46.json", "native-hub46/manifest.json"):
-    path = ROOT / relative
-    projection = load(path)
-    ids = manifest_ids(path)
-    assert set(ids) == projection_active, (
-        f"{relative}: Global+France active membership drift "
-        f"actual={len(ids)} expected={len(projection_active)} "
-        f"missing={sorted(projection_active-set(ids))} extra={sorted(set(ids)-projection_active)}"
-    )
-    assert_no_archive_paths(path)
-    assert str(projection.get("version") or "") == root_version, (
-        f"{relative}: version drift {projection.get('version')!r} != {root_version!r}"
-    )
+# The root manifest intentionally keeps disabled rows visible. Native Labs execute
+# the canonical Global and VF projections directly; their active union authority
+# is projection_active_provider_ids(), not a derived published manifest.
 
 catalog = load(ROOT / "provider_catalog.json")
 catalog_ids = [canonical(row.get("canonicalId")) for row in catalog.get("providers") or [] if isinstance(row, dict)]
@@ -162,5 +150,5 @@ print(
     f"union_visible={len(union_visible)} global_active={len(active_set)} "
     f"projection_active={len(projection_active)} historical={len(archive)} "
     "vf=global-subset+france-only no-anime=global-subset vf-no-anime=vf-subset "
-    "hub46/native-hub46=Global+France-active-union"
+    "native-labs=canonical-global+vf"
 )

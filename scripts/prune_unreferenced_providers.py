@@ -77,15 +77,13 @@ def normalize_provider_path(value: str) -> str | None:
 def choose_manifests(root: Path) -> list[Path]:
     """Return only current local publication manifests.
 
-    Do not glob every */manifest.json: native-hub46/manifest.json deliberately
-    pins absolute provider URLs to an immutable provider SHA and therefore is not
-    a local-file retention authority. Historical/diagnostic manifests likewise
-    cannot keep archived provider files alive in providers/.
+    Do not glob every */manifest.json: only intentional consumer projections
+    retain provider files. Historical/diagnostic manifests cannot keep archived
+    provider files alive in providers/.
     """
     candidates = [
         root / "manifest.next.json",
         root / "manifest.json",
-        root / "manifest-hub46.json",
         root / "vf" / "manifest.json",
         root / "no-anime" / "manifest.json",
         root / "vf-no-anime" / "manifest.json",

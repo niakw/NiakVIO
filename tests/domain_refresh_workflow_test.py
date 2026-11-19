@@ -46,7 +46,6 @@ assert "python scripts/sync_release_versions.py" in text
 assert '--previous "$RUNNER_TEMP/published-manifest-baseline.json"' in text
 assert "python tests/release_auto_bump_test.py" in text
 assert "python scripts/generate_hub46_manifest.py" in text
-assert "python scripts/build_hub46_native_manifest.py" in text
 assert '--vf-source vf/manifest.json' in text
 assert '--output "$RUNNER_TEMP/domain-observation-manifest.json"' in text
 assert '--manifest "$RUNNER_TEMP/domain-observation-manifest.json"' in text
@@ -662,7 +661,6 @@ for changed_source in (
     "provider-hubs.json",
     "provider-overrides.json",
     "manifest.json",
-    "native-hub46/manifest.json",
     "providers/demo.js",
     "automation/provider-v3-static-knowledge.json",
     "automation/provider-disabled-lifecycle.json",
