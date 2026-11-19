@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "requestedAt": "2026-11-19",
-  "sourceSha": "b96c96cf942e655e5755394d9f5d561b772e8e6a",
+  "sourceSha": "06b87bbff53b0a2c1f7e5db3f6afc57d4c0d36b8",
   "device": "all",
   "targetProviders": [
     "animeonsen",
@@ -10,6 +10,6 @@
   "targetFixture": "jujutsu-kaisen-s01e01",
   "residentialExit": true,
   "reason": "Run the accepted official Desktop, Mobile and Android TV clients against fresh WAF-ambiguous active providers through independently attested residential egress; Mobile also records same-source Auto -> ExoPlayer -> libmpv evidence.",
-  "requestVersion": 6,
-  "retryCause": "Supersede v5 because targeted Desktop was a Linux extraction/JVM approximation. v6 runs Desktop on macos-15 with the official NuvioDesktop native libmpv bridge and canonical desktop suite, while retaining exact provider/manifest/fixture scope, residential egress attestation, Android Mobile/TV clients and Brain evidence persistence."
+  "requestVersion": 7,
+  "retryCause": "Replay all official clients on the current bounded-residential harness: TV includes UIAutomator audit-policy v8, Desktop connects Tailscale only after toolchain/client/native bridge bootstrap, and WAF/native exit selection plus cleanup are timeout-bounded."
 }
