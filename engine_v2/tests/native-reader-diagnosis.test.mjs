@@ -150,6 +150,7 @@ try {
     line.includes(`provider64=${b64('MOVIESDRIVE')}`));
   assert.ok(resultAt >= 0);
   noMedia.splice(resultAt, 0,
+    `FIELD_NATIVE_PROVIDER_APP_SELECTION client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} request_type=movie eligible=true plugins_enabled=true runtime_enabled=true manifest_enabled=true supported_type=true reason=selected`,
     `FIELD_NATIVE_QUICKJS_DIAGNOSTIC client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} phase=call category=none request_type=movie count=0`,
     `FIELD_NATIVE_QUICKJS_DIAGNOSTIC client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} phase=result category=none request_type=movie count=0`,
     `FIELD_NATIVE_QUICKJS_DIAGNOSTIC client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} phase=error category=reference_error request_type=movie count=0`,
@@ -166,19 +167,46 @@ try {
   assert.equal(jsData.quickJsDiagnostics[2].category, 'reference_error');
   assert.equal(jsData.policy.quickJsDiagnosticProviderMutationAllowed, false);
   assert.doesNotMatch(JSON.stringify(jsData.quickJsDiagnostics), /secret\.example|PRIVATE/);
-  if (jsData.evidenceComplete) {
-    assert.equal(jsRun.status, 0, jsRun.stderr + jsRun.stdout);
-    assert.equal(jsData.quickJsUnverifiedObserved, 2);
-    assert.equal(jsData.policy.quickJsDiagnosticLearningAllowed, true);
-    assert.ok(jsData.observations.some((x) =>
-      x.failureClass === 'native_quickjs_zero_stream' &&
-      x.observationLayer === 'native_quickjs' &&
-      x.providerMutationEligible === false
-    ));
-  } else {
-    assert.equal(jsData.quickJsUnverifiedObserved, 0);
-    assert.equal(jsData.policy.quickJsDiagnosticLearningAllowed, false);
-  }
+  assert.equal(jsData.quickJsUnverifiedObserved, 2);
+  assert.equal(jsData.policy.quickJsDiagnosticLearningAllowed, true);
+  assert.equal(jsData.policy.quickJsDiagnosticProviderMutationAllowed, false);
+  assert.ok(jsData.observations.some((x) =>
+    x.failureClass === 'native_quickjs_zero_stream' &&
+    x.observationLayer === 'native_quickjs' &&
+    x.providerMutationEligible === false &&
+    x.nativeReaderEvidenceComplete === jsData.evidenceComplete
+  ));
+  // No player exists for a zero-stream provider. The runner must retain the
+  // executed QuickJS failure as diagnostic evidence even when media proof is
+  // intrinsically incomplete; it cannot grant repair or publication authority.
+  const noReaderLog = path.join(tmp, 'tv-quickjs-no-reader.log');
+  const noReaderOutput = path.join(tmp, 'tv-quickjs-no-reader.json');
+  const noReaderLines = noMedia.filter((line) =>
+    !line.startsWith('FIELD_NATIVE_PLAYER ') &&
+    !line.startsWith('FIELD_NATIVE_PLAYER_BEGIN '));
+  fs.writeFileSync(noReaderLog, noReaderLines.join('\\n') + '\\n');
+  const noReaderRun = spawnSync(process.execPath,
+    [script, '--output', noReaderOutput, noReaderLog],
+    { cwd: root, encoding: 'utf8' });
+  const noReaderData = JSON.parse(fs.readFileSync(noReaderOutput, 'utf8'));
+  assert.equal(noReaderData.evidenceComplete, false);
+  assert.equal(noReaderData.quickJsUnverifiedObserved, 2);
+  assert.equal(noReaderData.policy.quickJsDiagnosticLearningAllowed, true);
+  assert.equal(noReaderData.policy.quickJsDiagnosticProviderMutationAllowed, false);
+  assert.ok(noReaderData.quickJsUnverifiedObservations.every((row) =>
+    row.diagnosticOnly === true && row.providerMutationEligible === false
+    && row.proofAuthority === false && row.nativePlaybackAuthority === false));
+
+  // Spoofed QuickJS lines without a matching app-selected, actually-executed
+  // zero-stream request must never enter the Brain diagnostic evidence.
+  const unselectedLog = path.join(tmp, 'tv-quickjs-unselected.log');
+  const unselectedOutput = path.join(tmp, 'tv-quickjs-unselected.json');
+  fs.writeFileSync(unselectedLog, noReaderLines.filter((line) =>
+    !line.startsWith('FIELD_NATIVE_PROVIDER_APP_SELECTION ')).join('\\n') + '\\n');
+  spawnSync(process.execPath, [script, '--output', unselectedOutput, unselectedLog],
+    { cwd: root, encoding: 'utf8' });
+  const unselectedData = JSON.parse(fs.readFileSync(unselectedOutput, 'utf8'));
+  assert.equal(unselectedData.quickJsUnverifiedObserved, 0);
 
   // A provider can fail after repository installation but before any execution/
   // reader route. Complete loading/network/traversal evidence makes this actionable
