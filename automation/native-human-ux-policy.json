@@ -1,5 +1,5 @@
 {
-  "version": 7,
+  "version": 8,
   "mode": "human-ux-observation-only",
   "purpose": "Native labs reproduce the real Nuvio user path and observe launch, stream selection, player opening and playback failures without repairing Nuvio, the OS or the lab environment to improve outcomes.",
   "immutable_principles": [
@@ -224,6 +224,15 @@
         "cause": "GitHub has not materialized the downloadable job log yet",
         "resolution": "inspect job step status and retry log retrieval only after completion or later in the same investigation",
         "never_repeat": "do not classify this as a Nuvio/NiakVIO failure or change the harness"
+      },
+      {
+        "id": "tv-uiautomator-audit-whitelist-drift",
+        "status": "resolved",
+        "signature": "native lab forbidden Gradle mutation (tv): androidTestImplementation(\"androidx.test.uiautomator:uiautomator:2.3.0\")",
+        "cause": "The canonical TV diagnostics had required the test-only UIAutomator dependency since native run 44307300810, but the checkout audit whitelist still omitted that exact allowed androidTest dependency. The faithful client observation was blocked before emulator/runtime execution.",
+        "resolution": "Add only the exact UIAutomator androidTest dependency already emitted by native_client_test_bootstrap.py to the TV allowed_gradle_additions policy. No Nuvio runtime, manifest, network, player or OS behavior is changed.",
+        "evidence_run": "44448665900",
+        "never_repeat": "Keep native_client_test_bootstrap.py test-only TV dependencies and automation/native-human-ux-policy.json allowed_gradle_additions in one contract; never remove UIAutomator while generated TV diagnostics import UiDevice/By/Until."
       }
     ]
   },
@@ -293,7 +302,8 @@
       "testInstrumentationRunner = \"androidx.test.runner.AndroidJUnitRunner\"",
       "dependencies {",
       "androidTestImplementation(\"androidx.test.ext:junit:1.3.0\")",
-      "androidTestImplementation(\"androidx.test:runner:1.7.0\")"
+      "androidTestImplementation(\"androidx.test:runner:1.7.0\")",
+      "androidTestImplementation(\"androidx.test.uiautomator:uiautomator:2.3.0\")"
     ],
     "desktop": []
   },

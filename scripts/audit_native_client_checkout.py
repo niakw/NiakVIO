@@ -23,6 +23,7 @@ REQUIRED_BLOCKER_IDS = {
     "reader-run-cancellation-churn",
     "repository-http-evidence-gap-after-instrumentation-disable",
     "actions-log-blob-not-ready",
+    "tv-uiautomator-audit-whitelist-drift",
 }
 
 

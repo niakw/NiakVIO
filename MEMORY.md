@@ -244,3 +244,10 @@
 - Native Desktop diagnostic rows intentionally use the generic client id `desktop`, while the official lab filenames encode `macos` or `windows`. The provider/device proof merger previously discarded those healthy player observations because generic `desktop` could not be assigned to a concrete device.
 - `update_provider_device_results.py` now uses the sanitized diagnosis filename only as an OS disambiguation hint for generic Desktop rows. Explicit client identities still win; an unqualified generic Desktop row remains unassigned rather than guessed.
 - This allows the targeted real macOS v6 run and existing full Desktop Labs to retain healthy player proof as `desktop_macos` without manufacturing a platform from ambiguous evidence.
+
+
+### 2026-11-19 — TV native staging blocker: UIAutomator audit whitelist drift
+- Targeted native run `44448665900` failed both TV jobs before runtime at `prepare_native_corpus_client.py`, after exact provider scope and manifest staging succeeded. Signature: `native lab forbidden Gradle mutation (tv): androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")`.
+- This is a harness contract drift, not a provider/WAF/player failure. The generated TV diagnostics already import `UiDevice`, `By` and `Until`, and the canonical bootstrap already adds UIAutomator as test-only plumbing; an older native run `44307300810` had established that requirement.
+- `automation/native-human-ux-policy.json` v8 now allows that exact `androidTestImplementation` line for TV and records blocker `tv-uiautomator-audit-whitelist-drift` as resolved. The audit remains fail-closed for every other Gradle addition and no production Nuvio runtime, manifest, network, player or OS behavior is changed.
+- Run `44448665900` TV results remain invalid/no-runtime; they must be replayed on a SHA containing this policy correction before any TV conclusion.

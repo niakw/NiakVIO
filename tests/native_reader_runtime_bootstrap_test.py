@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import json
 import sys
 import tempfile
 from pathlib import Path
@@ -24,6 +25,13 @@ tv_bootstrap = (SCRIPTS / "nuvio_tv_test_bootstrap.py").read_text(encoding="utf-
 shared_bootstrap = (SCRIPTS / "native_client_test_bootstrap.py").read_text(encoding="utf-8")
 reader_acceptance = (SCRIPTS / "prepare_native_reader_acceptance.py").read_text(encoding="utf-8")
 corpus_client = (SCRIPTS / "prepare_native_corpus_client.py").read_text(encoding="utf-8")
+native_policy = json.loads((ROOT / "automation/native-human-ux-policy.json").read_text(encoding="utf-8"))
+tv_allowed_gradle = set(native_policy["allowed_gradle_additions"]["tv"])
+assert 'androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")' in tv_allowed_gradle
+assert any(
+    row.get("id") == "tv-uiautomator-audit-whitelist-drift" and row.get("status") == "resolved"
+    for row in native_policy["job_blocker_memory"]["entries"]
+)
 
 # NuvioTV's androidTest compiler must not infer nested map Pair types through
 # Kotlin's generic infix `to`; the real run previously failed before the corpus
