@@ -57,6 +57,8 @@ base = {
 
 # Another family published while this cohort was running.
 previous = {
+    "generatedAt": "2026-11-19T00:02:00+00:00",
+    "marker": "newer-published-state",
     "experimentMemory": {
         "schemaVersion": 1,
         "entries": [
@@ -91,6 +93,8 @@ assert by_provider["base"]["failures"] == 3, by_provider["base"]
 assert merged["concurrentMemoryMerge"]["deltaRows"] == 1
 assert merged["publicationAllowed"] is False
 assert merged["productionWritesAllowed"] is False
+assert merged["marker"] == "newer-published-state", merged
+assert merged["concurrentMemoryMerge"]["metadataSource"] == "previous", merged
 
 # Same exact experiment advances independently after the shared base. Apply
 # only this cohort's +1 delta on top of a concurrently published +2 delta.
