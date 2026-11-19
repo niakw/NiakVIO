@@ -113,9 +113,15 @@ for (const file of paths) {
     }
     productionPlayerInvoked += 1;
     invokedByClient.set(client, Number(invokedByClient.get(client) || 0) + 1);
+    // READY/duration can be reported before an actual video track exists,
+    // especially for NuvioTV's TunneledFirstReady fallback. No false FULL.
+    const videoWidth = Number(parsed.get('video_width') || 0);
+    const videoHeight = Number(parsed.get('video_height') || 0);
     const playbackVerified =
       (playerState === 'ready' || playerState === 'ended') &&
-      (!failureStage || failureStage === 'none');
+      (!failureStage || failureStage === 'none') &&
+      Number.isFinite(videoWidth) && Number.isFinite(videoHeight) &&
+      videoWidth > 0 && videoHeight > 0;
     if (playbackVerified) {
       productionPlaybackVerified += 1;
       verifiedByClient.set(client, Number(verifiedByClient.get(client) || 0) + 1);
