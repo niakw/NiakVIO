@@ -232,11 +232,6 @@ def update_active_only_manifest(path: Path, active_ids: set[str]) -> None:
     dump_json(path, doc)
 
 
-def rebuild_active_union_manifest() -> None:
-    """Compatibility no-op: canonical Global/VF manifests are the execution authority."""
-    return
-
-
 def update_provider_catalog(root_rows: dict[str, dict[str, Any]], archived: set[str]) -> None:
     path = ROOT / "provider_catalog.json"
     if not path.exists():
