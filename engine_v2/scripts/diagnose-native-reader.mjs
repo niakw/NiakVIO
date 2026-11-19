@@ -21,7 +21,17 @@ const outputIndex = args.indexOf('--output');
 const outputPath = outputIndex >= 0 && args[outputIndex + 1]
   ? path.resolve(args[outputIndex + 1])
   : path.resolve('targeted-reader-brain.json');
-const logPaths = args.filter((value, index) => index !== outputIndex && index !== outputIndex + 1 && value !== '--output').map((value) => path.resolve(value));
+const clientShaIndex = args.indexOf('--official-client-sha');
+const clientShaValue = clientShaIndex >= 0 ? args[clientShaIndex + 1] : '';
+if (clientShaIndex >= 0 && !/^[0-9a-f]{40}$/.test(String(clientShaValue || ''))) {
+  throw new Error('official native client SHA must be a complete lower-case commit hash');
+}
+const officialClientSha = clientShaIndex >= 0 ? clientShaValue : '';
+const logPaths = args.filter((value, index) => (
+  index !== outputIndex && index !== outputIndex + 1 && value !== '--output'
+  && index !== clientShaIndex && index !== clientShaIndex + 1
+  && value !== '--official-client-sha'
+)).map((value) => path.resolve(value));
 const nonblockingSmoke = process.env.NIAKVIO_BRAIN_NONBLOCKING === '1';
 const RUNTIME_ERROR_SENTINEL = '__NIAKVIO_RUNTIME_ERROR__';
 
@@ -784,6 +794,7 @@ const capabilityProbes = capabilityRows.map((row) => ({
 
 const payload = {
   schemaVersion: 5,
+  officialClientSha,
   generatedAt: new Date().toISOString(),
   brainVersion: BRAIN_CONTROL_PLANE_VERSION,
   evidenceComplete: evidence.complete,
