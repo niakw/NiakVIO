@@ -660,6 +660,58 @@ def probe_tv_direct_http(
         "ordinarySessionReused": attempt_limit > 1,
     }
 
+def diagnose_transport_profiles(
+    browser_profiles: list[dict[str, Any]],
+    direct_profile: dict[str, Any] | None,
+    okhttp_profile: dict[str, Any] | None,
+) -> str:
+    """Classify transport differentials without promoting them to playback proof."""
+    browser_outcomes = {
+        str(row.get("outcome") or "")
+        for row in browser_profiles
+        if isinstance(row, dict)
+    }
+    browser_content = "browser_content_reached" in browser_outcomes
+    browser_challenge = "browser_challenge_persisted" in browser_outcomes
+    direct_outcome = str((direct_profile or {}).get("outcome") or "")
+    okhttp_outcome = str((okhttp_profile or {}).get("outcome") or "")
+    okhttp_errors = {
+        str((okhttp_profile or {}).get("error") or ""),
+        *{
+            str(row.get("error") or "")
+            for row in (okhttp_profile or {}).get("attempts") or []
+            if isinstance(row, dict)
+        },
+    }
+    tls_error = any(
+        marker in value
+        for value in okhttp_errors
+        for marker in ("SSLHandshakeException", "SSLProtocolException", "CertPathValidatorException")
+    )
+
+    if browser_content and tls_error:
+        return "native_client_tls_differential"
+    if browser_content and okhttp_outcome == "okhttp_jvm_challenge_persisted":
+        return "native_client_waf_differential"
+    if browser_content and okhttp_outcome == "okhttp_jvm_content_reached":
+        if direct_outcome == "direct_http_content_reached":
+            return "content_reached_cross_transport"
+        return "browser_and_okhttp_content_reached"
+    if browser_content and okhttp_outcome in {
+        "okhttp_jvm_error", "okhttp_jvm_timeout", "okhttp_jvm_http_error",
+    }:
+        return "native_client_transport_differential"
+    if browser_content:
+        return "browser_content_native_unproven"
+    if browser_challenge and okhttp_outcome == "okhttp_jvm_challenge_persisted":
+        return "waf_persisted_cross_transport"
+    if okhttp_outcome == "okhttp_jvm_content_reached":
+        return "okhttp_content_browser_unproven"
+    if browser_challenge:
+        return "browser_waf_persisted"
+    return "transport_inconclusive"
+
+
 def probe_target(
     target: dict[str, Any],
     browser: str,
@@ -814,6 +866,11 @@ def probe_target(
         "directHttpProfile": direct_profile,
         "okHttpJvmProfile": okhttp_profile,
         "contentProfiles": content_profiles,
+        "transportDiagnosis": diagnose_transport_profiles(
+            profile_rows,
+            direct_profile,
+            okhttp_profile,
+        ),
         "nativeTvTransportStillUnproven": True,
         "durationMs": round((time.monotonic()-started)*1000),
     }
