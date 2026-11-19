@@ -42,6 +42,7 @@ def player(client: str, fixture: str, provider: str, state: str, *, status: int 
     return (
         f"FIELD_NATIVE_PLAYER client={client} fixture={fixture} provider64={b64(provider)} index=0 "
         f"state={state} engine=media3 http_status={status} failure_stage={stage} duration_seconds={seconds} "
+        f"video_width={1280 if state == 'ready' else 0} video_height={720 if state == 'ready' else 0} "
         f"host64={b64('media.example')} error_class64={b64('PlaybackException' if state == 'error' else '')} "
         f"error_code64={b64('ERROR_CODE_IO_BAD_HTTP_STATUS' if status else '')} "
         f"exception_chain64={b64('InvalidResponseCodeException' if status else '')} response_header_names64={b64('content-type,date' if status else '')}"
