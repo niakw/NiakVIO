@@ -15,6 +15,7 @@ import argparse
 import copy
 import json
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -114,6 +115,20 @@ def experiment_delta(
     return delta
 
 
+
+def generated_ms(payload: dict[str, Any]) -> int:
+    raw = str(payload.get("generatedAt") or "").strip()
+    if not raw:
+        return 0
+    try:
+        value = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError:
+        return 0
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    return int(value.timestamp() * 1000)
+
+
 def merge_latest(
     base: dict[str, Any],
     previous: dict[str, Any],
@@ -131,7 +146,8 @@ def merge_latest(
         changes,
         max_entries=max_entries,
     )
-    output = copy.deepcopy(current)
+    previous_is_newer = generated_ms(previous) >= generated_ms(current) > 0
+    output = copy.deepcopy(previous if previous_is_newer else current)
     output["experimentMemory"] = copy.deepcopy(
         merged_state.get("experimentMemory") or {}
     )
@@ -144,6 +160,7 @@ def merge_latest(
         "currentRows": len(entries(current)),
         "deltaRows": len(changes),
         "mergedRows": len(entries(output)),
+        "metadataSource": "previous" if previous_is_newer else "current",
         "publicationAuthority": False,
         "providerMutationAuthority": False,
     }
