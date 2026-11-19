@@ -670,7 +670,7 @@ function ensureProviderOutcome(provider) {
       providerEligibleFailures: 0, clientRuntimeFailures: 0,
       extractionExecutions: 0, extractionHealthy: 0, extractionFailures: 0,
       capabilityProbes: 0, capabilityHealthy: 0, capabilityFailures: 0,
-      loadFailures: 0, loadFailureClasses: {},
+      loadFailures: 0, loadFailureClasses: {}, nativeExecutionTimeouts: 0,
       failureClasses: {}, clients: new Set(), fixtures: new Set(), requestTypes: new Set(),
     });
   }
@@ -724,6 +724,25 @@ for (const row of runtimeSentinelObservations) {
   current.fixtures.add(row.fixture);
   current.requestTypes.add(row.requestType);
 }
+// A selected, attempted provider with a hard native timeout must remain
+// visible in Brain provider outcomes even when there is no FIELD_NATIVE_RESULT,
+// no media row and therefore no reader. This is an *unattributed runtime
+// diagnostic*, not an extractor or provider-mutation authorization. The
+// independent Android-TV feedback ingester retains the same redacted event.
+const seenNativeExecution = new Set();
+for (const row of nativeExecutionDiagnostics) {
+  const key = [row.client, row.provider, row.fixture, row.requestType, row.failureClass].join('\u0000');
+  if (seenNativeExecution.has(key)) continue;
+  seenNativeExecution.add(key);
+  const current = ensureProviderOutcome(row.provider);
+  current.observed += 1;
+  current.failures += 1;
+  current.nativeExecutionTimeouts += 1;
+  current.failureClasses.provider_hard_timeout = Number(current.failureClasses.provider_hard_timeout || 0) + 1;
+  current.clients.add(row.client);
+  current.fixtures.add(row.fixture);
+  current.requestTypes.add(row.requestType);
+}
 for (const issue of providerLoadIssues) {
   const current = ensureProviderOutcome(issue.provider);
   current.loadFailures += 1;
@@ -746,6 +765,7 @@ const providerOutcomes = [...providerMap.values()].map((row) => ({
   capabilityFailures: row.capabilityFailures,
   loadFailures: row.loadFailures,
   loadFailureClasses: row.loadFailureClasses,
+  nativeExecutionTimeouts: row.nativeExecutionTimeouts,
   failureClasses: row.failureClasses,
   clients: [...row.clients].sort(),
   fixtures: [...row.fixtures].sort(),
