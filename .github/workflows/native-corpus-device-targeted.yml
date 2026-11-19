@@ -28,6 +28,11 @@ on:
         required: false
         default: false
         type: boolean
+      candidate_rematerialize:
+        description: Ephemeral ProviderBase candidate for one TV provider and fixture; never production
+        required: false
+        default: false
+        type: boolean
   push:
     branches: [main]
     paths:
@@ -82,6 +87,7 @@ jobs:
           INPUT_TARGET_PROVIDERS: ${{ inputs.target_providers || '' }}
           INPUT_TARGET_FIXTURE: ${{ inputs.target_fixture || '' }}
           INPUT_RESIDENTIAL_EXIT: ${{ inputs.residential_exit || false }}
+          INPUT_CANDIDATE_REMATERIALIZE: ${{ inputs.candidate_rematerialize || false }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
@@ -100,6 +106,7 @@ jobs:
           ]
           target_fixture = (os.environ.get("INPUT_TARGET_FIXTURE") or "").strip()
           residential = str(os.environ.get("INPUT_RESIDENTIAL_EXIT") or "").strip().lower() == "true"
+          candidate_rematerialize = str(os.environ.get("INPUT_CANDIDATE_REMATERIALIZE") or "").strip().lower() == "true"
 
           if event == "push":
               trigger = Path(".github/triggers/native-residential-transport-targeted.json")
@@ -112,6 +119,7 @@ jobs:
               })
               target_fixture = str(payload.get("targetFixture") or "").strip()
               residential = payload.get("residentialExit") is True
+              candidate_rematerialize = payload.get("candidateRematerialize") is True
 
           if device in {"desktop", "mobile", "tv"}:
               devices = [device]
@@ -124,6 +132,8 @@ jobs:
               raise SystemExit("targeted native provider cohort is capped at 8")
           if residential and not providers:
               raise SystemExit("residential native transport proof requires explicit target provider(s)")
+          if candidate_rematerialize and (device != "tv" or len(providers) != 1 or not target_fixture):
+              raise SystemExit("candidate native replay requires TV, one active provider and an exact fixture")
           if target_fixture:
               lab = json.loads(Path(".github/triggers/nuvio-client-lab.json").read_text(encoding="utf-8"))
               fixture_slugs = set()
@@ -168,6 +178,7 @@ jobs:
                   "manifest": spec["manifest"],
                   "projection": spec["projection"],
                   "residential": residential,
+                  "candidateRematerialize": candidate_rematerialize,
               }
               for selected_device in devices
               for spec in target_specs
@@ -292,6 +303,28 @@ jobs:
           node-version: "24"
           package-manager-cache: false
 
+      - name: Set up Python for native candidate rematerialization
+        if: ${{ matrix.candidateRematerialize == true }}
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+
+      - name: Rematerialize isolated ProviderBase candidate for official TV test
+        if: ${{ matrix.candidateRematerialize == true }}
+        shell: bash
+        env:
+          NUVIO_PROVIDER_V3_CONTEXT: workspace
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+          cd niakvio
+          npm ci --ignore-scripts --no-audit --no-fund
+          python3 scripts/prepare_native_candidate_remat.py \
+            --provider "$NIAKVIO_TARGET_PROVIDER" \
+            --manifest "$NIAKVIO_TARGET_MANIFEST" \
+            --source-sha "$GITHUB_SHA"
+
       - name: Checkout accepted official client and stage corpus once
         shell: bash
         env:
@@ -331,6 +364,16 @@ jobs:
               python3 niakvio/scripts/prepare_native_corpus_client.py tv --fixture "$INITIAL_FIXTURE" --workspace "$GITHUB_WORKSPACE" --provider "$NIAKVIO_TARGET_PROVIDER" --manifest "$NIAKVIO_TARGET_MANIFEST"
               ;;
           esac
+
+      - name: Verify candidate bytes in official TV instrumentation assets
+        if: ${{ matrix.candidateRematerialize == true }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 niakvio/scripts/prepare_native_candidate_remat.py --verify-staging \
+            --provider "$NIAKVIO_TARGET_PROVIDER" \
+            --manifest "$NIAKVIO_TARGET_MANIFEST" \
+            --client-root nuvio-tv
 
       - name: Set up Gradle runtime
         uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c
@@ -544,7 +587,7 @@ jobs:
           echo "FIELD_NATIVE_TARGETED_BRAIN_DIAGNOSIS client=${{ matrix.device }} provider=${{ matrix.provider }} files=$diagnosed status=written"
 
       - name: Upload sanitized native corpus logs
-        if: always()
+        if: ${{ always() && matrix.candidateRematerialize != true }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: native-corpus-${{ matrix.device }}-${{ matrix.provider }}-${{ matrix.projection }}-${{ matrix.fixture }}-${{ github.run_id }}
@@ -553,6 +596,20 @@ jobs:
             ${{ matrix.device }}-native-corpus-*-brain.json
             ${{ matrix.device }}-native-frontend-*.log
             native-evidence/${{ matrix.device }}/**
+          retention-days: 8
+          if-no-files-found: warn
+
+      - name: Upload isolated candidate evidence (never production proof)
+        if: ${{ always() && matrix.candidateRematerialize == true }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: native-candidate-${{ matrix.device }}-${{ matrix.provider }}-${{ matrix.fixture }}-${{ github.run_id }}
+          path: |
+            ${{ matrix.device }}-native-corpus-*.log
+            ${{ matrix.device }}-native-corpus-*-brain.json
+            ${{ matrix.device }}-native-frontend-*.log
+            native-evidence/${{ matrix.device }}/**
+            niakvio/automation/native-candidate-remat-proof.json
           retention-days: 8
           if-no-files-found: warn
 
