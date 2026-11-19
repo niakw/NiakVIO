@@ -2,7 +2,7 @@
   "schema_version": 69,
   "repository": {
     "name": "NiakVIO",
-    "manifest_version": "5.21.172",
+    "manifest_version": "5.21.173",
     "description": "NiakVIO-owned provider catalogue and routing policy. ProviderBase, structured DATA, owned Lego, official address discovery and validated runtime observations are the operational sources of truth. External provider repositories are not required for ordinary reconstruction or playback."
   },
   "selection_policy": {
@@ -128,7 +128,7 @@
     "external_provider_repository_required": false,
     "route_learning_owner": "NiakVIO"
   },
-  "manifest_version": "5.21.172",
+  "manifest_version": "5.21.173",
   "nuvio_client_compatibility": {
     "schema_version": 1,
     "policy": "accepted_ref may advance automatically only when hard and semantic runtime contract checks remain unchanged",
@@ -179,18 +179,14 @@
       },
       "nuvio-tv": {
         "contract_ref": "67bbb3c3f3be2235e3abb7fda9c4670f97df8448",
-        "accepted_ref": "15286b68c48b1afc5632aa309ed3d4afc3b5a4d7",
-        "accepted_at": "2026-11-18T19:12:04.870938+00:00",
+        "accepted_ref": "1391e6bdc2f27547c63dea28f92b272f8487645b",
+        "accepted_at": "2026-11-19T08:43:11.846952+00:00",
         "acceptance": "automatic-contract-safe-advance",
-        "changed_file_count": 6,
+        "changed_file_count": 2,
         "observed_sensitive_changed_files": [],
         "unrelated_changed_files": [
-          "app/src/main/java/com/nuvio/tv/domain/model/FocusedPosterTrailerPlaybackTarget.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/home/ModernHomeContent.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/home/ModernHomeRows.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/settings/LayoutCardSettings.kt",
-          "app/src/main/res/values-pl/strings.xml",
-          "app/src/main/res/values/strings.xml"
+          "app/src/main/java/com/nuvio/tv/ui/components/AvatarPickerGrid.kt",
+          "app/src/main/java/com/nuvio/tv/ui/screens/profile/ProfileSelectionScreen.kt"
         ]
       }
     }
