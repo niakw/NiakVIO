@@ -1,15 +1,16 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-11-19",
+  "requestedAt": "2026-11-20",
   "device": "tv",
   "targetProviders": [
     "purstream"
   ],
   "targetFixture": "interstellar",
   "residentialExit": false,
-  "reason": "P2 first strict production-byte official NuvioTV Android TV fixture for Purstream Interstellar. The current source-pinned corpus #44625129300 recorded intermediate accepted playable on this provider in ~2.8s, not decoded-media proof. Require actual TV player terminal, correct film, video/audio, rendition and no mutation/candidate staging.",
-  "requestVersion": 28,
-  "retryCause": "Switch oracle after source-pinned French-Manga ProviderBase v27 candidate #44620517326 returned zero media in 25.659s and confirmed synchronous official TV bridge cannot race two JS Promises. Do not repeat same strategy or promote stale candidate.",
-  "sourceImplementationSha": "f755afe4395f9d72294011463938d6c8f1db51f3",
-  "candidateRematerialize": false
+  "reason": "P2 source-pinned Core HLS v20 generative differential on official NuvioTV Android TV: prior Purstream Interstellar 44627471661 recovered master 200, video and audio playlists, video segment 206 and audio .aac segment returning TS 206, then 0 streams. Rematerialize canonical ProviderBase/Core in isolated workspace, attest exact V20 marker and p000 JS SHA, validate returned streams/player/decoded audio FR+EN. No publication or success authority.",
+  "requestVersion": 29,
+  "retryCause": "Supersedes node-only playable expectation: official published JS run 44627471661 returned 0 in 3855ms after audio TS-over-AAC segment proof. Published provider JS lacks source-owned NIAKVIO_HLS_TS_WRAPPED_AAC_RENDITION_V20. Test generic Core repair against the exact same native fixture; do not patch provider manually.",
+  "sourceImplementationSha": "f4e833212e256ccada1d14755dc45f90b31c5401",
+  "candidateRematerialize": true,
+  "candidateRequiredMarker": "NIAKVIO_HLS_TS_WRAPPED_AAC_RENDITION_V20"
 }
