@@ -41,11 +41,21 @@ const CLIENT_RUNTIME_ERROR_PATTERNS = [
 
 function readerFailureClass(row = {}) {
   const state = String(row.state || '').toLowerCase();
+  const stage = String(row.failureStage || row.failure_stage || '').toLowerCase();
+  const status = Number(row.httpStatus ?? row.http_status ?? 0);
+
+  // A nominal READY event cannot override a *typed* terminal failure.
+  if (state === 'short_media') return 'short_media';
+  if (state === 'duration_unknown') return 'playback_duration_unknown';
+  if (READER_FAILURE_CLASSES[stage]) return READER_FAILURE_CLASSES[stage];
+  if ([401, 403, 407, 451].includes(status)) return 'playback_http_access';
+  if ([404, 410].includes(status)) return 'playback_http_gone';
+  if (status === 429) return 'playback_rate_limited';
+  if (status >= 500 && status <= 599) return 'playback_http_upstream';
   if (state === 'ready' || state === 'ended') {
-    // Official Android TV can signal READY from a manifest/timeline before
-    // the player exposes a video track. Treat missing or 0x0 decoded format
-    // as an unresolved media observation, NOT provider-owned failure.
-    // Non-TV historical reader logs may not supply these fields yet.
+    // Official Android TV can signal READY from manifest/timeline before a
+    // video track exists. A decoded format is mandatory in the TV player gate.
+    // This failure proves missing playback evidence, not provider ownership.
     if (String(row.client || '').toLowerCase() === 'tv') {
       const width = Number(row.videoWidth ?? row.video_width ?? 0);
       const height = Number(row.videoHeight ?? row.video_height ?? 0);
@@ -53,22 +63,13 @@ function readerFailureClass(row = {}) {
         return 'playback_video_format_unverified';
       }
     }
+    if (stage && stage !== 'none' && stage !== 'unknown') return 'playback_unknown';
     return 'healthy';
   }
-  if (state === 'short_media') return 'short_media';
-  if (state === 'duration_unknown') return 'playback_duration_unknown';
-  const stage = String(row.failureStage || row.failure_stage || '').toLowerCase();
-  if (READER_FAILURE_CLASSES[stage]) return READER_FAILURE_CLASSES[stage];
-  const status = Number(row.httpStatus ?? row.http_status ?? 0);
-  if ([401, 403, 407, 451].includes(status)) return 'playback_http_access';
-  if ([404, 410].includes(status)) return 'playback_http_gone';
-  if (status === 429) return 'playback_rate_limited';
-  if (status >= 500 && status <= 599) return 'playback_http_upstream';
   if (state === 'timeout') return 'playback_timeout';
   if (state === 'error') return 'playback_player_error';
   return state ? 'playback_unknown' : 'unknown_failure';
 }
-
 function readerFailureDomain(row = {}) {
   const cls = readerFailureClass(row);
   if (cls === 'healthy') return 'healthy';
