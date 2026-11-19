@@ -1,3 +1,19 @@
+## Evidence block — 2026-11-19 French-Manga / Sadisflix native cross-client field observation
+
+**Source:** direct user test report in NiakVIO project conversation, 2026-11-19. User-observed client behavior, **not** a source-SHA-verified Android native replay or TMDB episode-identity certification. App build SHA, exact manifest installed per client, cached scraper SHA and test duration are not supplied; leave them UNKNOWN.
+
+| Provider | Client | Observation | Confidence and unproven stages |
+|---|---|---|---|
+| French-Manga | Nuvio Desktop macOS | 1 stream worked; the played stream exposed French audio | User-observed playable on macOS, not independently source/episode-identity certified; installed JS SHA and exact runtime unknown |
+| French-Manga | Nuvio Android TV | Not displayed in streams | UI absence observed, but whether manifest missing/stale/disabled, media-type filter, plugin invocation, fetch, empty return or UI suppression is still undetermined |
+| Sadisflix | Client not specified | Not seen in streams | UI absence observed; **Sadisflix is VF-only**, so Global-only installation would exclude it; installed manifest and tested title/media type not supplied |
+
+**Canonical production source at intake:** NiakVIO `0815e9a42545061ba0880708c8e219631cadeff0`, manifest `5.21.173`. French-Manga enabled in Global and VF with `supportedTypes=["anime","tv"]`, no platform disable; Sadisflix enabled **only** in VF with `supportedTypes=["movie","tv"]`, no platform disable. These are repository facts, **not proof of the clients' installed state**. TV client `PluginManager` uses persisted `existingScraper.enabled` on repository refresh, normalizes `series/show/other → tv`, and filters `enabledScrapers` by type before JS invocation; code fetch and runtime must be traced separately.
+
+**Causal discrimination to perform, Brain-first:** (1) record installed manifest URL/version, plugin canonical ID, enabled flag and SHA-256 on each client, (2) compare Nuvio TV media type and capability gate, (3) trace actual NuvioTV `getStreams(tmdbId,mediaType,season,episode)` invocation and response, (4) compare network/headers/WAF/timeout and returned terminal HLS against Desktop, (5) validate rendered stream, decoded correct episode and audio tracks. Do not patch French-Manga JS because it works on another client without locating the causal layer. Do not add Sadisflix to Global merely to make it appear: VF-only ownership is intentional.
+
+**Independent automated follow-up:** [focused Android-TV native run 44514660418](https://github.com/niakw/NiakVIO/actions/runs/44514660418) requested on current source `6659716e` for `french-manga` / `jujutsu-kaisen-s01e01`, residential exit disabled to isolate client path first. This test was in progress when evidence was written; no terminal proof inferred.
+
 # User Provider Evidence Ledger
 
 > Durable NiakVIO ledger for provider evidence supplied manually by the user across earlier chats/files.  
