@@ -46,7 +46,7 @@ assert "NUVIO_HLS_RUNTIME_INTEGRITY_V1" in wrapped
 # Native first-segment/VOD proof remains enabled by default, while the current
 # implementation revision also preserves per-variant quality/audio/subtitle
 # coherence. Older v17 assertions must not pin the pre-coherence revision.
-assert "variant-coherence-v18" in wrapped
+assert "variant-coherence-v19-core-proof-handoff" in wrapped
 assert '"probeFirstSegmentNative":true' in wrapped
 assert 'typeof setTimeout==="function"' in wrapped
 assert 'typeof clearTimeout==="function"' in wrapped
@@ -134,7 +134,7 @@ assert ordered.count(hls_end) == 1
 assert ordered.rfind(hls_begin) > ordered.rfind("streamzo #1")
 # Strict final-output flags must survive even though the implementation revision
 # is upgraded to the current variant-coherence layer.
-assert "variant-coherence-v18" in ordered
+assert "variant-coherence-v19-core-proof-handoff" in ordered
 assert '"probeAllUrls":true' in ordered
 assert '"failClosedUnknown":true' in ordered
 run_node(r'''
