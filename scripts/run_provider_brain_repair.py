@@ -924,14 +924,24 @@ def _frontier_status_rank(row: dict[str, Any]) -> int:
     return order.get(status, 5)
 
 
-def trusted_transfer_capability_strategies(
+FRONTIER_SCOPE_FAILURE_FAMILIES = {
+    "transport": "route-terminal",
+    "route-to-terminal": "route-terminal",
+    "terminal-extraction": "terminal-media",
+    "variant-coverage": "terminal-media",
+    "candidate-replay": "candidate-replay",
+}
+
+
+def trusted_transfer_family_keys(
     overrides_payload: dict[str, Any] | None = None,
     policy_payload: dict[str, Any] | None = None,
-) -> set[str]:
-    """Return capability strategies backed by transferable trusted skills.
+) -> set[tuple[str, str]]:
+    """Return (capability strategy, causal failure family) trust keys.
 
-    This widens only the validation frontier. Every sibling still passes the
-    ordinary sandbox/current-byte/identity/playback/non-regression gates.
+    Capability alone is deliberately insufficient: the same runtime strategy
+    can own transport, terminal extraction and candidate replay. Fan-out is
+    allowed only when a validated trusted skill matches both axes.
     """
     overrides = overrides_payload if isinstance(overrides_payload, dict) else load(OVERRIDES, {})
     policy = policy_payload if isinstance(policy_payload, dict) else load(BRAIN_POLICY, {})
@@ -944,7 +954,7 @@ def trusted_transfer_capability_strategies(
     min_successes = max(1, int(maturity.get("trustedSuccesses") or 3))
     runtime = overrides.get("runtime_repair") if isinstance(overrides.get("runtime_repair"), dict) else {}
     skills = runtime.get("learned_skills") if isinstance(runtime.get("learned_skills"), dict) else {}
-    output: set[str] = set()
+    output: set[tuple[str, str]] = set()
     for raw in skills.values():
         if not isinstance(raw, dict) or raw.get("validated") is not True:
             continue
@@ -959,11 +969,28 @@ def trusted_transfer_capability_strategies(
             continue
         if int(raw.get("successCount") or 0) < min_successes:
             continue
+        failure = _canon_failure(raw.get("failureClass"))
+        failure_family = META_GAP_FAILURE_FAMILIES.get(failure, failure)
+        if not failure_family or failure_family in {"healthy", "unknown_failure"}:
+            continue
         for value in raw.get("capabilityStrategies") or []:
             strategy = cid(value)
             if strategy and strategy not in {"unknown", "not-applicable"}:
-                output.add(strategy)
+                output.add((strategy, failure_family))
     return output
+
+
+def trusted_transfer_capability_strategies(
+    overrides_payload: dict[str, Any] | None = None,
+    policy_payload: dict[str, Any] | None = None,
+) -> set[str]:
+    """Compatibility view for diagnostics; scheduling uses family keys."""
+    return {
+        strategy
+        for strategy, _failure_family in trusted_transfer_family_keys(
+            overrides_payload, policy_payload
+        )
+    }
 
 
 def repair_wave_frontier(
@@ -973,9 +1000,9 @@ def repair_wave_frontier(
     plan: dict[str, Any] | None = None,
     rows: dict[str, dict[str, Any]] | None = None,
     pressure: dict[str, int] | None = None,
-    trusted_strategies: set[str] | None = None,
+    trusted_family_keys: set[tuple[str, str]] | None = None,
 ) -> dict[str, Any]:
-    """Run one oracle per causal family until a transferable skill is trusted."""
+    """Run one oracle per causal family until matching transferable trust exists."""
     selected_values = [cid(value) for value in values if cid(value)]
     wanted = set(selected_values)
     if not wanted:
@@ -1001,9 +1028,13 @@ def repair_wave_frontier(
     status_rows_map = rows if isinstance(rows, dict) else status_rows(status)
     attempts = pressure if isinstance(pressure, dict) else provider_attempt_pressure_map()
     trusted = (
-        {cid(value) for value in trusted_strategies if cid(value)}
-        if trusted_strategies is not None
-        else trusted_transfer_capability_strategies()
+        {
+            (cid(strategy), str(family or "").strip().casefold())
+            for strategy, family in trusted_family_keys
+            if cid(strategy) and str(family or "").strip()
+        }
+        if trusted_family_keys is not None
+        else trusted_transfer_family_keys()
     )
     pinned_set = {cid(value) for value in (pinned or set()) if cid(value)} & wanted
 
@@ -1019,8 +1050,11 @@ def repair_wave_frontier(
         ]
         if not members:
             continue
+        repair_scope = cid(raw.get("repairScope")) or "unknown"
         families.append({
             "groupId": str(raw.get("groupId") or "unknown"),
+            "repairScope": repair_scope,
+            "failureFamily": FRONTIER_SCOPE_FAILURE_FAMILIES.get(repair_scope, ""),
             "capabilityStrategy": cid(raw.get("capabilityStrategy")) or "unknown",
             "members": members,
         })
@@ -1029,6 +1063,8 @@ def repair_wave_frontier(
     for provider in sorted(wanted - assigned):
         families.append({
             "groupId": f"provider-local:{provider}",
+            "repairScope": "provider-local",
+            "failureFamily": "",
             "capabilityStrategy": "provider-local",
             "members": [provider],
         })
@@ -1059,10 +1095,16 @@ def repair_wave_frontier(
         members = sorted(family["members"], key=provider_rank)
         pinned_members = [provider for provider in members if provider in pinned_set]
         capability = family["capabilityStrategy"]
+        failure_family = family["failureFamily"]
+        transfer_key = (capability, failure_family)
         if pinned_members:
             active = pinned_members
             pinned_families.append(family["groupId"])
-        elif capability in trusted and capability != "provider-local":
+        elif (
+            failure_family
+            and capability != "provider-local"
+            and transfer_key in trusted
+        ):
             active = members
             fanout_families.append(family["groupId"])
         else:
