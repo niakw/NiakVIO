@@ -21,6 +21,13 @@ def report(provider="demo", *, selected=True, returned=0, complete=False):
             "requestType": "anime", "eligible": selected,
             "rawUrl": "https://PRIVATE.example/should-not-leak",
         }],
+        "quickJsPromiseControls": [{
+            "client": "tv", "fixture": "jujutsu-kaisen-s01e01",
+            "status": "promise_delivery_gap",
+            "proofAuthority": False, "publicationAuthority": False,
+            "nativePlaybackAuthority": False, "providerJsMutationAllowed": False,
+            "headers": {"Authorization": "SECRET"},
+        }],
         "quickJsDiagnostics": [
             {"client": "tv", "provider": provider, "fixture": "jujutsu-kaisen-s01e01",
              "requestType": "anime", "phase": "call", "category": "none", "count": 0},
@@ -62,6 +69,7 @@ with tempfile.TemporaryDirectory() as folder:
     x = a["rows"][0]
     assert x["appSelected"] is True
     assert x["quickJsReturned"] == 0
+    assert x["tvPromiseControl"] == "promise_delivery_gap"
     assert x["nativeExtractionZeroObserved"] is True
     assert x["nativeExtractionPositiveObserved"] is False
     assert x["quickJsErrors"] == ["reference_error"]
@@ -88,6 +96,7 @@ with tempfile.TemporaryDirectory() as folder:
     assert b["rows"][0]["readerEvidenceComplete"] is True
     assert b["rows"][0]["providerArtifactSha256"] != b["rows"][1]["providerArtifactSha256"]
     assert b["rows"][0]["nativePlaybackAuthority"] is False
+    assert b["rows"][1]["tvPromiseControl"] == "promise_delivery_gap"
     for i in range(1003, 1035):
         b = mod.merge(b, [report()], source_root=root, source_sha="b"*40, run_id=str(i))
     assert b["observationCount"] == 10
@@ -112,6 +121,15 @@ with tempfile.TemporaryDirectory() as folder:
     # Even a forged native extraction record without app selection and
     # QuickJS markers must never enter the Brain at all.
     assert mod.sanitized_rows(spoof) == []
+    forged_control = report()
+    forged_control["quickJsPromiseControls"][0]["publicationAuthority"] = True
+    assert mod.sanitized_rows(forged_control)[0]["tvPromiseControl"] == "not_observed"
+    forged_control = report()
+    forged_control["quickJsPromiseControls"][0]["status"] = "https://private.example/t"
+    assert mod.sanitized_rows(forged_control)[0]["tvPromiseControl"] == "not_observed"
+    invisible_control = report(selected=False)
+    assert mod.sanitized_rows(invisible_control)[0]["tvPromiseControl"] == "not_observed"
+
     malicious = report()
     malicious["quickJsDiagnostics"][2]["category"] = "https://PRIVATE.example"
     assert mod.sanitized_rows(malicious)[0]["quickJsErrors"] == []
