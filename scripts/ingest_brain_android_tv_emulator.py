@@ -96,6 +96,7 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
             samples[key] = {
                 "provider": key[0], "fixture": fixture, "requestType": lane,
                 "appSelected": None, "tvPromiseControl": "not_observed", "quickJsPhases": [],
+                "nativeHardTimeoutObserved": False, "nativeHardTimeoutMs": 0,
                 "quickJsErrors": [], "quickJsReturned": 0,
                 "nativeExtractionZeroObserved": False,
                 "nativeExtractionPositiveObserved": False,
@@ -167,6 +168,28 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
         if failure in PLAYER_FAILURES and failure not in row["playerFailureClasses"]:
             row["playerFailureClasses"].append(failure)
 
+    for item in (report.get("nativeExecutionDiagnostics") or [])[:200]:
+        if not isinstance(item, dict):
+            continue
+        row = get(item)
+        if (
+            row is None
+            or item.get("failureClass") != "provider_hard_timeout"
+            or any(item.get(key) is not False for key in (
+                "proofAuthority", "publicationAuthority",
+                "nativePlaybackAuthority", "providerJsMutationAllowed",
+            ))
+        ):
+            continue
+        duration = item.get("observedDurationMs")
+        configured = item.get("configuredTimeoutMs")
+        if (
+            type(duration) is int and 1000 <= duration <= 180000
+            and type(configured) is int and 1000 <= configured <= 180000
+        ):
+            row["nativeHardTimeoutObserved"] = True
+            row["nativeHardTimeoutMs"] = duration
+
     # Synthetic control status is fixture-scoped test-harness diagnostics,
     # not proof of any actual media URL, episode or provider correction.
     controls: dict[str, str] = {}
@@ -200,6 +223,8 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
             row["quickJsReturned"] = 0
             row["nativeExtractionZeroObserved"] = False
             row["nativeExtractionPositiveObserved"] = False
+            row["nativeHardTimeoutObserved"] = False
+            row["nativeHardTimeoutMs"] = 0
             row["playerStates"] = []
             row["playerFailureClasses"] = []
         accepted.append(row)
@@ -238,6 +263,9 @@ def merge(previous: dict[str, Any], reports: list[dict[str, Any]], *,
                 if type(record.get("appSelected")) is bool else None,
             "tvPromiseControl": record.get("tvPromiseControl")
                 if record.get("tvPromiseControl") in TV_PROMISE_STATUSES else "not_observed",
+            "nativeHardTimeoutObserved": record.get("nativeHardTimeoutObserved") is True,
+            "nativeHardTimeoutMs": safe_count(record.get("nativeHardTimeoutMs"))
+                if record.get("nativeHardTimeoutObserved") is True else 0,
             "quickJsPhases": [x for x in (record.get("quickJsPhases") or [])
                               if x in QUICKJS_PHASES][:4],
             "quickJsErrors": [x for x in (record.get("quickJsErrors") or [])
