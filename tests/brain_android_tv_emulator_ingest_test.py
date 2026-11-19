@@ -153,6 +153,52 @@ with tempfile.TemporaryDirectory() as folder:
     malicious["quickJsDiagnostics"][2]["category"] = "https://PRIVATE.example"
     assert mod.sanitized_rows(malicious)[0]["quickJsErrors"] == []
 
+# Exact source-pinned TV: two results, HLS probe HTTP 403 and player READY
+# without video format. Separate transport-probe hypothesis from native decode.
+tv_terminal = report(returned=0, complete=True)
+tv_terminal["observations"] = [
+    {"client": "tv", "provider": "demo", "fixture": "jujutsu-kaisen-s01e01",
+     "requestType": "anime", "routeMode": "declared",
+     "observationLayer": "extraction", "state": "non_empty",
+     "failureClass": "healthy", "returnedCount": 2,
+     "url": "https://PRIVATE.example/?secret=TOKEN"},
+    {"client": "tv", "provider": "demo", "fixture": "jujutsu-kaisen-s01e01",
+     "requestType": "anime", "routeMode": "declared",
+     "observationLayer": "player", "state": "ready",
+     "failureClass": "healthy", "playerVideoFormatObserved": False,
+     "playerAudioTrackCount": 0, "url": "https://PRIVATE.example/?secret=TOKEN"},
+]
+tv_terminal["terminalTransportDiagnostics"] = [{
+    "client": "tv", "provider": "demo", "fixture": "jujutsu-kaisen-s01e01",
+    "requestType": "anime", "index": 0,
+    "source": "independent-terminal-transport-probe",
+    "state": "dead", "kind": "hls", "httpStatus": 403,
+    "proofAuthority": False, "publicationAuthority": False,
+    "nativePlaybackAuthority": False, "providerJsMutationAllowed": False,
+    "url": "https://PRIVATE.example/?secret=TOKEN",
+    "headers": {"Cookie": "PRIVATE"},
+}]
+tv_row = mod.sanitized_rows(tv_terminal)[0]
+assert tv_row["nativeExtractionPositiveObserved"] is True
+assert tv_row["nativeExtractionReturnedCount"] == 2
+assert tv_row["quickJsReturned"] == 0  # no QuickJS console result is not empty extraction
+assert tv_row["playerVideoFormatUnverified"] is True
+assert tv_row["independentTerminalHttpStatuses"] == [403]
+assert tv_row["nativePlaybackAuthority"] is False
+assert "PRIVATE" not in json.dumps(tv_row)
+faked = json.loads(json.dumps(tv_terminal))
+faked["terminalTransportDiagnostics"][0]["providerJsMutationAllowed"] = True
+assert mod.sanitized_rows(faked)[0]["independentTerminalHttpStatuses"] == []
+faked = json.loads(json.dumps(tv_terminal))
+faked["terminalTransportDiagnostics"][0]["httpStatus"] = 200
+assert mod.sanitized_rows(faked)[0]["independentTerminalHttpStatuses"] == []
+faked = json.loads(json.dumps(tv_terminal))
+faked["observations"][1]["playerVideoFormatObserved"] = True
+assert mod.sanitized_rows(faked)[0]["playerVideoFormatUnverified"] is False
+faked = report(selected=False)
+faked["terminalTransportDiagnostics"] = tv_terminal["terminalTransportDiagnostics"]
+assert mod.sanitized_rows(faked)[0]["independentTerminalHttpStatuses"] == []
+
 native_workflow = (ROOT / ".github/workflows/native-corpus-device-targeted.yml").read_text()
 feedback_workflow = (ROOT / ".github/workflows/brain-android-tv-emulator-feedback.yml").read_text()
 assert "Diagnose sanitized targeted native evidence for Brain" in native_workflow
