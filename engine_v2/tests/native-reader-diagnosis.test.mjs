@@ -349,6 +349,40 @@ try {
   assert.deepEqual(loadRefusedData.plans, []);
   assert.ok(loadRefusedData.evidenceProblems.some((problem) => problem.startsWith('missing_repository_load:')));
 
+  // Preserve the *native* terminal hard timeout even when QuickJS never
+  // printed a result/error. It is NOT a zero stream or proof of provider fault.
+  const hardTimeoutLog = path.join(tmp, 'tv-hard-timeout.log');
+  const hardTimeoutOutput = path.join(tmp, 'tv-hard-timeout.json');
+  fs.writeFileSync(hardTimeoutLog, [
+    ...common,
+    'FIELD_NATIVE_ERROR client=tv fixture=sinners-2025 provider64='
+      + b64('MOVIESDRIVE') + ' request_type=movie route_mode=declared duration_ms=25000 error64='
+      + b64('provider_hard_timeout_ms=25000'),
+    'FIELD_NATIVE_ERROR client=tv fixture=sinners-2025 provider64='
+      + b64('MOVIESDRIVE') + ' request_type=movie route_mode=declared duration_ms=25000 error64='
+      + b64('Bearer SECRET https://private.example'),
+    'FIELD_NATIVE_ERROR client=desktop fixture=sinners-2025 provider64='
+      + b64('MOVIESDRIVE') + ' request_type=movie route_mode=declared duration_ms=25000 error64='
+      + b64('provider_hard_timeout_ms=25000'),
+  ].join('\n') + '\n');
+  const timed = spawnSync(process.execPath, [script, '--output', hardTimeoutOutput, hardTimeoutLog], { cwd: root, encoding: 'utf8' });
+  assert.equal(timed.status, 0, timed.stderr + timed.stdout);
+  const timedData = JSON.parse(fs.readFileSync(hardTimeoutOutput, 'utf8'));
+  assert.equal(timedData.nativeExecutionDiagnosticObserved, 1);
+  assert.equal(timedData.nativeExecutionDiagnostics.length, 1);
+  assert.deepEqual(
+    [timedData.nativeExecutionDiagnostics[0].failureClass,
+     timedData.nativeExecutionDiagnostics[0].observedDurationMs,
+     timedData.nativeExecutionDiagnostics[0].configuredTimeoutMs],
+    ['provider_hard_timeout', 25000, 25000],
+  );
+  assert.equal(timedData.nativeExecutionDiagnostics[0].providerJsMutationAllowed, false);
+  assert.equal(timedData.nativeExecutionDiagnostics[0].nativePlaybackAuthority, false);
+  assert.equal(timedData.nativeExecutionDiagnostics[0].proofAuthority, false);
+  for (const secret of ['private.example', 'Bearer', 'SECRET']) {
+    assert.equal(JSON.stringify(timedData.nativeExecutionDiagnostics).includes(secret), false);
+  }
+
   // A synthetic official QuickJS control distinguishes normal immediate
   // delivery from a lost async Promise. It is never real provider/media proof.
   const promiseLog = path.join(tmp, 'tv-promise-control.log');
