@@ -147,10 +147,10 @@ with tempfile.TemporaryDirectory() as tmp:
     noformat = root / "without-decoded-video"
     noformat.mkdir()
     (noformat / "desktop-native-corpus-synthetic.log").write_text(
-        "\\n".join(desktop) + "\\n"
+        "\n".join(desktop) + "\n"
     )
     (noformat / "tv-native-corpus-synthetic.log").write_text(
-        ("\\n".join(tv) + "\\n").replace(
+        ("\n".join(tv) + "\n").replace(
             "video_width=1280 video_height=720",
             "video_width=0 video_height=0",
         )
