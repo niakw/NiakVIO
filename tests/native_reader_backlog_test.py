@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import importlib.util
 import subprocess
 import tempfile
 from pathlib import Path
@@ -10,6 +11,23 @@ ROOT = Path(__file__).resolve().parents[1]
 MERGE = ROOT / "scripts/merge_native_reader_backlog.py"
 SYNC = ROOT / ".github/workflows/native-reader-learning-sync.yml"
 CANONICAL = ROOT / ".github/workflows/canonical-media-types.yml"
+
+# A native QuickJS zero-result or exception is an unresolved client/provider
+# differential, not proof that a provider JS patch should be accepted.
+spec = importlib.util.spec_from_file_location("native_backlog", MERGE)
+assert spec and spec.loader
+native_backlog = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(native_backlog)
+for failure in (
+    "native_quickjs_zero_stream",
+    "native_quickjs_exception",
+    "native_quickjs_missing_export",
+):
+    contract = native_backlog.classification(failure)
+    assert contract["layer"] == "client_provider_execution_unresolved"
+    assert contract["providerJsMutationAllowed"] is False
+    assert contract["externalCandidate"] is False
+
 
 
 def backlog_of(state: dict) -> dict:
