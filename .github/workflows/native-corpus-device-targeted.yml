@@ -292,6 +292,7 @@ jobs:
           NUVIO_DESKTOP_SHA: ${{ needs.resolve.outputs.desktop_sha }}
           NUVIO_MOBILE_SHA: ${{ needs.resolve.outputs.mobile_sha }}
           NUVIO_TV_SHA: ${{ needs.resolve.outputs.tv_sha }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
         run: |
           set -euxo pipefail
           case "$DEVICE" in
@@ -317,6 +318,7 @@ jobs:
               git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
               git -C nuvio-tv checkout "$NUVIO_TV_SHA"
               touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
+              python3 niakvio/scripts/prepare_native_tv_tmdb_contract.py --repo-root niakvio --client-root nuvio-tv --manifest "$NIAKVIO_TARGET_MANIFEST" --provider "$NIAKVIO_TARGET_PROVIDER"
               INITIAL_FIXTURE="${NIAKVIO_TARGET_FIXTURE:-interstellar}"
               if [ -z "$INITIAL_FIXTURE" ] || [ "$INITIAL_FIXTURE" = "all" ]; then INITIAL_FIXTURE=interstellar; fi
               python3 niakvio/scripts/prepare_native_corpus_client.py tv --fixture "$INITIAL_FIXTURE" --workspace "$GITHUB_WORKSPACE" --provider "$NIAKVIO_TARGET_PROVIDER" --manifest "$NIAKVIO_TARGET_MANIFEST"
