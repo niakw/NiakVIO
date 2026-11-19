@@ -110,6 +110,7 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
                 "nativeExtractionZeroObserved": False,
                 "nativeExtractionPositiveObserved": False,
                 "nativeExtractionReturnedCount": 0,
+                "sameMediaRootSuccessThenForbidden": False,
                 "playerVideoFormatUnverified": False,
                 "independentTerminalHttpStatuses": [],
                 "playerStates": [], "playerFailureClasses": [],
@@ -198,6 +199,27 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
             and raw.get("routeMode") == "declared"
         ):
             row["playerVideoFormatUnverified"] = True
+
+    # Provider-runtime fetch sequence can reveal that the same HLS root was
+    # consumed successfully and then forbidden on a later pre-player request.
+    # The diagnostic intentionally contains no URL/host/token/header.
+    for item in (report.get("prePlayerMediaRootTransitions") or [])[:64]:
+        if not isinstance(item, dict):
+            continue
+        row = get(item)
+        if (
+            row is None
+            or item.get("source") != "plugin-runtime-fetch-sequence"
+            or item.get("kind") != "hls"
+            or item.get("pattern") != "same_media_root_2xx_then_403"
+            or item.get("phase") != "provider-runtime-pre-player"
+            or any(item.get(key) is not False for key in (
+                "proofAuthority", "publicationAuthority",
+                "nativePlaybackAuthority", "providerJsMutationAllowed",
+            ))
+        ):
+            continue
+        row["sameMediaRootSuccessThenForbidden"] = True
 
     # HTTP status comes from an independent network probe, NOT an observed
     # player decoder/network result; it remains a bounded negative hypothesis.
@@ -339,6 +361,7 @@ def merge(previous: dict[str, Any], reports: list[dict[str, Any]], *,
             "nativeExtractionPositiveObserved": record.get("nativeExtractionPositiveObserved") is True,
             "nativeExtractionReturnedCount": safe_count(record.get("nativeExtractionReturnedCount"))
                 if record.get("nativeExtractionPositiveObserved") is True else 0,
+            "sameMediaRootSuccessThenForbidden": record.get("sameMediaRootSuccessThenForbidden") is True,
             "playerVideoFormatUnverified": record.get("playerVideoFormatUnverified") is True,
             "independentTerminalHttpStatuses": sorted({
                 v for v in (record.get("independentTerminalHttpStatuses") or [])
