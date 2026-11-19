@@ -223,6 +223,19 @@ def main() -> int:
         "--output", "automation/provider-repair-batch-plan-latest.json",
     )
 
+    # Persist only redacted, exact-bundle failure diagnostics as Brain context.
+    # The raw Retest artifact may include signed player URLs: never commit it.
+    if run_id.isdigit() and len(sha) == 40 and all(c in "0123456789abcdef" for c in sha):
+        run(
+            sys.executable,
+            "scripts/export_retest_brain_evidence.py",
+            "--report", str(output.relative_to(ROOT)),
+            "--census", str(STATUS.relative_to(ROOT)),
+            "--sha", sha,
+            "--run", run_id,
+            "--output", "automation/provider-retest-brain-evidence-latest.json",
+        )
+
     refreshed = load(STATUS)
     by_provider = {
         cid(row.get("provider")): str(row.get("status") or "")
