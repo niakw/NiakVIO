@@ -28,12 +28,11 @@ assert "python3 scripts/sync_release_versions.py" in workflow
 assert '--previous "$RUNNER_TEMP/published-manifest-baseline.json"' in workflow
 assert workflow.index("python3 scripts/sync_release_versions.py") < workflow.index("python3 scripts/generate_release_hashes.py")
 assert workflow.index("python3 scripts/generate_release_hashes.py") < workflow.index("python3 scripts/validate_release_integrity.py")
-# Provider reapplication rewrites content-addressed filenames. Hub46 is a local
-# prune authority, so its projection must be refreshed before stale bundles are pruned.
+# Provider reapplication rewrites content-addressed filenames. Canonical Global/VF
+# projections are already synchronized before stale bundles are pruned.
 _first_reapply = workflow.index("python3 scripts/reapply_published_overrides.py")
-_first_hub46 = workflow.index("python3 scripts/generate_hub46_manifest.py")
 _prune = workflow.index("python3 scripts/prune_unreferenced_providers.py --prune-provider-bases")
-assert _first_reapply < _first_hub46 < _prune
+assert _first_reapply < _prune
 assert "provider-v3-materialization.json providers/ provider-bases/" in workflow
 # A late authority/type reconciliation is followed by one bounded reapply.
 # Reapply emits canonical readable bytes, so the main finalizer must restore
@@ -47,10 +46,9 @@ _late_minimize_check = workflow.index("python3 scripts/finalize_provider_v3_mini
 _late_reapply_check = workflow.index("python3 scripts/reapply_published_overrides.py --check", _late_minimize_check)
 _published_minimizer_test = workflow.index("python3 tests/provider_v3_minimizer_published_test.py", _late_reapply_check)
 assert _type_reconcile < _late_reapply < _late_minimize < _late_minimize_check < _late_reapply_check < _published_minimizer_test
-assert workflow.count("python3 scripts/generate_hub46_manifest.py") >= 2
 assert "Stage provider generation locally" in workflow
 assert "Unexpected path changed by provider-generation finalization" in workflow
-assert "Commit final pinned release locally" in workflow
+assert "Commit final canonical release locally" in workflow
 assert "Unexpected path changed by pinned release finalization" in workflow
 assert "Publish accepted release atomically" in workflow
 # Publication may accept subsequent evidence-only commits, but executable Core,
@@ -76,9 +74,9 @@ assert "chore(release): reseal accepted evidence-only merge" in publisher
 assert publisher.index("git merge --no-ff --no-edit") < publisher.index("git push origin HEAD:main")
 assert "git push --force" not in publisher
 assert 'ref: ${{ github.event_name == \'workflow_dispatch\' && inputs.expected_sha || github.sha }}' in workflow
-assert workflow.index("Stage provider generation locally") < workflow.index("Rebuild exact pinned Hub46 transport and release integrity")
-assert workflow.index("Rebuild exact pinned Hub46 transport and release integrity") < workflow.index("Commit final pinned release locally")
-assert workflow.index("Commit final pinned release locally") < workflow.index("Publish accepted release atomically")
+assert workflow.index("Stage provider generation locally") < workflow.index("Rebuild canonical release integrity")
+assert workflow.index("Rebuild canonical release integrity") < workflow.index("Commit final canonical release locally")
+assert workflow.index("Commit final canonical release locally") < workflow.index("Publish accepted release atomically")
 assert "git push origin HEAD:main" in workflow
 assert "--first-parent" in baseline_source
 assert "current_version" in baseline_source
