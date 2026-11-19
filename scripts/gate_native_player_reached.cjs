@@ -38,9 +38,12 @@ function executionKey(parsed) {
 
 let readable = 0;
 let terminalEvidence = 0;
-let productionPlayerReached = 0;
+let productionPlayerInvoked = 0;
+let productionPlaybackVerified = 0;
+let productionPlaybackFailed = 0;
 let rejectedSetup = 0;
-const byClient = new Map();
+const invokedByClient = new Map();
+const verifiedByClient = new Map();
 const structuralFailures = [];
 const zeroMediaFixtures = [];
 const executed = new Set();
@@ -99,16 +102,26 @@ for (const file of paths) {
     terminalEvidence += 1;
     const client = parsed.get('client') || 'unknown';
     const engine = parsed.get('engine') || '';
+    const playerState = String(parsed.get('state') || '').toLowerCase();
     const failureStage = parsed.get('failure_stage') || '';
     const errorCode = parsed.get('error_code') || '';
-    const isProduction = /-production$/i.test(engine);
+    const isProduction = parsed.get('production_surface') === 'true' || /-production$/i.test(engine);
     const isSetupOnly = failureStage === 'player_setup' || errorCode === 'NO_LAUNCH_INTENT';
     if (!isProduction || isSetupOnly) {
       if (isSetupOnly) rejectedSetup += 1;
       continue;
     }
-    productionPlayerReached += 1;
-    byClient.set(client, Number(byClient.get(client) || 0) + 1);
+    productionPlayerInvoked += 1;
+    invokedByClient.set(client, Number(invokedByClient.get(client) || 0) + 1);
+    const playbackVerified =
+      (playerState === 'ready' || playerState === 'ended') &&
+      (!failureStage || failureStage === 'none');
+    if (playbackVerified) {
+      productionPlaybackVerified += 1;
+      verifiedByClient.set(client, Number(verifiedByClient.get(client) || 0) + 1);
+    } else {
+      productionPlaybackFailed += 1;
+    }
   }
 
   if (state.placeholder) structuralFailures.push(`${file}:diagnostic_placeholder`);
@@ -123,14 +136,14 @@ for (const file of paths) {
 }
 
 if (!readable) {
-  console.error('FIELD_NATIVE_PLAYER_REACH_GATE status=fail reason=no_readable_logs terminal=0 production=0 setup_rejected=0 blocking=true owner=lab_infra');
+  console.error('FIELD_NATIVE_PLAYER_REACH_GATE status=fail reason=no_readable_logs terminal=0 production=0 playback_verified=0 playback_failed=0 setup_rejected=0 blocking=true owner=lab_infra');
   process.exit(3);
 }
 
 if (structuralFailures.length) {
   console.error(
     `FIELD_NATIVE_PLAYER_REACH_GATE status=fail reason=incomplete_native_evidence ` +
-    `terminal=${terminalEvidence} production=${productionPlayerReached} setup_rejected=${rejectedSetup} ` +
+    `terminal=${terminalEvidence} production=${productionPlayerInvoked} setup_rejected=${rejectedSetup} ` +
     `problems=${structuralFailures.length} blocking=true owner=lab_infra`
   );
   for (const problem of structuralFailures.slice(0, 40)) {
@@ -149,7 +162,7 @@ if (systemicRuntimeFailure) {
   console.error(
     `FIELD_NATIVE_PLAYER_REACH_GATE status=fail reason=systemic_provider_runtime_error ` +
     `runtime_sentinels=${sentinelCount} executions=${executedCount} ratio=${sentinelRatio.toFixed(3)} ` +
-    `terminal=${terminalEvidence} production=${productionPlayerReached} blocking=true owner=runtime_contract`
+    `terminal=${terminalEvidence} production=${productionPlayerInvoked} blocking=true owner=runtime_contract`
   );
   process.exit(6);
 }
@@ -158,23 +171,31 @@ for (const file of zeroMediaFixtures.slice(0, 40)) {
   console.error(`FIELD_NATIVE_PLAYER_REACH_BRAIN_OBSERVATION ${file}:zero_media_verified`);
 }
 
-if (!productionPlayerReached) {
-  // A route with complete runtime/reader evidence but no successful production-player
-  // reach remains Brain evidence by default. Structural/runtime-contract failures above
-  // are always blocking; callers may separately make playback outcome strict.
-  const blocking = process.env.NIAKVIO_NATIVE_PLAYER_GATE_BLOCKING === '1';
+const blocking = process.env.NIAKVIO_NATIVE_PLAYER_GATE_BLOCKING === '1';
+if (!productionPlayerInvoked) {
   console.error(
     `FIELD_NATIVE_PLAYER_REACH_GATE status=fail reason=production_player_never_reached ` +
-    `terminal=${terminalEvidence} production=0 setup_rejected=${rejectedSetup} ` +
-    `runtime_sentinels=${sentinelCount} executions=${executedCount} ` +
-    `blocking=${blocking} owner=brain`
+    `terminal=${terminalEvidence} production=0 playback_verified=0 playback_failed=0 setup_rejected=${rejectedSetup} ` +
+    `runtime_sentinels=${sentinelCount} executions=${executedCount} blocking=${blocking} owner=brain`
   );
   if (blocking) process.exit(4);
   process.exit(0);
 }
-const clients = [...byClient.entries()].map(([client, count]) => `${client}:${count}`).join(',');
+if (!productionPlaybackVerified) {
+  console.error(
+    `FIELD_NATIVE_PLAYER_REACH_GATE status=fail reason=production_playback_never_verified ` +
+    `terminal=${terminalEvidence} production=${productionPlayerInvoked} playback_verified=0 ` +
+    `playback_failed=${productionPlaybackFailed} setup_rejected=${rejectedSetup} ` +
+    `runtime_sentinels=${sentinelCount} executions=${executedCount} blocking=${blocking} owner=brain`
+  );
+  if (blocking) process.exit(4);
+  process.exit(0);
+}
+const invokedClients = [...invokedByClient.entries()].map(([client, count]) => `${client}:${count}`).join(',');
+const verifiedClients = [...verifiedByClient.entries()].map(([client, count]) => `${client}:${count}`).join(',');
 console.log(
   `FIELD_NATIVE_PLAYER_REACH_GATE status=pass terminal=${terminalEvidence} ` +
-  `production=${productionPlayerReached} setup_rejected=${rejectedSetup} clients=${clients} ` +
-  `runtime_sentinels=${sentinelCount} executions=${executedCount} blocking=false owner=brain`
+  `production=${productionPlayerInvoked} playback_verified=${productionPlaybackVerified} playback_failed=${productionPlaybackFailed} ` +
+  `setup_rejected=${rejectedSetup} clients=${invokedClients} verified_clients=${verifiedClients} ` +
+  `runtime_sentinels=${sentinelCount} executions=${executedCount} blocking=${blocking} owner=brain`
 );
