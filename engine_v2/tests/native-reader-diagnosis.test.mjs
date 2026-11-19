@@ -396,8 +396,8 @@ try {
 
   // Preserve the *native* terminal hard timeout even when QuickJS never
   // printed a result/error. It is NOT a zero stream or proof of provider fault.
-  const hardTimeoutLog = path.join(tmp, 'tv-hard-timeout.log');
-  const hardTimeoutOutput = path.join(tmp, 'tv-hard-timeout.json');
+  const separateHardTimeoutLog = path.join(tmp, 'tv-hard-timeout.log');
+  const separateHardTimeoutOutput = path.join(tmp, 'tv-hard-timeout.json');
   const timeoutProvider64 = b64('MOVIESDRIVE');
   const hardBase = common.filter((line) =>
     !(line.startsWith('FIELD_NATIVE_RESULT ') &&
@@ -415,10 +415,10 @@ try {
     'FIELD_NATIVE_ERROR client=tv fixture=sinners-2025 provider64='
       + timeoutProvider64 + ' request_type=movie route_mode=declared duration_ms=25000 error64='
       + b64('provider_hard_timeout_ms=25000'));
-  fs.writeFileSync(hardTimeoutLog, hardBase.join('\n') + '\n');
-  const timed = spawnSync(process.execPath, [script, '--output', hardTimeoutOutput, hardTimeoutLog], { cwd: root, encoding: 'utf8' });
+  fs.writeFileSync(separateHardTimeoutLog, hardBase.join('\n') + '\n');
+  const timed = spawnSync(process.execPath, [script, '--output', separateHardTimeoutOutput, separateHardTimeoutLog], { cwd: root, encoding: 'utf8' });
   assert.equal(timed.status, 0, timed.stderr + timed.stdout);
-  const timedData = JSON.parse(fs.readFileSync(hardTimeoutOutput, 'utf8'));
+  const timedData = JSON.parse(fs.readFileSync(separateHardTimeoutOutput, 'utf8'));
   assert.equal(timedData.nativeExecutionDiagnosticObserved, 1);
   assert.equal(timedData.nativeExecutionDiagnostics.length, 1);
   assert.deepEqual(
