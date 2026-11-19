@@ -45,8 +45,7 @@ assert "python scripts/generate_language_manifests.py" in text
 assert "python scripts/sync_release_versions.py" in text
 assert '--previous "$RUNNER_TEMP/published-manifest-baseline.json"' in text
 assert "python tests/release_auto_bump_test.py" in text
-assert "python scripts/generate_hub46_manifest.py" in text
-assert '--vf-source vf/manifest.json' in text
+assert "python scripts/native_manifest_projection.py write-active-union" in text
 assert '--output "$RUNNER_TEMP/domain-observation-manifest.json"' in text
 assert '--manifest "$RUNNER_TEMP/domain-observation-manifest.json"' in text
 assert "python scripts/generate_release_hashes.py" in text
@@ -56,7 +55,7 @@ assert "ref: ${{ github.event_name == 'push' && github.sha || 'main' }}" in text
 assert 'PROVIDER_SHA="$(git rev-parse HEAD)"' in text
 assert 'BASE_SHA="$(cat "$RUNNER_TEMP/domain-base-sha")"' in text
 assert text.count("NUVIO_SKIP_CLIENT_UPSTREAM_GUARD: '1'") == 1, "Domain Refresh may scope the client-head bypass only to its domain-only release projection step"
-domain_release_step = text.index("- name: Reproject, pin Hub46 transport and validate release")
+domain_release_step = text.index("- name: Reproject canonical manifests and validate release")
 domain_publish_step = text.index("- name: Publish authoritative domain transaction", domain_release_step)
 domain_release_block = text[domain_release_step:domain_publish_step]
 assert "NUVIO_SKIP_CLIENT_UPSTREAM_GUARD: '1'" in domain_release_block
