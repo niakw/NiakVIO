@@ -161,3 +161,9 @@
 - Finalizer `44441559053` reached and passed the new Android variant/quality/audio/subtitle regression tests, then failed in `augment_native_desktop_player.py` because its exact regex still matched the old, audio-only `FIELD_NATIVE_TRANSPORT` line.
 - The Desktop augmenter now anchors on the structural transport row instead of a frozen evidence column list, and emits the same advertised-quality, rendered-dimensions, audio, integrated-subtitle and per-variant transport fields as Android. Desktop production `PlayerEngineController` now observes both audio and subtitle tracks.
 - This is harness/client evidence alignment; it is not a real Desktop playback success claim.
+
+
+### 2026-11-19 — HLS finalizer stale revision assertion corrected
+- Finalizer run 44442153792 on `2afc1c19` reached the full native/client contract suite and failed only because `tests/hls_playback_integrity_test.py` still asserted the superseded implementation marker `native-audio-terminal-proof-v17` after Core moved to `variant-coherence-v18`.
+- The newer native evidence tests immediately before that assertion passed, including selected-variant quality and audio/subtitle completeness. The fix updates the stale contract to assert the current revision; it does not roll back HLS variant coherence or weaken terminal playback validation.
+- Validation required: rerun finalizer on the resulting SHA and continue through rematerialization/release integrity and native certification before calling the client/HLS work complete.
