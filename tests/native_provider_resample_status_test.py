@@ -16,6 +16,9 @@ assert gate.provider_status({"movie": "positive", "tv": "positive"}) == "FULL"
 assert gate.provider_status({"movie": "positive", "tv": "technical_error"}) == "PARTIAL"
 assert gate.provider_status({"movie": "positive", "tv": "catalog_miss"}) == "RESAMPLE"
 assert gate.provider_status({"movie": "catalog_miss", "tv": "catalog_miss"}) == "RESAMPLE"
+assert gate.provider_status({"movie": "unattributed_zero", "tv": "unattributed_zero"}) == "RESAMPLE"
+assert gate.provider_status({"movie": "unattributed_zero", "tv": "technical_error"}) == "ZERO"
+assert gate.provider_status({"movie": "positive", "tv": "unattributed_zero"}) == "RESAMPLE"
 assert gate.provider_status({"movie": "technical_error", "tv": "catalog_miss"}) == "ZERO"
 assert gate.provider_status({"movie": "technical_error", "tv": "technical_error"}) == "ZERO"
 assert gate.provider_status({"movie": "unobserved"}) == "INCOMPLETE"
@@ -38,7 +41,7 @@ payload = {
     "state": "completed",
 }
 parsed = gate.parse_ios_result("FIELD_NATIVE_IOS_RESULT " + json.dumps(payload))
-assert parsed == ("example", "movie", "catalog_miss"), parsed
+assert parsed == ("example", "movie", "unattributed_zero"), parsed
 payload["state"] = "timeout"
 parsed = gate.parse_ios_result("FIELD_NATIVE_IOS_RESULT " + json.dumps(payload))
 assert parsed == ("example", "movie", "technical_error"), parsed
