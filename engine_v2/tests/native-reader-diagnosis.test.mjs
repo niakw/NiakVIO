@@ -190,7 +190,16 @@ try {
     { cwd: root, encoding: 'utf8' });
   const noReaderData = JSON.parse(fs.readFileSync(noReaderOutput, 'utf8'));
   assert.equal(noReaderData.evidenceComplete, false);
-  assert.equal(noReaderData.quickJsUnverifiedObserved, 2);
+  assert.equal(noReaderData.quickJsUnverifiedObserved, 2,
+    JSON.stringify({
+      app: noReaderData.appSelectionObservations?.length,
+      appEligible: noReaderData.appSelectionObservations?.filter((x) => x.eligible).length,
+      quick: noReaderData.quickJsDiagnostics?.length,
+      quickCategories: noReaderData.quickJsDiagnostics?.map((x) => x.phase),
+      extraction: noReaderData.extractionResultObserved,
+      zero: noReaderData.extractionFailures,
+      reader: noReaderData.readerObserved,
+    }));
   assert.equal(noReaderData.policy.quickJsDiagnosticLearningAllowed, true);
   assert.equal(noReaderData.policy.quickJsDiagnosticProviderMutationAllowed, false);
   assert.ok(noReaderData.quickJsUnverifiedObservations.every((row) =>
