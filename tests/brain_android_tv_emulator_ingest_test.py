@@ -156,12 +156,14 @@ with tempfile.TemporaryDirectory() as folder:
 # Exact source-pinned TV: two results, HLS probe HTTP 403 and player READY
 # without video format. Separate transport-probe hypothesis from native decode.
 tv_terminal = report(returned=0, complete=True)
-tv_terminal["observations"] = [
+tv_terminal["extractionHealthyObservations"] = [
     {"client": "tv", "provider": "demo", "fixture": "jujutsu-kaisen-s01e01",
      "requestType": "anime", "routeMode": "declared",
      "observationLayer": "extraction", "state": "non_empty",
      "failureClass": "healthy", "returnedCount": 2,
      "url": "https://PRIVATE.example/?secret=TOKEN"},
+]
+tv_terminal["observations"] = [
     {"client": "tv", "provider": "demo", "fixture": "jujutsu-kaisen-s01e01",
      "requestType": "anime", "routeMode": "declared",
      "observationLayer": "player", "state": "ready",
@@ -181,6 +183,8 @@ tv_terminal["terminalTransportDiagnostics"] = [{
 tv_row = mod.sanitized_rows(tv_terminal)[0]
 assert tv_row["nativeExtractionPositiveObserved"] is True
 assert tv_row["nativeExtractionReturnedCount"] == 2
+assert tv_terminal["quickJsDiagnostics"][0]["phase"] == "call"
+assert tv_terminal["extractionHealthyObservations"][0]["returnedCount"] == 2
 assert tv_row["quickJsReturned"] == 0  # no QuickJS console result is not empty extraction
 assert tv_row["playerVideoFormatUnverified"] is True
 assert tv_row["independentTerminalHttpStatuses"] == [403]
