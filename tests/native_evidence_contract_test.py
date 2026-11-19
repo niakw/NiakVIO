@@ -232,6 +232,9 @@ assert 'androidx.test.uiautomator:uiautomator:2.3.0' in native_corpus
 
 assert "PlatformPlayerSurface(" in desktop_player
 assert "production_surface=true" in desktop_player
+for player_source in (android_player, desktop_player):
+    assert "(snapshot.videoWidth > 0 && snapshot.videoHeight > 0)" in player_source
+    assert "snapshot.positionMs > 0L || snapshot.durationMs > 0L" not in player_source
 assert "probeDesktopProductionPlayer" in desktop_player
 assert "sourceHeaders = headers.orEmpty()" in desktop_player
 assert "DEFAULT_PR_STREAM_LIMIT = 2" in desktop_player
