@@ -103,6 +103,30 @@ try {
   assert.match(data.privacy, /No raw URLs/);
   assert.match(run.stdout, /FIELD_NATIVE_READER_BRAIN evidence_complete=true/);
 
+  // A native 25-second timeout has no result/reader. It is still a Brain
+  // outcome: retain the observed error and forbid provider mutation without
+  // a proven causal owner. A later different provider must not erase it.
+  const hardTimeoutLog = path.join(tmp, 'native-tv-hard-timeout.log');
+  const hardTimeoutOutput = path.join(tmp, 'native-tv-hard-timeout.json');
+  fs.writeFileSync(hardTimeoutLog, [
+    ...common,
+    `FIELD_NATIVE_ERROR client=tv fixture=sinners-2025 provider64=${b64('SADISFLIX')} request_type=movie route_mode=declared duration_ms=25000 error64=${b64('provider_hard_timeout_ms=25000')}`,
+  ].join('\n') + '\n');
+  spawnSync(process.execPath, [script, '--output', hardTimeoutOutput, hardTimeoutLog], {
+    cwd: root, encoding: 'utf8',
+  });
+  const timeout = JSON.parse(fs.readFileSync(hardTimeoutOutput, 'utf8'));
+  assert.equal(timeout.nativeExecutionDiagnosticObserved, 1);
+  const sadisOutcome = timeout.providerOutcomes.find((row) => row.provider === 'sadisflix');
+  assert.ok(sadisOutcome, 'selected native provider timeout must not disappear from Brain outcomes');
+  assert.equal(sadisOutcome.nativeExecutionTimeouts, 1);
+  assert.equal(sadisOutcome.failures, 1);
+  assert.equal(sadisOutcome.providerEligibleFailures, 0);
+  assert.equal(sadisOutcome.failureClasses.provider_hard_timeout, 1);
+  assert.equal(timeout.policy.providerMutationRequiresCrossClientConsensus, true);
+  assert.equal(timeout.policy.productionWritesAllowed, false);
+  assert.equal(timeout.nativeExecutionDiagnostics[0].providerJsMutationAllowed, false);
+
   // Real NuvioTV UI selection is different from directly invoking the
   // installed JS. An omitted provider belongs to client/plugin state or the
   // manifest media-type gate, not a provider extraction repair.
