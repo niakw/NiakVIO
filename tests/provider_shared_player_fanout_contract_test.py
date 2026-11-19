@@ -11,6 +11,8 @@ required=[
     "NIAKVIO_PROVIDER_ADAPTIVE_PLAYER_FANOUT_V25",
     "NIAKVIO_PROVIDER_MULTI_VARIANT_FANOUT_V26",
     "NIAKVIO_PROVIDER_NATIVE_PLAYER_HEDGE_V27",
+    "NIAKVIO_PROVIDER_NATIVE_FETCH_CAPABILITY_GATE_V28",
+    "globalThis.__nuvioNonBlockingNativeFetchV1 === true",
     "const seedCap = Math.min(32, Math.max(8, rankedSeeds.length));",
     "const requestBudget = Math.min(32, Math.max(12, queue.length + 8));",
     "while (!hedgeStopped && queue.length && requests < requestBudget && streams.length < 40)",
