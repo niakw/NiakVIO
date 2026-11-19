@@ -19,11 +19,19 @@ spec.loader.exec_module(mod)
 
 MASTER = """#EXTM3U
 #EXT-X-VERSION:6
-#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID=\"aud\",NAME=\"Korean\",LANGUAGE=\"ko\",CHANNELS=\"2\",DEFAULT=YES,AUTOSELECT=YES,URI=\"audio-ko.m3u8\"
-#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs\",NAME=\"French\",LANGUAGE=\"fr\",DEFAULT=NO,AUTOSELECT=YES,URI=\"sub-fr.m3u8\"
-#EXT-X-STREAM-INF:BANDWIDTH=2200000,AVERAGE-BANDWIDTH=1800000,RESOLUTION=960x540,CODECS=\"avc1.4d401f,mp4a.40.2\",FRAME-RATE=23.976,VIDEO-RANGE=SDR,AUDIO=\"aud\",SUBTITLES=\"subs\"
+# Low rendition exposes Hindi only.
+#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID=\"aud-low\",NAME=\"Hindi\",LANGUAGE=\"hi\",CHANNELS=\"2\",DEFAULT=YES,AUTOSELECT=YES,URI=\"audio-hi.m3u8\"
+# High rendition exposes four selectable languages.
+#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID=\"aud-high\",NAME=\"Hindi\",LANGUAGE=\"hi\",CHANNELS=\"2\",DEFAULT=YES,AUTOSELECT=YES,URI=\"audio-hi.m3u8\"
+#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID=\"aud-high\",NAME=\"English\",LANGUAGE=\"en\",CHANNELS=\"2\",AUTOSELECT=YES,URI=\"audio-en.m3u8\"
+#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID=\"aud-high\",NAME=\"French\",LANGUAGE=\"fr\",CHANNELS=\"2\",AUTOSELECT=YES,URI=\"audio-fr.m3u8\"
+#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID=\"aud-high\",NAME=\"Spanish\",LANGUAGE=\"es\",CHANNELS=\"2\",AUTOSELECT=YES,URI=\"audio-es.m3u8\"
+#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs-low\",NAME=\"French\",LANGUAGE=\"fr\",DEFAULT=NO,AUTOSELECT=YES,URI=\"sub-fr.m3u8\"
+#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs-high\",NAME=\"French\",LANGUAGE=\"fr\",DEFAULT=NO,AUTOSELECT=YES,URI=\"sub-fr.m3u8\"
+#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs-high\",NAME=\"English\",LANGUAGE=\"en\",DEFAULT=NO,AUTOSELECT=YES,URI=\"sub-en.m3u8\"
+#EXT-X-STREAM-INF:BANDWIDTH=2200000,AVERAGE-BANDWIDTH=1800000,RESOLUTION=960x540,CODECS=\"avc1.4d401f,mp4a.40.2\",FRAME-RATE=23.976,VIDEO-RANGE=SDR,AUDIO=\"aud-low\",SUBTITLES=\"subs-low\"
 540.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=6200000,AVERAGE-BANDWIDTH=5800000,RESOLUTION=1440x720,CODECS=\"avc1.64001f,mp4a.40.2\",FRAME-RATE=23.976,VIDEO-RANGE=SDR,AUDIO=\"aud\",SUBTITLES=\"subs\"
+#EXT-X-STREAM-INF:BANDWIDTH=6200000,AVERAGE-BANDWIDTH=5800000,RESOLUTION=1440x720,CODECS=\"avc1.64001f,mp4a.40.2\",FRAME-RATE=23.976,VIDEO-RANGE=SDR,AUDIO=\"aud-high\",SUBTITLES=\"subs-high\"
 720.m3u8
 """
 MEDIA = """#EXTM3U
@@ -60,8 +68,8 @@ if(mode==='browser'||mode==='native'||mode==='native-many'||mode==='native-dead-
   globalThis.fetch=async(url)=>{
     url=String(url);
     if(url.endsWith('/master.m3u8'))return textResponse(url,master);
-    if(url.endsWith('/540.m3u8')||url.endsWith('/720.m3u8')||url.endsWith('/sub-fr.m3u8'))return textResponse(url,media);
-    if(url.endsWith('/audio-ko.m3u8'))return textResponse(url,mode==='native-dead-audio'?media.replace('seg.ts','dead-audio.ts'):media);
+    if(url.endsWith('/540.m3u8')||url.endsWith('/720.m3u8')||url.endsWith('/sub-fr.m3u8')||url.endsWith('/sub-en.m3u8'))return textResponse(url,media);
+    if(url.endsWith('/audio-hi.m3u8')||url.endsWith('/audio-en.m3u8')||url.endsWith('/audio-fr.m3u8')||url.endsWith('/audio-es.m3u8'))return textResponse(url,mode==='native-dead-audio'?media.replace('seg.ts','dead-audio.ts'):media);
     if(url.endsWith('/dead-audio.ts'))return textResponse(url,'<!doctype html><html>dead audio</html>','text/html');
     if(url.endsWith('/seg.ts'))return tsResponse(url);
     throw new Error('unexpected fetch '+url);
@@ -88,26 +96,30 @@ require(process.argv[2]);
   if(!Array.isArray(out)||out.length!==expectedCount)throw new Error('unexpected rows '+JSON.stringify(out));
   if(mode==='native-many'){
     for(const proven of out){
-      if(proven.quality!=='720p'||proven.resolution!=='1440x720'||proven.codec!=='AVC'||proven.audioCodec!=='AAC')throw new Error('validated HLS facts missing '+JSON.stringify(proven));
+      if(proven.quality!=='Adaptive'||proven.resolution!==null||proven.codec!=='AVC'||proven.audioCodec!=='AAC')throw new Error('validated adaptive HLS facts missing '+JSON.stringify(proven));
     }
   }
   const row=out[0];
-  if(row.quality!=='720p')throw new Error('quality not upgraded '+JSON.stringify(row));
-  if(Number(row.width)!==1440||Number(row.height)!==720)throw new Error('dimensions missing '+JSON.stringify(row));
-  if(row.resolution!=='1440x720')throw new Error('resolution missing '+JSON.stringify(row));
-  if(row.codec!=='AVC'||row.audioCodec!=='AAC')throw new Error('codec facts missing '+JSON.stringify(row));
-  if(row.frameRate!=='23.976 fps')throw new Error('frame rate missing '+JSON.stringify(row));
-  if(row.bitrate!=='5.8 Mbps max')throw new Error('bandwidth missing '+JSON.stringify(row));
-  if(row.hdr!=='SDR')throw new Error('video range missing '+JSON.stringify(row));
-  if(row.audioChannels!=='2.0')throw new Error('channels missing '+JSON.stringify(row));
-  if(row.language!=='ko')throw new Error('single HLS language not normalized '+JSON.stringify(row));
-  const langs=(row.audioTracks||[]).map(x=>x.language).sort().join(',');
-  if(langs!=='ko')throw new Error('audio tracks missing '+JSON.stringify(row));
+  if(row.quality!=='Adaptive')throw new Error('adaptive master falsely advertised as fixed quality '+JSON.stringify(row));
+  if(row.resolution!==null||row.width!=null||row.height!=null)throw new Error('adaptive master leaked fixed dimensions '+JSON.stringify(row));
+  if(row.hlsMasterMaxQuality!=='720p'||row.hlsMasterMaxResolution!=='1440x720')throw new Error('max capability missing '+JSON.stringify(row));
+  if(Number(row.hlsMasterVariantCount)!==2||!Array.isArray(row.hlsMasterVariantMatrix)||row.hlsMasterVariantMatrix.length!==2)throw new Error('variant matrix missing '+JSON.stringify(row));
+  const low=row.hlsMasterVariantMatrix.find(x=>x.quality==='540p');
+  const high=row.hlsMasterVariantMatrix.find(x=>x.quality==='720p');
+  if(!low||low.audioLanguages.join(',')!=='hi')throw new Error('low rendition audio group flattened '+JSON.stringify(row));
+  if(!high||high.audioLanguages.slice().sort().join(',')!=='en,es,fr,hi')throw new Error('high rendition audio group flattened '+JSON.stringify(row));
+  if(row.language!==null||Array.isArray(row.audioTracks))throw new Error('variant-dependent language falsely promoted '+JSON.stringify(row));
+  const allLangs=(row.hlsMasterAudioTracks||[]).map(x=>x.language).filter(Boolean).sort().join(',');
+  if(allLangs!=='en,es,fr,hi,hi')throw new Error('master audio capability inventory missing '+JSON.stringify(row));
+  if(row.codec!=='AVC'||row.audioCodec!=='AAC')throw new Error('common codec facts missing '+JSON.stringify(row));
+  if(row.frameRate!=='23.976 fps'||row.hdr!=='SDR')throw new Error('common video facts missing '+JSON.stringify(row));
   const externalSubs=(row.subtitles||[]).filter(x=>x&&x.url);
   if(externalSubs.length)throw new Error('integrated HLS subtitle leaked into external subtitles '+JSON.stringify(row));
-  const subs=(row.hlsMasterSubtitleTracks||[]).map(x=>x.language||x.lang||x.code).filter(Boolean).sort().join(',');
-  if(subs!=='fr')throw new Error('integrated HLS subtitle metadata missing '+JSON.stringify(row));
-  console.log('HLS_MASTER_FACTS_OK mode='+mode+' quality='+row.quality+' audio='+langs+' subs='+subs);
+  const integrated=row.hlsMasterSubtitleTracks||[];
+  if(!integrated.length||integrated.some(x=>x.source!=='integrated'||x.sourceName!=='Intégré'))throw new Error('integrated subtitle source identity missing '+JSON.stringify(row));
+  const subs=integrated.map(x=>x.language).filter(Boolean).sort().join(',');
+  if(subs!=='en,fr,fr')throw new Error('integrated HLS subtitle capability missing '+JSON.stringify(row));
+  console.log('HLS_MASTER_FACTS_OK mode='+mode+' quality='+row.quality+' max='+row.hlsMasterMaxQuality+' audio='+allLangs+' subs='+subs);
 })().catch(e=>{console.error(e);process.exit(1)});
 '''
 
@@ -162,7 +174,7 @@ global_hls = cfg["playback_integrity_policy"]["hls_runtime_options"]
 assert global_hls["inspect_master_facts"] is True, global_hls
 assert global_hls["drop_unprobed_hls_after_budget"] is True, global_hls
 assert int(global_hls["native_probe_max_rows"]) == 8, global_hls
-assert "native-audio-terminal-proof-v17" in generated({"inspect_master_facts": True}), "late-batch HLS revision missing"
+assert "variant-coherence-v18" in generated({"inspect_master_facts": True}), "variant-coherent HLS revision missing"
 play = providers["playimdb"]["core_options"]["hls_runtime_integrity"]
 assert play["probe_all_urls"] is True and play["fail_closed_unknown"] is True, play
 

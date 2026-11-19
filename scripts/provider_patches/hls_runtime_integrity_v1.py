@@ -111,7 +111,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         payload_config.update(
             {
                 "inspectMasterFacts": True,
-                "implementationRevision": "native-audio-terminal-proof-v17",
+                "implementationRevision": "variant-coherence-v18",
             }
         )
     payload = json.dumps(payload_config, separators=(",", ":"))
@@ -391,42 +391,78 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   function bandwidthLabel(value){var n=Number(value||0);if(!Number.isFinite(n)||n<=0)return"";if(n>=1000000){var mb=Math.round(n/100000)/10;return String(mb).replace(/\.0$/,"")+" Mbps max"}var kb=Math.round(n/1000);return kb?kb+" kbps max":""}
   function frameLabel(value){var n=Number(String(value||"").replace(",","."));if(!Number.isFinite(n)||n<=0)return"";var rounded=Math.round(n*1000)/1000;return String(rounded).replace(/\.0+$/,"")+" fps"}
   function rangeLabel(value){var v=clean(value).toUpperCase();return v==="HLG"?"HLG":v==="PQ"?"HDR":v==="SDR"?"SDR":""}
-  function masterFacts(body){
-    var lines=clean(body).split(/\r?\n/),best={width:0,height:0,bandwidth:0,codecs:"",frameRate:"",videoRange:""},audioTracks=[],subtitleTracks=[],audioSeen={},subSeen={};
+  function masterFacts(body,baseUrl){
+    var lines=clean(body).split(/\r?\n/),variants=[],audioTracks=[],subtitleTracks=[],audioGroups={},subtitleGroups={},audioSeen={},subSeen={};
+    function pushGroup(map,group,track){var key=clean(group);if(!key)return;if(!Array.isArray(map[key]))map[key]=[];map[key].push(track)}
     for(var i=0;i<lines.length;i++){
       var line=lines[i];
       if(/^#EXT-X-STREAM-INF\s*:/i.test(line)){
         var rm=/\bRESOLUTION\s*=\s*(\d{2,5})\s*[xX]\s*(\d{2,5})/i.exec(line),width=Number(rm&&rm[1]||0),height=Number(rm&&rm[2]||0);
-        var bandwidth=Number(hlsAttr(line,"AVERAGE-BANDWIDTH")||hlsAttr(line,"BANDWIDTH")||0)||0;
-        if(height>best.height||(height===best.height&&bandwidth>best.bandwidth))best={width:width,height:height,bandwidth:bandwidth,codecs:hlsAttr(line,"CODECS"),frameRate:hlsAttr(line,"FRAME-RATE"),videoRange:hlsAttr(line,"VIDEO-RANGE")};
+        var bandwidth=Number(hlsAttr(line,"AVERAGE-BANDWIDTH")||hlsAttr(line,"BANDWIDTH")||0)||0,next="";
+        for(var j=i+1;j<lines.length;j++){var candidate=clean(lines[j]);if(!candidate)continue;if(candidate.charAt(0)==="#")continue;next=absolute(candidate,baseUrl);break}
+        variants.push({width:width,height:height,bandwidth:bandwidth,codecs:hlsAttr(line,"CODECS"),frameRate:hlsAttr(line,"FRAME-RATE"),videoRange:hlsAttr(line,"VIDEO-RANGE"),audioGroup:hlsAttr(line,"AUDIO"),subtitleGroup:hlsAttr(line,"SUBTITLES"),url:next});
         continue;
       }
       if(!/^#EXT-X-MEDIA\s*:/i.test(line))continue;
-      var type=clean(hlsAttr(line,"TYPE")).toUpperCase(),code=hlsLang(hlsAttr(line,"LANGUAGE")),name=hlsAttr(line,"NAME"),channels=channelLabel(hlsAttr(line,"CHANNELS"));
+      var type=clean(hlsAttr(line,"TYPE")).toUpperCase(),groupId=hlsAttr(line,"GROUP-ID"),code=hlsLang(hlsAttr(line,"LANGUAGE")),name=hlsAttr(line,"NAME"),channels=channelLabel(hlsAttr(line,"CHANNELS")),uri=absolute(hlsAttr(line,"URI"),baseUrl),isDefault=clean(hlsAttr(line,"DEFAULT")).toUpperCase()==="YES",autoSelect=clean(hlsAttr(line,"AUTOSELECT")).toUpperCase()==="YES";
       if(!code)code=hlsLang(name);
-      if(type==="AUDIO"&&code&&!audioSeen[code+"|"+channels]){audioSeen[code+"|"+channels]=1;audioTracks.push({language:code,name:name||code.toUpperCase(),channels:channels})}
-      if(type==="SUBTITLES"&&code&&!subSeen[code]){subSeen[code]=1;subtitleTracks.push({language:code,name:name||code.toUpperCase()})}
+      if(type==="AUDIO"&&code){
+        var akey=groupId+"|"+code+"|"+channels+"|"+uri,atrack={language:code,name:name||code.toUpperCase(),channels:channels,groupId:groupId,uri:uri,default:isDefault,autoSelect:autoSelect};
+        if(!audioSeen[akey]){audioSeen[akey]=1;audioTracks.push(atrack);pushGroup(audioGroups,groupId,atrack)}
+      }
+      if(type==="SUBTITLES"&&code){
+        var skey=groupId+"|"+code+"|"+uri,strack={language:code,name:name||code.toUpperCase(),groupId:groupId,uri:uri,default:isDefault,autoSelect:autoSelect,source:"integrated",sourceName:"Intégré"};
+        if(!subSeen[skey]){subSeen[skey]=1;subtitleTracks.push(strack);pushGroup(subtitleGroups,groupId,strack)}
+      }
     }
-    var codecs=codecFacts(best.codecs),hdr=codecs.hdr||rangeLabel(best.videoRange),channelValues=audioTracks.map(function(t){return t.channels}).filter(Boolean),audioChannels=channelValues.length&&channelValues.every(function(v){return v===channelValues[0]})?channelValues[0]:"";
-    return{width:best.width,height:best.height,resolution:best.width&&best.height?best.width+"x"+best.height:"",quality:masterQuality(best.height),bandwidth:best.bandwidth,bitrate:bandwidthLabel(best.bandwidth),codec:codecs.video,audioCodec:codecs.audio,frameRate:frameLabel(best.frameRate),hdr:hdr,audioChannels:audioChannels,audioTracks:audioTracks,subtitleTracks:subtitleTracks,rawCodecs:best.codecs};
+    var best={width:0,height:0,bandwidth:0,codecs:"",frameRate:"",videoRange:""};
+    variants.forEach(function(v){if(v.height>best.height||(v.height===best.height&&v.bandwidth>best.bandwidth))best=v});
+    function uniq(values){var seen={},out=[];values.forEach(function(v){v=clean(v);if(v&&!seen[v]){seen[v]=1;out.push(v)}});return out}
+    function trackKey(rows){return (rows||[]).map(function(t){return clean(t.language)+"|"+clean(t.channels)}).sort().join(",")}
+    function groupRows(map,id){return clean(id)&&Array.isArray(map[clean(id)])?map[clean(id)]:[]}
+    var resolutions=uniq(variants.map(function(v){return v.width&&v.height?v.width+"x"+v.height:""})),qualities=uniq(variants.map(function(v){return masterQuality(v.height)}));
+    var fixedResolution=resolutions.length===1,variantAudioKeys=variants.map(function(v){return trackKey(groupRows(audioGroups,v.audioGroup))}),variantSubtitleKeys=variants.map(function(v){return trackKey(groupRows(subtitleGroups,v.subtitleGroup))});
+    var stableAudio=variantAudioKeys.length>0&&variantAudioKeys.every(function(v){return v===variantAudioKeys[0]})&&!!variantAudioKeys[0],stableSubs=variantSubtitleKeys.length>0&&variantSubtitleKeys.every(function(v){return v===variantSubtitleKeys[0]})&&!!variantSubtitleKeys[0];
+    var stableAudioTracks=stableAudio?groupRows(audioGroups,variants[0].audioGroup):[],stableSubtitleTracks=stableSubs?groupRows(subtitleGroups,variants[0].subtitleGroup):[];
+    var videoCodecs=uniq(variants.map(function(v){return codecFacts(v.codecs).video})),audioCodecs=uniq(variants.map(function(v){return codecFacts(v.codecs).audio})),hdrValues=uniq(variants.map(function(v){var c=codecFacts(v.codecs);return c.hdr||rangeLabel(v.videoRange)})),frameRates=uniq(variants.map(function(v){return frameLabel(v.frameRate)}));
+    var matrix=variants.map(function(v){return{url:v.url,quality:masterQuality(v.height),resolution:v.width&&v.height?v.width+"x"+v.height:"",width:v.width,height:v.height,bandwidth:v.bandwidth,audioGroup:clean(v.audioGroup),audioLanguages:groupRows(audioGroups,v.audioGroup).map(function(t){return t.language}),subtitleGroup:clean(v.subtitleGroup),subtitleLanguages:groupRows(subtitleGroups,v.subtitleGroup).map(function(t){return t.language})}});
+    var channelValues=stableAudioTracks.map(function(t){return t.channels}).filter(Boolean),audioChannels=channelValues.length&&channelValues.every(function(v){return v===channelValues[0]})?channelValues[0]:"";
+    return{variantCount:variants.length,adaptiveResolution:resolutions.length>1,qualities:qualities,resolutions:resolutions,maxWidth:best.width,maxHeight:best.height,maxResolution:best.width&&best.height?best.width+"x"+best.height:"",maxQuality:masterQuality(best.height),maxBandwidth:best.bandwidth,fixedWidth:fixedResolution?best.width:0,fixedHeight:fixedResolution?best.height:0,fixedResolution:fixedResolution&&best.width&&best.height?best.width+"x"+best.height:"",fixedQuality:fixedResolution?masterQuality(best.height):"",bitrate:variants.length===1?bandwidthLabel(best.bandwidth):"",codec:videoCodecs.length===1?videoCodecs[0]:"",audioCodec:audioCodecs.length===1?audioCodecs[0]:"",frameRate:frameRates.length===1?frameRates[0]:"",hdr:hdrValues.length===1?hdrValues[0]:"",audioChannels:audioChannels,audioTracks:stableAudioTracks,subtitleTracks:stableSubtitleTracks,allAudioTracks:audioTracks,allSubtitleTracks:subtitleTracks,variantMatrix:matrix,rawCodecs:best.codecs};
   }
   function weakFact(value){return !clean(value)||/^(?:unknown|inconnu(?:e)?|n\/?a|none|null|undefined|auto|-+)$/i.test(clean(value))}
   function enrichMasterFacts(stream,facts){
     if(!stream||!facts)return stream;
-    var row=Object.assign({},stream),tracks=Array.isArray(facts.audioTracks)?facts.audioTracks:[],subs=Array.isArray(facts.subtitleTracks)?facts.subtitleTracks:[];
-    if(facts.quality){if(!weakFact(row.quality)&&!clean(row.sourceQuality))row.sourceQuality=clean(row.quality);if(!weakFact(row.resolution)&&!clean(row.sourceResolution))row.sourceResolution=clean(row.resolution);row.quality=facts.quality;row.hlsMasterQuality=facts.quality}
-    if(facts.width)row.width=Number(facts.width)||row.width;if(facts.height)row.height=Number(facts.height)||row.height;if(facts.resolution)row.resolution=facts.resolution;
-    if(facts.bitrate&&weakFact(row.bitrate)){row.bitrate=facts.bitrate;row.hlsMasterBandwidth=Number(facts.bandwidth)||0}if(Number(facts.bandwidth)>0)row.bitrateMbps=Math.round((Number(facts.bandwidth)/1000000)*1000)/1000;
+    var row=Object.assign({},stream),tracks=Array.isArray(facts.audioTracks)?facts.audioTracks:[],allTracks=Array.isArray(facts.allAudioTracks)?facts.allAudioTracks:[],subs=Array.isArray(facts.allSubtitleTracks)?facts.allSubtitleTracks:[];
+    row.hlsMasterVariantCount=Number(facts.variantCount)||0;row.hlsMasterVariantMatrix=Array.isArray(facts.variantMatrix)?facts.variantMatrix:[];row.hlsMasterQualities=Array.isArray(facts.qualities)?facts.qualities:[];row.hlsMasterResolutions=Array.isArray(facts.resolutions)?facts.resolutions:[];
+    if(facts.maxQuality)row.hlsMasterMaxQuality=facts.maxQuality;if(facts.maxResolution)row.hlsMasterMaxResolution=facts.maxResolution;if(Number(facts.maxBandwidth)>0)row.hlsMasterMaxBandwidth=Number(facts.maxBandwidth);
+    if(facts.adaptiveResolution){
+      if(!weakFact(row.quality)&&!clean(row.sourceQuality))row.sourceQuality=clean(row.quality);
+      if(!weakFact(row.resolution)&&!clean(row.sourceResolution))row.sourceResolution=clean(row.resolution);
+      row.quality="Adaptive";row.resolution=null;delete row.width;delete row.height;
+    }else{
+      if(facts.fixedQuality){if(!weakFact(row.quality)&&!clean(row.sourceQuality))row.sourceQuality=clean(row.quality);row.quality=facts.fixedQuality}
+      if(facts.fixedResolution){if(!weakFact(row.resolution)&&!clean(row.sourceResolution))row.sourceResolution=clean(row.resolution);row.resolution=facts.fixedResolution}
+      if(facts.fixedWidth)row.width=Number(facts.fixedWidth)||row.width;if(facts.fixedHeight)row.height=Number(facts.fixedHeight)||row.height;
+    }
+    if(facts.bitrate&&weakFact(row.bitrate))row.bitrate=facts.bitrate;if(Number(facts.maxBandwidth)>0&&Number(facts.variantCount)===1)row.bitrateMbps=Math.round((Number(facts.maxBandwidth)/1000000)*1000)/1000;
     if(facts.codec&&weakFact(row.codec)){row.codec=facts.codec;row.hlsMasterCodecs=facts.rawCodecs||""}
     if(facts.audioCodec&&weakFact(row.audioCodec))row.audioCodec=facts.audioCodec;
     if(facts.audioChannels&&weakFact(row.audioChannels))row.audioChannels=facts.audioChannels;
     if(facts.frameRate&&weakFact(row.frameRate))row.frameRate=facts.frameRate;
     if(facts.hdr&&weakFact(row.hdr))row.hdr=facts.hdr;
-    if(tracks.length){row.audioTracks=tracks.map(function(t){return{language:t.language,name:t.name,channels:t.channels||""}});row.hlsMasterAudioTracks=row.audioTracks;if(tracks.length===1){var actual=tracks[0].language;if(!weakFact(row.language)&&clean(row.language).toLowerCase()!==actual&&!clean(row.sourceLanguage))row.sourceLanguage=clean(row.language);row.language=actual}}
-    // Integrated HLS subtitle renditions belong to the master playlist. Keep
-    // them as technical metadata only; do not inject language-only objects into
-    // row.subtitles/extCaptions, whose Nuvio/SubSense contract requires a URL.
-    if(subs.length){row.subtitleTracks=subs.map(function(t){return{language:t.language,name:t.name}});row.hlsMasterSubtitleTracks=row.subtitleTracks}
+    row.hlsMasterAudioTracks=allTracks.map(function(t){return{language:t.language,name:t.name,channels:t.channels||"",groupId:t.groupId||"",source:"integrated"}});
+    if(tracks.length){
+      row.audioTracks=tracks.map(function(t){return{language:t.language,name:t.name,channels:t.channels||"",groupId:t.groupId||"",source:"integrated"}});
+      if(!weakFact(row.language)&&!clean(row.sourceLanguage))row.sourceLanguage=clean(row.language);
+      row.language=tracks.length>1?"MULTI":tracks[0].language;
+    }else if(allTracks.length){
+      if(!weakFact(row.language)&&!clean(row.sourceLanguage))row.sourceLanguage=clean(row.language);
+      row.language=null;delete row.audioTracks;
+    }
+    // Integrated HLS subtitle renditions are media-internal. Keep them distinct
+    // from provider/addon subtitles; clients should present their source as
+    // "Intégré" and must not inject them into the external subtitle-addon list.
+    if(subs.length){row.hlsMasterSubtitleTracks=subs.map(function(t){return{language:t.language,name:t.name,groupId:t.groupId||"",source:"integrated",sourceName:"Intégré"}});row.integratedSubtitleCount=row.hlsMasterSubtitleTracks.length}
     return row;
   }
   async function validateChild(url,stream,referer){
@@ -442,7 +478,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     if(kind==="invalid"||kind==="header_only")return {state:"invalid",kind:kind,body:body,result:result};
     if(kind==="media"){var tiny=shortMediaDuration(body);if(tiny)return {state:"invalid",kind:"vod_duration_too_short",durationSeconds:tiny,body:body,result:result};return {state:"valid",kind:kind,url:result.url,body:body,result:result}}
 
-    var facts=config.inspectMasterFacts?masterFacts(body):null,variants=variantUris(body,result.url||url),audio=audioUris(body,result.url||url);
+    var facts=config.inspectMasterFacts?masterFacts(body,result.url||url):null,variants=variantUris(body,result.url||url),audio=audioUris(body,result.url||url);
     if(!variants.length)return {state:"invalid",kind:"master_without_variants",body:body,result:result};
     var variantState="invalid";
     for(var i=0;i<variants.length;i++){

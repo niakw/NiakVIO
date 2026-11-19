@@ -953,3 +953,24 @@ redéclenche pas de workflow \`push\` GitHub Actions.
 ### 2026-11-19 — Preserving no-anime and client transport authority
 
 The release exposes four intentional consumer manifests: Global root, France vf/, Global no-anime/ and France vf-no-anime/. The two no-anime variants are supported features, not obsolete Hub46 aliases. Official Nuvio acceptance staging resolves relative provider bundle filenames from the actual manifest directory, exactly as a repository client should, and refuses paths outside providers/ and provider-disabled/. Explicit VF/no-anime selection is honored even if a historical native scope matrix exists. `manifest-hub46.json` and `native-hub46/manifest.json` are retired publication artifacts. Native Labs execute Global and VF independently; temporary union files may exist only outside the tracked release tree for diagnostics that require a single input.
+
+
+## Cohérence HLS source × variante × pistes — 19 novembre 2026
+
+Un master HLS n'est pas une qualité fixe. Les propriétés publiques d'une ligne NiakVIO
+doivent décrire ce que le lecteur peut réellement sélectionner sans fusionner des faits
+issus de variantes incompatibles. Le Core conserve désormais une matrice par
+`#EXT-X-STREAM-INF` : URL de variante, résolution/qualité, bande passante,
+`AUDIO` group, `SUBTITLES` group et langues réellement rattachées à ces groupes.
+
+Quand plusieurs résolutions existent, `quality` devient `Adaptive`; le maximum
+présent dans le master reste une capacité `hlsMasterMaxQuality`, jamais la qualité
+garantie au démarrage. De même, `language=MULTI` n'est publié que si toutes les
+variantes observées exposent le même ensemble multi-audio. Si les groupes diffèrent
+(par exemple une variante Hindi seule et une autre Hindi/English/Français/Español),
+la langue publique reste inconnue et la matrice garde la vérité par variante.
+
+Les sous-titres HLS `TYPE=SUBTITLES` sont des pistes **intégrées au média**. Ils ne
+sont jamais injectés dans `subtitles` / la liste des addons de sous-titres. Leur
+métadonnée interne porte `source=integrated` et `sourceName=Intégré`; le client
+doit les présenter comme source « Intégré » séparément des addons externes.
