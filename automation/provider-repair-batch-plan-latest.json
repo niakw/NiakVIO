@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44479137393",
-  "sourceTriggerSha": "8839ab4b109cadfab2d26164f7cad7ba0b2a74da",
+  "sourceRunId": "44485146908",
+  "sourceTriggerSha": "3bd164a923a582ebb6e0d3b0c0b55ca03d658b4d",
   "unresolvedProviderCount": 66,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -127,7 +127,7 @@
     "zone-telechargement"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 9,
+  "groupCount": 10,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -159,10 +159,11 @@
         "native-policy-reachable",
         "no-transport-evidence",
         "residential-exit-all-challenged",
-        "residential-exit-browser-reachable"
+        "residential-exit-browser-reachable",
+        "residential-exit-native-reachable"
       ],
       "transportSignature": "not-applicable",
-      "providerCount": 39,
+      "providerCount": 38,
       "providers": [
         "1jour1film0626",
         "anikototv",
@@ -186,7 +187,6 @@
         "hianime",
         "kidraz",
         "latestmovies",
-        "moiflix",
         "moviebite",
         "movish",
         "movix-fr",
@@ -362,6 +362,36 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:native-policy-reachable",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "not-applicable",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "native-policy-reachable"
+      ],
+      "transportSignature": "native-policy-reachable",
+      "providerCount": 1,
+      "providers": [
+        "moiflix"
+      ],
+      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
       "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
@@ -392,36 +422,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "learning|direct_media|runtime:direct_media",
-      "repairScope": "learning",
-      "runtimeFamilies": [
-        "direct_media"
-      ],
-      "runtimeFamilySignature": "direct_media",
-      "capabilityStrategy": "direct_media",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "timeout"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "hindmoviez"
-      ],
-      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [
-        "hindmoviez"
-      ],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "variant-coverage|api_stream_resolver|runtime:api_stream_resolver",
       "repairScope": "variant-coverage",
       "runtimeFamilies": [
@@ -447,6 +447,36 @@
       ],
       "dynamicVariantProviders": [
         "meowtv"
+      ],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "variant-coverage|direct_media|runtime:direct_media",
+      "repairScope": "variant-coverage",
+      "runtimeFamilies": [
+        "direct_media"
+      ],
+      "runtimeFamilySignature": "direct_media",
+      "capabilityStrategy": "direct_media",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "none"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "hindmoviez"
+      ],
+      "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
+      "selectionAuthorities": [
+        "provider-census-sharded-latest.json:dynamic-variant-debt"
+      ],
+      "dynamicVariantProviders": [
+        "hindmoviez"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
