@@ -89,7 +89,7 @@ for seed_fixture in "${SEEDS[@]}"; do
       break
     fi
     echo "FIELD_NATIVE_ADAPTIVE_CATALOG_ROTATE client=$CLIENT seed=$seed_fixture from=$current to=$next_fixture providers=$clean_count attempt=$((attempt+1))"
-    NIAKVIO_TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-native-hub46/manifest.json}" \
+    NIAKVIO_TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}" \
     NIAKVIO_RESOLVED_MANIFEST_URL="${NIAKVIO_RESOLVED_MANIFEST_URL:-}" \
     NIAKVIO_RESOLVED_ALLOW_LOCAL="${NIAKVIO_RESOLVED_ALLOW_LOCAL:-0}" \
     NIAKVIO_MOBILE_TASK="${NIAKVIO_MOBILE_TASK:-}" \
