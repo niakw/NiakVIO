@@ -100,6 +100,9 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
                 "quickJsErrors": [], "quickJsReturned": 0,
                 "nativeExtractionZeroObserved": False,
                 "nativeExtractionPositiveObserved": False,
+                "nativeExtractionReturnedCount": 0,
+                "playerVideoFormatUnverified": False,
+                "independentTerminalHttpStatuses": [],
                 "playerStates": [], "playerFailureClasses": [],
                 "readerEvidenceComplete": report["evidenceComplete"],
                 "proofAuthority": False, "publicationAuthority": False,
@@ -160,6 +163,9 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
                 and type(returned) is int and 0 < returned <= 10000
             ):
                 row["nativeExtractionPositiveObserved"] = True
+                row["nativeExtractionReturnedCount"] = max(
+                    row["nativeExtractionReturnedCount"], safe_count(returned)
+                )
             continue
         state = str(raw.get("state") or "")
         failure = str(raw.get("failureClass") or "")
@@ -167,6 +173,38 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
             row["playerStates"].append(state)
         if failure in PLAYER_FAILURES and failure not in row["playerFailureClasses"]:
             row["playerFailureClasses"].append(failure)
+        # An official READY state can precede decoded/video-track proof. Do
+        # not transmute a missing track into player health or mutation rights.
+        if (
+            state in {"ready", "ended"}
+            and raw.get("playerVideoFormatObserved") is False
+            and raw.get("routeMode") == "declared"
+        ):
+            row["playerVideoFormatUnverified"] = True
+
+    # HTTP status comes from an independent network probe, NOT an observed
+    # player decoder/network result; it remains a bounded negative hypothesis.
+    for item in (report.get("terminalTransportDiagnostics") or [])[:128]:
+        if not isinstance(item, dict):
+            continue
+        row = get(item)
+        if (
+            row is None or item.get("source") != "independent-terminal-transport-probe"
+            or item.get("state") not in {"dead", "error"}
+            or item.get("kind") not in {"hls", "dash", "video", "html", "unknown"}
+            or any(item.get(k) is not False for k in (
+                "proofAuthority", "publicationAuthority",
+                "nativePlaybackAuthority", "providerJsMutationAllowed",
+            ))
+            or type(item.get("index")) is not int or not 0 <= item["index"] <= 40
+            or type(item.get("httpStatus")) is not int
+            or not 400 <= item["httpStatus"] <= 599
+        ):
+            continue
+        if item["httpStatus"] not in row["independentTerminalHttpStatuses"]:
+            row["independentTerminalHttpStatuses"].append(item["httpStatus"])
+            row["independentTerminalHttpStatuses"].sort()
+            row["independentTerminalHttpStatuses"] = row["independentTerminalHttpStatuses"][:8]
 
     for item in (report.get("nativeExecutionDiagnostics") or [])[:200]:
         if not isinstance(item, dict):
@@ -223,6 +261,9 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
             row["quickJsReturned"] = 0
             row["nativeExtractionZeroObserved"] = False
             row["nativeExtractionPositiveObserved"] = False
+            row["nativeExtractionReturnedCount"] = 0
+            row["playerVideoFormatUnverified"] = False
+            row["independentTerminalHttpStatuses"] = []
             row["nativeHardTimeoutObserved"] = False
             row["nativeHardTimeoutMs"] = 0
             row["playerStates"] = []
@@ -275,6 +316,13 @@ def merge(previous: dict[str, Any], reports: list[dict[str, Any]], *,
             "quickJsReturned": safe_count(record.get("quickJsReturned")),
             "nativeExtractionZeroObserved": record.get("nativeExtractionZeroObserved") is True,
             "nativeExtractionPositiveObserved": record.get("nativeExtractionPositiveObserved") is True,
+            "nativeExtractionReturnedCount": safe_count(record.get("nativeExtractionReturnedCount"))
+                if record.get("nativeExtractionPositiveObserved") is True else 0,
+            "playerVideoFormatUnverified": record.get("playerVideoFormatUnverified") is True,
+            "independentTerminalHttpStatuses": sorted({
+                v for v in (record.get("independentTerminalHttpStatuses") or [])
+                if type(v) is int and 400 <= v <= 599
+            })[:8],
             "playerStates": [x for x in (record.get("playerStates") or [])
                              if x in PLAYER_STATES][:8],
             "playerFailureClasses": [x for x in (record.get("playerFailureClasses") or [])
