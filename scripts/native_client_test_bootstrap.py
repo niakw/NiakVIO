@@ -54,6 +54,7 @@ import dagger.hilt.components.SingletonComponent
 @InstallIn(SingletonComponent::class)
 interface NiakvioPluginManagerEntryPoint {
     fun pluginManager(): PluginManager
+    fun pluginRuntime(): PluginRuntime
 }
 
 @EntryPoint
