@@ -1,3 +1,11 @@
+## 2026-11-19 — Native QuickJS Promise control and hard timeout preservation
+
+The test-only NuvioTV corpus exercises the accepted official `PluginRuntime` using two strictly synthetic exports (an immediate result, then an `await Promise.resolve(1)` result). They return dummy `example.invalid` URLs which never enter media/player or production manifests. `FIELD_NATIVE_TV_PROMISE_CONTROL` emits only two bounded result counts. The sanitized native reader JSON exports only `bridge_ok`, `promise_delivery_gap` or `baseline_failed`; all proof/publication/JS-mutation authorities remain false. A bridge gap is a **client runtime causality hint**, not proof that a specific provider is broken or repaired. This must be tested inside the official emulator, not merely parsed statically.
+
+Native errors are independent from QuickJS console phases. In particular, NuvioTV can select a provider, log `QuickJS call`, and then have the *outer native harness* end after `provider_hard_timeout_ms=25000` with no JavaScript `result/error`. `engine_v2/scripts/diagnose-native-reader.mjs` reads an exact `FIELD_NATIVE_ERROR` and exports only `provider_hard_timeout` plus bounded elapsed/configured milliseconds; `scripts/ingest_brain_android_tv_emulator.py` carries this code in the exact-source/same-bundle historical ledger as `nativeHardTimeoutObserved` and `nativeHardTimeoutMs`. This is neither a returned `[]` nor a media terminal. The Brain must diagnose network/WAF vs runtime/bridge vs Core vs provider before it can assign correction authority. Historical records can inform reasoning but cannot authorize publication or mutation.
+
+In the demonstrated [Sadisflix official TV run 44529501795](https://github.com/niakw/NiakVIO/actions/runs/44529501795), the VF provider was enabled and app-eligible; its native execution hit 25,000 ms with no player. Initial automatic [Brain feedback 44533227233](https://github.com/niakw/NiakVIO/actions/runs/44533227233) lost that terminal event and suggested a generic provider deterministic advisor. This is precisely the generic evidence-loss regression covered by new tests. No production provider JS or Nuvio client sources were changed.
+
 # NiakVIO — Android TV first, Brain-driven repair loop
 
 **Policy date:** 2026-11-19. **Main product:** NiakVIO + Brain-LLM, not an individual provider.
