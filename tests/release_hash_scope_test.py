@@ -14,6 +14,13 @@ spec.loader.exec_module(module)
 
 assert "availability-history.json" in module.IGNORED_FILES
 assert "availability-report.json" in module.IGNORED_FILES
+for mutable_evidence in (
+    "PROVIDER_CENSUS_STATUS.md",
+    "automation/provider-census-status.json",
+    "automation/provider-repair-batch-plan-latest.json",
+    "automation/provider-waf-browser-session-latest.json",
+):
+    assert mutable_evidence in module.IGNORED_FILES
 assert ".github/ci-status/" in module.IGNORED_PREFIXES
 assert ".github/triggers/" in module.IGNORED_PREFIXES
 assert ".github/workflows/tmp-" in module.IGNORED_PREFIXES
@@ -61,6 +68,11 @@ with tempfile.TemporaryDirectory() as tmp:
     (root / "durable.txt").write_text("release-input\n", encoding="utf-8")
     (root / "availability-history.json").write_text('{"value":1}\n', encoding="utf-8")
     (root / "availability-report.json").write_text('{"value":1}\n', encoding="utf-8")
+    (root / "PROVIDER_CENSUS_STATUS.md").write_text("run 1\n", encoding="utf-8")
+    (root / "automation").mkdir(parents=True)
+    (root / "automation/provider-census-status.json").write_text('{"run":1}\n', encoding="utf-8")
+    (root / "automation/provider-repair-batch-plan-latest.json").write_text('{"run":1}\n', encoding="utf-8")
+    (root / "automation/provider-waf-browser-session-latest.json").write_text('{"run":1}\n', encoding="utf-8")
     (root / ".github/ci-status").mkdir(parents=True)
     (root / ".github/triggers").mkdir(parents=True)
     (root / ".github/workflows").mkdir(parents=True)
@@ -74,6 +86,10 @@ with tempfile.TemporaryDirectory() as tmp:
     assert "durable.txt" in before
     assert "availability-history.json" not in before
     assert "availability-report.json" not in before
+    assert "PROVIDER_CENSUS_STATUS.md" not in before
+    assert "automation/provider-census-status.json" not in before
+    assert "automation/provider-repair-batch-plan-latest.json" not in before
+    assert "automation/provider-waf-browser-session-latest.json" not in before
     assert ".github/ci-status/current-runs.json" not in before
     assert ".github/triggers/query-current-actions-main" not in before
     assert ".github/workflows/release.yml" in before
@@ -81,6 +97,10 @@ with tempfile.TemporaryDirectory() as tmp:
 
     (root / "availability-history.json").write_text('{"value":2}\n', encoding="utf-8")
     (root / "availability-report.json").write_text('{"value":2}\n', encoding="utf-8")
+    (root / "PROVIDER_CENSUS_STATUS.md").write_text("run 2\n", encoding="utf-8")
+    (root / "automation/provider-census-status.json").write_text('{"run":2}\n', encoding="utf-8")
+    (root / "automation/provider-repair-batch-plan-latest.json").write_text('{"run":2}\n', encoding="utf-8")
+    (root / "automation/provider-waf-browser-session-latest.json").write_text('{"run":2}\n', encoding="utf-8")
     (root / ".github/ci-status/current-runs.json").write_text('{"run":2}\n', encoding="utf-8")
     (root / ".github/triggers/query-current-actions-main").write_text("probe-2\n", encoding="utf-8")
     (root / ".github/workflows/tmp-diagnostic.yml").write_text("name: temporary-v2\n", encoding="utf-8")
