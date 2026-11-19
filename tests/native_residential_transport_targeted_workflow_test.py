@@ -5,6 +5,17 @@ ROOT = Path(__file__).resolve().parents[1]
 workflow = (ROOT / ".github/workflows/native-corpus-device-targeted.yml").read_text(encoding="utf-8")
 
 required = (
+    "Resolve latest official client HEADs (audit contract drift first)",
+    "scripts/check_nuvio_client_upstreams.py",
+    "--clients nuvio-tv nuvio-mobile nuvio-desktop",
+    "--paths-only --no-fail",
+    "scripts/resolve_nuvio_lab_heads.py",
+    "health-output/native-target-current-client-drift.json",
+    "health-output/native-target-current-client-heads.json",
+    "latest_official_head=true accepted_ref_only_for_audit=true",
+    "steps.heads.outputs.tv_sha",
+    "steps.heads.outputs.mobile_sha",
+    "steps.heads.outputs.desktop_sha",
     "target_providers:",
     "target_fixture:",
     "residential_exit:",
@@ -54,6 +65,12 @@ required = (
 )
 for needle in required:
     assert needle in workflow, needle
+
+assert "steps.resolve.outputs.tv_sha" not in workflow
+assert "steps.resolve.outputs.desktop_sha" not in workflow
+assert 'ref = str((clients.get(key) or {}).get("accepted_ref") or "")' not in workflow
+assert workflow.index("Resolve latest official client HEADs") < workflow.index("Resolve selected devices and manifests")
+assert "no stale fallback" not in workflow or "latest official" in workflow
 
 dns_snapshot = workflow.index("Snapshot pre-Tailscale DNS policy and baseline egress")
 connect = workflow.index("Connect native client host to Tailscale")
