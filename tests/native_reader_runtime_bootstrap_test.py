@@ -204,6 +204,60 @@ assert "NuvioTheme {" in desktop_player
 assert "desktopThrowableChain" in desktop_player
 assert "exception_chain64=${{b64(reader.exceptionChain)}}" in desktop_player
 
+# Verify test-only Hilt EntryPoint de-dup matches the generated Promise-control accessor.
+from finalize_native_tv_test_entrypoint import finalize as finalize_tv_hilt
+from native_client_test_bootstrap import TV_DEBUG_ENTRYPOINT
+
+assert "fun pluginRuntime(): PluginRuntime" in TV_DEBUG_ENTRYPOINT
+with tempfile.TemporaryDirectory(prefix="niakvio-tv-hilt-regression-") as temp:
+    source = Path(temp) / "GeneratedNativeCorpus.kt"
+    nested_settings = """
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface NiakvioPlayerSettingsEntryPoint {
+        fun playerSettingsDataStore(): PlayerSettingsDataStore
+    }
+"""
+    generated = (
+        "package com.nuvio.tv.core.plugin\\n"
+        "import dagger.hilt.EntryPoint\\n"
+        "import dagger.hilt.InstallIn\\n"
+        "import dagger.hilt.components.SingletonComponent\\n"
+        "import dagger.hilt.android.EntryPointAccessors\\n"
+        "class GeneratedNativeCorpus {\\n"
+        + tv_helpers("https://raw.githubusercontent.com/niakw/NiakVIO/main/manifest.json", [])
+        + nested_settings
+        + "    val playerAccessor = NiakvioPlayerSettingsEntryPoint::class.java\\n"
+        + "}\\n"
+    )
+    source.write_text(generated, encoding="utf-8")
+    finalize_tv_hilt(source)
+    cleaned = source.read_text(encoding="utf-8")
+    assert "interface NiakvioPluginManagerEntryPoint" not in cleaned
+    assert "interface NiakvioPlayerSettingsEntryPoint" not in cleaned
+    assert "NiakvioPluginManagerEntryPoint::class.java" in cleaned
+    assert "NiakvioPlayerSettingsEntryPoint::class.java" in cleaned
+    assert "probeOfficialTvPromiseBridge(entryPoint.pluginRuntime())" in cleaned
+    assert "FIELD_NATIVE_TV_PROMISE_CONTROL" in cleaned
+    assert "import dagger.hilt.android.EntryPointAccessors" in cleaned
+    assert "import dagger.hilt.EntryPoint" not in cleaned
+    assert "@InstallIn(SingletonComponent::class)" not in cleaned
+    # Reject a downgraded generated accessor: controls must be test-owned and
+    # compile against the exact debug-only Hilt bridge, never an old method set.
+    source.write_text(
+        generated.replace(
+            "        fun pluginRuntime(): com.nuvio.tv.core.plugin.PluginRuntime\\n", ""
+        ),
+        encoding="utf-8",
+    )
+    try:
+        finalize_tv_hilt(source)
+    except SystemExit:
+        pass
+    else:
+        raise AssertionError("old TV Hilt entrypoint was silently accepted")
+
+
 print(
     "native reader runtime bootstrap contract passed: "
     "tv_explicit_pairs=true generated_empty_generics_typed=true tv_single_owner_hilt_imports=true "
