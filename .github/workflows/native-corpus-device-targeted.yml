@@ -65,6 +65,7 @@ jobs:
           python3 - <<'PY' >> "$GITHUB_OUTPUT"
           import json
           import os
+          import sys
           from pathlib import Path
 
           event = os.environ.get("EVENT_NAME", "")
@@ -99,32 +100,37 @@ jobs:
           if residential and not providers:
               raise SystemExit("residential native transport proof requires explicit target provider(s)")
 
-          manifest = json.loads(Path("manifest-hub46.json").read_text(encoding="utf-8"))
-          available = {
-              str(row.get("id") or "").strip().lower(): row
-              for row in manifest.get("scrapers") or []
-              if isinstance(row, dict) and str(row.get("id") or "").strip()
-          }
-          missing = sorted(set(providers) - set(available))
-          if missing:
-              raise SystemExit("unknown target provider(s): " + ",".join(missing))
-          disabled = sorted(
-              provider for provider in providers
-              if available[provider].get("enabled") is not True
-          )
-          if disabled:
-              raise SystemExit("disabled target provider(s): " + ",".join(disabled))
+          sys.path.insert(0, str((Path.cwd() / "scripts").resolve()))
+          from native_manifest_projection import active_provider_manifest
+          target_specs = []
+          if providers:
+              for provider in providers:
+                  try:
+                      manifest = active_provider_manifest(provider)
+                  except ValueError as exc:
+                      raise SystemExit(str(exc)) from exc
+                  target_specs.append({
+                      "provider": provider,
+                      "manifest": manifest,
+                      "projection": "global" if manifest == "manifest.json" else "vf",
+                  })
+          else:
+              target_specs = [
+                  {"provider": "declared-type", "manifest": "manifest.json", "projection": "global"},
+                  {"provider": "declared-type", "manifest": "vf/manifest.json", "projection": "vf"},
+              ]
 
-          target_providers = providers or ["declared-type"]
           targets = [
               {
                   "device": selected_device,
                   "fixture": "all",
-                  "provider": provider,
+                  "provider": spec["provider"],
+                  "manifest": spec["manifest"],
+                  "projection": spec["projection"],
                   "residential": residential,
               }
               for selected_device in devices
-              for provider in target_providers
+              for spec in target_specs
           ]
           print("targets=" + json.dumps({"include": targets}, separators=(",", ":")))
 
@@ -154,6 +160,7 @@ jobs:
       TS_EXIT_NODE: ${{ secrets.TS_EXIT_NODE }}
       TS_TAG_NAME: ${{ secrets.TS_TAG_NAME }}
       NIAKVIO_TARGET_PROVIDER: ${{ matrix.provider }}
+      NIAKVIO_TARGET_MANIFEST: ${{ matrix.manifest }}
     steps:
       - name: Checkout exact Niakvio generation
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -170,6 +177,7 @@ jobs:
         shell: bash
         env:
           TARGET_PROVIDER: ${{ matrix.provider }}
+          TARGET_MANIFEST: ${{ matrix.manifest }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -178,7 +186,8 @@ jobs:
           from pathlib import Path
 
           root = Path(os.environ["GITHUB_WORKSPACE"]) / "niakvio"
-          manifest = json.loads((root / "manifest-hub46.json").read_text(encoding="utf-8"))
+          manifest_path = os.environ["TARGET_MANIFEST"].strip()
+          manifest = json.loads((root / manifest_path).read_text(encoding="utf-8"))
           wanted = os.environ["TARGET_PROVIDER"].strip().lower()
           row = next(
               (
@@ -269,20 +278,20 @@ jobs:
               git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioDesktop.git nuvio-desktop
               git -C nuvio-desktop checkout "$NUVIO_DESKTOP_SHA"
               touch nuvio-desktop/local.properties
-              python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest native-hub46/manifest.json
+              python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest "$NIAKVIO_TARGET_MANIFEST"
               ;;
             mobile)
               git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
               git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
               touch nuvio-mobile/local.properties
-              python3 niakvio/scripts/prepare_native_corpus_client.py mobile --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest native-hub46/manifest.json
+              python3 niakvio/scripts/prepare_native_corpus_client.py mobile --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest "$NIAKVIO_TARGET_MANIFEST"
               python3 niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
               ;;
             tv)
               git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
               git -C nuvio-tv checkout "$NUVIO_TV_SHA"
               touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
-              python3 niakvio/scripts/prepare_native_corpus_client.py tv --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest native-hub46/manifest.json
+              python3 niakvio/scripts/prepare_native_corpus_client.py tv --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest "$NIAKVIO_TARGET_MANIFEST"
               ;;
           esac
 
@@ -436,7 +445,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: native-corpus-${{ matrix.device }}-${{ matrix.provider }}-${{ matrix.fixture }}-${{ github.run_id }}
+          name: native-corpus-${{ matrix.device }}-${{ matrix.provider }}-${{ matrix.projection }}-${{ matrix.fixture }}-${{ github.run_id }}
           path: ${{ matrix.device }}-native-corpus-*.log
           retention-days: 1
           if-no-files-found: warn
@@ -463,19 +472,22 @@ jobs:
       - name: Download Desktop extraction-runtime evidence
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
-          name: native-corpus-desktop-declared-type-all-${{ github.run_id }}
+          pattern: native-corpus-desktop-declared-type-*-all-${{ github.run_id }}
+          merge-multiple: true
           path: cross-runtime/desktop
 
       - name: Download Mobile extraction-runtime evidence
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
-          name: native-corpus-mobile-declared-type-all-${{ github.run_id }}
+          pattern: native-corpus-mobile-declared-type-*-all-${{ github.run_id }}
+          merge-multiple: true
           path: cross-runtime/mobile
 
       - name: Download TV extraction-runtime evidence
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
-          name: native-corpus-tv-declared-type-all-${{ github.run_id }}
+          pattern: native-corpus-tv-declared-type-*-all-${{ github.run_id }}
+          merge-multiple: true
           path: cross-runtime/tv
 
       - name: Gate Desktop Mobile TV runtime divergence
