@@ -1389,10 +1389,10 @@ jobs:
               exit 1
             }
           fi
+          candidate_older=false
           if [ -n "$existing_ms" ] && [ "$candidate_ms" -le "$existing_ms" ]; then
-            echo "FIELD_BRAIN_MEMORY_PUBLISH skipped=stale candidate_ms=$candidate_ms existing_ms=$existing_ms"
-            echo "published=false" >> "$GITHUB_OUTPUT"
-            exit 0
+            candidate_older=true
+            echo "FIELD_BRAIN_MEMORY_PUBLISH stale_generated_state=true candidate_ms=$candidate_ms existing_ms=$existing_ms action=merge-experiment-delta"
           fi
           if [ -s "$RUNNER_TEMP/brain-learning-existing.json" ] && [ -s brain-learning-input/previous.json ]; then
             python scripts/merge_brain_learning_latest_memory.py \
@@ -1400,6 +1400,13 @@ jobs:
               --previous "$RUNNER_TEMP/brain-learning-existing.json" \
               --current brain-learning-output/latest.json \
               --output brain-learning-output/latest.json
+            if [ "$candidate_older" = "true" ] && git cat-file -e "refs/remotes/origin/$BRANCH:engine_v2/learning/latest.md" 2>/dev/null; then
+              git show "refs/remotes/origin/$BRANCH:engine_v2/learning/latest.md" > brain-learning-output/latest.md
+            fi
+          elif [ "$candidate_older" = "true" ]; then
+            echo "FIELD_BRAIN_MEMORY_PUBLISH skipped=stale-without-three-way-base candidate_ms=$candidate_ms existing_ms=$existing_ms"
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
           if [ -s "$RUNNER_TEMP/brain-learning-existing-guidance.json" ]; then
             python scripts/merge_brain_llm_guidance_memory.py \
