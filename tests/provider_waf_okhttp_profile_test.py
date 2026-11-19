@@ -22,6 +22,8 @@ workflow = WORKFLOW.read_text(encoding="utf-8")
 source = PY.read_text(encoding="utf-8")
 
 assert "<version>4.12.0</version>" in pom
+assert "<artifactId>maven-resources-plugin</artifactId>" in pom
+assert "<version>3.3.1</version>" in pom
 assert "clientBuilder.proxy(Proxy.NO_PROXY)" in java
 assert '"system".equals(proxyMode)' in java
 assert "NIAKVIO_WAF_OKHTTP_PROFILE" in java
