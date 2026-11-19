@@ -42,7 +42,7 @@ try {
     `FIELD_NATIVE_PROVIDER_BEGIN client=tv fixture=sinners-2025 provider64=${b64('PURSTREAM')} request_type=movie`,
     `FIELD_NATIVE_RESULT client=tv fixture=sinners-2025 provider64=${b64('PURSTREAM')} request_type=movie enabled=true duration_ms=1 count=1`,
     `FIELD_NATIVE_PLAYER_BEGIN client=tv fixture=sinners-2025 provider64=${b64('PURSTREAM')} request_type=movie index=0`,
-    `FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider64=${b64('PURSTREAM')} request_type=movie index=0 state=ready engine=media3 http_status=0 failure_stage=none duration_seconds=8220 host64=${b64('media.example')} error_class64=${b64('')} error_code64=${b64('')} exception_chain64=${b64('')} response_header_names64=${b64('')}`,
+    `FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider64=${b64('PURSTREAM')} request_type=movie index=0 state=ready engine=media3 http_status=0 failure_stage=none video_width=1280 video_height=720 audio_track_count=1 duration_seconds=8220 host64=${b64('media.example')} error_class64=${b64('')} error_code64=${b64('')} exception_chain64=${b64('')} response_header_names64=${b64('')}`,
     'FIELD_NATIVE_CORPUS_END client=tv fixture=sinners-2025 errors=0',
   ];
   fs.writeFileSync(log, common.join('\n') + '\n');
@@ -60,6 +60,27 @@ try {
   assert.equal(data.policy.providerLoadJsMutationAllowed, false);
   assert.equal(data.readerObserved, 3);
   assert.equal(data.readerHealthy, 1);
+  // Android TV READY and plausible duration are not decoded playback when
+  // width and height are zero. This remains an owner-unknown Brain diagnosis.
+  const unverifiedLog = path.join(tmp, 'tv-video-format-unverified.log');
+  const unverifiedOutput = path.join(tmp, 'tv-video-format-unverified.json');
+  const unverifiedLines = common.map((line) =>
+    line.startsWith('FIELD_NATIVE_PLAYER ') && line.includes(`provider64=${b64('PURSTREAM')}`)
+      ? line.replace('video_width=1280 video_height=720', 'video_width=0 video_height=0')
+      : line
+  );
+  fs.writeFileSync(unverifiedLog, unverifiedLines.join('\n') + '\n');
+  spawnSync(process.execPath, [script, '--output', unverifiedOutput, unverifiedLog], {
+    cwd: root, encoding: 'utf8',
+  });
+  const unverified = JSON.parse(fs.readFileSync(unverifiedOutput, 'utf8'));
+  assert.equal(unverified.readerHealthy, 0);
+  assert.equal(unverified.readerFailures, 3);
+  assert.ok(unverified.observations.some((row) =>
+    row.failureClass === 'playback_video_format_unverified' &&
+    row.providerMutationEligible === false &&
+    row.failureDomain === 'unresolved_media'
+  ));
   assert.equal(data.readerFailures, 2);
   assert.equal(data.providerEligibleReaderFailures, 2);
   assert.equal(data.clientRuntimeReaderFailures, 0);
