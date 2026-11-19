@@ -1,3 +1,9 @@
+## 2026-11-19 — Autorité de preuve des sorties réseau résidentielles
+
+Les Labs WAF et clients natifs exigent une attestation de route fail-closed : adresse IPv4 **globale** observée avant connexion Tailnet, sélection d'un exit Tailscale actif et adresse IPv4 globale différente après sélection. Une adresse privée, CGNAT, boucle locale ou de documentation n'est pas une preuve de sortie Internet publique. Le contrôle de transport ne prouve ni que le provider renvoie des flux, ni que le client les décode ou les lit.
+
+Le diagnostic d'échec de l'attestation classe séparément les endpoints bornés (DNS, connexion, HTTP, TLS, certificat, timeout, résultat non-public) et ne publie ni adresse IP, ni réponse brute, ni identité du nœud résidentiel. L'échec d'attestation empêche le label résidentiel et toute qualification native correspondante ; il constitue un **blocage environnement/harness**, jamais une panne provider. Les changements de ce contrat sont implémentés dans `scripts/verify_waf_exit_route.py` et testés dans `tests/waf_exit_route_attestation_test.py`. Un run CI et une lecture native réels restent nécessaires après chaque modification.
+
 ## Oracle reverse-engineering shared renderer — 2026-11-10
 
 The shared `anime_catalogue_runtime_common.py` renderer previously coerced
