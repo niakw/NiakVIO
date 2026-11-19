@@ -132,8 +132,8 @@ with tempfile.TemporaryDirectory() as tmp:
         mod.BATCH_PLAN.write_text(json.dumps({
             "sourceRunId":"scale-r1",
             "groups":[
-                {"groupId":"family-html","capabilityStrategy":"html_scraper","providers":["a","b","c"]},
-                {"groupId":"family-mixed","capabilityStrategy":"mixed_embed_resolver","providers":["d","e"]},
+                {"groupId":"family-html","repairScope":"terminal-extraction","capabilityStrategy":"html_scraper","providers":["a","b","c"]},
+                {"groupId":"family-mixed","repairScope":"transport","capabilityStrategy":"mixed_embed_resolver","providers":["d","e"]},
             ],
         }),encoding="utf-8")
         mod.REPAIR_MEMORY.write_text(json.dumps({"entries":[]}),encoding="utf-8")
@@ -162,6 +162,7 @@ with tempfile.TemporaryDirectory() as tmp:
                     "confidence":1.0,
                     "successCount":3,
                     "providers":["p1","p2"],
+                    "failureClass":"media_extraction_gap",
                     "capabilityStrategies":["html_scraper"],
                 }
             }}
@@ -169,19 +170,33 @@ with tempfile.TemporaryDirectory() as tmp:
         assert mod.trusted_transfer_capability_strategies(
             trusted,policy
         )=={"html-scraper"}
+        assert mod.trusted_transfer_family_keys(
+            trusted,policy
+        )=={("html-scraper","terminal-media")}
 
         fanout=mod.repair_wave_frontier(
             ["a","b","c","d","e","solo"],
-            trusted_strategies={"html-scraper"},
+            trusted_family_keys={("html-scraper","terminal-media")},
         )
         assert set(fanout["providers"])=={"a","b","c","d","solo"},fanout
         assert fanout["deferred"]==["e"],fanout
         assert fanout["fanoutFamilies"]==["family-html"],fanout
 
+
+        # Same capability trust from terminal-media must NOT fan out a transport
+        # family; capability equality alone is not causal transfer authority.
+        wrong_cause=mod.repair_wave_frontier(
+            ["d","e"],
+            trusted_family_keys={("mixed-embed-resolver","terminal-media")},
+        )
+        assert wrong_cause["providers"]==["d"],wrong_cause
+        assert wrong_cause["deferred"]==["e"],wrong_cause
+        assert wrong_cause["fanoutFamilies"]==[],wrong_cause
+
         pinned=mod.repair_wave_frontier(
             ["a","b","c","d","e"],
             pinned={"a"},
-            trusted_strategies=set(),
+            trusted_family_keys=set(),
         )
         assert "a" in pinned["providers"],pinned
         assert "b" not in pinned["providers"] and "c" not in pinned["providers"],pinned
@@ -195,6 +210,7 @@ with tempfile.TemporaryDirectory() as tmp:
             members=thousand[family_index*50:(family_index+1)*50]
             scale_groups.append({
                 "groupId":f"scale-family-{family_index:02d}",
+                "repairScope":"terminal-extraction",
                 "capabilityStrategy":f"strategy_{family_index:02d}",
                 "providers":members,
             })
@@ -210,7 +226,7 @@ with tempfile.TemporaryDirectory() as tmp:
             plan=scale_plan,
             rows=scale_rows,
             pressure={},
-            trusted_strategies=set(),
+            trusted_family_keys=set(),
         )
         assert len(bounded["providers"])==20,bounded
         assert len(bounded["deferred"])==980,bounded
@@ -221,7 +237,7 @@ with tempfile.TemporaryDirectory() as tmp:
             plan=scale_plan,
             rows=scale_rows,
             pressure={},
-            trusted_strategies={"strategy-00"},
+            trusted_family_keys={("strategy-00","terminal-media")},
         )
         # One trusted 50-provider family fans out while the other 19 families
         # still contribute exactly one oracle: 50 + 19 = 69 providers.
@@ -715,6 +731,7 @@ for required in (
     "FIELD_PROVIDER_BRAIN_FAMILY_FRONTIER",
     "familyFrontierScheduling",
     "trusted_transfer_capability_strategies",
+    "trusted_transfer_family_keys",
     "repair_wave_frontier",
     "PROVIDER_BRAIN_BATCH_CONCURRENCY_V1",
     "PROVIDER_BRAIN_GENERIC_MISS_TO_LEARNING_V1",
