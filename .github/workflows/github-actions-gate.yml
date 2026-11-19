@@ -443,6 +443,7 @@ jobs:
       - name: Validate native provider-loading compatibility
         run: |
           python3 tests/native_provider_loading_compat_test.py
+          python3 tests/native_reader_runtime_bootstrap_test.py
           python3 tests/native_quickjs_sanitization_test.py
           python3 tests/native_tv_tmdb_build_capability_test.py
           python3 tests/brain_android_tv_emulator_ingest_test.py
