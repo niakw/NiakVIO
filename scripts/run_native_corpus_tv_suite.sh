@@ -35,11 +35,7 @@ done < <(python3 "${NIAKVIO}/scripts/rotating_corpus.py" select --lane all --cou
 TARGET_FIXTURE="${NIAKVIO_TARGET_FIXTURE:-}"
 TARGET_FIXTURES="${NIAKVIO_TARGET_FIXTURES:-}"
 TARGET_PROVIDER="${NIAKVIO_TARGET_PROVIDER:-declared-type}"
-TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-native-hub46/manifest.json}"
-if [[ -n "${NIAKVIO_PROVIDER_SCOPE_MATRIX:-}" && -f "${NIAKVIO}/native-hub46/manifest.json" ]]; then
-  TARGET_MANIFEST="native-hub46/manifest.json"
-  echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=$TARGET_MANIFEST providers=current-active authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"
-fi
+TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"
 PLAYER_PROBES="${NIAKVIO_PLAYER_PROBES:-1}"
 READER_ACCEPTANCE="${NIAKVIO_READER_ACCEPTANCE:-0}"
 PRIMARY_FIXTURE="${NIAKVIO_PRIMARY_FIXTURE:-interstellar}"
@@ -98,7 +94,7 @@ fi
 # the generic representative movie/series/anime trio. Candidate Brain retests use a
 # different manifest path and intentionally keep their bounded original fixture set.
 TV_PRIORITY_FIXTURES=()
-if [[ ( "$TARGET_MANIFEST" = "manifest.json" || "$TARGET_MANIFEST" = "native-hub46/manifest.json" ) && "$TV_PRIORITY_APPEND" = "1" ]]; then
+if [[ "$TARGET_MANIFEST" = "manifest.json" && "$TV_PRIORITY_APPEND" = "1" ]]; then
   while IFS= read -r fixture; do
     [[ -n "$fixture" ]] && TV_PRIORITY_FIXTURES+=("$fixture")
   done < <(python3 - <<'PY' 2>/dev/null || true
