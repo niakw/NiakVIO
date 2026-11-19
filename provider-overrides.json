@@ -5398,10 +5398,6 @@
           }
         ]
       },
-      "manifest_overrides": {
-        "enabled": false
-      },
-      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -5439,7 +5435,51 @@
       "provider_lego_scripts": [
         "scripts/provider_patches/kurage_runtime_v1.py"
       ],
-      "activation_eligible": false
+      "disabled_reactivation_proof": {
+        "provider": "kurage",
+        "scope": "global",
+        "proofAuthority": "current-census-exact-byte-terminal-v1",
+        "proofStatus": "terminal_identity_verified",
+        "sourceKind": "current-bytes-census",
+        "sourceRunId": "44630718083",
+        "sourceSha": "e49b118064eaa30f89b99bd08f6eeeb1168e2102",
+        "providerArtifactSha256": "36032908e53441dda2bc53432c4227533d4889e2d85a801bc61d546a987723eb",
+        "declaredLanes": [
+          "anime"
+        ],
+        "verifiedLanes": [
+          "anime"
+        ],
+        "testedThisRun": true,
+        "verifiedRowCount": 1,
+        "identityContradictionCount": 0,
+        "wrongContent": false,
+        "repairRequired": false,
+        "directMutationAuthority": false,
+        "routeAuthorityVerified": true,
+        "routeValidatedLanes": [
+          "anime"
+        ],
+        "laneEvidence": {
+          "anime": [
+            {
+              "fixture": {
+                "slug": "golden-time-2013-s01e01",
+                "tmdbId": "67389",
+                "mediaType": "anime",
+                "category": "anime",
+                "title": "Golden Time",
+                "year": 2013,
+                "season": 1,
+                "episode": 1
+              },
+              "verified": 1,
+              "qualityHeights": []
+            }
+          ]
+        },
+        "disabledReason": "auto_off_current_architecture_regression"
+      }
     },
     "moviesmod": {
       "notes": [
