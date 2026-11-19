@@ -28,8 +28,11 @@ assert all(x.startswith("https://") for x in mod.ENDPOINTS)
 source = script.read_text(encoding="utf-8")
 assert "ProxyHandler({})" not in source
 assert '"--ipv4"' in source and '"--noproxy", "*"' in source
-assert '"--max-time", "8"' in source
-assert mod.PUBLIC_IP_COMMAND_TIMEOUT_SECONDS <= 12
+assert '"--max-time", "6"' in source
+assert "https://1.1.1.1/cdn-cgi/trace" in source
+assert mod.PUBLIC_IP_COMMAND_TIMEOUT_SECONDS <= 10
+assert mod._extract_public_ipv4("203.0.113.22\n") == "203.0.113.22"
+assert mod._extract_public_ipv4("fl=1\nip=203.0.113.23\nts=1\n") == "203.0.113.23"
 assert mod.TAILSCALE_SET_TIMEOUT_SECONDS <= 15
 assert mod.TAILSCALE_CLEAR_TIMEOUT_SECONDS <= 10
 assert "pre_tailnet=true" in source
@@ -42,12 +45,16 @@ original_run = mod.subprocess.run
 try:
     mod.shutil.which = lambda name: "/usr/bin/curl" if name == "curl" else original_which(name)
     ip_calls = []
+    responses = [
+        SimpleNamespace(returncode=0, stdout="not-an-ip\n", stderr=""),
+        SimpleNamespace(returncode=0, stdout="203.0.113.22\n", stderr=""),
+    ]
     def fake_ip_run(args, **kwargs):
         ip_calls.append((list(args), kwargs.get("timeout")))
-        return SimpleNamespace(returncode=0, stdout="203.0.113.22\n", stderr="")
+        return responses.pop(0)
     mod.subprocess.run = fake_ip_run
     assert mod.observed_public_ipv4() == "203.0.113.22"
-    assert len(ip_calls) == len(mod.ENDPOINTS)
+    assert len(ip_calls) == 2
     assert all(timeout == mod.PUBLIC_IP_COMMAND_TIMEOUT_SECONDS for _, timeout in ip_calls)
     assert all("--max-time" in args and "--noproxy" in args for args, _ in ip_calls)
 finally:
