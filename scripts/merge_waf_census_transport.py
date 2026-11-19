@@ -791,6 +791,9 @@ def merge_transport(
     residential = waf.get("residentialExitNodeEvidence")
     if isinstance(residential, dict):
         out["residentialExitNodeEvidence"] = copy.deepcopy(residential)
+    residential_attempt = waf.get("residentialExitNodeLastAttempt")
+    if isinstance(residential_attempt, dict):
+        out["residentialExitNodeLastAttempt"] = copy.deepcopy(residential_attempt)
     if replay_summary:
         out["residentialProviderReplay"] = copy.deepcopy(replay_summary)
     return out
