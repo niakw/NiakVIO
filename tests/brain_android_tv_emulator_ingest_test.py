@@ -16,6 +16,7 @@ spec.loader.exec_module(mod)
 def report(provider="demo", *, selected=True, returned=0, complete=False):
     return {
         "schemaVersion": 5, "evidenceComplete": complete,
+        "officialClientSha": "c" * 40,
         "appSelectionObservations": [{
             "client": "tv", "provider": provider, "fixture": "jujutsu-kaisen-s01e01",
             "requestType": "anime", "eligible": selected,
@@ -76,6 +77,7 @@ with tempfile.TemporaryDirectory() as folder:
     assert a["providerCount"] == 1 and a["observationCount"] == 1
     x = a["rows"][0]
     assert x["appSelected"] is True
+    assert x["officialClientSha"] == "c" * 40
     assert x["quickJsReturned"] == 0
     assert x["tvPromiseControl"] == "promise_delivery_gap"
     assert x["nativeHardTimeoutObserved"] is True
@@ -109,6 +111,19 @@ with tempfile.TemporaryDirectory() as folder:
     assert b["rows"][1]["tvPromiseControl"] == "promise_delivery_gap"
     assert b["rows"][1]["nativeHardTimeoutObserved"] is True
     assert b["rows"][1]["nativeHardTimeoutMs"] == 25000
+    assert b["rows"][0]["officialClientSha"] == "c" * 40
+    assert b["rows"][1]["officialClientSha"] == "c" * 40
+    versioned = report(returned=2, complete=True)
+    versioned["officialClientSha"] = "d" * 40
+    newer = mod.merge(b, [versioned], source_root=root, source_sha="b"*40, run_id="1004")
+    assert newer["rows"][0]["officialClientSha"] == "d" * 40
+    assert newer["rows"][1]["officialClientSha"] == "c" * 40
+    forged = report()
+    forged["officialClientSha"] = "https://SECRET.example/fake"
+    assert mod.sanitized_rows(forged)[0]["officialClientSha"] == ""
+    unknown = report()
+    del unknown["officialClientSha"]
+    assert mod.sanitized_rows(unknown)[0]["officialClientSha"] == ""
     for i in range(1003, 1035):
         b = mod.merge(b, [report()], source_root=root, source_sha="b"*40, run_id=str(i))
     assert b["observationCount"] == 10
