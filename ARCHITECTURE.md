@@ -1,3 +1,11 @@
+## 2026-11-19 — Retest → mémoire Brain par provider et SHA exact
+
+Le Retest ciblé exécute uniquement les JS déjà publiés ; il conserve un artefact brut séparé, non commité, et exporte un reçu **sans URL de média, cookie, header ni corps réseau** dans `automation/provider-retest-brain-evidence-latest.json`. Le reçu comprend l'identité provider, le SHA-256 des bytes JS actifs, le SHA source/ID du Retest, le type et les coordonnées TMDB minimales du fixture, les compteurs de flux et uniquement des codes d'échec d'identité/durée autorisés. `proofAuthority=false`, `publicationAuthority=false`, `nativePlaybackAuthority=false` sont impératifs. Ce n'est pas une certification de lecture.
+
+`scripts/merge_retest_brain_evidence_history.py` préserve ces diagnostics dans `automation/provider-retest-brain-evidence-history.json` au-delà du dernier provider ciblé, avec déduplication par provider/bundle/run/fixture et limite de dix observations par provider. La mémoire historique **ne peut jamais remplacer le census courant** ni autoriser une promotion. À l'ingestion, Brain-LLM distingue une observation courante liée au même census/JS des négatifs historiques ne concordant qu'avec des bytes JS identiques. Une modification du JS invalide leur réutilisation comme hypothèse exacte.
+
+Pour les cas `playable_unverified` (French-Manga, Sadisflix) il est interdit de prendre l'étiquette Core dérivée de TMDB pour une preuve indépendante de l'identité. Si le HLS ne prouve pas sa durée complète et que les métadonnées sources ne prouvent pas le bon film/épisode, la route doit produire un diagnostic causal (source provider → provenance saison/épisode → Core → lecteur), **pas** un `FULL OK`. Les user-tests TV/Mobile/Desktop peuvent apporter un oracle additionnel, mais ne substituent pas les tests automatiques ni l'autorité du media terminal.
+
 ## 2026-11-19 — Autorité de preuve des sorties réseau résidentielles
 
 Les Labs WAF et clients natifs exigent une attestation de route fail-closed : adresse IPv4 **globale** observée avant connexion Tailnet, sélection d'un exit Tailscale actif et adresse IPv4 globale différente après sélection. Une adresse privée, CGNAT, boucle locale ou de documentation n'est pas une preuve de sortie Internet publique. Le contrôle de transport ne prouve ni que le provider renvoie des flux, ni que le client les décode ou les lit.
