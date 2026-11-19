@@ -1856,14 +1856,9 @@
       "statusRepairEligible": true,
       "repairEligible": true,
       "testedThisRun": true,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayReclassified": true
+      "targetedTransportEvidence": []
     },
     {
       "provider": "french-manga",
@@ -2478,15 +2473,9 @@
       "statusRepairEligible": true,
       "repairEligible": true,
       "testedThisRun": true,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
-        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayReclassified": true
+      "targetedTransportEvidence": []
     },
     {
       "provider": "moviebite",
@@ -3701,7 +3690,11 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "showbox",
@@ -5626,40 +5619,19 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "44431474021-waf-transport",
-  "harnessEvidenceSha": "1e0321654fbefac3f21f5adf5de1be6f3077b010",
-  "authorityRefreshedProviders": [
-    "67movies",
-    "cinematheque-de-bretagne",
-    "film-a-revoir",
-    "nakios",
-    "neko-sama",
-    "primewire",
-    "sadisflix",
-    "shuttletv",
-    "skstream",
-    "streamzo",
-    "voirserie"
-  ],
-  "harnessTransportUpdatedProviders": [
-    "french-anime",
-    "moiflix"
-  ],
+  "harnessEvidenceRunId": "44434777580-waf-transport",
+  "harnessEvidenceSha": "3e03cc5a59fe555078fbcb7eeb938c1d72549475",
+  "authorityRefreshedProviders": [],
+  "harnessTransportUpdatedProviders": [],
   "networkDifferentialUpdatedProviders": [],
   "residentialProviderReplayPromotedProviders": [],
-  "residentialProviderReplayReclassifiedProviders": [
-    "french-anime",
-    "moiflix"
-  ],
-  "residentialProviderReplayRepairableProviders": [
-    "french-anime",
-    "moiflix"
-  ],
+  "residentialProviderReplayReclassifiedProviders": [],
+  "residentialProviderReplayRepairableProviders": [],
   "residentialExitNodeEvidence": {
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 3,
+    "matchedProviderLanes": 4,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -7281,15 +7253,17 @@
         "providerArtifactSha256": "be7898d0cd10d8cb6df2804720ef1fa927abc1114e1a4d9cf4eb06a67f70f1a0",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_zero_before_provider_network",
+        "debugStage": "provider_network_zero_result",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_zero_before_provider_network"
+          "provider_network_http_error",
+          "provider_network_zero_result"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
+          "lookup_only",
           "none"
         ],
         "raw": 0,
@@ -7298,9 +7272,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "df7c8004bf2321a89ea90e46801ce1e29b622024",
+          "sourceNiakvioSha": "3e03cc5a59fe555078fbcb7eeb938c1d72549475",
           "providerBundleSha256": "be7898d0cd10d8cb6df2804720ef1fa927abc1114e1a4d9cf4eb06a67f70f1a0",
-          "runId": "44425754944",
+          "runId": "44434777580",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7664,24 +7638,23 @@
     },
     "lastAttempt": {
       "available": true,
-      "providerCount": 2,
+      "providerCount": 1,
       "refreshedProviders": [
-        "french-anime",
-        "moiflix"
+        "allwish",
+        "animeonsen",
+        "sekai"
       ],
       "replayedProviders": [
-        "french-anime",
-        "moiflix"
+        "sekai"
       ],
       "rawProviders": [],
       "playableProviders": [],
       "verifiedProviders": [],
       "byteMatchedProviders": [
-        "french-anime",
-        "moiflix"
+        "sekai"
       ],
-      "sourceNiakvioSha": "ce48d4e49b3c9bf5f166165b43fbc8ebcbae7757",
-      "runId": "44431474021",
+      "sourceNiakvioSha": "3e03cc5a59fe555078fbcb7eeb938c1d72549475",
+      "runId": "44434777580",
       "proofAuthority": false,
       "publicationAuthority": false
     },
