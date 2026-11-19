@@ -187,6 +187,17 @@ assert tv_terminal["quickJsDiagnostics"][0]["phase"] == "call"
 assert tv_terminal["extractionHealthyObservations"][0]["returnedCount"] == 2
 assert tv_row["quickJsReturned"] == 0  # no QuickJS console result is not empty extraction
 assert tv_row["playerVideoFormatUnverified"] is True
+classified = json.loads(json.dumps(tv_terminal))
+classified["observations"][0]["failureClass"] = "playback_video_format_unverified"
+classified_row = mod.sanitized_rows(classified)[0]
+assert "playback_video_format_unverified" in classified_row["playerFailureClasses"]
+assert classified_row["playerVideoFormatUnverified"] is True
+assert classified_row["providerMutationAuthority"] is False
+assert "PRIVATE" not in json.dumps(classified_row)
+for typed_failure in ("playback_http_access", "playback_decoder"):
+    classified["observations"][0]["failureClass"] = typed_failure
+    assert typed_failure in mod.sanitized_rows(classified)[0]["playerFailureClasses"]
+
 assert tv_row["independentTerminalHttpStatuses"] == [403]
 assert tv_row["nativePlaybackAuthority"] is False
 assert "PRIVATE" not in json.dumps(tv_row)
