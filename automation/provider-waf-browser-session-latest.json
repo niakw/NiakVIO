@@ -5,7 +5,7 @@
   "browserExecutable": "google-chrome",
   "targetCount": 54,
   "providerFilter": [],
-  "attemptsPerTarget": 1,
+  "attemptsPerTarget": 2,
   "clientProfileMatrixEnabled": true,
   "clientProfiles": [
     {
@@ -240,7 +240,7 @@
           "exitCode": 0
         }
       ],
-      "ordinarySessionReused": false,
+      "ordinarySessionReused": true,
       "clientProfileMatrix": [
         {
           "profile": "github-default-browser",
@@ -254,7 +254,7 @@
               "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         },
         {
           "profile": "nuvio-tv-ua-browser",
@@ -268,7 +268,7 @@
               "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         }
       ],
       "directHttpProfile": {
@@ -292,7 +292,7 @@
             "exitCode": 0
           }
         ],
-        "ordinarySessionReused": false
+        "ordinarySessionReused": true
       },
       "okHttpJvmProfile": {
         "profile": "nuvio-tv-okhttp-jvm",
@@ -351,21 +351,21 @@
       ],
       "transportDiagnosis": "content_reached_cross_transport",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 16664,
+      "durationMs": 16088,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
-        "attemptCount": 1,
+        "attemptCount": 2,
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
             "outcome": "browser_content_reached",
-            "attemptCount": 1
+            "attemptCount": 2
           },
           {
             "profile": "nuvio-tv-ua-browser",
             "outcome": "browser_content_reached",
-            "attemptCount": 1
+            "attemptCount": 2
           }
         ],
         "directHttpProfile": {
@@ -392,16 +392,16 @@
         ]
       },
       "transportReceipt": {
-        "sourceNiakvioSha": "d5809edd33c6881ada6127cb3caf13dba68ec1aa",
+        "sourceNiakvioSha": "d1a1730ff120bad629297e78cab0aed41755cf49",
         "providerBundleSha256": "e067beed64be354d98e0bc578009b1511d35e46442853f887f3f0b42252883b3",
-        "runId": "44435559118",
+        "runId": "44445635550",
         "proofAuthority": false,
         "publicationAuthority": false
       },
       "residentialReceipt": {
-        "sourceNiakvioSha": "d5809edd33c6881ada6127cb3caf13dba68ec1aa",
+        "sourceNiakvioSha": "d1a1730ff120bad629297e78cab0aed41755cf49",
         "providerBundleSha256": "e067beed64be354d98e0bc578009b1511d35e46442853f887f3f0b42252883b3",
-        "runId": "44435559118",
+        "runId": "44445635550",
         "proofAuthority": false,
         "publicationAuthority": false
       }
@@ -426,7 +426,7 @@
           "exitCode": 0
         }
       ],
-      "ordinarySessionReused": false,
+      "ordinarySessionReused": true,
       "clientProfileMatrix": [
         {
           "profile": "github-default-browser",
@@ -440,7 +440,7 @@
               "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         },
         {
           "profile": "nuvio-tv-ua-browser",
@@ -454,7 +454,7 @@
               "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         }
       ],
       "directHttpProfile": {
@@ -478,7 +478,7 @@
             "exitCode": 0
           }
         ],
-        "ordinarySessionReused": false
+        "ordinarySessionReused": true
       },
       "okHttpJvmProfile": {
         "profile": "nuvio-tv-okhttp-jvm",
@@ -537,16 +537,16 @@
       ],
       "transportDiagnosis": "content_reached_cross_transport",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 16481,
+      "durationMs": 14680,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
-        "attemptCount": 1,
+        "attemptCount": 2,
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
             "outcome": "browser_content_reached",
-            "attemptCount": 1
+            "attemptCount": 2
           },
           {
             "profile": "nuvio-tv-ua-browser",
@@ -578,16 +578,16 @@
         ]
       },
       "transportReceipt": {
-        "sourceNiakvioSha": "d5809edd33c6881ada6127cb3caf13dba68ec1aa",
+        "sourceNiakvioSha": "d1a1730ff120bad629297e78cab0aed41755cf49",
         "providerBundleSha256": "e067beed64be354d98e0bc578009b1511d35e46442853f887f3f0b42252883b3",
-        "runId": "44435559118",
+        "runId": "44445635550",
         "proofAuthority": false,
         "publicationAuthority": false
       },
       "residentialReceipt": {
-        "sourceNiakvioSha": "d5809edd33c6881ada6127cb3caf13dba68ec1aa",
+        "sourceNiakvioSha": "d1a1730ff120bad629297e78cab0aed41755cf49",
         "providerBundleSha256": "e067beed64be354d98e0bc578009b1511d35e46442853f887f3f0b42252883b3",
-        "runId": "44435559118",
+        "runId": "44445635550",
         "proofAuthority": false,
         "publicationAuthority": false
       }
@@ -710,29 +710,39 @@
       "seedKind": null,
       "seedRoute": null,
       "outcome": "browser_content_reached",
-      "attemptCount": 1,
+      "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
           "outcome": "browser_challenge_persisted",
           "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
         }
       ],
-      "ordinarySessionReused": false,
+      "ordinarySessionReused": true,
       "clientProfileMatrix": [
         {
           "profile": "github-default-browser",
           "userAgent": null,
           "outcome": "browser_challenge_persisted",
-          "attemptCount": 1,
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
               "outcome": "browser_challenge_persisted",
               "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         },
         {
           "profile": "nuvio-tv-ua-browser",
@@ -746,7 +756,7 @@
               "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         }
       ],
       "directHttpProfile": {
@@ -761,16 +771,22 @@
           "httpStack": "libcurl-not-OkHttp"
         },
         "outcome": "direct_http_inconclusive",
-        "attemptCount": 1,
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
             "outcome": "direct_http_inconclusive",
             "status": 200,
             "exitCode": 0
+          },
+          {
+            "attempt": 2,
+            "outcome": "direct_http_inconclusive",
+            "status": 200,
+            "exitCode": 0
           }
         ],
-        "ordinarySessionReused": false
+        "ordinarySessionReused": true
       },
       "okHttpJvmProfile": {
         "profile": "nuvio-tv-okhttp-jvm",
@@ -786,10 +802,15 @@
           "safeRequestHeaderCount": 0
         },
         "outcome": "okhttp_jvm_inconclusive",
-        "attemptCount": 1,
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
+            "outcome": "okhttp_jvm_inconclusive",
+            "status": 200
+          },
+          {
+            "attempt": 2,
             "outcome": "okhttp_jvm_inconclusive",
             "status": 200
           }
@@ -810,10 +831,15 @@
           "safeRequestHeaderCount": 0
         },
         "outcome": "okhttp_jvm_inconclusive",
-        "attemptCount": 1,
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
+            "outcome": "okhttp_jvm_inconclusive",
+            "status": 200
+          },
+          {
+            "attempt": 2,
             "outcome": "okhttp_jvm_inconclusive",
             "status": 200
           }
@@ -825,7 +851,7 @@
       ],
       "transportDiagnosis": "browser_content_native_unproven",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 16720,
+      "durationMs": 19518,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -845,17 +871,17 @@
         "directHttpProfile": {
           "profile": "nuvio-tv-direct-http-approx",
           "outcome": "direct_http_inconclusive",
-          "attemptCount": 1
+          "attemptCount": 2
         },
         "okHttpJvmProfile": {
           "profile": "nuvio-tv-okhttp-jvm",
           "outcome": "okhttp_jvm_inconclusive",
-          "attemptCount": 1
+          "attemptCount": 2
         },
         "desktopOkHttpJvmProfile": {
           "profile": "nuvio-desktop-okhttp-jvm",
           "outcome": "okhttp_jvm_inconclusive",
-          "attemptCount": 1
+          "attemptCount": 2
         },
         "contentProfiles": [
           "github-default-browser",
@@ -863,16 +889,16 @@
         ]
       },
       "transportReceipt": {
-        "sourceNiakvioSha": "d5809edd33c6881ada6127cb3caf13dba68ec1aa",
-        "providerBundleSha256": "4c83d04d65296ecd7df2acc2d618b46f07b280205e820982e2124a280088a760",
-        "runId": "44435559118",
+        "sourceNiakvioSha": "d1a1730ff120bad629297e78cab0aed41755cf49",
+        "providerBundleSha256": "c1b744ca9c7cc482e91a31a293d9ae7a8e3ca5c0143d7dbad006ff51fa3fe2ad",
+        "runId": "44445635550",
         "proofAuthority": false,
         "publicationAuthority": false
       },
       "residentialReceipt": {
-        "sourceNiakvioSha": "d5809edd33c6881ada6127cb3caf13dba68ec1aa",
-        "providerBundleSha256": "4c83d04d65296ecd7df2acc2d618b46f07b280205e820982e2124a280088a760",
-        "runId": "44435559118",
+        "sourceNiakvioSha": "d1a1730ff120bad629297e78cab0aed41755cf49",
+        "providerBundleSha256": "c1b744ca9c7cc482e91a31a293d9ae7a8e3ca5c0143d7dbad006ff51fa3fe2ad",
+        "runId": "44445635550",
         "proofAuthority": false,
         "publicationAuthority": false
       }
@@ -3925,7 +3951,7 @@
           "exitCode": 0
         }
       ],
-      "ordinarySessionReused": false,
+      "ordinarySessionReused": true,
       "clientProfileMatrix": [
         {
           "profile": "github-default-browser",
@@ -3939,7 +3965,7 @@
               "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         },
         {
           "profile": "nuvio-tv-ua-browser",
@@ -3953,7 +3979,7 @@
               "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         }
       ],
       "directHttpProfile": {
@@ -3977,7 +4003,7 @@
             "exitCode": 0
           }
         ],
-        "ordinarySessionReused": false
+        "ordinarySessionReused": true
       },
       "okHttpJvmProfile": {
         "profile": "nuvio-tv-okhttp-jvm",
@@ -4036,21 +4062,21 @@
       ],
       "transportDiagnosis": "content_reached_cross_transport",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 22488,
+      "durationMs": 23997,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
-        "attemptCount": 1,
+        "attemptCount": 2,
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
-            "outcome": "browser_timeout",
-            "attemptCount": 1
+            "outcome": "browser_content_reached",
+            "attemptCount": 2
           },
           {
             "profile": "nuvio-tv-ua-browser",
             "outcome": "browser_content_reached",
-            "attemptCount": 1
+            "attemptCount": 2
           }
         ],
         "directHttpProfile": {
@@ -4069,6 +4095,7 @@
           "attemptCount": 1
         },
         "contentProfiles": [
+          "github-default-browser",
           "nuvio-tv-ua-browser",
           "nuvio-tv-direct-http-approx",
           "nuvio-tv-okhttp-jvm",
@@ -4076,16 +4103,16 @@
         ]
       },
       "transportReceipt": {
-        "sourceNiakvioSha": "d5809edd33c6881ada6127cb3caf13dba68ec1aa",
-        "providerBundleSha256": "be7898d0cd10d8cb6df2804720ef1fa927abc1114e1a4d9cf4eb06a67f70f1a0",
-        "runId": "44435559118",
+        "sourceNiakvioSha": "d1a1730ff120bad629297e78cab0aed41755cf49",
+        "providerBundleSha256": "2b380ed1d91b6bc505ef9084f012e52b94ac50e3f8bf0756ac232fb6ab51ad49",
+        "runId": "44445635550",
         "proofAuthority": false,
         "publicationAuthority": false
       },
       "residentialReceipt": {
-        "sourceNiakvioSha": "d5809edd33c6881ada6127cb3caf13dba68ec1aa",
-        "providerBundleSha256": "be7898d0cd10d8cb6df2804720ef1fa927abc1114e1a4d9cf4eb06a67f70f1a0",
-        "runId": "44435559118",
+        "sourceNiakvioSha": "d1a1730ff120bad629297e78cab0aed41755cf49",
+        "providerBundleSha256": "2b380ed1d91b6bc505ef9084f012e52b94ac50e3f8bf0756ac232fb6ab51ad49",
+        "runId": "44445635550",
         "proofAuthority": false,
         "publicationAuthority": false
       }
@@ -7118,7 +7145,7 @@
       },
       {
         "provider": "sekai",
-        "providerArtifactSha256": "be7898d0cd10d8cb6df2804720ef1fa927abc1114e1a4d9cf4eb06a67f70f1a0",
+        "providerArtifactSha256": "2b380ed1d91b6bc505ef9084f012e52b94ac50e3f8bf0756ac232fb6ab51ad49",
         "lane": "anime",
         "status": "no_streams",
         "debugStage": "provider_zero_before_provider_network",
@@ -7138,9 +7165,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "d5809edd33c6881ada6127cb3caf13dba68ec1aa",
-          "providerBundleSha256": "be7898d0cd10d8cb6df2804720ef1fa927abc1114e1a4d9cf4eb06a67f70f1a0",
-          "runId": "44435559118",
+          "sourceNiakvioSha": "d1a1730ff120bad629297e78cab0aed41755cf49",
+          "providerBundleSha256": "2b380ed1d91b6bc505ef9084f012e52b94ac50e3f8bf0756ac232fb6ab51ad49",
+          "runId": "44445635550",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7519,8 +7546,8 @@
       "byteMatchedProviders": [
         "sekai"
       ],
-      "sourceNiakvioSha": "d5809edd33c6881ada6127cb3caf13dba68ec1aa",
-      "runId": "44435559118",
+      "sourceNiakvioSha": "d1a1730ff120bad629297e78cab0aed41755cf49",
+      "runId": "44445635550",
       "proofAuthority": false,
       "publicationAuthority": false
     },
@@ -7545,8 +7572,8 @@
     }
   },
   "freshRunReceipt": {
-    "sourceNiakvioSha": "d5809edd33c6881ada6127cb3caf13dba68ec1aa",
-    "runId": "44435559118",
+    "sourceNiakvioSha": "d1a1730ff120bad629297e78cab0aed41755cf49",
+    "runId": "44445635550",
     "providerCount": 3,
     "proofAuthority": false,
     "publicationAuthority": false
