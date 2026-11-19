@@ -259,6 +259,7 @@ META_GAP_FAILURE_FAMILIES = {
     "media_extraction_gap": "terminal-media",
     "variant_coverage_gap": "terminal-media",
     "playback_context_gap": "terminal-media",
+    "candidate_replay_gap": "candidate-replay",
 }
 META_GAP_PROFILE_BY_FAILURE = {
     "route_proven_gap": "proven_route_terminal_traversal_v1",
