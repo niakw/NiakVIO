@@ -41,7 +41,7 @@ for required in (
     "reapply_published_overrides.py --check",
     "published_provider_lego_contract_test.py",
     "provider_js_lego_ownership_test.py",
-    "build_hub46_native_manifest.py",
+    "release_projection_scope_test.py",
     "validate_release_integrity.py",
     'CURRENT_SHA="$(git rev-parse origin/main)"',
     'git merge-base --is-ancestor "$GITHUB_SHA" "$CURRENT_SHA"',
@@ -91,6 +91,8 @@ assert publisher.index("git merge --no-ff --no-edit") < publisher.index("git pus
 assert "git rebase" not in publisher and "git push --force" not in publisher
 assert "for attempt in 1 2 3 4" in publisher
 assert "python scripts/validate_release_integrity.py" in publisher
+assert "manifest-hub46.json" not in wf
+assert "native-hub46/manifest.json" not in wf
 
 assert "python scripts/materialize_provider_v3_all.py" not in wf
 assert 'steps.drift.outputs.count != \'0\'' in wf
