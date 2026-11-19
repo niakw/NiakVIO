@@ -1,17 +1,17 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-11-18T17:25:54.192306+00:00",
+  "generated_at": "2026-11-19T01:57:29.682399+00:00",
   "test_environment": "github-actions-node",
-  "checked_providers": 76,
+  "checked_providers": 75,
   "status_counts": {
     "healthy": 7,
     "reachable": 0,
-    "blocked": 19,
+    "blocked": 17,
     "degraded": 0,
-    "no_streams": 43,
+    "no_streams": 45,
     "provider_unreachable": 0,
     "runtime_error": 0,
-    "unavailable": 7,
+    "unavailable": 6,
     "excluded": 0
   },
   "policy": {
@@ -1312,7 +1312,7 @@
     },
     {
       "id": "documentary-area",
-      "status": "blocked",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2507,7 +2507,7 @@
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 2,
       "hosts": [
         "cdn2.slowcloud.live"
       ],
@@ -2516,14 +2516,14 @@
       ],
       "host_health": {
         "cdn2.slowcloud.live": {
-          "last_checked_at": "2026-11-18T17:25:54.192306+00:00",
+          "last_checked_at": "2026-11-19T01:57:29.682399+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 200,
-          "latency_ms": 376,
+          "latency_ms": 692,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 2,
+          "consecutive_successes": 3,
           "consecutive_blocked": 0
         }
       },
@@ -2913,17 +2913,15 @@
     },
     {
       "id": "movy",
-      "status": "blocked",
+      "status": "not-checked",
       "action": "unchanged",
-      "enabled": true,
+      "enabled": false,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "hosts": [],
       "response_categories": [],
-      "host_health": {},
-      "activation_eligible": true,
-      "activation_mode": "bulk_offline_contract_live_unverified"
+      "host_health": {}
     },
     {
       "id": "mugiwarastream",
@@ -3223,7 +3221,7 @@
     },
     {
       "id": "neobam",
-      "status": "unavailable",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -3709,15 +3707,31 @@
     },
     {
       "id": "sadisflix",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
-      "host_health": {},
+      "consecutive_successes": 1,
+      "hosts": [
+        "prx-1566-ant-r.vmpx.online"
+      ],
+      "response_categories": [
+        "playable"
+      ],
+      "host_health": {
+        "prx-1566-ant-r.vmpx.online": {
+          "last_checked_at": "2026-11-19T01:57:29.682399+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 200,
+          "latency_ms": 520,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        }
+      },
       "activation_eligible": true,
       "activation_mode": "bulk_offline_contract_live_unverified"
     },
@@ -3861,18 +3875,14 @@
     },
     {
       "id": "streamzo",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "u14.vidzy.org"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "static.cloudflareinsights.com": {
           "last_checked_at": "2026-11-18T17:25:54.192306+00:00",
