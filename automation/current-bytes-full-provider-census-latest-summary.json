@@ -2,9 +2,10 @@
   "acceptanceBasis": "aggregate-operational-state-including-carried-evidence",
   "acceptanceReached": false,
   "acceptanceTarget": 84,
-  "acceptedPlayableProviderCount": 17,
+  "acceptedPlayableProviderCount": 20,
   "acceptedPlayableProviders": [
     "castle",
+    "cinematheque-de-bretagne",
     "french-manga",
     "hindmoviez",
     "internet-archive",
@@ -20,7 +21,9 @@
     "streamzo",
     "topcartoons",
     "voiranime-homes",
-    "webflix"
+    "webflix",
+    "wookafr",
+    "zone-streaming"
   ],
   "brainQueue": [
     "1jour1film0626",
@@ -35,7 +38,6 @@
     "boredflix",
     "cinegram",
     "cinemabz",
-    "cinematheque-de-bretagne",
     "cinetimes",
     "corsflix",
     "documentary-area",
@@ -73,12 +75,10 @@
     "rivestream-app",
     "rivestream-ru",
     "sadisflix",
-    "sekai",
     "showbox",
     "shuttletv",
     "skstream",
     "stigstream",
-    "streamzo",
     "videasy",
     "vidlink",
     "voirserie",
@@ -94,12 +94,12 @@
   "carriedOperationalProviders": [],
   "debugStageCounts": {
     "provider_network_exception": 10,
-    "provider_network_http_error": 40,
-    "provider_network_zero_result": 65,
-    "provider_returned_streams": 26,
+    "provider_network_http_error": 38,
+    "provider_network_zero_result": 64,
+    "provider_returned_streams": 30,
     "provider_returned_wrong_content": 1,
-    "provider_waf_challenge": 53,
-    "timeout": 16
+    "provider_waf_challenge": 56,
+    "timeout": 12
   },
   "debugStageProviders": {
     "provider_network_exception": [
@@ -120,17 +120,18 @@
       "corsflix",
       "documentary-area",
       "emnexmovies",
-      "moiflix",
       "movieshunt",
       "movish",
       "persianstremio",
       "rivestream-app",
       "rivestream-ru",
+      "sekai",
       "showbox",
       "shuttletv",
       "vidfast",
       "voiranime-rip",
-      "watchott"
+      "watchott",
+      "youtitou"
     ],
     "provider_network_zero_result": [
       "4khdhub",
@@ -159,14 +160,14 @@
       "playimdb",
       "primewire",
       "pstream",
-      "streamzo",
+      "shuttletv",
       "uhdmovies",
       "vidlink",
-      "watchott",
-      "youtitou"
+      "watchott"
     ],
     "provider_returned_streams": [
       "castle",
+      "cinematheque-de-bretagne",
       "french-manga",
       "hindmoviez",
       "internet-archive",
@@ -182,10 +183,12 @@
       "streamzo",
       "topcartoons",
       "voiranime-homes",
-      "webflix"
+      "webflix",
+      "wookafr",
+      "zone-streaming"
     ],
     "provider_returned_wrong_content": [
-      "sekai"
+      "topcartoons"
     ],
     "provider_waf_challenge": [
       "1jour1film0626",
@@ -201,11 +204,13 @@
       "fexini",
       "film-a-revoir",
       "flemmix",
+      "flixhq",
       "franime",
       "french-anime",
       "fullanime",
       "ihavenotv",
       "kehflix",
+      "moiflix",
       "moviesmod",
       "movish",
       "movy",
@@ -223,18 +228,18 @@
       "anidb",
       "anime-sama",
       "anisama",
-      "cinematheque-de-bretagne",
       "flixhq",
       "hianime",
       "sadisflix",
+      "showbox",
       "vuflix",
-      "wookafr",
       "zone-streaming"
     ]
   },
-  "fullOkCount": 4,
+  "fullOkCount": 5,
   "fullOkProviders": [
     "castle",
+    "hindmoviez",
     "internet-archive",
     "meowtv",
     "webflix"
@@ -249,42 +254,37 @@
   ],
   "operationalWithoutCurrentVerifiedCount": 0,
   "operationalWithoutCurrentVerifiedProviders": [],
-  "partialOkCount": 1,
-  "partialOkProviders": [
-    "hindmoviez"
-  ],
+  "partialOkCount": 0,
+  "partialOkProviders": [],
   "providerCount": 111,
-  "runId": 44461753512,
+  "runId": 44466952731,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
     "CANDIDATE OK": 1,
     "CHAIN REACHED": 20,
-    "DISABLED": 36,
-    "FULL OK": 4,
-    "HARNESS MISMATCH": 5,
+    "DISABLED": 37,
+    "FULL OK": 5,
+    "HARNESS MISMATCH": 6,
     "HARNESS/ENV BLOCKED": 15,
-    "NO PROOF": 10,
-    "PARTIAL OK": 1,
-    "PROOF REFRESH REQUIRED": 4,
+    "NO PROOF": 9,
+    "PROOF REFRESH REQUIRED": 6,
     "PROVIDER JS BROKEN": 2,
-    "PROVIDER NETWORK BLOCKED": 7,
-    "REGRESSION PROVIDER": 4,
-    "REGRESSION PROVIDER JS": 2
+    "PROVIDER NETWORK BLOCKED": 6,
+    "REGRESSION PROVIDER": 4
   },
   "testedProviderCount": 109,
-  "triggerSha": "ea386db0ccb8523f4abb6b5cd50dd543eeb45765",
-  "verifiedProviderCount": 6,
+  "triggerSha": "4eee3d431d6efaa6d3e1861b990fa73f52147f97",
+  "verifiedProviderCount": 5,
   "verifiedProviders": [
     "castle",
     "hindmoviez",
     "internet-archive",
     "meowtv",
-    "topcartoons",
     "webflix"
   ],
   "wrongContentProviderCount": 1,
   "wrongContentProviders": [
-    "sekai"
+    "topcartoons"
   ]
 }

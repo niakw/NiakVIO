@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "authority": "provider-authority-arbiter-v1",
-  "censusStatusSource": "/home/runner/work/NiakVIO/NiakVIO/automation/provider-census-status.json",
-  "productionFreshnessStatusSource": "persisted-all-scope",
+  "censusStatusSource": "/tmp/provider-census-preauthority.json",
+  "productionFreshnessStatusSource": "/tmp/provider-census-current-freshness.json",
   "policy": {
     "searchRole": "historical-supplement-only",
     "futureHubSearchDefault": false,
@@ -462,7 +462,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
+        "current_status:CHAIN REACHED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -616,7 +616,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "current_status:PROOF REFRESH REQUIRED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -1062,13 +1062,8 @@
         "https://hindmovie.icu/wp-json/wp/v2/posts"
       ],
       "reasons": [
-        "structured_backend_authority",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:PARTIAL OK"
-      ],
-      "productionFreshnessAuthorized": false,
-      "productionProofAuthority": "no-current-byte-production-proof"
+        "structured_backend_authority"
+      ]
     },
     {
       "provider": "ihavenotv",
@@ -1235,7 +1230,7 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
+        "current_status:HARNESS MISMATCH"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -1765,7 +1760,7 @@
         "existing_positive_route_prior",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:REGRESSION PROVIDER JS"
+        "current_status:PROOF REFRESH REQUIRED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -2088,7 +2083,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "current_status:PROVIDER NETWORK BLOCKED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
