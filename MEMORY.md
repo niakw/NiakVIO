@@ -1,3 +1,7 @@
+## 2026-11-19 — VM test regex proof corrected
+
+- Removed the two literal double-backslash occurrences from the embedded Node regex in `tests/provider_native_player_hedge_test.py`; the harness now recognizes `.m3u8` strings as intended. This is a test fixture correction only. Native playback and production rematerialization remain unproven.
+
 ## 2026-11-19 — Player-hedge test harness correction (pre-CI)
 
 - Follow-up source review of new generated-Base hedge synthetic test found an overescaped JS regex for `.m3u8` (two JS backslashes instead of one) and a VM harness global assignment ambiguity. Corrected only test regex and assigned the evaluated crawler function explicitly to the JS VM test context. No provider code/JS or stream gate changed. The new hedge itself remains unqualified until the exact-SHA CI and representative native test.

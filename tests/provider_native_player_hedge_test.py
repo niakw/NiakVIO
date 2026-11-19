@@ -31,7 +31,7 @@ function make(native, slowHost, fastHost) {
     _origin: u => new URL(u).origin,
     _text: x => String(x || ''),
     _uniq: x => [...new Set(x)],
-    _directMedia: u => /\\.m3u8(?:[?#]|$)/.test(u),
+    _directMedia: u => /\.m3u8(?:[?#]|$)/.test(u),
     _streams: urls => urls.map(url => ({url, type:'hls'})),
     _jsonUrls: () => [],
     _spv26JsonMediaRows: () => [],
@@ -65,7 +65,7 @@ function make(native, slowHost, fastHost) {
  const rows=await a.f.testCrawl([slow,fast],'https://example.org',2);
  const ms=Date.now()-start;
  assert.equal(rows.length,1,JSON.stringify(rows));
- assert.match(rows[0].url,/fast-master\\.m3u8/);
+ assert.match(rows[0].url,/fast-master\.m3u8/);
  assert.ok(ms<100,'native fast origin must not wait for slow failed sibling: '+ms);
  assert.equal(a.requests.length,2,'hedge limited to two initially independent hosts');
  const b=make(false,slow,fast),startB=Date.now();
