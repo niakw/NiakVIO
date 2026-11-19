@@ -10,7 +10,9 @@ invalid row with no bounded recovery path is removed.
 Rows beyond the heavy native probe budget are dropped when the configured
 fail-closed budget policy requires it; an explicit opt-out may retain a
 lightweight master-facts-only path. MPEG-TS samples can additionally prove a
-video-only PMT and reject it before playback. Master bitrate is exposed both as
+video-only PMT and reject it before playback. TS-wrapped audio served at an
+`.aac` URL requires PAT/PMT evidence of an audio elementary stream, preserving
+raw ADTS and video-only rejection. Master bitrate is exposed both as
 display text and numeric `bitrateMbps` for downstream scoring.
 """
 from __future__ import annotations
@@ -237,7 +239,24 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     if(encrypted)return {state:"unknown",reason:"encrypted_segment"};
     var u=String(url||"").toLowerCase(),ct=String(contentType||"").toLowerCase();
     var aac=/\.aac(?:[?#]|$)/i.test(u)||/audio\/(?:aac|aacp)/i.test(ct);
-    if(aac)return hasAdtsSync(bytes)?{state:"valid",kind:"aac"}:{state:"invalid",reason:"aac_sync_missing"};
+    /* NIAKVIO_HLS_TS_WRAPPED_AAC_RENDITION_V20 */
+    // The URL suffix/MIME hint can say .aac while the server returns a
+    // packetized MPEG-TS audio rendition. Never equate that to corrupt AAC.
+    // Require PAT/PMT evidence of an actual audio elementary stream before
+    // accepting TS-wrapped audio; a mere 0x47 sync or video-only PMT is not
+    // sufficient. Preserve strict raw ADTS validation and encryption gating.
+    if(aac){
+      if(hasAdtsSync(bytes))return {state:"valid",kind:"aac",audioPresent:true};
+      if(hasTsSync(bytes)){
+        var tsAudio=tsElementaryProof(bytes);
+        if(tsAudio.state==="valid"&&tsAudio.audioPresent===true)
+          return {state:"valid",kind:"mpegts-audio",audioPresent:true,videoPresent:tsAudio.videoPresent};
+        if(tsAudio.state==="unknown")
+          return {state:"unknown",reason:"aac_ts_audio_unverified"};
+        return {state:"invalid",reason:tsAudio.reason||"aac_ts_audio_missing"};
+      }
+      return {state:"invalid",reason:"aac_sync_missing"};
+    }
     var ts=/\.ts(?:[?#]|$)/i.test(u)||/video\/(?:mp2t|mpegts)|application\/(?:mp2t|mpegts)/i.test(ct);
     if(ts){if(!hasTsSync(bytes))return{state:"invalid",reason:"ts_sync_missing"};var elementary=tsElementaryProof(bytes);return elementary.state==="invalid"?elementary:{state:"valid",kind:"mpegts",audioPresent:elementary.audioPresent,videoPresent:elementary.videoPresent}}
     var fragmented=hasMap||/\.(?:m4s|mp4)(?:[?#]|$)/i.test(u)||/video\/mp4|application\/mp4/i.test(ct);
