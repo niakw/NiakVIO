@@ -142,7 +142,7 @@ HELPERS = r'''
                             onControllerReady = { controller -> controllerRef.set(controller) },
                             onSnapshot = { snapshot ->
                                 latestSnapshot.set(snapshot)
-                                if (snapshot.isEnded || (!snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L))) {
+                                if (snapshot.isEnded || (!snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || (snapshot.videoWidth > 0 && snapshot.videoHeight > 0)))) {
                                     terminal.countDown()
                                 }
                             },
@@ -219,7 +219,7 @@ HELPERS = r'''
                     videoWidth = snapshot?.videoWidth ?: 0, videoHeight = snapshot?.videoHeight ?: 0,
                 )
             }
-            if (snapshot != null && !snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L)) {
+            if (snapshot != null && !snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || (snapshot.videoWidth > 0 && snapshot.videoHeight > 0))) {
                 return DesktopNativePlayerProbe(
                     "ready", "", "", 0, "none", durationSeconds, positionSeconds,
                     audioTrackCount = audioTracks.size, audioTrackLanguages = audioLanguages,
