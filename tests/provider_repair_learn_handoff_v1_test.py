@@ -52,6 +52,21 @@ fast_summary = {
 }
 fast = module.merge_summary({"schemaVersion":1,"providers":{}}, fast_summary, run_id="777")
 assert set(fast["providers"]) == {"exhausted", "remaining-one"}, fast
+
+
+# Fast Repair schema v2 may intentionally leave family siblings unvisited. The
+# explicit handoff list is therefore authoritative even when brainRemaining
+# still contains those siblings.
+frontier_summary={
+    "selectedProviders":["exhausted","sibling-unvisited"],
+    "validatedProviders":[],
+    "brainDeferredLearningProviders":["exhausted"],
+    "brainRemainingProviders":["exhausted","sibling-unvisited"],
+    "learnHandoffProviders":["exhausted"],
+}
+frontier=module.merge_summary({"schemaVersion":1,"providers":{}},frontier_summary,run_id="778")
+assert set(frontier["providers"])=={"exhausted"},frontier
+assert frontier["providers"]["exhausted"]["reason"]=="brain-strategy-exhausted",frontier
 assert fast["providers"]["exhausted"]["reason"] == "brain-strategy-exhausted", fast
 assert fast["providers"]["remaining-one"]["reason"] == "brain-unresolved", fast
 assert "fixed-now" not in fast["providers"], fast
