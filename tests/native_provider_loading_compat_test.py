@@ -82,6 +82,9 @@ with tempfile.TemporaryDirectory() as raw_tmp:
     wrapped_text = canonical.replace_official_execution(wrapped.read_text(encoding="utf-8"), "tv")
     assert "kotlinx.coroutines.withTimeout(25000L)" in wrapped_text
     assert CASES["tv"][1] in wrapped_text
+    assert "officialPluginManager.enabledScrapers.first().any" in rewritten if client == "tv" else True
+    assert ("FIELD_NATIVE_PROVIDER_APP_SELECTION client=tv" in rewritten) == (client == "tv")
+    assert ("emptyList<com.nuvio.tv.domain.model.LocalScraperResult>()" in rewritten) == (client == "tv")
     assert "runtime.executePlugin(" not in wrapped_text
 
     # Android FULL isolation puts the blocking QuickJS call behind a Future hard
