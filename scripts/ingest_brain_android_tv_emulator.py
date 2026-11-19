@@ -166,7 +166,23 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
         if failure in PLAYER_FAILURES and failure not in row["playerFailureClasses"]:
             row["playerFailureClasses"].append(failure)
 
-    return list(samples.values())[:32]
+    # An extracted QuickJS/media marker without a matching official app
+    # selection cannot prove the provider was eligible or executed. Preserve
+    # legitimate excluded-client observations only as client selection facts.
+    accepted = []
+    for row in samples.values():
+        if type(row["appSelected"]) is not bool:
+            continue
+        if row["appSelected"] is False:
+            row["quickJsPhases"] = []
+            row["quickJsErrors"] = []
+            row["quickJsReturned"] = 0
+            row["nativeExtractionZeroObserved"] = False
+            row["nativeExtractionPositiveObserved"] = False
+            row["playerStates"] = []
+            row["playerFailureClasses"] = []
+        accepted.append(row)
+    return accepted[:32]
 
 
 def merge(previous: dict[str, Any], reports: list[dict[str, Any]], *,
