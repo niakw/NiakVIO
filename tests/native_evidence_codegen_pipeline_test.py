@@ -194,11 +194,15 @@ with tempfile.TemporaryDirectory() as tmp_raw:
                 'captureDesktopPhase("player-result"',
                 "PlayerEngineController",
                 "getAudioTracks()",
+                "getSubtitleTracks()",
                 "logical_provider64=${b64(row.provider)}",
-        "audio_track_count=${reader.audioTrackCount}",
+                "audio_track_count=${reader.audioTrackCount}",
                 "audio_track_languages64=${b64(reader.audioTrackLanguages)}",
+                "subtitle_track_count=${reader.subtitleTrackCount}",
+                "video_height=${reader.videoHeight}",
                 "audio_track_count=${transport.audioTrackCount}",
                 "audio_track_languages64=${b64(transport.audioTrackLanguages)}",
+                "subtitle_variant_matrix64=${b64(transport.subtitleVariantMatrix)}",
             ):
                 assert required in desktop_out, f"{platform}:{required}"
             assert "NativePlayerController(" not in desktop_out

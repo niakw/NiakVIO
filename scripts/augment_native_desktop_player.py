@@ -52,6 +52,11 @@ HELPERS = r'''
         val exceptionChain: String = "",
         val audioTrackCount: Int = -1,
         val audioTrackLanguages: String = "",
+        val subtitleTrackCount: Int = -1,
+        val subtitleTrackLanguages: String = "",
+        val subtitleTrackLabels: String = "",
+        val videoWidth: Int = 0,
+        val videoHeight: Int = 0,
     )
 
     private fun desktopThrowableChain(error: Throwable): Pair<Throwable, String> {
@@ -158,17 +163,31 @@ HELPERS = r'''
             val snapshot = latestSnapshot.get()
             var audioTracks = runCatching { controllerRef.get()?.getAudioTracks().orEmpty() }
                 .getOrDefault(emptyList())
-            if (error.isNullOrBlank() && audioTracks.isEmpty()) {
+            var subtitleTracks = runCatching { controllerRef.get()?.getSubtitleTracks().orEmpty() }
+                .getOrDefault(emptyList())
+            if (error.isNullOrBlank() && (audioTracks.isEmpty() || subtitleTracks.isEmpty())) {
                 repeat(8) {
-                    if (audioTracks.isNotEmpty()) return@repeat
+                    if (audioTracks.isNotEmpty() && subtitleTracks.isNotEmpty()) return@repeat
                     Thread.sleep(125L)
-                    audioTracks = runCatching { controllerRef.get()?.getAudioTracks().orEmpty() }
-                        .getOrDefault(emptyList())
+                    if (audioTracks.isEmpty()) {
+                        audioTracks = runCatching { controllerRef.get()?.getAudioTracks().orEmpty() }
+                            .getOrDefault(emptyList())
+                    }
+                    if (subtitleTracks.isEmpty()) {
+                        subtitleTracks = runCatching { controllerRef.get()?.getSubtitleTracks().orEmpty() }
+                            .getOrDefault(emptyList())
+                    }
                 }
             }
             val audioLanguages = audioTracks.mapNotNull { track ->
                 track.language?.trim()?.takeIf { it.isNotBlank() && !it.equals("und", ignoreCase = true) }
             }.distinct().joinToString(",")
+            val subtitleLanguages = subtitleTracks.mapNotNull { track ->
+                track.language?.trim()?.takeIf { it.isNotBlank() && !it.equals("und", ignoreCase = true) }
+            }.distinct().joinToString(",")
+            val subtitleLabels = subtitleTracks.mapNotNull { track ->
+                track.label.trim().takeIf { it.isNotBlank() }
+            }.distinct().joinToString(" | ")
             if (!error.isNullOrBlank()) {
                 return DesktopNativePlayerProbe(
                     "error", "NuvioDesktopProductionPlayer",
@@ -186,23 +205,35 @@ HELPERS = r'''
                 return DesktopNativePlayerProbe(
                     "short_media", "", "", 0, "duration_identity", durationSeconds, positionSeconds,
                     audioTrackCount = audioTracks.size, audioTrackLanguages = audioLanguages,
+                    subtitleTrackCount = subtitleTracks.size, subtitleTrackLanguages = subtitleLanguages,
+                    subtitleTrackLabels = subtitleLabels,
+                    videoWidth = snapshot?.videoWidth ?: 0, videoHeight = snapshot?.videoHeight ?: 0,
                 )
             }
             if (snapshot?.isEnded == true) {
                 return DesktopNativePlayerProbe(
                     "ended", "", "", 0, "none", durationSeconds, positionSeconds,
                     audioTrackCount = audioTracks.size, audioTrackLanguages = audioLanguages,
+                    subtitleTrackCount = subtitleTracks.size, subtitleTrackLanguages = subtitleLanguages,
+                    subtitleTrackLabels = subtitleLabels,
+                    videoWidth = snapshot?.videoWidth ?: 0, videoHeight = snapshot?.videoHeight ?: 0,
                 )
             }
             if (snapshot != null && !snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L)) {
                 return DesktopNativePlayerProbe(
                     "ready", "", "", 0, "none", durationSeconds, positionSeconds,
                     audioTrackCount = audioTracks.size, audioTrackLanguages = audioLanguages,
+                    subtitleTrackCount = subtitleTracks.size, subtitleTrackLanguages = subtitleLanguages,
+                    subtitleTrackLabels = subtitleLabels,
+                    videoWidth = snapshot?.videoWidth ?: 0, videoHeight = snapshot?.videoHeight ?: 0,
                 )
             }
             return DesktopNativePlayerProbe(
                 "timeout", "NuvioDesktopProductionPlayer", "READER_TIMEOUT", 0, "timeout", durationSeconds, positionSeconds,
                 audioTrackCount = audioTracks.size, audioTrackLanguages = audioLanguages,
+                    subtitleTrackCount = subtitleTracks.size, subtitleTrackLanguages = subtitleLanguages,
+                    subtitleTrackLabels = subtitleLabels,
+                    videoWidth = snapshot?.videoWidth ?: 0, videoHeight = snapshot?.videoHeight ?: 0,
             )
         } catch (error: Throwable) {
             val (root, chain) = desktopThrowableChain(error)
@@ -253,7 +284,7 @@ def augment(path: Path, expected_minutes: int, stream_scope: str) -> None:
     transport_pattern = re.compile(
         r'''                rows\.firstOrNull\(\)\?\.let \{ row ->\n'''
         r'''                    val probe = probeTransport\(row\.url, row\.headers\)\n'''
-        r'''                    emit\("FIELD_NATIVE_TRANSPORT client=desktop fixture=\$fixtureSlug provider64=\$\{b64\(provider\.id\)\} request_type=\$requestMediaType route_mode=\$routeMode state=\$\{probe\.state\} kind=\$\{probe\.kind\} status=\$\{probe\.status\} content_type64=\$\{b64\(probe\.contentType\)\} extm3u=\$\{probe\.extm3u\} audio_track_count=\$\{probe\.audioTrackCount\} audio_track_languages64=\$\{b64\(probe\.audioTrackLanguages\)\} duration_seconds=\$\{probe\.durationSeconds \?: 0\.0\} host64=\$\{b64\(probe\.host\)\} media_hint64=\$\{b64\(probe\.mediaHint\)\}"\)\n'''
+        r'''                    emit\("FIELD_NATIVE_TRANSPORT client=desktop fixture=\$fixtureSlug provider64=\$\{b64\(provider\.id\)\} request_type=\$requestMediaType route_mode=\$routeMode [^\n]*"\)\n'''
         r'''                \}\n'''
     )
     replacement = f'''                {reader_iter} {{ index, row ->
@@ -261,12 +292,12 @@ def augment(path: Path, expected_minutes: int, stream_scope: str) -> None:
                         emit("FIELD_NATIVE_PLAYER_BEGIN client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index entry=PlatformPlayerSurface")
                         captureDesktopPhase("player-start", fixtureSlug)
                         val reader = probeDesktopProductionPlayer(row.url, row.headers, row.type, {expected_minutes})
-                        emit("FIELD_NATIVE_PLAYER client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index state=${{reader.state}} engine=nuvio-desktop-production http_status=${{reader.httpStatus}} failure_stage=${{reader.failureStage}} duration_seconds=${{reader.durationSeconds ?: 0.0}} host64=${{b64(hostOnly(row.url))}} error_class64=${{b64(reader.errorClass)}} error_code64=${{b64(reader.errorCode)}} exception_chain64=${{b64(reader.exceptionChain)}} response_header_names64=${{b64("")}} load_bytes=0 load_duration_ms=0 media_data_type=-1 track_type=-1 audio_track_count=${{reader.audioTrackCount}} audio_track_languages64=${{b64(reader.audioTrackLanguages)}}")
+                        emit("FIELD_NATIVE_PLAYER client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index state=${{reader.state}} engine=nuvio-desktop-production advertised_quality64=${{b64(row.quality)}} http_status=${{reader.httpStatus}} failure_stage=${{reader.failureStage}} duration_seconds=${{reader.durationSeconds ?: 0.0}} video_width=${{reader.videoWidth}} video_height=${{reader.videoHeight}} host64=${{b64(hostOnly(row.url))}} error_class64=${{b64(reader.errorClass)}} error_code64=${{b64(reader.errorCode)}} exception_chain64=${{b64(reader.exceptionChain)}} response_header_names64=${{b64("")}} load_bytes=0 load_duration_ms=0 media_data_type=-1 track_type=-1 audio_track_count=${{reader.audioTrackCount}} audio_track_languages64=${{b64(reader.audioTrackLanguages)}} subtitle_track_count=${{reader.subtitleTrackCount}} subtitle_track_languages64=${{b64(reader.subtitleTrackLanguages)}} subtitle_track_labels64=${{b64(reader.subtitleTrackLabels)}}")
                         captureDesktopPhase("player-result", fixtureSlug)
                         // Independent transport diagnostics run only after the production
                         // player has reached a terminal observation for this source.
                         val transport = probeTransport(row.url, row.headers)
-                        emit("FIELD_NATIVE_TRANSPORT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index state=${{transport.state}} kind=${{transport.kind}} status=${{transport.status}} content_type64=${{b64(transport.contentType)}} extm3u=${{transport.extm3u}} audio_track_count=${{transport.audioTrackCount}} audio_track_languages64=${{b64(transport.audioTrackLanguages)}} duration_seconds=${{transport.durationSeconds ?: 0.0}} host64=${{b64(transport.host)}} media_hint64=${{b64(transport.mediaHint)}}")
+                        emit("FIELD_NATIVE_TRANSPORT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index state=${{transport.state}} kind=${{transport.kind}} status=${{transport.status}} content_type64=${{b64(transport.contentType)}} extm3u=${{transport.extm3u}} audio_track_count=${{transport.audioTrackCount}} audio_track_languages64=${{b64(transport.audioTrackLanguages)}} subtitle_track_count=${{transport.subtitleTrackCount}} subtitle_track_languages64=${{b64(transport.subtitleTrackLanguages)}} audio_variant_matrix64=${{b64(transport.audioVariantMatrix)}} subtitle_variant_matrix64=${{b64(transport.subtitleVariantMatrix)}} variant_heights64=${{b64(transport.variantHeights)}} duration_seconds=${{transport.durationSeconds ?: 0.0}} host64=${{b64(transport.host)}} media_hint64=${{b64(transport.mediaHint)}}")
                     }}
                 }}
 '''

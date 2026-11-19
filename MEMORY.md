@@ -155,3 +155,9 @@
 ### 2026-11-19 — Native variant Lab first CI correction
 - Release Finalizer 44441318564 on `6c5891b15c0dc61d462e474e5e0c91454d71b8f6` stopped at the old static assertion that required `hlsAudioTrackCount`. The implementation intentionally replaced that union-only helper with `hlsTrackTopology`; the finalizer did not reach the new generated-player/evidence tests yet.
 - The static contract is updated to require variant audio/subtitle matrices and subtitle observation fields. This is a test-contract correction, not playback proof.
+
+
+### 2026-11-19 — Desktop consumer follows enriched native track evidence
+- Finalizer `44441559053` reached and passed the new Android variant/quality/audio/subtitle regression tests, then failed in `augment_native_desktop_player.py` because its exact regex still matched the old, audio-only `FIELD_NATIVE_TRANSPORT` line.
+- The Desktop augmenter now anchors on the structural transport row instead of a frozen evidence column list, and emits the same advertised-quality, rendered-dimensions, audio, integrated-subtitle and per-variant transport fields as Android. Desktop production `PlayerEngineController` now observes both audio and subtitle tracks.
+- This is harness/client evidence alignment; it is not a real Desktop playback success claim.
