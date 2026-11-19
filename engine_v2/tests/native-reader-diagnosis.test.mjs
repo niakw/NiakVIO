@@ -412,6 +412,45 @@ try {
     assert.equal(JSON.stringify(promiseData.quickJsPromiseControls).includes(secret), false);
   }
 
+  // A real TV transcript returned media while the independent HLS probe got
+  // HTTP 403; READY/duration with no video format is not certified playback.
+  // The Brain must learn this without persisting signed URLs or hostnames.
+  const terminalLog = path.join(tmp, 'tv-terminal-probe.log');
+  const terminalOutput = path.join(tmp, 'tv-terminal-probe.json');
+  fs.writeFileSync(terminalLog, [
+    ...common,
+    'FIELD_NATIVE_TRANSPORT client=tv fixture=sinners-2025 provider64='
+      + b64('MOVIESDRIVE')
+      + ' request_type=movie route_mode=declared index=0 state=dead kind=hls'
+      + ' status=403 extm3u=false host64=' + b64('PRIVATE.example')
+      + ' url=https://PRIVATE.example/token=SECRET headers=Bearer',
+    'FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider64='
+      + b64('MOVIESDRIVE')
+      + ' request_type=movie route_mode=declared index=0 state=ready'
+      + ' engine=nuvio-tv-production production_surface=true failure_stage=none'
+      + ' duration_seconds=1435 video_width=0 video_height=0 audio_track_count=0',
+  ].join('\\n') + '\\n');
+  const terminalRun = spawnSync(process.execPath,
+    [script, '--output', terminalOutput, terminalLog],
+    { cwd: root, encoding: 'utf8' });
+  assert.equal(terminalRun.status, 0, terminalRun.stderr + terminalRun.stdout);
+  const terminal = JSON.parse(fs.readFileSync(terminalOutput, 'utf8'));
+  assert.equal(terminal.terminalTransportDiagnosticObserved, 1);
+  const blockedHls = terminal.terminalTransportDiagnostics[0];
+  assert.equal(blockedHls.httpStatus, 403);
+  assert.equal(blockedHls.kind, 'hls');
+  assert.equal(blockedHls.source, 'independent-terminal-transport-probe');
+  assert.equal(blockedHls.provider, 'moviesdrive');
+  assert.equal(blockedHls.proofAuthority, false);
+  assert.equal(blockedHls.providerJsMutationAllowed, false);
+  const ready = terminal.observations.find(row => row.observationLayer === 'player'
+    && row.state === 'ready' && row.provider === 'moviesdrive');
+  assert.equal(ready.playerVideoFormatObserved, false);
+  assert.equal(ready.playerAudioTrackCount, 0);
+  for (const secret of ['PRIVATE.example', 'Bearer', 'SECRET', 'https://']) {
+    assert.equal(JSON.stringify(terminal.terminalTransportDiagnostics).includes(secret), false);
+  }
+
   const incomplete = path.join(tmp, 'incomplete.log');
   const incompleteOutput = path.join(tmp, 'incomplete.json');
   fs.writeFileSync(incomplete, [
