@@ -1,3 +1,7 @@
+## 2026-11-19 — Player-hedge test harness correction (pre-CI)
+
+- Follow-up source review of new generated-Base hedge synthetic test found an overescaped JS regex for `.m3u8` (two JS backslashes instead of one) and a VM harness global assignment ambiguity. Corrected only test regex and assigned the evaluated crawler function explicitly to the JS VM test context. No provider code/JS or stream gate changed. The new hedge itself remains unqualified until the exact-SHA CI and representative native test.
+
 ## 2026-11-19 — Generic native player hedging candidate in ProviderBase generator (not published)
 
 - The latest official French-Manga native run `44610510286` on `27e52de6` was **FAILURE**. It showed a single HLS root HTTP 200 (prior duplicate-root 403 signature absent) but returned zero streams at 25,477ms, no player/media decode. ProviderBase's generated `_crawlDirectMedia` sequentially visited a player that returned HTTP 522 after ~20s before the alternate healthy player, while shared Core `CORE.MEDIA_TYPE_RESOLUTION.V1` has a hard 25s TV deadline in the materialized JS. The Android test harness's 60s outer timeout does not increase this Core budget.

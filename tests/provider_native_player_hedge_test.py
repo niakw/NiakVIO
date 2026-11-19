@@ -56,7 +56,7 @@ function make(native, slowHost, fastHost) {
     ? { __native_fetch:()=>{}, __nuvioProviderDeadlineMs:Date.now()+25000 }
     : {};
   vm.createContext(f);
-  vm.runInContext(crawler+';globalThis.testCrawl=_crawlDirectMedia;',f);
+  f.testCrawl=vm.runInContext(crawler+';_crawlDirectMedia;',f);
   return {f, requests};
 }
 (async()=>{
