@@ -27,6 +27,8 @@ state_renderer=(ROOT/"scripts/render_provider_census_status_from_state.py").read
 assert "Residential probe" in state_renderer
 assert "⚠️ unavailable · GitHub-only" in state_renderer
 assert "residentialExitNodeEvidence" in state_renderer
+assert "residentialExitNodeLastAttempt" in state_renderer
+assert "unavailable on latest attempt" in state_renderer
 
 assert "Residential replay" in state_renderer
 assert "residentialProviderReplayClass" in state_renderer
