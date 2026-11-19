@@ -422,6 +422,7 @@ jobs:
       # the requested residential exit before the official client executes.
       - name: Connect native client host to Tailscale
         if: ${{ matrix.residential == true }}
+        timeout-minutes: 4
         uses: tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c
         with:
           oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
@@ -440,6 +441,7 @@ jobs:
 
       - name: Select and attest residential exit immediately before native runtime
         if: ${{ matrix.residential == true }}
+        timeout-minutes: 2
         shell: bash
         run: |
           set -euo pipefail

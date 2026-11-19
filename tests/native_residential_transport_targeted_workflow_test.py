@@ -67,6 +67,10 @@ assert prepare < tv_snapshot < dns_snapshot < connect < dns_restore < exit_node
 assert exit_node < desktop_runtime < mobile_runtime < tv_runtime
 
 assert "continue-on-error: true" not in workflow[connect:exit_node], "native residential connection must fail closed"
+connect_block = workflow[connect:dns_restore]
+attest_block = workflow[exit_node:desktop_runtime]
+assert "timeout-minutes: 4" in connect_block, "Tailscale connect must be wall-clock bounded"
+assert "timeout-minutes: 2" in attest_block, "residential egress attestation must be wall-clock bounded"
 assert "matrix.residential == true" in workflow
 assert "matrix.device == 'mobile' && matrix.provider != 'declared-type'" in workflow
 assert "manifest-hub46.json" not in workflow

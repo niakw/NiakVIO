@@ -1,3 +1,10 @@
+## 2026-11-19 — Native residential egress attestation hard-bounded
+
+- Targeted native run 44451624563 exposed a harness stall before the official Desktop client: macOS jobs remained in residential exit attestation far beyond the intended subprocess limits. The responsible layer is harness/network attestation, not provider code.
+- Public IPv4 attestation no longer uses urllib/socket DNS under a nominal request timeout because system DNS resolution can outlive that timeout. It now uses curl with IPv4, NO_PROXY, connect/max-time bounds plus an outer subprocess deadline, while still requiring two independent public-IP endpoints to agree and never persisting the IP.
+- The native targeted workflow now hard-bounds the Tailscale connection step to 4 minutes and residential select+attest step to 2 minutes. A failed attestation remains fail-closed; the official client does not run under an unverified residential label.
+- This is a client/harness reliability correction. It preserves canonical Global/VF manifests and both no-anime product variants; no provider bytes were changed.
+
 ## 2026-11-19 — WAF persistence semantics and current-vs-history ledger split
 
 - A single challenge HTML sample is no longer labelled `persisted`. Browser, libcurl and JVM OkHttp now record per-attempt `challenge_observed` and only promote to `challenge_persisted` after at least two concordant challenge observations. A challenge followed by timeout remains unconfirmed instead of becoming a persistent-WAF claim.

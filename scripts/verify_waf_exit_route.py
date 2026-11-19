@@ -11,14 +11,15 @@ import argparse
 import ipaddress
 import json
 import os
+import shutil
 import subprocess
 import time
-import urllib.request
 from pathlib import Path
 
 ENDPOINTS = ("https://checkip.amazonaws.com/", "https://ipv4.icanhazip.com/")
 TAILSCALE_SET_TIMEOUT_SECONDS = 12
 TAILSCALE_CLEAR_TIMEOUT_SECONDS = 8
+PUBLIC_IP_COMMAND_TIMEOUT_SECONDS = 10
 
 
 def _set_exit_route(*args: str, timeout: int) -> bool:
@@ -57,16 +58,43 @@ def clear_exit_node() -> None:
 
 
 def observed_public_ipv4() -> str:
-    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    """Resolve public IPv4 through a killable child process.
+
+    Python's socket timeout does not reliably bound a blocked system DNS lookup.
+    The curl process therefore has both its own network deadline and an outer
+    subprocess deadline so native Labs cannot spend an hour in egress attestation.
+    """
+    curl = shutil.which("curl")
+    if not curl:
+        raise RuntimeError("public IPv4 probe unavailable")
     seen = []
     for url in ENDPOINTS:
         try:
-            request = urllib.request.Request(url, headers={"User-Agent": "NiakVIO-egress-attestation/1"})
-            with opener.open(request, timeout=8) as response:
-                raw = response.read(64).decode("ascii").strip()
+            proc = subprocess.run(
+                [
+                    curl,
+                    "--ipv4",
+                    "--noproxy", "*",
+                    "--location",
+                    "--max-redirs", "2",
+                    "--connect-timeout", "4",
+                    "--max-time", "8",
+                    "--silent",
+                    "--show-error",
+                    "--user-agent", "NiakVIO-egress-attestation/2",
+                    url,
+                ],
+                capture_output=True,
+                text=True,
+                timeout=PUBLIC_IP_COMMAND_TIMEOUT_SECONDS,
+                check=False,
+            )
+            if proc.returncode != 0:
+                continue
+            raw = str(proc.stdout or "").strip().splitlines()[0][:64]
             ipaddress.IPv4Address(raw)
             seen.append(raw)
-        except (OSError, ValueError, UnicodeError):
+        except (OSError, ValueError, UnicodeError, IndexError, subprocess.TimeoutExpired):
             continue
     if not seen or len(set(seen)) != 1:
         raise RuntimeError("public IPv4 cannot be independently established")
