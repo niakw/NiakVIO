@@ -125,6 +125,11 @@ def mark_residential_unavailable(
         "tailscale-connect-failed",
         "exit-node-unavailable",
         "exit-egress-unverified",
+        "exit-selected-public-internet-unavailable",
+        "exit-node-offline",
+        "exit-status-unavailable",
+        "egress-unchanged",
+        "post-exit-public-ip-unavailable",
         "residential-probe-failed",
     }:
         safe_reason = "tailscale-unavailable"
