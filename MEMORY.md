@@ -1,3 +1,10 @@
+
+## 2026-11-19 — Native Learning contract aligned with trusted automatic evidence import
+
+- Fixed a Workflow Gate contract drift after native-reader-learning-sync gained a trusted workflow_run importer. Three older tests still required manual-only imports and made the architecture gate red even though the backlog contract already required automatic same-run persistence.
+- Automatic import is now explicitly contract-tested as same-repository + main-only Device Corpus evidence, excluding cancelled/skipped runs, with workflow-level permissions empty and fail-closed publicationAllowed/productionWritesAllowed enforcement. Native Labs still do not run Repair or mutate provider bytes.
+- This preserves the client improvements already under real Desktop/Mobile/Android-TV execution and keeps no-anime/manifest.json + vf-no-anime/manifest.json as supported product manifests. Hub46 publication aliases remain retired.
+
 ## 2026-11-19 — Targeted residential replay cohort now matches saved evidence
 
 - Run 44425027154 completed SUCCESS with current-only WAF merge contract passing and Tailscale egress attested. The residential selection log stated 3 provider candidates, but persisted current replay evidence showed only one requested provider (Sekai) with exact JS receipt; additional baseline environment candidates were executed outside the explicit browser cohort and then filtered out by targeted merge. The full quick-yield diagnostic printed playable=1, verified=0, wrong=1 among its broader executed set; **no current verified stream** and no evidence of a repaired provider.

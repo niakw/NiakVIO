@@ -32,8 +32,13 @@ assert "brain-reader-repair" not in texts["mobile_android"]
 assert "brain-reader-repair" not in texts["mobile_ios"]
 
 learning = (ROOT / ".github/workflows/native-reader-learning-sync.yml").read_text(encoding="utf-8")
-assert "workflow_run:" not in learning, "native Labs must never invoke Brain automatically"
+assert "workflow_run:" in learning, "sanitized native evidence must not be lost after trusted main runs"
+assert 'workflows: ["NATIVE - Device Corpus Tests"]' in learning
+assert "github.event.workflow_run.head_repository.full_name == github.repository" in learning
+assert "github.event.workflow_run.head_branch == 'main'" in learning
+assert "permissions: {}" in learning
+assert "productionWritesAllowed===true||x.publicationAllowed===true" in learning
 assert "workflow_dispatch:" in learning
 assert "run_id:" in learning
 
-print("native Lab nonblocking contract passed: weekly+manual=true routine_push=false android_tv_mobile=combined ios=separate brain=decoupled")
+print("native Lab nonblocking contract passed: weekly+manual=true routine_push=false android_tv_mobile=combined ios=separate brain=decoupled-learning-sync")

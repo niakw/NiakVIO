@@ -202,7 +202,12 @@ for workflow in (tv_reader, mobile_android, mobile_ios):
     assert "brain-reader-repair" not in workflow
     assert "build_native_reader_brain_repair.py" not in workflow
     assert "compare_native_reader_brain_repair.py" not in workflow
-assert "workflow_run:" not in reader_learning
+assert "workflow_run:" in reader_learning
+assert 'workflows: ["NATIVE - Device Corpus Tests"]' in reader_learning
+assert "github.event.workflow_run.head_repository.full_name == github.repository" in reader_learning
+assert "github.event.workflow_run.head_branch == 'main'" in reader_learning
+assert "permissions: {}" in reader_learning
+assert "productionWritesAllowed===true||x.publicationAllowed===true" in reader_learning
 assert "workflow_dispatch:" in reader_learning
 assert "run_id:" in reader_learning
 assert "native-corpus-device-lab.yml" not in brain_learning

@@ -134,13 +134,21 @@ for required in (
 ):
     assert required in reader_runtime_scope, required
 # Native Labs are independent evidence producers. They do not run Brain repair,
-# merge cross-client state, or mutate provider code. Learning imports one exact
-# completed run only when explicitly dispatched.
+# merge cross-client state, or mutate provider code. Sanitized diagnoses may be
+# imported automatically only from the trusted same-repository main Device Corpus
+# workflow, or manually by exact run id. The Learning branch stays fail-closed.
 for workflow in (tv_workflow, mobile_android_workflow, mobile_ios_workflow, desktop_workflow):
     assert "brain-reader-repair" not in workflow
     assert "build_native_reader_brain_repair.py" not in workflow
     assert "compare_native_reader_brain_repair.py" not in workflow
-assert "workflow_run:" not in learning_sync
+assert "workflow_run:" in learning_sync
+assert 'workflows: ["NATIVE - Device Corpus Tests"]' in learning_sync
+assert "github.event.workflow_run.head_repository.full_name == github.repository" in learning_sync
+assert "github.event.workflow_run.head_branch == 'main'" in learning_sync
+assert "github.event.workflow_run.conclusion != 'cancelled'" in learning_sync
+assert "github.event.workflow_run.conclusion != 'skipped'" in learning_sync
+assert "permissions: {}" in learning_sync
+assert "productionWritesAllowed===true||x.publicationAllowed===true" in learning_sync
 assert "workflow_dispatch:" in learning_sync
 assert "Exact completed native reader run ID to import manually" in learning_sync
 assert '"native-tv-full-$RUN_ID"' in learning_sync
