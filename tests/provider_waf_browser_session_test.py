@@ -225,7 +225,7 @@ assert safe_header_target["requestHeaders"] == {
     "origin": "https://headers.example",
     "referer": "https://headers.example/",
 }
-assert mod.classify_dom("<html><title>Just a moment...</title><div>challenge-platform</div></html>") == "browser_challenge_persisted"
+assert mod.classify_dom("<html><title>Just a moment...</title><div>challenge-platform</div></html>") == "browser_challenge_observed"
 assert mod.classify_dom("<html><body>" + ("normal catalogue content " * 10) + "</body></html>") == "browser_content_reached"
 assert mod.classify_dom("<html></html>") == "browser_inconclusive"
 assert mod.classify_dom(
@@ -234,7 +234,7 @@ assert mod.classify_dom(
 ) == "browser_content_reached"
 assert mod.classify_dom(
     '<html><div class="challenge-platform">checking your browser</div></html>'
-) == "browser_challenge_persisted"
+) == "browser_challenge_observed"
 assert mod.classify_dom('<html><script>' + ('var a0x="opaque";' * 100) + '</script></html>') == 'browser_inconclusive'
 
 assert mod.diagnose_transport_profiles(
@@ -293,8 +293,9 @@ finally:
 assert warmed["outcome"]=="browser_content_reached",warmed
 assert warmed["attemptCount"]==2,warmed
 assert [row["outcome"] for row in warmed["attempts"]]==[
-    "browser_challenge_persisted","browser_content_reached"
+    "browser_challenge_observed","browser_content_reached"
 ]
+assert warmed["browserAttemptTimeoutSeconds"] == 6
 assert warmed["ordinarySessionReused"] is True
 assert len(calls)==2
 profiles=[
@@ -302,6 +303,28 @@ profiles=[
     for call in calls
 ]
 assert profiles[0]==profiles[1],profiles
+
+challenge_timeout_calls=[]
+challenge_timeout_responses=[
+    SimpleNamespace(returncode=0,stdout="<html><title>Just a moment...</title><div>challenge-platform</div></html>"),
+    "timeout",
+]
+original_run=mod.subprocess.run
+try:
+    def challenge_timeout_run(*args,**kwargs):
+        challenge_timeout_calls.append((args,kwargs))
+        value=challenge_timeout_responses.pop(0)
+        if value=="timeout":
+            raise mod.subprocess.TimeoutExpired(cmd="chromium", timeout=kwargs.get("timeout", 0))
+        return value
+    mod.subprocess.run=challenge_timeout_run
+    unconfirmed=mod.probe_target(allwish,"chromium",timeout=20,virtual_time_ms=7000,attempts=2)
+finally:
+    mod.subprocess.run=original_run
+assert unconfirmed["outcome"]=="browser_challenge_observed",unconfirmed
+assert [row["outcome"] for row in unconfirmed["attempts"]]==["browser_challenge_observed","browser_timeout"]
+assert unconfirmed["browserAttemptTimeoutSeconds"]==12,unconfirmed
+assert all(call[1]["timeout"]==12 for call in challenge_timeout_calls),challenge_timeout_calls
 
 
 matrix_calls=[]
@@ -331,6 +354,8 @@ assert matrix["contentProfiles"]==["nuvio-tv-ua-browser"],matrix
 assert len(matrix["clientProfileMatrix"])==2,matrix
 assert matrix["clientProfileMatrix"][0]["outcome"]=="browser_challenge_persisted",matrix
 assert matrix["clientProfileMatrix"][1]["outcome"]=="browser_content_reached",matrix
+assert matrix["clientProfileMatrix"][1]["attemptCount"]==1,matrix
+assert matrix["clientProfileMatrix"][1]["ordinarySessionReused"] is False
 assert matrix["nativeTvTransportStillUnproven"] is True
 assert "desktopOkHttpJvmProfile" in matrix
 assert "transportDiagnosis" in matrix

@@ -38,6 +38,11 @@ assert by[("keep","movie")]["outcome"]=="browser_content_reached"
 assert by[("target","movie")]["outcome"]=="browser_content_reached"
 assert out["lastRefreshProviderFilter"]==["target"]
 assert out["providerFilter"]==[]
+assert out["currentRefreshProviderCount"]==1
+assert out["currentRefreshRowCount"]==1
+assert out["currentRefreshCounts"]=={"browser_content_reached":1}
+assert out["historicalRetainedRowCount"]==1
+assert out["historicalRetainedCounts"]=={"browser_content_reached":1}
 replay=out["residentialProviderReplay"]
 rby={(r["provider"],r["lane"]):r for r in replay["rows"]}
 assert rby[("keep","movie")]["verified"]==1

@@ -71,9 +71,20 @@ public final class WafOkHttpProbe {
         boolean structuralChallenge = visible.length() < 500
             && (clean.contains("challenge-platform") || clean.contains("cf-browser-verification"));
         if (titleChallenge || visibleChallenge || structuralChallenge)
-            return "okhttp_jvm_challenge_persisted";
+            return "okhttp_jvm_challenge_observed";
         if (visible.length() < 80) return "okhttp_jvm_inconclusive";
         return "okhttp_jvm_content_reached";
+    }
+
+    private static String aggregate(List<String> outcomes) {
+        if (outcomes.contains("okhttp_jvm_content_reached")) return "okhttp_jvm_content_reached";
+        long challenges = outcomes.stream().filter("okhttp_jvm_challenge_observed"::equals).count();
+        if (challenges >= 2) return "okhttp_jvm_challenge_persisted";
+        if (challenges == 1) return "okhttp_jvm_challenge_observed";
+        if (!outcomes.isEmpty() && outcomes.stream().allMatch("okhttp_jvm_timeout"::equals))
+            return "okhttp_jvm_timeout";
+        if (outcomes.contains("okhttp_jvm_inconclusive")) return "okhttp_jvm_inconclusive";
+        return outcomes.isEmpty() ? "okhttp_jvm_error" : outcomes.get(outcomes.size() - 1);
     }
 
     public static void main(String[] args) throws Exception {
@@ -83,7 +94,13 @@ public final class WafOkHttpProbe {
             String challenge = "<html><title>Just a moment...</title>"
                 + "<body><div id='challenge-platform'>checking your browser</div></body></html>";
             if (!"okhttp_jvm_content_reached".equals(classify(ordinary))
-                || !"okhttp_jvm_challenge_persisted".equals(classify(challenge))
+                || !"okhttp_jvm_challenge_observed".equals(classify(challenge))
+                || !"okhttp_jvm_challenge_persisted".equals(aggregate(List.of(
+                    "okhttp_jvm_challenge_observed", "okhttp_jvm_challenge_observed"
+                )))
+                || !"okhttp_jvm_challenge_observed".equals(aggregate(List.of(
+                    "okhttp_jvm_challenge_observed", "okhttp_jvm_timeout"
+                )))
                 || !"okhttp_jvm_inconclusive".equals(classify("<html></html>"))) {
                 throw new IllegalStateException("NuvioTV OkHttp DOM classification self-test failed");
             }
@@ -132,6 +149,7 @@ public final class WafOkHttpProbe {
         OkHttpClient client = clientBuilder.build();
 
         List<String> attemptJson = new ArrayList<>();
+        List<String> attemptOutcomes = new ArrayList<>();
         String finalOutcome = "okhttp_jvm_error";
         for (int attempt = 1; attempt <= attempts; attempt++) {
             Request.Builder requestBuilder = new Request.Builder().url(url);
@@ -151,7 +169,7 @@ public final class WafOkHttpProbe {
                 String body = response.body() == null ? "" : response.peekBody(262144).string();
                 outcome = classify(body);
                 if ((status < 200 || status >= 400)
-                    && !"okhttp_jvm_challenge_persisted".equals(outcome)) {
+                    && !"okhttp_jvm_challenge_observed".equals(outcome)) {
                     outcome = "okhttp_jvm_http_error";
                 }
             } catch (java.net.SocketTimeoutException timeoutError) {
@@ -161,6 +179,7 @@ public final class WafOkHttpProbe {
                 outcome = "okhttp_jvm_error";
                 error = ex.getClass().getSimpleName();
             }
+            attemptOutcomes.add(outcome);
             attemptJson.add(
                 "{\"attempt\":" + attempt +
                 ",\"outcome\":\"" + esc(outcome) + "\"" +
@@ -168,9 +187,9 @@ public final class WafOkHttpProbe {
                 (error.isEmpty() ? "" : ",\"error\":\"" + esc(error) + "\"") +
                 "}"
             );
-            finalOutcome = outcome;
             if ("okhttp_jvm_content_reached".equals(outcome)) break;
         }
+        finalOutcome = aggregate(attemptOutcomes);
 
         System.out.println(
             "NIAKVIO_WAF_OKHTTP={" +

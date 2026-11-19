@@ -1,3 +1,10 @@
+## 2026-11-19 — WAF persistence semantics and current-vs-history ledger split
+
+- A single challenge HTML sample is no longer labelled `persisted`. Browser, libcurl and JVM OkHttp now record per-attempt `challenge_observed` and only promote to `challenge_persisted` after at least two concordant challenge observations. A challenge followed by timeout remains unconfirmed instead of becoming a persistent-WAF claim.
+- The ordinary Chromium profile keeps two same-session attempts for persistence. The secondary Nuvio-TV-UA browser differential is bounded to one attempt because native-like libcurl/OkHttp profiles are measured separately; Chromium wall time is bounded from the 7 s virtual-time budget (12 s by default) instead of allowing 20 s per profile attempt.
+- Durable WAF JSON keeps total historical counts for compatibility but now also records `currentRefreshCounts/currentRefreshRowCount` and `historicalRetainedCounts/historicalRetainedRowCount`. This prevents a historical "34 challenges" ledger total from being misread as the latest targeted Tailscale cohort result.
+- Historical evidence is not rewritten. The stricter semantics apply to fresh measurements; downstream transport diagnosis treats one-shot `challenge_observed` as unconfirmed and grants no playback/Repair authority.
+
 
 ## 2026-11-19 — Native Learning contract aligned with trusted automatic evidence import
 

@@ -71,6 +71,14 @@ def _merge_rows(previous: list[Any], current: list[Any]) -> tuple[list[dict[str,
     return rows, refreshed
 
 
+def _outcome_counts(rows: list[dict[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        outcome = str(row.get("outcome") or "unknown")
+        counts[outcome] = counts.get(outcome, 0) + 1
+    return dict(sorted(counts.items()))
+
+
 def _replay_rows(summary: dict[str, Any]) -> list[dict[str, Any]]:
     return [
         copy.deepcopy(row)
@@ -180,18 +188,22 @@ def merge(previous: dict[str, Any], current: dict[str, Any]) -> dict[str, Any]:
         list(previous.get("rows") or []),
         list(current.get("rows") or []),
     )
-    counts: dict[str, int] = {}
-    for row in rows:
-        outcome = str(row.get("outcome") or "unknown")
-        counts[outcome] = counts.get(outcome, 0) + 1
     out["rows"] = rows
     out["targetCount"] = len(rows)
-    out["counts"] = dict(sorted(counts.items()))
+    out["counts"] = _outcome_counts(rows)
     out["lastRefreshProviderFilter"] = (
         sorted({str(value or "").strip().casefold() for value in current.get("lastRefreshProviderFilter") or [] if str(value or "").strip()})
         if isinstance(current.get("lastRefreshProviderFilter"), list)
         else sorted(refreshed)
     )
+    current_scope = set(out["lastRefreshProviderFilter"])
+    current_rows = [row for row in rows if _pid(row) in current_scope]
+    historical_rows = [row for row in rows if _pid(row) not in current_scope]
+    out["currentRefreshProviderCount"] = len(current_scope)
+    out["currentRefreshRowCount"] = len(current_rows)
+    out["currentRefreshCounts"] = _outcome_counts(current_rows)
+    out["historicalRetainedRowCount"] = len(historical_rows)
+    out["historicalRetainedCounts"] = _outcome_counts(historical_rows)
 
     prev_res = previous.get("residentialExitNodeEvidence")
     cur_res = current.get("residentialExitNodeEvidence")
@@ -230,6 +242,8 @@ def main() -> int:
         "FIELD_WAF_LATEST_MERGE "
         f"refreshed={len(result.get('lastRefreshProviderFilter') or [])} "
         f"rows={len(result.get('rows') or [])} "
+        f"current_rows={int(result.get('currentRefreshRowCount') or 0)} "
+        f"historical_rows={int(result.get('historicalRetainedRowCount') or 0)} "
         f"residential_available={str(bool(isinstance(res, dict) and res.get('available') is True)).lower()} "
         f"replay_rows={len((replay or {}).get('rows') or []) if isinstance(replay, dict) else 0}"
     )

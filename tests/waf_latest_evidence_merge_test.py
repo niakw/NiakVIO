@@ -145,6 +145,11 @@ assert scoped["residentialProviderReplay"]["lastAttempt"]["verifiedProviders"] =
 assert scoped["residentialProviderReplay"]["lastAttempt"]["replayedProviders"] == ["target"]
 assert scoped["residentialProviderReplay"]["lastAttempt"]["providerCount"] == 1
 assert scoped["lastRefreshProviderFilter"] == ["target"], scoped
+assert scoped["currentRefreshProviderCount"] == 1, scoped
+assert scoped["currentRefreshRowCount"] == 1, scoped
+assert scoped["currentRefreshCounts"] == {"browser_content_reached": 1}, scoped
+assert scoped["historicalRetainedRowCount"] == 1, scoped
+assert scoped["historicalRetainedCounts"] == {"browser_content_reached": 1}, scoped
 mismatched = module.merge({}, {
     **new_run,
     "freshRunReceipt": {"sourceNiakvioSha": "d" * 40, "runId": "44423214249"},

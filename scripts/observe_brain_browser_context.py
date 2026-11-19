@@ -28,8 +28,8 @@ def main():
          'publicUrl': origin, 'host': url.hostname, 'method': 'GET'},
         browser, timeout=25, virtual_time_ms=7000, attempts=1,
     )
-    allowed = {'browser_unavailable', 'browser_content_reached', 'browser_challenge_persisted',
-               'browser_timeout', 'browser_inconclusive', 'browser_error'}
+    allowed = {'browser_unavailable', 'browser_content_reached', 'browser_challenge_observed',
+               'browser_challenge_persisted', 'browser_timeout', 'browser_inconclusive', 'browser_error'}
     outcome = result.get('outcome')
     live['browser_observation'] = {
         'outcome': outcome if outcome in allowed else 'browser_inconclusive',

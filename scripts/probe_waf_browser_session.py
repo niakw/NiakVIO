@@ -422,10 +422,34 @@ def classify_dom(dom: str) -> str:
         word in clean for word in ("challenge-platform", "cf-browser-verification")
     )
     if title_challenge or visible_challenge or structural_challenge:
-        return "browser_challenge_persisted"
+        return "browser_challenge_observed"
     if len(text) < 80:
         return "browser_inconclusive"
     return "browser_content_reached"
+
+
+def _aggregate_probe_outcomes(
+    outcomes: list[str],
+    *,
+    content: str,
+    observed: str,
+    persisted: str,
+    timeout: str,
+    inconclusive: str,
+    error: str,
+) -> str:
+    """Promote a challenge to persisted only after two concordant observations."""
+    if content in outcomes:
+        return content
+    if sum(value == observed for value in outcomes) >= 2:
+        return persisted
+    if observed in outcomes:
+        return observed
+    if outcomes and all(value == timeout for value in outcomes):
+        return timeout
+    if inconclusive in outcomes:
+        return inconclusive
+    return outcomes[-1] if outcomes else error
 
 
 def _probe_okhttp_jvm(
@@ -620,8 +644,8 @@ def probe_tv_direct_http(
             status_text = str(proc.stdout or "").strip()
             status = int(status_text) if status_text.isdigit() else 0
             classified = classify_dom(body)
-            if classified == "browser_challenge_persisted":
-                outcome = "direct_http_challenge_persisted"
+            if classified == "browser_challenge_observed":
+                outcome = "direct_http_challenge_observed"
             elif proc.returncode != 0 or not 200 <= status < 400:
                 outcome = "direct_http_http_error" if status >= 400 else "direct_http_error"
             elif classified == "browser_content_reached":
@@ -638,16 +662,15 @@ def probe_tv_direct_http(
                 break
 
     outcomes = [str(row.get("outcome") or "") for row in attempt_rows]
-    if "direct_http_content_reached" in outcomes:
-        final = "direct_http_content_reached"
-    elif "direct_http_challenge_persisted" in outcomes:
-        final = "direct_http_challenge_persisted"
-    elif outcomes and all(value == "direct_http_timeout" for value in outcomes):
-        final = "direct_http_timeout"
-    elif "direct_http_inconclusive" in outcomes:
-        final = "direct_http_inconclusive"
-    else:
-        final = outcomes[-1] if outcomes else "direct_http_error"
+    final = _aggregate_probe_outcomes(
+        outcomes,
+        content="direct_http_content_reached",
+        observed="direct_http_challenge_observed",
+        persisted="direct_http_challenge_persisted",
+        timeout="direct_http_timeout",
+        inconclusive="direct_http_inconclusive",
+        error="direct_http_error",
+    )
     return {
         "profile": "nuvio-tv-direct-http-approx",
         "transportApproximation": "GitHub libcurl IPv4+NO_PROXY+redirects with audited NuvioTV request headers",
@@ -707,10 +730,18 @@ def diagnose_transport_profiles(
         return "browser_content_native_unproven"
     if browser_challenge and tv_outcome == "okhttp_jvm_challenge_persisted" and (not desktop_outcome or desktop_outcome == "okhttp_jvm_challenge_persisted"):
         return "waf_persisted_cross_transport"
+    observed = (
+        "browser_challenge_observed" in browser_outcomes
+        or direct_outcome == "direct_http_challenge_observed"
+        or tv_outcome == "okhttp_jvm_challenge_observed"
+        or desktop_outcome == "okhttp_jvm_challenge_observed"
+    )
     if native_content:
         return "okhttp_content_browser_unproven"
     if browser_challenge:
         return "browser_waf_persisted"
+    if observed:
+        return "challenge_observed_unconfirmed"
     return "transport_inconclusive"
 
 
@@ -734,15 +765,25 @@ def probe_target(
     if not browser:
         return {**base, "outcome": "browser_unavailable", "durationMs": 0}
     attempt_limit = max(1, min(int(attempts), 3))
-    profiles: list[tuple[str, str | None]] = [("github-default-browser", None)]
+    browser_attempt_timeout = max(
+        6,
+        min(
+            max(6, int(timeout)),
+            ((max(1000, int(virtual_time_ms)) + 999) // 1000) + 5,
+        ),
+    )
+    profiles: list[tuple[str, str | None, int]] = [("github-default-browser", None, attempt_limit)]
     if client_profile_matrix:
-        profiles.append(("nuvio-tv-ua-browser", NUVIO_TV_WINDOWS_UA))
+        # Persistence is established by the ordinary reused session. One bounded
+        # TV-UA browser observation is enough for a differential because the
+        # native-like direct/OkHttp profiles are probed separately below.
+        profiles.append(("nuvio-tv-ua-browser", NUVIO_TV_WINDOWS_UA, 1))
 
     profile_rows: list[dict[str, Any]] = []
-    for profile_name, user_agent in profiles:
+    for profile_name, user_agent, profile_attempt_limit in profiles:
         attempt_rows: list[dict[str, Any]] = []
         with tempfile.TemporaryDirectory(prefix="niakvio-waf-browser-", ignore_cleanup_errors=True) as profile:
-            for attempt in range(1, attempt_limit + 1):
+            for attempt in range(1, profile_attempt_limit + 1):
                 cmd = [
                     browser,
                     "--headless=new",
@@ -764,7 +805,7 @@ def probe_target(
                         cmd,
                         capture_output=True,
                         text=True,
-                        timeout=max(5, timeout),
+                        timeout=browser_attempt_timeout,
                         check=False,
                     )
                 except subprocess.TimeoutExpired:
@@ -794,23 +835,22 @@ def probe_target(
                     break
 
         outcomes = [str(row.get("outcome") or "") for row in attempt_rows]
-        if "browser_content_reached" in outcomes:
-            profile_outcome = "browser_content_reached"
-        elif "browser_challenge_persisted" in outcomes:
-            profile_outcome = "browser_challenge_persisted"
-        elif outcomes and all(value == "browser_timeout" for value in outcomes):
-            profile_outcome = "browser_timeout"
-        elif "browser_inconclusive" in outcomes:
-            profile_outcome = "browser_inconclusive"
-        else:
-            profile_outcome = outcomes[-1] if outcomes else "browser_error"
+        profile_outcome = _aggregate_probe_outcomes(
+            outcomes,
+            content="browser_content_reached",
+            observed="browser_challenge_observed",
+            persisted="browser_challenge_persisted",
+            timeout="browser_timeout",
+            inconclusive="browser_inconclusive",
+            error="browser_error",
+        )
         profile_rows.append({
             "profile": profile_name,
             "userAgent": user_agent,
             "outcome": profile_outcome,
             "attemptCount": len(attempt_rows),
             "attempts": attempt_rows,
-            "ordinarySessionReused": attempt_limit > 1,
+            "ordinarySessionReused": profile_attempt_limit > 1,
         })
 
     direct_profile: dict[str, Any] | None = None
@@ -863,6 +903,8 @@ def probe_target(
         final_outcome = "browser_content_reached"
     elif "browser_challenge_persisted" in profile_outcomes:
         final_outcome = "browser_challenge_persisted"
+    elif "browser_challenge_observed" in profile_outcomes:
+        final_outcome = "browser_challenge_observed"
     elif profile_outcomes and all(value == "browser_timeout" for value in profile_outcomes):
         final_outcome = "browser_timeout"
     elif "browser_inconclusive" in profile_outcomes:
@@ -877,6 +919,7 @@ def probe_target(
         "attemptCount": int(default_profile.get("attemptCount") or 0),
         "attempts": default_profile.get("attempts") or [],
         "ordinarySessionReused": attempt_limit > 1,
+        "browserAttemptTimeoutSeconds": browser_attempt_timeout,
         "clientProfileMatrix": profile_rows,
         "directHttpProfile": direct_profile,
         "okHttpJvmProfile": okhttp_profile,

@@ -32,6 +32,14 @@ def merge_rows(base_rows: list[Any], refresh_rows: list[Any], targets: set[str])
 
 
 
+def outcome_counts(rows: list[dict[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        outcome = str(row.get("outcome") or "unknown")
+        counts[outcome] = counts.get(outcome, 0) + 1
+    return dict(sorted(counts.items()))
+
+
 def current_attempt_summary(refresh: dict[str, Any], targets: set[str]) -> dict[str, Any]:
     """Describe ONLY full provider replays executed by this targeted run.
 
@@ -152,17 +160,20 @@ def merge(base: dict[str, Any], refresh: dict[str, Any], targets: set[str]) -> d
         list(refresh.get("rows") or []),
         targets,
     )
-    counts: dict[str, int] = {}
-    for row in rows:
-        outcome = str(row.get("outcome") or "unknown")
-        counts[outcome] = counts.get(outcome, 0) + 1
     out["rows"] = rows
     out["targetCount"] = len(rows)
-    out["counts"] = dict(sorted(counts.items()))
+    out["counts"] = outcome_counts(rows)
     # The merged file remains the full latest ledger. Record only the cohort
     # refreshed by this execution separately.
     out["providerFilter"] = copy.deepcopy(base.get("providerFilter") or [])
     out["lastRefreshProviderFilter"] = sorted(targets)
+    current_rows = [row for row in rows if provider_id(row) in targets]
+    historical_rows = [row for row in rows if provider_id(row) not in targets]
+    out["currentRefreshProviderCount"] = len(targets)
+    out["currentRefreshRowCount"] = len(current_rows)
+    out["currentRefreshCounts"] = outcome_counts(current_rows)
+    out["historicalRetainedRowCount"] = len(historical_rows)
+    out["historicalRetainedCounts"] = outcome_counts(historical_rows)
     out["residentialProviderReplay"] = replay_summary(base, refresh, targets)
     return out
 
@@ -182,6 +193,8 @@ def main() -> int:
     print(
         "FIELD_WAF_TARGETED_LEDGER_MERGE "
         f"refreshed={len(targets)} rows={len(out.get('rows') or [])} "
+        f"current_rows={int(out.get('currentRefreshRowCount') or 0)} "
+        f"historical_rows={int(out.get('historicalRetainedRowCount') or 0)} "
         f"replay_rows={len((out.get('residentialProviderReplay') or {}).get('rows') or [])}"
     )
     return 0
