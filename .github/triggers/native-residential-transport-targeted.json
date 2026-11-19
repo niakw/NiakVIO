@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
   "requestedAt": "2026-11-19",
-  "sourceSha": "ff000f8ec6792b226fcc1e6b6efff4ef42739bbc",
+  "sourceSha": "c1b35fdd2bfe761c92a1296cd4a43be0a9caa199",
   "device": "tv",
   "targetProviders": [
-    "french-manga"
+    "sadisflix"
   ],
-  "targetFixture": "jujutsu-kaisen-s01e01",
+  "targetFixture": "interstellar",
   "residentialExit": false,
-  "reason": "Re-run source-pinned official NuvioTV French-Manga after restoring Brain diagnostics for 2 extracted HLS, independent HTTP 403 and READY without decoded video/audio. Verify exact current instrumenter -> native player -> redacted report -> Brain feedback; do not change provider JS or declare FULL without decoded identity/video.",
-  "requestVersion": 19,
-  "retryCause": "Prior real run 44537074209 showed 2 streams, no verified video format/audio and independent HLS probe HTTP403; older reports dropped source-pinned extraction count/terminal HTTP, current generic bridge now retains both. Reprove on exact main."
+  "reason": "User saw no Sadisflix stream; VF-only in published manifest. Source-pinned NuvioTV Interstellar test discriminates manifest loaded and enabled, app selection, movie type, native hard timeout vs extraction, terminal media and decoded player, without provider JS or manifest edits.",
+  "requestVersion": 20,
+  "retryCause": "Prior source-pinned TV Sadisflix 44529501795 showed 25-second native timeout; fresh Brain-native diagnostics now preserve hard timeouts and provider source SHA. Replay VF movie only, fail closed."
 }
