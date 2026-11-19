@@ -324,6 +324,11 @@ jobs:
             --provider "$NIAKVIO_TARGET_PROVIDER" \
             --manifest "$NIAKVIO_TARGET_MANIFEST" \
             --source-sha "$GITHUB_SHA"
+          # App repository selection remains a real SHA-pinned HTTPS manifest.
+          # Only the diagnostic instrumentation executes the checked local candidate.
+          echo "NIAKVIO_MANIFEST_URL=https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}/${NIAKVIO_TARGET_MANIFEST}" >> "$GITHUB_ENV"
+          echo "NIAKVIO_ALLOW_LOCAL_MANIFEST=0" >> "$GITHUB_ENV"
+          echo "FIELD_NATIVE_CANDIDATE_REPOSITORY published_manifest_https=true pinned_sha=$GITHUB_SHA candidate_asset_local=true playback_authority=false"
 
       - name: Checkout accepted official client and stage corpus once
         shell: bash
