@@ -113,6 +113,8 @@ const resultRows = [];
 const providerLoadObservations = [];
 const appSelectionObservations = [];
 const quickJsDiagnostics = [];
+const quickJsPromiseControls = [];
+const PROMISE_CONTROL_STATUSES = new Set(['bridge_ok', 'promise_delivery_gap', 'baseline_failed']);
 const QUICKJS_PHASES = new Set(['call', 'result', 'error', 'missing_export']);
 const QUICKJS_ERROR_CATEGORIES = new Set([
   'none', 'reference_error', 'type_error', 'syntax_error', 'timeout',
@@ -199,6 +201,30 @@ for (const file of logPaths) {
           proofAuthority: false, publicationAuthority: false,
           nativePlaybackAuthority: false, providerJsMutationAllowed: false,
         });
+      }
+    }
+
+    const promiseAt = raw.indexOf('FIELD_NATIVE_TV_PROMISE_CONTROL ');
+    if (promiseAt >= 0) {
+      const f = fields(raw.slice(promiseAt).trim());
+      const sync = Number(f.sync_count);
+      const awaited = Number(f.async_count);
+      const fixture = String(f.fixture || '');
+      if (f.client === 'tv' && f.test_only === 'true'
+          && f.provider_media === 'false' && f.proof_authority === 'false'
+          && /^[a-z0-9][a-z0-9-]{0,95}$/.test(fixture)
+          && /^-?[0-9]{1,2}$/.test(String(f.sync_count || ''))
+          && /^-?[0-9]{1,2}$/.test(String(f.async_count || ''))
+          && sync >= -1 && sync <= 8 && awaited >= -1 && awaited <= 8) {
+        const status = sync !== 1 ? 'baseline_failed'
+          : awaited !== 1 ? 'promise_delivery_gap' : 'bridge_ok';
+        if (PROMISE_CONTROL_STATUSES.has(status)) {
+          quickJsPromiseControls.push({
+            client: 'tv', fixture, status,
+            proofAuthority: false, publicationAuthority: false,
+            nativePlaybackAuthority: false, providerJsMutationAllowed: false,
+          });
+        }
       }
     }
 
@@ -703,6 +729,7 @@ const payload = {
   clientRuntimeExtractionPlans: systemicExtractionPlans,
   providerLoadObservations,
   quickJsDiagnostics,
+  quickJsPromiseControls,
   quickJsUnverifiedObservations,
   appSelectionObservations,
   appSelectionIssues,
@@ -748,7 +775,7 @@ console.log(
   `provider_extraction_failures=${payload.providerExtractionFailures} systemic_extraction_failures=${payload.clientRuntimeExtractionFailures} ` +
   `client_runtime_failures=${payload.clientRuntimeReaderFailures} runtime_sentinels=${payload.runtimeErrorSentinelObserved} ` +
   `cross_client_provider_groups=${payload.crossClientProviderFailureGroups} ` +
-  `provider_load_failures=${payload.providerLoadActionableFailures} app_selection_failures=${payload.appSelectionFailures} quickjs_unverified=${payload.quickJsUnverifiedObserved} capability_probes=${payload.capabilityProbeObserved} ` +
+  `provider_load_failures=${payload.providerLoadActionableFailures} app_selection_failures=${payload.appSelectionFailures} quickjs_unverified=${payload.quickJsUnverifiedObserved} quickjs_promise_controls=${quickJsPromiseControls.length} capability_probes=${payload.capabilityProbeObserved} ` +
   `capability_probe_healthy=${payload.capabilityProbeHealthy} capability_probe_failures=${payload.capabilityProbeFailures} ` +
   `priorities=${priorities.length} provider_load_priorities=${providerLoadPriorities.length} provider_outcomes=${providerOutcomes.length} ` +
   `nonblocking_smoke=${nonblockingSmoke}`
