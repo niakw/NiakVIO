@@ -98,7 +98,7 @@ assert "native-hub46/manifest.json" not in workflow
 # TV now prepares the official TMDB BuildConfig capability before the
 # usual Desktop/Mobile/TV staging; all four calls must preserve the same
 # canonical Global/VF projection, not a retired hub46 route.
-assert workflow.count('--manifest "$NIAKVIO_TARGET_MANIFEST"') == 4
+assert workflow.count('--manifest "$NIAKVIO_TARGET_MANIFEST"') == 6  # Four canonical stage calls + two isolated candidate byte checks
 assert 'prepare_native_tv_tmdb_contract.py --repo-root niakvio --client-root nuvio-tv' in workflow
 assert "matrix.manifest" in workflow and "matrix.projection" in workflow
 assert "Prime Android adb server" in workflow
