@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
+from unittest.mock import patch
 from pathlib import Path
 from current_provider_scope import visible_provider_count
 
@@ -40,6 +42,29 @@ def main() -> int:
         "mobile",
     )
     assert "provider_hard_timeout_ms=25000" in generated
+    # Independent TV field run: a 522 embed fallback took ~20s and HLS 200
+    # arrived just after 25s. The official client permits a longer search.
+    # Do not turn a test-owned timeout into a provider failure.
+    with patch.dict(os.environ, {"NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS": "60000"}):
+        targeted = android_test(anime, [
+            {"id": "contract", "asset": "p000.js", "enabled": True, "logo": ""}
+        ], "tv")
+    assert "provider_hard_timeout_ms=60000" in targeted
+    assert "providerFuture.get(60000L" in targeted
+    assert "provider_hard_timeout_ms=25000" not in targeted
+    for value in ("0", "invalid", "60001", "-500", "61000", "100000"):
+        with patch.dict(os.environ, {"NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS": value}):
+            try:
+                android_test(anime, [
+                    {"id": "contract", "asset": "p000.js", "enabled": True, "logo": ""}
+                ], "tv")
+            except ValueError:
+                pass
+            else:
+                raise AssertionError("invalid override silently accepted: " + value)
+    workflow = (ROOT / ".github/workflows/native-corpus-device-targeted.yml").read_text()
+    assert "NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS:" in workflow
+    assert "matrix.provider != 'declared-type'" in workflow
     assert "var providerTimedOut = false" in generated
     provider_section = generated.split("var providerTimedOut = false", 1)[1].split('emit("FIELD_NATIVE_RESULT', 1)[0]
     assert "providerTimedOut = true" in provider_section
