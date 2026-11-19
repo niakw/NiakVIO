@@ -221,17 +221,6 @@ def update_projection(path: Path, root_rows: dict[str, dict[str, Any]], archived
     dump_json(path, doc)
 
 
-def update_active_only_manifest(path: Path, active_ids: set[str]) -> None:
-    if not path.exists():
-        return
-    doc = load_json(path)
-    rows = [row for row in doc.get("scrapers") or [] if isinstance(row, dict)]
-    doc["scrapers"] = [row for row in rows if cid(row.get("id")) in active_ids]
-    if isinstance(doc.get("labScope"), dict):
-        doc["labScope"]["providerCount"] = len(doc["scrapers"])
-    dump_json(path, doc)
-
-
 def update_provider_catalog(root_rows: dict[str, dict[str, Any]], archived: set[str]) -> None:
     path = ROOT / "provider_catalog.json"
     if not path.exists():
@@ -578,7 +567,6 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
         dump_json(ROOT_MANIFEST, manifest)
         for path in PROJECTION_MANIFESTS:
             update_projection(path, by_id, archived_now)
-        rebuild_active_union_manifest()
         update_provider_catalog(by_id, archived_now)
         static_result = reconcile_static_knowledge(runtime_visible_ids, apply=True)
         materialization_result = reconcile_materialization_report(
