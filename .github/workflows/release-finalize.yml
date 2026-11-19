@@ -84,6 +84,7 @@ on:
       - 'tests/stream_score_contract_test.py'
       - 'tests/hls_master_facts_short_test.py'
       - 'tests/hls_playback_integrity_test.py'
+      - 'tests/native_hls_one_shot_master_handoff_test.py'
       - 'tests/hls_presentation_badge_integration_test.py'
       - 'tests/stream_output_sanitizer_multi_variant_test.py'
       - 'scripts/provider_patches/global_telemetry_v1.py'
@@ -323,6 +324,7 @@ jobs:
           python3 tests/stream_score_contract_test.py
           python3 tests/hls_master_facts_short_test.py
           python3 tests/hls_playback_integrity_test.py
+          python3 tests/native_hls_one_shot_master_handoff_test.py
           python3 tests/hls_presentation_badge_integration_test.py
           python3 tests/stream_output_sanitizer_multi_variant_test.py
           python3 tests/global_telemetry_contract_test.py
