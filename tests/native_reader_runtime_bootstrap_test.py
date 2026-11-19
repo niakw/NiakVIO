@@ -139,6 +139,8 @@ with tempfile.TemporaryDirectory(prefix="niakvio-tv-bootstrap-") as tmp:
     assert "@InstallIn(SingletonComponent::class)" in first_entrypoint
     assert "fun pluginManager(): PluginManager" in first_entrypoint
     assert "fun pluginRuntime(): PluginRuntime" in first_entrypoint
+    assert "probeOfficialTvPromiseBridge(entryPoint.pluginRuntime())" in tv_empty
+    assert "fun pluginRuntime(): PluginRuntime" in first_entrypoint
     assert first.count('testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"') == 1
     assert first.count('androidTestImplementation("androidx.test.ext:junit:1.3.0")') == 1
     assert first.count('androidTestImplementation("androidx.test:runner:1.7.0")') == 1
@@ -149,6 +151,34 @@ with tempfile.TemporaryDirectory(prefix="niakvio-tv-bootstrap-") as tmp:
     assert second.count('androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")') == 1
     assert 'signingConfigs.getByName("debug")' in first
     assert 'versionName = "9.99.0-future"' in first
+
+# Hilt must strip the test APK's nested declarations without losing the
+# debug-only runtime accessor, even after synthetic async probes are generated.
+from finalize_native_tv_test_entrypoint import finalize as finalize_tv_entrypoints  # noqa: E402
+with tempfile.TemporaryDirectory(prefix="niakvio-tv-hilt-finalize-") as tmp:
+    fixture_source = Path(tmp) / "NativeTvTest.kt"
+    fixture_source.write_text(
+        "import dagger.hilt.EntryPoint\\n"
+        "import dagger.hilt.InstallIn\\n"
+        "import dagger.hilt.android.EntryPointAccessors\\n"
+        "import dagger.hilt.components.SingletonComponent\\n"
+        + tv_empty
+        + """
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface NiakvioPlayerSettingsEntryPoint {
+        fun playerSettingsDataStore(): PlayerSettingsDataStore
+    }
+    val settingsRef = NiakvioPlayerSettingsEntryPoint::class.java
+""", encoding="utf-8")
+    finalize_tv_entrypoints(fixture_source)
+    finalized_source = fixture_source.read_text("utf-8")
+    assert "interface NiakvioPluginManagerEntryPoint" not in finalized_source
+    assert "interface NiakvioPlayerSettingsEntryPoint" not in finalized_source
+    assert "fun pluginRuntime(): com.nuvio.tv.core.plugin.PluginRuntime" not in finalized_source
+    assert "probeOfficialTvPromiseBridge(entryPoint.pluginRuntime())" in finalized_source
+    assert "import dagger.hilt.android.EntryPointAccessors" in finalized_source
+    assert "@EntryPoint" not in finalized_source
 
 # Mobile device diagnostics execute from composeApp, but the official launcher is the
 # androidApp fullDebug APK whose debug application id is com.nuviodebug.com.
