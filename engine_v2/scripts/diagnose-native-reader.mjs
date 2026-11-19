@@ -112,6 +112,12 @@ const readerRows = [];
 const resultRows = [];
 const providerLoadObservations = [];
 const appSelectionObservations = [];
+const quickJsDiagnostics = [];
+const QUICKJS_PHASES = new Set(['call', 'result', 'error', 'missing_export']);
+const QUICKJS_ERROR_CATEGORIES = new Set([
+  'none', 'reference_error', 'type_error', 'syntax_error', 'timeout',
+  'network_error', 'http_error', 'unspecified_js_exception',
+]);
 const APP_SELECTION_REASONS = new Set([
   'plugins_globally_disabled', 'scraper_disabled_locally',
   'unsupported_media_type', 'not_selected_by_app',
@@ -166,6 +172,32 @@ for (const file of logPaths) {
             : f.supported_type === 'false' ? false : null,
           proofAuthority: false, publicationAuthority: false,
           providerJsMutationAllowed: false,
+        });
+      }
+    }
+
+    const quickAt = raw.indexOf('FIELD_NATIVE_QUICKJS_DIAGNOSTIC ');
+    if (quickAt >= 0) {
+      const f = fields(raw.slice(quickAt).trim());
+      const provider = decode(f.provider64).trim().toLowerCase();
+      const phase = String(f.phase || '');
+      const category = String(f.category || '');
+      const requestType = String(f.request_type || '');
+      const fixture = String(f.fixture || '');
+      if (
+        ['tv', 'mobile', 'desktop'].includes(f.client)
+        && /^[a-z0-9][a-z0-9_-]{0,95}$/.test(provider)
+        && /^[a-z0-9][a-z0-9-]{0,95}$/.test(fixture)
+        && QUICKJS_PHASES.has(phase)
+        && QUICKJS_ERROR_CATEGORIES.has(category)
+        && ['unknown', 'movie', 'tv', 'anime'].includes(requestType)
+        && /^\d{1,3}$/.test(String(f.count || ''))
+      ) {
+        quickJsDiagnostics.push({
+          client: f.client, provider, fixture, phase, category,
+          requestType, count: Math.min(100, Number(f.count)),
+          proofAuthority: false, publicationAuthority: false,
+          nativePlaybackAuthority: false, providerJsMutationAllowed: false,
         });
       }
     }
@@ -488,7 +520,35 @@ const extractionHealthyObservations = extractionHealthy.map((row) => ({
   requestType: row.requestType, routeMode: row.routeMode, returnedCount: row.count,
   observationLayer: 'extraction', state: 'non_empty', failureClass: 'healthy',
 }));
-const observations = [...playerObservations, ...extractionObservations, ...systemicExtractionObservations, ...runtimeSentinelObservations];
+const quickJsUnverifiedObservations = evidence.complete
+  ? quickJsDiagnostics.filter((row) => (
+      row.phase === 'error' || row.phase === 'missing_export'
+      || (row.phase === 'result' && row.count === 0)
+    )).map((row) => ({
+      client: row.client,
+      provider: row.provider,
+      fixture: row.fixture,
+      requestType: row.requestType,
+      observationLayer: 'native_quickjs',
+      state: row.phase,
+      failureClass: row.phase === 'missing_export' ? 'native_quickjs_missing_export'
+        : row.phase === 'error' ? 'native_quickjs_exception'
+        : 'native_quickjs_zero_stream',
+      failureDomain: 'client_provider_execution_unresolved',
+      providerMutationEligible: false,
+      category: row.category,
+      count: row.count,
+      routeMode: 'declared',
+      proofAuthority: false,
+      publicationAuthority: false,
+      nativePlaybackAuthority: false,
+    }))
+  : [];
+const observations = [
+  ...playerObservations, ...extractionObservations,
+  ...systemicExtractionObservations, ...runtimeSentinelObservations,
+  ...quickJsUnverifiedObservations,
+];
 const providerMap = new Map();
 function ensureProviderOutcome(provider) {
   const key = String(provider || '').toLowerCase();
@@ -621,12 +681,16 @@ const payload = {
   providerLoadActionableFailures: providerLoadObservations.length,
   appSelectionObserved: appSelectionObservations.length,
   appSelectionFailures: appSelectionIssues.length,
+  quickJsDiagnosticObserved: quickJsDiagnostics.length,
+  quickJsUnverifiedObserved: quickJsUnverifiedObservations.length,
   readerLoadErrorEvidence: brainReaderRows.filter((row) => row.loadDurationMs > 0 || row.loadBytes > 0 || row.httpStatus > 0).length,
   observations,
   extractionHealthyObservations,
   systemicExtractionGroups: systemicExtraction.systemicGroups,
   clientRuntimeExtractionPlans: systemicExtractionPlans,
   providerLoadObservations,
+  quickJsDiagnostics,
+  quickJsUnverifiedObservations,
   appSelectionObservations,
   appSelectionIssues,
   providerLoadIssues,
@@ -647,6 +711,8 @@ const payload = {
     runtimeErrorSentinelLearningAllowed: false,
     repositoryLearningAllowed: evidence.complete && providerLoadObservations.length > 0,
     clientSelectionDiagnosticLearningAllowed: evidence.complete && appSelectionIssues.length > 0,
+    quickJsDiagnosticLearningAllowed: evidence.complete && quickJsUnverifiedObservations.length > 0,
+    quickJsDiagnosticProviderMutationAllowed: false,
     clientSelectionProviderJsMutationAllowed: false,
     providerLoadJsMutationAllowed: false,
     coreOrManifestLoadProposalAllowed: evidence.complete && providerLoadObservations.length > 0,
@@ -669,7 +735,7 @@ console.log(
   `provider_extraction_failures=${payload.providerExtractionFailures} systemic_extraction_failures=${payload.clientRuntimeExtractionFailures} ` +
   `client_runtime_failures=${payload.clientRuntimeReaderFailures} runtime_sentinels=${payload.runtimeErrorSentinelObserved} ` +
   `cross_client_provider_groups=${payload.crossClientProviderFailureGroups} ` +
-  `provider_load_failures=${payload.providerLoadActionableFailures} app_selection_failures=${payload.appSelectionFailures} capability_probes=${payload.capabilityProbeObserved} ` +
+  `provider_load_failures=${payload.providerLoadActionableFailures} app_selection_failures=${payload.appSelectionFailures} quickjs_unverified=${payload.quickJsUnverifiedObserved} capability_probes=${payload.capabilityProbeObserved} ` +
   `capability_probe_healthy=${payload.capabilityProbeHealthy} capability_probe_failures=${payload.capabilityProbeFailures} ` +
   `priorities=${priorities.length} provider_load_priorities=${providerLoadPriorities.length} provider_outcomes=${providerOutcomes.length} ` +
   `nonblocking_smoke=${nonblockingSmoke}`
