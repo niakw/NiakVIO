@@ -1,3 +1,10 @@
+## 2026-11-19 — Roadmap Brain-first orientée portes de sortie (réparation réelle, pas CI vert)
+
+- Après examen du Fast run 44602295350 : 10 sélectionnés, 4/6 vagues, 0 candidat accepté, 0 réparable validé, 5 progressions sandbox exploratoires et budget épuisé. Le contrôle actuel porte sur une source plus récente que ce run. Cette situation confirme que l'amplification de campagnes ne suffit pas ; résultat produit zéro.
+- Le routage Android TV `.github/workflows/brain-android-tv-emulator-feedback.yml` est explicitement *diagnostic only* et n'invoque pas de modèle, tandis que Fast Repair applique une frontière provider-local. La transition observation native Core-likely → diagnostic causal exécuté → mutation Brain de la couche responsable → validation native est donc une lacune d'intégration à prouver et à combler ; ne pas attribuer définitivement le doublon HLS au Core sans trace propriétaire.
+- Nouvelle feuille de route `docs/BRAIN_REPAIR_EXECUTION_ROADMAP.md` : P0 preuves et non-répétition, P1 fermeture boucle Core/Brain, P2 premier repair Brain end-to-end jouable, P3 une famille par mécanisme, P4 cohortes réelles, P5 échelle 600–1000+. Chaque sortie réclame SHA, bytes, identité, lecture et expérience ; le 1000-provider scheduler synthétique n'est pas une preuve de réparation.
+- Dernier census consulté : run 44609268223, 111 providers, 5 FULL OK, 1 PARTIAL OK, 11 repairQueue ; le run family-frontier 44609250980 et test TV 44610510286 étaient en cours au contrôle. Les SHA/runs suivants doivent être inspectés avant toute affirmation de nouveau succès.
+
 ## 2026-11-19 — Brain Repair family frontier for 600–1000+ providers
 
 - Scale target is now explicit: NiakVIO must remain operational with roughly **600–1000+ providers**. Raising per-process network concurrency is not the primary scaling model. The current health runner remains bounded to 8 concurrent provider checks until a separate resource/safety proof justifies changing that limit.
