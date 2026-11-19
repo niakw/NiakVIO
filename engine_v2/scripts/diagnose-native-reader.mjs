@@ -146,6 +146,9 @@ for (const file of logPaths) {
   // Raw signed URLs exist only in this process-local map. The emitted report
   // retains no URL/host/token, only a route-bound transition classification.
   let activeProviderRoute = null;
+  // Ephemeral, route-scoped fact: a native provider received an HLS playlist
+  // before returning zero. Never export the signed URL or infer the owner here.
+  let hlsPlaylist2xxDuringRoute = false;
   const mediaRootStatuses = new Map();
   for (const raw of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
     const beginAt = raw.indexOf('FIELD_NATIVE_PROVIDER_BEGIN ');
@@ -154,6 +157,7 @@ for (const file of logPaths) {
       const provider = decode(b.provider64).trim().toLowerCase();
       const fixture = String(b.fixture || '').trim().toLowerCase();
       const requestType = String(b.request_type || '').trim().toLowerCase();
+      hlsPlaylist2xxDuringRoute = false;
       activeProviderRoute = (
         b.client === 'tv'
         && /^[a-z0-9][a-z0-9_-]{0,95}$/.test(provider)
@@ -170,6 +174,7 @@ for (const file of logPaths) {
         const status = Number(match[1]);
         const url = String(match[2] || '');
         if (/\.m3u8(?:[?#]|$)/i.test(url) && Number.isInteger(status)) {
+          if (status >= 200 && status < 300) hlsPlaylist2xxDuringRoute = true;
           const route = runtimeExecutionKey(activeProviderRoute);
           const key = route + '\u0000' + url;
           const previous = mediaRootStatuses.get(key) || [];
@@ -329,6 +334,31 @@ for (const file of logPaths) {
     const resultAt = raw.indexOf('FIELD_NATIVE_RESULT ');
     if (resultAt >= 0) {
       const f = fields(raw.slice(resultAt).trim());
+      const returnedCount = Math.max(0, Number(f.count ?? f.returned ?? 0) || 0);
+      const elapsedMs = Number(f.duration_ms);
+      // This signal is intentionally only a temporal correlation. A 2xx HLS
+      // reply plus a completed 0-stream result near a common 25s JS budget
+      // calls for Core/ProviderBase/runtime discrimination, not a provider
+      // mutation or a decoded-playback claim.
+      if (
+        activeProviderRoute && hlsPlaylist2xxDuringRoute
+        && f.client === 'tv' && f.route_mode === 'declared'
+        && f.enabled === 'true' && returnedCount === 0
+        && Number.isFinite(elapsedMs) && elapsedMs >= 24000 && elapsedMs <= 32000
+        && decode(f.provider64).trim().toLowerCase() === activeProviderRoute.provider
+        && String(f.fixture || '').trim().toLowerCase() === activeProviderRoute.fixture
+        && String(f.request_type || '').trim().toLowerCase() === activeProviderRoute.requestType
+      ) {
+        prePlayerMediaRootTransitions.push({
+          ...activeProviderRoute,
+          source: 'plugin-runtime-fetch-sequence',
+          kind: 'hls',
+          pattern: 'hls_playlist_2xx_near_25s_zero_preplayer',
+          phase: 'provider-runtime-pre-player',
+          proofAuthority: false, publicationAuthority: false,
+          nativePlaybackAuthority: false, providerJsMutationAllowed: false,
+        });
+      }
       resultRows.push({
         client: f.client || 'unknown',
         fixture: f.fixture || 'unknown',
@@ -336,7 +366,7 @@ for (const file of logPaths) {
         requestType: String(f.request_type || 'unknown').toLowerCase(),
         routeMode: String(f.route_mode || 'declared').toLowerCase(),
         enabled: f.enabled === 'true',
-        count: Math.max(0, Number(f.count ?? f.returned ?? 0) || 0),
+        count: returnedCount,
       });
       activeProviderRoute = null;
     }
