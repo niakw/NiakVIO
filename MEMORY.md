@@ -230,3 +230,11 @@
 ### 2026-11-19 — Targeted native successes join retained device proof
 - `OPS - Provider README Sync` now listens to `NATIVE - Device Corpus Tests` in addition to the full native reader workflows and downloads `native-corpus-*-$RUN_ID` diagnostics.
 - The existing `update_provider_device_results.py` trust policy remains unchanged: only complete `*brain.json` observations at player layer with `failureClass=healthy` become retained device proof. Targeted failures/incomplete evidence therefore feed Learning but cannot become a positive README/device result.
+
+
+### 2026-11-19 — Targeted Desktop transport/player proof moved to the real macOS client
+- The targeted Device Corpus workflow previously labeled an Ubuntu/JVM Desktop test as the official Desktop runtime. That was not production-faithful: the canonical Desktop suite explicitly rejects Linux because NuvioDesktop's production player is a native macOS/Windows bridge, and the inline targeted restage also omitted the exact provider/manifest arguments.
+- Targeted Desktop jobs now run on `macos-15`, pull the accepted NuvioDesktop macOS native runtime via Git LFS, apply only the existing test-compat shim, build `buildMacosPlayerBridge` + `prepareMacosPlayerRuntime`, and execute `run_native_corpus_desktop_suite.sh` with the exact target provider, canonical Global/VF manifest and focused fixture.
+- The pinned Tailscale GitHub Action at `064b10558093f38325e838ddea35486bdc6b1d5c` is from 2026-10-29 and documents macOS support. The configured Tailscale `1.94.2` is above its OIDC minimum `1.90.1`; residential egress attestation remains fail-closed immediately before the real client runtime.
+- Mobile and TV initial staging now receive the exact target provider too, reducing harness scope drift before their canonical Android suites restage and execute.
+- Targeted request v6 supersedes v5; v5 Desktop evidence must not be treated as real Desktop player authority.

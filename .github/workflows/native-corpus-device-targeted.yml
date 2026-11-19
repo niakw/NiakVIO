@@ -175,7 +175,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.resolve.outputs.targets) }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.device == 'desktop' && 'macos-15' || 'ubuntu-latest' }}
     timeout-minutes: 220
     env:
       TS_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
@@ -290,12 +290,6 @@ jobs:
           node-version: "24"
           package-manager-cache: false
 
-      - name: Install official Desktop runtime dependencies
-        if: matrix.device == 'desktop'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
-
       - name: Checkout accepted official client and stage corpus once
         shell: bash
         env:
@@ -309,28 +303,45 @@ jobs:
             desktop)
               git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioDesktop.git nuvio-desktop
               git -C nuvio-desktop checkout "$NUVIO_DESKTOP_SHA"
+              git -C nuvio-desktop lfs pull --include="composeApp/src/desktopMain/native/macos/runtime/**" --exclude=""
               touch nuvio-desktop/local.properties
-              python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest "$NIAKVIO_TARGET_MANIFEST"
+              python3 niakvio/scripts/native_desktop_upstream_test_compat.py nuvio-desktop
+              INITIAL_FIXTURE="${NIAKVIO_TARGET_FIXTURE:-interstellar}"
+              if [ -z "$INITIAL_FIXTURE" ] || [ "$INITIAL_FIXTURE" = "all" ]; then INITIAL_FIXTURE=interstellar; fi
+              python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture "$INITIAL_FIXTURE" --workspace "$GITHUB_WORKSPACE" --provider "$NIAKVIO_TARGET_PROVIDER" --manifest "$NIAKVIO_TARGET_MANIFEST"
               ;;
             mobile)
               git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
               git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
               touch nuvio-mobile/local.properties
-              python3 niakvio/scripts/prepare_native_corpus_client.py mobile --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest "$NIAKVIO_TARGET_MANIFEST"
+              INITIAL_FIXTURE="${NIAKVIO_TARGET_FIXTURE:-interstellar}"
+              if [ -z "$INITIAL_FIXTURE" ] || [ "$INITIAL_FIXTURE" = "all" ]; then INITIAL_FIXTURE=interstellar; fi
+              python3 niakvio/scripts/prepare_native_corpus_client.py mobile --fixture "$INITIAL_FIXTURE" --workspace "$GITHUB_WORKSPACE" --provider "$NIAKVIO_TARGET_PROVIDER" --manifest "$NIAKVIO_TARGET_MANIFEST"
               ;;
             tv)
               git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
               git -C nuvio-tv checkout "$NUVIO_TV_SHA"
               touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
-              python3 niakvio/scripts/prepare_native_corpus_client.py tv --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest "$NIAKVIO_TARGET_MANIFEST"
+              INITIAL_FIXTURE="${NIAKVIO_TARGET_FIXTURE:-interstellar}"
+              if [ -z "$INITIAL_FIXTURE" ] || [ "$INITIAL_FIXTURE" = "all" ]; then INITIAL_FIXTURE=interstellar; fi
+              python3 niakvio/scripts/prepare_native_corpus_client.py tv --fixture "$INITIAL_FIXTURE" --workspace "$GITHUB_WORKSPACE" --provider "$NIAKVIO_TARGET_PROVIDER" --manifest "$NIAKVIO_TARGET_MANIFEST"
               ;;
           esac
 
       - name: Set up Gradle runtime
-        if: matrix.device != 'desktop'
         uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c
         with:
           cache-disabled: true
+
+      - name: Build official macOS native player bridge once
+        if: matrix.device == 'desktop'
+        shell: bash
+        run: |
+          set -euxo pipefail
+          ./nuvio-desktop/gradlew -p nuvio-desktop \
+            :composeApp:buildMacosPlayerBridge \
+            :composeApp:prepareMacosPlayerRuntime \
+            --no-configuration-cache --console=plain
 
       - name: Enable Linux KVM when available
         if: matrix.device != 'desktop'
@@ -427,32 +438,16 @@ jobs:
           echo "FIELD_NATIVE_RESIDENTIAL_EXIT active=true egress_attested=true provider=${{ matrix.provider }} device=${{ matrix.device }}"
           echo "FIELD_NATIVE_RESIDENTIAL_DNS tailscale_accept_dns=false resolver_equivalence=unverified"
 
-      - name: Execute six works across every provider in official Desktop runtime
+      - name: Execute focused provider in official macOS Desktop runtime
         if: matrix.device == 'desktop'
         shell: bash
+        env:
+          LC_NUMERIC: C
         run: |
-          set -u
-          if [ -n "${NIAKVIO_TARGET_FIXTURE:-}" ] && [ "${NIAKVIO_TARGET_FIXTURE}" != "all" ]; then
-            FIXTURES=("${NIAKVIO_TARGET_FIXTURE}")
-          else
-            FIXTURES=(interstellar mon-ninja-et-moi-3 breaking-bad-s01e01 revenant-s01e01 jujutsu-kaisen-s01e01 mushoku-tensei-s01e01)
-          fi
-          STATUS=0
-          for fixture in "${FIXTURES[@]}"; do
-            echo "===== DESKTOP CORPUS FIXTURE: $fixture ====="
-            python3 niakvio/scripts/restage_native_corpus_client.py desktop --fixture "$fixture" --workspace "$GITHUB_WORKSPACE" || { STATUS=1; continue; }
-            LOG="$GITHUB_WORKSPACE/desktop-native-corpus-${fixture}.log"
-            rm -f "$LOG"
-            RUNTIME_STATUS=0
-            ./nuvio-desktop/gradlew -p nuvio-desktop :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --no-daemon --console=plain || RUNTIME_STATUS=$?
-            cat "$LOG" || true
-            COLLECTION_STATUS=0
-            node niakvio/scripts/analyze_native_corpus_collection.cjs "$fixture" "$LOG" || COLLECTION_STATUS=$?
-            echo "FIELD_NATIVE_CORPUS_DESKTOP_STATUS fixture=$fixture runtime=$RUNTIME_STATUS collection=$COLLECTION_STATUS"
-            if [ "$RUNTIME_STATUS" -ne 0 ] || [ "$COLLECTION_STATUS" -ne 0 ]; then STATUS=1; fi
-          done
-          echo "FIELD_NATIVE_CORPUS_DESKTOP_SUITE_STATUS status=$STATUS fixtures=${#FIXTURES[@]} clients=1"
-          exit "$STATUS"
+          set -euo pipefail
+          test "$(uname -s)" = "Darwin"
+          NIAKVIO_PRIMARY_FIXTURE="$NIAKVIO_TARGET_FIXTURE" \
+            bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_desktop_suite.sh"
 
       - name: Execute six works across every provider in isolated Mobile emulator
         if: matrix.device == 'mobile'

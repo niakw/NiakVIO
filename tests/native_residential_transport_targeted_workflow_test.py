@@ -53,7 +53,7 @@ exit_node = workflow.index("Select and attest residential exit immediately befor
 prepare = workflow.index("Checkout accepted official client and stage corpus once")
 mobile_snapshot = workflow.index("Create Mobile AVD snapshot on cache miss")
 tv_snapshot = workflow.index("Create TV AVD snapshot on cache miss")
-desktop_runtime = workflow.index("Execute six works across every provider in official Desktop runtime")
+desktop_runtime = workflow.index("Execute focused provider in official macOS Desktop runtime")
 mobile_runtime = workflow.index("Execute six works across every provider in isolated Mobile emulator")
 tv_runtime = workflow.index("Execute six works across every provider in isolated Android TV emulator")
 assert connect < prepare < mobile_snapshot < exit_node
@@ -75,7 +75,15 @@ assert "~/.android/debug.keystore" in workflow
 assert "avd-v2-" not in workflow
 assert "harden_nuvio_mobile_device_test.py" not in workflow
 assert "prepare_native_corpus_client.py mobile" in workflow
-assert 'FIXTURES=("${NIAKVIO_TARGET_FIXTURE}")' in workflow
+assert "matrix.device == 'desktop' && 'macos-15' || 'ubuntu-latest'" in workflow
+assert "git -C nuvio-desktop lfs pull" in workflow
+assert "native_desktop_upstream_test_compat.py nuvio-desktop" in workflow
+assert ":composeApp:buildMacosPlayerBridge" in workflow
+assert ":composeApp:prepareMacosPlayerRuntime" in workflow
+assert "run_native_corpus_desktop_suite.sh" in workflow
+assert 'test "$(uname -s)" = "Darwin"' in workflow
+assert 'restage_native_corpus_client.py desktop --fixture "$fixture"' not in workflow
+assert '--provider "$NIAKVIO_TARGET_PROVIDER" --manifest "$NIAKVIO_TARGET_MANIFEST"' in workflow
 assert '"fixture": target_fixture or "all"' in workflow
 clear_exit = workflow.index("Clear native residential exit")
 brain_diag = workflow.index("Diagnose sanitized targeted native evidence for Brain")

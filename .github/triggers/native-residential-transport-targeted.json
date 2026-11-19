@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "requestedAt": "2026-11-19",
-  "sourceSha": "a87309e498da848811d25f95f4e274e941ffebd1",
+  "sourceSha": "b96c96cf942e655e5755394d9f5d561b772e8e6a",
   "device": "all",
   "targetProviders": [
     "animeonsen",
@@ -10,6 +10,6 @@
   "targetFixture": "jujutsu-kaisen-s01e01",
   "residentialExit": true,
   "reason": "Run the accepted official Desktop, Mobile and Android TV clients against fresh WAF-ambiguous active providers through independently attested residential egress; Mobile also records same-source Auto -> ExoPlayer -> libmpv evidence.",
-  "requestVersion": 5,
-  "retryCause": "Run on the current client/Brain evidence bridge: targeted official-client logs are diagnosed to sanitized *brain.json and automatically imported into learning memory after the run."
+  "requestVersion": 6,
+  "retryCause": "Supersede v5 because targeted Desktop was a Linux extraction/JVM approximation. v6 runs Desktop on macos-15 with the official NuvioDesktop native libmpv bridge and canonical desktop suite, while retaining exact provider/manifest/fixture scope, residential egress attestation, Android Mobile/TV clients and Brain evidence persistence."
 }
