@@ -96,6 +96,8 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
                 "provider": key[0], "fixture": fixture, "requestType": lane,
                 "appSelected": None, "quickJsPhases": [],
                 "quickJsErrors": [], "quickJsReturned": 0,
+                "nativeExtractionZeroObserved": False,
+                "nativeExtractionPositiveObserved": False,
                 "playerStates": [], "playerFailureClasses": [],
                 "readerEvidenceComplete": report["evidenceComplete"],
                 "proofAuthority": False, "publicationAuthority": False,
@@ -129,10 +131,33 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
             row["quickJsReturned"] = max(row["quickJsReturned"], safe_count(raw.get("count")))
 
     for raw in (report.get("observations") or [])[:400]:
-        if not isinstance(raw, dict) or raw.get("observationLayer") != "player":
+        if not isinstance(raw, dict):
+            continue
+        layer = raw.get("observationLayer")
+        if layer not in {"player", "extraction"}:
             continue
         row = get(raw)
         if row is None:
+            continue
+        if layer == "extraction":
+            # Source-pinned FIELD_NATIVE_RESULT count=0 can prove a completed
+            # empty extractor even when console only exposes QuickJS phase=call.
+            # It does not prove that a media player or episode was validated.
+            returned = raw.get("returnedCount")
+            if (
+                raw.get("routeMode") == "declared"
+                and raw.get("state") == "empty"
+                and raw.get("failureClass") == "media_extraction_gap"
+                and type(returned) is int and returned == 0
+            ):
+                row["nativeExtractionZeroObserved"] = True
+            elif (
+                raw.get("routeMode") == "declared"
+                and raw.get("state") == "non_empty"
+                and raw.get("failureClass") == "healthy"
+                and type(returned) is int and 0 < returned <= 10000
+            ):
+                row["nativeExtractionPositiveObserved"] = True
             continue
         state = str(raw.get("state") or "")
         failure = str(raw.get("failureClass") or "")
@@ -179,6 +204,8 @@ def merge(previous: dict[str, Any], reports: list[dict[str, Any]], *,
             "quickJsErrors": [x for x in (record.get("quickJsErrors") or [])
                               if x in QUICKJS_CLASSES][:8],
             "quickJsReturned": safe_count(record.get("quickJsReturned")),
+            "nativeExtractionZeroObserved": record.get("nativeExtractionZeroObserved") is True,
+            "nativeExtractionPositiveObserved": record.get("nativeExtractionPositiveObserved") is True,
             "playerStates": [x for x in (record.get("playerStates") or [])
                              if x in PLAYER_STATES][:8],
             "playerFailureClasses": [x for x in (record.get("playerFailureClasses") or [])
