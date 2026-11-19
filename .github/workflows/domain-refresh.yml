@@ -253,9 +253,7 @@ jobs:
         env:
           GLOBALPING_API_TOKEN: ${{ secrets.GLOBALPING_API_TOKEN }}
         run: |
-          python scripts/generate_hub46_manifest.py \
-            --source manifest.json \
-            --vf-source vf/manifest.json \
+          python scripts/native_manifest_projection.py write-active-union \
             --output "$RUNNER_TEMP/domain-observation-manifest.json"
           node scripts/provider_dns_preflight.mjs \
             --manifest "$RUNNER_TEMP/domain-observation-manifest.json" \
@@ -294,7 +292,7 @@ jobs:
           python scripts/audit_provider_v3_static.py --domain-only
           git diff --exit-code -- scripts/provider_patches provider-bases provider-type-policy.json
 
-      - name: Reproject, pin Hub46 transport and validate release
+      - name: Reproject canonical manifests and validate release
         env:
           NUVIO_SKIP_CLIENT_UPSTREAM_GUARD: '1'
         shell: bash
@@ -307,6 +305,7 @@ jobs:
           python tests/release_auto_bump_test.py
           python scripts/finalize_provider_v3_minimizer.py --check
           python scripts/audit_provider_v3_static.py --domain-only
+          python scripts/native_manifest_projection.py validate
           python scripts/prune_unreferenced_providers.py
 
           git config user.name github-actions[bot]
@@ -378,6 +377,7 @@ jobs:
                 # Rebasing changes commit identity but not canonical manifest transport.
                 # Rebuild release hashes against the rebased tree before atomic push.
                 PROVIDER_SHA="$(git rev-parse HEAD^)"
+                python scripts/native_manifest_projection.py validate
                 python scripts/generate_release_hashes.py
                 python scripts/reapply_published_overrides.py --check
                 python scripts/validate_release_integrity.py
