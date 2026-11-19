@@ -43,6 +43,7 @@ assert "PlayerPlaybackNetworking.createDataSourceFactory" not in tv
 assert "FIELD_NATIVE_PLAYER_ENTRY client=tv" in tv
 assert "FIELD_NATIVE_PLAYER_BEGIN client=tv" not in tv
 assert "entry=nuvio-production-player" in tv
+assert "production_surface=true" in tv
 assert "UiDevice.getInstance(instrumentation)" in tv
 assert "R.string.cd_audio_tracks" in tv
 assert 'By.clazz("android.widget.RadioButton")' in tv
@@ -81,6 +82,7 @@ mobile_compare = finalizer.finalize_source(mobile_compare_generated, "mobile")
 assert "com.nuvio.app.MainActivity" in mobile
 assert "PlatformPlayerSurface" in mobile
 assert "nuvio-mobile-production" in mobile
+assert "production_surface=true" in mobile
 assert "forcedEngine: AndroidPlaybackEngine? = null" in mobile
 assert "playbackEngine = forcedEngine" in mobile
 assert "FIELD_NATIVE_ENGINE_COMPARE" not in mobile
@@ -203,11 +205,32 @@ assert "blocking=false" in setup_only.stderr
 assert "owner=brain" in setup_only.stderr
 
 real_player_error = reach_gate([
-    "FIELD_NATIVE_PLAYER client=tv fixture=sinners provider64=x request_type=movie route_mode=declared index=0 state=error engine=nuvio-tv-production http_status=0 failure_stage=player error_code=HTTP_403"
+    "FIELD_NATIVE_PLAYER client=tv fixture=sinners provider64=x request_type=movie route_mode=declared index=0 state=error engine=nuvio-tv-production production_surface=true http_status=0 failure_stage=player error_code=HTTP_403"
 ])
 assert real_player_error.returncode == 0, (real_player_error.stdout, real_player_error.stderr)
-assert "status=pass" in real_player_error.stdout
-assert "production=1" in real_player_error.stdout
+assert "production_playback_never_verified" in real_player_error.stderr
+assert "production=1" in real_player_error.stderr
+assert "playback_verified=0" in real_player_error.stderr
+assert "playback_failed=1" in real_player_error.stderr
+
+strict_player_error = reach_gate([
+    "FIELD_NATIVE_PLAYER client=tv fixture=sinners provider64=x request_type=movie route_mode=declared index=0 state=error engine=nuvio-tv-production production_surface=true http_status=403 failure_stage=player error_code=HTTP_403"
+], blocking=True)
+assert strict_player_error.returncode == 4, (strict_player_error.stdout, strict_player_error.stderr)
+assert "production_playback_never_verified" in strict_player_error.stderr
+
+mobile_real_engine = reach_gate([
+    "FIELD_NATIVE_PLAYER client=mobile fixture=sinners provider64=x request_type=movie route_mode=declared index=0 state=ready engine=ExoPlayer production_surface=true http_status=0 failure_stage=none"
+], blocking=True)
+assert mobile_real_engine.returncode == 0, (mobile_real_engine.stdout, mobile_real_engine.stderr)
+assert "playback_verified=1" in mobile_real_engine.stdout
+assert "verified_clients=mobile:1" in mobile_real_engine.stdout
+
+short_media = reach_gate([
+    "FIELD_NATIVE_PLAYER client=desktop fixture=sinners provider64=x request_type=movie route_mode=declared index=0 state=short_media engine=nuvio-desktop-production production_surface=true http_status=0 failure_stage=duration_identity"
+], blocking=True)
+assert short_media.returncode == 4, (short_media.stdout, short_media.stderr)
+assert "production_playback_never_verified" in short_media.stderr
 
 rows = [{"id": "A"}, {"id": "MOVIESDRIVE"}, {"id": "B"}]
 assert [row["id"] for row in mod.filter_staged_providers(rows, "moviesdrive")] == ["MOVIESDRIVE"]
