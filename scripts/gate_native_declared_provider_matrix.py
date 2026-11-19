@@ -340,7 +340,17 @@ def main() -> int:
     for provider in sorted(provider_ids):
         lanes = sorted(media_type for p, media_type in expected if p == provider)
         outcomes = {media_type: lane_outcomes[(provider, media_type)] for media_type in lanes}
-        status = provider_status(outcomes)
+        if target_lanes:
+            # Targeted lane coverage is not full provider health. A returned
+            # URL is merely a media candidate, not verified playback/identity.
+            values = list(outcomes.values())
+            status = (
+                "TARGETED_CANDIDATE" if "positive" in values
+                else "TARGETED_TECHNICAL" if "technical_error" in values
+                else "TARGETED_CATALOG_MISS"
+            )
+        else:
+            status = provider_status(outcomes)
         status_counts[status] += 1
         lane_text = ",".join(f"{media_type}:{outcomes[media_type]}" for media_type in lanes)
         print(
@@ -350,7 +360,10 @@ def main() -> int:
     print(
         "FIELD_NATIVE_PROVIDER_STATUS_SUMMARY "
         f"client={args.client} total={len(provider_ids)} FULL={status_counts['FULL']} "
-        f"PARTIAL={status_counts['PARTIAL']} RESAMPLE={status_counts['RESAMPLE']} ZERO={status_counts['ZERO']}"
+        f"PARTIAL={status_counts['PARTIAL']} RESAMPLE={status_counts['RESAMPLE']} ZERO={status_counts['ZERO']} "
+        f"TARGETED_CANDIDATE={status_counts['TARGETED_CANDIDATE']} "
+        f"TARGETED_TECHNICAL={status_counts['TARGETED_TECHNICAL']} "
+        f"TARGETED_CATALOG_MISS={status_counts['TARGETED_CATALOG_MISS']}"
     )
 
     for provider in missing_providers[:120]:
