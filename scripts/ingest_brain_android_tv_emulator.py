@@ -135,7 +135,15 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
         if phase == "result":
             row["quickJsReturned"] = max(row["quickJsReturned"], safe_count(raw.get("count")))
 
-    for raw in (report.get("observations") or [])[:400]:
+    # Native diagnosis deliberately publishes successful extraction separately
+    # from failure-only "observations". Without this union the Brain saw
+    # QuickJS call_count=0 even when official FIELD_NATIVE_RESULT count=2.
+    # Both channels still require exact same provider/app selection.
+    failure_rows = report.get("observations")
+    positive_rows = report.get("extractionHealthyObservations")
+    failure_rows = failure_rows if isinstance(failure_rows, list) else []
+    positive_rows = positive_rows if isinstance(positive_rows, list) else []
+    for raw in failure_rows[:400] + positive_rows[:128]:
         if not isinstance(raw, dict):
             continue
         layer = raw.get("observationLayer")
