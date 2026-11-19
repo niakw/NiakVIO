@@ -94,6 +94,19 @@ assert offline_bounded==["authority-blocked"],offline_bounded
 
 unavailable={"residentialExitNodeEvidence":{"available":False}}
 assert mod.select(unavailable,status)==[]
+
+# Historical residential success must never authorize a new replay after the
+# latest route attempt failed.
+stale_historical={
+    "residentialExitNodeEvidence":{"available":True},
+    "residentialExitNodeLastAttempt":{"available":False,"reason":"exit-egress-unverified"},
+}
+assert mod.select(stale_historical,status)==[]
+fresh_current={
+    "residentialExitNodeEvidence":{"available":True},
+    "residentialExitNodeLastAttempt":{"available":True},
+}
+assert mod.select(fresh_current,status)==["all-blocked","client-gap","waf-only","yflix"]
 assert mod.ELIGIBLE_STATUSES=={
     "HARNESS MISMATCH","CLIENT TRANSPORT GAP","HARNESS/ENV BLOCKED","PROVIDER NETWORK BLOCKED"
 }
