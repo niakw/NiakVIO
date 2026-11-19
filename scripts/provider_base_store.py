@@ -1318,15 +1318,17 @@ async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
   let requests = 0;
   const requestBudget = Math.min(32, Math.max(12, queue.length + 8));
   /* NIAKVIO_PROVIDER_NATIVE_PLAYER_HEDGE_V27 */
-  // Two distinct player hosts may have radically different time-to-first
-  // media. On native, race one candidate from each origin instead of letting
-  // an upstream 522 consume the entire official provider deadline.
-  // Never race identical-host mirrors or non-native contexts: those retain
-  // exhaustive sequential variant enumeration.
+  /* NIAKVIO_PROVIDER_NATIVE_FETCH_CAPABILITY_GATE_V28 */
+  // Official NuvioTV QuickJS fetch() directly calls synchronous __native_fetch
+  // -> OkHttp Call.execute(). Two JS promises cannot overlap that bridge.
+  // Never infer transport concurrency merely from presence of __native_fetch.
+  // Unless the host explicitly offers a verified nonblocking capability,
+  // retain sequential/full variant enumeration (including language tracks).
   let nativeHedge = false;
   try {
     const deadline = Number(globalThis.__nuvioProviderDeadlineMs);
-    nativeHedge = typeof globalThis.__native_fetch === "function" &&
+    nativeHedge = globalThis.__nuvioNonBlockingNativeFetchV1 === true &&
+      typeof globalThis.__native_fetch === "function" &&
       Number.isFinite(deadline) && deadline > Date.now() && queue.length > 1;
     if (nativeHedge) {
       const primaryOrigin = _origin(queue[0].url);
