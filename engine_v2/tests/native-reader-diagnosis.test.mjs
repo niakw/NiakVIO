@@ -551,6 +551,61 @@ try {
     assert.equal(JSON.stringify(oneShot.prePlayerMediaRootTransitions).includes(secret), false);
   }
 
+  // A completed zero near the shared 25s JS deadline *after* a successful
+  // HLS playlist is a causal routing clue, not proof of owner/playable media.
+  // The root URL/token must only exist in the in-memory native log parser.
+  const budgetHlsLog = path.join(tmp, 'tv-hls-near-budget.log');
+  const budgetHlsOutput = path.join(tmp, 'tv-hls-near-budget.json');
+  fs.writeFileSync(budgetHlsLog, [
+    ...common.slice(0, -1),
+    `FIELD_NATIVE_PROVIDER_BEGIN client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} request_type=movie route_mode=declared`,
+    'D/PluginRuntime: Fetch result: 200 OK url=https://signed.example/master.m3u8?token=NEVER_PERSIST bodyLen=120 bodyPreview=#EXTM3U',
+    `FIELD_NATIVE_RESULT client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} request_type=movie route_mode=declared enabled=true duration_ms=25477 count=0`,
+    'FIELD_NATIVE_CORPUS_END client=tv fixture=sinners-2025 errors=0',
+  ].join('\\n') + '\\n');
+  const budgetRun = spawnSync(process.execPath,
+    [script, '--output', budgetHlsOutput, budgetHlsLog],
+    { cwd: root, encoding: 'utf8',
+      env: { ...process.env, NIAKVIO_BRAIN_NONBLOCKING: '1' } });
+  assert.equal(budgetRun.status, 0, budgetRun.stderr + budgetRun.stdout);
+  const budgetRows = JSON.parse(fs.readFileSync(budgetHlsOutput, 'utf8'));
+  assert.equal(budgetRows.prePlayerMediaRootTransitionObserved, 1);
+  const budgetRow = budgetRows.prePlayerMediaRootTransitions[0];
+  assert.deepEqual([budgetRow.provider, budgetRow.fixture, budgetRow.requestType,
+    budgetRow.kind, budgetRow.pattern, budgetRow.phase],
+  ['moviesdrive', 'sinners-2025', 'movie', 'hls',
+    'hls_playlist_2xx_near_25s_zero_preplayer', 'provider-runtime-pre-player']);
+  assert.equal(budgetRow.proofAuthority, false);
+  assert.equal(budgetRow.publicationAuthority, false);
+  assert.equal(budgetRow.nativePlaybackAuthority, false);
+  assert.equal(budgetRow.providerJsMutationAllowed, false);
+  for (const secret of ['signed.example', 'NEVER_PERSIST', 'token=', 'https://']) {
+    assert.equal(JSON.stringify(budgetRows.prePlayerMediaRootTransitions).includes(secret), false);
+  }
+  // A fast zero, an actual stream, or a failed playlist must NOT trigger this
+  // near-budget signal, preventing mere status/URL promotion.
+  for (const [suffix, duration, count, httpStatus] of [
+    ['fast-zero', 500, 0, 200],
+    ['near-positive', 25477, 1, 200],
+    ['near-failed-hls', 25477, 0, 403],
+  ]) {
+    const variantLog = path.join(tmp, 'tv-hls-' + suffix + '.log');
+    const variantOutput = path.join(tmp, 'tv-hls-' + suffix + '.json');
+    fs.writeFileSync(variantLog, [
+      ...common.slice(0, -1),
+      `FIELD_NATIVE_PROVIDER_BEGIN client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} request_type=movie route_mode=declared`,
+      `D/PluginRuntime: Fetch result: ${httpStatus} url=https://signed.example/master.m3u8?token=SECRET bodyLen=0`,
+      `FIELD_NATIVE_RESULT client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} request_type=movie route_mode=declared enabled=true duration_ms=${duration} count=${count}`,
+      'FIELD_NATIVE_CORPUS_END client=tv fixture=sinners-2025 errors=0',
+    ].join('\\n') + '\\n');
+    const run = spawnSync(process.execPath, [script, '--output', variantOutput, variantLog],
+      { cwd: root, encoding: 'utf8',
+        env: { ...process.env, NIAKVIO_BRAIN_NONBLOCKING: '1' } });
+    assert.equal(run.status, 0, suffix + ': ' + run.stderr + run.stdout);
+    assert.equal(JSON.parse(fs.readFileSync(variantOutput, 'utf8'))
+      .prePlayerMediaRootTransitions.length, 0, suffix);
+  }
+
   const incomplete = path.join(tmp, 'incomplete.log');
   const incompleteOutput = path.join(tmp, 'incomplete.json');
   fs.writeFileSync(incomplete, [
