@@ -72,6 +72,31 @@ assert "FIELD_NATIVE_TV_PROMISE_CONTROL_ERROR" in tv_controls
 assert "provider-mutation" not in tv_controls
 assert "NIAKVIO_PROVIDER_BASE_OWNED_V3" not in tv_controls
 
+# Candidate diagnostics are an explicit exception to repository execution:
+# only after app eligibility is checked, run the exact staged bundle through the
+# official PluginRuntime. This is not a native player/production success.
+candidate_sha = "a1" * 32
+candidate_tv_source = CASES["tv"][0].replace(
+    "trapRuntimeErrors(code(provider.asset))", "code(provider.asset)"
+)
+candidate_tv = canonical.replace_official_execution(
+    candidate_tv_source, "tv", candidate_sha
+)
+assert "officialPluginManager.enabledScrapers.first().any" in candidate_tv
+assert "officialPluginManager.executeScraper(loadedScraper" not in candidate_tv
+assert "candidateRuntime.executePlugin(" in candidate_tv
+assert "code = candidateCode" in candidate_tv
+assert "sha256=$candidateSha matched=true runtime=official_plugin_runtime" in candidate_tv
+assert "candidate asset byte mismatch" in candidate_tv
+assert "FIELD_NATIVE_CANDIDATE_RUNTIME_RESULT" in candidate_tv
+assert "production_playback_authority=false" in candidate_tv
+assert "authority=diagnostic_only" in candidate_tv
+assert candidate_sha in candidate_tv
+assert "https://example.invalid" not in candidate_tv
+assert "candidateRuntime.executePlugin(" not in canonical.replace_official_execution(
+    candidate_tv_source, "tv"
+)
+
 with tempfile.TemporaryDirectory() as raw_tmp:
     tmp = Path(raw_tmp)
     for client, (source, expected) in CASES.items():
