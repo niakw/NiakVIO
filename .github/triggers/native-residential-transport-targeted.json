@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "requestedAt": "2026-11-19",
-  "sourceSha": "cf4da4c3e04c72ea513f75f04ab1e335cbd86fbe",
+  "sourceSha": "65d5ba20fe4e42a508c2a6c551c86f639957afd4",
   "device": "all",
   "targetProviders": [
     "animeonsen",
@@ -10,6 +10,6 @@
   "targetFixture": "jujutsu-kaisen-s01e01",
   "residentialExit": true,
   "reason": "Run the accepted official Desktop, Mobile and Android TV clients against fresh WAF-ambiguous active providers through independently attested residential egress; Mobile also records same-source Auto -> ExoPlayer -> libmpv evidence.",
-  "requestVersion": 9,
-  "retryCause": "Replay after hard-bounding macOS Tailscale connect and residential egress attestation; public-IP proof now uses killable curl DNS/network deadlines before official Desktop/Mobile/TV runtime."
+  "requestVersion": 10,
+  "retryCause": "Replay after DNS-resilient residential egress attestation and strict official-client playback qualification (production_surface + ready/ended required)."
 }
