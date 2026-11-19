@@ -143,7 +143,7 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "current_status:PROVIDER NETWORK BLOCKED"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -1127,7 +1127,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROOF REFRESH REQUIRED"
+        "current_status:CHAIN REACHED"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -1566,7 +1566,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS MISMATCH"
+        "current_status:HARNESS/ENV BLOCKED"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -1815,9 +1815,9 @@
     },
     {
       "provider": "french-anime",
-      "status": "HARNESS/ENV BLOCKED",
+      "status": "NO PROOF",
       "underlyingStatus": "",
-      "color": "🟫",
+      "color": "🔵",
       "declaredLanes": [
         "anime"
       ],
@@ -1851,11 +1851,19 @@
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
-      "action": "private residential exit is also challenged; GitHub IP reputation alone does not explain the block",
+      "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
-      "statusRepairEligible": false,
-      "repairEligible": false,
-      "testedThisRun": false
+      "statusRepairEligible": true,
+      "repairEligible": true,
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "french-manga",
@@ -2424,9 +2432,9 @@
     },
     {
       "provider": "moiflix",
-      "status": "HARNESS/ENV BLOCKED",
+      "status": "ROUTE PROVEN",
       "underlyingStatus": "",
-      "color": "🟫",
+      "color": "🟪",
       "declaredLanes": [
         "movie",
         "tv"
@@ -2465,11 +2473,20 @@
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
-      "action": "private residential exit probe was inconclusive; keep provider code untouched until transport evidence is decisive",
+      "action": "replay qualified route fixtures and finish terminal extraction/validation",
       "brainCheckRequired": true,
-      "statusRepairEligible": false,
-      "repairEligible": false,
-      "testedThisRun": false
+      "statusRepairEligible": true,
+      "repairEligible": true,
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "moviebite",
@@ -2888,7 +2905,7 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER JS BROKEN"
+        "current_status:CHAIN REACHED"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -2937,7 +2954,7 @@
         "existing_positive_route_prior",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROOF REFRESH REQUIRED"
+        "current_status:FULL OK"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -3289,7 +3306,7 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "current_status:PROVIDER NETWORK BLOCKED"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -3629,7 +3646,7 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "current_status:PARTIAL OK"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -3773,7 +3790,7 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "current_status:PROVIDER NETWORK BLOCKED"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -3820,7 +3837,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS MISMATCH"
+        "current_status:HARNESS/ENV BLOCKED"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -3928,7 +3945,7 @@
         "existing_positive_route_prior",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:REGRESSION PROVIDER JS"
+        "current_status:PROOF REFRESH REQUIRED"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -4428,7 +4445,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS MISMATCH"
+        "current_status:HARNESS/ENV BLOCKED"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -5253,12 +5270,13 @@
     "CHAIN REACHED": 19,
     "DISABLED": 36,
     "FULL OK": 6,
-    "HARNESS/ENV BLOCKED": 20,
-    "NO PROOF": 11,
+    "HARNESS/ENV BLOCKED": 18,
+    "NO PROOF": 12,
     "PARTIAL OK": 1,
     "PROOF REFRESH REQUIRED": 4,
     "PROVIDER NETWORK BLOCKED": 9,
-    "REGRESSION PROVIDER": 4
+    "REGRESSION PROVIDER": 4,
+    "ROUTE PROVEN": 1
   },
   "symptomaticProviders": [
     "1jour1film0626",
@@ -5396,8 +5414,10 @@
     "67movies",
     "anikototv",
     "corsflix",
+    "french-anime",
     "french-manga",
     "frenchstream",
+    "moiflix",
     "nakios",
     "primewire",
     "sekai",
@@ -5583,19 +5603,10 @@
     "zone-streaming",
     "zone-telechargement"
   ],
-  "environmentQueue": [
-    "french-anime",
-    "moiflix"
-  ],
+  "environmentQueue": [],
   "harnessMismatchQueue": [],
-  "environmentBlockedQueue": [
-    "french-anime",
-    "moiflix"
-  ],
-  "harnessQueue": [
-    "french-anime",
-    "moiflix"
-  ],
+  "environmentBlockedQueue": [],
+  "harnessQueue": [],
   "lastRepairAttempt": {
     "runId": "44364177375",
     "sourceCensusRunId": "",
@@ -5615,17 +5626,35 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "44427111864-canonical-waf",
-  "harnessEvidenceSha": "de76624c0b1b3aaf59d68117961e94481ec7bd67",
-  "authorityRefreshedProviders": [],
+  "harnessEvidenceRunId": "44431474021-waf-transport",
+  "harnessEvidenceSha": "1e0321654fbefac3f21f5adf5de1be6f3077b010",
+  "authorityRefreshedProviders": [
+    "67movies",
+    "cinematheque-de-bretagne",
+    "film-a-revoir",
+    "nakios",
+    "neko-sama",
+    "primewire",
+    "sadisflix",
+    "shuttletv",
+    "skstream",
+    "streamzo",
+    "voirserie"
+  ],
   "harnessTransportUpdatedProviders": [
     "french-anime",
     "moiflix"
   ],
   "networkDifferentialUpdatedProviders": [],
   "residentialProviderReplayPromotedProviders": [],
-  "residentialProviderReplayReclassifiedProviders": [],
-  "residentialProviderReplayRepairableProviders": [],
+  "residentialProviderReplayReclassifiedProviders": [
+    "french-anime",
+    "moiflix"
+  ],
+  "residentialProviderReplayRepairableProviders": [
+    "french-anime",
+    "moiflix"
+  ],
   "residentialExitNodeEvidence": {
     "enabled": true,
     "available": true,
@@ -6761,6 +6790,7 @@
       },
       {
         "provider": "french-anime",
+        "providerArtifactSha256": "9ababe40afbe0c5126c716e0fa21f51dae63da07de507e064450801d24f4a777",
         "lane": "anime",
         "status": "no_streams",
         "debugStage": "provider_zero_before_provider_network",
@@ -6778,7 +6808,14 @@
         "playable": 0,
         "verified": 0,
         "contradictions": 0,
-        "identitySafe": true
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "ce48d4e49b3c9bf5f166165b43fbc8ebcbae7757",
+          "providerBundleSha256": "9ababe40afbe0c5126c716e0fa21f51dae63da07de507e064450801d24f4a777",
+          "runId": "44431474021",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
       },
       {
         "provider": "fullanime",
@@ -6888,6 +6925,7 @@
       },
       {
         "provider": "moiflix",
+        "providerArtifactSha256": "5e91eb3a16e5a272f759400a732036714f9170ac03f86056f42e428959d0a4ad",
         "lane": "movie",
         "status": "no_streams",
         "debugStage": "provider_zero_before_provider_network",
@@ -6905,10 +6943,18 @@
         "playable": 0,
         "verified": 0,
         "contradictions": 0,
-        "identitySafe": true
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "ce48d4e49b3c9bf5f166165b43fbc8ebcbae7757",
+          "providerBundleSha256": "5e91eb3a16e5a272f759400a732036714f9170ac03f86056f42e428959d0a4ad",
+          "runId": "44431474021",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
       },
       {
         "provider": "moiflix",
+        "providerArtifactSha256": "5e91eb3a16e5a272f759400a732036714f9170ac03f86056f42e428959d0a4ad",
         "lane": "tv",
         "status": "no_streams",
         "debugStage": "provider_zero_before_provider_network",
@@ -6926,7 +6972,14 @@
         "playable": 0,
         "verified": 0,
         "contradictions": 0,
-        "identitySafe": true
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "ce48d4e49b3c9bf5f166165b43fbc8ebcbae7757",
+          "providerBundleSha256": "5e91eb3a16e5a272f759400a732036714f9170ac03f86056f42e428959d0a4ad",
+          "runId": "44431474021",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
       },
       {
         "provider": "moviebox",
@@ -7610,26 +7663,25 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": false,
-      "providerCount": 0,
+      "available": true,
+      "providerCount": 2,
       "refreshedProviders": [
-        "1jour1film0626",
-        "aniflix-uno",
-        "animejlprovider",
-        "animeonsen",
-        "animesalt",
-        "arrowtv",
-        "chillflix",
-        "cinegram",
-        "cinetimes",
-        "dulourd"
+        "french-anime",
+        "moiflix"
       ],
-      "replayedProviders": [],
+      "replayedProviders": [
+        "french-anime",
+        "moiflix"
+      ],
       "rawProviders": [],
       "playableProviders": [],
       "verifiedProviders": [],
-      "sourceNiakvioSha": "",
-      "runId": "",
+      "byteMatchedProviders": [
+        "french-anime",
+        "moiflix"
+      ],
+      "sourceNiakvioSha": "ce48d4e49b3c9bf5f166165b43fbc8ebcbae7757",
+      "runId": "44431474021",
       "proofAuthority": false,
       "publicationAuthority": false
     },
