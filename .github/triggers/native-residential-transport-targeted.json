@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
   "requestedAt": "2026-11-19",
-  "sourceSha": "4766bf8d5b571a140b7bdb672eb2856959bd8b91",
+  "sourceSha": "71280c630bf753e7a160c9c1856c8d423b41f45c",
   "device": "tv",
   "targetProviders": [
     "french-manga"
   ],
   "targetFixture": "jujutsu-kaisen-s01e01",
-  "residentialExit": true,
-  "reason": "Brain-owned A/B discriminator: user macOS FR-audio-positive, official NuvioTV 44546095189 extracted two HLS but no decoded video/audio; independent terminal probe HTTP403. Replay exact current published French-Manga JS, canonical Global, official NuvioTV with attested residential Tailscale exit versus prior exit=false. Preserve request-origin/response-origin distinction, classify WAF/egress vs client/Core, no provider code or publication promotion.",
-  "requestVersion": 21,
-  "retryCause": "After two native TV no-exit media results and a separate HLS 403, run residential-exit network differential before guessing a provider or Core fix; no direct provider edits."
+  "residentialExit": false,
+  "reason": "Supersede old accepted-TV-head residential run by source-pinned official latest-head NuvioTV Android-TV native replay after upstream merged PR4672 (conditional HTTP2 after 403 with proxyHeaders). User Desktop FR-audio-positive but TV source invisible. Verify actual client SHA includes PR, provider loading/eligibility, HLS terminal video/audio dimensions and correct episode. No provider patch, manifest edits, or false FULL.",
+  "requestVersion": 22,
+  "retryCause": "Old targeted run pinned NuvioTV accepted_ref 1391e6bd, predating upstream HTTP2/403 fix and remained without decoded proof. New generic latest-client-head resolver has passed CORE 44559240557 on f805f95e; prioritize updated real client reader over another old-version comparison."
 }
