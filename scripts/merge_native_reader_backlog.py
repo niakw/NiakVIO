@@ -80,6 +80,20 @@ def classification(failure_class: str, *, load_issue: dict[str, Any] | None = No
             "externalCandidate": False,
             "providerJsMutationAllowed": False,
         }
+    if failure in {
+        "native_quickjs_zero_stream",
+        "native_quickjs_exception",
+        "native_quickjs_missing_export",
+    }:
+        # One official JS runtime probe is a discriminating negative, not
+        # causal proof that provider JS is wrong. Desktop may have playable
+        # media for the exact same provider while Android cannot invoke it.
+        return {
+            "layer": "client_provider_execution_unresolved",
+            "scope": "client_runtime_vs_provider",
+            "externalCandidate": False,
+            "providerJsMutationAllowed": False,
+        }
     if failure in {"playback_runtime_setup", "runtime_contract_drift"}:
         return {
             "layer": "client_runtime",
