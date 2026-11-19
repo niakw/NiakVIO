@@ -13,10 +13,15 @@ source = json.loads((root / "automation/native-bridge-negative-experiments.json"
 assert source.get("role") == "brain-native-bridge-negative-experiments"
 assert source.get("schemaVersion") == 1
 assert len(source.get("experiments") or []) >= 1
-expected = source["experiments"][0]
+expected = next(x for x in source["experiments"] if x.get("id") == "tv-french-manga-44620517326-v27")
 rows = [json.loads(line) for line in Path(sys.argv[1]).read_text(encoding="utf-8").splitlines() if line.strip()]
-matched = [row for row in rows if row.get("source") == "official-tv-executed-negative"]
+all_negative = [row for row in rows if row.get("source") == "official-tv-executed-negative"]
+matched = [row for row in all_negative
+           if row.get("candidate_js_sha256") == expected["candidateJsSha256"]]
 assert len(matched) == 1, matched
+assert all(row.get("proof_authority") is False and row.get("prior_only") is True
+           and row.get("result") == "rejected_executed_no_improvement"
+           for row in all_negative)
 row = matched[0]
 assert row.get("providers") == [expected["provider"]]
 assert row.get("failure_class") == "synchronous_native_fetch_no_parallelism"
