@@ -133,6 +133,15 @@ assert 'old_census" = "$new_census"' in workflow
 assert ".github/triggers/provider-fast-repair.json; then" in workflow
 assert workflow.index("skipped=no_executable_or_causal_evidence_drift") < workflow.index("requeue_target_provider=")
 assert "workflow_run" not in workflow
+early = (ROOT / "scripts/early_fast_repair_preflight.sh").read_text(encoding="utf-8")
+assert "FIELD_PROVIDER_FAST_REPAIR_EARLY_REQUEUE" in early
+assert "FIELD_PROVIDER_FAST_REPAIR_EARLY_CANCEL" in early
+assert 'gh workflow run provider-fast-repair.yml' in early
+assert 'gh run cancel "$GITHUB_RUN_ID"' in early
+assert 'git diff --quiet "$GITHUB_SHA" "$remote_main"' in early
+assert ".github/workflows/provider-fast-repair.yml" in early
+assert workflow.index("Requeue stale executable source before expensive Repair") < workflow.index("Install locked Node tooling")
+assert workflow.index("Requeue stale executable source before expensive Repair") < workflow.index("Run provider-local Brain Repair")
 # A stale result has only negative experiment-memory authority. Requeued runs
 # can import it solely from a same-repo, same-workflow, unchanged runtime and
 # provider byte lineage; this never imports or publishes stale provider bytes.
