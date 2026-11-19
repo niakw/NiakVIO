@@ -103,3 +103,11 @@
 - Quick-yield WAF evidence now retains only a strict replay-safe request-header subset (Accept, Accept-Language, Content-Type, Origin, Referer/Referrer, User-Agent and bounded X-Requested-With/client-version headers). Authorization, Cookie, token/signature/session material and Accept-Encoding are excluded before persistence.
 - WAF libcurl and JVM OkHttp profiles replay that safe subset. The JVM probe independently reapplies the allowlist and caps timeout at the audited NuvioTV 30s maximum, so the Python harness cannot accidentally forward a sensitive header.
 - This improves request/transport equivalence only. A reachable/challenge-free HTTP response remains weaker than full provider execution and terminal decoded/playable media.
+
+
+### 2026-11-19 — Native clients switched to canonical manifests
+- Native acceptance no longer needs a synthetic physical Hub manifest for execution. Desktop macOS/Windows, Android TV, Android Mobile and iOS full Labs now matrix directly over `manifest.json` (Global) and `vf/manifest.json` (France); targeted native diagnostics choose the canonical manifest that actually owns an explicit active provider.
+- At migration start the canonical active sets were Global=45, VF=38, shared=8, union=75. Running both projections covers the real execution authority with only 8 duplicate identities instead of publishing a synthetic union.
+- `no-anime/manifest.json` and `vf-no-anime/manifest.json` are explicitly retained as user-facing functional variants. They are validated as subsets and do not require duplicate expensive device execution.
+- `scripts/native_manifest_projection.py` centralizes canonical membership, relative provider-path validation, targeted provider-to-manifest selection and an explicitly ephemeral active-union writer for diagnostics that still require one input file.
+- Client/harness migration landed before release-writer retirement so no client is left pointing at a deleted transport during the transition.
