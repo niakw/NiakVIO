@@ -241,10 +241,19 @@ done
 
 LOGS=("${WORKSPACE}"/tv-native-corpus-*.log)
 MATRIX_STATUS=0
+MATRIX_FIXTURE_ARGS=()
+# A focused request executes only its explicit fixture(s). Retain the
+# full all-declared-lanes gate for ordinary and rotating corpus runs.
+if [[ -n "$TARGET_FIXTURE" && "$TARGET_FIXTURE" != "all" || -n "$TARGET_FIXTURES" ]]; then
+  for fixture in "${FIXTURES[@]}"; do
+    MATRIX_FIXTURE_ARGS+=(--target-fixture "$fixture")
+  done
+fi
 python3 "$NIAKVIO/scripts/gate_native_declared_provider_matrix.py" \
   --client tv \
   --manifest "$NIAKVIO/$TARGET_MANIFEST" \
   --corpus "$NIAKVIO/.github/triggers/nuvio-client-lab.json" \
+  "${MATRIX_FIXTURE_ARGS[@]}" \
   "${LOGS[@]}" || MATRIX_STATUS=$?
 SMOKE_STATUS=0
 node "$SMOKE_GATE" "${LOGS[@]}" || SMOKE_STATUS=$?
