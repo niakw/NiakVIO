@@ -110,8 +110,10 @@ assert "visible providers missing from materialization ledger" not in lifecycle_
 assert "materialization_ids == active_union" in workflow
 assert "materialization_ids == runtime_visible_ids" not in workflow
 assert "staticKnowledgeProviderCount" in workflow
-assert "rebuild_active_union_manifest()" in lifecycle_source
-assert "Compatibility no-op: canonical Global/VF manifests are the execution authority." in lifecycle_source
+assert "rebuild_active_union_manifest" not in lifecycle_source
+assert "ACTIVE_UNION_MANIFEST" not in lifecycle_source
+assert "native-hub46/manifest.json" not in lifecycle_source
+assert "manifest-hub46.json" not in lifecycle_source
 
 
 with tempfile.TemporaryDirectory(prefix="provider-lifecycle-prefix-") as tmp:
