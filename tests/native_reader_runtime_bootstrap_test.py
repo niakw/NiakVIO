@@ -138,6 +138,7 @@ with tempfile.TemporaryDirectory(prefix="niakvio-tv-bootstrap-") as tmp:
     assert first_entrypoint.count("interface NiakvioPluginManagerEntryPoint") == 1
     assert "@InstallIn(SingletonComponent::class)" in first_entrypoint
     assert "fun pluginManager(): PluginManager" in first_entrypoint
+    assert "fun pluginRuntime(): PluginRuntime" in first_entrypoint
     assert first.count('testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"') == 1
     assert first.count('androidTestImplementation("androidx.test.ext:junit:1.3.0")') == 1
     assert first.count('androidTestImplementation("androidx.test:runner:1.7.0")') == 1
