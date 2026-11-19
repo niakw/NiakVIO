@@ -96,3 +96,10 @@
 - NiakVIO Learning private-memory fallback is fixed on `3a949681` and guarded on `1b641a60`: absent private token means explicit public-memory-only operation, not a checkout error; configured private token preserves the existing private ChatGPT importer. Route-recovery fail-closed test wording was corrected on `bed41b5f`; Provider Non-Regression `44367952078`, Verify&Publish `44367952573` and Workflow Gate `44367952228` all passed on that exact SHA.
 - Current manifest truth changed from the earlier 46 Global active to **45 Global active** because `movy` was deliberately moved to `provider-disabled/` with `auto_off_current_wrong_content`; France remains **38 active**. This is correct lifecycle subtraction, not a missing provider regression. Current census `44364202521` still has 6 FULL / 111 and Sekai remains `REGRESSION PROVIDER`, direct authority, repairEligible=true.
 
+
+
+### 2026-11-19 — WAF/native-client request fidelity
+- Audited current NuvioTV PluginRuntime transport against upstream source: OkHttp, Proxy.NO_PROXY, IPv4FirstDns, 30s connect/read/write timeouts, redirects enabled, caller headers preserved, caller Accept-Encoding stripped, default Windows UA only when the provider did not supply one.
+- Quick-yield WAF evidence now retains only a strict replay-safe request-header subset (Accept, Accept-Language, Content-Type, Origin, Referer/Referrer, User-Agent and bounded X-Requested-With/client-version headers). Authorization, Cookie, token/signature/session material and Accept-Encoding are excluded before persistence.
+- WAF libcurl and JVM OkHttp profiles replay that safe subset. The JVM probe independently reapplies the allowlist and caps timeout at the audited NuvioTV 30s maximum, so the Python harness cannot accidentally forward a sensitive header.
+- This improves request/transport equivalence only. A reachable/challenge-free HTTP response remains weaker than full provider execution and terminal decoded/playable media.

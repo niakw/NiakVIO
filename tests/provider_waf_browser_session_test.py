@@ -201,6 +201,30 @@ assert mod.filter_targets_by_provider(targets, set()) == targets
 allwish = next(row for row in targets if row["provider"] == "allwish")
 assert allwish["publicUrl"] == "https://all-wish.me/filter"
 assert "keyword=" not in allwish["publicUrl"]
+safe_header_target = mod.extract_targets({
+    "rows": [{
+        "provider_id": "headers",
+        "semantic_type": "movie",
+        "debug_stage": "provider_waf_challenge",
+        "debug_fetches": [{
+            "url": "https://headers.example/watch",
+            "method": "GET",
+            "status": 403,
+            "challenge": "cloudflare",
+            "request_headers": {
+                "Referer": "https://headers.example/",
+                "Origin": "https://headers.example",
+                "Authorization": "Bearer secret",
+                "Cookie": "session=secret",
+                "Accept-Encoding": "br",
+            },
+        }],
+    }]
+})[0]
+assert safe_header_target["requestHeaders"] == {
+    "origin": "https://headers.example",
+    "referer": "https://headers.example/",
+}
 assert mod.classify_dom("<html><title>Just a moment...</title><div>challenge-platform</div></html>") == "browser_challenge_persisted"
 assert mod.classify_dom("<html><body>" + ("normal catalogue content " * 10) + "</body></html>") == "browser_content_reached"
 assert mod.classify_dom("<html></html>") == "browser_inconclusive"

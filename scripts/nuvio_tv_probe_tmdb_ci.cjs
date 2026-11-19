@@ -270,6 +270,27 @@ function textShape(contentType, body) {
   }
   return null;
 }
+const WAF_REPLAY_SAFE_HEADERS = new Set([
+  'accept', 'accept-language', 'content-type', 'origin', 'referer', 'referrer',
+  'user-agent', 'x-requested-with', 'x-client-version', 'x-app-version',
+]);
+function safeReplayRequestHeaders(input, init = {}) {
+  const out = {};
+  try {
+    const merged = new Headers(
+      (input && typeof input === 'object' && input.headers) ? input.headers : {},
+    );
+    new Headers(init?.headers || {}).forEach((value, key) => merged.set(key, value));
+    merged.forEach((value, key) => {
+      const name = String(key || '').trim().toLowerCase();
+      if (!WAF_REPLAY_SAFE_HEADERS.has(name) || name === 'accept-encoding') return;
+      const text = String(value || '').trim();
+      if (text) out[name] = text.slice(0, 500);
+    });
+  } catch {}
+  return out;
+}
+
 if (typeof originalFetch === 'function') {
   globalThis.fetch = async function tracedFetch(input, init) {
     const started = Date.now();
@@ -332,6 +353,7 @@ if (typeof originalFetch === 'function') {
         url,
         response_url: safeUrl(response?.url || url),
         method,
+        request_headers: safeReplayRequestHeaders(input, init),
         status,
         content_type: contentType,
         challenge,
@@ -347,7 +369,12 @@ if (typeof originalFetch === 'function') {
       });
       return response;
     } catch (error) {
-      trace.push({ url, response_url: '', method, status: 0, duration_ms: Date.now() - started, error: String(error?.name || 'Error') });
+      trace.push({
+        url, response_url: '', method,
+        request_headers: safeReplayRequestHeaders(input, init),
+        status: 0, duration_ms: Date.now() - started,
+        error: String(error?.name || 'Error'),
+      });
       throw error;
     }
   };

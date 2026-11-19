@@ -133,6 +133,7 @@ def extract_targets(report: dict[str, Any]) -> list[dict[str, Any]]:
             "method": method,
             "fetchStatus": int(terminal.get("status") or 0),
             "challenge": str(terminal.get("challenge") or "unknown")[:32],
+            "requestHeaders": safe_request_headers(terminal),
         })
     return out
 
@@ -151,6 +152,26 @@ SENSITIVE_QUERY_KEY = re.compile(
     r"(?:api[_-]?key|token|auth|authorization|signature|sig|secret|password|cookie|session|nonce|hash)",
     re.I,
 )
+SAFE_REPLAY_HEADERS = {
+    "accept", "accept-language", "content-type", "origin", "referer", "referrer",
+    "user-agent", "x-requested-with", "x-client-version", "x-app-version",
+}
+
+
+def safe_request_headers(row: dict[str, Any] | None) -> dict[str, str]:
+    """Return the bounded non-secret header subset safe for transport replay."""
+    raw = (row or {}).get("request_headers")
+    if not isinstance(raw, dict):
+        return {}
+    out: dict[str, str] = {}
+    for key, value in list(raw.items())[:32]:
+        name = str(key or "").strip().casefold()
+        if name not in SAFE_REPLAY_HEADERS or name == "accept-encoding":
+            continue
+        text = str(value or "").strip()
+        if text:
+            out[name] = text[:500]
+    return out
 
 
 def extract_network_failure_targets(
@@ -234,6 +255,7 @@ def extract_network_failure_targets(
                 "challenge": challenge,
                 "seedKind": "network-failure-replay",
                 "seedRoute": None,
+                "requestHeaders": safe_request_headers(item),
             })
             break
     return out
@@ -414,25 +436,28 @@ def probe_tv_okhttp_jvm(
 ) -> dict[str, Any]:
     """Exercise NuvioTV's audited PluginRuntime transport policy via JVM OkHttp.
 
-    This reproduces the HTTP stack/policy much more closely than Chromium or
-    libcurl, but GitHub JVM TLS and runner IP reputation still differ from an
-    Android TV device. It remains harness evidence, never playback authority.
+    Replays only the provider request headers that passed the strict non-secret
+    allowlist. The Java probe applies the same allowlist again. This remains
+    harness transport evidence, never Android-device or playback authority.
     """
     java = shutil.which("java")
     cp = str(classpath or "").strip()
+    request_headers = safe_request_headers({"request_headers": target.get("requestHeaders")})
+    effective_user_agent = request_headers.get("user-agent", NUVIO_TV_WINDOWS_UA)
     base = {
         "profile": "nuvio-tv-okhttp-jvm",
         "transportApproximation": (
             "GitHub JVM OkHttp 4.12.0 with NuvioTV PluginRuntime policy; "
             "not Android device TLS/IP"
         ),
-        "userAgent": NUVIO_TV_WINDOWS_UA,
+        "userAgent": effective_user_agent,
+        "requestHeaderNames": sorted(request_headers),
         "nativeContractApproximation": {
             "httpStack": "OkHttp 4.12.0",
             "proxyPolicy": "Proxy.NO_PROXY",
             "dnsPolicy": "IPv4FirstDns",
             "redirects": "HTTP+SSL enabled",
-            "timeouts": "bounded by WAF diagnostic",
+            "timeouts": "30s maximum, matching audited PluginRuntime",
             "tlsRuntime": "GitHub JVM, not Android device",
         },
     }
@@ -449,15 +474,17 @@ def probe_tv_okhttp_jvm(
         "WafOkHttpProbe",
         str(target.get("url") or ""),
         str(max(1, min(int(attempts), 3))),
-        str(max(2, min(int(timeout), 60))),
+        str(max(2, min(int(timeout), 30))),
         NUVIO_TV_WINDOWS_UA,
     ]
+    for name, value in sorted(request_headers.items()):
+        cmd.append(f"{name}: {value}")
     try:
         proc = subprocess.run(
             cmd,
             capture_output=True,
             text=True,
-            timeout=max(8, int(timeout) * max(1, min(int(attempts), 3)) + 8),
+            timeout=max(8, min(int(timeout), 30) * max(1, min(int(attempts), 3)) + 8),
             check=False,
         )
     except subprocess.TimeoutExpired:
@@ -509,25 +536,27 @@ def probe_tv_okhttp_jvm(
         "exitCode": int(proc.returncode),
     }
 
-
 def probe_tv_direct_http(
     target: dict[str, Any],
     *,
     timeout: int,
     attempts: int,
 ) -> dict[str, Any]:
-    """Approximate audited NuvioTV transport properties without claiming OkHttp.
+    """Approximate the audited native request with libcurl.
 
-    Uses GitHub-hosted libcurl with IPv4, no proxy, redirects and the audited
-    NuvioTV UA. Cookie state exists only inside one ephemeral temp directory.
-    TLS/client fingerprint and runner IP still differ from a real TV client.
+    Safe provider headers are replayed so this profile and the JVM profile probe
+    the same HTTP request contract. Cookie state remains ephemeral and libcurl
+    is still not OkHttp/Android TLS.
     """
     curl = shutil.which("curl")
+    request_headers = safe_request_headers({"request_headers": target.get("requestHeaders")})
+    effective_user_agent = request_headers.get("user-agent", NUVIO_TV_WINDOWS_UA)
     if not curl:
         return {
             "profile": "nuvio-tv-direct-http-approx",
             "transportApproximation": "GitHub libcurl; native OkHttp not reproduced",
-            "userAgent": NUVIO_TV_WINDOWS_UA,
+            "userAgent": effective_user_agent,
+            "requestHeaderNames": sorted(request_headers),
             "outcome": "direct_http_unavailable",
             "attemptCount": 0,
             "attempts": [],
@@ -547,8 +576,8 @@ def probe_tv_direct_http(
                 "--location",
                 "--max-redirs", "5",
                 "--connect-timeout", str(max(2, min(int(timeout), 15))),
-                "--max-time", str(max(5, int(timeout))),
-                "--user-agent", NUVIO_TV_WINDOWS_UA,
+                "--max-time", str(max(5, min(int(timeout), 30))),
+                "--user-agent", effective_user_agent,
                 "--cookie", str(cookie_jar),
                 "--cookie-jar", str(cookie_jar),
                 "--compressed",
@@ -556,14 +585,17 @@ def probe_tv_direct_http(
                 "--show-error",
                 "--output", str(body_path),
                 "--write-out", "%{http_code}",
-                str(target.get("url") or ""),
             ]
+            for name, value in sorted(request_headers.items()):
+                if name != "user-agent":
+                    cmd.extend(["--header", f"{name}: {value}"])
+            cmd.append(str(target.get("url") or ""))
             try:
                 proc = subprocess.run(
                     cmd,
                     capture_output=True,
                     text=True,
-                    timeout=max(6, int(timeout) + 3),
+                    timeout=max(6, min(int(timeout), 30) + 3),
                     check=False,
                 )
             except subprocess.TimeoutExpired:
@@ -613,8 +645,9 @@ def probe_tv_direct_http(
         final = outcomes[-1] if outcomes else "direct_http_error"
     return {
         "profile": "nuvio-tv-direct-http-approx",
-        "transportApproximation": "GitHub libcurl IPv4+NO_PROXY+redirects with audited NuvioTV UA",
-        "userAgent": NUVIO_TV_WINDOWS_UA,
+        "transportApproximation": "GitHub libcurl IPv4+NO_PROXY+redirects with audited NuvioTV request headers",
+        "userAgent": effective_user_agent,
+        "requestHeaderNames": sorted(request_headers),
         "nativeContractApproximation": {
             "ipv4First": True,
             "proxyPolicy": "NO_PROXY",
@@ -626,7 +659,6 @@ def probe_tv_direct_http(
         "attempts": attempt_rows,
         "ordinarySessionReused": attempt_limit > 1,
     }
-
 
 def probe_target(
     target: dict[str, Any],

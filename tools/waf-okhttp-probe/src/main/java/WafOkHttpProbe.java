@@ -4,6 +4,10 @@ import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import okhttp3.Dns;
 import okhttp3.OkHttpClient;
@@ -11,6 +15,10 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public final class WafOkHttpProbe {
+    private static final Set<String> SAFE_REQUEST_HEADERS = Set.of(
+        "accept", "accept-language", "content-type", "origin", "referer", "referrer",
+        "user-agent", "x-requested-with", "x-client-version", "x-app-version"
+    );
     private static final String[] CHALLENGE_MARKERS = new String[] {
         "just a moment",
         "checking your browser",
@@ -83,12 +91,24 @@ public final class WafOkHttpProbe {
             return;
         }
         if (args.length < 4) {
-            throw new IllegalArgumentException("usage: WafOkHttpProbe <url> <attempts> <timeoutSeconds> <userAgent>");
+            throw new IllegalArgumentException(
+                "usage: WafOkHttpProbe <url> <attempts> <timeoutSeconds> <defaultUserAgent> [safe-header...]"
+            );
         }
         String url = args[0];
         int attempts = Math.max(1, Math.min(3, Integer.parseInt(args[1])));
-        int timeout = Math.max(2, Math.min(60, Integer.parseInt(args[2])));
+        int timeout = Math.max(2, Math.min(30, Integer.parseInt(args[2])));
         String userAgent = args[3];
+        Map<String, String> requestHeaders = new LinkedHashMap<>();
+        for (int index = 4; index < args.length; index++) {
+            String raw = args[index] == null ? "" : args[index];
+            int separator = raw.indexOf(':');
+            if (separator <= 0) continue;
+            String name = raw.substring(0, separator).trim().toLowerCase(Locale.ROOT);
+            String value = raw.substring(separator + 1).trim();
+            if (!SAFE_REQUEST_HEADERS.contains(name) || name.equals("accept-encoding") || value.isEmpty()) continue;
+            requestHeaders.put(name, value.length() > 500 ? value.substring(0, 500) : value);
+        }
 
         OkHttpClient client = new OkHttpClient.Builder()
             .dns(new IPv4FirstDns())
@@ -103,11 +123,14 @@ public final class WafOkHttpProbe {
         List<String> attemptJson = new ArrayList<>();
         String finalOutcome = "okhttp_jvm_error";
         for (int attempt = 1; attempt <= attempts; attempt++) {
-            Request request = new Request.Builder()
-                .url(url)
-                .header("User-Agent", userAgent)
-                .get()
-                .build();
+            Request.Builder requestBuilder = new Request.Builder().url(url);
+            for (Map.Entry<String, String> header : requestHeaders.entrySet()) {
+                requestBuilder.header(header.getKey(), header.getValue());
+            }
+            if (!requestHeaders.containsKey("user-agent")) {
+                requestBuilder.header("User-Agent", userAgent);
+            }
+            Request request = requestBuilder.get().build();
             int status = 0;
             String outcome;
             String error = "";
@@ -150,7 +173,8 @@ public final class WafOkHttpProbe {
               "\"proxyPolicy\":\"Proxy.NO_PROXY\"," +
               "\"dnsPolicy\":\"IPv4FirstDns\"," +
               "\"redirects\":\"HTTP+SSL enabled\"," +
-              "\"tlsRuntime\":\"GitHub JVM, not Android Conscrypt/device TLS\"" +
+              "\"tlsRuntime\":\"GitHub JVM, not Android Conscrypt/device TLS\"," +
+              "\"safeRequestHeaderCount\":" + requestHeaders.size() +
             "}" +
             "}"
         );

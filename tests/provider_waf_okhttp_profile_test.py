@@ -26,6 +26,10 @@ assert ".proxy(Proxy.NO_PROXY)" in java
 assert ".dns(new IPv4FirstDns())" in java
 assert ".followRedirects(true)" in java
 assert ".followSslRedirects(true)" in java
+assert "SAFE_REQUEST_HEADERS" in java
+assert 'name.equals("accept-encoding")' in java
+assert "requestBuilder.header(header.getKey(), header.getValue())" in java
+assert "Math.min(30, Integer.parseInt(args[2]))" in java
 assert "response.peekBody(262144)" in java
 assert 'outcome = "okhttp_jvm_http_error";' in java
 assert "script|style|noscript|template" in java
@@ -48,9 +52,18 @@ target = {
     "provider": "synthetic",
     "lane": "movie",
     "url": "https://example.invalid/",
+    "requestHeaders": {
+        "Referer": "https://catalog.example/",
+        "Origin": "https://catalog.example",
+        "Accept-Language": "fr-FR,fr",
+        "Authorization": "Bearer must-never-leave-python",
+        "Cookie": "session=must-never-leave-python",
+        "Accept-Encoding": "br",
+    },
 }
 original_which = mod.shutil.which
 original_run = mod.subprocess.run
+commands = []
 try:
     mod.shutil.which = lambda name: "/usr/bin/java" if name == "java" else original_which(name)
     payload = (
@@ -58,11 +71,10 @@ try:
         '"outcome":"okhttp_jvm_content_reached","attemptCount":1,'
         '"attempts":[{"attempt":1,"outcome":"okhttp_jvm_content_reached","status":200}]}\n'
     )
-    mod.subprocess.run = lambda *args, **kwargs: SimpleNamespace(
-        returncode=0,
-        stdout=payload,
-        stderr="",
-    )
+    def fake_run(*args, **kwargs):
+        commands.append(args[0])
+        return SimpleNamespace(returncode=0, stdout=payload, stderr="")
+    mod.subprocess.run = fake_run
     row = mod.probe_tv_okhttp_jvm(
         target,
         timeout=5,
@@ -78,5 +90,13 @@ assert row["profile"] == "nuvio-tv-okhttp-jvm", row
 assert row["nativeContractApproximation"]["httpStack"] == "OkHttp 4.12.0", row
 assert row["nativeContractApproximation"]["proxyPolicy"] == "Proxy.NO_PROXY", row
 assert row["nativeContractApproximation"]["dnsPolicy"] == "IPv4FirstDns", row
+assert row["requestHeaderNames"] == ["accept-language", "origin", "referer"], row
+assert commands, commands
+joined = "\n".join(str(value) for value in commands[0])
+assert "referer: https://catalog.example/" in joined
+assert "origin: https://catalog.example" in joined
+assert "accept-language: fr-FR,fr" in joined
+for secret in ("Authorization", "Bearer must-never-leave-python", "Cookie", "session=must-never-leave-python", "Accept-Encoding"):
+    assert secret not in joined, (secret, joined)
 
 print("NuvioTV-policy OkHttp WAF diagnostic contract passed")
