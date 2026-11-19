@@ -1,8 +1,57 @@
 {
   "schemaVersion": 3,
-  "runId": "44490043760",
-  "triggerSha": "4fcf996f4cd27a3ecd465094f8b7af9dfebea5e2",
+  "runId": "44498512688-retest",
+  "triggerSha": "136f3287d4aa665128a85440fc7094a2e3b274f1",
   "providers": [
+    {
+      "provider": "french-manga",
+      "status": "CANDIDATE OK",
+      "underlyingStatus": "",
+      "color": "🟦",
+      "declaredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [
+        "anime: Jujutsu Kaisen"
+      ],
+      "candidateProof": [
+        "run 34309729426"
+      ],
+      "routeProof": [
+        "1 live routes / anime"
+      ],
+      "latestLaneVerdicts": [
+        "anime=playable_unverified/provider_returned_streams"
+      ],
+      "dominantIssue": "provider_returned_streams",
+      "searchProgress": [
+        "anime: 1 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=lookup_only"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": true,
+      "authorityAction": "KEEP_DIRECT",
+      "authorityClass": "direct",
+      "authorityConfidence": "medium",
+      "authorityReasons": [
+        "curated_direct",
+        "existing_positive_route_prior",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:CANDIDATE OK"
+      ],
+      "authorityKnown": true,
+      "onboardingRuntimePlanState": "",
+      "action": "replay candidate proof against current bytes; publish only after current verified media",
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
+      "repairEligible": true,
+      "testedThisRun": true
+    },
     {
       "provider": "1jour1film0626",
       "status": "HARNESS/ENV BLOCKED",
@@ -102,7 +151,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "67movies",
@@ -152,7 +201,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "3aede017879781f4d182f8df0a511e6a65baec5fcb9e6fa77770eeaca04d69ab"
     },
     {
@@ -194,7 +243,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "allwish",
@@ -237,7 +286,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "anidb",
@@ -280,7 +329,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "1e10a97cd94744224d20aaa3f200c7e98ec76d815bf363a1508f57e3be1ecf3d"
     },
     {
@@ -373,7 +422,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "71cb22c7e4a972fe05ffbb055fc176a8ad1d674fbb1a1b03c2b1e4b7397575b6"
     },
     {
@@ -417,7 +466,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "anime-ultime",
@@ -460,7 +509,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "animejlprovider",
@@ -549,7 +598,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "animeonsen",
@@ -640,7 +689,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "animesama-co",
@@ -685,7 +734,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "animesultra",
@@ -726,7 +775,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "animevost-fr",
@@ -767,7 +816,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "animevostfr",
@@ -812,7 +861,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "anisama",
@@ -855,7 +904,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "27590656f8e93cc477719ffb5b91a7e8613ae75ebf2e64a7b692373e3fd1e199"
     },
     {
@@ -963,7 +1012,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "84fe82373da95cf0abaec9fbb8177fa8ca93a1eafc866310529f1e3c4a814be3"
     },
     {
@@ -1015,7 +1064,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "6a8a37099d02e262f194a004813700fe885193d966b8b6f7c10557696f890f4a"
     },
     {
@@ -1062,7 +1111,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "cinegram",
@@ -1159,7 +1208,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "a7afb4217e9ce9b0dc58287372be214128eea14509a17916ea356095db654738"
     },
     {
@@ -1203,7 +1252,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "8f7f2e8b7a25b8d2c929e30d1009e623a2cb2fb69fbc479947e87f973dbb931e"
     },
     {
@@ -1310,7 +1359,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "corsflix",
@@ -1360,7 +1409,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "45936eeb1258044a42e772e4e1b77f1d3a77e3bc8a4af360f360aff10d0f2e59"
     },
     {
@@ -1404,7 +1453,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "da6420aff9e80ab6e86b483e27871758f32f9525aad302793f085e86974eb226"
     },
     {
@@ -1506,7 +1555,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "dad4a00bd3e7c76cf5f9d7214c93c644df9305858d3163359ba4eaa9345bc21a"
     },
     {
@@ -1554,7 +1603,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "ef67009021278fb4c4881e9633c335c187cdd683b36ce059d41d4807fb0e9c0d"
     },
     {
@@ -1701,7 +1750,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "flixer",
@@ -1752,7 +1801,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "7062fa96dd0528dda2125919bc9471f185709c03de8414b7c69a6ea862ba9e1a"
     },
     {
@@ -1800,7 +1849,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "880a87befaedb408eb8006ff15c70b72603b41b2099090f76aa5287bb4f9bf8f"
     },
     {
@@ -1898,7 +1947,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "ac026606e3ae111c4cbcb3ed4b1dce94dc610d3eebd5e431fa17878c93657872"
     },
     {
@@ -1945,56 +1994,6 @@
       "repairEligible": false,
       "testedThisRun": false,
       "providerArtifactSha256": "6230fb79d4994968ad452da926515fb14132c46bf6b5e192f78b983be30f6064"
-    },
-    {
-      "provider": "french-manga",
-      "status": "CANDIDATE OK",
-      "underlyingStatus": "",
-      "color": "🟦",
-      "declaredLanes": [
-        "anime"
-      ],
-      "currentVerifiedLanes": [],
-      "historicalProof": [
-        "anime: Jujutsu Kaisen"
-      ],
-      "candidateProof": [
-        "run 34309729426"
-      ],
-      "routeProof": [
-        "1 live routes / anime"
-      ],
-      "latestLaneVerdicts": [
-        "anime=playable_unverified/provider_returned_streams"
-      ],
-      "dominantIssue": "provider_returned_streams",
-      "searchProgress": [
-        "anime: 1 works tested / 0 retained misses"
-      ],
-      "evidenceDepth": [
-        "anime=lookup_only"
-      ],
-      "harnessTransportClass": "not-applicable",
-      "harnessTransportEvidence": [],
-      "authorityRepairEligible": true,
-      "authorityAction": "KEEP_DIRECT",
-      "authorityClass": "direct",
-      "authorityConfidence": "medium",
-      "authorityReasons": [
-        "curated_direct",
-        "existing_positive_route_prior",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:CANDIDATE OK"
-      ],
-      "authorityKnown": true,
-      "onboardingRuntimePlanState": "",
-      "action": "replay candidate proof against current bytes; publish only after current verified media",
-      "brainCheckRequired": true,
-      "statusRepairEligible": true,
-      "repairEligible": true,
-      "testedThisRun": true,
-      "providerArtifactSha256": "f18a1c3a2352c0a3fed0b094cf517cea251125c39e70fa6da319cde869e21c4e"
     },
     {
       "provider": "frenchstream",
@@ -2044,7 +2043,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "f04b51c642fc43afeea166bd4b8d419d5dd520a814937e0187ea2660d7962bef"
     },
     {
@@ -2088,7 +2087,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "07e65c6cd58be8a3f40808602a0a1fe91ad1e1cde79c6e7f16abc1c2cc601758"
     },
     {
@@ -2186,7 +2185,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "9443a1626c3fa92635825b686b95d56a35cc357aaac503633060babd4fffd443"
     },
     {
@@ -2230,7 +2229,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "df44a0f091eb19caf83d2cd43b5fab8b26b71ee9745885d7ca56f21ae38e2660"
     },
     {
@@ -2282,7 +2281,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "1d758dfc1166cef6873d878ad0a5c4b94c37bcf8d68e29599833951bfb98ccb9"
     },
     {
@@ -2330,7 +2329,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "057cd9ca70cfca189919d53f633b94a301ff2de868a5aed3fed28a00424eb961"
     },
     {
@@ -2375,7 +2374,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "73cb10ae3e74fb94e3f27a13d623095a584cc5ffdf050976eb3af712e646919c"
     },
     {
@@ -2429,7 +2428,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "kidraz",
@@ -2480,7 +2479,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "37f5cbafaeedc975b3bfefaaab940c6655c6baa857e98636b1e5dbb021d8bc36"
     },
     {
@@ -2524,7 +2523,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "latestmovies",
@@ -2575,7 +2574,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "4c5b5354bd0f6db3d4212f44f054804d8767ea0a27febb61a18f08cc89b4550f"
     },
     {
@@ -2617,7 +2616,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "meowtv",
@@ -2672,7 +2671,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "707a798d7aae642efe3edfcb950431f26ebdec10406a4c5c296cc21a0e708604"
     },
     {
@@ -2774,7 +2773,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "97f07225195e37984ac5f66dd6914fb865dd06e1e2e2b5785dbb8e42330e599d"
     },
     {
@@ -2820,7 +2819,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "movieshunt",
@@ -2865,7 +2864,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "moviesmod",
@@ -2910,7 +2909,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "movish",
@@ -2961,7 +2960,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "2a715f778ee971a32761acbbe05c34e16c2bb5301fc00d13a62e99fdea3e7eb4"
     },
     {
@@ -3013,7 +3012,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "fa7a88bef1cba56173ed2e248063d885c1f91a67074b8c0b2cf75a8049cbfbe5"
     },
     {
@@ -3065,7 +3064,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "mugiwarastream",
@@ -3111,7 +3110,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "680198ac4792e29b64e449bd0690236d25891edb7285bc7aaf09130d47e73fe7"
     },
     {
@@ -3158,7 +3157,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "44a76a3806b27a3c44624c51f0a2e9a4467644ff9e076759f79df3ff3b106bdd"
     },
     {
@@ -3206,7 +3205,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "0228645b8b1ec00100053a7914a89cea9f6a28e76516bc7ae956013f25d515e3"
     },
     {
@@ -3258,7 +3257,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "c1cd46a5378435a9203830602117686e29cff31eeb4daa16f923d51e51da132b"
     },
     {
@@ -3310,7 +3309,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "ab7f6fabc4a24ad9e90beef6845b8c4624b1f306c04c3fcc7dbf4b7482eff0ba"
     },
     {
@@ -3362,7 +3361,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "53d6aed2238d2eee58e298ce20b4d19a54ee4318bc0abbe8114ca77e3b1a02aa"
     },
     {
@@ -3419,7 +3418,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "de843d6641a4e0ec711405ab351db2aa3db80550e9a8600a0b68878742f65bbd"
     },
     {
@@ -3469,7 +3468,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "playimdb",
@@ -3517,7 +3516,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "primewire",
@@ -3563,7 +3562,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "55d93f748980d3815c8b45133f11a15d72e9dca76d15592c6896a0768efecdda"
     },
     {
@@ -3615,7 +3614,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "b612cbb5f7dae395360b03803ca7570960ebd84033d305756ec46c5d32c875ef"
     },
     {
@@ -3667,7 +3666,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "e6879dd8a031e1b8abf0fcf43cc3cd08f1a3190ed321568ce3f8006049841ed0",
       "residentialProviderReplayClass": "playable-unverified",
       "residentialProviderReplayEvidence": [
@@ -3716,7 +3715,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "d7d96759167a179a9f7949b364ea819d4ae156cf22d322f144ed676e6ff25b57"
     },
     {
@@ -3760,7 +3759,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "aece40b4b2f6640db39985ead9dff7daf0e12a961cb4682edb57106afaae578d"
     },
     {
@@ -3812,7 +3811,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "9d969b003914eb419ff43a0b76c8118467346cd5603091350a8430d4e6a88a61"
     },
     {
@@ -3864,7 +3863,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "1fe4adf6562c1d86d7048de5645fac3176274b0ccd6e3d19c0cf63b63095bd70"
     },
     {
@@ -3913,7 +3912,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "abfd1ce22ebd5e99b3dee1806b96eac2483c02e80c7c4966870aed2c5d46bc26"
     },
     {
@@ -3957,7 +3956,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "showbox",
@@ -4004,7 +4003,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "ac98f6d33336ef7298c218bd78e80262c4831161718b09649de92aa98209939d"
     },
     {
@@ -4055,7 +4054,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "1bf7c2078e62281f78664afa32e0856a474b6074653e1de3672dca0d42caa76c"
     },
     {
@@ -4158,7 +4157,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "3106d772523a29a8af5ca0586ccdce8b1bb5527c16ccf1f75b189cca8ee24bb7"
     },
     {
@@ -4177,7 +4176,7 @@
       "historicalProof": [
         "anime: Mushoku Tensei: Jobless Reincarnation",
         "movie: Mon ninja et moi 3 / Interstellar",
-        "tv: Stranger Things / Revenant"
+        "tv: Revenant"
       ],
       "candidateProof": [],
       "routeProof": [
@@ -4218,7 +4217,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "556c2208ef3338cdc052390797166c4b6b293e1b84300b8ac0c1181169f8e610"
     },
     {
@@ -4233,9 +4232,7 @@
       "currentVerifiedLanes": [
         "tv"
       ],
-      "historicalProof": [
-        "tv: The Flash"
-      ],
+      "historicalProof": [],
       "candidateProof": [],
       "routeProof": [],
       "latestLaneVerdicts": [
@@ -4266,7 +4263,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "uhdmovies",
@@ -4309,7 +4306,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "videasy",
@@ -4359,7 +4356,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "dd67e8d1da42e13a98864b1c45f4b6f5bee204bb303b2924e82a46abc31dc3dc"
     },
     {
@@ -4405,7 +4402,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "vidlink",
@@ -4452,7 +4449,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "f52e80e3ed80c0e9359f5bb13981c9bba7b7e935703cb655765d40ed68f64b67"
     },
     {
@@ -4501,7 +4498,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "vidrock",
@@ -4549,7 +4546,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "voiranime",
@@ -4592,7 +4589,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "voiranime-homes",
@@ -4635,7 +4632,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "voiranime-rip",
@@ -4678,7 +4675,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "voirserie",
@@ -4770,7 +4767,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "vuflix",
@@ -4821,7 +4818,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "bf7fd1b71a426a229a1c040198ffd6722ef7486bb5910cf23a614f2dee2ab49c"
     },
     {
@@ -4873,7 +4870,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "006a7f0779b9f88de34b41c1831f22cfd2f142dc036061e81aed9a2eed37ec1b"
     },
     {
@@ -4925,7 +4922,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "245126845cbc3a37efce7a7edb6ff6476dd6018f0f1b964b34847b12ec6b9a3e"
     },
     {
@@ -4985,9 +4982,7 @@
       "currentVerifiedLanes": [
         "tv"
       ],
-      "historicalProof": [
-        "tv: Breaking Bad"
-      ],
+      "historicalProof": [],
       "candidateProof": [],
       "routeProof": [],
       "latestLaneVerdicts": [
@@ -5015,7 +5010,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "062746a77d77cf5bfaebb9bf6c315237094da45f45ef0240a4ab9d35229d7055"
     },
     {
@@ -5068,7 +5063,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "yflix",
@@ -5113,7 +5108,7 @@
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false
     },
     {
       "provider": "youtitou",
@@ -5156,7 +5151,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "81e3fd7e12debabc6880ec19f8cd086f76871483d7683cdd391e8026672dd967"
     },
     {
@@ -5210,7 +5205,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "cb230fa1088d565f6d0a794067e7b341e2a0377f088ab0f756a739732d5427ef"
     },
     {
@@ -5258,7 +5253,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true,
+      "testedThisRun": false,
       "providerArtifactSha256": "27a4739fb744c0efa6c87441d402776043b04fb802fcfeada2f15b915ca78473"
     },
     {
@@ -5717,8 +5712,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "44494433206-waf-transport",
-  "harnessEvidenceSha": "1dabf105fd5ca92a84832c94b13af851c61fe1fa",
+  "harnessEvidenceRunId": "44498512688-retest-transport",
+  "harnessEvidenceSha": "136f3287d4aa665128a85440fc7094a2e3b274f1",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
@@ -7862,7 +7857,5 @@
       "publicationAuthority": false
     },
     "providerBundleDigestAuthority": "executed-global-vf-published-bytes"
-  },
-  "artifactHashSchemaVersion": 2,
-  "activeArtifactHashCount": 74
+  }
 }
