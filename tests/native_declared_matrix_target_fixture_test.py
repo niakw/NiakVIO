@@ -83,7 +83,7 @@ with tempfile.TemporaryDirectory(prefix="niakvio-native-target-matrix-") as dire
 
     # A build/Gradle failure may leave a readable log but never launch the
     # provider. It is a missing native execution, NOT a catalogue search miss.
-    log.write_text("Gradle: resolver missing transitive dependency\\n", encoding="utf-8")
+    log.write_text("Gradle: resolver missing transitive dependency\n", encoding="utf-8")
     not_started = run(["--target-fixture", "jujutsu-kaisen-s01e01"])
     assert not_started.returncode == 1, (not_started.stdout, not_started.stderr)
     assert "missing_begin=1" in not_started.stdout
@@ -93,8 +93,8 @@ with tempfile.TemporaryDirectory(prefix="niakvio-native-target-matrix-") as dire
     # A genuine executed 0-stream return still retains the sampled-catalogue
     # uncertainty label, distinct from missing execution and technical error.
     log.write_text(
-        "FIELD_NATIVE_PROVIDER_BEGIN client=tv provider=FRENCH-MANGA request_type=anime\\n"
-        "FIELD_NATIVE_RESULT client=tv provider=FRENCH-MANGA request_type=anime count=0\\n",
+        "FIELD_NATIVE_PROVIDER_BEGIN client=tv provider=FRENCH-MANGA request_type=anime\n"
+        "FIELD_NATIVE_RESULT client=tv provider=FRENCH-MANGA request_type=anime count=0\n",
         encoding="utf-8",
     )
     catalog_zero = run(["--target-fixture", "jujutsu-kaisen-s01e01"])
@@ -103,8 +103,8 @@ with tempfile.TemporaryDirectory(prefix="niakvio-native-target-matrix-") as dire
     assert "TARGETED_UNOBSERVED=0" in catalog_zero.stdout
 
     log.write_text(
-        "FIELD_NATIVE_PROVIDER_BEGIN client=tv provider=FRENCH-MANGA request_type=anime\\n"
-        "FIELD_NATIVE_ERROR client=tv provider=FRENCH-MANGA request_type=anime error=runtime\\n",
+        "FIELD_NATIVE_PROVIDER_BEGIN client=tv provider=FRENCH-MANGA request_type=anime\n"
+        "FIELD_NATIVE_ERROR client=tv provider=FRENCH-MANGA request_type=anime error=runtime\n",
         encoding="utf-8",
     )
     technical = run(["--target-fixture", "jujutsu-kaisen-s01e01"])
