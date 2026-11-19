@@ -180,3 +180,9 @@
 - The targeted native-client workflow no longer treats a successful `tailscale set --exit-node` as sufficient residential proof. Immediately before Desktop/Mobile/TV runtime it records the baseline public IPv4 in a mode-0600 temporary file, selects the private exit, verifies a changed public IPv4 against two independent endpoints plus active Tailscale ExitNodeStatus, and only then exports `NIAKVIO_NATIVE_RESIDENTIAL_EXIT_ACTIVE=1`.
 - The temporary IP is deleted in-step and is never persisted to artifacts/evidence. Failed attestation clears the exit route and fails closed.
 - DNS parity is deliberately not overstated: the Tailscale action still uses `--accept-dns=false`, so the workflow emits `FIELD_NATIVE_RESIDENTIAL_DNS ... resolver_equivalence=unverified`. Residential egress is now proven; equivalence with the user's Mac DNS resolver is not.
+
+
+### 2026-11-19 — First targeted engine-differential replay exposed stale projection contract
+- Native Device Corpus run 44443987021 failed before network/client execution because `tests/native_residential_transport_targeted_workflow_test.py` still required the pre-migration artifact name without the Global/VF `matrix.projection` segment. The workflow itself already emitted the canonical projection-aware artifact name.
+- The contract now matches the post-Hub46 Global/VF workflow. Exit cleanup also runs only after `NIAKVIO_NATIVE_RESIDENTIAL_EXIT_ACTIVE=1`, avoiding a misleading `tailscale: command not found` cleanup message when a pre-Tailscale contract step fails.
+- This failure is harness-only and provides no player/WAF result. The same HINDMOVIEZ/Purstream/Papadustream Mobile residential request is retriggered after the correction.

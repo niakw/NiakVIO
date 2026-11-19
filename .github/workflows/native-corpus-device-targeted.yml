@@ -452,7 +452,7 @@ jobs:
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_tv_suite.sh"
 
       - name: Clear native residential exit
-        if: ${{ always() && matrix.residential == true }}
+        if: ${{ always() && env.NIAKVIO_NATIVE_RESIDENTIAL_EXIT_ACTIVE == '1' }}
         shell: bash
         run: sudo tailscale set --exit-node= || true
 

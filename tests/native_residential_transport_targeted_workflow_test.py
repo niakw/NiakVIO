@@ -33,7 +33,7 @@ required = (
     'if residential and not providers:',
     'raise SystemExit("residential native transport proof requires explicit target provider(s)")',
     "targeted native provider cohort is capped at 8",
-    "native-corpus-${{ matrix.device }}-${{ matrix.provider }}-${{ matrix.fixture }}-${{ github.run_id }}",
+    "native-corpus-${{ matrix.device }}-${{ matrix.provider }}-${{ matrix.projection }}-${{ matrix.fixture }}-${{ github.run_id }}",
     "inputs.device == 'all' && inputs.target_providers == ''",
 )
 for needle in required:
