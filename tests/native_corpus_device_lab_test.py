@@ -86,7 +86,10 @@ assert "providers.chunked(6)" in prepare_core
 assert "async(Dispatchers.IO)" in prepare_core
 assert "providerJobs.awaitAll()" in prepare_core
 assert "java.util.Collections.synchronizedList" in prepare_core
-assert 'os.environ.get("NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS", "25000")' in prepare_core
+assert 'os.environ.get("NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS", "").strip()' in prepare_core
+assert "5_000 <= requested_timeout <= 60_000" in prepare_core
+assert "source=default_corpus" in prepare_core and "source=targeted_override" in prepare_core
+assert "matrix.provider != 'declared-type' && '60000' || ''" in targeted_runtime
 assert "niakvioPlayerProbeLock" in reader_codegen
 assert "synchronized(niakvioPlayerProbeLock)" in reader_codegen
 desktop_player_codegen = (ROOT / "scripts/augment_native_desktop_player.py").read_text(encoding="utf-8")
