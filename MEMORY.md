@@ -150,3 +150,8 @@
 - Production-player evidence now carries actual rendered video dimensions plus internal audio/subtitle observations. NuvioMobile reads `PlayerEngineController.getAudioTracks()/getSubtitleTracks()`, the controller's actual playback engine and `PlayerPlaybackSnapshot.videoWidth/videoHeight`. NuvioTV reads `LastPlaybackDiagnostics.videoResolution` and its production audio/subtitle overlays; built-in subtitle rows are counted through the existing `subtitle_built_in` source.
 - `native_evidence_completeness.cjs` resolves expected audio/subtitle languages from the variant matching the player's actual video height. A 540p Hindi-only selection no longer fails because another 720p rendition exposes four languages; the 720p rendition still fails if the player exposes only Hindi. Fixed quality labels also fail when actual selected height is below their quality bucket, while `Adaptive` may legitimately select a lower rendition.
 - This closes a validation bug discovered by field comparison of ExoPlayer vs libmpv. Explicit same-URL two-engine certification remains the next validation step.
+
+
+### 2026-11-19 — Native variant Lab first CI correction
+- Release Finalizer 44441318564 on `6c5891b15c0dc61d462e474e5e0c91454d71b8f6` stopped at the old static assertion that required `hlsAudioTrackCount`. The implementation intentionally replaced that union-only helper with `hlsTrackTopology`; the finalizer did not reach the new generated-player/evidence tests yet.
+- The static contract is updated to require variant audio/subtitle matrices and subtitle observation fields. This is a test-contract correction, not playback proof.

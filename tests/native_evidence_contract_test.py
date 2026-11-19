@@ -207,8 +207,11 @@ for required in (
 ):
     assert required in ios_player, required
 assert "logical_provider64=" in native_corpus
-assert "hlsAudioTrackCount" in native_corpus
-assert "hlsAudioTrackLanguages" in native_corpus
+assert "hlsTrackTopology" in native_corpus
+assert "audioVariantMatrix" in native_corpus
+assert "subtitleVariantMatrix" in native_corpus
+assert "subtitleTrackCount" in native_corpus
+assert "subtitleTrackLanguages" in native_corpus
 assert "LANGUAGE" in native_corpus
 assert 'startsWith("#EXT-X-MEDIA", ignoreCase = true)' in native_corpus
 assert "TYPE" in native_corpus and "AUDIO" in native_corpus
