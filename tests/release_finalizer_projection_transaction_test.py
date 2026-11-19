@@ -34,9 +34,7 @@ semantic_transport = workflow.index("python3 tests/provider_anime_semantic_trans
 multiplicity = workflow.index("python3 tests/provider_stream_multiplicity_contract_test.py", semantic_transport)
 season_zero = workflow.index("python3 tests/special_season_zero_identity_test.py", multiplicity)
 five_labs = workflow.index("python3 tests/native_five_lab_coverage_test.py", season_zero)
-native_scope = workflow.index("python3 tests/native_hub46_scope_contract_test.py", five_labs)
-native_transport = workflow.index("python3 tests/native_hub46_transport_manifest_test.py", native_scope)
-native_corpus = workflow.index("python3 tests/native_corpus_device_lab_test.py", native_transport)
+native_corpus = workflow.index("python3 tests/native_corpus_device_lab_test.py", five_labs)
 native_evidence = workflow.index("python3 tests/native_evidence_contract_test.py", native_corpus)
 native_floor = workflow.index("node tests/native_evidence_completeness_test.cjs", native_evidence)
 native_codegen = workflow.index("python3 tests/native_player_diagnostics_codegen_test.py", native_floor)
@@ -82,8 +80,8 @@ final_reconcile = workflow.index("python3 scripts/reconcile_active_provider_publ
 
 assert reapply < sync < sync_check < reconcile < materialize < sync2 < sync2_check < second_reconcile < validate
 assert runtime_step < upstream_guard_test < upstream_guard < runtime_render < runtime_gate < runtime_matrix < runtime_policy < portable_gate < clean_base
-assert portable_gate < metier_docs < metier_plans < cardinality < semantic_transport < multiplicity < season_zero < five_labs < native_scope
-assert native_scope < native_transport < native_corpus < native_evidence < native_floor < native_codegen < native_pipeline < native_ios_audio < native_multi_audio < native_provenance < branding_provenance < domain_registry < presentation < metadata < score < hls_facts < hls_integrity < hls_presentation < multi_variant < telemetry < core_ownership < step
+assert portable_gate < metier_docs < metier_plans < cardinality < semantic_transport < multiplicity < season_zero < five_labs < native_corpus
+assert native_corpus < native_evidence < native_floor < native_codegen < native_pipeline < native_ios_audio < native_multi_audio < native_provenance < branding_provenance < domain_registry < presentation < metadata < score < hls_facts < hls_integrity < hls_presentation < multi_variant < telemetry < core_ownership < step
 assert release_types < reapply2 < minimize2 < minimize2_check < sync3 < sync3_check < final_reconcile
 reverse_rebuild = workflow.index("python3 scripts/verify_provider_v3_reverse_rebuild.py", final_reconcile)
 finalize_versions = workflow.index("- name: Finalize synchronized release and provider cache versions", reverse_rebuild)
@@ -92,7 +90,8 @@ assert workflow.count("python3 scripts/sync_manifest_projection_rows.py\n") >= 3
 assert workflow.count("python3 scripts/sync_manifest_projection_rows.py --check") >= 3
 assert "'scripts/sync_manifest_projection_rows.py'" in workflow
 assert "--matrix automation/evidence/hub-lab-matrix-46.json" not in workflow
-assert workflow.count("--vf-source vf/manifest.json") >= 2
+assert "manifest-hub46.json" not in workflow
+assert "native-hub46/manifest.json" not in workflow
 for required in (
     "'automation/nuvio-client-compatibility-matrix.json'",
     "'automation/platform-runtime-contracts.json'",
@@ -115,8 +114,6 @@ for required in (
     "'scripts/run_native_corpus_tv_suite.sh'",
     "'scripts/run_native_corpus_desktop_suite.sh'",
     "'scripts/run_native_corpus_ios_suite.sh'",
-    "'scripts/apply_hub46_native_lab_scope.py'",
-    "'tests/native_hub46_transport_manifest_test.py'",
     "'tests/native_corpus_device_lab_test.py'",
     "'tests/native_evidence_contract_test.py'",
     "'tests/native_evidence_completeness_test.cjs'",
@@ -181,7 +178,6 @@ for required in (
     "'tests/provider_census_status_markdown_test.py'",
     "'tests/provider_anime_semantic_transport_contract_test.py'",
     "'tests/native_five_lab_coverage_test.py'",
-    "'tests/native_hub46_scope_contract_test.py'",
     "'tests/global_stream_presentation_test.py'",
     "'tests/global_stream_metadata_preservation_contract_test.py'",
     "'tests/stream_score_contract_test.py'",
