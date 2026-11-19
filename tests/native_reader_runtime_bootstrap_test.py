@@ -242,6 +242,17 @@ with tempfile.TemporaryDirectory(prefix="niakvio-tv-hilt-regression-") as temp:
     assert "import dagger.hilt.android.EntryPointAccessors" in cleaned
     assert "import dagger.hilt.EntryPoint" not in cleaned
     assert "@InstallIn(SingletonComponent::class)" not in cleaned
+    # The player and repository diagnostic layers compose imports separately.
+    # Missing test-only Hilt accessor import is repaired by the finalizer
+    # before Kotlin compilation, never by modifying the production client.
+    source.write_text(
+        generated.replace("import dagger.hilt.android.EntryPointAccessors" + chr(10), ""),
+        encoding="utf-8",
+    )
+    finalize_tv_hilt(source)
+    assert source.read_text(encoding="utf-8").count(
+        "import dagger.hilt.android.EntryPointAccessors" + chr(10)
+    ) == 1
     # Reject a downgraded generated accessor: controls must be test-owned and
     # compile against the exact debug-only Hilt bridge, never an old method set.
     source.write_text(
