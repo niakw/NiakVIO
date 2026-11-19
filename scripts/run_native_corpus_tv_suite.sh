@@ -54,6 +54,17 @@ MANIFEST_URL="$NIAKVIO_RESOLVED_MANIFEST_URL"
 ALLOW_LOCAL_MANIFEST="$NIAKVIO_RESOLVED_ALLOW_LOCAL"
 PROVIDER_LOADING_URL_ARGS=()
 if [[ "$ALLOW_LOCAL_MANIFEST" = "1" ]]; then PROVIDER_LOADING_URL_ARGS+=(--allow-local-lab-url); fi
+# A candidate must execute its SHA-attested staged asset in the *real*
+# PluginRuntime, not just copy it next to an official manager execution of
+# published bytes. Normal TV tests still use PluginManager exclusively.
+if [[ -n "${NIAKVIO_NATIVE_CANDIDATE_SHA256:-}" ]]; then
+  if [[ ! "$NIAKVIO_NATIVE_CANDIDATE_SHA256" =~ ^[0-9a-f]{64}$ || "$TARGET_PROVIDER" = "declared-type" ]]; then
+    echo "FIELD_NATIVE_CANDIDATE_ORACLE_ERROR reason=invalid_or_unscoped_candidate" >&2
+    exit 2
+  fi
+  PROVIDER_LOADING_URL_ARGS+=(--candidate-execution-sha256 "$NIAKVIO_NATIVE_CANDIDATE_SHA256")
+  echo "FIELD_NATIVE_CANDIDATE_ORACLE_ENABLED sha256=$NIAKVIO_NATIVE_CANDIDATE_SHA256 official_plugin_runtime=true production_playback_authority=false"
+fi
 CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE="$(python3 - <<'PY' 2>/dev/null || true
 import json
 import os
@@ -202,6 +213,20 @@ for fixture in "${FIXTURES[@]}"; do
 
   echo "FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=tv" | tee -a "$LOG"
   cat "$FRONT_LOG" >> "$LOG" 2>/dev/null || true
+
+  # The generated test must prove that the candidate bytes were actually
+  # executed, and that its result was observed, before any diagnostic verdict.
+  # This is a separate oracle from production playback verification.
+  if [[ -n "${NIAKVIO_NATIVE_CANDIDATE_SHA256:-}" ]]; then
+    if ! grep -Fq "FIELD_NATIVE_CANDIDATE_RUNTIME_BYTE_CHECK client=tv" "$LOG" \
+      || ! grep -Fq "sha256=$NIAKVIO_NATIVE_CANDIDATE_SHA256 matched=true runtime=official_plugin_runtime" "$LOG" \
+      || ! grep -Fq "FIELD_NATIVE_CANDIDATE_RUNTIME_RESULT client=tv" "$LOG"; then
+      echo "FIELD_NATIVE_CANDIDATE_ORACLE_FAILED fixture=$fixture reason=exact_candidate_execution_or_terminal_missing authority=none" | tee -a "$LOG"
+      SOFT_FAILURES=$((SOFT_FAILURES+1))
+    else
+      echo "FIELD_NATIVE_CANDIDATE_ORACLE_OBSERVED fixture=$fixture sha256=$NIAKVIO_NATIVE_CANDIDATE_SHA256 byte_matched=true runtime_result_observed=true production_playback_authority=false" | tee -a "$LOG"
+    fi
+  fi
 
   ANALYSIS_STATUS=0
   node "$ANALYZER" "$fixture" "$LOG" || ANALYSIS_STATUS=$?
