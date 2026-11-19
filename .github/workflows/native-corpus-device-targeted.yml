@@ -29,10 +29,15 @@ on:
         default: false
         type: boolean
       candidate_rematerialize:
-        description: Ephemeral ProviderBase candidate for one TV provider and fixture; never production
+        description: Ephemeral Core/ProviderBase candidate for one TV fixture; never production
         required: false
         default: false
         type: boolean
+      candidate_required_marker:
+        description: Optional source-owned Core marker required in exact candidate JS
+        required: false
+        default: ""
+        type: string
   push:
     branches: [main]
     paths:
@@ -88,6 +93,7 @@ jobs:
           INPUT_TARGET_FIXTURE: ${{ inputs.target_fixture || '' }}
           INPUT_RESIDENTIAL_EXIT: ${{ inputs.residential_exit || false }}
           INPUT_CANDIDATE_REMATERIALIZE: ${{ inputs.candidate_rematerialize || false }}
+          INPUT_CANDIDATE_REQUIRED_MARKER: ${{ inputs.candidate_required_marker || '' }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
@@ -107,6 +113,7 @@ jobs:
           target_fixture = (os.environ.get("INPUT_TARGET_FIXTURE") or "").strip()
           residential = str(os.environ.get("INPUT_RESIDENTIAL_EXIT") or "").strip().lower() == "true"
           candidate_rematerialize = str(os.environ.get("INPUT_CANDIDATE_REMATERIALIZE") or "").strip().lower() == "true"
+          candidate_marker = str(os.environ.get("INPUT_CANDIDATE_REQUIRED_MARKER") or "").strip()
 
           if event == "push":
               trigger = Path(".github/triggers/native-residential-transport-targeted.json")
@@ -120,6 +127,7 @@ jobs:
               target_fixture = str(payload.get("targetFixture") or "").strip()
               residential = payload.get("residentialExit") is True
               candidate_rematerialize = payload.get("candidateRematerialize") is True
+              candidate_marker = str(payload.get("candidateRequiredMarker") or "").strip()
 
           if device in {"desktop", "mobile", "tv"}:
               devices = [device]
@@ -134,6 +142,11 @@ jobs:
               raise SystemExit("residential native transport proof requires explicit target provider(s)")
           if candidate_rematerialize and (device != "tv" or len(providers) != 1 or not target_fixture):
               raise SystemExit("candidate native replay requires TV, one active provider and an exact fixture")
+          if candidate_marker not in {"", "NIAKVIO_HLS_TS_WRAPPED_AAC_RENDITION_V20",
+                                     "NIAKVIO_PROVIDER_NATIVE_FETCH_CAPABILITY_GATE_V28"}:
+              raise SystemExit("invalid native candidate source-owned Core marker")
+          if candidate_marker and not candidate_rematerialize:
+              raise SystemExit("candidate marker without isolated candidate materialization")
           if target_fixture:
               lab = json.loads(Path(".github/triggers/nuvio-client-lab.json").read_text(encoding="utf-8"))
               fixture_slugs = set()
@@ -179,6 +192,7 @@ jobs:
                   "projection": spec["projection"],
                   "residential": residential,
                   "candidateRematerialize": candidate_rematerialize,
+                  "candidateRequiredMarker": candidate_marker,
               }
               for selected_device in devices
               for spec in target_specs
@@ -316,6 +330,7 @@ jobs:
           NUVIO_PROVIDER_V3_CONTEXT: workspace
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+          NIAKVIO_CANDIDATE_REQUIRED_MARKER: ${{ matrix.candidateRequiredMarker }}
         run: |
           set -euo pipefail
           cd niakvio
@@ -323,6 +338,7 @@ jobs:
           python3 scripts/prepare_native_candidate_remat.py \
             --provider "$NIAKVIO_TARGET_PROVIDER" \
             --manifest "$NIAKVIO_TARGET_MANIFEST" \
+            --required-marker "$NIAKVIO_CANDIDATE_REQUIRED_MARKER" \
             --source-sha "$GITHUB_SHA"
           # App repository selection remains a real SHA-pinned HTTPS manifest.
           # Only the diagnostic instrumentation executes the checked local candidate.
@@ -373,11 +389,14 @@ jobs:
       - name: Verify candidate bytes in official TV instrumentation assets
         if: ${{ matrix.candidateRematerialize == true }}
         shell: bash
+        env:
+          NIAKVIO_CANDIDATE_REQUIRED_MARKER: ${{ matrix.candidateRequiredMarker }}
         run: |
           set -euo pipefail
           python3 niakvio/scripts/prepare_native_candidate_remat.py --verify-staging \
             --provider "$NIAKVIO_TARGET_PROVIDER" \
             --manifest "$NIAKVIO_TARGET_MANIFEST" \
+            --required-marker "$NIAKVIO_CANDIDATE_REQUIRED_MARKER" \
             --client-root nuvio-tv
 
       - name: Set up Gradle runtime
