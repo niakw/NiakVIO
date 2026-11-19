@@ -393,7 +393,7 @@ try {
     'FIELD_NATIVE_TV_PROMISE_CONTROL client=tv fixture=sinners-2025 sync_count=1 async_count=1 expected=1 test_only=false provider_media=false proof_authority=false',
     'FIELD_NATIVE_TV_PROMISE_CONTROL client=tv fixture=sinners-2025 sync_count=1 async_count=1 expected=1 test_only=true provider_media=false proof_authority=true',
     'FIELD_NATIVE_TV_PROMISE_CONTROL client=tv fixture=sinners-2025 sync_count=1 async_count=1 expected=1 test_only=true provider_media=false proof_authority=false url=https://private.example/?token=SECRET',
-  ].join('\\n') + '\\n');
+  ].join('\n') + '\n');
   const promiseRun = spawnSync(process.execPath, [script, '--output', promiseOutput, promiseLog], { cwd: root, encoding: 'utf8' });
   assert.equal(promiseRun.status, 0, promiseRun.stderr + promiseRun.stdout);
   const promiseData = JSON.parse(fs.readFileSync(promiseOutput, 'utf8'));
