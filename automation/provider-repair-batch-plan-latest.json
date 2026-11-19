@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44470838668",
-  "sourceTriggerSha": "a649fc865f582fa2ccbef6f56f4e3c51394d72d3",
+  "sourceRunId": "44474308425",
+  "sourceTriggerSha": "accbf1827b39411f38493f89c83474a80696a72a",
   "unresolvedProviderCount": 67,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -12,7 +12,9 @@
     "papadustream",
     "stigstream"
   ],
-  "lifecycleSuppressedDynamicProviders": [],
+  "lifecycleSuppressedDynamicProviders": [
+    "animevostfr"
+  ],
   "dynamicVariantCurrentObservedProviders": [
     "1jour1film0626",
     "4khdhub",
@@ -421,6 +423,36 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
+      "groupId": "learning|direct_media|runtime:direct_media",
+      "repairScope": "learning",
+      "runtimeFamilies": [
+        "direct_media"
+      ],
+      "runtimeFamilySignature": "direct_media",
+      "capabilityStrategy": "direct_media",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "timeout"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "hindmoviez"
+      ],
+      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [
+        "hindmoviez"
+      ],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
       "groupId": "variant-coverage|api_stream_resolver|runtime:api_stream_resolver",
       "repairScope": "variant-coverage",
       "runtimeFamilies": [
@@ -446,36 +478,6 @@
       ],
       "dynamicVariantProviders": [
         "meowtv"
-      ],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "variant-coverage|direct_media|runtime:direct_media",
-      "repairScope": "variant-coverage",
-      "runtimeFamilies": [
-        "direct_media"
-      ],
-      "runtimeFamilySignature": "direct_media",
-      "capabilityStrategy": "direct_media",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "none"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "hindmoviez"
-      ],
-      "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
-      "selectionAuthorities": [
-        "provider-census-sharded-latest.json:dynamic-variant-debt"
-      ],
-      "dynamicVariantProviders": [
-        "hindmoviez"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
