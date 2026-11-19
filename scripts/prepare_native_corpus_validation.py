@@ -459,15 +459,22 @@ class NiakvioNativeCorpusDesktopTest {{
 
 def android_test(fixture: dict, providers: list[dict], client: str) -> str:
     f = common_fixture_values(fixture)
-    # Native Android is a real device/emulator traversal. Keep a tighter hard
-    # wall-clock budget than the generic host Lab so one wedged JS runtime does
-    # not consume the whole fixture. The workflow can override this explicitly.
-    raw_android_timeout = os.environ.get("NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS", "25000").strip()
-    try:
-        android_timeout_ms = max(5_000, min(int(raw_android_timeout), 60_000))
-    except ValueError:
-        android_timeout_ms = 25_000
-    f["provider_timeout_ms"] = str(min(int(f["provider_timeout_ms"]), android_timeout_ms))
+    # Normal corpus coverage keeps its 25s execution guard. One explicitly
+    # selected provider on the *official* native client may need more than
+    # 25s for its sequential embed fallbacks. The lab budget must be explicit,
+    # bounded and test-owned: never silently extend every 140-provider census.
+    raw_android_timeout = os.environ.get("NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS", "").strip()
+    if raw_android_timeout:
+        if not raw_android_timeout.isdecimal():
+            raise ValueError("targeted native provider timeout must be an integer in milliseconds")
+        requested_timeout = int(raw_android_timeout)
+        if not 5_000 <= requested_timeout <= 60_000:
+            raise ValueError("targeted native provider timeout must be between 5000 and 60000 ms")
+        f["provider_timeout_ms"] = str(requested_timeout)
+        print(f"FIELD_NATIVE_PROVIDER_BUDGET client={client} ms={requested_timeout} source=targeted_override playback_authority=false")
+    else:
+        f["provider_timeout_ms"] = str(min(int(f["provider_timeout_ms"]), 25_000))
+        print(f"FIELD_NATIVE_PROVIDER_BUDGET client={client} ms={f['provider_timeout_ms']} source=default_corpus playback_authority=false")
     if client == "mobile":
         package = "com.nuvio.app.features.plugins"
         klass = "NiakvioNativeCorpusMobileTest"
