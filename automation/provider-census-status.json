@@ -1822,9 +1822,9 @@
     },
     {
       "provider": "french-anime",
-      "status": "HARNESS MISMATCH",
+      "status": "NO PROOF",
       "underlyingStatus": "",
-      "color": "🟧",
+      "color": "🔵",
       "declaredLanes": [
         "anime"
       ],
@@ -1858,11 +1858,19 @@
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
-      "action": "GitHub-hosted IP/environment differential confirmed by private residential exit; keep provider JS unchanged and reproduce with native transport/playback before any code blame",
+      "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
-      "statusRepairEligible": false,
-      "repairEligible": false,
-      "testedThisRun": false
+      "statusRepairEligible": true,
+      "repairEligible": true,
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "french-manga",
@@ -2326,16 +2334,17 @@
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
-      "authorityRepairEligible": false,
-      "authorityAction": "KEEP_DISABLED",
-      "authorityClass": "disabled",
-      "authorityConfidence": "terminal",
+      "authorityRepairEligible": true,
+      "authorityAction": "KEEP_DIRECT",
+      "authorityClass": "direct",
+      "authorityConfidence": "medium",
       "authorityReasons": [
-        "already_disabled"
+        "curated_direct",
+        "existing_positive_route_prior"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
-      "action": "provider lifecycle/authority blocks Repair; keep disabled until a new authoritative provider address/backend is qualified",
+      "action": "lifecycle disabled; exclude from automatic Retest/Repair until authority re-enables it",
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
@@ -5282,9 +5291,9 @@
     "CHAIN REACHED": 22,
     "DISABLED": 37,
     "FULL OK": 5,
-    "HARNESS MISMATCH": 5,
+    "HARNESS MISMATCH": 4,
     "HARNESS/ENV BLOCKED": 14,
-    "NO PROOF": 9,
+    "NO PROOF": 10,
     "PARTIAL OK": 1,
     "PROOF REFRESH REQUIRED": 5,
     "PROVIDER NETWORK BLOCKED": 8,
@@ -5424,6 +5433,7 @@
     "67movies",
     "anikototv",
     "corsflix",
+    "french-anime",
     "french-manga",
     "frenchstream",
     "moiflix",
@@ -5475,7 +5485,6 @@
     "ihavenotv",
     "kehflix",
     "kidraz",
-    "kurage",
     "latestmovies",
     "mallumv",
     "moviebite",
@@ -5537,7 +5546,6 @@
     "coflix",
     "flemmix",
     "kehflix",
-    "kurage",
     "mallumv",
     "moviebox",
     "movieshunt",
@@ -5612,16 +5620,10 @@
     "zone-streaming",
     "zone-telechargement"
   ],
-  "environmentQueue": [
-    "french-anime"
-  ],
-  "harnessMismatchQueue": [
-    "french-anime"
-  ],
+  "environmentQueue": [],
+  "harnessMismatchQueue": [],
   "environmentBlockedQueue": [],
-  "harnessQueue": [
-    "french-anime"
-  ],
+  "harnessQueue": [],
   "lastRepairAttempt": {
     "runId": "44630700000",
     "sourceCensusRunId": "44609268223",
@@ -5640,9 +5642,11 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "44630718083-sharded-waf",
-  "harnessEvidenceSha": "e49b118064eaa30f89b99bd08f6eeeb1168e2102",
-  "authorityRefreshedProviders": [],
+  "harnessEvidenceRunId": "44631470665-waf-transport",
+  "harnessEvidenceSha": "d126b0a0f72012f2d457b3fd1ba6e4e43f1cd853",
+  "authorityRefreshedProviders": [
+    "kurage"
+  ],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
     "aniflix-uno",
@@ -5663,8 +5667,12 @@
   ],
   "networkDifferentialUpdatedProviders": [],
   "residentialProviderReplayPromotedProviders": [],
-  "residentialProviderReplayReclassifiedProviders": [],
-  "residentialProviderReplayRepairableProviders": [],
+  "residentialProviderReplayReclassifiedProviders": [
+    "french-anime"
+  ],
+  "residentialProviderReplayRepairableProviders": [
+    "french-anime"
+  ],
   "residentialExitNodeEvidence": {
     "enabled": true,
     "available": true,
@@ -6824,7 +6832,7 @@
       },
       {
         "provider": "french-anime",
-        "providerArtifactSha256": "4eae89a53a97f94ee854f611264e1a5a68321d859cb65f95c605ae8ef6815ea8",
+        "providerArtifactSha256": "7c7b6d29acbdc8eb9367b1f20ee3e76eaa0c289779b1958d0484af67c800d41d",
         "lane": "anime",
         "status": "no_streams",
         "debugStage": "provider_zero_before_provider_network",
@@ -6844,9 +6852,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "13cbfa071c3b3a49d213efb7ad9b425ec2a70f2d",
-          "providerBundleSha256": "4eae89a53a97f94ee854f611264e1a5a68321d859cb65f95c605ae8ef6815ea8",
-          "runId": "44610116697",
+          "sourceNiakvioSha": "d2f0a378369e32c67581a668b981a3bd0764275c",
+          "providerBundleSha256": "7c7b6d29acbdc8eb9367b1f20ee3e76eaa0c289779b1958d0484af67c800d41d",
+          "runId": "44631470665",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7757,26 +7765,22 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": false,
-      "providerCount": 0,
+      "available": true,
+      "providerCount": 1,
       "refreshedProviders": [
-        "1jour1film0626",
-        "aniflix-uno",
-        "animejlprovider",
-        "animeonsen",
-        "animesalt",
-        "arrowtv",
-        "chillflix",
-        "cinegram",
-        "cinetimes",
-        "dulourd"
+        "french-anime"
       ],
-      "replayedProviders": [],
+      "replayedProviders": [
+        "french-anime"
+      ],
       "rawProviders": [],
       "playableProviders": [],
       "verifiedProviders": [],
-      "sourceNiakvioSha": "",
-      "runId": "",
+      "byteMatchedProviders": [
+        "french-anime"
+      ],
+      "sourceNiakvioSha": "d2f0a378369e32c67581a668b981a3bd0764275c",
+      "runId": "44631470665",
       "proofAuthority": false,
       "publicationAuthority": false
     },

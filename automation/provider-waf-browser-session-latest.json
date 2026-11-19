@@ -6,12 +6,46 @@
   "targetCount": 56,
   "providerFilter": [],
   "attemptsPerTarget": 2,
-  "clientProfileMatrixEnabled": false,
+  "clientProfileMatrixEnabled": true,
   "clientProfiles": [
     {
       "id": "github-default-browser",
       "transportApproximation": "GitHub-hosted Chromium",
       "userAgent": "browser-default"
+    },
+    {
+      "id": "nuvio-tv-ua-browser",
+      "transportApproximation": "GitHub-hosted Chromium with audited NuvioTV default UA only",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "nativeContract": {
+        "httpStack": "OkHttp",
+        "proxyPolicy": "Proxy.NO_PROXY",
+        "dnsPolicy": "IPv4FirstDns",
+        "redirects": "HTTP+SSL enabled"
+      }
+    },
+    {
+      "id": "nuvio-tv-okhttp-jvm",
+      "transportApproximation": "GitHub JVM OkHttp 4.12.0 with audited NuvioTV PluginRuntime policy",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "nativeContractApproximation": {
+        "httpStack": "OkHttp 4.12.0",
+        "proxyPolicy": "Proxy.NO_PROXY",
+        "dnsPolicy": "IPv4FirstDns",
+        "redirects": "HTTP+SSL enabled",
+        "tlsRuntime": "GitHub JVM, not Android device"
+      }
+    },
+    {
+      "id": "nuvio-tv-direct-http-approx",
+      "transportApproximation": "GitHub libcurl with IPv4, NO_PROXY, redirects and audited NuvioTV UA",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "nativeContractApproximation": {
+        "httpStack": "libcurl-not-OkHttp",
+        "proxyPolicy": "NO_PROXY",
+        "dnsPolicy": "IPv4 only",
+        "redirects": "enabled"
+      }
     }
   ],
   "limitations": [
@@ -2731,7 +2765,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "challenge_observed_unconfirmed",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 18054,
+      "durationMs": 18846,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -2771,16 +2805,16 @@
         ]
       },
       "transportReceipt": {
-        "sourceNiakvioSha": "13cbfa071c3b3a49d213efb7ad9b425ec2a70f2d",
-        "providerBundleSha256": "4eae89a53a97f94ee854f611264e1a5a68321d859cb65f95c605ae8ef6815ea8",
-        "runId": "44610116697",
+        "sourceNiakvioSha": "d2f0a378369e32c67581a668b981a3bd0764275c",
+        "providerBundleSha256": "7c7b6d29acbdc8eb9367b1f20ee3e76eaa0c289779b1958d0484af67c800d41d",
+        "runId": "44631470665",
         "proofAuthority": false,
         "publicationAuthority": false
       },
       "residentialReceipt": {
-        "sourceNiakvioSha": "13cbfa071c3b3a49d213efb7ad9b425ec2a70f2d",
-        "providerBundleSha256": "4eae89a53a97f94ee854f611264e1a5a68321d859cb65f95c605ae8ef6815ea8",
-        "runId": "44610116697",
+        "sourceNiakvioSha": "d2f0a378369e32c67581a668b981a3bd0764275c",
+        "providerBundleSha256": "7c7b6d29acbdc8eb9367b1f20ee3e76eaa0c289779b1958d0484af67c800d41d",
+        "runId": "44631470665",
         "proofAuthority": false,
         "publicationAuthority": false
       }
@@ -7067,7 +7101,7 @@
       },
       {
         "provider": "french-anime",
-        "providerArtifactSha256": "4eae89a53a97f94ee854f611264e1a5a68321d859cb65f95c605ae8ef6815ea8",
+        "providerArtifactSha256": "7c7b6d29acbdc8eb9367b1f20ee3e76eaa0c289779b1958d0484af67c800d41d",
         "lane": "anime",
         "status": "no_streams",
         "debugStage": "provider_zero_before_provider_network",
@@ -7087,9 +7121,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "13cbfa071c3b3a49d213efb7ad9b425ec2a70f2d",
-          "providerBundleSha256": "4eae89a53a97f94ee854f611264e1a5a68321d859cb65f95c605ae8ef6815ea8",
-          "runId": "44610116697",
+          "sourceNiakvioSha": "d2f0a378369e32c67581a668b981a3bd0764275c",
+          "providerBundleSha256": "7c7b6d29acbdc8eb9367b1f20ee3e76eaa0c289779b1958d0484af67c800d41d",
+          "runId": "44631470665",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -8000,42 +8034,29 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": false,
-      "providerCount": 0,
+      "available": true,
+      "providerCount": 1,
       "refreshedProviders": [
-        "1jour1film0626",
-        "aniflix-uno",
-        "animejlprovider",
-        "animeonsen",
-        "animesalt",
-        "arrowtv",
-        "chillflix",
-        "cinegram",
-        "cinetimes",
-        "dulourd"
+        "french-anime"
       ],
-      "replayedProviders": [],
+      "replayedProviders": [
+        "french-anime"
+      ],
       "rawProviders": [],
       "playableProviders": [],
       "verifiedProviders": [],
-      "sourceNiakvioSha": "",
-      "runId": "",
+      "byteMatchedProviders": [
+        "french-anime"
+      ],
+      "sourceNiakvioSha": "d2f0a378369e32c67581a668b981a3bd0764275c",
+      "runId": "44631470665",
       "proofAuthority": false,
       "publicationAuthority": false
     },
     "providerBundleDigestAuthority": "executed-global-vf-published-bytes"
   },
   "lastRefreshProviderFilter": [
-    "1jour1film0626",
-    "aniflix-uno",
-    "animejlprovider",
-    "animeonsen",
-    "animesalt",
-    "arrowtv",
-    "chillflix",
-    "cinegram",
-    "cinetimes",
-    "dulourd"
+    "french-anime"
   ],
   "residentialExitNodeLastAttempt": {
     "enabled": true,
@@ -8051,22 +8072,21 @@
     }
   },
   "freshRunReceipt": {
-    "sourceNiakvioSha": "13cbfa071c3b3a49d213efb7ad9b425ec2a70f2d",
-    "runId": "44610116697",
+    "sourceNiakvioSha": "d2f0a378369e32c67581a668b981a3bd0764275c",
+    "runId": "44631470665",
     "providerCount": 1,
     "proofAuthority": false,
     "publicationAuthority": false
   },
-  "currentRefreshProviderCount": 10,
-  "currentRefreshRowCount": 16,
+  "currentRefreshProviderCount": 1,
+  "currentRefreshRowCount": 1,
   "currentRefreshCounts": {
-    "browser_challenge_observed": 3,
-    "browser_challenge_persisted": 13
+    "browser_challenge_observed": 1
   },
-  "historicalRetainedRowCount": 40,
+  "historicalRetainedRowCount": 55,
   "historicalRetainedCounts": {
-    "browser_challenge_observed": 1,
-    "browser_challenge_persisted": 18,
+    "browser_challenge_observed": 3,
+    "browser_challenge_persisted": 31,
     "browser_content_reached": 19,
     "browser_inconclusive": 2
   }
