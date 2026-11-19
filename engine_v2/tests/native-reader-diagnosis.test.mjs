@@ -562,7 +562,7 @@ try {
     'D/PluginRuntime: Fetch result: 200 OK url=https://signed.example/master.m3u8?token=NEVER_PERSIST bodyLen=120 bodyPreview=#EXTM3U',
     `FIELD_NATIVE_RESULT client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} request_type=movie route_mode=declared enabled=true duration_ms=25477 count=0`,
     'FIELD_NATIVE_CORPUS_END client=tv fixture=sinners-2025 errors=0',
-  ].join('\\n') + '\\n');
+  ].join('\n') + '\n');
   const budgetRun = spawnSync(process.execPath,
     [script, '--output', budgetHlsOutput, budgetHlsLog],
     { cwd: root, encoding: 'utf8',
@@ -597,7 +597,7 @@ try {
       `D/PluginRuntime: Fetch result: ${httpStatus} url=https://signed.example/master.m3u8?token=SECRET bodyLen=0`,
       `FIELD_NATIVE_RESULT client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} request_type=movie route_mode=declared enabled=true duration_ms=${duration} count=${count}`,
       'FIELD_NATIVE_CORPUS_END client=tv fixture=sinners-2025 errors=0',
-    ].join('\\n') + '\\n');
+    ].join('\n') + '\n');
     const run = spawnSync(process.execPath, [script, '--output', variantOutput, variantLog],
       { cwd: root, encoding: 'utf8',
         env: { ...process.env, NIAKVIO_BRAIN_NONBLOCKING: '1' } });
