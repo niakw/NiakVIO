@@ -40,8 +40,8 @@ assert "mandatoryRegression" in ios_prepare
 assert "fixture.mandatoryRegression || key !in terminalProviders" in ios_prepare
 
 ios_runner = (ROOT / "scripts/run_native_corpus_ios_suite.sh").read_text(encoding="utf-8")
-assert "native-hub46/manifest.json" in ios_runner
-assert "manifest=manifest-hub46.json" not in ios_runner
-assert "/manifest-hub46.json" not in ios_runner
+assert "native-hub46/manifest.json" not in ios_runner
+assert "manifest-hub46.json" not in ios_runner
+assert 'NIAKVIO_MANIFEST_URL:?NIAKVIO_MANIFEST_URL is required' in ios_runner
 
-print("NATIVE_ADAPTIVE_CATALOG_CONTRACT_OK lanes=3 initial=1_each clean_zero_only=true fixed_batch=false ios_transport=nested_hub46")
+print("NATIVE_ADAPTIVE_CATALOG_CONTRACT_OK lanes=3 initial=1_each clean_zero_only=true fixed_batch=false ios_transport=canonical_manifest")
