@@ -105,6 +105,16 @@ jobs:
     needs: resolve_tv
     runs-on: ubuntu-latest
     timeout-minutes: 220
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - projection: global
+            manifest: manifest.json
+          - projection: vf
+            manifest: vf/manifest.json
+    env:
+      NIAKVIO_TARGET_MANIFEST: ${{ matrix.manifest }}
     steps:
       - name: Checkout NiakVIO candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -158,8 +168,8 @@ jobs:
             echo "NIAKVIO_TARGET_FIXTURES=$ROTATED_FIXTURES"
             echo "NIAKVIO_PRIMARY_FIXTURE=$PRIMARY_FIXTURE"
           } >> "$GITHUB_ENV"
-          echo "FIELD_ROTATING_CORPUS client=tv fixtures=$ROTATED_FIXTURES scope=projection-union"
-          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture "$PRIMARY_FIXTURE" --workspace "$GITHUB_WORKSPACE" --manifest native-hub46/manifest.json --provider declared-type --streams 2 --initial
+          echo "FIELD_ROTATING_CORPUS client=tv fixtures=$ROTATED_FIXTURES scope=${{ matrix.projection }}"
+          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture "$PRIMARY_FIXTURE" --workspace "$GITHUB_WORKSPACE" --manifest "$NIAKVIO_TARGET_MANIFEST" --provider declared-type --streams 2 --initial
       - name: Restore TV Android prebuild cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
@@ -168,11 +178,11 @@ jobs:
             ~/.gradle/wrapper
             nuvio-tv/.gradle
             nuvio-tv/app/build
-          key: native-prebuild-v2-tv-${{ runner.os }}-${{ needs.resolve_tv.outputs.tv_sha }}-${{ hashFiles('niakvio/scripts/prebuild_native_android_reader_suite.sh', 'niakvio/scripts/prepare_native_reader_acceptance.py', 'niakvio/scripts/instrument_native_client_evidence.py', 'niakvio/scripts/instrument_native_repository_http_evidence.py', 'niakvio/scripts/augment_native_corpus_request_contract.py', 'niakvio/scripts/augment_native_provider_loading_compat.py', 'niakvio/native-hub46/manifest.json') }}
+          key: native-prebuild-v3-tv-${{ runner.os }}-${{ matrix.projection }}-${{ needs.resolve_tv.outputs.tv_sha }}-${{ hashFiles('niakvio/scripts/prebuild_native_android_reader_suite.sh', 'niakvio/scripts/prepare_native_reader_acceptance.py', 'niakvio/scripts/instrument_native_client_evidence.py', 'niakvio/scripts/instrument_native_repository_http_evidence.py', 'niakvio/scripts/augment_native_corpus_request_contract.py', 'niakvio/scripts/augment_native_provider_loading_compat.py', 'niakvio/manifest.json', 'niakvio/vf/manifest.json') }}
       - name: Prebuild TV reader once before QEMU
         shell: bash
         env:
-          NIAKVIO_TARGET_MANIFEST: native-hub46/manifest.json
+          NIAKVIO_TARGET_MANIFEST: ${{ matrix.manifest }}
           NIAKVIO_TARGET_PROVIDER: declared-type
           NIAKVIO_PRIMARY_STREAM_SCOPE: all
         run: bash niakvio/scripts/prebuild_native_android_reader_suite.sh tv
@@ -184,7 +194,7 @@ jobs:
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         env:
           NIAKVIO_TARGET_PROVIDER: declared-type
-          NIAKVIO_TARGET_MANIFEST: native-hub46/manifest.json
+          NIAKVIO_TARGET_MANIFEST: ${{ matrix.manifest }}
           NIAKVIO_READER_ACCEPTANCE: "1"
           NIAKVIO_TV_PRIORITY_APPEND: "1"
           NIAKVIO_TV_ROUTE_TIMEOUT_MINUTES: "45"
@@ -209,7 +219,7 @@ jobs:
           set -euo pipefail
           python3 niakvio/scripts/gate_native_declared_provider_matrix.py \
             --client tv \
-            --manifest niakvio/native-hub46/manifest.json \
+            --manifest "niakvio/${NIAKVIO_TARGET_MANIFEST}" \
             --corpus niakvio/.github/triggers/nuvio-client-lab.json \
             "$GITHUB_WORKSPACE"/tv-native-corpus-*.log
       - name: Require TV multi-audio release witness
@@ -238,7 +248,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: native-tv-full-${{ github.run_id }}
+          name: native-tv-full-${{ matrix.projection }}-${{ github.run_id }}
           path: |
             tv-native-corpus-*.log
             tv-native-frontend-*.log
@@ -251,6 +261,16 @@ jobs:
     needs: resolve_mobile
     runs-on: ubuntu-latest
     timeout-minutes: 220
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - projection: global
+            manifest: manifest.json
+          - projection: vf
+            manifest: vf/manifest.json
+    env:
+      NIAKVIO_TARGET_MANIFEST: ${{ matrix.manifest }}
     steps:
       - name: Checkout NiakVIO candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -291,8 +311,8 @@ jobs:
             echo "NIAKVIO_TARGET_FIXTURES=$ROTATED_FIXTURES"
             echo "NIAKVIO_PRIMARY_FIXTURE=$PRIMARY_FIXTURE"
           } >> "$GITHUB_ENV"
-          echo "FIELD_ROTATING_CORPUS client=mobile fixtures=$ROTATED_FIXTURES scope=projection-union"
-          python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile --fixture "$PRIMARY_FIXTURE" --workspace "$GITHUB_WORKSPACE" --manifest native-hub46/manifest.json --provider declared-type --streams all --initial
+          echo "FIELD_ROTATING_CORPUS client=mobile fixtures=$ROTATED_FIXTURES scope=${{ matrix.projection }}"
+          python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile --fixture "$PRIMARY_FIXTURE" --workspace "$GITHUB_WORKSPACE" --manifest "$NIAKVIO_TARGET_MANIFEST" --provider declared-type --streams all --initial
       - name: Restore Mobile Android prebuild cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
@@ -302,11 +322,11 @@ jobs:
             nuvio-mobile/.gradle
             nuvio-mobile/androidApp/build
             nuvio-mobile/composeApp/build
-          key: native-prebuild-v2-mobile-${{ runner.os }}-${{ needs.resolve_mobile.outputs.mobile_sha }}-${{ hashFiles('niakvio/scripts/prebuild_native_android_reader_suite.sh', 'niakvio/scripts/prepare_native_reader_acceptance.py', 'niakvio/scripts/instrument_native_client_evidence.py', 'niakvio/scripts/instrument_native_repository_http_evidence.py', 'niakvio/scripts/augment_native_corpus_request_contract.py', 'niakvio/scripts/augment_native_provider_loading_compat.py', 'niakvio/native-hub46/manifest.json') }}
+          key: native-prebuild-v3-mobile-${{ runner.os }}-${{ matrix.projection }}-${{ needs.resolve_mobile.outputs.mobile_sha }}-${{ hashFiles('niakvio/scripts/prebuild_native_android_reader_suite.sh', 'niakvio/scripts/prepare_native_reader_acceptance.py', 'niakvio/scripts/instrument_native_client_evidence.py', 'niakvio/scripts/instrument_native_repository_http_evidence.py', 'niakvio/scripts/augment_native_corpus_request_contract.py', 'niakvio/scripts/augment_native_provider_loading_compat.py', 'niakvio/manifest.json', 'niakvio/vf/manifest.json') }}
       - name: Prebuild Mobile Android reader once before QEMU
         shell: bash
         env:
-          NIAKVIO_TARGET_MANIFEST: native-hub46/manifest.json
+          NIAKVIO_TARGET_MANIFEST: ${{ matrix.manifest }}
           NIAKVIO_TARGET_PROVIDER: declared-type
           NIAKVIO_PRIMARY_STREAM_SCOPE: all
         run: bash niakvio/scripts/prebuild_native_android_reader_suite.sh mobile
@@ -318,7 +338,7 @@ jobs:
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         env:
           NIAKVIO_TARGET_PROVIDER: declared-type
-          NIAKVIO_TARGET_MANIFEST: native-hub46/manifest.json
+          NIAKVIO_TARGET_MANIFEST: ${{ matrix.manifest }}
           NIAKVIO_READER_ACCEPTANCE: "1"
           NIAKVIO_PRIMARY_STREAM_SCOPE: all
           NIAKVIO_REGRESSION_STREAM_SCOPE: all
@@ -339,7 +359,7 @@ jobs:
           set -euo pipefail
           python3 niakvio/scripts/gate_native_declared_provider_matrix.py \
             --client mobile \
-            --manifest niakvio/native-hub46/manifest.json \
+            --manifest "niakvio/${NIAKVIO_TARGET_MANIFEST}" \
             --corpus niakvio/.github/triggers/nuvio-client-lab.json \
             "$GITHUB_WORKSPACE"/mobile-native-corpus-*.log
       - name: Require Mobile Android multi-audio release witness
@@ -368,7 +388,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: native-mobile-android-full-${{ github.run_id }}
+          name: native-mobile-android-full-${{ matrix.projection }}-${{ github.run_id }}
           path: |
             mobile-native-corpus-*.log
             mobile-native-frontend-*.log
