@@ -429,7 +429,7 @@ try {
       + ' request_type=movie route_mode=declared index=0 state=ready'
       + ' engine=nuvio-tv-production production_surface=true failure_stage=none'
       + ' duration_seconds=1435 video_width=0 video_height=0 audio_track_count=0',
-  ].join('\\n') + '\\n');
+  ].join('\n') + '\n');
   const terminalRun = spawnSync(process.execPath,
     [script, '--output', terminalOutput, terminalLog],
     { cwd: root, encoding: 'utf8' });
