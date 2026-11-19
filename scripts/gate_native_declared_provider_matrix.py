@@ -105,6 +105,10 @@ def merge_outcome(current: str, incoming: str) -> str:
 
 def provider_status(lane_outcomes: dict[str, str]) -> str:
     values = list(lane_outcomes.values())
+    # A missing BEGIN/RESULT is a harness coverage gap, not a provider
+    # catalogue miss or a verified technical error. Never give it ZERO/FULL.
+    if not values or "unobserved" in values:
+        return "INCOMPLETE"
     if values and all(value == "positive" for value in values):
         return "FULL"
     positive = sum(value == "positive" for value in values)
@@ -345,7 +349,8 @@ def main() -> int:
             # URL is merely a media candidate, not verified playback/identity.
             values = list(outcomes.values())
             status = (
-                "TARGETED_CANDIDATE" if "positive" in values
+                "TARGETED_UNOBSERVED" if "unobserved" in values
+                else "TARGETED_CANDIDATE" if "positive" in values
                 else "TARGETED_TECHNICAL" if "technical_error" in values
                 else "TARGETED_CATALOG_MISS"
             )
@@ -361,6 +366,7 @@ def main() -> int:
         "FIELD_NATIVE_PROVIDER_STATUS_SUMMARY "
         f"client={args.client} total={len(provider_ids)} FULL={status_counts['FULL']} "
         f"PARTIAL={status_counts['PARTIAL']} RESAMPLE={status_counts['RESAMPLE']} ZERO={status_counts['ZERO']} "
+        f"INCOMPLETE={status_counts['INCOMPLETE']} TARGETED_UNOBSERVED={status_counts['TARGETED_UNOBSERVED']} "
         f"TARGETED_CANDIDATE={status_counts['TARGETED_CANDIDATE']} "
         f"TARGETED_TECHNICAL={status_counts['TARGETED_TECHNICAL']} "
         f"TARGETED_CATALOG_MISS={status_counts['TARGETED_CATALOG_MISS']}"
