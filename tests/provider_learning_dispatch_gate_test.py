@@ -263,7 +263,11 @@ assert '--brain automation/provider-brain-repair-latest.json' in fast_workflow
 assert '--ledger automation/provider-learning-dispatch-ledger.json' in fast_workflow
 assert '--providers "$learn_handoff_csv"' in fast_workflow
 assert 'if [ -z "$eligible_csv" ]; then' in fast_workflow
-assert '-f target_providers="$eligible_csv"' in fast_workflow
+assert 'ELIGIBLE_CSV="$eligible_csv"' in fast_workflow
+family_dispatch = (ROOT / "scripts/dispatch_learning_family_cohorts.sh").read_text(encoding="utf-8")
+assert '-f target_providers="$cohort_filter"' in family_dispatch
+assert 'gh workflow run brain-learning-lab.yml "${args[@]}"' in family_dispatch
+assert 'MAX_COHORTS="${MAX_COHORTS:-8}"' in family_dispatch
 assert 'reason=no-new-causal-strategy' in fast_workflow
 assert 'reason=causal-gate-error persisted=true' in fast_workflow
 assert 'reason=invalid-causal-selection persisted=true' in fast_workflow

@@ -1,3 +1,8 @@
+## 2026-11-19 — Fast→Learning causal dispatch test aligned to family helper
+
+- CORE Gate `44614521028` on `beb13e4f` failed at `tests/provider_learning_dispatch_gate_test.py:266`: stale assertion expecting an inline `-f target_providers="$eligible_csv"` command. The production Fast workflow now delegates through `scripts/dispatch_learning_family_cohorts.sh`, which passes each bounded `cohort_filter` to the Learning workflow.
+- The contract now checks the real environment handoff and the family helper rather than the old inline command. No validation, identity, media, provider or publication gate is weakened. **0 provider repair** validated by this CI correction.
+
 ## 2026-11-19 — Core gate test adapted to actual family Learning dispatch
 
 - Current Core gate run `44612924705` failed its contract at `tests/provider_brain_autopilot_workflow_test.py:135`: it still required the obsolete inline `-f target_providers="$eligible_csv"` Fast command, while Fast already delegates to `scripts/dispatch_learning_family_cohorts.sh`. This was an **outdated test assertion**, not evidence of provider media failure.
