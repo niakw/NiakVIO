@@ -38,6 +38,10 @@ assert mod.TAILSCALE_CLEAR_TIMEOUT_SECONDS <= 10
 assert "pre_tailnet=true" in source
 assert "baseline-public-ip-unavailable" in source
 assert "post-exit-public-ip-unavailable" in source
+assert "exit-selected-public-internet-unavailable" in source
+assert "FIELD_WAF_EXIT_STATUS" in source
+assert "FIELD_WAF_EXIT_PUBLIC_PROBE" in source
+assert mod.EGRESS_VERIFY_ATTEMPTS == 3
 assert "egress-unchanged" in source
 
 original_which = mod.shutil.which
@@ -60,6 +64,47 @@ try:
 finally:
     mod.subprocess.run = original_run
     mod.shutil.which = original_which
+
+# Exit selection is control-plane evidence only. Dataplane qualification retries
+# a bounded number of times and succeeds only after public egress changes.
+original_status = mod.exit_status
+original_observed = mod.observed_public_ipv4
+original_sleep = mod.time.sleep
+try:
+    mod.exit_status = lambda: selected
+    observations = [RuntimeError("public IPv4 cannot be independently established"), "198.51.100.11", "203.0.113.44"]
+    def fake_observed():
+        value = observations.pop(0)
+        if isinstance(value, Exception):
+            raise value
+        return value
+    sleeps = []
+    mod.observed_public_ipv4 = fake_observed
+    mod.time.sleep = lambda value: sleeps.append(value)
+    assert mod.verify_converged_exit("198.51.100.11", attempts=3) == "203.0.113.44"
+    assert sleeps == [2, 4], sleeps
+finally:
+    mod.exit_status = original_status
+    mod.observed_public_ipv4 = original_observed
+    mod.time.sleep = original_sleep
+
+original_status = mod.exit_status
+original_observed = mod.observed_public_ipv4
+original_sleep = mod.time.sleep
+try:
+    mod.exit_status = lambda: selected
+    mod.observed_public_ipv4 = lambda: (_ for _ in ()).throw(RuntimeError("public IPv4 cannot be independently established"))
+    mod.time.sleep = lambda _: None
+    try:
+        mod.verify_converged_exit("198.51.100.11", attempts=3)
+    except RuntimeError as error:
+        assert "no observable public internet" in str(error)
+    else:
+        raise AssertionError("exit without public internet accepted")
+finally:
+    mod.exit_status = original_status
+    mod.observed_public_ipv4 = original_observed
+    mod.time.sleep = original_sleep
 
 calls = []
 original_run = mod.subprocess.run
