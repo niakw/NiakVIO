@@ -1,3 +1,7 @@
+## 2026-11-19 — Global multiflux static contract aligned to native bounded hedge
+
+- Provider Non-Regression Gate `44616643685` on `230b1dc3` failed in `tests/provider_shared_player_fanout_contract_test.py` because it matched the **old exact** crawler loop guard. The new generated loop adds `!hedgeStopped` to safely cease stale native workers after a direct candidate. Changed this static test to require the new guard and generic hedge marker; unchanged invariant remains requestBudget 32 and stream cap 40. A separate dynamic Node fixture still must validate native fast-sibling and nonnative/same-host coverage. **No provider playback proof** inferred from this test update.
+
 ## 2026-11-19 — VM test regex proof corrected
 
 - Removed the two literal double-backslash occurrences from the embedded Node regex in `tests/provider_native_player_hedge_test.py`; the harness now recognizes `.m3u8` strings as intended. This is a test fixture correction only. Native playback and production rematerialization remain unproven.

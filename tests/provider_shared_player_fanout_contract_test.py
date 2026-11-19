@@ -10,9 +10,10 @@ base=(ROOT/"scripts/provider_base_store.py").read_text(encoding="utf-8")
 required=[
     "NIAKVIO_PROVIDER_ADAPTIVE_PLAYER_FANOUT_V25",
     "NIAKVIO_PROVIDER_MULTI_VARIANT_FANOUT_V26",
+    "NIAKVIO_PROVIDER_NATIVE_PLAYER_HEDGE_V27",
     "const seedCap = Math.min(32, Math.max(8, rankedSeeds.length));",
     "const requestBudget = Math.min(32, Math.max(12, queue.length + 8));",
-    "while (queue.length && requests < requestBudget && streams.length < 40)",
+    "while (!hedgeStopped && queue.length && requests < requestBudget && streams.length < 40)",
     "return _dedupeStreamRows(streams).slice(0, 40);",
 ]
 for needle in required:
