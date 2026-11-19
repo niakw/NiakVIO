@@ -329,7 +329,28 @@ def replace_official_execution(text: str, client: str) -> str:
             r"\)",
             flags=re.S,
         )
-        replacement = "officialPluginManager.executeScraper(loadedScraper, tmdbId, requestMediaType, season, episode)"
+        # The official app never invokes a scraper merely because its bytes
+        # were installed. enabledScrapers combines the user's persisted enabled
+        # flag and the global plugin switch; supportsType gates the request.
+        # A direct executeScraper() test bypassed all three and could report
+        # a TV success while the real stream list never selected that scraper.
+        replacement = (
+            "run {\n"
+            "    val appEligible = officialPluginManager.enabledScrapers.first().any { "
+            "it.id == loadedScraper.id && it.supportsType(requestMediaType) }\n"
+            "    if (!appEligible) {\n"
+            "        emit(\"FIELD_NATIVE_PROVIDER_APP_SELECTION client=tv fixture=$fixtureSlug "
+            "provider64=${b64(provider.id)} eligible=false runtime_enabled=${loadedScraper.enabled} "
+            "manifest_enabled=${loadedScraper.manifestEnabled} request_type=$requestMediaType "
+            "reason=plugin_disabled_or_incompatible\")\n"
+            "        emptyList<com.nuvio.tv.domain.model.LocalScraperResult>()\n"
+            "    } else {\n"
+            "        emit(\"FIELD_NATIVE_PROVIDER_APP_SELECTION client=tv fixture=$fixtureSlug "
+            "provider64=${b64(provider.id)} eligible=true request_type=$requestMediaType\")\n"
+            "        officialPluginManager.executeScraper(loadedScraper, tmdbId, requestMediaType, season, episode)\n"
+            "    }\n"
+            "}"
+        )
     else:
         code_expr = r"File\(root, provider\.asset\)\.readText\(\)" if client == "desktop" else r"code\(provider\.asset\)"
         pattern = re.compile(
