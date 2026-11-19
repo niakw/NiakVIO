@@ -149,11 +149,10 @@ def select(
     active_transport_allowed: set[str] | None = None,
     restrict_to_explicit: bool = False,
 ) -> list[str]:
-    residential = (
-        report.get("residentialExitNodeEvidence")
-        if isinstance(report.get("residentialExitNodeEvidence"), dict)
-        else {}
-    )
+    current_residential = report.get("residentialExitNodeLastAttempt")
+    if not isinstance(current_residential, dict):
+        current_residential = report.get("residentialExitNodeEvidence")
+    residential = current_residential if isinstance(current_residential, dict) else {}
     if residential.get("available") is not True:
         return []
 
