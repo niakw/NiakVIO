@@ -26,6 +26,8 @@ ENDPOINTS = (
 TAILSCALE_SET_TIMEOUT_SECONDS = 12
 TAILSCALE_CLEAR_TIMEOUT_SECONDS = 8
 PUBLIC_IP_COMMAND_TIMEOUT_SECONDS = 8
+EGRESS_VERIFY_ATTEMPTS = 3
+EGRESS_VERIFY_BACKOFF_SECONDS = (2, 4)
 
 
 def _set_exit_route(*args: str, timeout: int) -> bool:
@@ -137,16 +139,57 @@ def exit_status() -> dict:
     return state
 
 
+def exit_route_health(status: dict) -> tuple[bool, bool, bool]:
+    selected = status.get("ExitNodeStatus")
+    backend_running = status.get("BackendState") == "Running"
+    exit_present = isinstance(selected, dict) and bool(selected.get("ID") or selected.get("TailscaleIPs"))
+    exit_online = bool(exit_present and selected.get("Online") is not False)
+    return backend_running, exit_present, exit_online
+
+
 def attest(before: str, after: str, status: dict) -> None:
     ipaddress.IPv4Address(before)
     ipaddress.IPv4Address(after)
-    selected = status.get("ExitNodeStatus")
-    if status.get("BackendState") != "Running" or not isinstance(selected, dict):
+    backend_running, exit_present, exit_online = exit_route_health(status)
+    if not backend_running or not exit_present:
         raise RuntimeError("selected Tailscale exit route absent")
-    if not (selected.get("ID") or selected.get("TailscaleIPs")) or selected.get("Online") is False:
+    if not exit_online:
         raise RuntimeError("selected Tailscale exit route inactive")
     if before == after:
         raise RuntimeError("public egress is unchanged")
+
+
+def verify_converged_exit(before: str, attempts: int = EGRESS_VERIFY_ATTEMPTS) -> str:
+    """Wait briefly for selected exit dataplane convergence, never for control-plane only."""
+    last_error = "selected exit route has no observable public internet"
+    bounded_attempts = max(1, min(int(attempts), EGRESS_VERIFY_ATTEMPTS))
+    for attempt in range(1, bounded_attempts + 1):
+        status = exit_status()
+        backend_running, exit_present, exit_online = exit_route_health(status)
+        print(
+            "FIELD_WAF_EXIT_STATUS "
+            f"attempt={attempt} backend_running={str(backend_running).lower()} "
+            f"exit_present={str(exit_present).lower()} exit_online={str(exit_online).lower()}"
+        )
+        if not backend_running or not exit_present:
+            raise RuntimeError("selected Tailscale exit route absent")
+        if not exit_online:
+            raise RuntimeError("selected Tailscale exit route inactive")
+        try:
+            after = observed_public_ipv4()
+        except RuntimeError:
+            last_error = "selected exit route has no observable public internet"
+            print(f"FIELD_WAF_EXIT_PUBLIC_PROBE attempt={attempt} reached=false")
+        else:
+            if after != before:
+                attest(before, after, status)
+                print(f"FIELD_WAF_EXIT_PUBLIC_PROBE attempt={attempt} reached=true changed=true")
+                return after
+            last_error = "public egress is unchanged"
+            print(f"FIELD_WAF_EXIT_PUBLIC_PROBE attempt={attempt} reached=true changed=false")
+        if attempt < bounded_attempts:
+            time.sleep(EGRESS_VERIFY_BACKOFF_SECONDS[min(attempt - 1, len(EGRESS_VERIFY_BACKOFF_SECONDS) - 1)])
+    raise RuntimeError(last_error)
 
 
 def main() -> int:
@@ -170,8 +213,8 @@ def main() -> int:
             print("FIELD_WAF_EXIT_SELECTION selected=true bounded=true")
         elif phase == "verify":
             if args.state is None: raise RuntimeError("verify state path missing")
-            before=args.state.read_text(encoding="ascii").strip(); after=observed_public_ipv4()
-            attest(before, after, exit_status())
+            before = args.state.read_text(encoding="ascii").strip()
+            verify_converged_exit(before, attempts=max(1, min(args.attempts, EGRESS_VERIFY_ATTEMPTS)))
             print("FIELD_WAF_EXIT_EGRESS phase=residential changed=true selected=true")
         else:
             clear_exit_node(); print("FIELD_WAF_EXIT_SELECTION cleared=true bounded=true")
@@ -179,8 +222,10 @@ def main() -> int:
         message=str(error).casefold()
         if phase=="baseline": reason="baseline-public-ip-unavailable"
         elif phase=="select": reason="exit-selection-unavailable"
+        elif "no observable public internet" in message: reason="exit-selected-public-internet-unavailable"
         elif "public ipv4" in message: reason="post-exit-public-ip-unavailable"
         elif "unchanged" in message: reason="egress-unchanged"
+        elif "inactive" in message: reason="exit-node-offline"
         elif "status" in message or "exit route" in message: reason="exit-status-unavailable"
         else: reason="verification-unavailable"
         print(f"FIELD_WAF_EXIT_EGRESS attested=false phase={phase} reason={reason}")
