@@ -296,6 +296,7 @@ jobs:
           python3 tests/brain_accepted_program_winning_trace_test.py
           node engine_v2/tests/brain-negative-memory-retention.test.mjs
           node engine_v2/tests/learning-lab-memory.test.mjs
+          node engine_v2/tests/native-reader-diagnosis.test.mjs
           python3 tests/brain_fast_handoff_active_context_test.py
           python3 tests/brain_learning_fixture_type_authority_test.py
           python3 tests/provider_repair_batch_causal_precedence_test.py
@@ -438,6 +439,8 @@ jobs:
       - name: Validate native provider-loading compatibility
         run: |
           python3 tests/native_provider_loading_compat_test.py
+          python3 tests/native_quickjs_sanitization_test.py
+          python3 tests/native_reader_backlog_test.py
           python3 tests/native_app_provider_selection_gate_test.py
           python3 tests/native_evidence_codegen_pipeline_test.py
           python3 tests/provider_clean_worker_smoke_test.py
