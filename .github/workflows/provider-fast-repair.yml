@@ -483,21 +483,12 @@ jobs:
                 return 0
               fi
             fi
-            args=(
-              --repo "$GITHUB_REPOSITORY" --ref main
-              -f publish_proposal="$publish_proposal"
-              -f target_providers="$eligible_csv"
-              -f slot_remaining_minutes=360
-              -f slot_phase=1
-            )
-            if [ "$force_mode" = "true" ]; then
-              args+=(-f architecture_force=true)
-            fi
-            if gh workflow run brain-learning-lab.yml "${args[@]}"; then
-              echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=${learn_handoff_count:-0} ids=${learn_handoff_csv:-none} learning_dispatch=true architecture_force=$force_mode publish_proposal=$publish_proposal owner=immediate-targeted-learning"
-            else
-              echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=${learn_handoff_count:-0} ids=${learn_handoff_csv:-none} learning_dispatch=false reason=github_api_unavailable persisted=true architecture_force=$force_mode publish_proposal=$publish_proposal owner=persisted-fast-handoff"
-            fi
+            ELIGIBLE_CSV="$eligible_csv" \
+              FORCE_MODE="$force_mode" \
+              PUBLISH_PROPOSAL="$publish_proposal" \
+              MAX_COHORTS=8 \
+              bash scripts/dispatch_learning_family_cohorts.sh
+            echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_DEBT providers=${learn_handoff_count:-0} ids=${learn_handoff_csv:-none} learning_dispatch=delegated architecture_force=$force_mode publish_proposal=$publish_proposal owner=parallel-family-learning"
             return 0
           }
           git fetch --quiet origin main
