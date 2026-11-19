@@ -76,6 +76,17 @@ jobs:
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
+      - name: Requeue stale executable source before expensive Repair
+        shell: bash
+        env:
+          DISPATCH_PROVIDER: ${{ inputs.target_provider || '' }}
+          DISPATCH_PROVIDERS: ${{ inputs.target_providers || '' }}
+          DISPATCH_WAVES: ${{ inputs.waves || '1' }}
+          DISPATCH_BUDGET: ${{ inputs.time_budget_seconds || '1200' }}
+          DISPATCH_MAX_ROUNDS: ${{ inputs.max_rounds_per_batch || '3' }}
+          DISPATCH_PUBLISH: ${{ inputs.publish_validated || 'true' }}
+          DISPATCH_FORCE: ${{ inputs.architecture_force || 'false' }}
+        run: bash scripts/early_fast_repair_preflight.sh
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
         with:
           python-version: '3.12'
