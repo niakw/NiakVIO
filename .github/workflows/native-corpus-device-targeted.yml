@@ -238,7 +238,9 @@ jobs:
           with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as handle:
               handle.write(f"NIAKVIO_PROVIDER_SCOPE_MATRIX={path}\n")
               handle.write(f"NIAKVIO_TARGET_PROVIDER={actual}\n")
+              handle.write("NIAKVIO_NATIVE_PLAYER_GATE_BLOCKING=1\n")
           print(f"FIELD_NATIVE_TARGET_SCOPE provider={actual} providers=1")
+          print("FIELD_NATIVE_PLAYER_GATE_MODE blocking=true requirement=production_playback_verified")
           PY
 
       - name: Enable targeted Mobile same-source engine differential
