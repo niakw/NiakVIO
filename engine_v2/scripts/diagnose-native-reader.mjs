@@ -114,6 +114,7 @@ const providerLoadObservations = [];
 const appSelectionObservations = [];
 const quickJsDiagnostics = [];
 const quickJsPromiseControls = [];
+const nativeExecutionDiagnostics = [];
 const PROMISE_CONTROL_STATUSES = new Set(['bridge_ok', 'promise_delivery_gap', 'baseline_failed']);
 const QUICKJS_PHASES = new Set(['call', 'result', 'error', 'missing_export']);
 const QUICKJS_ERROR_CATEGORIES = new Set([
@@ -225,6 +226,35 @@ for (const file of logPaths) {
             nativePlaybackAuthority: false, providerJsMutationAllowed: false,
           });
         }
+      }
+    }
+
+    const executionErrorAt = raw.indexOf('FIELD_NATIVE_ERROR ');
+    if (executionErrorAt >= 0) {
+      const f = fields(raw.slice(executionErrorAt).trim());
+      const provider = decode(f.provider64).trim().toLowerCase();
+      const errorText = decode(f.error64).trim();
+      const fixture = String(f.fixture || '');
+      const requestType = String(f.request_type || '').toLowerCase();
+      const duration = Number(f.duration_ms);
+      const hardTimeout = /^provider_hard_timeout_ms=([0-9]{1,6})$/.exec(errorText);
+      if (f.client === 'tv'
+          && /^[a-z0-9][a-z0-9_-]{0,95}$/.test(provider)
+          && /^[a-z0-9][a-z0-9-]{0,95}$/.test(fixture)
+          && ['movie', 'tv', 'anime'].includes(requestType)
+          && f.route_mode === 'declared'
+          && hardTimeout && Number(hardTimeout[1]) >= 1000
+          && Number(hardTimeout[1]) <= 180000
+          && Number.isFinite(duration) && duration >= 1000
+          && duration <= 180000) {
+        nativeExecutionDiagnostics.push({
+          client: 'tv', provider, fixture, requestType,
+          failureClass: 'provider_hard_timeout',
+          observedDurationMs: Math.floor(duration),
+          configuredTimeoutMs: Number(hardTimeout[1]),
+          proofAuthority: false, publicationAuthority: false,
+          nativePlaybackAuthority: false, providerJsMutationAllowed: false,
+        });
       }
     }
 
@@ -721,6 +751,7 @@ const payload = {
   appSelectionObserved: appSelectionObservations.length,
   appSelectionFailures: appSelectionIssues.length,
   quickJsDiagnosticObserved: quickJsDiagnostics.length,
+  nativeExecutionDiagnosticObserved: nativeExecutionDiagnostics.length,
   quickJsUnverifiedObserved: quickJsUnverifiedObservations.length,
   readerLoadErrorEvidence: brainReaderRows.filter((row) => row.loadDurationMs > 0 || row.loadBytes > 0 || row.httpStatus > 0).length,
   observations,
@@ -730,6 +761,7 @@ const payload = {
   providerLoadObservations,
   quickJsDiagnostics,
   quickJsPromiseControls,
+  nativeExecutionDiagnostics,
   quickJsUnverifiedObservations,
   appSelectionObservations,
   appSelectionIssues,
