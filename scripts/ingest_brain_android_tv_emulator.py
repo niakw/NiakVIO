@@ -111,6 +111,7 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
                 "nativeExtractionPositiveObserved": False,
                 "nativeExtractionReturnedCount": 0,
                 "sameMediaRootSuccessThenForbidden": False,
+                "hlsPlaylist2xxNearProviderBudgetZeroObserved": False,
                 "playerVideoFormatUnverified": False,
                 "independentTerminalHttpStatuses": [],
                 "playerStates": [], "playerFailureClasses": [],
@@ -211,7 +212,10 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
             row is None
             or item.get("source") != "plugin-runtime-fetch-sequence"
             or item.get("kind") != "hls"
-            or item.get("pattern") != "same_media_root_2xx_then_403"
+            or item.get("pattern") not in {
+                "same_media_root_2xx_then_403",
+                "hls_playlist_2xx_near_25s_zero_preplayer",
+            }
             or item.get("phase") != "provider-runtime-pre-player"
             or any(item.get(key) is not False for key in (
                 "proofAuthority", "publicationAuthority",
@@ -219,7 +223,11 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
             ))
         ):
             continue
-        row["sameMediaRootSuccessThenForbidden"] = True
+        if item["pattern"] == "same_media_root_2xx_then_403":
+            row["sameMediaRootSuccessThenForbidden"] = True
+        else:
+            # Only an owner-unknown, non-authoritative near-budget correlation.
+            row["hlsPlaylist2xxNearProviderBudgetZeroObserved"] = True
 
     # HTTP status comes from an independent network probe, NOT an observed
     # player decoder/network result; it remains a bounded negative hypothesis.
