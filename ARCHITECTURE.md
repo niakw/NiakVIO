@@ -1,3 +1,9 @@
+## 2026-11-19 — Learning disabled catalogue preservation without reactivation
+
+Learning `staging/candidates.json` must preserve every canonical identity in `provider_catalog.json`, including disabled Global/VF records, even when the production JS has been archived under `provider-disabled/`. A cancelled or incomplete remote upstream refresh must not erase that local authoritative identity. Conversely, the stage must not reactivate a disabled provider or reuse archived JS as an executable seed.
+
+`scripts/discover_candidates.py` resolves active source paths only under `providers/` and disabled source paths only for `enabled=false` canonical rows under `provider-disabled/`. The latter bytes are **static knowledge only**. Learning assembles a new NiakVIO-owned clean ProviderBase with `metadata.enabled=false`, `catalogue_disabled=true`, `repair_allowed=false`, `publication_allowed=false` and without LKG promotion. Missing or escaped paths abort instead of silently dropping canonical rows. The strict `engine_v2/scripts/validate-stage-against-catalog.mjs` preservation gate remains unchanged. No production manifests are modified. Acceptance requires the isolated reconstruction regression and the real full-catalogue Learning gate, not merely a matching count.
+
 ## 2026-11-19 — Retest → mémoire Brain par provider et SHA exact
 
 Le Retest ciblé exécute uniquement les JS déjà publiés ; il conserve un artefact brut séparé, non commité, et exporte un reçu **sans URL de média, cookie, header ni corps réseau** dans `automation/provider-retest-brain-evidence-latest.json`. Le reçu comprend l'identité provider, le SHA-256 des bytes JS actifs, le SHA source/ID du Retest, le type et les coordonnées TMDB minimales du fixture, les compteurs de flux et uniquement des codes d'échec d'identité/durée autorisés. `proofAuthority=false`, `publicationAuthority=false`, `nativePlaybackAuthority=false` sont impératifs. Ce n'est pas une certification de lecture.
