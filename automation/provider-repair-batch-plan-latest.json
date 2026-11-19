@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44579520696",
-  "sourceTriggerSha": "dc41f04fdcdb576ca028d7f11ea69e8da82643f1",
-  "unresolvedProviderCount": 66,
+  "sourceRunId": "44595798395",
+  "sourceTriggerSha": "406e4f688cc4a7156be3e803e54bdf7d9b0d838b",
+  "unresolvedProviderCount": 67,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
     "hindmoviez",
@@ -37,6 +37,7 @@
     "anisama",
     "arrowtv",
     "boredflix",
+    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -62,12 +63,15 @@
     "fullanime",
     "hexa",
     "hianime",
+    "hindmoviez",
     "ihavenotv",
+    "internet-archive",
     "kehflix",
     "kidraz",
     "kurage",
     "latestmovies",
     "mallumv",
+    "meowtv",
     "moiflix",
     "moviebite",
     "moviebox",
@@ -98,6 +102,7 @@
     "shuttletv",
     "skstream",
     "stigstream",
+    "streamzo",
     "topcartoons",
     "uhdmovies",
     "videasy",
@@ -114,14 +119,15 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
+    "webflix",
     "wookafr",
     "yflix",
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": true,
-  "groupCount": 10,
+  "dynamicVariantFallbackUsed": false,
+  "groupCount": 9,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -157,9 +163,10 @@
         "residential-exit-native-reachable"
       ],
       "transportSignature": "not-applicable",
-      "providerCount": 38,
+      "providerCount": 43,
       "providers": [
         "1jour1film0626",
+        "67movies",
         "anikototv",
         "animeonsen",
         "anisama",
@@ -167,6 +174,7 @@
         "boredflix",
         "cinegram",
         "cinemabz",
+        "cinematheque-de-bretagne",
         "cinetimes",
         "dulourd",
         "emnexmovies",
@@ -181,14 +189,17 @@
         "hianime",
         "kidraz",
         "latestmovies",
+        "moiflix",
         "moviebite",
         "movish",
         "movix-fr",
         "neobam",
         "neonflix",
         "overlook",
+        "primewire",
         "pstream",
         "showbox",
+        "shuttletv",
         "skstream",
         "voirserie",
         "vuflix",
@@ -262,42 +273,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
-      "repairScope": "terminal-extraction",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_http_error",
-        "network_zero_result",
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 5,
-      "providers": [
-        "67movies",
-        "corsflix",
-        "nakios",
-        "primewire",
-        "shuttletv"
-      ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [
-        "nakios"
-      ],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
       "repairScope": "learning",
       "runtimeFamilies": [
@@ -329,6 +304,38 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
+      "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
+      "repairScope": "terminal-extraction",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "mixed_embed_resolver",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_http_error",
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 2,
+      "providers": [
+        "corsflix",
+        "nakios"
+      ],
+      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [
+        "nakios"
+      ],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
       "groupId": "candidate-replay|mixed_embed_resolver|runtime:mixed_embed_resolver",
       "repairScope": "candidate-replay",
       "runtimeFamilies": [
@@ -349,36 +356,6 @@
         "french-manga"
       ],
       "action": "replay/rematerialize retained candidate knowledge against current bytes before new mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:native-policy-reachable",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "not-applicable",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "native-policy-reachable"
-      ],
-      "transportSignature": "native-policy-reachable",
-      "providerCount": 1,
-      "providers": [
-        "moiflix"
-      ],
-      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
