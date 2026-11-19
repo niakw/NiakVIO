@@ -1,15 +1,16 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44510538929-retest",
-  "sourceTriggerSha": "09d14fc78e6760da0d089bac7b30953f68a53d1f",
+  "sourceRunId": "44578784933",
+  "sourceTriggerSha": "5faf332cb494bda68f639a3d8acf01b1897d80d7",
   "unresolvedProviderCount": 66,
-  "dynamicVariantProviderCount": 6,
+  "dynamicVariantProviderCount": 7,
   "dynamicVariantProviders": [
     "hindmoviez",
     "meowtv",
     "movix-fr",
     "nakios",
     "papadustream",
+    "sadisflix",
     "stigstream"
   ],
   "lifecycleSuppressedDynamicProviders": [
@@ -37,7 +38,6 @@
     "anisama",
     "arrowtv",
     "boredflix",
-    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -65,13 +65,11 @@
     "hianime",
     "hindmoviez",
     "ihavenotv",
-    "internet-archive",
     "kehflix",
     "kidraz",
     "kurage",
     "latestmovies",
     "mallumv",
-    "meowtv",
     "moiflix",
     "moviebite",
     "moviebox",
@@ -102,7 +100,6 @@
     "shuttletv",
     "skstream",
     "stigstream",
-    "streamzo",
     "topcartoons",
     "uhdmovies",
     "videasy",
@@ -119,14 +116,13 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
-    "webflix",
     "wookafr",
     "yflix",
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": false,
+  "dynamicVariantFallbackUsed": true,
   "groupCount": 10,
   "executionModel": {
     "default": "family/signature batch",
@@ -155,7 +151,6 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "browser-profile-only",
         "github-all-transports-challenged",
         "native-policy-reachable",
         "no-transport-evidence",
@@ -281,14 +276,16 @@
       ],
       "dominantIssues": [
         "network_http_error",
-        "network_zero_result"
+        "network_zero_result",
+        "waf_challenge"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 4,
+      "providerCount": 5,
       "providers": [
         "67movies",
         "corsflix",
+        "nakios",
         "primewire",
         "shuttletv"
       ],
@@ -296,7 +293,9 @@
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [],
+      "dynamicVariantProviders": [
+        "nakios"
+      ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -318,18 +317,17 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 3,
+      "providerCount": 2,
       "providers": [
         "frenchstream",
-        "nakios",
         "sadisflix"
       ],
-      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
+      "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
       "dynamicVariantProviders": [
-        "nakios"
+        "sadisflix"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
@@ -346,7 +344,7 @@
         "lookup"
       ],
       "dominantIssues": [
-        "provider_returned_streams"
+        "network_http_error"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
@@ -423,36 +421,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "learning|direct_media|runtime:direct_media",
-      "repairScope": "learning",
-      "runtimeFamilies": [
-        "direct_media"
-      ],
-      "runtimeFamilySignature": "direct_media",
-      "capabilityStrategy": "direct_media",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "timeout"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "hindmoviez"
-      ],
-      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [
-        "hindmoviez"
-      ],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "variant-coverage|api_stream_resolver|runtime:api_stream_resolver",
       "repairScope": "variant-coverage",
       "runtimeFamilies": [
@@ -478,6 +446,36 @@
       ],
       "dynamicVariantProviders": [
         "meowtv"
+      ],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "variant-coverage|direct_media|runtime:direct_media",
+      "repairScope": "variant-coverage",
+      "runtimeFamilies": [
+        "direct_media"
+      ],
+      "runtimeFamilySignature": "direct_media",
+      "capabilityStrategy": "direct_media",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "none"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "hindmoviez"
+      ],
+      "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
+      "selectionAuthorities": [
+        "provider-census-sharded-latest.json:dynamic-variant-debt"
+      ],
+      "dynamicVariantProviders": [
+        "hindmoviez"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
