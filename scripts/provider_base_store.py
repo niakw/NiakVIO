@@ -1317,7 +1317,34 @@ async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
   const streams = [];
   let requests = 0;
   const requestBudget = Math.min(32, Math.max(12, queue.length + 8));
-  while (queue.length && requests < requestBudget && streams.length < 40) {
+  /* NIAKVIO_PROVIDER_NATIVE_PLAYER_HEDGE_V27 */
+  // Two distinct player hosts may have radically different time-to-first
+  // media. On native, race one candidate from each origin instead of letting
+  // an upstream 522 consume the entire official provider deadline.
+  // Never race identical-host mirrors or non-native contexts: those retain
+  // exhaustive sequential variant enumeration.
+  let nativeHedge = false;
+  try {
+    const deadline = Number(globalThis.__nuvioProviderDeadlineMs);
+    nativeHedge = typeof globalThis.__native_fetch === "function" &&
+      Number.isFinite(deadline) && deadline > Date.now() && queue.length > 1;
+    if (nativeHedge) {
+      const primaryOrigin = _origin(queue[0].url);
+      const peer = queue.findIndex((row, index) =>
+        index > 0 && _origin(row.url) && _origin(row.url) !== primaryOrigin);
+      if (peer < 0) nativeHedge = false;
+      else if (peer > 1) queue.splice(1, 0, queue.splice(peer, 1)[0]);
+    }
+  } catch (_) { nativeHedge = false; }
+  let hedgeStopped = false;
+  let resolveFirstDirect = null;
+  const firstDirect = new Promise(resolve => { resolveFirstDirect = resolve; });
+  function directMediaFound() {
+    return streams.some(row => row && _directMedia(_text(row.url || "")) &&
+      !/\/troll\/master\.m3u8(?:[?#]|$)/i.test(_text(row.url)));
+  }
+  async function crawlWorker() {
+  while (!hedgeStopped && queue.length && requests < requestBudget && streams.length < 40) {
     queue.sort((a,b)=>_spv187QueueScore(b.url)-_spv187QueueScore(a.url));
     const row = queue.shift();
     if (!row || seen.has(row.url)) continue;
@@ -1327,6 +1354,7 @@ async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
       const response = await _fetch(row.url, {
         headers: row.referer ? { Referer: row.referer } : {}
       });
+      if (hedgeStopped) return;
       const responseUrl = response.url || row.url;
       const contentType = _text(response.headers.get("content-type")).toLowerCase();
       if (_directMedia(responseUrl) || /(?:mpegurl|dash\+xml|video\/)/i.test(contentType)) {
@@ -1405,6 +1433,22 @@ async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
         }
       }
     } catch (_) {}
+    finally {
+      // A direct candidate still passes the later common HLS/identity/player
+      // gates. A pending failed sibling is not allowed to delay its handoff.
+      if (nativeHedge && !hedgeStopped && directMediaFound() &&
+          typeof resolveFirstDirect === "function") resolveFirstDirect();
+    }
+  }
+  }
+  if (nativeHedge) {
+    const workers = [crawlWorker(), crawlWorker()];
+    // Promise.all observes both workers' errors; firstDirect merely stops
+    // awaiting an unrelated slow origin once a direct media candidate exists.
+    await Promise.race([Promise.all(workers), firstDirect]);
+    hedgeStopped = true;
+  } else {
+    await crawlWorker();
   }
   return _dedupeStreamRows(streams).slice(0, 40);
 }
