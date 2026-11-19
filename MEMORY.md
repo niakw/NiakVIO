@@ -174,3 +174,9 @@
 - The emitted `FIELD_NATIVE_ENGINE_COMPARE` preserves same-row identity without persisting the URL and records each engine's actual engine name, rendered dimensions, audio track count/languages and integrated subtitle count/languages. The evidence is intentionally diagnostic: signed or one-shot URLs may have been consumed by the first production playback and therefore a later forced-engine failure is not provider authority by itself.
 - The expensive dual-engine replay is enabled only for explicit Mobile provider targets in `NATIVE - Device Corpus Tests`; broad declared-type/census runs keep one production player attempt. Static contracts verify Auto -> ExoPlayer -> libmpv -> transport ordering.
 - Validation required after this commit: targeted workflow must compile/run the generated NuvioMobile test on an emulator and produce real `FIELD_NATIVE_ENGINE_COMPARE` evidence before the historical ExoPlayer/libmpv mismatch is considered revalidated.
+
+
+### 2026-11-19 — Native residential client egress is independently attested
+- The targeted native-client workflow no longer treats a successful `tailscale set --exit-node` as sufficient residential proof. Immediately before Desktop/Mobile/TV runtime it records the baseline public IPv4 in a mode-0600 temporary file, selects the private exit, verifies a changed public IPv4 against two independent endpoints plus active Tailscale ExitNodeStatus, and only then exports `NIAKVIO_NATIVE_RESIDENTIAL_EXIT_ACTIVE=1`.
+- The temporary IP is deleted in-step and is never persisted to artifacts/evidence. Failed attestation clears the exit route and fails closed.
+- DNS parity is deliberately not overstated: the Tailscale action still uses `--accept-dns=false`, so the workflow emits `FIELD_NATIVE_RESIDENTIAL_DNS ... resolver_equivalence=unverified`. Residential egress is now proven; equivalence with the user's Mac DNS resolver is not.

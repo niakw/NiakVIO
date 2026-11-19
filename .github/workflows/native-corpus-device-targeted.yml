@@ -374,11 +374,15 @@ jobs:
       # the normal GitHub runner network. The residential exit is evidence for the
       # native client transport only; routing CI bootstrap traffic through it can
       # create unrelated Git/Gradle failures and yields no provider evidence.
-      - name: Select residential exit immediately before native runtime
+      - name: Select and attest residential exit immediately before native runtime
         if: ${{ matrix.residential == true }}
         shell: bash
         run: |
           set -euo pipefail
+          proof_path="$(mktemp /tmp/niakvio-native-exit-proof.XXXXXX)"
+          route_verified=0
+          trap 'rm -f "$proof_path"; if [ "$route_verified" != "1" ]; then sudo tailscale set --exit-node= >/dev/null 2>&1 || true; fi' EXIT
+          python3 niakvio/scripts/verify_waf_exit_route.py baseline --state "$proof_path"
           selected=0
           for attempt in 1 2 3 4 5; do
             if sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false >/dev/null 2>&1; then
@@ -388,8 +392,11 @@ jobs:
             sleep "$((attempt * 2))"
           done
           test "$selected" -eq 1
+          python3 niakvio/scripts/verify_waf_exit_route.py verify --state "$proof_path"
+          route_verified=1
           echo "NIAKVIO_NATIVE_RESIDENTIAL_EXIT_ACTIVE=1" >> "$GITHUB_ENV"
-          echo "FIELD_NATIVE_RESIDENTIAL_EXIT active=true provider=${{ matrix.provider }} device=${{ matrix.device }}"
+          echo "FIELD_NATIVE_RESIDENTIAL_EXIT active=true egress_attested=true provider=${{ matrix.provider }} device=${{ matrix.device }}"
+          echo "FIELD_NATIVE_RESIDENTIAL_DNS tailscale_accept_dns=false resolver_equivalence=unverified"
 
       - name: Execute six works across every provider in official Desktop runtime
         if: matrix.device == 'desktop'

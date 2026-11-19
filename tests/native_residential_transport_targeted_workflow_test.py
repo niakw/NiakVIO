@@ -14,9 +14,12 @@ required = (
     "TS_EXIT_NODE: ${{ secrets.TS_EXIT_NODE }}",
     "TS_TAG_NAME: ${{ secrets.TS_TAG_NAME }}",
     "tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c",
-    "Select residential exit immediately before native runtime",
+    "Select and attest residential exit immediately before native runtime",
+    "scripts/verify_waf_exit_route.py baseline",
+    "scripts/verify_waf_exit_route.py verify",
     'sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false',
-    "FIELD_NATIVE_RESIDENTIAL_EXIT active=true",
+    "FIELD_NATIVE_RESIDENTIAL_EXIT active=true egress_attested=true",
+    "FIELD_NATIVE_RESIDENTIAL_DNS tailscale_accept_dns=false resolver_equivalence=unverified",
     "native-target-provider-scope.json",
     "Enable targeted Mobile same-source engine differential",
     "NIAKVIO_NATIVE_COMPARE_ENGINES=1",
@@ -37,7 +40,7 @@ for needle in required:
     assert needle in workflow, needle
 
 connect = workflow.index("Connect native client host to Tailscale")
-exit_node = workflow.index("Select residential exit immediately before native runtime")
+exit_node = workflow.index("Select and attest residential exit immediately before native runtime")
 prepare = workflow.index("Checkout accepted official client and stage corpus once")
 mobile_snapshot = workflow.index("Create Mobile AVD snapshot on cache miss")
 tv_snapshot = workflow.index("Create TV AVD snapshot on cache miss")
