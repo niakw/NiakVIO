@@ -897,6 +897,190 @@ def provider_attempt_pressure_map() -> dict[str, int]:
         output[provider] += max(0, int(row.get("successes") or 0))
     return output
 
+
+def _frontier_evidence_rank(row: dict[str, Any]) -> int:
+    depths = row.get("evidenceDepth")
+    if not isinstance(depths, list):
+        depths = row.get("evidenceDepths")
+    values = [str(value or "").strip().casefold() for value in (depths or [])]
+    if any("chain_reached" in value for value in values):
+        return 0
+    if any("lookup_only" in value for value in values):
+        return 1
+    if any(value.endswith("=none") or value == "none" for value in values):
+        return 2
+    return 3
+
+
+def _frontier_status_rank(row: dict[str, Any]) -> int:
+    status = str(row.get("status") or "").strip().upper()
+    order = {
+        "CANDIDATE OK": 0,
+        "CHAIN REACHED": 1,
+        "REGRESSION PROVIDER": 2,
+        "NO PROOF": 3,
+        "PROVIDER NETWORK BLOCKED": 4,
+    }
+    return order.get(status, 5)
+
+
+def trusted_transfer_capability_strategies(
+    overrides_payload: dict[str, Any] | None = None,
+    policy_payload: dict[str, Any] | None = None,
+) -> set[str]:
+    """Return capability strategies backed by transferable trusted skills.
+
+    This widens only the validation frontier. Every sibling still passes the
+    ordinary sandbox/current-byte/identity/playback/non-regression gates.
+    """
+    overrides = overrides_payload if isinstance(overrides_payload, dict) else load(OVERRIDES, {})
+    policy = policy_payload if isinstance(policy_payload, dict) else load(BRAIN_POLICY, {})
+    production = policy.get("production") if isinstance(policy.get("production"), dict) else {}
+    transfer = production.get("learnedSkillTransferPolicy") if isinstance(production.get("learnedSkillTransferPolicy"), dict) else {}
+    maturity = policy.get("skillMaturity") if isinstance(policy.get("skillMaturity"), dict) else {}
+    required_maturity = str(transfer.get("maturity") or "trusted")
+    min_confidence = float(transfer.get("minimumConfidence") or maturity.get("minimumConfidence") or 0.8)
+    min_providers = max(1, int(transfer.get("minimumDistinctProviders") or maturity.get("trustedProviders") or 2))
+    min_successes = max(1, int(maturity.get("trustedSuccesses") or 3))
+    runtime = overrides.get("runtime_repair") if isinstance(overrides.get("runtime_repair"), dict) else {}
+    skills = runtime.get("learned_skills") if isinstance(runtime.get("learned_skills"), dict) else {}
+    output: set[str] = set()
+    for raw in skills.values():
+        if not isinstance(raw, dict) or raw.get("validated") is not True:
+            continue
+        if str(raw.get("maturity") or "experimental") != required_maturity:
+            continue
+        try:
+            confidence = float(raw.get("confidence") or 0.0)
+        except (TypeError, ValueError):
+            confidence = 0.0
+        providers = {cid(value) for value in raw.get("providers") or [] if cid(value)}
+        if confidence < min_confidence or len(providers) < min_providers:
+            continue
+        if int(raw.get("successCount") or 0) < min_successes:
+            continue
+        for value in raw.get("capabilityStrategies") or []:
+            strategy = cid(value)
+            if strategy and strategy not in {"unknown", "not-applicable"}:
+                output.add(strategy)
+    return output
+
+
+def repair_wave_frontier(
+    values: list[str],
+    *,
+    pinned: set[str] | None = None,
+    plan: dict[str, Any] | None = None,
+    rows: dict[str, dict[str, Any]] | None = None,
+    pressure: dict[str, int] | None = None,
+    trusted_strategies: set[str] | None = None,
+) -> dict[str, Any]:
+    """Run one oracle per causal family until a transferable skill is trusted."""
+    selected_values = [cid(value) for value in values if cid(value)]
+    wanted = set(selected_values)
+    if not wanted:
+        return {
+            "providers": [],
+            "deferred": [],
+            "frontierFamilies": [],
+            "fanoutFamilies": [],
+            "pinnedFamilies": [],
+        }
+
+    status = status_payload()
+    active_plan = plan if isinstance(plan, dict) else load(BATCH_PLAN, {})
+    if str(active_plan.get("sourceRunId") or "") != str(status.get("runId") or ""):
+        return {
+            "providers": sorted(wanted),
+            "deferred": [],
+            "frontierFamilies": [f"provider-local:{provider}" for provider in sorted(wanted)],
+            "fanoutFamilies": [],
+            "pinnedFamilies": [],
+        }
+
+    status_rows_map = rows if isinstance(rows, dict) else status_rows(status)
+    attempts = pressure if isinstance(pressure, dict) else provider_attempt_pressure_map()
+    trusted = (
+        {cid(value) for value in trusted_strategies if cid(value)}
+        if trusted_strategies is not None
+        else trusted_transfer_capability_strategies()
+    )
+    pinned_set = {cid(value) for value in (pinned or set()) if cid(value)} & wanted
+
+    families: list[dict[str, Any]] = []
+    assigned: set[str] = set()
+    for raw in active_plan.get("groups") or []:
+        if not isinstance(raw, dict):
+            continue
+        members = [
+            cid(value)
+            for value in raw.get("providers") or []
+            if cid(value) in wanted and cid(value) not in assigned
+        ]
+        if not members:
+            continue
+        families.append({
+            "groupId": str(raw.get("groupId") or "unknown"),
+            "capabilityStrategy": cid(raw.get("capabilityStrategy")) or "unknown",
+            "members": members,
+        })
+        assigned.update(members)
+
+    for provider in sorted(wanted - assigned):
+        families.append({
+            "groupId": f"provider-local:{provider}",
+            "capabilityStrategy": "provider-local",
+            "members": [provider],
+        })
+
+    def provider_rank(provider: str) -> tuple[int, int, int, str]:
+        row = status_rows_map.get(provider) if isinstance(status_rows_map.get(provider), dict) else {}
+        return (
+            _frontier_status_rank(row),
+            _frontier_evidence_rank(row),
+            max(0, int(attempts.get(provider) or 0)),
+            provider,
+        )
+
+    families.sort(
+        key=lambda family: (
+            min((provider_rank(provider) for provider in family["members"]), default=(9, 9, 999999, "")),
+            family["groupId"],
+        )
+    )
+
+    chosen: list[str] = []
+    deferred: list[str] = []
+    frontier_families: list[str] = []
+    fanout_families: list[str] = []
+    pinned_families: list[str] = []
+
+    for family in families:
+        members = sorted(family["members"], key=provider_rank)
+        pinned_members = [provider for provider in members if provider in pinned_set]
+        capability = family["capabilityStrategy"]
+        if pinned_members:
+            active = pinned_members
+            pinned_families.append(family["groupId"])
+        elif capability in trusted and capability != "provider-local":
+            active = members
+            fanout_families.append(family["groupId"])
+        else:
+            active = members[:1]
+            frontier_families.append(family["groupId"])
+        active_set = set(active)
+        chosen.extend(active)
+        deferred.extend(provider for provider in members if provider not in active_set)
+
+    return {
+        "providers": chosen,
+        "deferred": deferred,
+        "frontierFamilies": frontier_families,
+        "fanoutFamilies": fanout_families,
+        "pinnedFamilies": pinned_families,
+    }
+
+
 def health_concurrency_for_batch(requested: int, batch_count: int) -> int:
     """Bound network concurrency to the actual packed Deep batch size."""
     # PROVIDER_BRAIN_BATCH_CONCURRENCY_V1
@@ -1564,6 +1748,8 @@ def main() -> int:
     time_budget_exhausted = False
     processed_providers: set[str] = set()
     sandbox_exploration_carryover: dict[str, dict[str, Any]] = {}
+    advisor_rotation_priority: set[str] = set()
+    family_frontier_deferred_seen: set[str] = set()
     started_monotonic = time.monotonic()
     deadline_monotonic = started_monotonic + time_budget_seconds
 
@@ -1584,8 +1770,29 @@ def main() -> int:
             advisor_rotation_this_wave: set[str] = set()
             batch_reports: list[dict[str, Any]] = []
             memory_before = repair_memory_fingerprint()
+            frontier = repair_wave_frontier(
+                remaining,
+                pinned=advisor_rotation_priority,
+                rows=rows,
+            )
+            wave_input = list(frontier.get("providers") or [])
+            family_deferred_this_wave = {
+                cid(value) for value in frontier.get("deferred") or [] if cid(value)
+            }
+            family_frontier_deferred_seen.update(family_deferred_this_wave)
+            if not wave_input:
+                no_progress_reason = "empty_family_frontier"
+                break
+            print(
+                "FIELD_PROVIDER_BRAIN_FAMILY_FRONTIER "
+                f"wave={wave} selected={len(wave_input)} deferred={len(family_deferred_this_wave)} "
+                f"frontier_families={len(frontier.get('frontierFamilies') or [])} "
+                f"fanout_families={len(frontier.get('fanoutFamilies') or [])} "
+                f"pinned_families={len(frontier.get('pinnedFamilies') or [])}",
+                flush=True,
+            )
 
-            for batch_index, batch_plan in enumerate(repair_batches(remaining, batch_size), start=1):
+            for batch_index, batch_plan in enumerate(repair_batches(wave_input, batch_size), start=1):
                 budget_remaining = deadline_monotonic - time.monotonic()
                 if budget_remaining < min_start_batch_seconds:
                     time_budget_exhausted = True
@@ -1825,11 +2032,17 @@ def main() -> int:
                     and provider not in all_harness_differential
                 )
             ]
+            advisor_rotation_priority = set(advisor_rotation_this_wave)
             memory_after = repair_memory_fingerprint()
             experiment_memory_advanced = memory_after != memory_before
             wave_reports.append({
                 "wave": wave,
                 "inputProviderCount": sum(row["providerCount"] for row in batch_reports),
+                "familyFrontierSelectedProviders": wave_input,
+                "familyFrontierDeferredProviders": sorted(family_deferred_this_wave),
+                "familyFrontierGroups": list(frontier.get("frontierFamilies") or []),
+                "trustedFamilyFanoutGroups": list(frontier.get("fanoutFamilies") or []),
+                "pinnedAdvisorFamilyGroups": list(frontier.get("pinnedFamilies") or []),
                 "acceptedCount": len(durable_accepted_this_wave),
                 "rawLabAcceptedCount": len(accepted_this_wave),
                 "timeBudgetExhausted": time_budget_exhausted,
@@ -1890,8 +2103,12 @@ def main() -> int:
                 # accepted candidates and zero deferred providers forever, even
                 # though current HTTP/detail evidence remains actionable.
                 # Keep transport/harness differentials out of mutation Learning.
+                visited_remaining = [
+                    provider for provider in remaining
+                    if provider in processed_providers
+                ]
                 learning_handoff = stalled_experiment_learning_handoff(
-                    remaining, all_harness_differential
+                    visited_remaining, all_harness_differential
                 )
                 all_deferred.update(learning_handoff)
                 if learning_handoff:
@@ -1944,6 +2161,15 @@ def main() -> int:
             "elapsedSeconds": round(time.monotonic() - started_monotonic, 3),
             "timeBudgetExhausted": time_budget_exhausted,
             "unvisitedProviders": sorted(set(selected) - processed_providers),
+            "familyFrontierPendingProviders": sorted(
+                family_frontier_deferred_seen & (set(selected) - processed_providers)
+            ),
+            "familyFrontierScheduling": {
+                "enabled": True,
+                "policy": "one-oracle-per-causal-family-until-transferable-trust-then-fanout",
+                "trustedSkillAuthority": "validated-repair-learning-only",
+                "siblingValidationBypassAllowed": False,
+            },
             "resumeRecommended": bool(
                 time_budget_exhausted
                 and remaining
@@ -1976,6 +2202,7 @@ def main() -> int:
             "harnessDifferentialProviders": sorted(all_harness_differential),
             "harnessDifferentialProviderCount": len(all_harness_differential),
             "deferredLearningProviders": sorted(all_deferred - all_harness_differential),
+            "learningHandoffProviders": sorted(all_deferred - all_harness_differential),
             "remainingProviders": remaining,
             "noProgressReason": no_progress_reason,
             "waves": wave_reports,
