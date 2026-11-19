@@ -218,7 +218,19 @@ def main() -> int:
         for value in brain.get("remainingProviders") or []
         if cid(value)
     })
-    learn_handoff = sorted((set(deferred_learning) | set(remaining_brain)) - set(validated))
+    explicit_learning_handoff = {
+        cid(value)
+        for value in brain.get("learningHandoffProviders") or []
+        if cid(value)
+    }
+    learn_handoff = sorted(
+        (
+            explicit_learning_handoff
+            if "learningHandoffProviders" in brain
+            else (set(deferred_learning) | set(remaining_brain))
+        )
+        - set(validated)
+    )
     payload = {
         "schemaVersion": 2,
         "sourceCensusRunId": status_before.get("runId"),
