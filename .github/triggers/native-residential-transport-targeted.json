@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "requestedAt": "2026-11-19",
-  "sourceSha": "858254dad30d956dd23b8d65dc45ff9ae8ecaf8d",
+  "sourceSha": "0bb274528477fafedbf1ac047300687a52dc9043",
   "device": "mobile",
   "targetProviders": [
     "hindmoviez",
@@ -10,6 +10,6 @@
   ],
   "residentialExit": true,
   "reason": "Validate targeted Mobile production player with independently attested residential egress and same-source Auto -> ExoPlayer -> libmpv differential on active HLS-capable providers.",
-  "requestVersion": 2,
-  "retryCause": "Retest after aligning stale post-Global/VF artifact-name contract and guarding exit cleanup before Tailscale activation."
+  "requestVersion": 3,
+  "retryCause": "Retest after removing the retired duplicate Mobile hardener call; canonical native_client_test_bootstrap already owns test-only device-test packaging/Sentry setup."
 }

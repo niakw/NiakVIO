@@ -186,3 +186,10 @@
 - Native Device Corpus run 44443987021 failed before network/client execution because `tests/native_residential_transport_targeted_workflow_test.py` still required the pre-migration artifact name without the Global/VF `matrix.projection` segment. The workflow itself already emitted the canonical projection-aware artifact name.
 - The contract now matches the post-Hub46 Global/VF workflow. Exit cleanup also runs only after `NIAKVIO_NATIVE_RESIDENTIAL_EXIT_ACTIVE=1`, avoiding a misleading `tailscale: command not found` cleanup message when a pre-Tailscale contract step fails.
 - This failure is harness-only and provides no player/WAF result. The same HINDMOVIEZ/Purstream/Papadustream Mobile residential request is retriggered after the correction.
+
+
+### 2026-11-19 — Targeted Mobile replay removed retired duplicate hardener
+- Native Device Corpus run 44444134848 passed targeted projection selection, exact provider scope, engine-differential enablement and Tailscale connection, then failed before emulator/runtime because the targeted workflow still invoked the deleted `scripts/harden_nuvio_mobile_device_test.py`.
+- This was a stale harness dependency, not a missing production-client repair. `prepare_native_corpus_client.py mobile` already invokes the canonical `native_client_test_bootstrap.enable_mobile_device_tests()`, which owns test-only device source-set/runner/dependency setup, libc++ packaging collision handling and the device-test-only Sentry auto-init metadata while leaving production manifests/network/player behavior unchanged.
+- The duplicate hardener call is removed. `native_android_lab_transport_test.py` now guards the canonical bootstrap directly and asserts the retired hardener remains absent; targeted workflow contracts also forbid reintroducing it.
+- No player, residential egress or ExoPlayer/libmpv result was produced by run 44444134848 because failure occurred before the exit-selection/emulator steps. The same HINDMOVIEZ/Purstream/Papadustream request is retriggered as requestVersion 3.

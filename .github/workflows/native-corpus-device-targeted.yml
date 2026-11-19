@@ -293,7 +293,6 @@ jobs:
               git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
               touch nuvio-mobile/local.properties
               python3 niakvio/scripts/prepare_native_corpus_client.py mobile --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest "$NIAKVIO_TARGET_MANIFEST"
-              python3 niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
               ;;
             tv)
               git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv

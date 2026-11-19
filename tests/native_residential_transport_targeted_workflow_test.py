@@ -58,5 +58,7 @@ assert "manifest-hub46.json" not in workflow
 assert "native-hub46/manifest.json" not in workflow
 assert workflow.count('--manifest "$NIAKVIO_TARGET_MANIFEST"') == 3
 assert "matrix.manifest" in workflow and "matrix.projection" in workflow
+assert "harden_nuvio_mobile_device_test.py" not in workflow
+assert "prepare_native_corpus_client.py mobile" in workflow
 
 print("native targeted residential transport workflow contract passed")

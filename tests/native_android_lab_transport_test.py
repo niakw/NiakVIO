@@ -76,11 +76,16 @@ with tempfile.TemporaryDirectory() as raw:
 
 mobile_suite = (SCRIPTS / "run_native_corpus_mobile_suite.sh").read_text(encoding="utf-8")
 tv_suite = (SCRIPTS / "run_native_corpus_tv_suite.sh").read_text(encoding="utf-8")
-hardener = (SCRIPTS / "harden_nuvio_mobile_device_test.py").read_text(encoding="utf-8")
+bootstrap = (SCRIPTS / "native_client_test_bootstrap.py").read_text(encoding="utf-8")
 for suite in (mobile_suite, tv_suite):
     assert "configure_native_android_lab_transport.py" in suite
 assert 'composeApp/src/androidDeviceTest/AndroidManifest.xml' in mobile_suite
 assert 'app/src/androidTest/AndroidManifest.xml' in tv_suite
-assert "from configure_native_android_lab_transport import configure_manifest" not in hardener
+# The canonical bootstrap may only enable test packaging/source sets. Network-policy
+# validation belongs to the suite and must not be folded into a second hardener.
+assert "from configure_native_android_lab_transport import configure_manifest" not in bootstrap
+assert "usesCleartextTraffic" not in bootstrap
+assert "networkSecurityConfig" not in bootstrap
+assert not (SCRIPTS / "harden_nuvio_mobile_device_test.py").exists()
 
 print("native Android lab transport contract passed: production_policy=true modified=false")
