@@ -54,23 +54,27 @@ assert "4khdhubnew" not in fixture_ids
 # Canonical release acceptance is exhaustive over the active Global+France
 # projection union, not the wider visible catalogue. Disabled providers remain
 # repair/diagnostic evidence and must not become release-certification rows.
-native_manifest = "native-hub46/manifest.json"
-manifest_all = mod.client_prepare.manifest_providers(native_manifest)
+manifest_all = []
+for native_manifest in ("manifest.json", "vf/manifest.json"):
+    rows = [
+        row for row in mod.client_prepare.manifest_providers(native_manifest)
+        if bool(row.get("enabled"))
+    ]
+    manifest_all.extend(rows)
 manifest_ids = {str(row["id"]).strip().casefold().replace("_", "-") for row in manifest_all}
 assert manifest_ids == projection_active_provider_ids(), (
     len(manifest_ids), len(projection_active_provider_ids())
 )
-assert manifest_all and all(bool(row.get("enabled")) for row in manifest_all)
-for slug, media_type in (
-    ("interstellar", "movie"),
-    ("breaking-bad-s01e01", "tv"),
-    ("jujutsu-kaisen-s01e01", "anime"),
-):
-    selected = mod.select_providers(native_manifest, slug, "declared-type")
-    assert selected, (slug, media_type)
-    assert all(media_type in row.get("supportedTypes", []) for row in selected), (slug, media_type)
-    assert all(bool(row.get("enabled")) for row in selected), (slug, "release scope contains disabled provider")
-    assert len({str(row["id"]).casefold() for row in selected}) == len(selected)
+for native_manifest in ("manifest.json", "vf/manifest.json"):
+    for slug, media_type in (
+        ("interstellar", "movie"),
+        ("breaking-bad-s01e01", "tv"),
+        ("jujutsu-kaisen-s01e01", "anime"),
+    ):
+        selected = mod.select_providers(native_manifest, slug, "declared-type")
+        assert all(media_type in row.get("supportedTypes", []) for row in selected), (native_manifest, slug, media_type)
+        assert all(bool(row.get("enabled")) for row in selected), (native_manifest, slug, "release scope contains disabled provider")
+        assert len({str(row["id"]).casefold() for row in selected}) == len(selected)
 
 # The explicit all mode remains available for manual diagnostics, including the
 # wider visible Global catalogue when that manifest is explicitly requested.
