@@ -100,6 +100,12 @@ def main() -> int:
         count += 1
         if count >= 100:
             break
+    print(
+        "FIELD_NATIVE_QUICKJS_DIAGNOSTIC_SUMMARY"
+        f" client={args.client} fixture={fixture} provider64={provider64}"
+        f" events={count} raw_content_logged=false proof_authority=false",
+        flush=True,
+    )
     return 0
 
 
