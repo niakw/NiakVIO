@@ -159,14 +159,47 @@ def tv_helpers(manifest_url: str, blocked: list[str]) -> str:
     @InstallIn(SingletonComponent::class)
     interface NiakvioPluginManagerEntryPoint {{
         fun pluginManager(): PluginManager
+        fun pluginRuntime(): com.nuvio.tv.core.plugin.PluginRuntime
+    }}
+
+    // Test-owned synthetic runtime control. It never downloads/installs a
+    // provider, supplies no real media and does not modify Nuvio production.
+    // The official PluginRuntime must preserve both immediate and awaited
+    // JS results before we attribute a provider's count=0 to its own code.
+    private suspend fun probeOfficialTvPromiseBridge(
+        runtime: com.nuvio.tv.core.plugin.PluginRuntime,
+    ) {{
+        val immediateCode = "module.exports.getStreams = function() {{ return [{{title:'control',url:'https://example.invalid/runtime-control.mp4'}}]; }};"
+        val awaitedCode = "module.exports.getStreams = async function() {{ await Promise.resolve(1); return [{{title:'control',url:'https://example.invalid/runtime-control.mp4'}}]; }};"
+        suspend fun runControl(code: String, label: String): Int {{
+            return try {{
+                runtime.executePlugin(
+                    code = code,
+                    tmdbId = "1",
+                    mediaType = "movie",
+                    season = null,
+                    episode = null,
+                    scraperId = "niakvio-test-only-$label",
+                    scraperSettings = emptyMap(),
+                ).size
+            }} catch (error: Throwable) {{
+                emit("FIELD_NATIVE_TV_PROMISE_CONTROL_ERROR client=tv kind=$label class64=${{b64(error.javaClass.simpleName)}}")
+                -1
+            }}
+        }}
+        val syncCount = runControl(immediateCode, "immediate")
+        val asyncCount = runControl(awaitedCode, "awaited")
+        emit("FIELD_NATIVE_TV_PROMISE_CONTROL client=tv sync_count=$syncCount async_count=$asyncCount expected=1 fixture=$fixtureSlugForLoad test_only=true provider_media=false proof_authority=false")
     }}
 
     private suspend fun loadProvidersThroughNuvio(): Pair<PluginManager, Map<String, com.nuvio.tv.domain.model.ScraperInfo>> {{
         val app = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext
-        val manager = EntryPointAccessors.fromApplication(
+        val entryPoint = EntryPointAccessors.fromApplication(
             app,
             NiakvioPluginManagerEntryPoint::class.java,
-        ).pluginManager()
+        )
+        val manager = entryPoint.pluginManager()
+        probeOfficialTvPromiseBridge(entryPoint.pluginRuntime())
         emit("FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=tv fixture=$fixtureSlugForLoad manifest_host=${{hostOnly(repositoryManifestUrl)}} expected=${{providers.size}}")
         val canonicalTarget = repositoryManifestUrl.substringBefore("?").trimEnd('/')
         val existing = manager.repositories.first().firstOrNull {{ repo ->
