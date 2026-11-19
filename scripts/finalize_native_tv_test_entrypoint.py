@@ -69,17 +69,8 @@ def finalize(source: Path) -> None:
 
     # EntryPointAccessors stays in androidTest, but every @EntryPoint declaration
     # itself must come from the target debug APK so Hilt aggregates it correctly.
-    accessor_import = "import dagger.hilt.android.EntryPointAccessors\n"
-    if accessor_import not in text:
-        # Generated androidTest sources are assembled by multiple independent
-        # diagnostic layers. A missing test-only import is safe to restore
-        # deterministically; never modify the official client/production source.
-        package = "package com.nuvio.tv.core.plugin\n"
-        if text.count(package) != 1:
-            raise SystemExit("TV generated test package anchor missing for Hilt accessor")
-        text = text.replace(package, package + accessor_import, 1)
-    if text.count(accessor_import) != 1:
-        raise SystemExit("TV generated test duplicated Hilt EntryPointAccessors import")
+    if "import dagger.hilt.android.EntryPointAccessors\n" not in text:
+        raise SystemExit("TV generated test lost EntryPointAccessors import")
     for forbidden in (
         "interface NiakvioPluginManagerEntryPoint",
         "interface NiakvioPlayerSettingsEntryPoint",
