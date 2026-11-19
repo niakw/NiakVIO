@@ -94,6 +94,7 @@ with tempfile.TemporaryDirectory() as folder:
     assert x["nativeExtractionZeroObserved"] is True
     assert x["nativeExtractionPositiveObserved"] is False
     assert x["sameMediaRootSuccessThenForbidden"] is False
+    assert x["hlsPlaylist2xxNearProviderBudgetZeroObserved"] is False
     assert x["quickJsErrors"] == ["reference_error"]
     assert x["quickJsPhases"] == ["call", "result", "error"]
     assert x["playerStates"] == []
@@ -115,6 +116,32 @@ with tempfile.TemporaryDirectory() as folder:
     forged_one_shot = report(one_shot=True)
     forged_one_shot["prePlayerMediaRootTransitions"][0]["providerJsMutationAllowed"] = True
     assert mod.sanitized_rows(forged_one_shot)[0]["sameMediaRootSuccessThenForbidden"] is False
+
+    budget_hls = report()
+    budget_hls["prePlayerMediaRootTransitions"] = [{
+        "client": "tv", "provider": "demo", "fixture": "jujutsu-kaisen-s01e01",
+        "requestType": "anime", "source": "plugin-runtime-fetch-sequence",
+        "kind": "hls", "pattern": "hls_playlist_2xx_near_25s_zero_preplayer",
+        "phase": "provider-runtime-pre-player",
+        "proofAuthority": False, "publicationAuthority": False,
+        "nativePlaybackAuthority": False, "providerJsMutationAllowed": False,
+        "url": "https://signed.example/?token=SECRET",
+    }]
+    budget_row = mod.sanitized_rows(budget_hls)[0]
+    assert budget_row["hlsPlaylist2xxNearProviderBudgetZeroObserved"] is True
+    assert budget_row["sameMediaRootSuccessThenForbidden"] is False
+    for secret in ("signed.example", "SECRET", "token=", "https://"):
+        assert secret not in json.dumps(budget_row)
+    forged_budget = report()
+    forged_budget["prePlayerMediaRootTransitions"] = [
+        {**budget_hls["prePlayerMediaRootTransitions"][0],
+         "providerJsMutationAllowed": True}]
+    assert mod.sanitized_rows(forged_budget)[0]["hlsPlaylist2xxNearProviderBudgetZeroObserved"] is False
+    invalid_budget = report()
+    invalid_budget["prePlayerMediaRootTransitions"] = [
+        {**budget_hls["prePlayerMediaRootTransitions"][0],
+         "phase": "production-player"}]
+    assert mod.sanitized_rows(invalid_budget)[0]["hlsPlaylist2xxNearProviderBudgetZeroObserved"] is False
 
     assert mod.merge(a, [report()], source_root=root,
                      source_sha=sha, run_id="1001")["observationCount"] == 1
