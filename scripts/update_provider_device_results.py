@@ -61,8 +61,9 @@ def iso_date(value: str | None) -> str:
         return raw[:10]
 
 
-def normalize_device(client: str) -> str | None:
+def normalize_device(client: str, evidence_path: str | Path | None = None) -> str | None:
     value = str(client or "").strip().casefold()
+    path_hint = str(evidence_path or "").strip().casefold()
     if not value:
         return None
     if "tv" in value:
@@ -76,7 +77,11 @@ def normalize_device(client: str) -> str | None:
     if "windows" in value or value.endswith("-win") or value == "win":
         return "desktop_windows"
     if "desktop" in value:
-        return "desktop_macos" if "darwin" in value else "desktop_windows" if "win" in value else None
+        if "darwin" in value or "macos" in path_hint or "darwin" in path_hint:
+            return "desktop_macos"
+        if "win" in value or "windows" in path_hint:
+            return "desktop_windows"
+        return None
     return None
 
 
@@ -129,7 +134,7 @@ def merge_diagnostics(results: dict[str, Any], diagnostics_root: Path, run_id: s
             provider = str(obs.get("provider") or "").strip().casefold()
             fixture = str(obs.get("fixture") or "").strip()
             media_type = str(obs.get("requestType") or "unknown").strip().casefold()
-            device = normalize_device(str(obs.get("client") or ""))
+            device = normalize_device(str(obs.get("client") or ""), path)
             if not provider or not fixture or not device:
                 continue
             key = (provider, fixture, media_type)

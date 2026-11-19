@@ -22,6 +22,10 @@ active_body = source.split("def active_providers() -> list[dict[str, Any]]:", 1)
 assert "projection_active_provider_rows()" in active_body
 assert 'load_json(ROOT / "manifest.json"' not in active_body
 assert "canonicalSupportedTypes" in active_body or "supportedTypes" in active_body
+assert module.normalize_device("desktop", "desktop-native-corpus-macos-jujutsu-kaisen-s01e01-brain.json") == "desktop_macos"
+assert module.normalize_device("desktop", "desktop-reader-darwin-interstellar-brain.json") == "desktop_macos"
+assert module.normalize_device("desktop", "desktop-native-corpus-windows-interstellar-brain.json") == "desktop_windows"
+assert module.normalize_device("desktop", "desktop-native-corpus-interstellar-brain.json") is None
 
 module.active_providers = lambda: [
     {

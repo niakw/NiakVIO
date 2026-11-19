@@ -238,3 +238,9 @@
 - The pinned Tailscale GitHub Action at `064b10558093f38325e838ddea35486bdc6b1d5c` is from 2026-10-29 and documents macOS support. The configured Tailscale `1.94.2` is above its OIDC minimum `1.90.1`; residential egress attestation remains fail-closed immediately before the real client runtime.
 - Mobile and TV initial staging now receive the exact target provider too, reducing harness scope drift before their canonical Android suites restage and execute.
 - Targeted request v6 supersedes v5; v5 Desktop evidence must not be treated as real Desktop player authority.
+
+
+### 2026-11-19 — Desktop positive proof keeps its actual OS identity
+- Native Desktop diagnostic rows intentionally use the generic client id `desktop`, while the official lab filenames encode `macos` or `windows`. The provider/device proof merger previously discarded those healthy player observations because generic `desktop` could not be assigned to a concrete device.
+- `update_provider_device_results.py` now uses the sanitized diagnosis filename only as an OS disambiguation hint for generic Desktop rows. Explicit client identities still win; an unqualified generic Desktop row remains unassigned rather than guessed.
+- This allows the targeted real macOS v6 run and existing full Desktop Labs to retain healthy player proof as `desktop_macos` without manufacturing a platform from ambiguous evidence.
