@@ -11,6 +11,14 @@ const {
 
 assert.equal(readerFailureClass({ state: 'ready' }), 'healthy');
 assert.equal(readerFailureClass({ state: 'ended' }), 'healthy');
+assert.equal(readerFailureClass({ client: 'tv', state: 'ready', videoWidth: 0, videoHeight: 0 }), 'playback_video_format_unverified');
+assert.equal(readerFailureClass({ client: 'tv', state: 'ended', videoWidth: 1920, videoHeight: 0 }), 'playback_video_format_unverified');
+assert.equal(readerFailureClass({ client: 'tv', state: 'ready', videoWidth: 1280, videoHeight: 720 }), 'healthy');
+assert.equal(readerFailureClass({ client: 'tv', state: 'ready' }), 'playback_video_format_unverified');
+assert.equal(readerFailureDomain({ client: 'tv', state: 'ready', videoWidth: 0, videoHeight: 0 }), 'unresolved_media');
+assert.equal(providerMutationEligible({ client: 'tv', state: 'ready', videoWidth: 0, videoHeight: 0 }), false);
+assert.equal(isReaderFailure({ client: 'tv', state: 'ready', videoWidth: 0, videoHeight: 0 }), true);
+assert.equal(isReaderFailure({ client: 'tv', state: 'ready', videoWidth: 1920, videoHeight: 1080 }), false);
 assert.equal(readerFailureClass({ state: 'short_media', failureStage: 'duration_identity' }), 'short_media');
 assert.equal(readerFailureClass({ state: 'error', failureStage: 'http_access', httpStatus: 403 }), 'playback_http_access');
 assert.equal(readerFailureClass({ state: 'error', httpStatus: 404 }), 'playback_http_gone');
