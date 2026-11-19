@@ -1,3 +1,11 @@
+## 2026-11-19 — Native client qualification now requires verified production playback
+
+- Audited the native smoke gate and found two proof weaknesses: a production-player error counted as a pass, while Mobile can expose the actual selected engine name (ExoPlayer/libmpv) and therefore evade suffix-only production detection.
+- Android and Desktop observations now emit `production_surface=true`. The gate separates production invocation from verified playback; only `ready` or `ended` with no failure stage qualifies. Error, timeout and short_media remain Brain evidence but cannot qualify the client.
+- Explicit targeted provider jobs enable `NIAKVIO_NATIVE_PLAYER_GATE_BLOCKING=1`, so targeted Desktop/Mobile/TV qualification now requires verified playback through the official production surface. Broad corpus runs remain nonblocking on provider playback negatives to preserve Learning evidence; structural/runtime failures stay fail-closed.
+- Global/VF and both no-anime manifests remain supported; retired Hub46 aliases remain retired. No provider bytes changed in this client/harness correction.
+- Commits in this change series: gate semantics `3a69abdd`, Android production-surface marker `b85789bc`, Desktop marker `1263f6c7`, targeted strict gate `e3dd9839`, regression contracts `af097a9d/e5156a82/681633d4`. Real native replay on the resulting HEAD remains required before claiming client playback success.
+
 ## 2026-11-19 — Residential replay selector import contract fixed
 
 - WAF run 44453550952 proved the new browser/egress contracts but failed before Tailscale because `select_residential_provider_replay.py` imported sibling `current_provider_scope` only under direct-script sys.path semantics. Importlib-based contract tests could not resolve it.
