@@ -155,6 +155,14 @@ assert "Restore compatible stale Fast Brain negative priors" in workflow
 assert 'git merge-base --is-ancestor "$prior_sha" "$GITHUB_SHA"' in workflow
 assert 'git diff --quiet "$prior_sha" "$GITHUB_SHA"' in workflow
 assert "merge_stale_fast_repair_memory.py" in workflow
+# Stale no-progress runs may pass negative priors to the next run if the
+# published provider bundles did not change, even when unpublished common
+# ProviderBase generator source changes (e.g. the V28 native capability gate).
+# All other script/core and published-byte differences still block the import.
+assert "':(exclude)scripts/provider_base_store.py'" in workflow
+assert 'providers provider-bases provider-v3-materialization.json' in workflow
+assert 'provider-overrides.json engine_v2 provider-v3-quick-yield.json' in workflow
+assert 'scripts \' :(exclude)' not in workflow
 assert "executable-or-provider-byte-drift" in workflow
 assert "provider-fast-repair-$prior" in workflow
 
