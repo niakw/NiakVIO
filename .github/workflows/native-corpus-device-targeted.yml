@@ -518,6 +518,8 @@ jobs:
       - name: Diagnose sanitized targeted native evidence for Brain
         if: always()
         shell: bash
+        env:
+          OFFICIAL_CLIENT_SHA: ${{ matrix.device == 'tv' && needs.resolve.outputs.tv_sha || matrix.device == 'mobile' && needs.resolve.outputs.mobile_sha || needs.resolve.outputs.desktop_sha }}
         run: |
           set -euo pipefail
           shopt -s nullglob
@@ -530,7 +532,7 @@ jobs:
           for log in "${logs[@]}"; do
             base="$(basename "$log" .log)"
             out="$GITHUB_WORKSPACE/${base}-brain.json"
-            node niakvio/engine_v2/scripts/diagnose-native-reader.mjs --output "$out" "$log"
+            node niakvio/engine_v2/scripts/diagnose-native-reader.mjs --output "$out" --official-client-sha "$OFFICIAL_CLIENT_SHA" "$log"
             diagnosed=$((diagnosed + 1))
           done
           echo "FIELD_NATIVE_TARGETED_BRAIN_DIAGNOSIS client=${{ matrix.device }} provider=${{ matrix.provider }} files=$diagnosed status=written"
