@@ -160,7 +160,7 @@ assert '"implementationRevision":"field-safety-v8-media-only-p2p-vod-duration"' 
 assert '"implementationRevision":"field-safety-v7-stream-scoped-p2p-vod-duration"' not in reapplied_text
 assert '"implementationRevision":"field-safety-v6-core-repair-types"' not in reapplied_text
 assert '"implementationRevision":"scoped-playback-context-v4"' not in reapplied_text
-assert '"implementationRevision":"scoped-playback-context-v10-nonmedia-nav-filter"' in reapplied_text
+assert '"implementationRevision":"scoped-playback-context-v11-hls-proof-handoff"' in reapplied_text
 assert "NONMEDIA_NAV" in reapplied_text
 assert "/cdn-cgi\\/l\\/email-protection" in reapplied_text
 assert "privacy(?:-policy)?" in reapplied_text
