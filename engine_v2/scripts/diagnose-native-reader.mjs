@@ -29,7 +29,7 @@ if (clientShaIndex >= 0 && !/^[0-9a-f]{40}$/.test(String(clientShaValue || '')))
 const officialClientSha = clientShaIndex >= 0 ? clientShaValue : '';
 const logPaths = args.filter((value, index) => (
   index !== outputIndex && index !== outputIndex + 1 && value !== '--output'
-  && index !== clientShaIndex && index !== clientShaIndex + 1
+  && (clientShaIndex < 0 || (index !== clientShaIndex && index !== clientShaIndex + 1))
   && value !== '--official-client-sha'
 )).map((value) => path.resolve(value));
 const nonblockingSmoke = process.env.NIAKVIO_BRAIN_NONBLOCKING === '1';
