@@ -1,6 +1,6 @@
 ## 2026-11-19 — Android TV primary Brain-driven emulator validation
 
-The existing official NuvioTV Android API31 x86/1080p GitHub Actions emulator is the **primary Brain repair validation target**. On completed native runs, `.github/workflows/brain-android-tv-emulator-feedback.yml` ingests redacted source-pinned observations and checks out Brain-LLM to route them into a next-action artifact, but **does not** run a model or publish a patch by itself. All four manifests (Global, VF, Global no-anime, VF no-anime) remain; Desktop/Mobile/iOS Core/ProviderBase/Lego compatibility is reused for targeted regression. Full data-flow, failure owner, privacy and decoded playback authority: `docs/BRAIN_ANDROID_TV_PRIMARY_VALIDATION.md`.
+The existing official NuvioTV Android API31 x86/1080p GitHub Actions emulator is the **primary Brain repair validation target**. On completed native runs, `.github/workflows/brain-android-tv-emulator-feedback.yml` ingests redacted source-pinned observations and checks out Brain-LLM to route them into a next-action artifact, but **does not** run a model or publish a patch by itself. All four manifests (Global, VF, Global no-anime, VF no-anime) remain; Desktop/Mobile/iOS Core/ProviderBase/Bloc compatibility is reused for targeted regression. Full data-flow, failure owner, privacy and decoded playback authority: `docs/BRAIN_ANDROID_TV_PRIMARY_VALIDATION.md`.
 
 ## 2026-11-19 — Android TV provider visibility: app eligibility before native proof
 
