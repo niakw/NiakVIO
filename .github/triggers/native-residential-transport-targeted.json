@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
   "requestedAt": "2026-11-19",
-  "sourceSha": "c1b35fdd2bfe761c92a1296cd4a43be0a9caa199",
+  "sourceSha": "4766bf8d5b571a140b7bdb672eb2856959bd8b91",
   "device": "tv",
   "targetProviders": [
-    "sadisflix"
+    "french-manga"
   ],
-  "targetFixture": "interstellar",
-  "residentialExit": false,
-  "reason": "User saw no Sadisflix stream; VF-only in published manifest. Source-pinned NuvioTV Interstellar test discriminates manifest loaded and enabled, app selection, movie type, native hard timeout vs extraction, terminal media and decoded player, without provider JS or manifest edits.",
-  "requestVersion": 20,
-  "retryCause": "Prior source-pinned TV Sadisflix 44529501795 showed 25-second native timeout; fresh Brain-native diagnostics now preserve hard timeouts and provider source SHA. Replay VF movie only, fail closed."
+  "targetFixture": "jujutsu-kaisen-s01e01",
+  "residentialExit": true,
+  "reason": "Brain-owned A/B discriminator: user macOS FR-audio-positive, official NuvioTV 44546095189 extracted two HLS but no decoded video/audio; independent terminal probe HTTP403. Replay exact current published French-Manga JS, canonical Global, official NuvioTV with attested residential Tailscale exit versus prior exit=false. Preserve request-origin/response-origin distinction, classify WAF/egress vs client/Core, no provider code or publication promotion.",
+  "requestVersion": 21,
+  "retryCause": "After two native TV no-exit media results and a separate HLS 403, run residential-exit network differential before guessing a provider or Core fix; no direct provider edits."
 }
