@@ -126,6 +126,7 @@ const quickJsDiagnostics = [];
 const quickJsPromiseControls = [];
 const nativeExecutionDiagnostics = [];
 const terminalTransportDiagnostics = [];
+const prePlayerMediaRootTransitions = [];
 const TERMINAL_TRANSPORT_KINDS = new Set(['hls', 'dash', 'video', 'html', 'unknown']);
 const TERMINAL_TRANSPORT_STATES = new Set(['dead', 'error']);
 
@@ -142,7 +143,56 @@ const APP_SELECTION_REASONS = new Set([
 const runtimeSentinelByKey = new Map();
 for (const file of logPaths) {
   if (!fs.existsSync(file)) continue;
+  // Raw signed URLs exist only in this process-local map. The emitted report
+  // retains no URL/host/token, only a route-bound transition classification.
+  let activeProviderRoute = null;
+  const mediaRootStatuses = new Map();
   for (const raw of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
+    const beginAt = raw.indexOf('FIELD_NATIVE_PROVIDER_BEGIN ');
+    if (beginAt >= 0) {
+      const b = fields(raw.slice(beginAt).trim());
+      const provider = decode(b.provider64).trim().toLowerCase();
+      const fixture = String(b.fixture || '').trim().toLowerCase();
+      const requestType = String(b.request_type || '').trim().toLowerCase();
+      activeProviderRoute = (
+        b.client === 'tv'
+        && /^[a-z0-9][a-z0-9_-]{0,95}$/.test(provider)
+        && /^[a-z0-9][a-z0-9-]{0,95}$/.test(fixture)
+        && ['movie', 'tv', 'anime'].includes(requestType)
+      ) ? {client: 'tv', provider, fixture, requestType} : null;
+    }
+
+    if (activeProviderRoute) {
+      const match = /Fetch result:\s*([0-9]{3})\s+url=(\S+)/.exec(raw);
+      if (match) {
+        const status = Number(match[1]);
+        const url = String(match[2] || '');
+        if (/\.m3u8(?:[?#]|$)/i.test(url) && Number.isInteger(status)) {
+          const route = runtimeExecutionKey(activeProviderRoute);
+          const key = route + '\u0000' + url;
+          const previous = mediaRootStatuses.get(key) || [];
+          if (
+            status === 403
+            && previous.some((value) => value >= 200 && value < 300)
+            && !prePlayerMediaRootTransitions.some((row) =>
+              runtimeExecutionKey(row) === route
+              && row.pattern === 'same_media_root_2xx_then_403')
+          ) {
+            prePlayerMediaRootTransitions.push({
+              ...activeProviderRoute,
+              source: 'plugin-runtime-fetch-sequence',
+              kind: 'hls',
+              pattern: 'same_media_root_2xx_then_403',
+              phase: 'provider-runtime-pre-player',
+              proofAuthority: false, publicationAuthority: false,
+              nativePlaybackAuthority: false, providerJsMutationAllowed: false,
+            });
+          }
+          previous.push(status);
+          mediaRootStatuses.set(key, previous.slice(-4));
+        }
+      }
+    }
     const loadAt = raw.indexOf('FIELD_NATIVE_PROVIDER_LOAD_ERROR ');
     if (loadAt >= 0) {
       const f = fields(raw.slice(loadAt).trim());
@@ -270,6 +320,8 @@ for (const file of logPaths) {
           nativePlaybackAuthority: false, providerJsMutationAllowed: false,
         });
       }
+      // Any provider execution error terminates pre-player sequence authority.
+      activeProviderRoute = null;
     }
 
     const resultAt = raw.indexOf('FIELD_NATIVE_RESULT ');
@@ -284,6 +336,7 @@ for (const file of logPaths) {
         enabled: f.enabled === 'true',
         count: Math.max(0, Number(f.count ?? f.returned ?? 0) || 0),
       });
+      activeProviderRoute = null;
     }
 
     // Network probe is independent of the official player. Never claim that
@@ -827,6 +880,7 @@ const payload = {
   quickJsDiagnosticObserved: quickJsDiagnostics.length,
   nativeExecutionDiagnosticObserved: nativeExecutionDiagnostics.length,
   terminalTransportDiagnosticObserved: terminalTransportDiagnostics.length,
+  prePlayerMediaRootTransitionObserved: prePlayerMediaRootTransitions.length,
   quickJsUnverifiedObserved: quickJsUnverifiedObservations.length,
   readerLoadErrorEvidence: brainReaderRows.filter((row) => row.loadDurationMs > 0 || row.loadBytes > 0 || row.httpStatus > 0).length,
   observations,
@@ -838,6 +892,7 @@ const payload = {
   quickJsPromiseControls,
   nativeExecutionDiagnostics,
   terminalTransportDiagnostics,
+  prePlayerMediaRootTransitions,
   quickJsUnverifiedObservations,
   appSelectionObservations,
   appSelectionIssues,
