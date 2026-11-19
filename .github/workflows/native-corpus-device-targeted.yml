@@ -47,9 +47,9 @@ jobs:
     timeout-minutes: 8
     outputs:
       targets: ${{ steps.resolve.outputs.targets }}
-      desktop_sha: ${{ steps.resolve.outputs.desktop_sha }}
-      mobile_sha: ${{ steps.resolve.outputs.mobile_sha }}
-      tv_sha: ${{ steps.resolve.outputs.tv_sha }}
+      desktop_sha: ${{ steps.heads.outputs.desktop_sha }}
+      mobile_sha: ${{ steps.heads.outputs.mobile_sha }}
+      tv_sha: ${{ steps.heads.outputs.tv_sha }}
     steps:
       - name: Checkout selected Niakvio generation
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -57,7 +57,24 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
-      - name: Resolve selected devices and accepted clients
+      - name: Resolve latest official client HEADs (audit contract drift first)
+        id: heads
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p health-output
+          python3 scripts/check_nuvio_client_upstreams.py \
+            --clients nuvio-tv nuvio-mobile nuvio-desktop \
+            --paths-only --no-fail \
+            --output health-output/native-target-current-client-drift.json
+          python3 scripts/resolve_nuvio_lab_heads.py \
+            --report health-output/native-target-current-client-drift.json \
+            --clients nuvio-tv nuvio-mobile nuvio-desktop \
+            --github-output "$GITHUB_OUTPUT" \
+            --output health-output/native-target-current-client-heads.json
+          echo "FIELD_NATIVE_TARGET_CLIENT_POLICY latest_official_head=true accepted_ref_only_for_audit=true require_exact_sha=true"
+
+      - name: Resolve selected devices and manifests
         id: resolve
         shell: bash
         env:
@@ -157,17 +174,6 @@ jobs:
           ]
           print("targets=" + json.dumps({"include": targets}, separators=(",", ":")))
 
-          data = json.loads(Path("sources.json").read_text(encoding="utf-8"))
-          clients = data.get("nuvio_client_compatibility", {}).get("clients", {})
-          for output, key in {
-              "desktop_sha": "nuvio-desktop",
-              "mobile_sha": "nuvio-mobile",
-              "tv_sha": "nuvio-tv",
-          }.items():
-              ref = str((clients.get(key) or {}).get("accepted_ref") or "").strip()
-              if len(ref) != 40:
-                  raise SystemExit(f"missing accepted_ref for {key}")
-              print(f"{output}={ref}")
           PY
 
   native-corpus:
