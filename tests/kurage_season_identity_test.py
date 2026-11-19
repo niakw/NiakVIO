@@ -83,7 +83,21 @@ require(process.argv[2]);
   if(Number(out[0].anilistId)!==202||Number(out[0].season)!==2||Number(out[0].episode)!==10)throw new Error('output identity mismatch '+JSON.stringify(out[0]));
   if(searchCalls!==1)throw new Error('unexpected search count '+searchCalls);
   if(scenario==='direct'&&idCalls!==0)throw new Error('direct season match should not hydrate base');
-  console.log('KURAGE_SEASON_IDENTITY_OK scenario='+scenario+' anilist='+trpcAnimeId+' episode='+trpcEpisode);
+  // An unsupported S00 or invalid E00 must never silently fetch S01/E01.
+  // No AniList/TRPC network or season+episode metadata mutation is allowed.
+  const before=[searchCalls,idCalls,trpcAnimeId,trpcEpisode];
+  for(const query of [
+    [{tmdbId:'280049',canonicalMediaType:'anime',season:0,episode:10}],
+    ['280049','anime',0,10],
+    [{tmdbId:'280049',canonicalMediaType:'anime',season:1,episode:0}],
+    [{tmdbId:'280049',canonicalMediaType:'anime',season:-1,episode:10}],
+  ]){
+    const rejected=await runtime.resolve(query,{});
+    if(!Array.isArray(rejected)||rejected.length!==0)throw new Error('invalid/special season incorrectly matched: '+JSON.stringify(query));
+    if(JSON.stringify(before)!==JSON.stringify([searchCalls,idCalls,trpcAnimeId,trpcEpisode]))
+      throw new Error('invalid/S00 input triggered AniList/TRPC network fetch');
+  }
+  console.log('KURAGE_SEASON_IDENTITY_OK scenario='+scenario+' anilist='+trpcAnimeId+' episode='+trpcEpisode+' s00_fail_closed=true');
 })().catch(e=>{console.error(e);process.exit(1)});
 '''
 
