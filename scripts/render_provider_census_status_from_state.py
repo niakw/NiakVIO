@@ -54,8 +54,16 @@ def cell(value: object) -> str:
 
 
 
+def current_residential_attempt(state: dict[str, Any]) -> dict[str, Any]:
+    current = state.get("residentialExitNodeLastAttempt")
+    if isinstance(current, dict):
+        return current
+    historical = state.get("residentialExitNodeEvidence")
+    return historical if isinstance(historical, dict) else {}
+
+
 def residential_probe_cell(state: dict[str, Any], row: dict[str, Any]) -> str:
-    residential = state.get("residentialExitNodeEvidence")
+    residential = current_residential_attempt(state)
     status = str(row.get("status") or "")
     if status not in census.ENVIRONMENT_ONLY_STATES:
         return "—"
@@ -141,14 +149,16 @@ def render(state: dict[str, Any]) -> str:
             and row.get("authorityRepairEligible") is not False
         ]
 
-    residential = state.get("residentialExitNodeEvidence") if isinstance(state.get("residentialExitNodeEvidence"), dict) else {}
+    residential = current_residential_attempt(state)
+    historical_residential = state.get("residentialExitNodeEvidence") if isinstance(state.get("residentialExitNodeEvidence"), dict) else {}
     residential_notice = ""
     attempt_notice = census.repair_attempt_notice(census.historical_repair_attempt(state), run_id)
     if residential.get("enabled") is True:
         if residential.get("available") is True:
             residential_notice = "Residential harness: **available** · private exit compared where matched."
         else:
-            residential_notice = "⚠️ Residential harness: **unavailable** · this overlay used GitHub-hosted transport only."
+            retained = " · prior residential evidence retained for history only" if historical_residential.get("available") is True else ""
+            residential_notice = "⚠️ Residential harness: **unavailable on latest attempt** · this overlay used GitHub-hosted transport only" + retained + "."
 
     # Retained positive proofs are valuable but not new verification on this
     # census SHA. A FULL row carried from history must never be presented as
