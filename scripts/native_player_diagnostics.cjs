@@ -41,7 +41,20 @@ const CLIENT_RUNTIME_ERROR_PATTERNS = [
 
 function readerFailureClass(row = {}) {
   const state = String(row.state || '').toLowerCase();
-  if (state === 'ready' || state === 'ended') return 'healthy';
+  if (state === 'ready' || state === 'ended') {
+    // Official Android TV can signal READY from a manifest/timeline before
+    // the player exposes a video track. Treat missing or 0x0 decoded format
+    // as an unresolved media observation, NOT provider-owned failure.
+    // Non-TV historical reader logs may not supply these fields yet.
+    if (String(row.client || '').toLowerCase() === 'tv') {
+      const width = Number(row.videoWidth ?? row.video_width ?? 0);
+      const height = Number(row.videoHeight ?? row.video_height ?? 0);
+      if (!(Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0)) {
+        return 'playback_video_format_unverified';
+      }
+    }
+    return 'healthy';
+  }
   if (state === 'short_media') return 'short_media';
   if (state === 'duration_unknown') return 'playback_duration_unknown';
   const stage = String(row.failureStage || row.failure_stage || '').toLowerCase();
@@ -59,6 +72,8 @@ function readerFailureClass(row = {}) {
 function readerFailureDomain(row = {}) {
   const cls = readerFailureClass(row);
   if (cls === 'healthy') return 'healthy';
+  if (cls === 'playback_video_format_unverified') return 'unresolved_media';
+
   if (CLIENT_RUNTIME_FAILURE_CLASSES.has(cls)) return 'client_runtime';
   const details = [
     row.errorClass, row.error_class,
