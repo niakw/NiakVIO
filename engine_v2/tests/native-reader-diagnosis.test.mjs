@@ -51,6 +51,26 @@ try {
   const data = JSON.parse(fs.readFileSync(output, 'utf8'));
   assert.equal(data.brainVersion, 7);
   assert.equal(data.schemaVersion, 5);
+  // The SHA of the actual official Nuvio client build is independent from
+  // NiakVIO's commit and the provider-JS content hash. Older reports stay
+  // unknown; do not infer the user-installed TV version from a native run.
+  assert.equal(data.officialClientSha, '');
+  const headOut = path.join(tmp, 'brain-pinned-client.json');
+  const officialHead = 'c'.repeat(40);
+  const pinned = spawnSync(process.execPath, [
+    script, '--output', headOut, '--official-client-sha', officialHead, log,
+  ], { cwd: root, encoding: 'utf8' });
+  assert.equal(pinned.status, 0, pinned.stderr + pinned.stdout);
+  const pinnedData = JSON.parse(fs.readFileSync(headOut, 'utf8'));
+  assert.equal(pinnedData.officialClientSha, officialHead);
+  assert.equal(pinnedData.readerObserved, data.readerObserved);
+  assert.equal(pinnedData.evidenceComplete, data.evidenceComplete);
+  const forged = spawnSync(process.execPath, [
+    script, '--output', path.join(tmp, 'forged-head.json'),
+    '--official-client-sha', 'https://private.invalid/SECRET', log,
+  ], { cwd: root, encoding: 'utf8' });
+  assert.notEqual(forged.status, 0);
+  assert.equal(fs.existsSync(path.join(tmp, 'forged-head.json')), false);
   assert.equal(data.evidenceComplete, true);
   assert.equal(data.policy.evidenceUsable, true);
   assert.equal(data.policy.learningAllowed, false);
