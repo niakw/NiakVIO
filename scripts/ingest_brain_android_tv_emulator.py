@@ -84,6 +84,11 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
         return []
     if type(report.get("evidenceComplete")) is not bool:
         return []
+    # This is the *real official client checkout* tested by native CI, not
+    # NiakVIO's source SHA and not a user-installed APK assertion.
+    native_client_sha = str(report.get("officialClientSha") or "").strip().lower()
+    if not SHA40.fullmatch(native_client_sha):
+        native_client_sha = ""
     samples: dict[tuple[str, str, str], dict[str, Any]] = {}
 
     def get(raw: dict[str, Any]) -> dict[str, Any] | None:
@@ -98,6 +103,7 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
         if key not in samples:
             samples[key] = {
                 "provider": key[0], "fixture": fixture, "requestType": lane,
+                "officialClientSha": native_client_sha,
                 "appSelected": None, "tvPromiseControl": "not_observed", "quickJsPhases": [],
                 "nativeHardTimeoutObserved": False, "nativeHardTimeoutMs": 0,
                 "quickJsErrors": [], "quickJsReturned": 0,
@@ -309,6 +315,10 @@ def merge(previous: dict[str, Any], reports: list[dict[str, Any]], *,
             "provider": provider, "fixture": fixture, "requestType": lane,
             "providerArtifactSha256": digest, "sourceNiakvioSha": sha,
             "nativeRunId": run,
+            "officialClientSha": (
+                str(record.get("officialClientSha") or "").lower()
+                if SHA40.fullmatch(str(record.get("officialClientSha") or "").lower()) else ""
+            ),
             "manifestScope": record.get("manifestScope")
                 if record.get("manifestScope") in {"manifest.json", "vf/manifest.json"} else "",
             "appSelected": record.get("appSelected")
