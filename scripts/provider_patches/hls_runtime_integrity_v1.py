@@ -111,7 +111,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         payload_config.update(
             {
                 "inspectMasterFacts": True,
-                "implementationRevision": "variant-coherence-v18",
+                "implementationRevision": "variant-coherence-v19-core-proof-handoff",
             }
         )
     payload = json.dumps(payload_config, separators=(",", ":"))
@@ -145,6 +145,21 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     if(!stream||typeof stream!=="object")return false;
     var u=String(stream.url||"").toLowerCase(),t=String(stream.type||stream.format||"").toLowerCase();
     return /\.m3u8(?:[?#]|$)/i.test(u)||u.indexOf("/hls/")>=0||u.indexOf("/hls2/")>=0||t==="hls"||t==="m3u8"||t.indexOf("mpegurl")>=0;
+  }
+  function coreHlsProof(stream){
+    var proof=stream&&stream.__nuvioCoreMediaProofV1;
+    if(!proof||typeof proof!=="object"||String(proof.kind||"").toLowerCase()!=="hls")return null;
+    if(String(proof.url||"")!==String(stream&&stream.url||""))return null;
+    var body=clean(proof.body||"");
+    if(body.indexOf("#EXTM3U")!==0)return null;
+    return {state:"ok",url:String(proof.url||stream.url||""),contentType:"application/vnd.apple.mpegurl",body:body};
+  }
+  function stripCoreHlsProofBody(stream){
+    try{
+      var proof=stream&&stream.__nuvioCoreMediaProofV1;
+      if(proof&&typeof proof==="object"&&Object.prototype.hasOwnProperty.call(proof,"body"))delete proof.body;
+    }catch(_e){}
+    return stream;
   }
   function absolute(raw,base){try{return new URL(clean(raw),base).toString()}catch(_e){return ""}}
   function headerValue(stream,name){
@@ -275,9 +290,9 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     return firstUnknown||{state:"valid",reason:"audio_renditions_verified"};
   }
   async function nativeFirstSegmentProof(stream){
-    var referer=headerValue(stream,"referer"),root=await fetchBounded(String(stream.url||""),stream,referer,false,config.nativeProbeTimeoutMs||config.timeoutMs);
+    var referer=headerValue(stream,"referer"),cached=coreHlsProof(stream),root=cached||await fetchBounded(String(stream.url||""),stream,referer,false,config.nativeProbeTimeoutMs||config.timeoutMs);
     if(root.state==="invalid")return root;if(root.state!=="ok")return {state:"unknown",reason:root.reason||"playlist_fetch_unknown"};
-    var body=await responseText(root),kind=playlistKind(body),base=root.url||String(stream.url||""),facts=null;
+    var body=cached?cached.body:await responseText(root),kind=playlistKind(body),base=root.url||String(stream.url||""),facts=null;
     if(kind==="invalid"||kind==="header_only")return {state:"invalid",reason:"playlist_"+kind};
     if(kind==="master"){
       if(config.inspectMasterFacts)facts=masterFacts(body);
@@ -319,19 +334,19 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     var proof=await proveMediaPlaylist(body,base,stream,referer);if(facts)proof.facts=facts;return proof;
   }
   async function nativeFactsOnly(stream){
-    var referer=headerValue(stream,"referer"),root=await fetchBounded(String(stream.url||""),stream,referer,false,config.nativeProbeTimeoutMs||config.timeoutMs);
+    var referer=headerValue(stream,"referer"),cached=coreHlsProof(stream),root=cached||await fetchBounded(String(stream.url||""),stream,referer,false,config.nativeProbeTimeoutMs||config.timeoutMs);
     if(root.state==="invalid")return null;
-    if(root.state!=="ok")return config.failClosedUnknown?null:stream;
-    var body=await responseText(root),kind=playlistKind(body);
+    if(root.state!=="ok")return config.failClosedUnknown?null:stripCoreHlsProofBody(stream);
+    var body=cached?cached.body:await responseText(root),kind=playlistKind(body);
     if(kind==="invalid"||kind==="header_only")return null;
     if(kind==="media"){
-      var tiny=shortMediaDuration(body);return tiny?null:stream;
+      var tiny=shortMediaDuration(body);return tiny?null:stripCoreHlsProofBody(stream);
     }
     if(kind==="master"){
       var facts=config.inspectMasterFacts?masterFacts(body):null;
-      return facts?enrichMasterFacts(stream,facts):stream;
+      return stripCoreHlsProofBody(facts?enrichMasterFacts(stream,facts):stream);
     }
-    return stream;
+    return stripCoreHlsProofBody(stream);
   }
   function segmentDuration(body){
     var text=clean(body),re=/#EXTINF\s*:\s*([0-9]+(?:\.[0-9]+)?)/gi,m,total=0,count=0;
@@ -594,7 +609,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         if(proof.state==="invalid"||(proof.state==="unknown"&&config.failClosedUnknown)){
           return null;
         }
-        var output=config.inspectMasterFacts&&proof.facts?enrichMasterFacts(stream,proof.facts):stream;if(proof.networkEvidence&&output&&typeof output==="object"){output=Object.assign({},output);output.__nuvioStreamNetworkEvidenceV1=proof.networkEvidence}return output;
+        var output=config.inspectMasterFacts&&proof.facts?enrichMasterFacts(stream,proof.facts):stream;output=stripCoreHlsProofBody(output);if(proof.networkEvidence&&output&&typeof output==="object"){output=Object.assign({},output);output.__nuvioStreamNetworkEvidenceV1=proof.networkEvidence}return output;
       }));
       var nativeFiltered=checks.filter(Boolean);
       if(Array.isArray(value))return nativeFiltered;
