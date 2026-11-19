@@ -1,3 +1,7 @@
+## 2026-11-19 — Android TV primary Brain-driven emulator validation
+
+The existing official NuvioTV Android API31 x86/1080p GitHub Actions emulator is the **primary Brain repair validation target**. On completed native runs, `.github/workflows/brain-android-tv-emulator-feedback.yml` ingests redacted source-pinned observations and checks out Brain-LLM to route them into a next-action artifact, but **does not** run a model or publish a patch by itself. All four manifests (Global, VF, Global no-anime, VF no-anime) remain; Desktop/Mobile/iOS Core/ProviderBase/Lego compatibility is reused for targeted regression. Full data-flow, failure owner, privacy and decoded playback authority: `docs/BRAIN_ANDROID_TV_PRIMARY_VALIDATION.md`.
+
 ## 2026-11-19 — Android TV provider visibility: app eligibility before native proof
 
 A positive provider stream from a direct `PluginManager.executeScraper` call does not imply that Android TV's actual stream UI can list the provider. The official NuvioTV stream repository first builds `PluginManager.enabledScrapers` from the persisted local `enabled` state plus the global plugins switch, then restricts it with `ScraperInfo.supportsType(mediaType)`. `downloadJsScrapers` retains an existing scraper's local `enabled` setting across manifest refreshes. The native harness previously bypassed this selection by invoking an installed scraper directly. It therefore could report a non-representative success where the UI would not select it.
