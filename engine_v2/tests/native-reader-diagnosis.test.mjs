@@ -517,6 +517,40 @@ try {
     assert.equal(JSON.stringify(terminal.terminalTransportDiagnostics).includes(secret), false);
   }
 
+  // The provider runtime may consume a signed HLS root twice before returning
+  // rows to the app. Detect 2xx -> 403 on the exact in-memory URL, but persist
+  // only a route-bound boolean pattern — never the signed URL/token.
+  const oneShotLog = path.join(tmp, 'tv-one-shot-hls.log');
+  const oneShotOutput = path.join(tmp, 'tv-one-shot-hls.json');
+  fs.writeFileSync(oneShotLog, [
+    ...common.slice(0, -1),
+    `FIELD_NATIVE_PROVIDER_BEGIN client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} request_type=movie route_mode=declared`,
+    'D/PluginRuntime: Fetch result: 200  url=https://signed.example/master.m3u8?token=SECRET bodyLen=120 bodyPreview=#EXTM3U',
+    'D/PluginRuntime: Fetch result: 403  url=https://signed.example/master.m3u8?token=SECRET bodyLen=12 bodyPreview=forbidden',
+    `FIELD_NATIVE_RESULT client=tv fixture=sinners-2025 provider64=${b64('MOVIESDRIVE')} request_type=movie route_mode=declared enabled=true duration_ms=24 count=0`,
+    'FIELD_NATIVE_CORPUS_END client=tv fixture=sinners-2025 errors=0',
+  ].join('\n') + '\n');
+  const oneShotRun = spawnSync(process.execPath,
+    [script, '--output', oneShotOutput, oneShotLog],
+    { cwd: root, encoding: 'utf8',
+      env: { ...process.env, NIAKVIO_BRAIN_NONBLOCKING: '1' } });
+  assert.equal(oneShotRun.status, 0, oneShotRun.stderr + oneShotRun.stdout);
+  const oneShot = JSON.parse(fs.readFileSync(oneShotOutput, 'utf8'));
+  assert.equal(oneShot.prePlayerMediaRootTransitionObserved, 1);
+  assert.equal(oneShot.prePlayerMediaRootTransitions.length, 1);
+  const transition = oneShot.prePlayerMediaRootTransitions[0];
+  assert.deepEqual(
+    [transition.provider, transition.fixture, transition.requestType,
+     transition.kind, transition.pattern, transition.phase],
+    ['moviesdrive', 'sinners-2025', 'movie', 'hls',
+     'same_media_root_2xx_then_403', 'provider-runtime-pre-player'],
+  );
+  assert.equal(transition.proofAuthority, false);
+  assert.equal(transition.providerJsMutationAllowed, false);
+  for (const secret of ['signed.example', 'SECRET', 'token=', 'https://']) {
+    assert.equal(JSON.stringify(oneShot.prePlayerMediaRootTransitions).includes(secret), false);
+  }
+
   const incomplete = path.join(tmp, 'incomplete.log');
   const incompleteOutput = path.join(tmp, 'incomplete.json');
   fs.writeFileSync(incomplete, [
