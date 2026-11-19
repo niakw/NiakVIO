@@ -456,7 +456,7 @@ assert catalogue_contract["france_only_first_class"] is True
 for stale_count in ("provider_objects", "active_provider_objects", "physical_native_lab_scope", "historical_recovery_census"):
     assert stale_count not in catalogue_contract
 assert validation_machine["core_contract"]["stream_sanitizer"] == "strict_v12"
-assert validation_machine["native_transport"]["scope"] == "Global+France active projection union"
+assert validation_machine["native_transport"]["scope"] == "Global and France projections execute independently; active authority is their union"
 stream_contract = machine["stream_multiplicity_contract"]
 assert stream_contract["provider_runtime_output_cap"] == 40
 assert stream_contract["terminal_validation_max_playback_identities"] == 40
