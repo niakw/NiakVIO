@@ -69,9 +69,27 @@
     "runtime_reproof_required": true,
     "runtime_reproof_reason": "Source ABI audit is current at 67bbb3c3f3be; fresh Android-TV Native Lab remains required for decoded playback, audio-language parity, subtitle-label rendering and provider/source provenance.",
     "audited_at": "2026-11-18",
-    "note": "2026-11-18 exact source re-audit at NuvioTV dev 67bbb3c3f3be. Across 21 commits / 58 files since 3ff5e2b41a9d, PluginRuntime, PluginManager, StreamRepository and getStreams transport are unchanged. Subtitle DTO/domain changes only add optional label while preserving url/lang/headers; StreamMapper and SubtitleRepository map that label additively. Player deltas add background-trailer handoff, fail-soft runtime buffer overrides and Dolby Vision diagnostics; no audio-track enumeration/selection or provider stream/header ownership path changed. Upstream full debug build workflow 44343356067 succeeded on this exact head. Source ABI is compatible; exact Android-TV Native Lab decoded playback/audio-language proof remains required."
+    "note": "2026-11-18 exact source re-audit at NuvioTV dev 67bbb3c3f3be. Across 21 commits / 58 files since 3ff5e2b41a9d, PluginRuntime, PluginManager, StreamRepository and getStreams transport are unchanged. Subtitle DTO/domain changes only add optional label while preserving url/lang/headers; StreamMapper and SubtitleRepository map that label additively. Player deltas add background-trailer handoff, fail-soft runtime buffer overrides and Dolby Vision diagnostics; no audio-track enumeration/selection or provider stream/header ownership path changed. Upstream full debug build workflow 44343356067 succeeded on this exact head. Source ABI is compatible; exact Android-TV Native Lab decoded playback/audio-language proof remains required.",
+    "accepted_head_review": {
+      "date": "2026-11-19",
+      "accepted_ref": "253eaf6d4de85932e08124ca9dc83eff060091b0",
+      "previous_accepted_ref": "1391e6bdc2f27547c63dea28f92b272f8487645b",
+      "audited_contract_ref": "67bbb3c3f3be2235e3abb7fda9c4670f97df8448",
+      "changed_file_count": 14,
+      "plugin_runtime_changed": false,
+      "plugin_manager_changed": false,
+      "stream_repository_changed": false,
+      "manifest_model_changed": false,
+      "player_networking_changed": true,
+      "player_networking_assessment": "Compatible additive behavior: streams carrying proxyHeaders remain HTTP/1.1 first; one HTTPS 403 may retry over HTTP/2, then cache that host in-memory. URL/header ownership and provider getStreams ABI are unchanged.",
+      "trailer_changes_assessment": "Trailer subtitle/player-pool/detail-overlay changes are isolated from provider stream discovery and plugin result projection.",
+      "upstream_build_evidence": "NuvioTV PR Full Debug Build Comment workflow 44573303677 completed success on current dev 253eaf6d4.",
+      "runtime_reproof_required": true,
+      "proof_authority": false
+    }
   },
   "notes": [
+    "2026-11-19 accepted-head review: dev 253eaf6d4 adds a bounded HTTP/2 retry after HTTPS 403 only for playback requests carrying proxyHeaders; provider QuickJS/getStreams/manifest/StreamRepository contracts are unchanged. This may help player-stage 403s but cannot repair a provider that returns zero rows before the player.",
     "NuvioTV source contract re-audited on 2026-11-16 at 2c853c1786743822c5ec7932e855529e0c731221.",
     "NuvioTV provider compatibility is a distinct runtime family from Nuvio Mobile and Nuvio Desktop.",
     "The source_ref is the exact official NuvioTV commit most recently source-audited against this contract.",
