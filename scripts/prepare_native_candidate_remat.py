@@ -13,6 +13,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MARKER = "NIAKVIO_PROVIDER_NATIVE_PLAYER_HEDGE_V27"
+# Additional causal signatures are only source-owned generic Core/ProviderBase
+# mechanisms. The caller cannot substitute provider-specific executable code.
+REQUIRED_MARKERS = {
+    "",
+    "NIAKVIO_HLS_TS_WRAPPED_AAC_RENDITION_V20",
+    "NIAKVIO_PROVIDER_NATIVE_FETCH_CAPABILITY_GATE_V28",
+}
 
 
 def rows(manifest: Path, provider: str) -> tuple[dict, int]:
@@ -62,8 +69,12 @@ def main() -> None:
     p.add_argument("--output", default="automation/native-candidate-remat-proof.json")
     p.add_argument("--verify-staging", action="store_true")
     p.add_argument("--client-root", default="")
+    p.add_argument("--required-marker", default="")
     args = p.parse_args()
 
+    required_marker = args.required_marker.strip()
+    if required_marker not in REQUIRED_MARKERS:
+        raise ValueError("unsupported source-owned native candidate marker")
     provider = args.provider.strip().lower()
     if not re.fullmatch(r"[a-z][a-z0-9-]{1,79}", provider):
         raise ValueError("invalid provider")
@@ -77,11 +88,17 @@ def main() -> None:
 
     if args.verify_staging:
         proof = json.loads(output.read_text(encoding="utf-8"))
-        if proof.get("provider") != provider or proof.get("manifest") != args.manifest:
+        if (
+            proof.get("provider") != provider
+            or proof.get("manifest") != args.manifest
+            or proof.get("requiredCoreMarker", "") != required_marker
+        ):
             raise ValueError("candidate provenance mismatch")
         candidate_sha = str(proof.get("candidateJsSha256") or "")
         if not re.fullmatch(r"[a-f0-9]{64}", candidate_sha) or sha256(local_js) != candidate_sha:
             raise ValueError("candidate source bytes diverged")
+        if required_marker and required_marker not in local_js.read_text(encoding="utf-8"):
+            raise ValueError("required generic Core marker absent from staged candidate source")
         if not args.client_root:
             raise ValueError("official client checkout required")
         # The native stage filters to NIAKVIO_PROVIDER_SCOPE_MATRIX *before*
@@ -117,12 +134,16 @@ def main() -> None:
     updated_row, _ = rows(manifest, provider)
     candidate_path = js_path(manifest, updated_row)
     candidate_sha = sha256(candidate_path)
-    if candidate_sha == baseline_sha or MARKER not in candidate_path.read_text(encoding="utf-8"):
-        raise ValueError("candidate did not change bytes with shared ProviderBase hedge")
+    candidate_source = candidate_path.read_text(encoding="utf-8")
+    if candidate_sha == baseline_sha or MARKER not in candidate_source:
+        raise ValueError("candidate did not rematerialize changed ProviderBase bytes")
+    if required_marker and required_marker not in candidate_source:
+        raise ValueError("candidate did not materialize required source-owned Core marker")
     proof = {
         "schemaVersion": 1, "provider": provider, "manifest": args.manifest,
         "sourceNiakvioSha": source_sha, "publishedBaselineJsSha256": baseline_sha,
         "candidateJsSha256": candidate_sha, "candidateByteChanged": True,
+        "requiredCoreMarker": required_marker,
         "generatedByBrain": False, "generatedByProviderBase": True,
         "officialTvTestAssetByteMatched": False, "productionPlaybackVerified": False,
         "publicationAllowed": False,
