@@ -10,6 +10,9 @@ start = source.index("async function _crawlDirectMedia(seedUrls, referer, maxDep
 end = source.index("function _candidateScore(url, meta)", start)
 crawl = source[start:end]
 assert "NIAKVIO_PROVIDER_NATIVE_PLAYER_HEDGE_V27" in crawl
+assert "NIAKVIO_PROVIDER_NATIVE_FETCH_CAPABILITY_GATE_V28" in crawl
+assert 'globalThis.__nuvioNonBlockingNativeFetchV1 === true' in crawl
+assert 'nativeHedge = typeof globalThis.__native_fetch === "function"' not in crawl
 assert "Promise.race([Promise.all(workers), firstDirect])" in crawl
 assert "const workers = [crawlWorker(), crawlWorker()]" in crawl
 assert "if (hedgeStopped) return;" in crawl
@@ -18,7 +21,7 @@ js = r"""
 const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const crawler = JSON.parse(process.env.CRAWL_CODE);
-function make(native, slowHost, fastHost, blockingNativeBridge=false) {
+function make(native, slowHost, fastHost, blockingNativeBridge=false, nonBlockingCapability=false) {
   const requests = [];
   const starts = [];
   const f = {
@@ -63,7 +66,11 @@ function make(native, slowHost, fastHost, blockingNativeBridge=false) {
     },
   };
   f.globalThis = native
-    ? { __native_fetch:()=>{}, __nuvioProviderDeadlineMs:Date.now()+25000 }
+    ? {
+        __native_fetch:()=>{},
+        __nuvioProviderDeadlineMs:Date.now()+25000,
+        ...(nonBlockingCapability ? {__nuvioNonBlockingNativeFetchV1:true} : {})
+      }
     : {};
   vm.createContext(f);
   f.testCrawl=vm.runInContext(crawler+';_crawlDirectMedia;',f);
@@ -71,7 +78,7 @@ function make(native, slowHost, fastHost, blockingNativeBridge=false) {
 }
 (async()=>{
  const slow='https://slow.example/embed/bad',fast='https://fast.example/e/good';
- const a=make(true,slow,fast),start=Date.now();
+ const a=make(true,slow,fast,false,true),start=Date.now();
  const rows=await a.f.testCrawl([slow,fast],'https://example.org',2);
  const ms=Date.now()-start;
  assert.equal(rows.length,1,JSON.stringify(rows));
@@ -82,7 +89,7 @@ function make(native, slowHost, fastHost, blockingNativeBridge=false) {
  const old=await b.f.testCrawl([slow,fast],'https://example.org',2);
  assert.equal(old.length,1);
  assert.ok(Date.now()-startB>=140,'non-native retains complete sequential scan');
- const c=make(true,slow,'https://slow.example/e/other'),startC=Date.now();
+ const c=make(true,slow,'https://slow.example/e/other',false,true),startC=Date.now();
  const same=await c.f.testCrawl([slow,'https://slow.example/e/other'],'https://example.org',2);
  assert.equal(same.length,0);
  assert.ok(Date.now()-startC>=140,'same-host URLs never fast-hedge');
@@ -94,7 +101,19 @@ function make(native, slowHost, fastHost, blockingNativeBridge=false) {
  assert.equal(d.requests.length,2,'no hidden duplicate requests under sync native bridge');
  assert.ok(d.starts[1].at-d.starts[0].at>=140,
     'the fast second host must not start before a blocking native 522 completes');
- console.log('provider native hedge contract passed: async-fixture-fast=true, sync-android-tv-parallel=false, bounded=2');
+ const e=make(true,slow,fast,false,false),startE=Date.now();
+ const guarded=await e.f.testCrawl([slow,fast],'https://example.org',2);
+ assert.equal(guarded.length,1);
+ assert.ok(Date.now()-startE>=140,
+   'real native bridge without explicit nonblocking capability must stay sequential');
+ assert.ok(e.starts[1].at-e.starts[0].at>=140,
+   'nonblocking promise fixture must not invent NuvioTV runtime capability');
+ const f=make(true,slow,fast,true,true),startF=Date.now();
+ const misleading=await f.f.testCrawl([slow,fast],'https://example.org',2);
+ assert.equal(misleading.length,1);
+ assert.ok(Date.now()-startF>=140,
+   'even a forged capability cannot make a blocking bridge concurrent');
+ console.log('provider native hedge contract passed: opt-in-nonblocking-fast=true, official-sync-default-sequential=true, forged-sync-not-parallel=true, bounded=2');
 })().catch(e=>{console.error(e);process.exitCode=1});
 """
 # Pass source through stdin to avoid env/code quoting for the dynamic function.
