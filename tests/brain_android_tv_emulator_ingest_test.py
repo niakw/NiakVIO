@@ -31,6 +31,11 @@ def report(provider="demo", *, selected=True, returned=0, complete=False):
              "rawError": "Bearer SECRET_TOKEN and URL https://PRIVATE.example"},
         ],
         "observations": [
+            {"client": "tv", "provider": provider, "fixture": "jujutsu-kaisen-s01e01",
+             "requestType": "anime", "routeMode": "declared",
+             "observationLayer": "extraction", "state": "empty",
+             "failureClass": "media_extraction_gap", "returnedCount": 0,
+             "url": "https://PRIVATE.example/should-never-leak"},
             {"client": "desktop", "provider": provider, "fixture": "jujutsu-kaisen-s01e01",
              "requestType": "anime", "observationLayer": "player",
              "state": "ready", "failureClass": "healthy",
@@ -57,6 +62,8 @@ with tempfile.TemporaryDirectory() as folder:
     x = a["rows"][0]
     assert x["appSelected"] is True
     assert x["quickJsReturned"] == 0
+    assert x["nativeExtractionZeroObserved"] is True
+    assert x["nativeExtractionPositiveObserved"] is False
     assert x["quickJsErrors"] == ["reference_error"]
     assert x["quickJsPhases"] == ["call", "result", "error"]
     assert x["playerStates"] == []
@@ -77,6 +84,7 @@ with tempfile.TemporaryDirectory() as folder:
                   source_root=root, source_sha="b"*40, run_id="1002")
     assert b["observationCount"] == 2
     assert b["rows"][0]["quickJsReturned"] == 2
+    assert b["rows"][0]["nativeExtractionZeroObserved"] is True  # independent native result, no media proof
     assert b["rows"][0]["readerEvidenceComplete"] is True
     assert b["rows"][0]["providerArtifactSha256"] != b["rows"][1]["providerArtifactSha256"]
     assert b["rows"][0]["nativePlaybackAuthority"] is False
@@ -101,6 +109,8 @@ with tempfile.TemporaryDirectory() as folder:
     spoof = report()
     spoof["quickJsDiagnostics"] = []
     spoof["appSelectionObservations"] = []
+    # Even a forged native extraction record without app selection and
+    # QuickJS markers must never enter the Brain at all.
     assert mod.sanitized_rows(spoof) == []
     malicious = report()
     malicious["quickJsDiagnostics"][2]["category"] = "https://PRIVATE.example"
