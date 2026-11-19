@@ -4,21 +4,28 @@
   "acceptedRepairCount": 0,
   "acceptedRepairs": [],
   "advisorDynamicWaveCeiling": 6,
-  "advisorHypothesisWaveBudget": 3,
+  "advisorHypothesisWaveBudget": 1,
   "batchSize": 48,
   "deferredLearningProviders": [
-    "sekai"
+    "primewire"
   ],
-  "effectiveWaves": 3,
-  "elapsedSeconds": 153.599,
+  "effectiveWaves": 2,
+  "elapsedSeconds": 64.365,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 6,
     "providerCount": 142,
     "schemaVersion": 2,
-    "sourceRunId": "44349669527",
-    "sourceSha": "d44cfc24f862b1833893844e7e84501db806825e",
+    "sourceRunId": "44609268223",
+    "sourceSha": "0251d7dae8dd4b2e4d51ca2f2cb52862f64c09a9",
     "strategyCount": 4
+  },
+  "familyFrontierPendingProviders": [],
+  "familyFrontierScheduling": {
+    "enabled": true,
+    "policy": "one-oracle-per-causal-family-until-transferable-trust-then-fanout",
+    "siblingValidationBypassAllowed": false,
+    "trustedSkillAuthority": "validated-repair-learning-only"
   },
   "fixedInLabProviders": [],
   "harnessDifferentialProviderCount": 0,
@@ -26,11 +33,14 @@
   "healthConcurrency": 0,
   "healthConcurrencyMode": "auto-per-batch",
   "initialStatuses": {
-    "sekai": "REGRESSION PROVIDER"
+    "primewire": "CHAIN REACHED"
   },
   "labOnlyWithoutCompiledRepairProviders": [],
-  "maxRoundsPerBatch": 3,
-  "maxWaves": 3,
+  "learningHandoffProviders": [
+    "primewire"
+  ],
+  "maxRoundsPerBatch": 1,
+  "maxWaves": 2,
   "noProgressReason": "experiment_variants_exhausted",
   "positiveProgramRecovery": {
     "durableProviders": [],
@@ -40,13 +50,13 @@
   },
   "processedProviderCount": 1,
   "processedProviders": [
-    "sekai"
+    "primewire"
   ],
   "providerSpecificRules": false,
   "rawLabAcceptedCount": 0,
   "rawLabAcceptedRepairs": [],
   "remainingProviders": [],
-  "requestedWaves": 1,
+  "requestedWaves": 2,
   "resumeRecommended": false,
   "safety": {
     "acceptedMutationRequiresStrictImprovement": true,
@@ -63,15 +73,15 @@
   "schemaVersion": 1,
   "selectedProviderCount": 1,
   "selectedProviders": [
-    "sekai"
+    "primewire"
   ],
   "selectionSource": "automation/provider-census-status.json:repairQueue",
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "44349669527",
+  "sourceCensusRunId": "44609268223",
   "timeBudgetExhausted": false,
-  "timeBudgetSeconds": 1200,
+  "timeBudgetSeconds": 900,
   "unvisitedProviders": [],
   "waves": [
     {
@@ -89,12 +99,12 @@
           "brain": {
             "attemptDiagnostics": [
               {
-                "parentSha256": "be7898d0cd10d8cb6df2804720ef1fa927abc1114e1a4d9cf4eb06a67f70f1a0",
+                "parentSha256": "1c43ad988bf7dc58dd5e3038ebb86c9291535140de82b359f7e122e34cc50a1e",
                 "phase": "attempts",
                 "profile": "adaptive_runtime_recovery",
-                "provider": "sekai",
+                "provider": "primewire",
                 "reasonCode": "",
-                "repairSha256": "5c5362b2812e59f0a45b5a71e90f501754967b39cd36f241130232f0fb0615bd",
+                "repairSha256": "c7965f70bee0878b074b273638f1ead52acc7a66ddeb04880bc10b1ca73c20e9",
                 "round": 1,
                 "status": "generated"
               },
@@ -102,60 +112,20 @@
                 "parentSha256": "",
                 "phase": "exploration_progress",
                 "profile": "adaptive_runtime_recovery",
-                "provider": "sekai",
+                "provider": "primewire",
                 "reasonCode": "sandbox_diagnostic_progress",
-                "repairSha256": "5c5362b2812e59f0a45b5a71e90f501754967b39cd36f241130232f0fb0615bd",
+                "repairSha256": "c7965f70bee0878b074b273638f1ead52acc7a66ddeb04880bc10b1ca73c20e9",
                 "round": 1,
                 "status": ""
-              },
-              {
-                "parentSha256": "5c5362b2812e59f0a45b5a71e90f501754967b39cd36f241130232f0fb0615bd",
-                "phase": "attempts",
-                "profile": "proven_route_terminal_traversal_v1",
-                "provider": "sekai",
-                "reasonCode": "",
-                "repairSha256": "c3cef8dafcb97a8f831a6d4af7c93d13c50b2a39804170022fbdfe9d04900b75",
-                "round": 2,
-                "status": "generated"
-              },
-              {
-                "parentSha256": "",
-                "phase": "rejected",
-                "profile": "proven_route_terminal_traversal_v1",
-                "provider": "sekai",
-                "reasonCode": "required_category_playable_proof",
-                "repairSha256": "",
-                "round": 2,
-                "status": "unavailable"
-              },
-              {
-                "parentSha256": "5c5362b2812e59f0a45b5a71e90f501754967b39cd36f241130232f0fb0615bd",
-                "phase": "attempts",
-                "profile": "proven_route_terminal_traversal_v1",
-                "provider": "sekai",
-                "reasonCode": "",
-                "repairSha256": "3f6602f57d05ff0ae954a6e7cbbd079ea374157db3886dde7b2f509058b81240",
-                "round": 3,
-                "status": "generated"
-              },
-              {
-                "parentSha256": "",
-                "phase": "rejected",
-                "profile": "proven_route_terminal_traversal_v1",
-                "provider": "sekai",
-                "reasonCode": "required_category_playable_proof",
-                "repairSha256": "",
-                "round": 3,
-                "status": "no_streams"
               }
             ],
             "harnessDifferentialProviders": [],
             "learnedEvents": 0,
             "plans": {
-              "published:sekai": {
+              "published:primewire": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "proven_route_terminal_traversal_v1"
+                  "adaptive_runtime_recovery"
                 ],
                 "baseExperimentExhausted": false,
                 "exitReason": null,
@@ -165,13 +135,13 @@
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
-                "failureClass": "transport_blocked",
+                "failureClass": "chain_terminal_gap",
                 "forcePreferredRequested": "",
                 "forcePreferredSelected": false,
                 "hypotheses": [
                   {
                     "confidence": 0,
-                    "id": "bootstrap-session",
+                    "id": "finish-reached-terminal-chain",
                     "learned": false,
                     "maturity": null,
                     "profile": null,
@@ -179,208 +149,13 @@
                   },
                   {
                     "confidence": 0,
-                    "id": "alternate-official-route",
+                    "id": "resolve-terminal-wrapper",
                     "learned": false,
                     "maturity": null,
                     "profile": null,
                     "transferScore": 0
                   }
                 ],
-                "learningDisposition": "core_repair_only",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.96,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": false,
-                  "documentRequestMining": false,
-                  "maxDepth": 6,
-                  "maxEmbeds": 24,
-                  "maxPages": 30,
-                  "maxRecipePasses": 4,
-                  "recipePolicy": "current_plus_provider_peer",
-                  "responseSalvage": true,
-                  "roleOrder": [
-                    "search",
-                    "detail",
-                    "episode",
-                    "player",
-                    "source",
-                    "api",
-                    "other"
-                  ],
-                  "routePolicy": "owned_plus_peer_generic",
-                  "sessionBootstrap": true,
-                  "terminalOnly": false
-                },
-                "llmAdvisorExperimentFingerprint": "6d5994dc0f7b38e76ca801eb2f507e4da75067220a7656e2b87b7793edd098fd",
-                "llmAdvisorExplorationRescue": false,
-                "llmAdvisorFailureCompatibility": "family",
-                "llmAdvisorGuidanceKind": "external-brain-llm",
-                "llmAdvisorProfile": "proven_route_terminal_traversal_v1",
-                "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "route_proven_gap",
-                "llmAdvisorStrategy": "search_detail_player_terminal_traversal",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 1,
-                "positiveProgramFingerprint": "",
-                "postExhaustionCandidateProfiles": [
-                  "transport_request_differential_v1",
-                  "provider_session_bootstrap_replay_v1",
-                  "runtime_response_salvage_v1",
-                  "route_transition_graph_v2",
-                  "route_transition_graph_v3",
-                  "route_transition_graph_v4",
-                  "route_transition_graph_v5",
-                  "route_transition_graph_v6",
-                  "route_transition_graph_v7",
-                  "route_transition_graph_v8",
-                  "route_transition_graph_v9",
-                  "route_transition_graph_v10",
-                  "route_transition_graph_v11",
-                  "route_transition_graph_v12",
-                  "route_transition_graph_v13",
-                  "route_transition_graph_v14",
-                  "route_transition_graph_v15",
-                  "route_transition_graph_v16",
-                  "route_transition_graph_v17",
-                  "route_transition_graph_v18",
-                  "route_transition_graph_v19",
-                  "route_transition_graph_v20",
-                  "route_transition_graph_v21",
-                  "route_transition_graph_v22"
-                ],
-                "postExhaustionSourceFailureClass": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "sekai",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "session_transport",
-                "signature": "ac5f8426938872bee42dae1d",
-                "strategyEscalated": false,
-                "targetCategories": []
-              }
-            },
-            "queuedForLearning": [],
-            "validatedRepairLearningExecuted": true
-          },
-          "capabilityStrategy": "html_scraper",
-          "crossWaveExplorationCarryoverApplied": [],
-          "crossWaveExplorationCarryoverCaptured": [
-            "sekai"
-          ],
-          "deferredToLearning": [],
-          "familyGroups": [
-            {
-              "capabilityStrategy": "html_scraper",
-              "groupId": "transport|html_scraper|runtime:sitemap-script-family",
-              "providers": [
-                "sekai"
-              ],
-              "repairScope": "transport"
-            }
-          ],
-          "fixedInLab": [],
-          "genericLearningHandoff": [],
-          "groupId": "transport|html_scraper|runtime:sitemap-script-family",
-          "harnessDifferentialProviders": [],
-          "healthConcurrency": 1,
-          "providerCount": 1,
-          "providers": [
-            "sekai"
-          ],
-          "repairScope": "transport",
-          "unexecutableLlmHandoff": []
-        }
-      ],
-      "compileRejectedToLearning": [],
-      "deferredToLearning": [],
-      "deferredToLearningCount": 0,
-      "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": true,
-      "fixedInLab": [],
-      "fixedInLabCount": 0,
-      "inputProviderCount": 1,
-      "labOnlyWithoutCompiledRepair": [],
-      "rawFixedInLab": [],
-      "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 1,
-      "timeBudgetExhausted": false,
-      "wave": 1
-    },
-    {
-      "acceptedCount": 0,
-      "acceptedProgramCompileFailures": {},
-      "acceptedProgramCompiledProviders": [],
-      "advisorRotationPending": [],
-      "batches": [
-        {
-          "accepted": [],
-          "acceptedCount": 0,
-          "advisorRemainingFingerprintCounts": {},
-          "advisorRotationPending": [],
-          "batch": 1,
-          "brain": {
-            "attemptDiagnostics": [
-              {
-                "parentSha256": "5c5362b2812e59f0a45b5a71e90f501754967b39cd36f241130232f0fb0615bd",
-                "phase": "attempts",
-                "profile": "proven_route_terminal_traversal_v1",
-                "provider": "sekai",
-                "reasonCode": "",
-                "repairSha256": "40d73b8e51fb06eb0d82bacf3e3c4e786a80837fca7ff626f0358930463a976d",
-                "round": 1,
-                "status": "generated"
-              },
-              {
-                "parentSha256": "",
-                "phase": "rejected",
-                "profile": "proven_route_terminal_traversal_v1",
-                "provider": "sekai",
-                "reasonCode": "required_category_playable_proof",
-                "repairSha256": "",
-                "round": 1,
-                "status": "unavailable"
-              },
-              {
-                "parentSha256": "5c5362b2812e59f0a45b5a71e90f501754967b39cd36f241130232f0fb0615bd",
-                "phase": "attempts",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "sekai",
-                "reasonCode": "",
-                "repairSha256": "e21492305118f5bfb1e14afd05880254938821de75b84387e865c15eb67563e2",
-                "round": 2,
-                "status": "generated"
-              },
-              {
-                "parentSha256": "",
-                "phase": "rejected",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "sekai",
-                "reasonCode": "required_category_playable_proof",
-                "repairSha256": "",
-                "round": 2,
-                "status": "unavailable"
-              }
-            ],
-            "harnessDifferentialProviders": [],
-            "learnedEvents": 0,
-            "plans": {
-              "published:sekai": {
-                "action": "deferred_retry",
-                "allowedProfiles": [],
-                "baseExperimentExhausted": false,
-                "exitReason": "repair_loop_detected",
-                "experimentExhausted": false,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "explorationChainEnabled": true,
-                "explorationModeEnabled": true,
-                "failureClass": "transport_blocked",
-                "forcePreferredRequested": "",
-                "forcePreferredSelected": false,
-                "hypotheses": [],
                 "learningDisposition": "core_repair_only",
                 "llmAdvisorApplied": false,
                 "llmAdvisorConfidence": 0,
@@ -394,43 +169,38 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 6,
+                "negativeMemoryMatches": 1,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
-                  "transport_request_differential_v1",
-                  "provider_session_bootstrap_replay_v1",
+                  "terminal_transition_graph_v1",
+                  "terminal_transition_graph_v2",
+                  "terminal_transition_graph_v3",
+                  "terminal_transition_graph_v4",
+                  "terminal_transition_graph_v5",
+                  "terminal_transition_graph_v6",
+                  "terminal_transition_graph_v7",
+                  "terminal_transition_graph_v8",
+                  "terminal_transition_graph_v9",
+                  "terminal_transition_graph_v10",
+                  "terminal_transition_graph_v11",
+                  "terminal_transition_graph_v12",
+                  "terminal_transition_graph_v13",
+                  "terminal_transition_graph_v14",
+                  "terminal_request_program_inference_v1",
                   "runtime_response_salvage_v1",
-                  "route_transition_graph_v2",
-                  "route_transition_graph_v3",
-                  "route_transition_graph_v4",
-                  "route_transition_graph_v5",
-                  "route_transition_graph_v6",
-                  "route_transition_graph_v7",
-                  "route_transition_graph_v8",
-                  "route_transition_graph_v9",
-                  "route_transition_graph_v10",
-                  "route_transition_graph_v11",
-                  "route_transition_graph_v12",
-                  "route_transition_graph_v13",
-                  "route_transition_graph_v14",
-                  "route_transition_graph_v15",
-                  "route_transition_graph_v16",
-                  "route_transition_graph_v17",
-                  "route_transition_graph_v18",
-                  "route_transition_graph_v19",
-                  "route_transition_graph_v20",
-                  "route_transition_graph_v21",
-                  "route_transition_graph_v22"
+                  "document_request_contract_mining_v1",
+                  "player_protocol_family_replay_v1",
+                  "media_response_shape_inference_v1"
                 ],
                 "postExhaustionSourceFailureClass": "",
                 "postExhaustionStrategyMethod": "",
                 "postExhaustionStrategyProfile": "",
-                "providerId": "sekai",
+                "providerId": "primewire",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
                 "repairScope": "capability",
-                "repairType": "session_transport",
-                "signature": "ac5f8426938872bee42dae1d",
+                "repairType": "terminal_media_resolution",
+                "signature": "4e8d92b8a8961450d87b63b2",
                 "strategyEscalated": false,
                 "targetCategories": []
               }
@@ -438,266 +208,68 @@
             "queuedForLearning": [],
             "validatedRepairLearningExecuted": true
           },
-          "capabilityStrategy": "html_scraper",
-          "crossWaveExplorationCarryoverApplied": [
-            "sekai"
-          ],
+          "capabilityStrategy": "mixed_embed_resolver",
+          "causalProgressCount": 1,
+          "causalProgressObserved": true,
+          "crossWaveExplorationCarryoverApplied": [],
           "crossWaveExplorationCarryoverCaptured": [
-            "sekai"
-          ],
-          "deferredToLearning": [],
-          "familyGroups": [
-            {
-              "capabilityStrategy": "html_scraper",
-              "groupId": "transport|html_scraper|runtime:sitemap-script-family",
-              "providers": [
-                "sekai"
-              ],
-              "repairScope": "transport"
-            }
-          ],
-          "fixedInLab": [],
-          "genericLearningHandoff": [],
-          "groupId": "transport|html_scraper|runtime:sitemap-script-family",
-          "harnessDifferentialProviders": [],
-          "healthConcurrency": 1,
-          "providerCount": 1,
-          "providers": [
-            "sekai"
-          ],
-          "repairScope": "transport",
-          "unexecutableLlmHandoff": []
-        }
-      ],
-      "compileRejectedToLearning": [],
-      "deferredToLearning": [],
-      "deferredToLearningCount": 0,
-      "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": true,
-      "fixedInLab": [],
-      "fixedInLabCount": 0,
-      "inputProviderCount": 1,
-      "labOnlyWithoutCompiledRepair": [],
-      "rawFixedInLab": [],
-      "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 1,
-      "timeBudgetExhausted": false,
-      "wave": 2
-    },
-    {
-      "acceptedCount": 0,
-      "acceptedProgramCompileFailures": {},
-      "acceptedProgramCompiledProviders": [],
-      "advisorRotationPending": [],
-      "batches": [
-        {
-          "accepted": [],
-          "acceptedCount": 0,
-          "advisorRemainingFingerprintCounts": {},
-          "advisorRotationPending": [],
-          "batch": 1,
-          "brain": {
-            "attemptDiagnostics": [
-              {
-                "parentSha256": "5c5362b2812e59f0a45b5a71e90f501754967b39cd36f241130232f0fb0615bd",
-                "phase": "attempts",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "sekai",
-                "reasonCode": "",
-                "repairSha256": "b4376f0a843214c936faff8461e4ea51d2f16ef1e554c709b74c1899cec9e043",
-                "round": 1,
-                "status": "generated"
-              },
-              {
-                "parentSha256": "",
-                "phase": "rejected",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "sekai",
-                "reasonCode": "required_category_playable_proof",
-                "repairSha256": "",
-                "round": 1,
-                "status": "unavailable"
-              },
-              {
-                "parentSha256": "5c5362b2812e59f0a45b5a71e90f501754967b39cd36f241130232f0fb0615bd",
-                "phase": "attempts",
-                "profile": "transport_request_differential_v1",
-                "provider": "sekai",
-                "reasonCode": "",
-                "repairSha256": "4ac325ea8735ff007d92aba87e86269f5c7dff3682a5c18fc4db5a0d912a1dcf",
-                "round": 2,
-                "status": "generated"
-              },
-              {
-                "parentSha256": "",
-                "phase": "rejected",
-                "profile": "transport_request_differential_v1",
-                "provider": "sekai",
-                "reasonCode": "required_category_playable_proof",
-                "repairSha256": "",
-                "round": 2,
-                "status": "unavailable"
-              },
-              {
-                "parentSha256": "5c5362b2812e59f0a45b5a71e90f501754967b39cd36f241130232f0fb0615bd",
-                "phase": "attempts",
-                "profile": "provider_session_bootstrap_replay_v1",
-                "provider": "sekai",
-                "reasonCode": "brain_repair_loop_detected",
-                "repairSha256": "",
-                "round": 3,
-                "status": "not_generated"
-              }
-            ],
-            "harnessDifferentialProviders": [],
-            "learnedEvents": 0,
-            "plans": {
-              "published:sekai": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "provider_session_bootstrap_replay_v1"
-                ],
-                "baseExperimentExhausted": true,
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "explorationChainEnabled": true,
-                "explorationModeEnabled": true,
-                "failureClass": "transport_blocked",
-                "forcePreferredRequested": "",
-                "forcePreferredSelected": false,
-                "hypotheses": [],
-                "learningDisposition": "execute_bounded_evolved_strategy",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.86,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": false,
-                  "documentRequestMining": true,
-                  "maxDepth": 4,
-                  "maxEmbeds": 16,
-                  "maxPages": 18,
-                  "maxRecipePasses": 5,
-                  "recipePolicy": "current_plus_provider",
-                  "responseSalvage": true,
-                  "roleOrder": [
-                    "api",
-                    "detail",
-                    "search",
-                    "player",
-                    "source",
-                    "episode",
-                    "other"
-                  ],
-                  "routePolicy": "owned_plus_peer",
-                  "sessionBootstrap": true,
-                  "terminalOnly": false
-                },
-                "llmAdvisorExperimentFingerprint": "8752eb1e3136a07c2c1dddce08257ff0631316bc267d0f9f06c58d881fd2bb8e",
-                "llmAdvisorExplorationRescue": false,
-                "llmAdvisorFailureCompatibility": "exact-rebound",
-                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "provider_origin_failover_v1",
-                "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "transport_blocked",
-                "llmAdvisorStrategy": "meta-gap-provider-transport-composition",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 10,
-                "positiveProgramFingerprint": "",
-                "postExhaustionCandidateProfiles": [
-                  "transport_request_differential_v1",
-                  "provider_session_bootstrap_replay_v1",
-                  "runtime_response_salvage_v1",
-                  "route_transition_graph_v2",
-                  "route_transition_graph_v3",
-                  "route_transition_graph_v4",
-                  "route_transition_graph_v5",
-                  "route_transition_graph_v6",
-                  "route_transition_graph_v7",
-                  "route_transition_graph_v8",
-                  "route_transition_graph_v9",
-                  "route_transition_graph_v10",
-                  "route_transition_graph_v11",
-                  "route_transition_graph_v12",
-                  "route_transition_graph_v13",
-                  "route_transition_graph_v14",
-                  "route_transition_graph_v15",
-                  "route_transition_graph_v16",
-                  "route_transition_graph_v17",
-                  "route_transition_graph_v18",
-                  "route_transition_graph_v19",
-                  "route_transition_graph_v20",
-                  "route_transition_graph_v21",
-                  "route_transition_graph_v22"
-                ],
-                "postExhaustionSourceFailureClass": "transport_blocked",
-                "postExhaustionStrategyMethod": "provider-owned-session-bootstrap-replay",
-                "postExhaustionStrategyProfile": "provider_session_bootstrap_replay_v1",
-                "providerId": "sekai",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "learning",
-                "repairType": "evolved_strategy",
-                "signature": "ac5f8426938872bee42dae1d",
-                "strategyEscalated": true,
-                "targetCategories": []
-              }
-            },
-            "queuedForLearning": [
-              "sekai"
-            ],
-            "validatedRepairLearningExecuted": true
-          },
-          "capabilityStrategy": "html_scraper",
-          "crossWaveExplorationCarryoverApplied": [
-            "sekai"
-          ],
-          "crossWaveExplorationCarryoverCaptured": [
-            "sekai"
+            "primewire"
           ],
           "deferredToLearning": [
-            "sekai"
+            "primewire"
           ],
           "familyGroups": [
             {
-              "capabilityStrategy": "html_scraper",
-              "groupId": "transport|html_scraper|runtime:sitemap-script-family",
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
               "providers": [
-                "sekai"
+                "primewire"
               ],
-              "repairScope": "transport"
+              "repairScope": "terminal-extraction"
             }
           ],
           "fixedInLab": [],
-          "genericLearningHandoff": [],
-          "groupId": "transport|html_scraper|runtime:sitemap-script-family",
+          "genericLearningHandoff": [
+            "primewire"
+          ],
+          "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
           "harnessDifferentialProviders": [],
           "healthConcurrency": 1,
           "providerCount": 1,
           "providers": [
-            "sekai"
+            "primewire"
           ],
-          "repairScope": "transport",
+          "repairScope": "terminal-extraction",
           "unexecutableLlmHandoff": []
         }
       ],
+      "causalProgressCount": 1,
+      "causalProgressObserved": true,
       "compileRejectedToLearning": [],
       "deferredToLearning": [
-        "sekai"
+        "primewire"
       ],
       "deferredToLearningCount": 1,
       "durableMaterializeTargets": [],
       "experimentMemoryAdvanced": true,
+      "familyFrontierDeferredProviders": [],
+      "familyFrontierGroups": [
+        "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver"
+      ],
+      "familyFrontierSelectedProviders": [
+        "primewire"
+      ],
       "fixedInLab": [],
       "fixedInLabCount": 0,
       "inputProviderCount": 1,
       "labOnlyWithoutCompiledRepair": [],
+      "pinnedAdvisorFamilyGroups": [],
       "rawFixedInLab": [],
       "rawLabAcceptedCount": 0,
       "remainingProviderCount": 0,
       "timeBudgetExhausted": false,
-      "wave": 3
+      "trustedFamilyFanoutGroups": [],
+      "wave": 1
     }
   ]
 }
