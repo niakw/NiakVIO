@@ -111,6 +111,11 @@ const evidence = assessNativeEvidence(logPaths);
 const readerRows = [];
 const resultRows = [];
 const providerLoadObservations = [];
+const appSelectionObservations = [];
+const APP_SELECTION_REASONS = new Set([
+  'plugins_globally_disabled', 'scraper_disabled_locally',
+  'unsupported_media_type', 'not_selected_by_app',
+]);
 const runtimeSentinelByKey = new Map();
 for (const file of logPaths) {
   if (!fs.existsSync(file)) continue;
@@ -127,6 +132,42 @@ for (const file of logPaths) {
         reason,
         failureClass,
       });
+    }
+
+    // This is the official PluginManager.enabledScrapers + supportsType gate,
+    // not a provider extraction failure. Whitelist every field; never persist
+    // arbitrary log content, credentials, URLs, or invented success authority.
+    const selectionAt = raw.indexOf('FIELD_NATIVE_PROVIDER_APP_SELECTION ');
+    if (selectionAt >= 0) {
+      const f = fields(raw.slice(selectionAt).trim());
+      const provider = decode(f.provider64).trim().toLowerCase();
+      const requestType = String(f.request_type || '').trim().toLowerCase();
+      const fixture = String(f.fixture || '').trim();
+      const eligible = f.eligible === 'true';
+      const reason = eligible ? 'selected' : String(f.reason || '');
+      if (
+        f.client === 'tv'
+        && /^[a-z0-9][a-z0-9_-]{0,95}$/.test(provider)
+        && /^[a-z0-9][a-z0-9-]{0,95}$/.test(fixture)
+        && ['movie', 'tv', 'anime'].includes(requestType)
+        && (eligible || APP_SELECTION_REASONS.has(reason))
+      ) {
+        appSelectionObservations.push({
+          client: 'tv', fixture, provider, requestType,
+          eligible,
+          reason,
+          pluginsEnabled: f.plugins_enabled === 'true' ? true
+            : f.plugins_enabled === 'false' ? false : null,
+          runtimeEnabled: f.runtime_enabled === 'true' ? true
+            : f.runtime_enabled === 'false' ? false : null,
+          manifestEnabled: f.manifest_enabled === 'true' ? true
+            : f.manifest_enabled === 'false' ? false : null,
+          supportedType: f.supported_type === 'true' ? true
+            : f.supported_type === 'false' ? false : null,
+          proofAuthority: false, publicationAuthority: false,
+          providerJsMutationAllowed: false,
+        });
+      }
     }
 
     const resultAt = raw.indexOf('FIELD_NATIVE_RESULT ');
@@ -316,10 +357,40 @@ const systemicExtractionPlans = evidence.complete ? systemicExtractionFailures.m
 }) : [];
 const plans = [...readerPlans, ...extractionPlans];
 
-const providerLoadIssues = evidence.complete ? providerLoadObservations.map((row) => ({
-  ...row,
-  ...providerLoadRepair(row),
-})) : [];
+const appSelectionIssues = evidence.complete
+  ? appSelectionObservations.filter((row) => !row.eligible).map((row) => ({
+      client: row.client,
+      provider: row.provider,
+      fixture: row.fixture,
+      requestType: row.requestType,
+      failureClass: {
+        plugins_globally_disabled: 'client_plugins_globally_disabled',
+        scraper_disabled_locally: 'client_scraper_disabled_locally',
+        unsupported_media_type: 'client_scraper_media_type_filtered',
+        not_selected_by_app: 'client_plugin_selection_mismatch',
+      }[row.reason],
+      reason: row.reason,
+      layer: row.reason === 'unsupported_media_type' ? 'manifest_contract'
+        : 'client_state',
+      providerJsMutationAllowed: false,
+      coreOrManifestProposalAllowed: false,
+      proofAuthority: false,
+      publicationAuthority: false,
+      actions: [
+        'inspect actual installed manifest, app plugin switch and persisted enabled state',
+        'compare the media-type eligibility and current canonical projection',
+        'respect user-disabled plugins and do not patch provider JS or force enable',
+        'repeat exact-source native app selection before extraction/decoder assessment',
+      ],
+    }))
+  : [];
+const providerLoadIssues = evidence.complete ? [
+  ...providerLoadObservations.map((row) => ({
+    ...row,
+    ...providerLoadRepair(row),
+  })),
+  ...appSelectionIssues,
+] : [];
 
 const playerHealthyByRoute = new Map();
 for (const row of declaredHealthy) {
@@ -547,13 +618,17 @@ const payload = {
   capabilityProbeHealthy: capabilityHealthy.length,
   capabilityProbeFailures: capabilityFailures.length,
   providerLoadObservedFailures: providerLoadObservations.length,
-  providerLoadActionableFailures: providerLoadIssues.length,
+  providerLoadActionableFailures: providerLoadObservations.length,
+  appSelectionObserved: appSelectionObservations.length,
+  appSelectionFailures: appSelectionIssues.length,
   readerLoadErrorEvidence: brainReaderRows.filter((row) => row.loadDurationMs > 0 || row.loadBytes > 0 || row.httpStatus > 0).length,
   observations,
   extractionHealthyObservations,
   systemicExtractionGroups: systemicExtraction.systemicGroups,
   clientRuntimeExtractionPlans: systemicExtractionPlans,
   providerLoadObservations,
+  appSelectionObservations,
+  appSelectionIssues,
   providerLoadIssues,
   providerOutcomes,
   capabilityProbes,
@@ -570,9 +645,11 @@ const payload = {
     clientRuntimeExtractionLearningAllowed: false,
     coreRuntimeCompatibilityProposalAllowed: evidence.complete && systemicExtractionFailures.length > 0,
     runtimeErrorSentinelLearningAllowed: false,
-    repositoryLearningAllowed: evidence.complete && providerLoadIssues.length > 0,
+    repositoryLearningAllowed: evidence.complete && providerLoadObservations.length > 0,
+    clientSelectionDiagnosticLearningAllowed: evidence.complete && appSelectionIssues.length > 0,
+    clientSelectionProviderJsMutationAllowed: false,
     providerLoadJsMutationAllowed: false,
-    coreOrManifestLoadProposalAllowed: evidence.complete && providerLoadIssues.length > 0,
+    coreOrManifestLoadProposalAllowed: evidence.complete && providerLoadObservations.length > 0,
     capabilityLearningAllowed: false,
     capabilityPromotionRequiresIdentityProof: true,
     disabledProviderExtractionLearningAllowed: false,
@@ -592,7 +669,7 @@ console.log(
   `provider_extraction_failures=${payload.providerExtractionFailures} systemic_extraction_failures=${payload.clientRuntimeExtractionFailures} ` +
   `client_runtime_failures=${payload.clientRuntimeReaderFailures} runtime_sentinels=${payload.runtimeErrorSentinelObserved} ` +
   `cross_client_provider_groups=${payload.crossClientProviderFailureGroups} ` +
-  `provider_load_failures=${payload.providerLoadActionableFailures} capability_probes=${payload.capabilityProbeObserved} ` +
+  `provider_load_failures=${payload.providerLoadActionableFailures} app_selection_failures=${payload.appSelectionFailures} capability_probes=${payload.capabilityProbeObserved} ` +
   `capability_probe_healthy=${payload.capabilityProbeHealthy} capability_probe_failures=${payload.capabilityProbeFailures} ` +
   `priorities=${priorities.length} provider_load_priorities=${providerLoadPriorities.length} provider_outcomes=${providerOutcomes.length} ` +
   `nonblocking_smoke=${nonblockingSmoke}`
