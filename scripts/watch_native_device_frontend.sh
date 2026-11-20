@@ -44,7 +44,10 @@ adb logcat -v brief -s NiakvioCorpus:I NiakvioEvidence:I '*:S' | while IFS= read
     *FIELD_NATIVE_HTTP_RESPONSE*|*FIELD_NATIVE_HTTP_ERROR*) capture_http_terminal "provider" ;;
     *FIELD_NATIVE_RESULT*) capture_once "provider-result" ;;
     *FIELD_NATIVE_PLAYER_BEGIN*) capture_once "player-start" ;;
-    *FIELD_NATIVE_PLAYER*) capture_once "player-result" ;;
+    # Require the exact terminal marker followed by a space. The previous
+    # wildcard matched FIELD_NATIVE_PLAYER_ENTRY / _BEGIN and captured the
+    # splash/login screen before the official player's terminal result.
+    *"FIELD_NATIVE_PLAYER "*) capture_once "player-result" ;;
     *FIELD_NATIVE_ERROR*) capture_once "provider-error" ;;
     *FIELD_NATIVE_CORPUS_END*) capture_once "corpus-end" ;;
     *) ;;
