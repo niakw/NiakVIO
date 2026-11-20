@@ -102,12 +102,12 @@ with tempfile.TemporaryDirectory() as td:
     def fake_fetch(url: str):
         paths.append(url)
         if url.endswith("/saison1/vostfr/"):
-            return 200, INLINE, False, ""
+            return 200, INLINE, False, "", ""
         if url.endswith("/episodes.js"):
-            return 404, "<html>PRIVATE 404</html>", False, ""
+            return 404, "<html>PRIVATE 404</html>", False, "", ""
         if url.endswith("/vostfr/"):
-            return 200, "<!doctype html><html>fallback</html>", False, ""
-        return 200, LEGACY, False, ""
+            return 200, "<!doctype html><html>fallback</html>", False, "", ""
+        return 200, LEGACY, False, "", ""
 
     report = probe.run(root, request, fetcher=fake_fetch)
     assert report["probeRequestCount"] == 12
@@ -126,6 +126,19 @@ with tempfile.TemporaryDirectory() as td:
         }
         assert row_out["originHost"] in hosts
         assert row_out["httpStatusClass"] in {"2xx", "4xx"}
+        assert row_out["httpStatus"] in {200, 404}
+        assert row_out["redirectTargetHost"] == ""
+    redirects = probe.run(
+        root, request,
+        fetcher=lambda url: (302, "", False, "", "fallback.example"),
+    )
+    assert redirects["probeRequestCount"] == 12
+    assert redirects["inlineTokenResponseCount"] == 0
+    assert all(x["httpStatus"] == 302
+               and x["httpStatusClass"] == "3xx"
+               and x["redirectTargetHost"] == "fallback.example"
+               and x["redirectTargetCurated"] is True
+               for x in redirects["observations"])
     for path in paths:
         assert "/api/lien.php" not in path
         assert "token=" not in path

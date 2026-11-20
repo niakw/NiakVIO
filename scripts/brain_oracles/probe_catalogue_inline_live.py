@@ -173,8 +173,8 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
-def fetch(url: str) -> tuple[int, str, bool, str]:
-    """No redirects, no cookies, no source body retained outside this function."""
+def fetch(url: str) -> tuple[int, str, bool, str, str]:
+    """No redirects, cookies or body persistence; expose only redirect hostname."""
     request = urllib.request.Request(url, method="GET", headers={
         "User-Agent": "Mozilla/5.0 (compatible; NiakVIO-SourceContract-ReadOnly/1)",
         "Accept": "text/html,application/javascript,text/plain;q=0.8,*/*;q=0.5",
@@ -185,18 +185,20 @@ def fetch(url: str) -> tuple[int, str, bool, str]:
     except urllib.error.HTTPError as error:
         response = error
     except (urllib.error.URLError, TimeoutError, OSError, ValueError):
-        return 0, "", False, "transport_error"
+        return 0, "", False, "transport_error", ""
     try:
         with response:
             status = int(response.status)
+            location = response.headers.get("Location", "") if 300 <= status < 400 else ""
+            target = origin_host(location) if location else ""
             raw = response.read(MAX_BODY + 1)
             oversized = len(raw) > MAX_BODY
-            return status, "" if oversized else raw.decode("utf-8", errors="replace"), oversized, ""
+            return status, "" if oversized else raw.decode("utf-8", errors="replace"), oversized, "", target
     except (TimeoutError, OSError, ValueError):
-        return 0, "", False, "transport_error"
+        return 0, "", False, "transport_error", ""
 
 
-def run(root: Path, request: dict, *, fetcher: Callable[[str], tuple[int, str, bool, str]] = fetch) -> dict:
+def run(root: Path, request: dict, *, fetcher: Callable[[str], tuple[int, str, bool, str, str]] = fetch) -> dict:
     details, hosts = attest(root, request)
     slug, season, voice = details["catalogueSlug"], details["season"], details["voice"]
     # Fixed paths only. Never request a player, signed HLS URL or opaque token resolver.
@@ -209,16 +211,22 @@ def run(root: Path, request: dict, *, fetcher: Callable[[str], tuple[int, str, b
     observations = []
     for host in hosts:
         for kind, path in templates:
-            status, body, oversized, error = fetcher("https://" + host + path)
+            status, body, oversized, error, redirect_host = fetcher("https://" + host + path)
             if type(status) is not int or not 0 <= status <= 599:
                 raise ValueError("invalid probe transport status")
             if not isinstance(body, str) or len(body) > MAX_BODY or type(oversized) is not bool:
                 raise ValueError("invalid probe transport body")
+            if not isinstance(redirect_host, str) or (redirect_host and not HOST.fullmatch(redirect_host)):
+                raise ValueError("invalid sanitized redirect host")
             result = classify(status, "" if oversized else body)
             observations.append({
                 "originHost": host,
                 "routeKind": kind,
-                "httpStatusClass": result["httpStatusClass"],
+                "httpStatus": status,
+                "httpStatusClass": ("3xx" if 300 <= status < 400 else
+                                    "transport" if status == 0 else result["httpStatusClass"]),
+                "redirectTargetHost": redirect_host if 300 <= status < 400 else "",
+                "redirectTargetCurated": redirect_host in hosts if 300 <= status < 400 and redirect_host else False,
                 "sourceShape": result["shape"],
                 "inlineSlotArrayObserved": result["inlineSlotArrayObserved"],
                 "opaqueLinkTokenObserved": result["opaqueLinkTokenObserved"],
