@@ -7,10 +7,10 @@
   ],
   "targetFixture": "interstellar",
   "residentialExit": false,
-  "reason": "Purstream Interstellar official NuvioTV Android TV V20 Core exact-byte differential. v30 on 5cecd660 executed candidate JS sha256 b33f7702 and yielded 1 stream versus 0 baseline, player reached but decoded video/audio not proven (playback_video_format_unverified). v31 exercises exactly same generic V20 candidate via full official PluginManager + original PluginDataStore code state preservation/restore and SHA attestation. Require decoded real media and identity; diagnostic result alone never authorizes production publication.",
-  "requestVersion": 31,
-  "retryCause": "v30 run 44641962165: candidate sha matched, runtime count=1 duration_ms=3512, FIELD_NATIVE_PLAYER state=ready duration_seconds=10143.925, video_width/height=0, audio_track_count=0, playback_video_format_unverified. Verify real PluginManager settings/code path and native terminal decode without changing production manifests/provider.",
-  "sourceImplementationSha": "8436487f46974e31e077fb8df9ed69f3b8af16b8",
+  "reason": "Re-run isolated Core HLS V20 official TV Purstream Interstellar, full PluginManager with SHA-attested PluginDataStore candidate override and finally restore. v31 (run 44645567286) was harness-only failure before Gradle/native execution: finalize_native_tv_test_entrypoint.py old regex could not strip newly expanded debug-only EntryPoint. Updated finalizer/bootstrap and tests on current main; do not infer provider behavior from v31. Require exact byte check+runtime terminal+rollback, then decoded video/FR-EN audio and identity.",
+  "requestVersion": 32,
+  "retryCause": "v31 unexpected nested TV PluginManager EntryPoint count=0, status=TARGETED_UNOBSERVED, runtime=not_started. Updated debug APK Hilt accessor + finalizer regex. v30 direct official PluginRuntime on exact V20 yielded 1 stream but unverified video dimensions/audio tracks. No production provider bytes published.",
+  "sourceImplementationSha": "6a22d4edcf65f55111d9bdbee3fce414ca3512c6",
   "candidateRematerialize": true,
   "candidateRequiredMarker": "NIAKVIO_HLS_TS_WRAPPED_AAC_RENDITION_V20"
 }
