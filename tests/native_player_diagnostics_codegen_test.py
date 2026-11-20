@@ -62,8 +62,8 @@ assert "Until.hasObject(By.text(builtIn)), 2500L" in tv
 assert "normalizeTvVisibleLanguage" in tv
 assert "Locale.getAvailableLocales()" in tv
 assert "locale.getDisplayLanguage(java.util.Locale.ENGLISH)" in tv
-assert r'Regex("""(^|[^\\p{L}])${Regex.escape(alias)}([^\\p{L}]|$)""")' in tv
-assert r'Regex("""(^|[^\\\\p{L}])${Regex.escape(alias)}([^\\\\p{L}]|$)""")' not in tv
+assert r'Regex("""(^|[^\p{L}])${Regex.escape(alias)}([^\p{L}]|$)""")' in tv
+assert r'Regex("""(^|[^\\p{L}])${Regex.escape(alias)}([^\\p{L}]|$)""")' not in tv
 assert "locale.isO3Language.equals(direct" in tv
 assert "audio_track_count=${reader.audioTrackCount}" in tv
 assert "subtitle_track_count=${reader.subtitleTrackCount}" in tv
