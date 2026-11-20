@@ -599,13 +599,12 @@ try {
   const oneShot = JSON.parse(fs.readFileSync(oneShotOutput, 'utf8'));
   assert.equal(oneShot.prePlayerMediaRootTransitionObserved, 1);
   assert.equal(oneShot.prePlayerMediaRootTransitions.length, 1);
-  assert.equal(oneShot.prePlayerFetchHostOutcomeObserved, 1);
-  assert.equal(oneShot.prePlayerFetchHostOutcomes.length, 1);
+  assert.equal(oneShot.prePlayerFetchHostOutcomeObserved, 2);
+  assert.equal(oneShot.prePlayerFetchHostOutcomes.length, 2);
   assert.deepEqual(
-    [oneShot.prePlayerFetchHostOutcomes[0].kind,
-     oneShot.prePlayerFetchHostOutcomes[0].host,
-     oneShot.prePlayerFetchHostOutcomes[0].httpStatus],
-    ['hls', '', 200],
+    oneShot.prePlayerFetchHostOutcomes.map((row) =>
+      [row.kind, row.host, row.httpStatus]),
+    [['hls', '', 200], ['hls', '', 403]],
   );
   const transition = oneShot.prePlayerMediaRootTransitions[0];
   assert.deepEqual(
@@ -618,6 +617,7 @@ try {
   assert.equal(transition.providerJsMutationAllowed, false);
   for (const secret of ['signed.example', 'SECRET', 'token=', 'https://']) {
     assert.equal(JSON.stringify(oneShot.prePlayerMediaRootTransitions).includes(secret), false);
+    assert.equal(JSON.stringify(oneShot.prePlayerFetchHostOutcomes).includes(secret), false);
   }
 
   // A completed zero near the shared 25s JS deadline *after* a successful
