@@ -19,6 +19,8 @@ required = (
     "target_providers:",
     "target_fixture:",
     "residential_exit:",
+    "source_sha:",
+    "brain_candidate_experiment_json:",
     ".github/triggers/native-residential-transport-targeted.json",
     "id-token: write",
     "TS_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}",
@@ -146,6 +148,7 @@ for needle in (
     "NIAKVIO_HLS_TS_WRAPPED_AAC_RENDITION_V20",
     "NIAKVIO_PROVIDER_NATIVE_FETCH_CAPABILITY_GATE_V28",
     "NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29",
+    "NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29",
     "requiredCoreMarker",
     "unsupported source-owned native candidate marker",
     "candidate did not materialize required source-owned Core marker",
@@ -163,8 +166,17 @@ for needle in (
     assert needle in helper, needle
 assert "candidate_rematerialize:" in workflow
 assert "candidate_required_marker:" in workflow
+assert "source_sha:" in workflow
+assert "brain_candidate_experiment_json:" in workflow
 assert "candidateRequiredMarker" in workflow
 assert "candidate marker without isolated candidate materialization" in workflow
+assert "Brain candidate experiment exceeds bounded input" in workflow
+assert "Brain candidate experiment requires isolated V29 materialization" in workflow
+assert 'ref: ${{ inputs.source_sha || github.sha }}' in workflow
+assert 'ref: ${{ matrix.sourceSha }}' in workflow
+assert 'NIAKVIO_SOURCE_SHA: ${{ matrix.sourceSha }}' in workflow
+assert '--brain-experiment-json "$NIAKVIO_BRAIN_CANDIDATE_EXPERIMENT_JSON"' in workflow
+assert '--source-sha "$NIAKVIO_SOURCE_SHA"' in workflow
 assert workflow.count('--required-marker "$NIAKVIO_CANDIDATE_REQUIRED_MARKER"') == 2
 assert workflow.count('NIAKVIO_CANDIDATE_REQUIRED_MARKER: ${{ matrix.candidateRequiredMarker }}') == 2
 assert "candidateRematerialize" in workflow
@@ -175,7 +187,7 @@ assert workflow.index("Rematerialize isolated ProviderBase candidate for officia
 assert workflow.index("Checkout accepted official client and stage corpus once") < workflow.index("Verify candidate bytes in official TV instrumentation assets")
 assert "always() && matrix.candidateRematerialize != true" in workflow
 assert "name: native-candidate-" in workflow
-assert 'NIAKVIO_MANIFEST_URL=https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}/${NIAKVIO_TARGET_MANIFEST}' in workflow
+assert 'NIAKVIO_MANIFEST_URL=https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${NIAKVIO_SOURCE_SHA}/${NIAKVIO_TARGET_MANIFEST}' in workflow
 assert 'NIAKVIO_ALLOW_LOCAL_MANIFEST=0' in workflow
 assert "published_manifest_https=true" in workflow
 assert "candidate_asset_local=true playback_authority=false" in workflow

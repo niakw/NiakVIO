@@ -38,6 +38,16 @@ on:
         required: false
         default: ""
         type: string
+      source_sha:
+        description: Optional exact NiakVIO SHA for a source-pinned Brain candidate replay
+        required: false
+        default: ""
+        type: string
+      brain_candidate_experiment_json:
+        description: Optional bounded Brain candidate experiment JSON; candidate-only
+        required: false
+        default: ""
+        type: string
   push:
     branches: [main]
     paths:
@@ -64,6 +74,7 @@ jobs:
       - name: Checkout selected Niakvio generation
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
+          ref: ${{ inputs.source_sha || github.sha }}
           fetch-depth: 1
           persist-credentials: false
 
@@ -94,12 +105,16 @@ jobs:
           INPUT_RESIDENTIAL_EXIT: ${{ inputs.residential_exit || false }}
           INPUT_CANDIDATE_REMATERIALIZE: ${{ inputs.candidate_rematerialize || false }}
           INPUT_CANDIDATE_REQUIRED_MARKER: ${{ inputs.candidate_required_marker || '' }}
+          INPUT_SOURCE_SHA: ${{ inputs.source_sha || '' }}
+          INPUT_BRAIN_CANDIDATE_EXPERIMENT_JSON: ${{ inputs.brain_candidate_experiment_json || '' }}
+          WORKFLOW_SHA: ${{ github.sha }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
           python3 - <<'PY' >> "$GITHUB_OUTPUT"
           import json
           import os
+          import re
           import sys
           from pathlib import Path
 
@@ -114,6 +129,8 @@ jobs:
           residential = str(os.environ.get("INPUT_RESIDENTIAL_EXIT") or "").strip().lower() == "true"
           candidate_rematerialize = str(os.environ.get("INPUT_CANDIDATE_REMATERIALIZE") or "").strip().lower() == "true"
           candidate_marker = str(os.environ.get("INPUT_CANDIDATE_REQUIRED_MARKER") or "").strip()
+          source_sha = str(os.environ.get("INPUT_SOURCE_SHA") or os.environ.get("WORKFLOW_SHA") or "").strip().lower()
+          brain_candidate_experiment = str(os.environ.get("INPUT_BRAIN_CANDIDATE_EXPERIMENT_JSON") or "").strip()
 
           if event == "push":
               trigger = Path(".github/triggers/native-residential-transport-targeted.json")
@@ -128,6 +145,8 @@ jobs:
               residential = payload.get("residentialExit") is True
               candidate_rematerialize = payload.get("candidateRematerialize") is True
               candidate_marker = str(payload.get("candidateRequiredMarker") or "").strip()
+              source_sha = str(os.environ.get("WORKFLOW_SHA") or "").strip().lower()
+              brain_candidate_experiment = ""
 
           if device in {"desktop", "mobile", "tv"}:
               devices = [device]
@@ -143,10 +162,24 @@ jobs:
           if candidate_rematerialize and (device != "tv" or len(providers) != 1 or not target_fixture):
               raise SystemExit("candidate native replay requires TV, one active provider and an exact fixture")
           if candidate_marker not in {"", "NIAKVIO_HLS_TS_WRAPPED_AAC_RENDITION_V20",
-                                     "NIAKVIO_PROVIDER_NATIVE_FETCH_CAPABILITY_GATE_V28"}:
+                                     "NIAKVIO_PROVIDER_NATIVE_FETCH_CAPABILITY_GATE_V28",
+                                     "NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29"}:
               raise SystemExit("invalid native candidate source-owned Core marker")
           if candidate_marker and not candidate_rematerialize:
               raise SystemExit("candidate marker without isolated candidate materialization")
+          if not re.fullmatch(r"[0-9a-f]{40}", source_sha):
+              raise SystemExit("native source_sha must be an exact 40-hex NiakVIO commit")
+          if len(brain_candidate_experiment) > 4096:
+              raise SystemExit("Brain candidate experiment exceeds bounded input")
+          if brain_candidate_experiment:
+              try:
+                  brain_payload = json.loads(brain_candidate_experiment)
+              except json.JSONDecodeError as exc:
+                  raise SystemExit("Brain candidate experiment is invalid JSON") from exc
+              if not isinstance(brain_payload, dict):
+                  raise SystemExit("Brain candidate experiment must be an object")
+              if not candidate_rematerialize or candidate_marker != "NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29":
+                  raise SystemExit("Brain candidate experiment requires isolated V29 materialization")
           if target_fixture:
               lab = json.loads(Path(".github/triggers/nuvio-client-lab.json").read_text(encoding="utf-8"))
               fixture_slugs = set()
@@ -193,6 +226,8 @@ jobs:
                   "residential": residential,
                   "candidateRematerialize": candidate_rematerialize,
                   "candidateRequiredMarker": candidate_marker,
+                  "sourceSha": source_sha,
+                  "brainCandidateExperiment": brain_candidate_experiment,
               }
               for selected_device in devices
               for spec in target_specs
@@ -216,11 +251,12 @@ jobs:
       NIAKVIO_TARGET_PROVIDER: ${{ matrix.provider }}
       NIAKVIO_TARGET_MANIFEST: ${{ matrix.manifest }}
       NIAKVIO_TARGET_FIXTURE: ${{ matrix.fixture }}
+      NIAKVIO_SOURCE_SHA: ${{ matrix.sourceSha }}
     steps:
       - name: Checkout exact Niakvio generation
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ matrix.sourceSha }}
           path: niakvio
           persist-credentials: false
 
@@ -331,6 +367,7 @@ jobs:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
           NIAKVIO_CANDIDATE_REQUIRED_MARKER: ${{ matrix.candidateRequiredMarker }}
+          NIAKVIO_BRAIN_CANDIDATE_EXPERIMENT_JSON: ${{ matrix.brainCandidateExperiment }}
         run: |
           set -euo pipefail
           cd niakvio
@@ -339,12 +376,13 @@ jobs:
             --provider "$NIAKVIO_TARGET_PROVIDER" \
             --manifest "$NIAKVIO_TARGET_MANIFEST" \
             --required-marker "$NIAKVIO_CANDIDATE_REQUIRED_MARKER" \
-            --source-sha "$GITHUB_SHA"
+            --brain-experiment-json "$NIAKVIO_BRAIN_CANDIDATE_EXPERIMENT_JSON" \
+            --source-sha "$NIAKVIO_SOURCE_SHA"
           # App repository selection remains a real SHA-pinned HTTPS manifest.
           # Only the diagnostic instrumentation executes the checked local candidate.
-          echo "NIAKVIO_MANIFEST_URL=https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}/${NIAKVIO_TARGET_MANIFEST}" >> "$GITHUB_ENV"
+          echo "NIAKVIO_MANIFEST_URL=https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${NIAKVIO_SOURCE_SHA}/${NIAKVIO_TARGET_MANIFEST}" >> "$GITHUB_ENV"
           echo "NIAKVIO_ALLOW_LOCAL_MANIFEST=0" >> "$GITHUB_ENV"
-          echo "FIELD_NATIVE_CANDIDATE_REPOSITORY published_manifest_https=true pinned_sha=$GITHUB_SHA candidate_asset_local=true playback_authority=false"
+          echo "FIELD_NATIVE_CANDIDATE_REPOSITORY published_manifest_https=true pinned_sha=$NIAKVIO_SOURCE_SHA candidate_asset_local=true playback_authority=false"
 
       - name: Checkout accepted official client and stage corpus once
         shell: bash

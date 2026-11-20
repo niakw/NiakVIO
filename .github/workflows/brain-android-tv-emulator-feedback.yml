@@ -8,7 +8,7 @@ on:
 
 permissions:
   contents: write
-  actions: read
+  actions: write
 
 # Serialize observation ledgers. The native TV emulator stays in its existing
 # Actions runner; the Brain receives a redacted, source-pinned transcript.
@@ -93,6 +93,82 @@ jobs:
             --route "$RUNNER_TEMP/brain-tv-route.json" \
             --ledger automation/brain-native-candidate-experiments.json \
             --brain-sha "$brain_sha"
+
+      - name: Dispatch one source-pinned Brain candidate experiment
+        if: ${{ hashFiles('automation/brain-android-tv-emulator-history.json') != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          candidate_count="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$NATIVE_RUN_ID/artifacts" \
+            --jq '[.artifacts[].name | select(startswith("native-candidate-tv-"))] | length')"
+          if [ "$candidate_count" != "0" ]; then
+            echo "FIELD_BRAIN_NATIVE_CANDIDATE_DISPATCH status=skipped_candidate_source run=$NATIVE_RUN_ID"
+            exit 0
+          fi
+          if [ ! -s "$RUNNER_TEMP/brain-tv-route.json" ]; then
+            echo "FIELD_BRAIN_NATIVE_CANDIDATE_DISPATCH status=no_route run=$NATIVE_RUN_ID"
+            exit 0
+          fi
+          python3 - "$RUNNER_TEMP/brain-tv-route.json" "$RUNNER_TEMP/brain-native-candidate.json" <<'PY'
+          import json
+          import re
+          import sys
+
+          source, output = sys.argv[1:]
+          plan = json.load(open(source, encoding="utf-8"))
+          rows = [
+              row for row in plan.get("routes") or []
+              if isinstance(row, dict) and isinstance(row.get("candidateExperiment"), dict)
+          ]
+          if not rows:
+              raise SystemExit(0)
+          if len(rows) != 1:
+              raise SystemExit("candidate dispatch is bounded to exactly one provider/fixture")
+          row = rows[0]
+          exp = row["candidateExperiment"]
+          provider = str(row.get("provider") or "")
+          fixture = str(row.get("fixture") or "")
+          if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,95}", provider):
+              raise SystemExit("invalid candidate provider")
+          if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,95}", fixture):
+              raise SystemExit("invalid candidate fixture")
+          if (
+              exp.get("providerId") != provider
+              or exp.get("fixture") != fixture
+              or exp.get("sourceNiakvioSha") != plan.get("sourceNiakvioSha")
+              or str(exp.get("sourceRunId") or "") != str(plan.get("nativeRunId") or "")
+          ):
+              raise SystemExit("candidate route provenance mismatch")
+          if exp.get("candidateOnly") is not True or exp.get("generatedByBrain") is not True:
+              raise SystemExit("candidate route lacks Brain provenance")
+          if any(exp.get(flag) is not False for flag in (
+              "proofAuthority", "publicationAuthority",
+              "nativePlaybackAuthority", "providerMutationAuthority",
+          )):
+              raise SystemExit("candidate route unexpectedly carries authority")
+          with open(output, "w", encoding="utf-8") as handle:
+              json.dump(
+                  {"provider": provider, "fixture": fixture, "experiment": exp},
+                  handle, sort_keys=True, separators=(",", ":"),
+              )
+          PY
+          if [ ! -s "$RUNNER_TEMP/brain-native-candidate.json" ]; then
+            echo "FIELD_BRAIN_NATIVE_CANDIDATE_DISPATCH status=no_experiment run=$NATIVE_RUN_ID"
+            exit 0
+          fi
+          provider="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["provider"])' "$RUNNER_TEMP/brain-native-candidate.json")"
+          fixture="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["fixture"])' "$RUNNER_TEMP/brain-native-candidate.json")"
+          experiment="$(python3 -c 'import json,sys; print(json.dumps(json.load(open(sys.argv[1]))["experiment"],sort_keys=True,separators=(",",":")))' "$RUNNER_TEMP/brain-native-candidate.json")"
+          gh workflow run native-corpus-device-targeted.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f device=tv \
+            -f target_providers="$provider" \
+            -f target_fixture="$fixture" \
+            -f residential_exit=false \
+            -f candidate_rematerialize=true \
+            -f candidate_required_marker=NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29 \
+            -f source_sha="$NATIVE_SOURCE_SHA" \
+            -f brain_candidate_experiment_json="$experiment"
+          echo "FIELD_BRAIN_NATIVE_CANDIDATE_DISPATCH status=dispatched provider=$provider fixture=$fixture source_sha=$NATIVE_SOURCE_SHA publication=false"
 
       - name: Upload bounded Brain TV next-action plan
         if: always()
