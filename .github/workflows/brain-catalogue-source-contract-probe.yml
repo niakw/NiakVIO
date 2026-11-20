@@ -1,0 +1,63 @@
+name: BRAIN - Catalogue Source Contract Probe
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/brain-catalogue-source-contract-probe.yml'
+      - '.github/triggers/brain-catalogue-source-contract-probe.json'
+      - 'scripts/brain_oracles/catalogue_source_probe.py'
+      - 'scripts/brain_oracles/catalogue_inline_episode_source.py'
+      - 'tests/brain_oracles/catalogue_source_probe_test.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: brain-catalogue-contract
+  cancel-in-progress: true
+
+jobs:
+  independent-source-shape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+      - name: Compile and run no-network source contract regressions
+        run: |
+          python -m py_compile scripts/brain_oracles/catalogue_source_probe.py
+          python tests/brain_oracles/catalogue_inline_episode_source_test.py
+          python tests/brain_oracles/catalogue_source_probe_test.py
+      - name: Probe curated source origins without redirect, cookies or media
+        run: |
+          python scripts/brain_oracles/catalogue_source_probe.py \
+            --request .github/triggers/brain-catalogue-source-contract-probe.json \
+            --output automation/brain-catalogue-source-contract-probe.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path('automation/brain-catalogue-source-contract-probe.json').read_text())
+          assert data['publicationAuthority'] is False
+          assert data['nativePlaybackAuthority'] is False
+          assert data['providerMutationAuthority'] is False
+          assert data['probeRequestCount'] <= 12
+          print('FIELD_CATALOGUE_SOURCE_PROBE_SHAPES ' +
+                json.dumps([{'origin': x['originHost'], 'route': x['routeKind'],
+                             'status': x['httpStatus'], 'shape': x['sourceShape'],
+                             'transportError': x['transportError']}
+                            for x in data['observations']], separators=(',', ':')))
+          PY
+      - name: Save enum-only independent observations
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: brain-catalogue-source-shapes
+          path: automation/brain-catalogue-source-contract-probe.json
+          if-no-files-found: ignore
+          retention-days: 7
