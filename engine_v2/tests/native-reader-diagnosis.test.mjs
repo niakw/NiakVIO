@@ -103,6 +103,47 @@ try {
   ));
   assert.equal(data.readerFailures, 2);
   assert.equal(data.providerEligibleReaderFailures, 2);
+
+  // Exact v33 family: production video decoded, but the HLS master advertises
+  // two audio languages + one subtitle while the user-visible TV player exposes
+  // no audio tracks and no integrated subtitle observation. Brain must retain
+  // this as Core/client unresolved media, never as provider repair authority.
+  const topologyLog = path.join(tmp, 'tv-track-topology-collapse.log');
+  const topologyOutput = path.join(tmp, 'tv-track-topology-collapse.json');
+  const topologyLines = [];
+  for (const line of common) {
+    if (line.startsWith('FIELD_NATIVE_PLAYER ') && line.includes(`provider64=${b64('PURSTREAM')}`)) {
+      topologyLines.push(
+        line.replace(
+          'audio_track_count=1',
+          `audio_track_count=0 audio_track_languages64=${b64('')} subtitle_track_count=-1 subtitle_track_languages64=${b64('')}`,
+        ),
+      );
+      topologyLines.push(
+        `FIELD_NATIVE_TRANSPORT client=tv fixture=sinners-2025 provider64=${b64('PURSTREAM')} request_type=movie route_mode=declared index=0 state=ok kind=hls status=200 audio_track_count=2 audio_track_languages64=${b64('fr,en')} subtitle_track_count=1 subtitle_track_languages64=${b64('fr')}`,
+      );
+    } else {
+      topologyLines.push(line);
+    }
+  }
+  fs.writeFileSync(topologyLog, topologyLines.join('\n') + '\n');
+  spawnSync(process.execPath, [script, '--output', topologyOutput, topologyLog], {
+    cwd: root, encoding: 'utf8',
+  });
+  const topology = JSON.parse(fs.readFileSync(topologyOutput, 'utf8'));
+  const collapsed = topology.observations.find((row) =>
+    row.provider === 'purstream' && row.observationLayer === 'player');
+  assert.ok(collapsed);
+  assert.equal(collapsed.failureClass, 'playback_audio_tracks_unverified');
+  assert.equal(collapsed.failureDomain, 'unresolved_media');
+  assert.equal(collapsed.providerMutationEligible, false);
+  assert.equal(collapsed.playerAudioTrackCount, 0);
+  assert.equal(collapsed.transportAudioTrackCount, 2);
+  assert.equal(collapsed.transportAudioTrackLanguages, 'fr,en');
+  assert.equal(collapsed.transportSubtitleTrackCount, 1);
+  assert.equal(topology.readerHealthy, 0);
+  assert.equal(topology.providerEligibleReaderFailures, 2);
+  assert.equal(topology.policy.productionWritesAllowed, false);
   assert.equal(data.clientRuntimeReaderFailures, 0);
   assert.equal(data.evidenceStats.providerLoads, 2);
   assert.equal(data.evidenceStats.repositoryHttpRequests, 1);
