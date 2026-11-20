@@ -39,6 +39,7 @@ function make(native, slowHost, fastHost, blockingNativeBridge=false, nonBlockin
   const requests = [];
   const starts = [];
   const f = {
+    URL,
     _spv187PrioritizedPlayerRoutes: x => x,
     _crawlEligible: () => true,
     _spv187QueueScore: x => x.includes('slow.example') ? 2 : 1,
