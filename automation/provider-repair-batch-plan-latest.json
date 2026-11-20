@@ -1,16 +1,15 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44790525212",
-  "sourceTriggerSha": "af6c5ab30aee57ae3bd9fc9168d4980ff1b9b777",
-  "unresolvedProviderCount": 68,
-  "dynamicVariantProviderCount": 7,
+  "sourceRunId": "44792157962",
+  "sourceTriggerSha": "63fbc896930949276a9f886a8ef8b3aa12238889",
+  "unresolvedProviderCount": 67,
+  "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
     "hindmoviez",
     "meowtv",
     "movix-fr",
     "nakios",
     "papadustream",
-    "sadisflix",
     "stigstream"
   ],
   "lifecycleSuppressedDynamicProviders": [
@@ -275,7 +274,8 @@
       ],
       "dominantIssues": [
         "network_http_error",
-        "network_zero_result"
+        "network_zero_result",
+        "waf_challenge"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
@@ -311,26 +311,22 @@
       ],
       "dominantIssues": [
         "network_zero_result",
-        "provider_returned_streams",
         "provider_returned_streams, timeout",
         "timeout"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 4,
+      "providerCount": 3,
       "providers": [
         "anime-sama",
         "frenchstream",
-        "sadisflix",
-        "streamzo"
+        "sadisflix"
       ],
       "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [
-        "sadisflix"
-      ],
+      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
