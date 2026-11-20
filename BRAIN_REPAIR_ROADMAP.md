@@ -1,3 +1,11 @@
+### 20 novembre — Familles native TV : dépôt DNS ≠ source épisodes 404/200 HTML ≠ HLS V31
+
+**Observé et testé** : la cohorte source-pinnée `44765346840` (Mushoku S01E01) a rétabli le démarrage ADB, mais French-Manga n'a pas passé l'installation du dépôt (`unrecognized format`, `UnknownHostException` sur une autre ressource du même hôte), alors qu'Anime-Sama a passé l'installation et exécuté ~26,4 s pour zéro flux. Les 404 de `episodes.js` et les 200 contenant du HTML chez Anime-Sama signalent une **mauvaise forme de réponse**, sans démontrer l'origine WAF/slug/route. Ne pas assimiler ces providers ni appliquer le Lego V31 HLS aux symptômes 404/HTML.
+
+**Capacité intégrée** : NiakVIO `05412a95` + `9006d9ea` classifient un éventuel DNS invité comme **correlation non prouvée** et conservent les réponses HTTP manifest directes comme éléments indépendants. `719bb337`, `bdda60fc`, `a743eed8` détectent, filtrent et mémorisent deux signatures `script_http_missing` / `script_html_2xx` par provider et fixture, sans URL ni html ni autorité mutation. Brain `b4297b85` (CI `44772926967`, sécurité `44772927114` vertes) reconnaît un zéro TV complet avec `script_html_2xx` et demande un **diagnostic source-shape familial** avant stratégie ; la provenance V31 exige désormais le même client/SHA/run/fixture/type.
+
+**Portes restantes** : CI exacte NiakVIO sur le pont de mémoire ; nouveau corpus officiel Android TV sur les bytes courants et sortie image pendant le lecteur ; sélection audio FR/JA, saison/épisode, variantes, 1080p si source disponible ; reproduction source-pinned d'un représentant de la bonne famille et non-régression avant toute propagation. V31 reste candidat isolé, le client officiel n'a pas montré de pixels vidéo sur les dix captures historiques. **0 réparation certifiée**.
+
 # NiakVIO — Brain Repair Roadmap and Decision Register
 
 ### 20 novembre — Contrôle de preuve visuelle et transition Brain V31 après succès diagnostique
