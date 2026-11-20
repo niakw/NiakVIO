@@ -193,6 +193,7 @@ for needle in (
     "NIAKVIO_NATIVE_CANDIDATE_SHA256",
     "FIELD_NATIVE_CANDIDATE_ORACLE_FAILED",
     "FIELD_NATIVE_CANDIDATE_ORACLE_OBSERVED",
+    "official_plugin_manager=true",
     "production_playback_authority=false",
 ):
     assert needle in tv_suite, needle
@@ -202,7 +203,9 @@ for needle in (
     "FIELD_NATIVE_CANDIDATE_RUNTIME_BYTE_CHECK",
     "FIELD_NATIVE_CANDIDATE_RUNTIME_RESULT",
     "officialPluginManager.executeScraper(loadedScraper",
-    "candidateRuntime.executePlugin(",
+    "candidateStore.saveScraperCode(",
+    "candidateStore.getScraperCode(",
+    "runtime=official_plugin_manager",
     "authority=diagnostic_only",
 ):
     assert needle in tv_loader, needle
