@@ -477,7 +477,7 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
 
 OLD_ANDROID_PROBE_BLOCK = '''                rows.firstOrNull()?.let { row ->
                     val probe = probeTransport(row.url, row.headers)
-                    emit("FIELD_NATIVE_TRANSPORT client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} state=${probe.state} kind=${probe.kind} status=${probe.status} content_type64=${b64(probe.contentType)} extm3u=${probe.extm3u} audio_track_count=${probe.audioTrackCount} audio_track_languages64=${b64(probe.audioTrackLanguages)} subtitle_track_count=${probe.subtitleTrackCount} subtitle_track_languages64=${b64(probe.subtitleTrackLanguages)} audio_variant_matrix64=${b64(probe.audioVariantMatrix)} subtitle_variant_matrix64=${b64(probe.subtitleVariantMatrix)} variant_heights64=${b64(probe.variantHeights)} duration_seconds=${probe.durationSeconds ?: 0.0} host64=${b64(probe.host)} media_hint64=${b64(probe.mediaHint)}")
+                    emit("FIELD_NATIVE_TRANSPORT client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} state=${probe.state} kind=${probe.kind} status=${probe.status} content_type64=${b64(probe.contentType)} extm3u=${probe.extm3u} audio_track_count=${probe.audioTrackCount} audio_track_languages64=${b64(probe.audioTrackLanguages)} subtitle_track_count=${probe.subtitleTrackCount} subtitle_track_languages64=${b64(probe.subtitleTrackLanguages)} audio_variant_matrix64=${b64(probe.audioVariantMatrix)} subtitle_variant_matrix64=${b64(probe.subtitleVariantMatrix)} variant_heights64=${b64(probe.variantHeights)} variant_codecs64=${b64(probe.variantCodecs)} duration_seconds=${probe.durationSeconds ?: 0.0} host64=${b64(probe.host)} media_hint64=${b64(probe.mediaHint)}")
                 }
 '''
 
