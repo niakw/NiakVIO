@@ -113,6 +113,10 @@ for (const input of logPaths) {
         client, provider, requestType, routeMode: routeMode(f), index,
         state: f.state || 'unknown', kind: f.kind || 'unknown', status: Number(f.status || 0),
         contentType: decode(f.content_type64), extm3u: f.extm3u === 'true', durationSeconds: Number(f.duration_seconds || 0) || null,
+        audioTrackCount: Number.isFinite(Number(f.audio_track_count)) ? Number(f.audio_track_count) : -1,
+        audioTrackLanguages: decode(f.audio_track_languages64),
+        subtitleTrackCount: Number.isFinite(Number(f.subtitle_track_count)) ? Number(f.subtitle_track_count) : -1,
+        subtitleTrackLanguages: decode(f.subtitle_track_languages64),
         host: decode(f.host64), mediaHint: decode(f.media_hint64),
       }));
     } else if (line.startsWith('FIELD_NATIVE_PLAYER ')) {
@@ -135,9 +139,11 @@ for (const input of logPaths) {
           ? Math.min(16384, Number(f.video_width)) : 0,
         videoHeight: Number.isInteger(Number(f.video_height)) && Number(f.video_height) > 0
           ? Math.min(16384, Number(f.video_height)) : 0,
+        audioTrackCount: Number.isFinite(Number(f.audio_track_count)) ? Number(f.audio_track_count) : -1,
+        audioTrackLanguages: decode(f.audio_track_languages64),
+        subtitleTrackCount: Number.isFinite(Number(f.subtitle_track_count)) ? Number(f.subtitle_track_count) : -1,
+        subtitleTrackLanguages: decode(f.subtitle_track_languages64),
       });
-      player.failureClass = readerFailureClass(player);
-      player.signature = readerSignature(player);
       players.set(streamKey(client, provider, requestType, index), player);
     } else if (line.startsWith('FIELD_NATIVE_ERROR ')) {
       runtimeErrors.push(withPolicy({
@@ -146,6 +152,18 @@ for (const input of logPaths) {
       }));
     }
   }
+}
+
+for (const [key, player] of players) {
+  const transport = transports.get(key);
+  if (transport) {
+    player.transportAudioTrackCount = transport.audioTrackCount;
+    player.transportAudioTrackLanguages = transport.audioTrackLanguages;
+    player.transportSubtitleTrackCount = transport.subtitleTrackCount;
+    player.transportSubtitleTrackLanguages = transport.subtitleTrackLanguages;
+  }
+  player.failureClass = readerFailureClass(player);
+  player.signature = readerSignature(player);
 }
 
 const contradictions = [];
