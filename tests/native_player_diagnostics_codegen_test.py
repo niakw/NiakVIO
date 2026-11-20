@@ -78,6 +78,10 @@ assert 'diagnosticPlayed = diagnostics.result.startsWith("Played", ignoreCase = 
 assert "R.string.cd_subtitles" in tv
 assert "R.string.subtitle_built_in" in tv
 assert "diagnostics.videoResolution" in tv
+# Kotlin triple-quoted regex is raw; a double backslash matches a literal
+# "\d" instead of 1920x1080. Assert both the immediate and late-format readers.
+assert tv.count(r'Regex("""(\d{2,5})x(\d{2,5})""")') == 2
+assert r'Regex("""(\\d{2,5})x(\\d{2,5})""")' not in tv
 assert "audio_track_count=${transport.audioTrackCount}" in tv
 assert "subtitle_variant_matrix64=${b64(transport.subtitleVariantMatrix)}" in tv
 

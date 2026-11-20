@@ -222,7 +222,7 @@ TV_HELPERS = PROBE_MODEL + r'''
                     kotlinx.coroutines.withTimeoutOrNull(__PLAYER_FORMAT_SETTLE_MS__L) {
                         store.lastPlaybackDiagnostics.first { row ->
                             row.timestampMs > baseline &&
-                                (Regex("""(\\d{2,5})x(\\d{2,5})""")
+                                (Regex("""(\d{2,5})x(\d{2,5})""")
                                     .containsMatchIn(row.videoResolution.orEmpty()) ||
                                  row.result.startsWith("Error", ignoreCase = true))
                         }
@@ -230,7 +230,7 @@ TV_HELPERS = PROBE_MODEL + r'''
                 } ?: initialDiagnostics
             } else initialDiagnostics
             val durationSeconds = diagnostics.durationMs.takeIf { it > 0L }?.div(1000.0)
-            val dimensions = Regex("""(\\d{2,5})x(\\d{2,5})""")
+            val dimensions = Regex("""(\d{2,5})x(\d{2,5})""")
                 .find(diagnostics.videoResolution.orEmpty())
             val videoWidth = dimensions?.groupValues?.getOrNull(1)?.toIntOrNull() ?: 0
             val videoHeight = dimensions?.groupValues?.getOrNull(2)?.toIntOrNull() ?: 0
