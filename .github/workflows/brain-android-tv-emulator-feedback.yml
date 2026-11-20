@@ -52,7 +52,7 @@ jobs:
           runs="$(mktemp)"
           gh api "repos/$GITHUB_REPOSITORY/contents/automation/brain-native-candidate-experiments.json" \
             --jq '.content' | base64 --decode |
-            jq -r '.rows[]? | .candidateAttempts[]? | .candidateRunId // empty' > "$seen"
+            jq -r '.rows[]? | .candidateBrainReroutes[]? | .candidateRunId // empty' > "$seen"
           gh api "repos/$GITHUB_REPOSITORY/actions/workflows/native-corpus-device-targeted.yml/runs?per_page=40" \
             --jq '.workflow_runs[] | select(.head_branch == "main" and .event == "workflow_dispatch" and .status == "completed") | .id' > "$runs"
           for candidate_run_id in $(cat "$runs"); do
@@ -289,6 +289,43 @@ jobs:
               or any(row.get("candidateExperiment") for row in routes)):
               raise SystemExit("post-candidate route must be one diagnostic-only non-repeat plan")
           row = routes[0]
+          ledger_path = Path("automation/brain-native-candidate-experiments.json")
+          ledger = json.loads(ledger_path.read_text())
+          run_id = os.environ["NATIVE_RUN_ID"]
+          source_sha = os.environ["NATIVE_SOURCE_SHA"]
+          experiments = [
+              item for item in ledger.get("rows", []) if (
+                  item.get("providerId") == row["provider"]
+                  and any(
+                      str(a.get("candidateRunId")) == run_id
+                      and a.get("candidateSourceSha") == source_sha
+                      and a.get("candidateExecutionObserved") is True
+                      for a in item.get("candidateAttempts", [])
+                  )
+              )
+          ]
+          if len(experiments) != 1:
+              raise SystemExit("post-candidate route not attributable to exact executed candidate")
+          experiment = experiments[0]
+          prior = [
+              r for r in experiment.get("candidateBrainReroutes", [])
+              if r.get("candidateRunId") != run_id
+          ][-7:]
+          prior.append({
+              "candidateRunId": run_id,
+              "candidateSourceSha": source_sha,
+              "observationRunId": plan["nativeRunId"],
+              "observationSourceSha": plan["sourceNiakvioSha"],
+              "targetLayer": row["targetLayer"],
+              "strategy": row["strategy"],
+              "mode": row["mode"],
+              "modelExecuted": False,
+              "validatedRepair": False,
+              "publicationAuthority": False,
+              "providerMutationAuthority": False,
+          })
+          experiment["candidateBrainReroutes"] = prior
+          ledger_path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n")
           print("FIELD_BRAIN_CANDIDATE_NEXT provider=" + str(row["provider"])
                 + " layer=" + str(row["targetLayer"]) + " strategy=" + str(row["strategy"])
                 + " generated_candidate=false publication=false")
