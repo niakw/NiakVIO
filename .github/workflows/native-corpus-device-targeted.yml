@@ -401,7 +401,7 @@ jobs:
           CANDIDATE_SHA="$(python3 -c 'import json; from pathlib import Path; proof=json.loads(Path("niakvio/automation/native-candidate-remat-proof.json").read_text()); assert proof["officialTvTestAssetByteMatched"] is True; print(proof["candidateJsSha256"])')"
           [[ "$CANDIDATE_SHA" =~ ^[0-9a-f]{64}$ ]]
           echo "NIAKVIO_NATIVE_CANDIDATE_SHA256=$CANDIDATE_SHA" >> "$GITHUB_ENV"
-          echo "FIELD_NATIVE_CANDIDATE_ORACLE_SELECTED sha256=$CANDIDATE_SHA client=tv oracle=official_plugin_runtime production_playback_authority=false"
+          echo "FIELD_NATIVE_CANDIDATE_ORACLE_SELECTED sha256=$CANDIDATE_SHA client=tv oracle=official_plugin_manager_staged_bytes production_playback_authority=false"
 
       - name: Set up Gradle runtime
         uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c
