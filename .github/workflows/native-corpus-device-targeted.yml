@@ -163,7 +163,8 @@ jobs:
               raise SystemExit("candidate native replay requires TV, one active provider and an exact fixture")
           if candidate_marker not in {"", "NIAKVIO_HLS_TS_WRAPPED_AAC_RENDITION_V20",
                                      "NIAKVIO_PROVIDER_NATIVE_FETCH_CAPABILITY_GATE_V28",
-                                     "NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29"}:
+                                     "NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29",
+                                     "NIAKVIO_PROVIDER_NATIVE_HLS_ROOT_RECEIPT_V30"}:
               raise SystemExit("invalid native candidate source-owned Core marker")
           if candidate_marker and not candidate_rematerialize:
               raise SystemExit("candidate marker without isolated candidate materialization")
@@ -178,8 +179,11 @@ jobs:
                   raise SystemExit("Brain candidate experiment is invalid JSON") from exc
               if not isinstance(brain_payload, dict):
                   raise SystemExit("Brain candidate experiment must be an object")
-              if not candidate_rematerialize or candidate_marker != "NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29":
-                  raise SystemExit("Brain candidate experiment requires isolated V29 materialization")
+              if not candidate_rematerialize or candidate_marker not in {
+                  "NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29",
+                  "NIAKVIO_PROVIDER_NATIVE_HLS_ROOT_RECEIPT_V30",
+              }:
+                  raise SystemExit("Brain candidate experiment requires isolated V29 or V30 materialization")
           if target_fixture:
               lab = json.loads(Path(".github/triggers/nuvio-client-lab.json").read_text(encoding="utf-8"))
               fixture_slugs = set()
