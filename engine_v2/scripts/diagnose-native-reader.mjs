@@ -117,6 +117,16 @@ function runtimeExecutionKey(row) {
   ].join('\u0000');
 }
 
+function mediaProbeKey(row) {
+  return [
+    String(row.client || 'unknown').trim().toLowerCase(),
+    String(row.fixture || 'unknown').trim().toLowerCase(),
+    String(row.provider || '').trim().toLowerCase(),
+    String(row.requestType || 'unknown').trim().toLowerCase(),
+    Number(row.index || 0),
+  ].join('\u0000');
+}
+
 const evidence = assessNativeEvidence(logPaths);
 const readerRows = [];
 const resultRows = [];
@@ -127,6 +137,7 @@ const quickJsPromiseControls = [];
 const nativeExecutionDiagnostics = [];
 const terminalTransportDiagnostics = [];
 const prePlayerMediaRootTransitions = [];
+const transportTopologyByMedia = new Map();
 const TERMINAL_TRANSPORT_KINDS = new Set(['hls', 'dash', 'video', 'html', 'unknown']);
 const TERMINAL_TRANSPORT_STATES = new Set(['dead', 'error']);
 
@@ -384,6 +395,20 @@ for (const file of logPaths) {
       const index = Number(t.index);
       const state = String(t.state || '');
       const kind = String(t.kind || '');
+      if (
+        ['tv', 'mobile', 'desktop'].includes(String(t.client || '').toLowerCase())
+        && provider && fixture && ['movie', 'tv', 'anime'].includes(requestType)
+        && Number.isInteger(index) && index >= 0 && index <= 40
+      ) {
+        transportTopologyByMedia.set(mediaProbeKey({
+          client: t.client, fixture, provider, requestType, index,
+        }), {
+          transportAudioTrackCount: Number.isFinite(Number(t.audio_track_count)) ? Number(t.audio_track_count) : -1,
+          transportAudioTrackLanguages: decode(t.audio_track_languages64),
+          transportSubtitleTrackCount: Number.isFinite(Number(t.subtitle_track_count)) ? Number(t.subtitle_track_count) : -1,
+          transportSubtitleTrackLanguages: decode(t.subtitle_track_languages64),
+        });
+      }
       if (t.client === 'tv' && t.route_mode === 'declared'
           && /^[a-z0-9][a-z0-9_-]{0,95}$/.test(provider)
           && /^[a-z0-9][a-z0-9-]{0,95}$/.test(fixture)
@@ -454,13 +479,21 @@ for (const file of logPaths) {
         ? Math.min(16384, Number(f.video_height)) : 0,
       audioTrackCount: Number.isInteger(Number(f.audio_track_count))
         ? Math.min(64, Math.max(-1, Number(f.audio_track_count))) : -1,
+      audioTrackLanguages: decode(f.audio_track_languages64),
+      subtitleTrackCount: Number.isInteger(Number(f.subtitle_track_count))
+        ? Math.min(64, Math.max(-1, Number(f.subtitle_track_count))) : -1,
+      subtitleTrackLanguages: decode(f.subtitle_track_languages64),
     };
-    row.failureClass = readerFailureClass(row);
-    row.failureDomain = readerFailureDomain(row);
-    row.providerMutationEligible = providerMutationEligible(row);
-    row.signature = readerSignature({ ...row, requestType: row.requestType });
     readerRows.push(row);
   }
+}
+
+for (const row of readerRows) {
+  Object.assign(row, transportTopologyByMedia.get(mediaProbeKey(row)) || {});
+  row.failureClass = readerFailureClass(row);
+  row.failureDomain = readerFailureDomain(row);
+  row.providerMutationEligible = providerMutationEligible(row);
+  row.signature = readerSignature({ ...row, requestType: row.requestType });
 }
 
 const runtimeSentinelObservations = [...runtimeSentinelByKey.values()];
@@ -691,6 +724,13 @@ const playerObservations = brainReaderRows.map((row) => ({
   durationSeconds: row.durationSeconds, loadBytes: row.loadBytes, loadDurationMs: row.loadDurationMs,
   playerVideoFormatObserved: row.videoWidth > 0 && row.videoHeight > 0,
   playerAudioTrackCount: row.audioTrackCount,
+  playerAudioTrackLanguages: row.audioTrackLanguages,
+  playerSubtitleTrackCount: row.subtitleTrackCount,
+  playerSubtitleTrackLanguages: row.subtitleTrackLanguages,
+  transportAudioTrackCount: row.transportAudioTrackCount ?? -1,
+  transportAudioTrackLanguages: row.transportAudioTrackLanguages || '',
+  transportSubtitleTrackCount: row.transportSubtitleTrackCount ?? -1,
+  transportSubtitleTrackLanguages: row.transportSubtitleTrackLanguages || '',
   observationLayer: 'player',
 }));
 const extractionObservations = providerExtractionFailures.map((row) => ({
