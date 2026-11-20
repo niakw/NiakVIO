@@ -427,6 +427,57 @@ try {
   assert.equal(installFailureData.providerLoadIssues[0].coreOrManifestProposalAllowed, true);
   assert.deepEqual(installFailureData.plans, []);
 
+  // The Android guest can report an unrecognized repository format while a
+  // separate addon-logo request to the SAME host is DNS-blocked. This must
+  // steer Brain to transport validation, not to a provider/Core patch.
+  const dnsLog = path.join(tmp, 'repo-guest-dns-correlated.log');
+  const dnsOutput = path.join(tmp, 'repo-guest-dns-correlated.json');
+  const originalLoad = 'FIELD_NATIVE_PROVIDER_LOAD_ERROR client=tv fixture=sinners-2025';
+  const logo = 'FIELD_NATIVE_ADDON_LOGO client=tv fixture=sinners-2025'
+    + ' provider64=' + b64('MOVIESDRIVE')
+    + ' state=error status=0 content_type64=' + b64('UnknownHostException')
+    + ' host64=' + b64('raw.githubusercontent.com');
+  fs.writeFileSync(dnsLog, fs.readFileSync(installFailure, 'utf8')
+    .split('\n').filter(line => !line.includes('FIELD_NATIVE_REPOSITORY_HTTP_')).join('\n')
+    .replace(b64('HTTP 404'), b64('Failed to parse repository: unrecognized format'))
+    .replace(originalLoad, logo + '\n' + originalLoad));
+  const dnsRun = spawnSync(process.execPath, [script, '--output', dnsOutput, dnsLog], {cwd: root, encoding: 'utf8'});
+  assert.equal(dnsRun.status, 0, dnsRun.stderr + dnsRun.stdout);
+  const dnsReport = JSON.parse(fs.readFileSync(dnsOutput, 'utf8'));
+  assert.equal(dnsReport.evidenceComplete, true);
+  assert.equal(dnsReport.providerLoadIssues.length, 1);
+  assert.equal(dnsReport.providerLoadIssues[0].failureClass, 'provider_repository_transport_dns_correlated');
+  assert.equal(dnsReport.providerLoadIssues[0].layer, 'repository_transport');
+  assert.equal(dnsReport.providerLoadIssues[0].attribution, 'correlated_not_proven');
+  assert.equal(dnsReport.providerLoadIssues[0].coreOrManifestProposalAllowed, false);
+  assert.equal(dnsReport.providerLoadIssues[0].providerJsMutationAllowed, false);
+  assert.equal(dnsReport.providerLoadPriorities[0].coreOrManifestProposalAllowed, false);
+  assert.equal(dnsReport.policy.coreOrManifestLoadProposalAllowed, false);
+  assert.deepEqual(dnsReport.plans, []);
+  assert.equal(JSON.stringify(dnsReport).includes('raw.githubusercontent.com'), false,
+    'transient repository host must never enter persisted Brain evidence');
+
+  // A different host, or an independently observed HTTP status for the
+  // manifest itself, must NOT be reclassified as a DNS fault.
+  const otherLog = path.join(tmp, 'repo-guest-other-host.log');
+  const otherOutput = path.join(tmp, 'repo-guest-other-host.json');
+  fs.writeFileSync(otherLog, fs.readFileSync(dnsLog, 'utf8')
+    .replace('host64=' + b64('raw.githubusercontent.com'), 'host64=' + b64('other.invalid')));
+  const otherRun = spawnSync(process.execPath, [script, '--output', otherOutput, otherLog], {cwd: root, encoding: 'utf8'});
+  assert.equal(otherRun.status, 0, otherRun.stderr + otherRun.stdout);
+  const otherReport = JSON.parse(fs.readFileSync(otherOutput, 'utf8'));
+  assert.equal(otherReport.providerLoadIssues[0].failureClass, 'provider_repository_load_error');
+  assert.equal(otherReport.providerLoadIssues[0].coreOrManifestProposalAllowed, true);
+
+  const httpLog = path.join(tmp, 'repo-guest-http-observed.log');
+  const httpOutput = path.join(tmp, 'repo-guest-http-observed.json');
+  fs.writeFileSync(httpLog, fs.readFileSync(dnsLog, 'utf8')
+    + 'FIELD_NATIVE_REPOSITORY_HTTP_RESPONSE client=tv fixture=sinners-2025 kind=manifest status=404\n');
+  const httpRun = spawnSync(process.execPath, [script, '--output', httpOutput, httpLog], {cwd: root, encoding: 'utf8'});
+  assert.equal(httpRun.status, 0, httpRun.stderr + httpRun.stdout);
+  assert.equal(JSON.parse(fs.readFileSync(httpOutput, 'utf8')).providerLoadIssues[0].failureClass,
+    'provider_repository_load_error');
+
   // Metadata drift at load time belongs to manifest/Core semantics, never JS repair.
   const metadataFailure = path.join(tmp, 'provider-metadata-failure.log');
   const metadataFailureOutput = path.join(tmp, 'provider-metadata-failure.json');
