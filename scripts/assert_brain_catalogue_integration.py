@@ -74,20 +74,25 @@ prompt = build_prompt_payload(
     mutation_policy={"allow_mutations": False, "allowed_scopes": []},
 )
 prompt_observations = prompt.get("request", {}).get("observations") or []
-has_causal_source = any(
-    item.get("source") == "independent-catalogue-source-probe"
-    and "catalogue_inline_token_episode" in json.dumps(item)
-    for item in prompt_observations
+witness = prompt.get("source_contract_witness") or {}
+has_causal_source = (
+    witness.get("seasonHtmlShape") == "catalogue_inline_token_episode"
+    and witness.get("officialParentRunId") == "44781039914"
+    and witness.get("independentProbeRunId") == "44798438960"
+    and witness.get("catalogueSlugUnverified") == "mushoku-tensei"
+    and witness.get("sourceContractVerifiedOnOfficialTv") is False
+    and witness.get("providerMutationAuthority") is False
 )
 print(
     "FIELD_BRAIN_CATALOGUE_PROMPT_WITNESS "
     f"prompt_observations={len(prompt_observations)} "
     f"source_visible={str(has_causal_source).lower()} "
+    f"witness_present={str(bool(witness)).lower()} "
     f"chars={prompt.get('context_budget', {}).get('serialized_user_chars')} "
     "authority=false",
     flush=True,
 )
-assert has_causal_source, "Brain LLM prompt lost the actual inline source contract"
+assert has_causal_source, "Brain LLM prompt lost the attested inline source contract witness"
 print(
     "FIELD_BRAIN_CATALOGUE_ADAPTER_INTEGRATION "
     f"brain_sha={sha[:12]} provider=anime-sama native_parents={len(native)} "
