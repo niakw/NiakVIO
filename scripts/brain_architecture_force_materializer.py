@@ -54,6 +54,16 @@ NEW_PROFILE_MODEL_TOKENS = 1024
 NEW_PROFILE_MODEL_TIMEOUT_SECONDS = 240
 NEW_PROFILE_RETRY_MODEL_TOKENS = 1280
 NEW_PROFILE_RETRY_TIMEOUT_SECONDS = 300
+# A new protocol needs a pure parser, runtime wiring AND a multi-episode test.
+# Generic 512-token retries cannot represent this three-edit source transaction.
+SOURCE_FAMILY_MODEL_TOKENS = 2048
+SOURCE_FAMILY_MODEL_TIMEOUT_SECONDS = 480
+SOURCE_FAMILY_RETRY_MODEL_TOKENS = 2560
+SOURCE_FAMILY_RETRY_TIMEOUT_SECONDS = 600
+SOURCE_FAMILY_CORRECTION_MODEL_TOKENS = 2048
+SOURCE_FAMILY_CORRECTION_TIMEOUT_SECONDS = 480
+SOURCE_FAMILY_CORRECTION_RETRY_MODEL_TOKENS = 2560
+SOURCE_FAMILY_CORRECTION_RETRY_TIMEOUT_SECONDS = 600
 EDIT_VALIDATION_CORRECTION_ROUNDS = 2
 MATERIALIZED_CORRECTION_ROUNDS = 3
 MAX_MATERIALIZED_FAILURE_CONTEXT = 3200
@@ -1558,7 +1568,8 @@ def _force_generation_temperature(payload: dict[str, Any]) -> float:
     identical, and no provider content is ever patched by this helper.
     """
     return 0.2 if (
-        _requires_new_repair_profile(payload)
+        (_requires_new_repair_profile(payload)
+         or _requires_new_source_family_lego(payload))
         and str(payload.get("correctionReason") or "").strip()
     ) else 0.0
 
@@ -2166,18 +2177,36 @@ def call_model(endpoint: str, model: str, payload: dict[str, Any]) -> dict[str, 
         try:
             value = _model_request(
                 endpoint, model, _compact_payload(payload),
-                max_tokens=1024, timeout=360, compact=True,
+                max_tokens=SOURCE_FAMILY_MODEL_TOKENS,
+                timeout=SOURCE_FAMILY_MODEL_TIMEOUT_SECONDS,
+                compact=True,
             )
             return _parse_model_value(value)
         except (TimeoutError, ValueError) as exc:
+            reason = "timeout" if isinstance(exc, TimeoutError) else "invalid-json"
             print(
                 "FIELD_BRAIN_ARCH_FORCE_MODEL_RETRY "
-                f"reason={type(exc).__name__} mode=source-family-lego",
+                f"reason={reason} mode=source-family-lego "
+                f"primary_max_tokens={SOURCE_FAMILY_MODEL_TOKENS} "
+                f"retry_max_tokens={SOURCE_FAMILY_RETRY_MODEL_TOKENS}",
                 flush=True,
             )
+            retry = _minimal_payload(payload)
+            retry["correctionReason"] = "source-family-generation-format"
+            retry["validationError"] = str(exc)[:180]
+            retry["correctionContract"] = {
+                "mustGenerateNewBrainSourceModule": True,
+                "mustWireRealBrainRuntime": True,
+                "mustGenerateTwoEpisodeRegression": True,
+                "mustReturnExactlyThreeEdits": True,
+                "mustNotEmitRecoveryProgram": True,
+                "providerPublicationAuthority": False,
+            }
             value = _model_request(
-                endpoint, model, _minimal_payload(payload),
-                max_tokens=1024, timeout=360, compact=True,
+                endpoint, model, retry,
+                max_tokens=SOURCE_FAMILY_RETRY_MODEL_TOKENS,
+                timeout=SOURCE_FAMILY_RETRY_TIMEOUT_SECONDS,
+                compact=True,
             )
             return _parse_model_value(value)
 
@@ -2214,24 +2243,25 @@ def _request_corrected_plan(
     correction_payload: dict[str, Any],
 ) -> dict[str, Any]:
     requires_new_profile = _requires_new_repair_profile(correction_payload)
+    source_family = _requires_new_source_family_lego(correction_payload)
     primary_tokens = (
-        NEW_PROFILE_MODEL_TOKENS
-        if requires_new_profile
+        NEW_PROFILE_MODEL_TOKENS if requires_new_profile
+        else SOURCE_FAMILY_CORRECTION_MODEL_TOKENS if source_family
         else VALIDATION_RETRY_MODEL_TOKENS
     )
     primary_timeout = (
-        NEW_PROFILE_MODEL_TIMEOUT_SECONDS
-        if requires_new_profile
+        NEW_PROFILE_MODEL_TIMEOUT_SECONDS if requires_new_profile
+        else SOURCE_FAMILY_CORRECTION_TIMEOUT_SECONDS if source_family
         else VALIDATION_RETRY_TIMEOUT_SECONDS
     )
     fallback_tokens = (
-        NEW_PROFILE_RETRY_MODEL_TOKENS
-        if requires_new_profile
+        NEW_PROFILE_RETRY_MODEL_TOKENS if requires_new_profile
+        else SOURCE_FAMILY_CORRECTION_RETRY_MODEL_TOKENS if source_family
         else VALIDATION_FORMAT_RETRY_MODEL_TOKENS
     )
     fallback_timeout = (
-        NEW_PROFILE_RETRY_TIMEOUT_SECONDS
-        if requires_new_profile
+        NEW_PROFILE_RETRY_TIMEOUT_SECONDS if requires_new_profile
+        else SOURCE_FAMILY_CORRECTION_RETRY_TIMEOUT_SECONDS if source_family
         else VALIDATION_FORMAT_RETRY_TIMEOUT_SECONDS
     )
     try:

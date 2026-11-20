@@ -2101,4 +2101,64 @@ assert real_runtime_path.read_bytes() == real_runtime_bytes, (
     "offline FORCE novelty oracle accidentally modified real files"
 )
 
+
+# A new source-family is a THREE-edit transaction. Guard its bounded model
+# budget and negative feedback independently of generic 512-token edits.
+source_family_blueprint = {
+    "strategyId": "catalogue_inline_token_episode_source_family_v1",
+    "gapKind": "missing_source_contract_family_executable",
+    "targetLayer": "brain",
+    "requiresNewSourceFamilyLego": True,
+    "requiresNewExecutableRepairProfile": False,
+}
+source_family_payload = {
+    "blueprint": source_family_blueprint,
+    "allowedPaths": ["scripts/brain_layers/*", "scripts/brain_repair_runtime.py", "tests/brain_*"],
+    "sources": {"scripts/brain_repair_runtime.py": "def _current_source_structural_repair_evidence(): pass"},
+    "contract": {"providerPublicationAuthority": False, "productionProviderWritesAllowed": False},
+}
+saved_source_family_request = mod._model_request
+source_family_calls = []
+try:
+    def fake_source_family_request(endpoint, model, payload, *, max_tokens, timeout, compact=False):
+        source_family_calls.append((payload, max_tokens, timeout,
+                                    mod._force_generation_temperature(payload)))
+        if len(source_family_calls) == 1:
+            raise ValueError("synthetic truncated source-family response")
+        return {"choices": [{"message": {"content":
+            '{"edits":[{"operation":"create","path":"scripts/brain_layers/demo.py","content":"pass"}]}'
+        }}]}
+    mod._model_request = fake_source_family_request
+    source_generated = mod.call_model("offline", "synthetic", source_family_payload)
+    assert len(source_generated["edits"]) == 1
+    assert [row[1] for row in source_family_calls] == [
+        mod.SOURCE_FAMILY_MODEL_TOKENS, mod.SOURCE_FAMILY_RETRY_MODEL_TOKENS
+    ]
+    assert [row[2] for row in source_family_calls] == [
+        mod.SOURCE_FAMILY_MODEL_TIMEOUT_SECONDS, mod.SOURCE_FAMILY_RETRY_TIMEOUT_SECONDS
+    ]
+    assert source_family_calls[0][3] == 0.0
+    assert source_family_calls[1][3] == 0.2
+    retry = source_family_calls[1][0]
+    assert retry["correctionReason"] == "source-family-generation-format"
+    assert retry["correctionContract"]["mustReturnExactlyThreeEdits"] is True
+    assert retry["contract"]["productionProviderWritesAllowed"] is False
+    source_family_calls.clear()
+    corrected = mod._request_corrected_plan(
+        "offline", "synthetic",
+        {**source_family_payload, "correctionReason": "materialized-source-validation"},
+    )
+    assert len(corrected["edits"]) == 1
+    assert source_family_calls[0][1] == mod.SOURCE_FAMILY_CORRECTION_MODEL_TOKENS
+    assert source_family_calls[0][2] == mod.SOURCE_FAMILY_CORRECTION_TIMEOUT_SECONDS
+    assert source_family_calls[0][3] == 0.2
+    assert len(source_family_calls) == 2
+    assert source_family_calls[1][1] == mod.SOURCE_FAMILY_CORRECTION_RETRY_MODEL_TOKENS
+    assert source_family_calls[1][2] == mod.SOURCE_FAMILY_CORRECTION_RETRY_TIMEOUT_SECONDS
+    assert source_family_calls[1][3] == 0.2
+    assert mod.SOURCE_FAMILY_CORRECTION_MODEL_TOKENS > mod.VALIDATION_RETRY_MODEL_TOKENS
+    assert mod._force_generation_temperature({"blueprint": {"targetLayer": "brain"}}) == 0.0
+finally:
+    mod._model_request = saved_source_family_request
+
 print("Brain architecture FORCE materializer tests passed")
