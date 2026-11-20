@@ -564,6 +564,33 @@ def _native_brain_origin_priority(provider_id: str) -> dict[str, object] | None:
     }
 
 
+def _native_brain_hls_root_receipt(provider_id: str) -> dict[str, object] | None:
+    """Accept only the next Brain-selected generic Core candidate in a workspace."""
+    raw = os.environ.get("NIAKVIO_NATIVE_BRAIN_HLS_ROOT_RECEIPT", "").strip()
+    if not raw:
+        return None
+    if allmat.materialization_context() != "workspace":
+        raise ValueError("Brain HLS receipt experiment is candidate-workspace only")
+    value = json.loads(raw)
+    if not isinstance(value, dict) or value.get("experimentType") != "native-hls-master-receipt-v30":
+        raise ValueError("unsupported Brain HLS receipt experiment")
+    if allmat.canonical_id(str(value.get("providerId") or "")) != allmat.canonical_id(provider_id):
+        raise ValueError("Brain HLS receipt provider mismatch")
+    if value.get("runtimeScope") != "native-blocking-fetch":
+        raise ValueError("Brain HLS receipt must run only on native blocking fetch")
+    if value.get("candidateOnly") is not True or value.get("generatedByBrain") is not True:
+        raise ValueError("Brain HLS receipt provenance is missing")
+    if any(value.get(k) is not False for k in (
+        "proofAuthority", "publicationAuthority", "nativePlaybackAuthority",
+        "providerMutationAuthority",
+    )):
+        raise ValueError("Brain HLS receipt cannot carry mutation/publication authority")
+    fingerprint = str(value.get("experimentFingerprint") or "").strip().lower()
+    if not re.fullmatch(r"[a-f0-9]{64}", fingerprint):
+        raise ValueError("Brain HLS receipt fingerprint invalid")
+    return {"experimentFingerprint": fingerprint}
+
+
 def _apply_native_brain_origin_priority_candidate(base: bytes) -> bytes:
     """Compile V29 only into ephemeral candidate ProviderBase bytes."""
     text = base.decode("utf-8", errors="strict")
@@ -714,8 +741,13 @@ def materialize_one(
     allmat.normalize_anime_transport_compatibility(entry)
     model = allmat.provider_model(provider_id, patch, capability, static_row)
     native_brain_origin_priority = _native_brain_origin_priority(provider_id)
+    native_brain_hls_receipt = _native_brain_hls_root_receipt(provider_id)
+    if native_brain_origin_priority and native_brain_hls_receipt:
+        raise ValueError("only one native Brain experiment per candidate")
     if native_brain_origin_priority:
         model["nativeBlockingOriginPriority"] = native_brain_origin_priority
+    if native_brain_hls_receipt:
+        model["nativeHlsRootReceiptV30"] = native_brain_hls_receipt
     if preserve_structured_data:
         # Provider-owned runtime Legos are executable authority in their own
         # right when the structured identity contract is explicit. This applies
@@ -743,6 +775,9 @@ def materialize_one(
     )
     if native_brain_origin_priority:
         base = _apply_native_brain_origin_priority_candidate(base)
+    if native_brain_hls_receipt:
+        from provider_patches.native_hls_root_receipt_v1 import apply as apply_native_hls_receipt
+        base = apply_native_hls_receipt(base)
     data = allmat.build_provider_data_model(
         provider_id,
         entry,
@@ -888,9 +923,9 @@ def materialize_one(
         "legacyProviderJsExecuted": False,
         "upstreamJsExecuted": False,
         "brainCandidateOriginPriority": bool(native_brain_origin_priority),
+        "brainCandidateHlsRootReceipt": bool(native_brain_hls_receipt),
         "brainCandidateExperimentFingerprint": (
-            str(native_brain_origin_priority.get("experimentFingerprint") or "")
-            if native_brain_origin_priority else ""
+            str((native_brain_origin_priority or native_brain_hls_receipt or {}).get("experimentFingerprint") or "")
         ),
         "securityHardening": {
             "changed": bool(security_report.get("changed")),
