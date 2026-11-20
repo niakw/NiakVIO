@@ -1,15 +1,16 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44720270943",
-  "sourceTriggerSha": "ebb1e421258c381a13230268872520c81b4d222e",
-  "unresolvedProviderCount": 68,
-  "dynamicVariantProviderCount": 6,
+  "sourceRunId": "44726885785",
+  "sourceTriggerSha": "f72ca87a75621c6e0143929131203d6c313717eb",
+  "unresolvedProviderCount": 67,
+  "dynamicVariantProviderCount": 7,
   "dynamicVariantProviders": [
     "hindmoviez",
     "meowtv",
     "movix-fr",
     "nakios",
     "papadustream",
+    "sadisflix",
     "stigstream"
   ],
   "lifecycleSuppressedDynamicProviders": [
@@ -37,7 +38,6 @@
     "anisama",
     "arrowtv",
     "boredflix",
-    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -63,15 +63,12 @@
     "fullanime",
     "hexa",
     "hianime",
-    "hindmoviez",
     "ihavenotv",
-    "internet-archive",
     "kehflix",
     "kidraz",
     "kurage",
     "latestmovies",
     "mallumv",
-    "meowtv",
     "moiflix",
     "moviebite",
     "moviebox",
@@ -119,7 +116,6 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
-    "webflix",
     "wookafr",
     "yflix",
     "youtitou",
@@ -127,7 +123,7 @@
     "zone-telechargement"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 9,
+  "groupCount": 10,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -311,22 +307,18 @@
       "runtimeFamilySignature": "mixed_embed_resolver",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "chain",
         "lookup"
       ],
       "dominantIssues": [
         "network_zero_result",
-        "provider_returned_streams",
         "timeout"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 4,
+      "providerCount": 2,
       "providers": [
         "anime-sama",
-        "frenchstream",
-        "sadisflix",
-        "streamzo"
+        "frenchstream"
       ],
       "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
       "selectionAuthorities": [
@@ -480,6 +472,36 @@
       ],
       "dynamicVariantProviders": [
         "papadustream"
+      ],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "variant-coverage|mixed_embed_resolver|runtime:mixed_embed_resolver",
+      "repairScope": "variant-coverage",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "mixed_embed_resolver",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "timeout"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "sadisflix"
+      ],
+      "action": "current execution proves playable output but fewer variants than the provider announced; keep publication authority unchanged and send completeness repair to Brain Learning",
+      "selectionAuthorities": [
+        "provider-census-sharded-latest.json:dynamic-variant-debt"
+      ],
+      "dynamicVariantProviders": [
+        "sadisflix"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
