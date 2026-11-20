@@ -10,6 +10,8 @@ on:
       - 'scripts/provider_patches/anime_catalogue_runtime_common.py'
       - 'scripts/brain_oracles/catalogue_inline_episode_source.py'
       - 'scripts/fill_brain_learning_guidance_gaps.py'
+      - 'scripts/run_brain_learning_queue.py'
+      - 'tests/brain_learning_source_contract_queue_deferral_test.py'
       - 'tests/brain_learning_source_contract_frontier_test.py'
       - 'scripts/compile_brain_accepted_program_v3.py'
       - 'scripts/brain_positive_program_memory.py'
@@ -60,6 +62,7 @@ jobs:
       - name: Reject generic Learning guidance replay for a native-attested new source contract
         run: |
           python tests/brain_learning_source_contract_frontier_test.py
+          python tests/brain_learning_source_contract_queue_deferral_test.py
           python tests/brain_learning_guidance_gap_fill_test.py
           python tests/brain_learning_guidance_executor_advance_test.py
       - name: Differentiate old episode scripts and inline-token source without media or secrets

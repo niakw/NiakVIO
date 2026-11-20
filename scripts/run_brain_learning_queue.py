@@ -23,6 +23,7 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 from brain_negative_memory_retention import select_bounded_negative_memory
 from repair_promotion_state import durable_accepted_event, provisional_accepted_event
+from fill_brain_learning_guidance_gaps import attested_source_contract_frontier
 
 class BudgetExhausted(RuntimeError):
     """The bounded Learning work window ended; persist state and resume later."""
@@ -1404,6 +1405,35 @@ def repair_attempt(
         "validationReason": "",
     }
 
+def defer_new_source_contract_family(
+    provider_id: str,
+    state: dict[str, Any],
+    info: dict[str, Any],
+    queue: dict[str, Any],
+) -> dict[str, Any]:
+    """Preserve a new source-contract family as debt without legacy executor work."""
+    state["lastStatus"] = "new_source_family_executable_required"
+    state["lastAttemptAt"] = datetime.now(timezone.utc).isoformat()
+    queue["pendingProviders"] = [
+        pid for pid in queue.get("pendingProviders") or []
+        if pid != provider_id
+    ]
+    queue["completedInCycle"] = unique([
+        *(queue.get("completedInCycle") or []), provider_id,
+    ])
+    return {
+        "provider": provider_id,
+        "coreHypothesis": info,
+        "routeSearch": None,
+        "routeRefresh": None,
+        "resolved": False,
+        "attempts": [],
+        "finalLab": None,
+        "sourceContractFamilyStatus": "new_family_required",
+        "independentSourceEvidenceNotNativePlayback": True,
+    }
+
+
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--stage", type=Path, default=ROOT / "staging")
@@ -1425,6 +1455,15 @@ def main() -> int:
     health_config = load_json(ROOT / "health-config.json", {})
     manifest_authority = load_json(ROOT / "manifest.json", {})
     census_authority = load_json(ROOT / "automation" / "provider-census-status.json", {})
+    # A diagnostic from an independent GitHub runner is usable to *defer*
+    # an unrelated legacy Core executor only with the same official TV
+    # source/run/fixture and currently materialized JS bytes. It never proves
+    # NuvioTV playback, identity, or permission to mutate.
+    source_contract_frontier = attested_source_contract_frontier(
+        load_json(ROOT / "automation" / "brain-catalogue-source-probe-history.json", {}),
+        load_json(ROOT / "automation" / "brain-android-tv-emulator-history.json", {}),
+        manifest_authority, ROOT,
+    )
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
 
@@ -1578,8 +1617,17 @@ def main() -> int:
     )
     queue["fastRepairHandoffMaxAttemptsPerProviderThisPhase"] = 1 if fair_handoff else 0
     queue["fastRepairHandoffMaxEvolvedAttemptsPerProviderThisPhase"] = 3 if fair_handoff else 0
-    queue["deferredRepairProviders"] = repair_deferred
-    queue["deferredRepairProviderCount"] = len(repair_deferred)
+    source_contract_deferred = [pid for pid in order if pid in source_contract_frontier]
+    queue["sourceContractFamilyDeferredProviders"] = source_contract_deferred
+    queue["sourceContractFamilyDeferredProviderCount"] = len(source_contract_deferred)
+    queue["sourceContractFamilyEvidenceAuthority"] = (
+        "native-parent-and-independent-source-exact-current-js-diagnostic-only"
+    )
+    queue["sourceContractFamilyExecutableStatus"] = (
+        "new_family_required" if source_contract_deferred else "not_attested"
+    )
+    queue["deferredRepairProviders"] = unique([*repair_deferred, *source_contract_deferred])
+    queue["deferredRepairProviderCount"] = len(queue["deferredRepairProviders"])
     queue["deferredRepairReason"] = "repair_experiment_variants_exhausted_new_strategy_required"
     queue["deferredRepairAuthorities"] = [
         "brain-repair-memory.json",
@@ -1608,7 +1656,11 @@ def main() -> int:
     write_json(phase_learning_state_path, phase_learning_state)
 
     interrupted_provider = ""
-    lab_session = LearningLabSession(work_deadline)
+    lab_session = (
+        LearningLabSession(work_deadline)
+        if any(pid not in source_contract_frontier for pid in order)
+        else None
+    )
     try:
         for provider_id in order:
             if time.time() >= work_deadline:
@@ -1622,6 +1674,19 @@ def main() -> int:
             run_dir = output / "providers" / provider_id
             run_dir.mkdir(parents=True, exist_ok=True)
             info = info_by_id.get(provider_id, {"provider": provider_id, "status": "", "needs_route_search": False})
+            if provider_id in source_contract_frontier:
+                run_results.append(
+                    defer_new_source_contract_family(provider_id, state, info, queue)
+                )
+                processed.append(provider_id)
+                print(
+                    "FIELD_BRAIN_LEARNING_SOURCE_CONTRACT_DEFER "
+                    f"provider={provider_id} old_profiles_executed=0 "
+                    "new_family_required=true native_playback=false "
+                    "publication=false",
+                    flush=True,
+                )
+                continue
             provider_deadline = work_deadline
             if fair_handoff:
                 remaining_providers = max(1, len(order) - len(processed))
@@ -1866,7 +1931,8 @@ def main() -> int:
             f"provider={interrupted_provider} reason={error}"
         )
     finally:
-        lab_session.close()
+        if lab_session is not None:
+            lab_session.close()
 
     remaining_order = [pid for pid in order if pid not in processed]
     queue["retryProviders"] = unique(retry_next)
@@ -1957,8 +2023,11 @@ def main() -> int:
         "fastRepairHandoffMaxEvolvedAttemptsPerProviderThisPhase": 3 if fair_handoff else 0,
         "cleanReconstructionRequiredProviders": reconstruction_required,
         "cleanReconstructionRequiredCount": len(reconstruction_required),
-        "deferredRepairProviders": repair_deferred,
-        "deferredRepairProviderCount": len(repair_deferred),
+        "deferredRepairProviders": queue["deferredRepairProviders"],
+        "deferredRepairProviderCount": queue["deferredRepairProviderCount"],
+        "sourceContractFamilyDeferredProviders": source_contract_deferred,
+        "sourceContractFamilyDeferredProviderCount": len(source_contract_deferred),
+        "sourceContractFamilyExecutableStatus": queue["sourceContractFamilyExecutableStatus"],
         "legacyExecutableSeedAllowed": False,
         "processedProviders": processed,
         "processedProviderCount": len(processed),
