@@ -7209,7 +7209,8 @@
       "official_hub": null,
       "official_site": "https://streamzo.fr",
       "manifest_overrides": {
-        "logo": "https://streamzo.fr/favicon.ico"
+        "logo": "https://streamzo.fr/favicon.ico",
+        "enabled": false
       },
       "published_types": [
         "movie",
@@ -7437,7 +7438,7 @@
           }
         }
       },
-      "route_data_state": "repair",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -7503,7 +7504,31 @@
       },
       "provider_lego_scripts": [
         "scripts/provider_patches/streamzo_runtime_v1.py"
-      ]
+      ],
+      "activation_eligible": false,
+      "wrong_content_disable_proof": {
+        "provider": "streamzo",
+        "scope": "global",
+        "proofAuthority": "current-census-exact-byte-wrong-content-v1",
+        "sourceKind": "current-bytes-census",
+        "sourceRunId": "44793860734",
+        "sourceSha": "697f123c74e4070c251d02c9113437408c8f209f",
+        "providerArtifactSha256": "583a1fdc826d779cc6a2a449854490bc594cdf3695475a593ad7cae4bbfca247",
+        "declaredLanes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "contradictoryLanes": [
+          "tv"
+        ],
+        "identityContradictionCount": 1,
+        "wrongContent": true,
+        "testedThisRun": true,
+        "disableReason": "auto_off_current_wrong_content",
+        "repairRequired": true,
+        "directProviderMutationAuthority": false
+      }
     },
     "videasy": {
       "notes": [
