@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44809612139",
+  "sourceRunId": "44809632697",
   "sourceTriggerSha": "a6278b66f95853bad49d10357674a454a73bc7a2",
   "unresolvedProviderCount": 67,
   "dynamicVariantProviderCount": 6,
@@ -120,7 +120,7 @@
     "zone-telechargement"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 9,
+  "groupCount": 8,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -142,6 +142,7 @@
         "none"
       ],
       "dominantIssues": [
+        "network_exception",
         "network_http_error",
         "network_zero_result",
         "timeout",
@@ -152,11 +153,10 @@
         "native-policy-reachable",
         "no-transport-evidence",
         "residential-exit-all-challenged",
-        "residential-exit-browser-reachable",
-        "residential-exit-native-reachable"
+        "residential-exit-browser-reachable"
       ],
       "transportSignature": "not-applicable",
-      "providerCount": 39,
+      "providerCount": 40,
       "providers": [
         "1jour1film0626",
         "anikototv",
@@ -175,6 +175,7 @@
         "flixer",
         "franime",
         "frembed",
+        "french-anime",
         "fullanime",
         "hexa",
         "hianime",
@@ -274,8 +275,7 @@
       ],
       "dominantIssues": [
         "network_http_error",
-        "network_zero_result",
-        "waf_challenge"
+        "network_zero_result"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
@@ -351,36 +351,6 @@
         "french-manga"
       ],
       "action": "replay/rematerialize retained candidate knowledge against current bytes before new mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "not-applicable",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "residential-exit-native-reachable"
-      ],
-      "transportSignature": "residential-exit-native-reachable",
-      "providerCount": 1,
-      "providers": [
-        "french-anime"
-      ],
-      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],

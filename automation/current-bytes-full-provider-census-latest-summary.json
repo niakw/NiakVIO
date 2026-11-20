@@ -2,7 +2,7 @@
   "acceptanceBasis": "aggregate-operational-state-including-carried-evidence",
   "acceptanceReached": false,
   "acceptanceTarget": 84,
-  "acceptedPlayableProviderCount": 8,
+  "acceptedPlayableProviderCount": 9,
   "acceptedPlayableProviders": [
     "cinematheque-de-bretagne",
     "movy",
@@ -11,6 +11,7 @@
     "purstream",
     "sadisflix",
     "streamzo",
+    "wookafr",
     "zone-streaming"
   ],
   "brainQueue": [
@@ -90,17 +91,18 @@
     "webflix"
   ],
   "debugStageCounts": {
-    "provider_network_exception": 12,
-    "provider_network_http_error": 35,
+    "provider_network_exception": 13,
+    "provider_network_http_error": 36,
     "provider_network_zero_result": 61,
     "provider_returned_streams": 15,
-    "provider_returned_wrong_content": 2,
-    "provider_waf_challenge": 52,
-    "timeout": 23
+    "provider_returned_wrong_content": 3,
+    "provider_waf_challenge": 48,
+    "timeout": 24
   },
   "debugStageProviders": {
     "provider_network_exception": [
       "animekai",
+      "french-anime",
       "topcartoons",
       "videasy",
       "vidlove",
@@ -120,10 +122,9 @@
       "emnexmovies",
       "moiflix",
       "movieshunt",
-      "movish",
       "persianstremio",
       "playimdb",
-      "sekai",
+      "rarefilmm",
       "showbox",
       "shuttletv",
       "vidfast",
@@ -150,6 +151,7 @@
       "mallumv",
       "moviebite",
       "moviebox",
+      "movish",
       "movix-fr",
       "nakios",
       "neobam",
@@ -173,10 +175,12 @@
       "sadisflix",
       "streamzo",
       "voiranime-homes",
+      "wookafr",
       "zone-streaming"
     ],
     "provider_returned_wrong_content": [
-      "movy"
+      "movy",
+      "streamzo"
     ],
     "provider_waf_challenge": [
       "1jour1film0626",
@@ -188,19 +192,17 @@
       "chillflix",
       "cinegram",
       "cinetimes",
-      "corsflix",
       "dulourd",
       "fexini",
       "film-a-revoir",
       "flemmix",
       "franime",
-      "french-anime",
       "fullanime",
       "ihavenotv",
       "kehflix",
       "moviesmod",
       "movish",
-      "rarefilmm",
+      "sekai",
       "skstream",
       "stigstream",
       "voirserie",
@@ -216,14 +218,15 @@
       "boredflix",
       "flixhq",
       "hianime",
+      "movish",
       "movix-fr",
       "nakios",
       "reanime-to",
       "rivestream-app",
       "rivestream-ru",
       "sadisflix",
-      "showbox",
-      "vuflix"
+      "vuflix",
+      "zone-streaming"
     ]
   },
   "fullOkCount": 7,
@@ -259,30 +262,31 @@
   "partialOkCount": 0,
   "partialOkProviders": [],
   "providerCount": 111,
-  "runId": 44809612139,
+  "runId": 44809632697,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 22,
+    "CHAIN REACHED": 24,
     "DISABLED": 36,
     "FULL OK": 7,
-    "HARNESS MISMATCH": 5,
+    "HARNESS MISMATCH": 3,
     "HARNESS/ENV BLOCKED": 14,
     "NO PROOF": 9,
     "PROOF REFRESH REQUIRED": 4,
     "PROVIDER NETWORK BLOCKED": 8,
-    "REGRESSION PROVIDER": 4,
-    "REGRESSION PROVIDER JS": 1
+    "REGRESSION PROVIDER": 5
   },
   "testedProviderCount": 102,
   "triggerSha": "a6278b66f95853bad49d10357674a454a73bc7a2",
-  "verifiedProviderCount": 1,
+  "verifiedProviderCount": 2,
   "verifiedProviders": [
-    "movy"
+    "movy",
+    "wookafr"
   ],
-  "wrongContentProviderCount": 1,
+  "wrongContentProviderCount": 2,
   "wrongContentProviders": [
-    "movy"
+    "movy",
+    "streamzo"
   ]
 }
