@@ -94,24 +94,31 @@ try {
     'D/PluginRuntime: Fetch result: 200 url=https://source.invalid/catalogue/example/other.js bodyLen=700 bodyPreview=<!doctype html>',
     'D/PluginRuntime: Fetch result: 200 url=https://source.invalid/catalogue/example/vostfr/sources.js bodyLen=500 bodyPreview=var videos = []',
   ];
+  const beforePurstreamResult = common.find((line) =>
+    line.startsWith('FIELD_NATIVE_RESULT client=tv') && line.includes('provider64=' + b64('PURSTREAM')));
+  assert.ok(beforePurstreamResult);
+  // A high-retry first provider must not hide the next provider's source fault.
+  const laterProviderShape = 'D/PluginRuntime: Fetch result: 410 Gone url=https://other.invalid/catalogue/example/sources.js bodyLen=4 bodyPreview=Gone';
   fs.writeFileSync(scriptShapeLog, common.flatMap((line) =>
-    line === beforeMoviesDriveResult ? [...syntheticShapes, line] : [line]
+    line === beforeMoviesDriveResult
+      ? [...syntheticShapes, ...Array(40).fill(syntheticShapes[0]), ...Array(40).fill(syntheticShapes[1]), line]
+      : line === beforePurstreamResult ? [laterProviderShape, line] : [line]
   ).join('\n') + '\n');
   const scriptShapeRun = spawnSync(process.execPath,
     [script, '--output', scriptShapeOutput, scriptShapeLog], {cwd: root, encoding: 'utf8'});
   assert.equal(scriptShapeRun.status, 0, scriptShapeRun.stderr + scriptShapeRun.stdout);
   const scriptShape = JSON.parse(fs.readFileSync(scriptShapeOutput, 'utf8'));
   const shapeRows = scriptShape.sourceScriptShapeDiagnostics;
-  assert.equal(shapeRows.length, 2);
-  assert.deepEqual(shapeRows.map((x) => x.pattern), ['script_http_missing', 'script_html_2xx']);
-  assert.deepEqual(shapeRows.map((x) => x.httpStatusClass), ['4xx', '2xx']);
-  assert.ok(shapeRows.every((x) => x.provider === 'moviesdrive'
-    && x.requestType === 'movie' && x.fixture === 'sinners-2025'
+  assert.equal(shapeRows.length, 3);
+  assert.deepEqual(shapeRows.map((x) => x.pattern), ['script_http_missing', 'script_html_2xx', 'script_http_missing']);
+  assert.deepEqual(shapeRows.map((x) => x.httpStatusClass), ['4xx', '2xx', '4xx']);
+  assert.deepEqual(shapeRows.map((x) => x.provider), ['moviesdrive', 'moviesdrive', 'purstream']);
+  assert.ok(shapeRows.every((x) => x.requestType === 'movie' && x.fixture === 'sinners-2025'
     && x.providerJsMutationAllowed === false && x.publicationAuthority === false
     && x.coreOrManifestProposalAllowed === false));
   assert.equal(JSON.stringify(shapeRows).includes('https://'), false);
   assert.equal(JSON.stringify(shapeRows).includes('source.invalid'), false);
-  assert.equal(scriptShape.sourceScriptShapeDiagnostics.some((x) => x.provider === 'purstream'), false);
+  assert.equal(JSON.stringify(shapeRows).includes('other.invalid'), false);
   // A known 200 with JavaScript-looking body never implies an HTML mismatch.
   // Likewise unrelated .js assets and HTML returned from a PHP search endpoint
   // must not borrow the episodes.js response classification.

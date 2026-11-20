@@ -173,6 +173,8 @@ const prePlayerFetchHostOutcomes = [];
 // Network metadata is reduced to enum-only Core script response shape.
 // Never persist source URL, signed query, page HTML or domain in this report.
 const sourceScriptShapeDiagnostics = [];
+// Keep a retry from consuming all slots before another provider is observed.
+const sourceScriptShapeSeen = new Set();
 const transportTopologyByMedia = new Map();
 const TERMINAL_TRANSPORT_KINDS = new Set(['hls', 'dash', 'video', 'html', 'unknown']);
 const TERMINAL_TRANSPORT_STATES = new Set(['dead', 'error']);
@@ -236,21 +238,26 @@ for (const [sourceLogIndex, file] of logPaths.entries()) {
           // shell/challenge. Distinguish response shape from HTTP success
           // without calling it WAF, incorrect episode or playable video.
           if (/\/(?:episodes?|sources?|players?)\.js$/i.test(pathname)
-              && sourceScriptShapeDiagnostics.length < 24) {
+              && sourceScriptShapeDiagnostics.length < 96) {
             const htmlAt200 = status >= 200 && status < 300
               && /\bbodyPreview=\s*(?:<!doctype\s+html\b|<html\b)/i.test(raw);
             const missingScript = status === 404 || status === 410;
             if (htmlAt200 || missingScript) {
-              sourceScriptShapeDiagnostics.push({
+              const pattern = htmlAt200 ? 'script_html_2xx' : 'script_http_missing';
+              const shapeKey = [sourceLogIndex, runtimeExecutionKey(activeProviderRoute), pattern].join('\u0000');
+              if (!sourceScriptShapeSeen.has(shapeKey)) {
+                sourceScriptShapeSeen.add(shapeKey);
+                sourceScriptShapeDiagnostics.push({
                 ...activeProviderRoute,
                 phase: 'provider-runtime-pre-player',
                 expectedResource: 'javascript_episode_source',
-                pattern: htmlAt200 ? 'script_html_2xx' : 'script_http_missing',
+                  pattern,
                 httpStatusClass: htmlAt200 ? '2xx' : '4xx',
                 proofAuthority: false, publicationAuthority: false,
                 nativePlaybackAuthority: false, providerJsMutationAllowed: false,
-                coreOrManifestProposalAllowed: false,
-              });
+                  coreOrManifestProposalAllowed: false,
+                });
+              }
             }
           }
           const kind = /\.m3u8$/i.test(pathname)
