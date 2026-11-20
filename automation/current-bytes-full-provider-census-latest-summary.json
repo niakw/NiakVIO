@@ -2,7 +2,7 @@
   "acceptanceBasis": "aggregate-operational-state-including-carried-evidence",
   "acceptanceReached": false,
   "acceptanceTarget": 84,
-  "acceptedPlayableProviderCount": 9,
+  "acceptedPlayableProviderCount": 8,
   "acceptedPlayableProviders": [
     "cinematheque-de-bretagne",
     "kurage",
@@ -10,7 +10,6 @@
     "neko-sama",
     "papadustream",
     "purstream",
-    "sadisflix",
     "streamzo",
     "zone-streaming"
   ],
@@ -64,10 +63,12 @@
     "reanime-to",
     "rivestream-app",
     "rivestream-ru",
+    "sadisflix",
     "showbox",
     "shuttletv",
     "skstream",
     "stigstream",
+    "streamzo",
     "videasy",
     "vidlink",
     "voirserie",
@@ -89,11 +90,12 @@
   ],
   "debugStageCounts": {
     "provider_network_exception": 12,
-    "provider_network_http_error": 45,
-    "provider_network_zero_result": 62,
-    "provider_returned_streams": 14,
-    "provider_waf_challenge": 51,
-    "timeout": 18
+    "provider_network_http_error": 41,
+    "provider_network_zero_result": 63,
+    "provider_returned_streams": 12,
+    "provider_returned_wrong_content": 1,
+    "provider_waf_challenge": 54,
+    "timeout": 19
   },
   "debugStageProviders": {
     "provider_network_exception": [
@@ -117,16 +119,14 @@
       "emnexmovies",
       "moiflix",
       "movieshunt",
-      "movish",
       "persianstremio",
       "playimdb",
       "rivestream-app",
       "rivestream-ru",
-      "sekai",
       "showbox",
       "shuttletv",
-      "skstream",
       "vidfast",
+      "voiranime-homes",
       "voiranime-rip",
       "watchott",
       "wookafr",
@@ -138,9 +138,9 @@
       "allwish",
       "animevost-fr",
       "animevostfr",
+      "boredflix",
       "cinemabz",
       "fawesome",
-      "film-a-revoir",
       "flixer",
       "frembed",
       "frenchstream",
@@ -151,7 +151,6 @@
       "mallumv",
       "moviebite",
       "moviebox",
-      "movish",
       "movix-fr",
       "nakios",
       "neobam",
@@ -160,6 +159,8 @@
       "playimdb",
       "primewire",
       "pstream",
+      "shuttletv",
+      "streamzo",
       "uhdmovies",
       "vidlink",
       "watchott",
@@ -172,9 +173,11 @@
       "neko-sama",
       "papadustream",
       "purstream",
-      "sadisflix",
       "streamzo",
       "zone-streaming"
+    ],
+    "provider_returned_wrong_content": [
+      "sekai"
     ],
     "provider_waf_challenge": [
       "1jour1film0626",
@@ -188,8 +191,8 @@
       "cinetimes",
       "dulourd",
       "fexini",
+      "film-a-revoir",
       "flemmix",
-      "flixhq",
       "franime",
       "french-anime",
       "fullanime",
@@ -199,6 +202,7 @@
       "movish",
       "movy",
       "rarefilmm",
+      "reanime-to",
       "skstream",
       "stigstream",
       "voirserie",
@@ -215,11 +219,11 @@
       "flixhq",
       "french-manga",
       "hianime",
+      "movish",
       "movix-fr",
       "nakios",
-      "reanime-to",
       "sadisflix",
-      "voiranime-homes",
+      "showbox",
       "vuflix",
       "zone-streaming"
     ]
@@ -232,14 +236,12 @@
     "meowtv",
     "webflix"
   ],
-  "operationalOkCount": 7,
+  "operationalOkCount": 5,
   "operationalOkProviders": [
     "castle",
     "hindmoviez",
     "internet-archive",
     "meowtv",
-    "sadisflix",
-    "streamzo",
     "webflix"
   ],
   "operationalWithoutCurrentVerifiedCount": 5,
@@ -250,35 +252,31 @@
     "meowtv",
     "webflix"
   ],
-  "partialOkCount": 2,
-  "partialOkProviders": [
-    "sadisflix",
-    "streamzo"
-  ],
+  "partialOkCount": 0,
+  "partialOkProviders": [],
   "providerCount": 111,
-  "runId": 44726885785,
+  "runId": 44726897485,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 22,
+    "CHAIN REACHED": 23,
     "DISABLED": 35,
     "FULL OK": 5,
-    "HARNESS MISMATCH": 4,
+    "HARNESS MISMATCH": 5,
     "HARNESS/ENV BLOCKED": 14,
-    "NO PROOF": 10,
-    "PARTIAL OK": 2,
+    "NO PROOF": 9,
     "PROOF REFRESH REQUIRED": 6,
-    "PROVIDER NETWORK BLOCKED": 8,
-    "REGRESSION PROVIDER": 4
+    "PROVIDER NETWORK BLOCKED": 7,
+    "REGRESSION PROVIDER": 5,
+    "REGRESSION PROVIDER JS": 1
   },
   "testedProviderCount": 104,
   "triggerSha": "f72ca87a75621c6e0143929131203d6c313717eb",
-  "verifiedProviderCount": 2,
-  "verifiedProviders": [
-    "sadisflix",
-    "streamzo"
-  ],
-  "wrongContentProviderCount": 0,
-  "wrongContentProviders": []
+  "verifiedProviderCount": 0,
+  "verifiedProviders": [],
+  "wrongContentProviderCount": 1,
+  "wrongContentProviders": [
+    "sekai"
+  ]
 }
