@@ -63,6 +63,21 @@ function providerLoadFailureClass(reason) {
   return 'provider_repository_load_error';
 }
 function providerLoadRepair(issue) {
+  if (issue.failureClass === 'provider_repository_transport_dns_correlated') {
+    return {
+      layer: 'repository_transport',
+      providerJsMutationAllowed: false,
+      coreOrManifestProposalAllowed: false,
+      transportEvidence: 'same_fixture_same_host_dns_error_on_separate_asset',
+      attribution: 'correlated_not_proven',
+      actions: [
+        'do not mutate provider JS, Core parser or manifest from a repository transport symptom',
+        'recheck exact SHA-pinned HTTPS manifest DNS/TLS from the official device',
+        'separate external repository availability from provider media extraction',
+        'repeat official repository installation before recording any provider result',
+      ],
+    };
+  }
   if (issue.failureClass === 'provider_repository_load_missing') {
     return {
       layer: 'repository',
@@ -132,6 +147,16 @@ const evidence = assessNativeEvidence(logPaths);
 const readerRows = [];
 const resultRows = [];
 const providerLoadObservations = [];
+// Comparing hosts is process-local. Never persist endpoint, URL or manifest
+// response bytes; only the bounded correlated-failure classification survives.
+const repositoryLoadContexts = new Map();
+function repositoryKey(index, f) {
+  return [index, String(f.client || ''), String(f.fixture || '')].join('|');
+}
+function safeRepositoryHost(value) {
+  const host = String(value || '').toLowerCase().replace(/\.$/, '');
+  return /^(?=.{4,253}$)[a-z0-9](?:[a-z0-9.-]*[a-z0-9])$/.test(host) && host.includes('.') ? host : '';
+}
 const appSelectionObservations = [];
 const quickJsDiagnostics = [];
 const quickJsPromiseControls = [];
@@ -252,6 +277,47 @@ for (const [sourceLogIndex, file] of logPaths.entries()) {
         }
       }
     }
+    const repositoryBeginAt = raw.indexOf('FIELD_NATIVE_REPOSITORY_LOAD_BEGIN ');
+    if (repositoryBeginAt >= 0) {
+      const f = fields(raw.slice(repositoryBeginAt).trim());
+      const key = repositoryKey(sourceLogIndex, f);
+      const context = repositoryLoadContexts.get(key) || {};
+      context.manifestHost = safeRepositoryHost(f.manifest_host);
+      repositoryLoadContexts.set(key, context);
+    }
+    const repositoryErrorAt = raw.indexOf('FIELD_NATIVE_REPOSITORY_LOAD_ERROR ');
+    if (repositoryErrorAt >= 0) {
+      const f = fields(raw.slice(repositoryErrorAt).trim());
+      const key = repositoryKey(sourceLogIndex, f);
+      const context = repositoryLoadContexts.get(key) || {};
+      context.unrecognizedFormat = f.reason === 'install_failed'
+        && /^Failed to parse repository: unrecognized format$/i.test(decode(f.error64).trim());
+      repositoryLoadContexts.set(key, context);
+    }
+    // A separate addon-logo DNS exception is corroboration, not proof that
+    // the manifest was malformed. Require identical client/fixture/host.
+    const logoAt = raw.indexOf('FIELD_NATIVE_ADDON_LOGO ');
+    if (logoAt >= 0) {
+      const f = fields(raw.slice(logoAt).trim());
+      if (f.state === 'error' && Number(f.status) === 0
+          && decode(f.content_type64) === 'UnknownHostException') {
+        const key = repositoryKey(sourceLogIndex, f);
+        const context = repositoryLoadContexts.get(key) || {};
+        context.logoDnsHost = safeRepositoryHost(decode(f.host64));
+        repositoryLoadContexts.set(key, context);
+      }
+    }
+    const httpAt = raw.indexOf('FIELD_NATIVE_REPOSITORY_HTTP_RESPONSE ');
+    if (httpAt >= 0) {
+      const f = fields(raw.slice(httpAt).trim());
+      const status = Number(f.status);
+      if (f.kind === 'manifest' && Number.isInteger(status) && status >= 200 && status <= 599) {
+        const key = repositoryKey(sourceLogIndex, f);
+        const context = repositoryLoadContexts.get(key) || {};
+        context.explicitManifestHttpStatus = status;
+        repositoryLoadContexts.set(key, context);
+      }
+    }
     const loadAt = raw.indexOf('FIELD_NATIVE_PROVIDER_LOAD_ERROR ');
     if (loadAt >= 0) {
       const f = fields(raw.slice(loadAt).trim());
@@ -263,6 +329,7 @@ for (const [sourceLogIndex, file] of logPaths.entries()) {
         provider: decode(f.provider64).toLowerCase(),
         reason,
         failureClass,
+        __repositoryKey: repositoryKey(sourceLogIndex, f),
       });
     }
 
@@ -685,10 +752,19 @@ const appSelectionIssues = evidence.complete
     }))
   : [];
 const providerLoadIssues = evidence.complete ? [
-  ...providerLoadObservations.map((row) => ({
-    ...row,
-    ...providerLoadRepair(row),
-  })),
+  ...providerLoadObservations.map((observation) => {
+    const {__repositoryKey, ...row} = observation;
+    const correlation = repositoryLoadContexts.get(__repositoryKey) || {};
+    const corroboratedDns = row.reason === 'repository_install_failed'
+      && correlation.unrecognizedFormat === true
+      && correlation.manifestHost
+      && correlation.manifestHost === correlation.logoDnsHost
+      && correlation.explicitManifestHttpStatus === undefined;
+    const classified = corroboratedDns
+      ? {...row, failureClass: 'provider_repository_transport_dns_correlated'}
+      : row;
+    return {...classified, ...providerLoadRepair(classified)};
+  }),
   ...appSelectionIssues,
 ] : [];
 
@@ -753,7 +829,7 @@ const providerLoadPriorities = [...loadGrouped.values()]
     clients: [...new Set(rows.map((row) => row.client))].sort(),
     fixtures: [...new Set(rows.map((row) => row.fixture))].sort(),
     providerJsMutationAllowed: false,
-    coreOrManifestProposalAllowed: evidence.complete,
+    coreOrManifestProposalAllowed: rows.some((row) => row.coreOrManifestProposalAllowed === true),
     actions: rows[0].actions,
   }))
   .sort((a, b) => b.occurrences - a.occurrences || a.provider.localeCompare(b.provider));
@@ -1038,7 +1114,7 @@ const payload = {
     quickJsDiagnosticProviderMutationAllowed: false,
     clientSelectionProviderJsMutationAllowed: false,
     providerLoadJsMutationAllowed: false,
-    coreOrManifestLoadProposalAllowed: evidence.complete && providerLoadObservations.length > 0,
+    coreOrManifestLoadProposalAllowed: providerLoadIssues.some((row) => row.coreOrManifestProposalAllowed === true),
     capabilityLearningAllowed: false,
     capabilityPromotionRequiresIdentityProof: true,
     disabledProviderExtractionLearningAllowed: false,
