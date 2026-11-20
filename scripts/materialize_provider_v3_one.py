@@ -13,6 +13,7 @@ import copy
 import hashlib
 import json
 import os
+import re
 import urllib.parse
 from pathlib import Path
 
@@ -519,6 +520,50 @@ def project_authoritative_types(
 
 
 
+def _native_brain_origin_priority(provider_id: str) -> dict[str, object] | None:
+    raw = os.environ.get("NIAKVIO_NATIVE_BRAIN_ORIGIN_PRIORITY", "").strip()
+    if not raw:
+        return None
+    if allmat.materialization_context() != "workspace":
+        raise ValueError("Brain native origin priority is candidate-workspace only")
+    value = json.loads(raw)
+    if not isinstance(value, dict):
+        raise ValueError("invalid Brain native origin priority")
+    if value.get("experimentType") != "native-blocking-player-origin-priority":
+        raise ValueError("unsupported Brain native experiment")
+    if allmat.canonical_id(str(value.get("providerId") or "")) != allmat.canonical_id(provider_id):
+        raise ValueError("Brain native experiment provider mismatch")
+    if value.get("candidateOnly") is not True or value.get("generatedByBrain") is not True:
+        raise ValueError("Brain native experiment lost candidate provenance")
+    if any(value.get(flag) is not False for flag in (
+        "proofAuthority", "publicationAuthority", "nativePlaybackAuthority",
+        "providerMutationAuthority",
+    )):
+        raise ValueError("Brain native experiment cannot carry publication authority")
+    fingerprint = str(value.get("experimentFingerprint") or "").strip().casefold()
+    if not re.fullmatch(r"[a-f0-9]{64}", fingerprint):
+        raise ValueError("Brain native experiment fingerprint invalid")
+    host_re = re.compile(r"(?=.{1,253}$)[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?")
+    def hosts(key: str) -> list[str]:
+        out: list[str] = []
+        for item in value.get(key) or []:
+            host = str(item or "").strip().casefold().rstrip(".")
+            if host_re.fullmatch(host) and host not in out:
+                out.append(host)
+            if len(out) >= 4:
+                break
+        return out
+    preferred = hosts("preferredHosts")
+    deprioritized = [host for host in hosts("deprioritizedHosts") if host not in preferred]
+    if not preferred:
+        raise ValueError("Brain native experiment has no preferred host")
+    return {
+        "preferredHosts": preferred,
+        "deprioritizedHosts": deprioritized,
+        "experimentFingerprint": fingerprint,
+    }
+
+
 def materialize_one(
     provider_id: str,
     *,
@@ -615,6 +660,9 @@ def materialize_one(
     project_authoritative_types(entry, patch, capability)
     allmat.normalize_anime_transport_compatibility(entry)
     model = allmat.provider_model(provider_id, patch, capability, static_row)
+    native_brain_origin_priority = _native_brain_origin_priority(provider_id)
+    if native_brain_origin_priority:
+        model["nativeBlockingOriginPriority"] = native_brain_origin_priority
     if preserve_structured_data:
         # Provider-owned runtime Legos are executable authority in their own
         # right when the structured identity contract is explicit. This applies
@@ -784,6 +832,11 @@ def materialize_one(
         "devices": ["tv", "mobile", "desktop"],
         "legacyProviderJsExecuted": False,
         "upstreamJsExecuted": False,
+        "brainCandidateOriginPriority": bool(native_brain_origin_priority),
+        "brainCandidateExperimentFingerprint": (
+            str(native_brain_origin_priority.get("experimentFingerprint") or "")
+            if native_brain_origin_priority else ""
+        ),
         "securityHardening": {
             "changed": bool(security_report.get("changed")),
             "alreadyHardened": bool(security_report.get("alreadyHardened")),

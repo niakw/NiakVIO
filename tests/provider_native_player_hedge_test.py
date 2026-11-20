@@ -6,11 +6,16 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 source = (ROOT / "scripts/provider_base_store.py").read_text(encoding="utf-8")
+priority_start = source.index("function _spv29NativeBlockingQueueScore(url) {")
+priority_end = source.index("/* NIAKVIO_PROVIDER_PLAYER_FORM_HANDOFF_V18_8 */", priority_start)
+priority = source[priority_start:priority_end]
 start = source.index("async function _crawlDirectMedia(seedUrls, referer, maxDepth) {")
 end = source.index("function _candidateScore(url, meta)", start)
-crawl = source[start:end]
+crawl = priority + "\n" + source[start:end]
 assert "NIAKVIO_PROVIDER_NATIVE_PLAYER_HEDGE_V27" in crawl
 assert "NIAKVIO_PROVIDER_NATIVE_FETCH_CAPABILITY_GATE_V28" in crawl
+assert "NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29" in source
+assert "_spv29NativeBlockingQueueScore" in crawl
 assert 'globalThis.__nuvioNonBlockingNativeFetchV1 === true' in crawl
 assert 'nativeHedge = typeof globalThis.__native_fetch === "function"' not in crawl
 assert "Promise.race([Promise.all(workers), firstDirect])" in crawl
@@ -21,13 +26,14 @@ js = r"""
 const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const crawler = JSON.parse(process.env.CRAWL_CODE);
-function make(native, slowHost, fastHost, blockingNativeBridge=false, nonBlockingCapability=false) {
+function make(native, slowHost, fastHost, blockingNativeBridge=false, nonBlockingCapability=false, originPriority=null) {
   const requests = [];
   const starts = [];
   const f = {
     _spv187PrioritizedPlayerRoutes: x => x,
     _crawlEligible: () => true,
     _spv187QueueScore: x => x.includes('slow.example') ? 2 : 1,
+    NIAKVIO_PROVIDER_MODEL: originPriority ? {nativeBlockingOriginPriority:originPriority} : {},
     _crawlUrlScore: () => 0,
     _crawlCanonical: x => x,
     _crawlFollowable: () => false,
@@ -113,7 +119,20 @@ function make(native, slowHost, fastHost, blockingNativeBridge=false, nonBlockin
  assert.equal(misleading.length,1);
  assert.ok(Date.now()-startF>=140,
    'even a forged capability cannot make a blocking bridge concurrent');
- console.log('provider native hedge contract passed: opt-in-nonblocking-fast=true, official-sync-default-sequential=true, forged-sync-not-parallel=true, bounded=2');
+ const rule={preferredHosts:['fast.example'],deprioritizedHosts:['slow.example'],experimentFingerprint:'a'.repeat(64)};
+ const g=make(true,slow,fast,true,false,rule);
+ await g.f.testCrawl([slow,fast],'https://example.org',2);
+ assert.match(g.requests[0],/fast\.example/,
+   'Brain candidate priority must reorder the blocking native queue before the known 522 origin');
+ const h=make(false,slow,fast,false,false,rule);
+ await h.f.testCrawl([slow,fast],'https://example.org',2);
+ assert.match(h.requests[0],/slow\.example/,
+   'browser/Node ordering must remain unchanged by a native-only candidate');
+ const i=make(true,slow,fast,false,true,rule);
+ await i.f.testCrawl([slow,fast],'https://example.org',2);
+ assert.match(i.requests[0],/slow\.example/,
+   'explicit nonblocking native bridge keeps normal hedge scoring rather than candidate blocking order');
+ console.log('provider native hedge contract passed: opt-in-nonblocking-fast=true, official-sync-default-sequential=true, brain-blocking-origin-priority=true, nonnative-unchanged=true, bounded=2');
 })().catch(e=>{console.error(e);process.exitCode=1});
 """
 # Pass source through stdin to avoid env/code quoting for the dynamic function.

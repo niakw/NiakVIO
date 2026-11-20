@@ -542,6 +542,31 @@ def _normalize_identity_input(value: Any) -> dict[str, Any]:
         "requiredFields": list(dict.fromkeys(fields)),
     }
 
+def _normalize_native_blocking_origin_priority(value: Any) -> dict[str, Any] | None:
+    """Normalize a Brain-generated candidate-only blocking-native host priority."""
+    raw = value if isinstance(value, dict) else {}
+    host_re = re.compile(r"(?=.{1,253}$)[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?")
+    def hosts(key: str, limit: int) -> list[str]:
+        out: list[str] = []
+        for item in raw.get(key) or []:
+            host = str(item or "").strip().casefold().rstrip(".")
+            if host_re.fullmatch(host) and host not in out:
+                out.append(host)
+            if len(out) >= limit:
+                break
+        return out
+    preferred = hosts("preferredHosts", 4)
+    deprioritized = [host for host in hosts("deprioritizedHosts", 4) if host not in preferred]
+    fingerprint = str(raw.get("experimentFingerprint") or "").strip().casefold()
+    if not preferred or not re.fullmatch(r"[a-f0-9]{64}", fingerprint):
+        return None
+    return {
+        "preferredHosts": preferred,
+        "deprioritizedHosts": deprioritized,
+        "experimentFingerprint": fingerprint,
+    }
+
+
 def build_provider_data_model(
     provider_id: str,
     manifest_entry: dict[str, Any] | None = None,
@@ -564,6 +589,9 @@ def build_provider_data_model(
     supported = list(dict.fromkeys(supported))
     display_name = str(entry.get("name") or provider_id).strip() or provider_id
     incoming_model = provider_model if isinstance(provider_model, dict) else {}
+    native_origin_priority = _normalize_native_blocking_origin_priority(
+        incoming_model.get("nativeBlockingOriginPriority")
+    )
     return {
         "providerId": canonical_id(provider_id),
         "displayName": display_name,
@@ -610,6 +638,10 @@ def build_provider_data_model(
             for value in incoming_model.get("proofProtectedHosts") or []
             if str(value).strip()
         ][:24],
+        **(
+            {"nativeBlockingOriginPriority": native_origin_priority}
+            if native_origin_priority else {}
+        ),
         "searchRequestPlan": [
             {
                 "base": str(row.get("base") or "").strip(),
@@ -1176,6 +1208,23 @@ function _spv187QueueScore(url) {
   } catch (_) {}
   return _crawlUrlScore(url) + bonus;
 }
+/* NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29 */
+function _spv29NativeBlockingQueueScore(url) {
+  let score = _spv187QueueScore(url);
+  try {
+    if (typeof globalThis.__native_fetch !== "function" ||
+        globalThis.__nuvioNonBlockingNativeFetchV1 === true) return score;
+    const rule = NIAKVIO_PROVIDER_MODEL &&
+      NIAKVIO_PROVIDER_MODEL.nativeBlockingOriginPriority;
+    if (!rule || typeof rule !== "object") return score;
+    const host = _text(new URL(url).hostname).toLowerCase().replace(/\.$/, "");
+    const preferred = Array.isArray(rule.preferredHosts) ? rule.preferredHosts : [];
+    const deprioritized = Array.isArray(rule.deprioritizedHosts) ? rule.deprioritizedHosts : [];
+    if (preferred.includes(host)) score += 6000;
+    if (deprioritized.includes(host)) score -= 6000;
+  } catch (_) {}
+  return score;
+}
 /* NIAKVIO_PROVIDER_PLAYER_FORM_HANDOFF_V18_8 */
 function _spv188DecodeAttr(value) {
   return _text(value).replace(/&(amp|quot|#39);/gi, function(_match, entity) {
@@ -1308,7 +1357,7 @@ function _spv241ExplicitPlayerPayloadUrls(text, base) {
 /* NIAKVIO_PROVIDER_ADAPTIVE_PLAYER_FANOUT_V25 */
 /* NIAKVIO_PROVIDER_MULTI_VARIANT_FANOUT_V26 */
 async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
-  const rankedSeeds = _spv187PrioritizedPlayerRoutes(seedUrls).filter(_crawlEligible).sort((a,b)=>_spv187QueueScore(b)-_spv187QueueScore(a));
+  const rankedSeeds = _spv187PrioritizedPlayerRoutes(seedUrls).filter(_crawlEligible).sort((a,b)=>_spv29NativeBlockingQueueScore(b)-_spv29NativeBlockingQueueScore(a));
   // Enumerate bounded announced readers/sources before the final stream cap.
   // A page may legitimately expose 20+ language/server/quality choices.
   const seedCap = Math.min(32, Math.max(8, rankedSeeds.length));
@@ -1347,7 +1396,7 @@ async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
   }
   async function crawlWorker() {
   while (!hedgeStopped && queue.length && requests < requestBudget && streams.length < 40) {
-    queue.sort((a,b)=>_spv187QueueScore(b.url)-_spv187QueueScore(a.url));
+    queue.sort((a,b)=>_spv29NativeBlockingQueueScore(b.url)-_spv29NativeBlockingQueueScore(a.url));
     const row = queue.shift();
     if (!row || seen.has(row.url)) continue;
     seen.add(row.url);
