@@ -1825,9 +1825,9 @@
     },
     {
       "provider": "french-anime",
-      "status": "HARNESS MISMATCH",
+      "status": "NO PROOF",
       "underlyingStatus": "",
-      "color": "🟧",
+      "color": "🔵",
       "declaredLanes": [
         "anime"
       ],
@@ -1861,11 +1861,19 @@
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
-      "action": "GitHub-hosted IP/environment differential confirmed by private residential exit; keep provider JS unchanged and reproduce with native transport/playback before any code blame",
+      "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
-      "statusRepairEligible": false,
-      "repairEligible": false,
-      "testedThisRun": false
+      "statusRepairEligible": true,
+      "repairEligible": true,
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "french-manga",
@@ -5273,9 +5281,9 @@
     "CHAIN REACHED": 21,
     "DISABLED": 36,
     "FULL OK": 7,
-    "HARNESS MISMATCH": 5,
+    "HARNESS MISMATCH": 4,
     "HARNESS/ENV BLOCKED": 14,
-    "NO PROOF": 9,
+    "NO PROOF": 10,
     "PROOF REFRESH REQUIRED": 4,
     "PROVIDER JS BROKEN": 1,
     "PROVIDER NETWORK BLOCKED": 8,
@@ -5419,6 +5427,7 @@
     "anikototv",
     "anime-sama",
     "corsflix",
+    "french-anime",
     "french-manga",
     "frenchstream",
     "moiflix",
@@ -5605,16 +5614,10 @@
     "zone-streaming",
     "zone-telechargement"
   ],
-  "environmentQueue": [
-    "french-anime"
-  ],
-  "harnessMismatchQueue": [
-    "french-anime"
-  ],
+  "environmentQueue": [],
+  "harnessMismatchQueue": [],
   "environmentBlockedQueue": [],
-  "harnessQueue": [
-    "french-anime"
-  ],
+  "harnessQueue": [],
   "lastRepairAttempt": {
     "runId": "44804340229",
     "sourceCensusRunId": "",
@@ -5634,8 +5637,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "44804402534-sharded-waf",
-  "harnessEvidenceSha": "2a7804823409215228224aef1e4133132a338d07",
+  "harnessEvidenceRunId": "44805648794-waf-transport",
+  "harnessEvidenceSha": "6491322e33261d2606678518c1e81b4da596d200",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
@@ -5657,8 +5660,12 @@
   ],
   "networkDifferentialUpdatedProviders": [],
   "residentialProviderReplayPromotedProviders": [],
-  "residentialProviderReplayReclassifiedProviders": [],
-  "residentialProviderReplayRepairableProviders": [],
+  "residentialProviderReplayReclassifiedProviders": [
+    "french-anime"
+  ],
+  "residentialProviderReplayRepairableProviders": [
+    "french-anime"
+  ],
   "residentialExitNodeEvidence": {
     "enabled": true,
     "available": true,
@@ -6838,9 +6845,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "847f213e74ac1bd4322d7b2401f301a22a7e905e",
+          "sourceNiakvioSha": "245fb9232848b2710e9e84453b95b629612ea505",
           "providerBundleSha256": "0d571fa4301a0e4e71147fb8586308837fa5b970006e0907b69b1f707e3b29e3",
-          "runId": "44803860965",
+          "runId": "44805648794",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7751,26 +7758,22 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": false,
-      "providerCount": 0,
+      "available": true,
+      "providerCount": 1,
       "refreshedProviders": [
-        "1jour1film0626",
-        "aniflix-uno",
-        "animejlprovider",
-        "animeonsen",
-        "animesalt",
-        "arrowtv",
-        "chillflix",
-        "cinegram",
-        "cinetimes",
-        "corsflix"
+        "french-anime"
       ],
-      "replayedProviders": [],
+      "replayedProviders": [
+        "french-anime"
+      ],
       "rawProviders": [],
       "playableProviders": [],
       "verifiedProviders": [],
-      "sourceNiakvioSha": "",
-      "runId": "",
+      "byteMatchedProviders": [
+        "french-anime"
+      ],
+      "sourceNiakvioSha": "245fb9232848b2710e9e84453b95b629612ea505",
+      "runId": "44805648794",
       "proofAuthority": false,
       "publicationAuthority": false
     },
