@@ -128,6 +128,52 @@ with tempfile.TemporaryDirectory() as folder:
         {"kind": "hls", "sequence": 6, "host": "", "httpStatus": 200},
     ]
     assert x["quickJsErrors"] == ["reference_error"]
+    assert x["nativeSourceScriptShapePatterns"] == []
+    script_shape = report()
+    script_shape["sourceScriptShapeDiagnostics"] = [
+        {
+            "client": "tv", "provider": "demo", "fixture": "jujutsu-kaisen-s01e01",
+            "requestType": "anime", "phase": "provider-runtime-pre-player",
+            "expectedResource": "javascript_episode_source",
+            "pattern": "script_html_2xx", "httpStatusClass": "2xx",
+            "proofAuthority": False, "publicationAuthority": False,
+            "nativePlaybackAuthority": False, "providerJsMutationAllowed": False,
+            "coreOrManifestProposalAllowed": False,
+            "url": "https://PRIVATE.example/episodes.js?token=SECRET",
+            "rawHtml": "PRIVATE",
+        },
+        {
+            "client": "tv", "provider": "demo", "fixture": "jujutsu-kaisen-s01e01",
+            "requestType": "anime", "phase": "provider-runtime-pre-player",
+            "expectedResource": "javascript_episode_source",
+            "pattern": "script_http_missing", "httpStatusClass": "4xx",
+            "proofAuthority": False, "publicationAuthority": False,
+            "nativePlaybackAuthority": False, "providerJsMutationAllowed": False,
+            "coreOrManifestProposalAllowed": False,
+        },
+        {
+            "client": "tv", "provider": "demo", "fixture": "jujutsu-kaisen-s01e01",
+            "requestType": "anime", "phase": "provider-runtime-pre-player",
+            "expectedResource": "javascript_episode_source",
+            "pattern": "script_html_2xx", "httpStatusClass": "4xx",
+            "proofAuthority": False, "publicationAuthority": False,
+            "nativePlaybackAuthority": False, "providerJsMutationAllowed": False,
+            "coreOrManifestProposalAllowed": False,
+        },
+    ]
+    shape_row = mod.sanitized_rows(script_shape)[0]
+    assert shape_row["nativeSourceScriptShapePatterns"] == ["script_html_2xx", "script_http_missing"]
+    assert "PRIVATE" not in json.dumps(shape_row)
+    persisted_shape = mod.merge({}, [script_shape], source_root=root, source_sha=sha, run_id="1011")
+    assert persisted_shape["rows"][0]["nativeSourceScriptShapePatterns"] == ["script_html_2xx", "script_http_missing"]
+    assert mod.merge(persisted_shape, [], source_root=root, source_sha=sha, run_id="1012")["rows"][0][
+        "nativeSourceScriptShapePatterns"
+    ] == ["script_html_2xx", "script_http_missing"]
+    script_shape["sourceScriptShapeDiagnostics"][0]["providerJsMutationAllowed"] = True
+    assert mod.sanitized_rows(script_shape)[0]["nativeSourceScriptShapePatterns"] == ["script_http_missing"]
+    script_shape["appSelectionObservations"][0]["eligible"] = False
+    assert mod.sanitized_rows(script_shape)[0]["nativeSourceScriptShapePatterns"] == []
+
     assert x["quickJsPhases"] == ["call", "result", "error"]
     assert x["playerStates"] == []
     assert x["readerEvidenceComplete"] is False
