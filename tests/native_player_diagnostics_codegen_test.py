@@ -49,6 +49,12 @@ assert "R.string.cd_audio_tracks" in tv
 assert 'By.clazz("android.widget.RadioButton")' in tv
 assert "val audioTracks = probeTvAudioTracks" in tv
 assert "track.contentDescription" in tv
+assert 'Until.hasObject(By.clazz("android.widget.RadioButton")), 4500L' in tv
+assert "Until.hasObject(By.text(builtIn)), 2500L" in tv
+assert "normalizeTvVisibleLanguage" in tv
+assert "Locale.getAvailableLocales()" in tv
+assert "locale.getDisplayLanguage(Locale.ENGLISH)" in tv
+assert "locale.isO3Language.equals(direct" in tv
 assert "audio_track_count=${reader.audioTrackCount}" in tv
 assert "subtitle_track_count=${reader.subtitleTrackCount}" in tv
 assert "video_height=${reader.videoHeight}" in tv
