@@ -94,15 +94,49 @@ jobs:
             --ledger automation/brain-native-candidate-experiments.json \
             --brain-sha "$brain_sha"
 
+      - name: Upload bounded Brain TV next-action plan
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: brain-tv-route-${{ github.event.workflow_run.id }}
+          path: ${{ runner.temp }}/brain-tv-route.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Persist non-authoritative Brain TV diagnostic memory on main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ ! -f automation/brain-android-tv-emulator-history.json ]; then
+            echo "NIAKVIO_BRAIN_CANDIDATE_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+            echo "FIELD_BRAIN_ANDROID_TV_PERSIST status=no_diagnostic"
+            exit 0
+          fi
+          git add automation/brain-android-tv-emulator-history.json
+          if [ -f automation/brain-native-candidate-experiments.json ]; then
+            git add automation/brain-native-candidate-experiments.json
+          fi
+          if git diff --cached --quiet; then
+            echo "NIAKVIO_BRAIN_CANDIDATE_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+            echo "FIELD_BRAIN_ANDROID_TV_PERSIST status=no_new_observation"
+            exit 0
+          fi
+          git commit -m "ci(brain): retain exact-source Android TV emulator diagnostic evidence"
+          git fetch --quiet origin main
+          git rebase origin/main
+          git push origin HEAD:main
+          candidate_source_sha="$(git rev-parse HEAD)"
+          grep -q '_apply_native_brain_origin_priority_candidate' scripts/materialize_provider_v3_one.py
+          echo "NIAKVIO_BRAIN_CANDIDATE_SOURCE_SHA=$candidate_source_sha" >> "$GITHUB_ENV"
+          echo "FIELD_BRAIN_ANDROID_TV_PERSIST status=committed mutation_authority=false candidate_source_sha=$candidate_source_sha"
+
       - name: Dispatch one source-pinned Brain candidate experiment
         if: ${{ hashFiles('automation/brain-android-tv-emulator-history.json') != '' }}
         shell: bash
         run: |
           set -euo pipefail
-          if ! grep -q '_apply_native_brain_origin_priority_candidate' tested-source/scripts/materialize_provider_v3_one.py; then
-            echo "FIELD_BRAIN_NATIVE_CANDIDATE_DISPATCH status=skipped_superseded_source source_sha=$NATIVE_SOURCE_SHA reason=predates_candidate_only_compiler"
-            exit 0
-          fi
           candidate_count="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$NATIVE_RUN_ID/artifacts" \
             --jq '[.artifacts[].name | select(startswith("native-candidate-tv-"))] | length')"
           if [ "$candidate_count" != "0" ]; then
@@ -162,7 +196,6 @@ jobs:
           fi
           provider="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["provider"])' "$RUNNER_TEMP/brain-native-candidate.json")"
           fixture="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["fixture"])' "$RUNNER_TEMP/brain-native-candidate.json")"
-          experiment="$(python3 -c 'import json,sys; print(json.dumps(json.load(open(sys.argv[1]))["experiment"],sort_keys=True,separators=(",",":")))' "$RUNNER_TEMP/brain-native-candidate.json")"
           gh workflow run native-corpus-device-targeted.yml --repo "$GITHUB_REPOSITORY" --ref main \
             -f device=tv \
             -f target_providers="$provider" \
@@ -170,39 +203,6 @@ jobs:
             -f residential_exit=false \
             -f candidate_rematerialize=true \
             -f candidate_required_marker=NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29 \
-            -f source_sha="$NATIVE_SOURCE_SHA" \
-            -f brain_candidate_experiment_json="$experiment"
-          echo "FIELD_BRAIN_NATIVE_CANDIDATE_DISPATCH status=dispatched provider=$provider fixture=$fixture source_sha=$NATIVE_SOURCE_SHA publication=false"
+            -f source_sha="$NIAKVIO_BRAIN_CANDIDATE_SOURCE_SHA"
+          echo "FIELD_BRAIN_NATIVE_CANDIDATE_DISPATCH status=dispatched provider=$provider fixture=$fixture evidence_sha=$NATIVE_SOURCE_SHA candidate_source_sha=$NIAKVIO_BRAIN_CANDIDATE_SOURCE_SHA persisted_experiment=true publication=false"
 
-      - name: Upload bounded Brain TV next-action plan
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-        with:
-          name: brain-tv-route-${{ github.event.workflow_run.id }}
-          path: ${{ runner.temp }}/brain-tv-route.json
-          if-no-files-found: ignore
-          retention-days: 14
-
-      - name: Persist non-authoritative Brain TV diagnostic memory on main
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if [ ! -f automation/brain-android-tv-emulator-history.json ]; then
-            echo "FIELD_BRAIN_ANDROID_TV_PERSIST status=no_diagnostic"
-            exit 0
-          fi
-          git add automation/brain-android-tv-emulator-history.json
-          if [ -f automation/brain-native-candidate-experiments.json ]; then
-            git add automation/brain-native-candidate-experiments.json
-          fi
-          if git diff --cached --quiet; then
-            echo "FIELD_BRAIN_ANDROID_TV_PERSIST status=no_new_observation"
-            exit 0
-          fi
-          git commit -m "ci(brain): retain exact-source Android TV emulator diagnostic evidence"
-          git fetch --quiet origin main
-          git rebase origin/main
-          git push origin HEAD:main
-          echo "FIELD_BRAIN_ANDROID_TV_PERSIST status=committed mutation_authority=false"
