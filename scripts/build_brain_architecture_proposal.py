@@ -491,7 +491,8 @@ def source_contract_family_blueprint(
         "failureFamily": "catalogue_inline_episode_source",
         "targetLayer": "brain",
         "gapKind": "missing_source_contract_family_executable",
-        "requiresNewExecutableRepairProfile": True,
+        "requiresNewExecutableRepairProfile": False,
+        "requiresNewSourceFamilyLego": True,
         "forcePromotionEligible": True,  # Only an allowlisted Brain-layer candidate
         "providers": sorted(normalized),
         "providerCount": len(normalized),

@@ -1055,6 +1055,7 @@ def validate_materialized_edits(
             root=root,
             baseline_sources=profile_baselines,
         )
+        validate_source_family_implementation(changed, blueprint, root=root)
         validate_materialized_contracts(changed, root=root)
         return changed
     except ValueError as exc:
@@ -1101,6 +1102,134 @@ def validate_materialized_edits(
                 target.write_bytes(content)
             elif target.exists():
                 target.unlink()
+
+
+def validate_source_family_implementation(
+    changed: list[str],
+    blueprint: dict[str, Any] | None,
+    *,
+    root: Path = ROOT,
+) -> None:
+    """Do not promote an orphan Brain Lego, a test-only edit, or old route glue.
+
+    A source-family FORCE must materialize a new parser, actively wire it into
+    the existing Brain diagnostic path, and execute at least one bounded
+    synthetic multi-episode regression test. It never publishes provider JS.
+    """
+    if not _requires_new_source_family_lego(blueprint or {}):
+        return
+    modules = [
+        p for p in changed
+        if re.fullmatch(r"scripts/brain_layers/[a-z][a-z0-9_]{1,70}\.py", p)
+    ]
+    tests = [
+        p for p in changed
+        if re.fullmatch(r"tests/brain_[a-z][a-z0-9_]{1,70}_test\.py", p)
+    ]
+    if (
+        len(modules) != 1 or len(tests) != 1
+        or "scripts/brain_repair_runtime.py" not in changed
+        or len(changed) != 3
+    ):
+        raise ValueError(
+            "source-family FORCE requires 3 executable edits: new Brain "
+            "layer + real brain_repair_runtime wiring + synthetic regression test"
+        )
+    mod_path = root / modules[0]
+    test_path = root / tests[0]
+    module_name = Path(modules[0]).stem
+    mod_src = mod_path.read_text(encoding="utf-8")
+    test_src = test_path.read_text(encoding="utf-8")
+    if (
+        "eps1" not in test_src or "eps2" not in test_src
+        or "lien:" not in test_src or "assert" not in test_src
+    ):
+        raise ValueError("source-family test lacks independent episode index fixtures")
+    layer = ast.parse(mod_src, filename=modules[0])
+    if not any(
+        isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and node.name == "parse_episode_source"
+        for node in layer.body
+    ):
+        raise ValueError("source-family module lacks parse_episode_source executable API")
+    allowed_imports = {"re", "json", "typing", "dataclasses", "urllib.parse"}
+    for node in ast.walk(layer):
+        if isinstance(node, ast.Import):
+            if any(alias.name not in allowed_imports for alias in node.names):
+                raise ValueError("source-family Lego may only import pure parser primitives")
+        elif isinstance(node, ast.ImportFrom):
+            if node.module not in allowed_imports:
+                raise ValueError("source-family Lego may only import pure parser primitives")
+        elif isinstance(node, ast.Call):
+            fn = node.func
+            if isinstance(fn, ast.Name) and fn.id in {
+                "eval", "exec", "compile", "open", "__import__", "globals", "locals"
+            }:
+                raise ValueError("source-family Lego may not execute dynamic code or file I/O")
+    runtime = ast.parse(
+        (root / "scripts/brain_repair_runtime.py").read_text(encoding="utf-8"),
+        filename="scripts/brain_repair_runtime.py",
+    )
+    wired = False
+    for node in ast.walk(runtime):
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        if node.name not in {"_current_source_structural_repair_evidence", "update_plans"}:
+            continue
+        imports = [
+            alias.asname or alias.name
+            for unit in ast.walk(node)
+            if isinstance(unit, ast.ImportFrom)
+            and unit.module == f"brain_layers.{module_name}"
+            for alias in unit.names
+            if alias.name == "parse_episode_source"
+        ]
+        if imports and any(
+            isinstance(unit, ast.Call)
+            and isinstance(unit.func, ast.Name)
+            and unit.func.id in imports
+            for unit in ast.walk(node)
+        ):
+            wired = True
+    if not wired:
+        raise ValueError(
+            "source-family module is orphaned: existing Brain planning path "
+            "must import and call its parser"
+        )
+
+    # No network, credentials or working-tree changes should be necessary to
+    # prove the isolated parser contract. A failing test rejects the candidate.
+    test_tree = ast.parse(test_src, filename=tests[0])
+    for node in ast.walk(test_tree):
+        if isinstance(node, ast.Import):
+            if any(
+                alias.name not in {
+                    "sys", "json", "re", "pathlib", "importlib",
+                    "importlib.util", f"brain_layers.{module_name}"
+                }
+                for alias in node.names
+            ):
+                raise ValueError("source-family synthetic test uses forbidden dependencies")
+        elif isinstance(node, ast.ImportFrom):
+            if node.module not in {
+                "pathlib", "importlib", "importlib.util",
+                f"brain_layers.{module_name}"
+            }:
+                raise ValueError("source-family synthetic test uses forbidden dependencies")
+    result = subprocess.run(
+        [sys.executable, str(test_path)],
+        cwd=root, capture_output=True, text=True, timeout=35,
+        env={
+            "PATH": str(__import__("os").environ.get("PATH") or "/usr/bin"),
+            "PYTHONPATH": str(root / "scripts"),
+            "PYTHONDONTWRITEBYTECODE": "1",
+        },
+    )
+    if result.returncode != 0:
+        raise ValueError(
+            "source-family synthetic parser replay failed: "
+            + (result.stderr or result.stdout or "nonzero exit")[-350:]
+        )
 
 
 def select_blueprint(
@@ -1244,10 +1373,27 @@ def _focused_source_snippet(text: str, blueprint: dict[str, Any], limit: int) ->
     return candidates[0][2]
 
 
+def _requires_new_source_family_lego(value: dict[str, Any]) -> bool:
+    """A new source protocol needs a new compiler/Lego, not old route sources."""
+    blueprint = value.get("blueprint", value) if isinstance(value, dict) else {}
+    return (
+        isinstance(blueprint, dict)
+        and blueprint.get("requiresNewSourceFamilyLego") is True
+        and blueprint.get("gapKind") == "missing_source_contract_family_executable"
+        and blueprint.get("targetLayer") == "brain"
+        and blueprint.get("requiresNewExecutableRepairProfile") is False
+    )
+
+
 def source_context(blueprint: dict[str, Any], patterns: list[str]) -> dict[str, str]:
     layer = str(blueprint.get("targetLayer") or "")
     requires_new_profile = blueprint.get("requiresNewExecutableRepairProfile") is True
-    if requires_new_profile:
+    if _requires_new_source_family_lego(blueprint):
+        candidates = [
+            "scripts/brain_repair_runtime.py",
+            "scripts/brain_layers/declarative_gap_strategy.py",
+        ]
+    elif requires_new_profile:
         candidates = [
             "scripts/brain_repair_runtime.py",
             "engine_v2/scripts/plan-repairs.mjs",
@@ -1268,11 +1414,19 @@ def source_context(blueprint: dict[str, Any], patterns: list[str]) -> dict[str, 
             break
         if path_allowed(path, patterns) and (ROOT / path).is_file():
             text = (ROOT / path).read_text(encoding="utf-8")
-            snippet = _focused_source_snippet(
-                text,
-                blueprint,
-                min(MAX_SOURCE_SNIPPET, remaining),
-            )
+            if (
+                _requires_new_source_family_lego(blueprint)
+                and path == "scripts/brain_repair_runtime.py"
+            ):
+                start = text.find("def _current_source_structural_repair_evidence(")
+                stop = text.find("\ndef update_plans(", start)
+                snippet = text[start:stop][:min(MAX_SOURCE_SNIPPET, remaining)] if start >= 0 and stop > start else ""
+            else:
+                snippet = _focused_source_snippet(
+                    text,
+                    blueprint,
+                    min(MAX_SOURCE_SNIPPET, remaining),
+                )
             if snippet:
                 out[path] = snippet
                 remaining -= len(snippet)
@@ -1366,6 +1520,12 @@ def _branch_body_response_format() -> dict[str, Any]:
 def _model_edits(
     planned: dict[str, Any], payload: dict[str, Any], *, root: Path = ROOT,
 ) -> list[dict[str, Any]]:
+    if _requires_new_source_family_lego(payload):
+        if "recoveryProgram" in planned or "branchBody" in planned:
+            raise ValueError(
+                "new source family cannot be represented as legacy route recoveryProgram"
+            )
+        return [dict(row) for row in planned.get("edits") or [] if isinstance(row, dict)]
     if _requires_new_repair_profile(payload):
         if isinstance(planned.get("recoveryProgram"), dict):
             body = compile_recovery_program(planned["recoveryProgram"], max_chars=4200)
@@ -1414,6 +1574,7 @@ def _model_request(
 ) -> dict[str, Any]:
     blueprint = payload.get("blueprint") if isinstance(payload.get("blueprint"), dict) else {}
     requires_new_profile = blueprint.get("requiresNewExecutableRepairProfile") is True
+    source_family = _requires_new_source_family_lego(payload)
     if requires_new_profile:
         child = str(blueprint.get("strategyId") or "")
         parent = str(blueprint.get("evolvesFromStrategyId") or "")
@@ -1446,6 +1607,25 @@ def _model_request(
             system += " Keep the JSON short and schema-exact."
         if payload.get("correctionReason"):
             system += " Correct the strategy according to validationError. No code."
+    elif source_family:
+        system = (
+            "You are NiakVIO Brain's NEW SOURCE FAMILY Lego generator, NOT a "
+            "route traversal tuner. Return JSON {edits:[...]} only. "
+            "The old recoveryProgram cannot parse inline epsN, lien: tokens "
+            "or epsJeton; it is INVALID for this task. Make a reusable "
+            "network-free Brain layer under scripts/brain_layers/ with a "
+            "parse_episode_source(html,episode) function, handling multiple "
+            "episodes without eval or executing upstream JavaScript. "
+            "Add a real import/use by the existing Brain repair runtime "
+            "in scripts/brain_repair_runtime.py and a synthetic fixture "
+            "test under tests/brain_..._test.py; all THREE are required. "
+            "Code must preserve season, episode index and language, return "
+            "opaque tokens only, never invent player URLs, media proof, "
+            "hosts, secrets, signed links, or author provider JS. "
+            "Use exact substring from supplied runtime source for replace "
+            "(max 600 characters). New module plus real Brain wiring plus "
+            "test must execute and pass; do not claim publication or playback."
+        )
     else:
         system = (
             "You are NiakVIO Brain architecture FORCE materializer. "
@@ -1457,6 +1637,7 @@ def _model_request(
         )
         if compact:
             system += " Prefer one small replace edit."
+    if not requires_new_profile:
         exact_paths = [str(path) for path in payload.get("exactAllowedPaths") or [] if str(path)]
         if exact_paths:
             system += (
@@ -1978,6 +2159,28 @@ def call_model(endpoint: str, model: str, payload: dict[str, Any]) -> dict[str, 
             )
             return _parse_model_value(value)
 
+    # A genuinely new protocol cannot fit into the legacy recovery-program
+    # schema or a short generic architecture response. Give a bounded 7B
+    # source-Lego generation slot; the three edits still need real tests.
+    if _requires_new_source_family_lego(payload):
+        try:
+            value = _model_request(
+                endpoint, model, _compact_payload(payload),
+                max_tokens=1024, timeout=240, compact=True,
+            )
+            return _parse_model_value(value)
+        except (TimeoutError, ValueError) as exc:
+            print(
+                "FIELD_BRAIN_ARCH_FORCE_MODEL_RETRY "
+                f"reason={type(exc).__name__} mode=source-family-lego",
+                flush=True,
+            )
+            value = _model_request(
+                endpoint, model, _minimal_payload(payload),
+                max_tokens=1024, timeout=240, compact=True,
+            )
+            return _parse_model_value(value)
+
     # Generic architecture edits remain small and bounded.
     try:
         value = _model_request(
@@ -2469,8 +2672,36 @@ def validated_model_plan(
     raise current_error
 
 
-def _program_provenance(planned: dict[str, Any]) -> dict[str, Any]:
-    """Record a bounded model-authored strategy for exact future replay."""
+def _program_provenance(
+    planned: dict[str, Any], blueprint: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Persist non-sensitive program/diff fingerprints, never private media."""
+    if _requires_new_source_family_lego(blueprint or {}):
+        edits = [
+            row for row in planned.get("edits") or []
+            if isinstance(row, dict)
+        ]
+        descriptors = [
+            {
+                "operation": str(row.get("operation") or ""),
+                "path": str(row.get("path") or ""),
+                "contentSha256": hashlib.sha256(
+                    str(row.get("replace") or row.get("content") or "").encode("utf-8")
+                ).hexdigest(),
+            }
+            for row in edits
+        ]
+        encoded = json.dumps(descriptors, sort_keys=True, separators=(",", ":"))
+        return {
+            "generatorFormat": "source-family-brain-allowlisted-edits",
+            "programFingerprint": hashlib.sha256(encoded.encode("utf-8")).hexdigest(),
+            "editCount": len(descriptors),
+            "editDescriptors": descriptors,
+            "generatedSourceFamilyLego": True,
+            "providerMutationAuthority": False,
+            "nativePlaybackAuthority": False,
+            "priorOnlyUntilAppliedPlayback": True,
+        }
     program = planned.get("recoveryProgram")
     if isinstance(program, dict):
         compile_recovery_program(program)
@@ -2553,7 +2784,7 @@ def main() -> int:
         "productionProviderWritesAllowed": False,
         "requiresTargetedTests": True,
         "requiresRequiredCi": True,
-        **_program_provenance(planned),
+        **_program_provenance(planned, blueprint),
     }
     a.report.parent.mkdir(parents=True, exist_ok=True)
     a.report.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

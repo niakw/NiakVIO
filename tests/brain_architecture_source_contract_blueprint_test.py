@@ -42,7 +42,8 @@ assert blueprint["failureFamily"] == "catalogue_inline_episode_source"
 assert blueprint["gapKind"] == "missing_source_contract_family_executable"
 assert blueprint["providers"] == ["another-sibling", "sample-anime"]
 assert blueprint["forcePromotionEligible"] is True
-assert blueprint["requiresNewExecutableRepairProfile"] is True
+assert blueprint["requiresNewExecutableRepairProfile"] is False
+assert blueprint["requiresNewSourceFamilyLego"] is True
 assert blueprint["productionWritesAllowed"] is False
 assert blueprint["providerPublicationAuthority"] is False
 assert blueprint["targetLayer"] == "brain"
