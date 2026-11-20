@@ -168,18 +168,38 @@ def attest(root: Path, request: dict) -> tuple[dict, list[str]]:
     }, hosts
 
 
-class _NoRedirect(urllib.request.HTTPRedirectHandler):
+class _CuratedRedirect(urllib.request.HTTPRedirectHandler):
+    """At most two HTTPS hops within predeclared hosts and the same catalogue."""
+
+    max_redirections = 2
+    max_repeats = 2
+
+    def __init__(self, approved_hosts: tuple[str, ...], slug: str):
+        super().__init__()
+        self.approved_hosts = frozenset(approved_hosts)
+        self.prefix = "/catalogue/" + slug
+
     def redirect_request(self, req, fp, code, msg, headers, newurl):
-        return None
+        dest = urllib.parse.urljoin(req.full_url, newurl)
+        parsed = urllib.parse.urlsplit(dest)
+        valid_path = (
+            parsed.path == self.prefix
+            or parsed.path.startswith(self.prefix + "/")
+        )
+        if (not valid_path or parsed.query or parsed.fragment
+                or origin_host(dest) not in self.approved_hosts):
+            return None
+        return super().redirect_request(req, fp, code, msg, headers, dest)
 
 
-def fetch(url: str) -> tuple[int, str, bool, str, str]:
-    """No redirects, cookies or body persistence; expose only redirect hostname."""
+def fetch(url: str, *, approved_hosts: tuple[str, ...] = (),
+          slug: str = "") -> tuple[int, str, bool, str, str]:
+    """Only curated catalogue redirects, no cookies/media/body persistence."""
     request = urllib.request.Request(url, method="GET", headers={
         "User-Agent": "Mozilla/5.0 (compatible; NiakVIO-SourceContract-ReadOnly/1)",
         "Accept": "text/html,application/javascript,text/plain;q=0.8,*/*;q=0.5",
     })
-    opener = urllib.request.build_opener(_NoRedirect())
+    opener = urllib.request.build_opener(_CuratedRedirect(approved_hosts, slug))
     try:
         response = opener.open(request, timeout=TIMEOUT)
     except urllib.error.HTTPError as error:
@@ -190,7 +210,7 @@ def fetch(url: str) -> tuple[int, str, bool, str, str]:
         with response:
             status = int(response.status)
             location = response.headers.get("Location", "") if 300 <= status < 400 else ""
-            target = origin_host(location) if location else ""
+            target = origin_host(location) if location else origin_host(response.geturl())
             raw = response.read(MAX_BODY + 1)
             oversized = len(raw) > MAX_BODY
             return status, "" if oversized else raw.decode("utf-8", errors="replace"), oversized, "", target
@@ -211,7 +231,13 @@ def run(root: Path, request: dict, *, fetcher: Callable[[str], tuple[int, str, b
     observations = []
     for host in hosts:
         for kind, path in templates:
-            status, body, oversized, error, redirect_host = fetcher("https://" + host + path)
+            url = "https://" + host + path
+            if fetcher is fetch:
+                status, body, oversized, error, redirect_host = fetch(
+                    url, approved_hosts=tuple(hosts), slug=slug
+                )
+            else:
+                status, body, oversized, error, redirect_host = fetcher(url)
             if type(status) is not int or not 0 <= status <= 599:
                 raise ValueError("invalid probe transport status")
             if not isinstance(body, str) or len(body) > MAX_BODY or type(oversized) is not bool:
@@ -222,6 +248,8 @@ def run(root: Path, request: dict, *, fetcher: Callable[[str], tuple[int, str, b
             observations.append({
                 "originHost": host,
                 "routeKind": kind,
+                "responseHost": (redirect_host if status >= 200 and status < 300
+                                 and redirect_host in hosts else host),
                 "httpStatus": status,
                 "httpStatusClass": ("3xx" if 300 <= status < 400 else
                                     "transport" if status == 0 else result["httpStatusClass"]),
