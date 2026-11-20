@@ -1,3 +1,7 @@
+### 20 novembre — Prompt témoin source conservé et test intégré réussi
+
+Le test réel `44801579405` sur le Brain `154e80fa` a passé la porte qui échouait `44800473836` : preuve `catalogue_inline_token_episode` bien visible dans le prompt (< 7 600 chars), digest natif/mémoire parent appariés, zéro autorité de mutation/lecture. La capacité générique de raisonnement possède à présent le fait causal. [Learning `44801784391`](https://github.com/niakw/NiakVIO/actions/runs/44801784391) confronte Qwen à cette nouvelle entrée ; seul un candidat Brain généré, compilé, testé sur bytes et lu sur client pourra faire évoluer **0 réparation certifiée**.
+
 ### 20 novembre — Prompt LLM perdit la preuve inline, cause générique observée et fixée en code
 
 `44800473836` : `prompt_observations=2, source_visible=false` malgré deux expériences catalogue réellement ingestées ; bug situé dans `prompting.build_prompt_payload` et non dans le provider. Brain `154e80fa` conserve désormais un témoin natif/indépendant exactement source-pinné à travers la compaction LLM, sans droits média ni mutation. CI Brain `44801155443` et sécurité `44801155522` vertes. Gate suivant : test de prompt NiakVIO sur exact SHA, puis un nouveau Learning ciblé utilisant la preuve. Aucune réparation réelle, aucune activation pour quota.
