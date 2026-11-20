@@ -207,6 +207,8 @@ for needle in (
     "candidateStore.saveScraperCode(",
     "candidateStore.getScraperCode(",
     "candidateStore.deleteScraperCode(",
+    "FIELD_NATIVE_CANDIDATE_RESTORE_FAILED",
+    "restoredCode != previousCode",
     "kotlinx.coroutines.NonCancellable",
     "runtime=official_plugin_manager",
     "authority=diagnostic_only",
