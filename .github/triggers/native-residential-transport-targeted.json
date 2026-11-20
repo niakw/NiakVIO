@@ -7,10 +7,12 @@
   ],
   "targetFixture": "interstellar",
   "residentialExit": false,
-  "reason": "Purstream Interstellar official NuvioTV Android TV Core V20 exact-byte replay. v36 was a harness-only failure before Gradle/runtime because the player augmentation anchor did not yet include the newly added sanitized HLS variant CODECS field. Main now updates the producer, augmentation anchor and source-derived tests together, and fixes the TV language observer raw Unicode regex contract. No provider JS or production manifest changed.",
-  "requestVersion": 37,
-  "retryCause": "v36 run 44663739770 rematerialized exact V20 candidate b33f770216b48099... but aborted at prepare_native_corpus_validation augmentation with transport probe anchor count=0, before app/provider/player execution. v37 must reach official PluginManager exact candidate execution, production player, decoded video, FR+EN audio and integrated FR subtitle controls, emit variant_codecs64, restore exact prior provider bytes, and remain publication-blocked unless all media gates pass.",
-  "sourceImplementationSha": "f86d11811021c7eb8fcddcc1f1c6c0d414e33570",
+  "reason": "Purstream Interstellar official NuvioTV Android TV Core V20 exact-byte replay after v37 proved exact PluginManager execution, 1 returned source, decoded 1280x720 video, coherent HLS CODECS avc1.640028 + mp4a.40.2, FR+EN audio topology and integrated FR subtitle topology. v38 uses the corrected Compose TV observer on current main: visible language text fallback for Audio rows plus two-stage subtitle language/source materialization. Brain now classifies TV zero-after-control-found as harness_observation rather than provider/Media3 collapse. No provider source or production manifest mutation.",
+  "requestVersion": 38,
+  "retryCause": "v37 run 44663988153 executed exact candidate b33f770216b48099dbe1e64ed3b7b3a8ae54b6de3cb3cd4148c408b0012b9a24 via official PluginManager and restored exact previous bytes. Production player decoded 1280x720 for 10143.925s; transport exposed audio=2(fr,en), subtitles=1(fr), variant CODECS 720:avc1.640028|mp4a.40.2. v37 still used the old UiAutomator RadioButton-only observer and returned audio=0/subtitle=-1. v38 must prove production-visible FR+EN audio and integrated FR subtitle using current Compose-aware observer, while remaining fail-closed and publication=false unless all playback gates pass.",
+  "sourceImplementationSha": "bb71ecf9149bb5f24b2fad5e7736e4014d13f96b",
   "candidateRematerialize": true,
-  "candidateRequiredMarker": "NIAKVIO_HLS_TS_WRAPPED_AAC_RENDITION_V20"
+  "candidateRequiredMarker": "NIAKVIO_HLS_TS_WRAPPED_AAC_RENDITION_V20",
+  "provider": "purstream",
+  "fixture": "interstellar"
 }
