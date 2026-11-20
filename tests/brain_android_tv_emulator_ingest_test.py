@@ -37,6 +37,33 @@ def report(provider="demo", *, selected=True, returned=0, complete=False, one_sh
             "nativePlaybackAuthority": False, "providerJsMutationAllowed": False,
             "headers": {"Authorization": "SECRET"},
         }],
+        "prePlayerFetchHostOutcomes": [
+            {
+                "client": "tv", "provider": provider, "fixture": "jujutsu-kaisen-s01e01",
+                "requestType": "anime", "source": "plugin-runtime-fetch-sequence",
+                "phase": "provider-runtime-pre-player", "kind": "player-page",
+                "sequence": 4, "host": "vidzy.live", "httpStatus": 522,
+                "proofAuthority": False, "publicationAuthority": False,
+                "nativePlaybackAuthority": False, "providerJsMutationAllowed": False,
+                "url": "https://PRIVATE.example/embed?token=SECRET",
+            },
+            {
+                "client": "tv", "provider": provider, "fixture": "jujutsu-kaisen-s01e01",
+                "requestType": "anime", "source": "plugin-runtime-fetch-sequence",
+                "phase": "provider-runtime-pre-player", "kind": "player-page",
+                "sequence": 5, "host": "lplaygo.com", "httpStatus": 200,
+                "proofAuthority": False, "publicationAuthority": False,
+                "nativePlaybackAuthority": False, "providerJsMutationAllowed": False,
+            },
+            {
+                "client": "tv", "provider": provider, "fixture": "jujutsu-kaisen-s01e01",
+                "requestType": "anime", "source": "plugin-runtime-fetch-sequence",
+                "phase": "provider-runtime-pre-player", "kind": "hls",
+                "sequence": 6, "host": "", "httpStatus": 200,
+                "proofAuthority": False, "publicationAuthority": False,
+                "nativePlaybackAuthority": False, "providerJsMutationAllowed": False,
+            },
+        ],
         "prePlayerMediaRootTransitions": ([{
             "client": "tv", "provider": provider, "fixture": "jujutsu-kaisen-s01e01",
             "requestType": "anime", "source": "plugin-runtime-fetch-sequence",
@@ -95,6 +122,11 @@ with tempfile.TemporaryDirectory() as folder:
     assert x["nativeExtractionPositiveObserved"] is False
     assert x["sameMediaRootSuccessThenForbidden"] is False
     assert x["hlsPlaylist2xxNearProviderBudgetZeroObserved"] is False
+    assert x["nativePrePlayerHostOutcomes"] == [
+        {"kind": "player-page", "sequence": 4, "host": "vidzy.live", "httpStatus": 522},
+        {"kind": "player-page", "sequence": 5, "host": "lplaygo.com", "httpStatus": 200},
+        {"kind": "hls", "sequence": 6, "host": "", "httpStatus": 200},
+    ]
     assert x["quickJsErrors"] == ["reference_error"]
     assert x["quickJsPhases"] == ["call", "result", "error"]
     assert x["playerStates"] == []
@@ -105,7 +137,7 @@ with tempfile.TemporaryDirectory() as folder:
         assert x[flag] is False
         assert a[flag] is False
     wire = json.dumps(a)
-    for forbidden in ("PRIVATE", "Bearer", "SECRET", "Cookie", "https://", "rawError"):
+    for forbidden in ("PRIVATE", "Bearer", "SECRET", "Cookie", "https://", "rawError", "embed?"):
         assert forbidden not in wire, forbidden
 
     one_shot = mod.sanitized_rows(report(one_shot=True))[0]

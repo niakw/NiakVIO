@@ -21,6 +21,7 @@ SHA40 = re.compile(r"[0-9a-f]{40}")
 SHA64 = re.compile(r"[0-9a-f]{64}")
 IDENT = re.compile(r"[a-z0-9][a-z0-9_-]{0,95}")
 FIXTURE = re.compile(r"[a-z0-9][a-z0-9-]{0,95}")
+HOST = re.compile(r"(?=.{1,253}$)[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?")
 LANES = {"movie", "tv", "anime"}
 QUICKJS_PHASES = {"call", "result", "error", "missing_export"}
 TV_PROMISE_STATUSES = {"bridge_ok", "promise_delivery_gap", "baseline_failed"}
@@ -112,6 +113,7 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
                 "nativeExtractionReturnedCount": 0,
                 "sameMediaRootSuccessThenForbidden": False,
                 "hlsPlaylist2xxNearProviderBudgetZeroObserved": False,
+                "nativePrePlayerHostOutcomes": [],
                 "playerVideoFormatUnverified": False,
                 "independentTerminalHttpStatuses": [],
                 "playerStates": [], "playerFailureClasses": [],
@@ -229,6 +231,42 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
             # Only an owner-unknown, non-authoritative near-budget correlation.
             row["hlsPlaylist2xxNearProviderBudgetZeroObserved"] = True
 
+    # Preserve only route-scoped player host/status/order plus anonymous HLS
+    # success/failure ordering for candidate experiment selection. Paths, query
+    # strings, response bodies, headers and terminal-media hosts never enter
+    # this ledger. These rows remain historical diagnosis only.
+    for item in (report.get("prePlayerFetchHostOutcomes") or [])[:96]:
+        if not isinstance(item, dict):
+            continue
+        row = get(item)
+        host = str(item.get("host") or "").strip().lower()
+        kind = str(item.get("kind") or "")
+        status = item.get("httpStatus")
+        sequence = item.get("sequence")
+        host_safe = (kind == "hls" and host == "") or (kind == "player-page" and HOST.fullmatch(host))
+        if (
+            row is None
+            or item.get("source") != "plugin-runtime-fetch-sequence"
+            or item.get("phase") != "provider-runtime-pre-player"
+            or kind not in {"player-page", "hls"}
+            or not host_safe
+            or type(status) is not int or not 200 <= status <= 599
+            or type(sequence) is not int or not 1 <= sequence <= 999
+            or any(item.get(key) is not False for key in (
+                "proofAuthority", "publicationAuthority",
+                "nativePlaybackAuthority", "providerJsMutationAllowed",
+            ))
+        ):
+            continue
+        candidate = {
+            "kind": kind, "sequence": sequence,
+            "host": host, "httpStatus": status,
+        }
+        if candidate not in row["nativePrePlayerHostOutcomes"] and len(row["nativePrePlayerHostOutcomes"]) < 12:
+            row["nativePrePlayerHostOutcomes"].append(candidate)
+    for row in samples.values():
+        row["nativePrePlayerHostOutcomes"].sort(key=lambda value: value["sequence"])
+
     # HTTP status comes from an independent network probe, NOT an observed
     # player decoder/network result; it remains a bounded negative hypothesis.
     for item in (report.get("terminalTransportDiagnostics") or [])[:128]:
@@ -309,6 +347,7 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
             row["nativeExtractionZeroObserved"] = False
             row["nativeExtractionPositiveObserved"] = False
             row["nativeExtractionReturnedCount"] = 0
+            row["nativePrePlayerHostOutcomes"] = []
             row["playerVideoFormatUnverified"] = False
             row["independentTerminalHttpStatuses"] = []
             row["nativeHardTimeoutObserved"] = False
@@ -370,6 +409,27 @@ def merge(previous: dict[str, Any], reports: list[dict[str, Any]], *,
             "nativeExtractionReturnedCount": safe_count(record.get("nativeExtractionReturnedCount"))
                 if record.get("nativeExtractionPositiveObserved") is True else 0,
             "sameMediaRootSuccessThenForbidden": record.get("sameMediaRootSuccessThenForbidden") is True,
+            "hlsPlaylist2xxNearProviderBudgetZeroObserved": record.get("hlsPlaylist2xxNearProviderBudgetZeroObserved") is True,
+            "nativePrePlayerHostOutcomes": [
+                {
+                    "kind": str(value.get("kind") or ""),
+                    "sequence": value.get("sequence"),
+                    "host": str(value.get("host") or "").strip().lower(),
+                    "httpStatus": value.get("httpStatus"),
+                }
+                for value in (record.get("nativePrePlayerHostOutcomes") or [])[:12]
+                if isinstance(value, dict)
+                and value.get("kind") in {"player-page", "hls"}
+                and type(value.get("sequence")) is int and 1 <= value.get("sequence") <= 999
+                and (
+                    (value.get("kind") == "hls" and str(value.get("host") or "") == "")
+                    or (
+                        value.get("kind") == "player-page"
+                        and HOST.fullmatch(str(value.get("host") or "").strip().lower())
+                    )
+                )
+                and type(value.get("httpStatus")) is int and 200 <= value.get("httpStatus") <= 599
+            ],
             "playerVideoFormatUnverified": record.get("playerVideoFormatUnverified") is True,
             "independentTerminalHttpStatuses": sorted({
                 v for v in (record.get("independentTerminalHttpStatuses") or [])

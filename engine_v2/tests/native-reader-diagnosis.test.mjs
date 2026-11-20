@@ -599,6 +599,14 @@ try {
   const oneShot = JSON.parse(fs.readFileSync(oneShotOutput, 'utf8'));
   assert.equal(oneShot.prePlayerMediaRootTransitionObserved, 1);
   assert.equal(oneShot.prePlayerMediaRootTransitions.length, 1);
+  assert.equal(oneShot.prePlayerFetchHostOutcomeObserved, 1);
+  assert.equal(oneShot.prePlayerFetchHostOutcomes.length, 1);
+  assert.deepEqual(
+    [oneShot.prePlayerFetchHostOutcomes[0].kind,
+     oneShot.prePlayerFetchHostOutcomes[0].host,
+     oneShot.prePlayerFetchHostOutcomes[0].httpStatus],
+    ['hls', '', 200],
+  );
   const transition = oneShot.prePlayerMediaRootTransitions[0];
   assert.deepEqual(
     [transition.provider, transition.fixture, transition.requestType,

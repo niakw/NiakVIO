@@ -138,6 +138,7 @@ const quickJsPromiseControls = [];
 const nativeExecutionDiagnostics = [];
 const terminalTransportDiagnostics = [];
 const prePlayerMediaRootTransitions = [];
+const prePlayerFetchHostOutcomes = [];
 const transportTopologyByMedia = new Map();
 const TERMINAL_TRANSPORT_KINDS = new Set(['hls', 'dash', 'video', 'html', 'unknown']);
 const TERMINAL_TRANSPORT_STATES = new Set(['dead', 'error']);
@@ -161,6 +162,7 @@ for (const [sourceLogIndex, file] of logPaths.entries()) {
   // Ephemeral, route-scoped fact: a native provider received an HLS playlist
   // before returning zero. Never export the signed URL or infer the owner here.
   let hlsPlaylist2xxDuringRoute = false;
+  let prePlayerFetchSequence = 0;
   const mediaRootStatuses = new Map();
   for (const raw of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
     const beginAt = raw.indexOf('FIELD_NATIVE_PROVIDER_BEGIN ');
@@ -170,6 +172,7 @@ for (const [sourceLogIndex, file] of logPaths.entries()) {
       const fixture = String(b.fixture || '').trim().toLowerCase();
       const requestType = String(b.request_type || '').trim().toLowerCase();
       hlsPlaylist2xxDuringRoute = false;
+      prePlayerFetchSequence = 0;
       activeProviderRoute = (
         b.client === 'tv'
         && /^[a-z0-9][a-z0-9_-]{0,95}$/.test(provider)
@@ -185,6 +188,43 @@ for (const [sourceLogIndex, file] of logPaths.entries()) {
       if (match) {
         const status = Number(match[1]);
         const url = String(match[2] || '');
+        prePlayerFetchSequence += 1;
+        let parsedUrl = null;
+        try {
+          parsedUrl = new URL(url);
+        } catch (_) {
+          parsedUrl = null;
+        }
+        if (parsedUrl && Number.isInteger(status) && status >= 200 && status <= 599) {
+          const rawHost = String(parsedUrl.hostname || '').trim().toLowerCase();
+          const pathname = String(parsedUrl.pathname || '/');
+          const kind = /\.m3u8$/i.test(pathname)
+            ? 'hls'
+            : /(?:\/embed(?:[-/]|$)|\/e\/[^/]+)/i.test(pathname)
+              ? 'player-page'
+              : '';
+          const host = kind === 'player-page' ? rawHost : '';
+          const hostSafe = kind === 'hls'
+            || /^(?=.{1,253}$)[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/.test(host);
+          const routeKey = runtimeExecutionKey(activeProviderRoute);
+          if (
+            kind && hostSafe
+            && prePlayerFetchHostOutcomes.filter((row) =>
+              runtimeExecutionKey(row) === routeKey).length < 12
+          ) {
+            prePlayerFetchHostOutcomes.push({
+              ...activeProviderRoute,
+              source: 'plugin-runtime-fetch-sequence',
+              phase: 'provider-runtime-pre-player',
+              kind,
+              sequence: Math.min(999, prePlayerFetchSequence),
+              host,
+              httpStatus: status,
+              proofAuthority: false, publicationAuthority: false,
+              nativePlaybackAuthority: false, providerJsMutationAllowed: false,
+            });
+          }
+        }
         if (/\.m3u8(?:[?#]|$)/i.test(url) && Number.isInteger(status)) {
           if (status >= 200 && status < 300) hlsPlaylist2xxDuringRoute = true;
           const route = runtimeExecutionKey(activeProviderRoute);
@@ -959,6 +999,7 @@ const payload = {
   nativeExecutionDiagnosticObserved: nativeExecutionDiagnostics.length,
   terminalTransportDiagnosticObserved: terminalTransportDiagnostics.length,
   prePlayerMediaRootTransitionObserved: prePlayerMediaRootTransitions.length,
+  prePlayerFetchHostOutcomeObserved: prePlayerFetchHostOutcomes.length,
   quickJsUnverifiedObserved: quickJsUnverifiedObservations.length,
   readerLoadErrorEvidence: brainReaderRows.filter((row) => row.loadDurationMs > 0 || row.loadBytes > 0 || row.httpStatus > 0).length,
   observations,
@@ -971,6 +1012,7 @@ const payload = {
   nativeExecutionDiagnostics,
   terminalTransportDiagnostics,
   prePlayerMediaRootTransitions,
+  prePlayerFetchHostOutcomes,
   quickJsUnverifiedObservations,
   appSelectionObservations,
   appSelectionIssues,
