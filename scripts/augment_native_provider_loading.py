@@ -422,27 +422,42 @@ def replace_official_execution(text: str, client: str, candidate_execution_sha25
                     InstrumentationRegistry.getInstrumentation().targetContext.applicationContext,
                     NiakvioPluginManagerEntryPoint::class.java,
                 ).pluginDataStore()
-                candidateStore.saveScraperCode(loadedScraper.id, candidateCode)
-                val installedCode = candidateStore.getScraperCode(loadedScraper.id) ?: ""
-                val installedSha = java.security.MessageDigest.getInstance("SHA-256")
-                    .digest(installedCode.toByteArray(Charsets.UTF_8))
-                    .joinToString("") { "%02x".format(it.toInt() and 0xff) }
-                if (installedSha != candidateExpectedSha) {
-                    emit("FIELD_NATIVE_CANDIDATE_BYTE_MISMATCH client=tv provider64=${b64(provider.id)} stage=installed expected=$candidateExpectedSha actual=$installedSha")
-                    throw IllegalStateException("candidate installed code mismatch")
+                val previousCode = candidateStore.getScraperCode(loadedScraper.id)
+                try {
+                    candidateStore.saveScraperCode(loadedScraper.id, candidateCode)
+                    val installedCode = candidateStore.getScraperCode(loadedScraper.id) ?: ""
+                    val installedSha = java.security.MessageDigest.getInstance("SHA-256")
+                        .digest(installedCode.toByteArray(Charsets.UTF_8))
+                        .joinToString("") { "%02x".format(it.toInt() and 0xff) }
+                    if (installedSha != candidateExpectedSha) {
+                        emit("FIELD_NATIVE_CANDIDATE_BYTE_MISMATCH client=tv provider64=${b64(provider.id)} stage=installed expected=$candidateExpectedSha actual=$installedSha")
+                        throw IllegalStateException("candidate installed code mismatch")
+                    }
+                    emit("FIELD_NATIVE_CANDIDATE_RUNTIME_BYTE_CHECK client=tv provider64=${b64(provider.id)} sha256=$installedSha matched=true runtime=official_plugin_manager production_playback_authority=false")
+                    val candidateRows = officialPluginManager.executeScraper(loadedScraper, tmdbId, requestMediaType, season, episode)
+                    val afterCode = candidateStore.getScraperCode(loadedScraper.id) ?: ""
+                    val afterSha = java.security.MessageDigest.getInstance("SHA-256")
+                        .digest(afterCode.toByteArray(Charsets.UTF_8))
+                        .joinToString("") { "%02x".format(it.toInt() and 0xff) }
+                    if (afterSha != candidateExpectedSha) {
+                        emit("FIELD_NATIVE_CANDIDATE_BYTE_MISMATCH client=tv provider64=${b64(provider.id)} stage=after_execute expected=$candidateExpectedSha actual=$afterSha")
+                        throw IllegalStateException("candidate changed during official manager invocation")
+                    }
+                    emit("FIELD_NATIVE_CANDIDATE_RUNTIME_RESULT client=tv provider64=${b64(provider.id)} sha256=$afterSha count=${candidateRows.size} runtime=official_plugin_manager authority=diagnostic_only")
+                    candidateRows
+                } finally {
+                    // Isolated diagnostic, not a persistent override of the
+                    // official installed provider. Cancellation cannot retain
+                    // candidate bytes for the next fixture/client attempt.
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
+                        if (previousCode == null) {
+                            candidateStore.deleteScraperCode(loadedScraper.id)
+                        } else {
+                            candidateStore.saveScraperCode(loadedScraper.id, previousCode)
+                        }
+                    }
+                    emit("FIELD_NATIVE_CANDIDATE_RESTORED client=tv provider64=${b64(provider.id)} exact_previous_state=true diagnostic_only=true")
                 }
-                emit("FIELD_NATIVE_CANDIDATE_RUNTIME_BYTE_CHECK client=tv provider64=${b64(provider.id)} sha256=$installedSha matched=true runtime=official_plugin_manager production_playback_authority=false")
-                val candidateRows = officialPluginManager.executeScraper(loadedScraper, tmdbId, requestMediaType, season, episode)
-                val afterCode = candidateStore.getScraperCode(loadedScraper.id) ?: ""
-                val afterSha = java.security.MessageDigest.getInstance("SHA-256")
-                    .digest(afterCode.toByteArray(Charsets.UTF_8))
-                    .joinToString("") { "%02x".format(it.toInt() and 0xff) }
-                if (afterSha != candidateExpectedSha) {
-                    emit("FIELD_NATIVE_CANDIDATE_BYTE_MISMATCH client=tv provider64=${b64(provider.id)} stage=after_execute expected=$candidateExpectedSha actual=$afterSha")
-                    throw IllegalStateException("candidate changed during official manager invocation")
-                }
-                emit("FIELD_NATIVE_CANDIDATE_RUNTIME_RESULT client=tv provider64=${b64(provider.id)} sha256=$afterSha count=${candidateRows.size} runtime=official_plugin_manager authority=diagnostic_only")
-                candidateRows
             }""".replace("EXPECTED_SHA", kotlin_string(candidate_execution_sha256))
             if replacement.count(baseline_call) != 1:
                 raise SystemExit("native candidate oracle cannot locate unique official TV invocation")
