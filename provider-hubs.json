@@ -446,6 +446,16 @@
           "url": "https://anime-sama.wiki/",
           "priority": 110,
           "purpose": "Official primary and mirror access hub"
+        },
+        {
+          "type": "telegram_public",
+          "url": "https://t.me/animesama_officiel",
+          "priority": 90,
+          "role": "fallback",
+          "resolver": "latest_telegram_domain",
+          "purpose": "Official address fallback discovered from authoritative hub link",
+          "discovery": "authoritative_hub_link",
+          "discovered_from": "https://anime-sama.wiki/"
         }
       ],
       "search_confirmation_runs": 2,
@@ -1143,13 +1153,14 @@
       "manifest_status": "Active",
       "category": "International",
       "hub": "https://t.me/s/hindmoviez/1975",
-      "direct": "https://v4.hindmovie.im/",
+      "direct": "https://v5.hindmovie.im/",
       "source": "curated_user_registry",
       "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
       "aliases": [
         "hindmoviez"
       ],
       "direct_candidates": [
+        "https://v5.hindmovie.im/",
         "https://v4.hindmovie.im/",
         "https://v3.hindmovie.im/",
         "https://v2.hindmovie.im/",
@@ -1161,6 +1172,7 @@
         "https://joshmovies.cc/"
       ],
       "allowed_terminal_hosts": [
+        "v5.hindmovie.im",
         "v4.hindmovie.im",
         "v3.hindmovie.im",
         "v2.hindmovie.im",
@@ -1195,7 +1207,7 @@
       ],
       "direct_authority": "explicit_current",
       "direct_authority_source": "domain-refresh-authoritative-source",
-      "direct_authority_observed_at": "2026-11-12",
+      "direct_authority_observed_at": "2026-11-20",
       "last_verified": "2026-09-19"
     },
     "uhdmovies": {
