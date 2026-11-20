@@ -1,3 +1,7 @@
+### 20 novembre — Oracle réseau source-pinné : origine, slug, contrat d'épisode
+
+`44795490814` puis `44796024215` ont séparé HTTP 3xx, 4xx et HTML ; `44797193595` a introduit la recherche catalogue en GET ; `44797871788` a découvert un candidat `mushoku-tensei` sur deux origines contrôlées, alors que le slug `mushoku-tensei-jobless-reincarnation` donne 404 (origine/titre/saison exacts non prouvés). 12 requêtes depuis un runner GitHub, 0 inline tokens, aucune preuve Android TV. Prochaine porte : source-pinned target slug court -> confirmation identité catalogue/saison -> si positif, nouvelle stratégie Brain de découverte de routes et Lego générique -> compilation/candidat -> test NuvioTV vrai lecteur. Ne pas attribuer une cause commune ou déployer un domaine sur un 301. **Zéro réparation certifiée.**
+
 ### 20 novembre — Causalité des épisodes inline et documents Brain retrouvables
 
 La famille réelle Anime-Sama Android TV V42 a échoué (0 flux). Les deux Fast profils `adaptive_runtime_recovery` et `proven_route_terminal_traversal_v1` ont échoué malgré leur exécution. Le Learning `44790842551` a réellement appelé Qwen mais, sur Brain `5d0e1448`, n'a pas conçu de mécanisme inédit : il a gardé ces profils ou `search_contract_inference_v1` sans gain. **0 réparation**.
