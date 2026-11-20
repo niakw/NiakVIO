@@ -105,6 +105,22 @@ assert 'prepare_native_tv_tmdb_contract.py --repo-root niakvio --client-root nuv
 assert "matrix.manifest" in workflow and "matrix.projection" in workflow
 assert "Prime Android adb server" in workflow
 assert "prime_android_lab_adb.sh" in workflow
+# A cached guest's adb authorized key must match the already-running host
+# daemon. The fresh runner used to start ADB before restoring ~/.android/adb*;
+# it then booted successfully but remained "adb: device unauthorized" for
+# ten minutes (native run 44762494993, both isolated TV jobs).
+for device in ("Mobile", "TV"):
+    cache = workflow.index(f"Restore {device} AVD snapshot and matching debug signing key")
+    rebind = workflow.index(f"Rebind {device} adb authorization after AVD cache restore")
+    create = workflow.index(f"Create {device} AVD snapshot on cache miss")
+    assert cache < rebind < create
+    block = workflow[rebind:create]
+    assert "bash niakvio/scripts/prime_android_lab_adb.sh" in block
+    assert "guest_auth_bypass=false" in block
+assert workflow.count("FIELD_NATIVE_ADB_AUTH_REBOUND client=") == 2
+assert workflow.count("bash niakvio/scripts/prime_android_lab_adb.sh") == 3
+assert "adb disable-verity" not in workflow
+assert "adb root" not in workflow
 assert "avd-v6-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2" in workflow
 assert "avd-v6-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p" in workflow
 assert "~/.android/adb*" in workflow
