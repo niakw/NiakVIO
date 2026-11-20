@@ -6,6 +6,7 @@ import hashlib
 import importlib.util
 import json
 import tempfile
+import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -170,6 +171,19 @@ with tempfile.TemporaryDirectory() as td:
     assert probe.origin_host("https://user:pass@current.example") == ""
     assert probe.origin_host("https://current.example:8443/") == ""
     assert probe.origin_host("https://current.example/private?token=SECRET") == "current.example"
+    # Redirects cannot escape the declared current catalogue or trusted hosts.
+    handler = probe._CuratedRedirect(
+        ("current.example", "fallback.example"), "mushoku-tensei"
+    )
+    request_url = urllib.request.Request("https://current.example/catalogue/mushoku-tensei/")
+    def redirect(target: str):
+        return handler.redirect_request(request_url, None, 301, "Moved", {}, target)
+    assert redirect("https://evil.example/catalogue/mushoku-tensei/") is None
+    assert redirect("https://current.example/other/path") is None
+    assert redirect("http://fallback.example/catalogue/mushoku-tensei/") is None
+    assert redirect("https://fallback.example/catalogue/mushoku-tensei/?token=SECRET") is None
+    assert redirect("/catalogue/mushoku-tensei/saison1/vostfr/") is not None
+    assert redirect("https://fallback.example/catalogue/mushoku-tensei/saison1/vostfr/") is not None
     (root / "providers/sample.js").write_bytes(b"modified!")
     try:
         probe.attest(root, request)

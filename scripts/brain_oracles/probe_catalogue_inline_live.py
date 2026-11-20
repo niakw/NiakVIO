@@ -248,7 +248,7 @@ def run(root: Path, request: dict, *, fetcher: Callable[[str], tuple[int, str, b
             observations.append({
                 "originHost": host,
                 "routeKind": kind,
-                "responseHost": (redirect_host if status >= 200 and status < 300
+                "responseHost": (redirect_host if not 300 <= status < 400
                                  and redirect_host in hosts else host),
                 "httpStatus": status,
                 "httpStatusClass": ("3xx" if 300 <= status < 400 else
