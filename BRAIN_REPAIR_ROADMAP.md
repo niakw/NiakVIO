@@ -1,5 +1,10 @@
 # NiakVIO — Brain Repair Roadmap and Decision Register
 
+### 20 November — Shared ProviderBase / S00 source and materialization repaired, separate from Brain HLS outcome
+
+The earlier Core gate on a stale but declared `clean_reconstruction_verified` Anime-Sama ProviderBase is corrected at the *generic lifecycle reconstruction layer* in `fe2ce9b`, not by editing the provider's original JS. A second gate correctly revealed that the owned Anime-Sama episode Lego collapsed S00→S01; source fix `fe9d902` and executable Node ABI regression `71d882c`. Source-only changes were not counted as playback until the actual [Projection Reconcile 44702937178](https://github.com/niakw/NiakVIO/actions/runs/44702937178) SUCCESS wrote content-addressed published `anime-sama--nuvio--9e917c77346af2a5.js` on `8f5afd7` with S00 preservation and Core sanitizer maxProbes 40. Version 5.21.178 keeps all 4 manifest variants and both generation-retention policies at 10. Core/CodeQL on the published SHA remained ongoing at note time, native decode untested, **0 new accepted Brain-generated provider repairs**. The next work item is *still* the genuine Brain-generated Core HLS same-root strategy and official Android TV episode/segment/decoder/audio proof; do not treat this source repair as that product milestone.
+
+
 ### 20 November — Verified native negative learning → new Core decision (no provider fix yet)
 
 - V29 official NuvioTV run [44671941015](https://github.com/niakw/NiakVIO/actions/runs/44671941015): matching candidate JS bytes executed, **0** returned streams and zero video playback, baseline restored. Its missing post-run learning was due to a missing feedback invocation; a separate native post-job explicit `workflow_dispatch` (with narrow `actions: write` and original native job still read-only) and source-checked recovery is now present.
