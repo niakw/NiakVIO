@@ -57,7 +57,7 @@ assert "visibleLanguages.first().second.click()" in tv
 assert "Compose TV exposes Role.RadioButton inconsistently" in tv
 assert "device.wait(Until.findObject(By.desc(label)), 500L)" in tv
 assert "androidx.test.uiautomator.UiObject2?" in tv
-assert 'Until.hasObject(By.clazz("android.widget.RadioButton")), 4500L' in tv
+assert 'Until.hasObject(By.clazz("android.widget.RadioButton")), 1200L' in tv
 assert "Until.hasObject(By.text(builtIn)), 2500L" in tv
 assert "normalizeTvVisibleLanguage" in tv
 assert "Locale.getAvailableLocales()" in tv
