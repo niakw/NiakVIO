@@ -107,6 +107,25 @@ assert "candidateStore.saveScraperCode(" not in canonical.replace_official_execu
     candidate_tv_source, "tv"
 )
 
+# A candidate mode must never be silently enabled on a different client or
+# with an unhashed payload. These fail before reading any fixture or code.
+for probe_client, probe_sha in (
+    ("mobile", candidate_sha),
+    ("desktop", candidate_sha),
+    ("tv", "bad-digest"),
+    ("tv", candidate_sha.upper()),
+):
+    try:
+        canonical.augment(
+            Path("/not-present.kt"), probe_client, Path("/not-present.json"),
+            "https://raw.githubusercontent.com/niakw/NiakVIO/0123456789abcdef0123456789abcdef01234567/manifest.json",
+            "", candidate_execution_sha256=probe_sha,
+        )
+    except SystemExit as error:
+        assert "requires TV and exact SHA256" in str(error)
+    else:
+        raise AssertionError("unsafe native candidate mode was admitted")
+
 with tempfile.TemporaryDirectory() as raw_tmp:
     tmp = Path(raw_tmp)
     for client, (source, expected) in CASES.items():
