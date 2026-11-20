@@ -193,6 +193,7 @@ for needle in (
     "NIAKVIO_NATIVE_CANDIDATE_SHA256",
     "FIELD_NATIVE_CANDIDATE_ORACLE_FAILED",
     "FIELD_NATIVE_CANDIDATE_ORACLE_OBSERVED",
+    "FIELD_NATIVE_CANDIDATE_RESTORED",
     "official_plugin_manager=true",
     "production_playback_authority=false",
 ):
@@ -205,6 +206,8 @@ for needle in (
     "officialPluginManager.executeScraper(loadedScraper",
     "candidateStore.saveScraperCode(",
     "candidateStore.getScraperCode(",
+    "candidateStore.deleteScraperCode(",
+    "kotlinx.coroutines.NonCancellable",
     "runtime=official_plugin_manager",
     "authority=diagnostic_only",
 ):
