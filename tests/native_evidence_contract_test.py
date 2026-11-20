@@ -6,6 +6,7 @@ repository/provider loading, production player entry points, observational evide
 ordinary OS privileges and fail-closed Brain learning. Detailed codegen behavior has
 its own dedicated tests.
 """
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -344,5 +345,42 @@ for required in (
 ):
     assert required in diagnosis, required
 assert "FIELD_NATIVE_CAPABILITY_PROBE_REJECTED" in reader_gate
+
+# TRANSPORT_HELPERS is a Python RAW string emitting Kotlin triple-quoted
+# Regex strings. Double escaping wrongly matches literal backslashes, not
+# HLS audio/quality declarations. Execute the generated patterns on real shapes.
+assert "TRANSPORT_HELPERS = r'''" in native_corpus
+transport_source = native_corpus.split("TRANSPORT_HELPERS = r'''", 1)[1].split("\n'''", 1)[0]
+attribute_regex = re.search(
+    r'val match = Regex\(\s*"""(.*?)""",\s*RegexOption\.IGNORE_CASE',
+    transport_source, re.DOTALL,
+)
+assert attribute_regex is not None
+for key, value, example in (
+    ("TYPE", "AUDIO", 'TYPE=AUDIO,GROUP-ID="audio",LANGUAGE="fr"'),
+    ("GROUP-ID", "audio", 'TYPE=AUDIO,GROUP-ID="audio",LANGUAGE="fr"'),
+    ("LANGUAGE", "fr", 'TYPE=AUDIO,GROUP-ID="audio",LANGUAGE="fr"'),
+    ("LANGUAGE", "en", 'TYPE=AUDIO,GROUP-ID="audio",LANGUAGE="en"'),
+    ("TYPE", "SUBTITLES", 'TYPE=SUBTITLES,GROUP-ID="subs",LANGUAGE="fr"'),
+):
+    candidate = attribute_regex.group(1).replace("${key}", re.escape(key))
+    match = re.search(candidate, example, re.IGNORECASE)
+    assert match, (key, example, candidate)
+    parsed = match.group(1) or match.group(2)
+    assert parsed == value, (key, parsed, value)
+height_regex = re.search(
+    r'val height = Regex\("""(.*?)""", RegexOption\.IGNORE_CASE\)',
+    transport_source,
+)
+assert height_regex is not None
+for text, expected in (
+    ('BANDWIDTH=2200000,RESOLUTION=1280x720,AUDIO="audio"', 720),
+    ('BANDWIDTH=4600000,RESOLUTION = 1920x1080,AUDIO="audio"', 1080),
+    ('BANDWIDTH=14000000,RESOLUTION=3840x2160,AUDIO="audio"', 2160),
+):
+    match = re.search(height_regex.group(1), text, re.IGNORECASE)
+    assert match and int(match.group(1)) == expected, (text, height_regex.group(1))
+assert r'\\s*${key}' not in attribute_regex.group(1)
+assert r'RESOLUTION\\s*' not in height_regex.group(1)
 
 print("full native human UX evidence contract tests passed")

@@ -242,7 +242,7 @@ TRANSPORT_HELPERS = r'''
     private fun hlsAttribute(attrs: String, name: String): String {
         val key = Regex.escape(name)
         val match = Regex(
-            """(?:^|,)\\s*${key}\\s*=\\s*(?:"([^"]*)"|([^,\\s]*))""",
+            """(?:^|,)\s*${key}\s*=\s*(?:"([^"]*)"|([^,\s]*))""",
             RegexOption.IGNORE_CASE,
         ).find(attrs) ?: return ""
         return (match.groupValues.getOrNull(1)?.takeIf { it.isNotBlank() }
@@ -291,7 +291,7 @@ TRANSPORT_HELPERS = r'''
         lines.forEach { line ->
             if (!line.startsWith("#EXT-X-STREAM-INF", ignoreCase = true)) return@forEach
             val attrs = line.substringAfter(':', line)
-            val height = Regex("""RESOLUTION\\s*=\\s*\\d{2,5}\\s*[xX]\\s*(\\d{2,5})""", RegexOption.IGNORE_CASE)
+            val height = Regex("""RESOLUTION\s*=\s*\d{2,5}\s*[xX]\s*(\d{2,5})""", RegexOption.IGNORE_CASE)
                 .find(attrs)?.groupValues?.getOrNull(1)?.toIntOrNull() ?: 0
             variants += HlsVariantGroups(
                 height,
