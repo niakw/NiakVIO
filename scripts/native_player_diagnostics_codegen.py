@@ -118,7 +118,7 @@ TV_HELPERS = PROBE_MODEL + r'''
                     .filter { it.length >= 3 }
                     .distinct()
                     .any { alias ->
-                        Regex("""(^|[^\\p{L}])${Regex.escape(alias)}([^\\p{L}]|$)""")
+                        Regex("""(^|[^\p{L}])${Regex.escape(alias)}([^\p{L}]|$)""")
                             .containsMatchIn(lowered)
                     }
             }
