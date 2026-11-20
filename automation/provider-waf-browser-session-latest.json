@@ -56,8 +56,8 @@
     "exact failed provider GET replay is transport differential evidence only; it cannot grant playback proof"
   ],
   "counts": {
-    "browser_challenge_observed": 3,
-    "browser_challenge_persisted": 32,
+    "browser_challenge_observed": 4,
+    "browser_challenge_persisted": 31,
     "browser_content_reached": 19,
     "browser_inconclusive": 2
   },
@@ -2626,13 +2626,12 @@
       "challenge": "metadata-search-seed",
       "seedKind": "metadata-search",
       "seedRoute": "/?s={query}",
-      "outcome": "browser_challenge_persisted",
+      "outcome": "browser_challenge_observed",
       "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_challenge_observed",
-          "exitCode": 0
+          "outcome": "browser_timeout"
         },
         {
           "attempt": 2,
@@ -2646,13 +2645,12 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_challenge_persisted",
+          "outcome": "browser_challenge_observed",
           "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_challenge_observed",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             },
             {
               "attempt": 2,
@@ -2765,9 +2763,9 @@
         "exitCode": 0
       },
       "contentProfiles": [],
-      "transportDiagnosis": "waf_persisted_cross_transport",
+      "transportDiagnosis": "challenge_observed_unconfirmed",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 14151,
+      "durationMs": 17732,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -2807,16 +2805,16 @@
         ]
       },
       "transportReceipt": {
-        "sourceNiakvioSha": "0542b29ac85c60f61e485845b5ff860aa0d261f3",
+        "sourceNiakvioSha": "d0588fadf18bafcaf3bd08f4b7aadbff4faa358a",
         "providerBundleSha256": "0d571fa4301a0e4e71147fb8586308837fa5b970006e0907b69b1f707e3b29e3",
-        "runId": "44727591780",
+        "runId": "44729174305",
         "proofAuthority": false,
         "publicationAuthority": false
       },
       "residentialReceipt": {
-        "sourceNiakvioSha": "0542b29ac85c60f61e485845b5ff860aa0d261f3",
+        "sourceNiakvioSha": "d0588fadf18bafcaf3bd08f4b7aadbff4faa358a",
         "providerBundleSha256": "0d571fa4301a0e4e71147fb8586308837fa5b970006e0907b69b1f707e3b29e3",
-        "runId": "44727591780",
+        "runId": "44729174305",
         "proofAuthority": false,
         "publicationAuthority": false
       }
@@ -7127,9 +7125,9 @@
         "contradictions": 1,
         "identitySafe": false,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "0542b29ac85c60f61e485845b5ff860aa0d261f3",
+          "sourceNiakvioSha": "d0588fadf18bafcaf3bd08f4b7aadbff4faa358a",
           "providerBundleSha256": "0d571fa4301a0e4e71147fb8586308837fa5b970006e0907b69b1f707e3b29e3",
-          "runId": "44727591780",
+          "runId": "44729174305",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -8058,8 +8056,8 @@
       "byteMatchedProviders": [
         "french-anime"
       ],
-      "sourceNiakvioSha": "0542b29ac85c60f61e485845b5ff860aa0d261f3",
-      "runId": "44727591780",
+      "sourceNiakvioSha": "d0588fadf18bafcaf3bd08f4b7aadbff4faa358a",
+      "runId": "44729174305",
       "proofAuthority": false,
       "publicationAuthority": false
     },
@@ -8082,8 +8080,8 @@
     }
   },
   "freshRunReceipt": {
-    "sourceNiakvioSha": "0542b29ac85c60f61e485845b5ff860aa0d261f3",
-    "runId": "44727591780",
+    "sourceNiakvioSha": "d0588fadf18bafcaf3bd08f4b7aadbff4faa358a",
+    "runId": "44729174305",
     "providerCount": 1,
     "proofAuthority": false,
     "publicationAuthority": false
@@ -8091,7 +8089,7 @@
   "currentRefreshProviderCount": 1,
   "currentRefreshRowCount": 1,
   "currentRefreshCounts": {
-    "browser_challenge_persisted": 1
+    "browser_challenge_observed": 1
   },
   "historicalRetainedRowCount": 55,
   "historicalRetainedCounts": {
