@@ -52,6 +52,10 @@ assert "track.contentDescription" in tv
 assert "audio_track_count=${reader.audioTrackCount}" in tv
 assert "subtitle_track_count=${reader.subtitleTrackCount}" in tv
 assert "video_height=${reader.videoHeight}" in tv
+assert "diagnostic_first_frame_ms=${reader.diagnosticFirstFrameMs}" in tv
+assert "diagnostic_played=${reader.diagnosticPlayed}" in tv
+assert "diagnosticFirstFrameMs = diagnostics.firstFrameMs" in tv
+assert 'diagnosticPlayed = diagnostics.result.startsWith("Played", ignoreCase = true)' in tv
 assert "R.string.cd_subtitles" in tv
 assert "R.string.subtitle_built_in" in tv
 assert "diagnostics.videoResolution" in tv
@@ -235,7 +239,8 @@ tv_ready_unproven = reach_gate([
     "provider64=x request_type=anime route_mode=declared index=0 "
     "state=ready engine=nuvio-tv-production production_surface=true "
     "http_status=0 failure_stage=none duration_seconds=1435.007 "
-    "video_width=0 video_height=0 audio_track_count=0"
+    "video_width=0 video_height=0 audio_track_count=0 "
+    "diagnostic_first_frame_ms=500 diagnostic_played=true"
 ], blocking=True)
 assert tv_ready_unproven.returncode == 4, (
     tv_ready_unproven.stdout, tv_ready_unproven.stderr,
