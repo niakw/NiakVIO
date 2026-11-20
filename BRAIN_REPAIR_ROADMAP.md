@@ -1,5 +1,12 @@
 # NiakVIO — Brain Repair Roadmap and Decision Register
 
+### 20 November — Verified native negative learning → new Core decision (no provider fix yet)
+
+- V29 official NuvioTV run [44671941015](https://github.com/niakw/NiakVIO/actions/runs/44671941015): matching candidate JS bytes executed, **0** returned streams and zero video playback, baseline restored. Its missing post-run learning was due to a missing feedback invocation; a separate native post-job explicit `workflow_dispatch` (with narrow `actions: write` and original native job still read-only) and source-checked recovery is now present.
+- Real recovery [44699467173](https://github.com/niakw/NiakVIO/actions/runs/44699467173) → [44699484216](https://github.com/niakw/NiakVIO/actions/runs/44699484216) persisted `candidate_zero_stream`; next [44700219368](https://github.com/niakw/NiakVIO/actions/runs/44700219368) checked original source `27d67758` / official run `44669003629` and validated Brain `761a90e`, emitted and persisted `reuse_successful_hls_root_across_core_validation`, target Core, mode `llm_diagnose`, with no regenerated V29.
+- Remaining: `llm_diagnose` **does not mean an LLM actually ran** (`modelExecuted=false`). Brain must synthesize/reuse a generic Core HLS root strategy, compile and test the exact applied bytes, then prove the correct S01E01, audio FR, HLS segments and decoded output on official TV (and cross-client regression). **0** certified repairs. ProviderBase, 4 manifests and disabled retention stay intact.
+
+
 ### 20 November — V29 negative-memory routing correction (unit-tested, not a provider repair)
 
 Brain-LLM `761a90e` fixes a dead branch following V29: when the candidate runtime returned data but sanitized extraction was unconfirmed, the harness fallback previously returned before independent official-TV evidence of the *same HLS root* succeeding and then returning 403 could reach Core. The router now prefers that explicit 200→403 discriminator, but without it still selects harness observability; both paths have test coverage in [Brain CI 44697912505](https://github.com/niakw/NiakVIO-Brain-LLM/actions/runs/44697912505) (**SUCCESS**, exact `761a90e`). Parent gitlink advanced in `cd4e55e`. Native V29 re-execution, actual Core duplicate-fetch correction and terminal decoded correct episode/FR audio remain **not tested** by these commits. **0 Brain provider repairs certified.**
