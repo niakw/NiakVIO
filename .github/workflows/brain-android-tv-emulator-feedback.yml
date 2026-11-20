@@ -72,6 +72,529 @@ jobs:
             echo "FIELD_BRAIN_CANDIDATE_RECOVERY status=dispatched run=$candidate_run_id publication=false"
             exit 0
           done
+          # The V29 outcome can already be learned while its distinct V30
+          # follow-up has not yet been materialized (e.g. a workflow edit
+          # added V30 support after the original negative was persisted).
+          # Recover that *same immutable completed native run* once; do not
+          # rerun V29, infer URL credentials or dispatch from a document.
+          pending="$(gh api "repos/$GITHUB_REPOSITORY/contents/automation/brain-native-candidate-experiments.json" \
+            --jq '.content' | base64 --decode | jq -r '
+            [
+              .rows[]? as $parent
+              | select($parent.candidateOnly == true
+                  and $parent.generatedByBrain == true
+                  and $parent.publicationAuthority == false
+                  and $parent.providerMutationAuthority == false
+                  and (($parent.candidateFollowUpExperiments // []) | length) == 0)
+              | $parent.candidateBrainReroutes[]? as $route
+              | select($route.strategy == "reuse_successful_hls_root_across_core_validation"
+                  and $route.targetLayer == "core"
+                  and $route.modelExecuted == false
+                  and $route.validatedRepair == false)
+              | $parent.candidateAttempts[]?
+              | select(.candidateRunId == $route.candidateRunId
+                  and .candidateSourceSha == $route.candidateSourceSha
+                  and .candidateVerdict == "candidate_zero_stream"
+                  and .candidateExecutionObserved == true
+                  and .candidateRestoredObserved == true
+                  and .candidateDecodedVideoObserved == false
+                  and .validatedRepair == false
+                  and .publicationAllowed == false)
+              | [$route.candidateRunId, $route.candidateSourceSha] | @tsv
+            ] | unique | .[0] // empty
+          ')"
+          if [ -n "$pending" ]; then
+            IFS=
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.candidate_run_id != '' && inputs.candidate_source_sha != '') || (github.event_name == 'workflow_run' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.head_branch == 'main' && (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NATIVE_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.candidate_run_id || github.event.workflow_run.id }}
+      NATIVE_SOURCE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.candidate_source_sha || github.event.workflow_run.head_sha }}
+    steps:
+      - name: Verify upstream native execution provenance before loading artifacts
+        shell: bash
+        env:
+          FEEDBACK_EVENT: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          [[ "$NATIVE_RUN_ID" =~ ^[0-9]{8,20}$ ]]
+          [[ "$NATIVE_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$NATIVE_RUN_ID" |
+            jq -e --arg repo "$GITHUB_REPOSITORY" --arg sha "$NATIVE_SOURCE_SHA" --arg event "$FEEDBACK_EVENT" '
+              .head_repository.full_name == $repo
+              and .head_branch == "main"
+              and .head_sha == $sha
+              and .name == "NATIVE - Device Corpus Tests"
+              and (.event == "push" or .event == "workflow_dispatch")
+              and (.status == "completed" or ($event == "workflow_dispatch" and .status == "in_progress"))
+            ' >/dev/null
+          echo "FIELD_BRAIN_NATIVE_SOURCE_ATTESTED run=$NATIVE_RUN_ID sha=$NATIVE_SOURCE_SHA event=$FEEDBACK_EVENT"
+
+      - name: Checkout trusted current Brain control scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Checkout exact source executed by the native client
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.NATIVE_SOURCE_SHA }}
+          path: tested-source
+          persist-credentials: false
+
+      - name: Detect isolated Brain candidate replay
+        id: candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          count="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$NATIVE_RUN_ID/artifacts" \
+            --jq '[.artifacts[].name | select(startswith("native-candidate-tv-"))] | length')"
+          if [ "$count" = "0" ]; then
+            echo "is_candidate=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "$count" != "1" ]; then
+            echo "unexpected native candidate artifact count: $count" >&2
+            exit 1
+          fi
+          mkdir -p "$RUNNER_TEMP/native-candidate-evidence"
+          gh run download "$NATIVE_RUN_ID" --repo "$GITHUB_REPOSITORY" \
+            --pattern 'native-candidate-tv-*' \
+            --dir "$RUNNER_TEMP/native-candidate-evidence"
+          echo "is_candidate=true" >> "$GITHUB_OUTPUT"
+          echo "FIELD_BRAIN_NATIVE_CANDIDATE_SOURCE run=$NATIVE_RUN_ID artifact_count=1"
+
+      - name: Persist isolated Brain candidate verdict
+        if: ${{ steps.candidate.outputs.is_candidate == 'true' }}
+        id: verdict
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/persist_brain_native_candidate_verdict.py \
+            --artifacts "$RUNNER_TEMP/native-candidate-evidence" \
+            --ledger automation/brain-native-candidate-experiments.json \
+            --candidate-source-sha "$NATIVE_SOURCE_SHA" \
+            --candidate-run-id "$NATIVE_RUN_ID"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          proofs = list(Path(os.environ["RUNNER_TEMP"], "native-candidate-evidence").rglob(
+              "native-candidate-remat-proof.json"
+          ))
+          if len(proofs) != 1:
+              raise SystemExit("native followup requires exactly one source-checked proof")
+          payload = json.loads(proofs[0].read_text(encoding="utf-8"))
+          kind = payload.get("brainExperimentType") or "native-blocking-player-origin-priority"
+          if kind not in {"native-blocking-player-origin-priority", "native-hls-master-receipt-v30"}:
+              raise SystemExit("unexpected candidate experiment type")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write("candidate_type=" + kind + "\n")
+          print("FIELD_BRAIN_NATIVE_CANDIDATE_TYPE " + kind)
+          PY
+
+      - name: Validate ingest and safe history contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/brain_android_tv_emulator_ingest_test.py
+
+      - name: Import only already-sanitized official TV native diagnostic JSON
+        if: ${{ steps.candidate.outputs.is_candidate != 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/official-tv-evidence"
+          if ! gh run download "$NATIVE_RUN_ID" --repo "$GITHUB_REPOSITORY" \
+              --pattern 'native-corpus-tv-*' \
+              --dir "$RUNNER_TEMP/official-tv-evidence"; then
+            echo "FIELD_BRAIN_ANDROID_TV_ARTIFACT status=not_found run=$NATIVE_RUN_ID"
+            exit 0
+          fi
+          if ! find "$RUNNER_TEMP/official-tv-evidence" -name '*-brain.json' -type f -print -quit | grep -q .; then
+            echo "FIELD_BRAIN_ANDROID_TV_ARTIFACT status=no_sanitized_reports run=$NATIVE_RUN_ID"
+            exit 0
+          fi
+          python3 scripts/ingest_brain_android_tv_emulator.py \
+            --reports "$RUNNER_TEMP/official-tv-evidence" \
+            --source-root tested-source \
+            --source-sha "$NATIVE_SOURCE_SHA" \
+            --run-id "$NATIVE_RUN_ID" \
+            --ledger automation/brain-android-tv-emulator-history.json
+
+      - name: Resolve exact validated Brain router source
+        id: brain_pin
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          pin = json.loads(Path("automation/brain-pinned-source.json").read_text())
+          sha = str(pin.get("sha") or "")
+          if (pin.get("role") != "validated-external-brain-gitlink"
+              or pin.get("brainCiConclusion") != "success"
+              or pin.get("brainSecurityConclusion") != "success"
+              or re.fullmatch(r"[a-f0-9]{40}", sha) is None):
+              raise SystemExit("invalid validated Brain router source pin")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write("sha=" + sha + "\n")
+          PY
+
+      - name: Checkout the exact validated Brain causal router (advisor only)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: niakw/NiakVIO-Brain-LLM
+          ref: ${{ steps.brain_pin.outputs.sha }}
+          path: brain
+          persist-credentials: false
+
+      - name: Resolve source-pinned pre-candidate observation for negative learning
+        if: ${{ steps.candidate.outputs.is_candidate == 'true' && steps.verdict.outputs.candidate_type == 'native-blocking-player-origin-priority' }}
+        id: prior_tv
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          experiment = json.loads(Path("automation/brain-native-candidate-experiments.json").read_text())
+          history = json.loads(Path("automation/brain-android-tv-emulator-history.json").read_text())
+          if (experiment.get("authority") != "candidate-only"
+              or history.get("authority") != "official-android-tv-emulator-diagnostic-only"):
+              raise SystemExit("candidate or native observation authority invalid")
+          matches = []
+          for row in experiment.get("rows", []):
+              for attempt in row.get("candidateAttempts", []):
+                  if (str(attempt.get("candidateRunId")) == os.environ["NATIVE_RUN_ID"]
+                      and attempt.get("candidateSourceSha") == os.environ["NATIVE_SOURCE_SHA"]
+                      and attempt.get("candidateExecutionObserved") is True
+                      and attempt.get("validatedRepair") is False
+                      and attempt.get("publicationAllowed") is False):
+                      matches.append(row)
+          if len(matches) != 1:
+              raise SystemExit("candidate verdict lacks unique source-pinned experiment")
+          exp = matches[0]
+          source, run = str(exp.get("sourceNiakvioSha") or ""), str(exp.get("sourceRunId") or "")
+          if not re.fullmatch(r"[a-f0-9]{40}", source) or not re.fullmatch(r"[0-9]{8,20}", run):
+              raise SystemExit("invalid original official-TV source provenance")
+          observed = [row for row in history.get("rows", []) if (
+              row.get("provider") == exp.get("providerId")
+              and row.get("fixture") == exp.get("fixture")
+              and row.get("sourceNiakvioSha") == source
+              and str(row.get("nativeRunId")) == run
+              and row.get("providerArtifactSha256") == exp.get("providerArtifactSha256")
+              and all(row.get(k) is False for k in (
+                  "proofAuthority", "publicationAuthority",
+                  "nativePlaybackAuthority", "providerMutationAuthority"
+              ))
+          )]
+          if len(observed) != 1:
+              raise SystemExit("original native observation/provenance not uniquely recoverable")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write("source_sha=" + source + "\n")
+              out.write("run_id=" + run + "\n")
+          print("FIELD_BRAIN_CANDIDATE_PRIOR_EVIDENCE source=" + source + " run=" + run
+                + " fixture=" + str(exp["fixture"]) + " authority=diagnostic_only")
+          PY
+
+      - name: Checkout exact original provider bytes for post-candidate learning
+        if: ${{ steps.candidate.outputs.is_candidate == 'true' && steps.verdict.outputs.candidate_type == 'native-blocking-player-origin-priority' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ steps.prior_tv.outputs.source_sha }}
+          path: before-candidate
+          persist-credentials: false
+
+      - name: Route executed candidate negative through Brain once without rerunning V29
+        if: ${{ steps.candidate.outputs.is_candidate == 'true' && steps.verdict.outputs.candidate_type == 'native-blocking-player-origin-priority' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp automation/brain-android-tv-emulator-history.json \
+            before-candidate/automation/brain-android-tv-emulator-history.json
+          cp automation/brain-native-candidate-experiments.json \
+            before-candidate/automation/brain-native-candidate-experiments.json
+          brain_sha="$(git -C brain rev-parse HEAD)"
+          test "$brain_sha" = "${{ steps.brain_pin.outputs.sha }}"
+          PYTHONPATH=brain/src python3 brain/scripts/route_android_tv_emulator_feedback.py \
+            --niakvio-root before-candidate \
+            --source-sha "${{ steps.prior_tv.outputs.source_sha }}" \
+            --run-id "${{ steps.prior_tv.outputs.run_id }}" \
+            --output "$RUNNER_TEMP/brain-tv-route.json"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          plan = json.loads((Path(os.environ["RUNNER_TEMP"]) / "brain-tv-route.json").read_text())
+          routes = plan.get("routes", [])
+          if (len(routes) != 1
+              or plan.get("providerMutationAuthority") is not False
+              or plan.get("publicationAuthority") is not False
+              or plan.get("modelExecuted") is not False
+              or any(row.get("candidateExperiment") for row in routes)):
+              raise SystemExit("post-candidate route must be one diagnostic-only non-repeat plan")
+          row = routes[0]
+          ledger_path = Path("automation/brain-native-candidate-experiments.json")
+          ledger = json.loads(ledger_path.read_text())
+          run_id = os.environ["NATIVE_RUN_ID"]
+          source_sha = os.environ["NATIVE_SOURCE_SHA"]
+          experiments = [
+              item for item in ledger.get("rows", []) if (
+                  item.get("providerId") == row["provider"]
+                  and any(
+                      str(a.get("candidateRunId")) == run_id
+                      and a.get("candidateSourceSha") == source_sha
+                      and a.get("candidateExecutionObserved") is True
+                      for a in item.get("candidateAttempts", [])
+                  )
+              )
+          ]
+          if len(experiments) != 1:
+              raise SystemExit("post-candidate route not attributable to exact executed candidate")
+          experiment = experiments[0]
+          prior = [
+              r for r in experiment.get("candidateBrainReroutes", [])
+              if r.get("candidateRunId") != run_id
+          ][-7:]
+          prior.append({
+              "candidateRunId": run_id,
+              "candidateSourceSha": source_sha,
+              "observationRunId": plan["nativeRunId"],
+              "observationSourceSha": plan["sourceNiakvioSha"],
+              "targetLayer": row["targetLayer"],
+              "strategy": row["strategy"],
+              "mode": row["mode"],
+              "modelExecuted": False,
+              "validatedRepair": False,
+              "publicationAuthority": False,
+              "providerMutationAuthority": False,
+          })
+          experiment["candidateBrainReroutes"] = prior
+          ledger_path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n")
+          print("FIELD_BRAIN_CANDIDATE_NEXT provider=" + str(row["provider"])
+                + " layer=" + str(row["targetLayer"]) + " strategy=" + str(row["strategy"])
+                + " generated_candidate=false publication=false")
+          PY
+          PYTHONPATH=scripts python3 scripts/persist_brain_native_hls_followup.py \
+            --route "$RUNNER_TEMP/brain-tv-route.json" \
+            --ledger automation/brain-native-candidate-experiments.json \
+            --brain-sha "$brain_sha" \
+            --candidate-run-id "$NATIVE_RUN_ID" \
+            --candidate-source-sha "$NATIVE_SOURCE_SHA"
+
+      - name: Route the exact TV replay through Brain as diagnosis only
+        if: ${{ steps.candidate.outputs.is_candidate != 'true' && hashFiles('automation/brain-android-tv-emulator-history.json') != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp automation/brain-android-tv-emulator-history.json \
+            tested-source/automation/brain-android-tv-emulator-history.json
+          if [ -f automation/brain-native-candidate-experiments.json ]; then
+            cp automation/brain-native-candidate-experiments.json \
+              tested-source/automation/brain-native-candidate-experiments.json
+          fi
+          brain_sha="$(git -C brain rev-parse HEAD)"
+          echo "FIELD_BRAIN_ANDROID_TV_ROUTER_SHA sha=$brain_sha"
+          PYTHONPATH=brain/src python3 brain/scripts/route_android_tv_emulator_feedback.py \
+            --niakvio-root tested-source \
+            --source-sha "$NATIVE_SOURCE_SHA" \
+            --run-id "$NATIVE_RUN_ID" \
+            --output "$RUNNER_TEMP/brain-tv-route.json"
+          python3 scripts/persist_brain_native_candidate_experiments.py \
+            --route "$RUNNER_TEMP/brain-tv-route.json" \
+            --ledger automation/brain-native-candidate-experiments.json \
+            --brain-sha "$brain_sha"
+
+      - name: Upload bounded Brain TV next-action plan
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: brain-tv-route-${{ env.NATIVE_RUN_ID }}
+          path: ${{ runner.temp }}/brain-tv-route.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Persist non-authoritative Brain TV diagnostic memory on main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ ! -f automation/brain-android-tv-emulator-history.json ] && [ ! -f automation/brain-native-candidate-experiments.json ]; then
+            echo "NIAKVIO_BRAIN_CANDIDATE_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+            echo "FIELD_BRAIN_ANDROID_TV_PERSIST status=no_diagnostic"
+            exit 0
+          fi
+          git add automation/brain-android-tv-emulator-history.json
+          if [ -f automation/brain-native-candidate-experiments.json ]; then
+            git add automation/brain-native-candidate-experiments.json
+          fi
+          if git diff --cached --quiet; then
+            echo "NIAKVIO_BRAIN_CANDIDATE_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+            echo "FIELD_BRAIN_ANDROID_TV_PERSIST status=no_new_observation"
+            exit 0
+          fi
+          git commit -m "ci(brain): retain exact-source Android TV emulator diagnostic evidence"
+          git fetch --quiet origin main
+          git rebase origin/main
+          git push origin HEAD:main
+          candidate_source_sha="$(git rev-parse HEAD)"
+          grep -q '_apply_native_brain_origin_priority_candidate' scripts/materialize_provider_v3_one.py
+          echo "NIAKVIO_BRAIN_CANDIDATE_SOURCE_SHA=$candidate_source_sha" >> "$GITHUB_ENV"
+          echo "FIELD_BRAIN_ANDROID_TV_PERSIST status=committed mutation_authority=false candidate_source_sha=$candidate_source_sha"
+
+      - name: Dispatch once the distinct Brain V30 Core receipt candidate
+        if: ${{ steps.candidate.outputs.is_candidate == 'true' && steps.verdict.outputs.candidate_type == 'native-blocking-player-origin-priority' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$RUNNER_TEMP/brain-tv-route.json" "$RUNNER_TEMP/brain-v30-dispatch.json" <<'PY'
+          import json, os, re, sys
+          from pathlib import Path
+          route_path, output_path = map(Path, sys.argv[1:])
+          if not route_path.is_file():
+              raise SystemExit(0)
+          plan = json.loads(route_path.read_text(encoding="utf-8"))
+          rows = plan.get("routes") or []
+          if len(rows) != 1 or not isinstance(rows[0], dict):
+              raise SystemExit("V30 dispatch requires exactly one official-TV route")
+          follow = rows[0].get("followupCoreExperiment")
+          if not follow:
+              raise SystemExit(0)
+          provider, fixture = str(follow.get("providerId") or ""), str(follow.get("fixture") or "")
+          if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,95}", provider) or not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,95}", fixture):
+              raise SystemExit("V30 dispatch has invalid provider/fixture")
+          ledger = json.loads(Path("automation/brain-native-candidate-experiments.json").read_text(encoding="utf-8"))
+          matches = [
+              candidate for row in ledger.get("rows") or []
+              if isinstance(row, dict) and row.get("providerId") == provider
+              for candidate in row.get("candidateFollowUpExperiments") or []
+              if isinstance(candidate, dict)
+              and candidate.get("experimentType") == "native-hls-master-receipt-v30"
+              and candidate.get("experimentFingerprint") == follow.get("experimentFingerprint")
+              and candidate.get("candidateOnly") is True
+              and candidate.get("generatedByBrain") is True
+              and candidate.get("publicationAuthority") is False
+              and candidate.get("providerMutationAuthority") is False
+          ]
+          if len(matches) != 1:
+              raise SystemExit("V30 dispatch has no unique persisted follow-up")
+          if matches[0].get("candidateAttempts"):
+              print("FIELD_BRAIN_V30_DISPATCH status=already_executed")
+              raise SystemExit(0)
+          output_path.write_text(json.dumps({"provider": provider, "fixture": fixture}, sort_keys=True), encoding="utf-8")
+          PY
+          if [ ! -s "$RUNNER_TEMP/brain-v30-dispatch.json" ]; then
+            echo "FIELD_BRAIN_V30_DISPATCH status=no_new_unexecuted_candidate publication=false"
+            exit 0
+          fi
+          provider="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["provider"])' "$RUNNER_TEMP/brain-v30-dispatch.json")"
+          fixture="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["fixture"])' "$RUNNER_TEMP/brain-v30-dispatch.json")"
+          gh workflow run native-corpus-device-targeted.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f device=tv \
+            -f target_providers="$provider" \
+            -f target_fixture="$fixture" \
+            -f residential_exit=false \
+            -f candidate_rematerialize=true \
+            -f candidate_required_marker=NIAKVIO_PROVIDER_NATIVE_HLS_ROOT_RECEIPT_V30 \
+            -f source_sha="$NIAKVIO_BRAIN_CANDIDATE_SOURCE_SHA"
+          echo "FIELD_BRAIN_V30_DISPATCH status=dispatched provider=$provider fixture=$fixture candidate_source_sha=$NIAKVIO_BRAIN_CANDIDATE_SOURCE_SHA publication=false"
+
+      - name: Dispatch one source-pinned Brain candidate experiment
+        if: ${{ steps.candidate.outputs.is_candidate != 'true' && hashFiles('automation/brain-android-tv-emulator-history.json') != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          candidate_count="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$NATIVE_RUN_ID/artifacts" \
+            --jq '[.artifacts[].name | select(startswith("native-candidate-tv-"))] | length')"
+          if [ "$candidate_count" != "0" ]; then
+            echo "FIELD_BRAIN_NATIVE_CANDIDATE_DISPATCH status=skipped_candidate_source run=$NATIVE_RUN_ID"
+            exit 0
+          fi
+          if [ ! -s "$RUNNER_TEMP/brain-tv-route.json" ]; then
+            echo "FIELD_BRAIN_NATIVE_CANDIDATE_DISPATCH status=no_route run=$NATIVE_RUN_ID"
+            exit 0
+          fi
+          python3 - "$RUNNER_TEMP/brain-tv-route.json" "$RUNNER_TEMP/brain-native-candidate.json" <<'PY'
+          import json
+          import re
+          import sys
+
+          source, output = sys.argv[1:]
+          plan = json.load(open(source, encoding="utf-8"))
+          rows = [
+              row for row in plan.get("routes") or []
+              if isinstance(row, dict) and isinstance(row.get("candidateExperiment"), dict)
+          ]
+          if not rows:
+              raise SystemExit(0)
+          if len(rows) != 1:
+              raise SystemExit("candidate dispatch is bounded to exactly one provider/fixture")
+          row = rows[0]
+          exp = row["candidateExperiment"]
+          provider = str(row.get("provider") or "")
+          fixture = str(row.get("fixture") or "")
+          if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,95}", provider):
+              raise SystemExit("invalid candidate provider")
+          if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,95}", fixture):
+              raise SystemExit("invalid candidate fixture")
+          if (
+              exp.get("providerId") != provider
+              or exp.get("fixture") != fixture
+              or exp.get("sourceNiakvioSha") != plan.get("sourceNiakvioSha")
+              or str(exp.get("sourceRunId") or "") != str(plan.get("nativeRunId") or "")
+          ):
+              raise SystemExit("candidate route provenance mismatch")
+          if exp.get("candidateOnly") is not True or exp.get("generatedByBrain") is not True:
+              raise SystemExit("candidate route lacks Brain provenance")
+          if any(exp.get(flag) is not False for flag in (
+              "proofAuthority", "publicationAuthority",
+              "nativePlaybackAuthority", "providerMutationAuthority",
+          )):
+              raise SystemExit("candidate route unexpectedly carries authority")
+          with open(output, "w", encoding="utf-8") as handle:
+              json.dump(
+                  {"provider": provider, "fixture": fixture, "experiment": exp},
+                  handle, sort_keys=True, separators=(",", ":"),
+              )
+          PY
+          if [ ! -s "$RUNNER_TEMP/brain-native-candidate.json" ]; then
+            echo "FIELD_BRAIN_NATIVE_CANDIDATE_DISPATCH status=no_experiment run=$NATIVE_RUN_ID"
+            exit 0
+          fi
+          provider="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["provider"])' "$RUNNER_TEMP/brain-native-candidate.json")"
+          fixture="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["fixture"])' "$RUNNER_TEMP/brain-native-candidate.json")"
+          gh workflow run native-corpus-device-targeted.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f device=tv \
+            -f target_providers="$provider" \
+            -f target_fixture="$fixture" \
+            -f residential_exit=false \
+            -f candidate_rematerialize=true \
+            -f candidate_required_marker=NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29 \
+            -f source_sha="$NIAKVIO_BRAIN_CANDIDATE_SOURCE_SHA"
+          echo "FIELD_BRAIN_NATIVE_CANDIDATE_DISPATCH status=dispatched provider=$provider fixture=$fixture evidence_sha=$NATIVE_SOURCE_SHA candidate_source_sha=$NIAKVIO_BRAIN_CANDIDATE_SOURCE_SHA persisted_experiment=true publication=false"
+
+\t' read -r candidate_run_id candidate_source_sha <<< "$pending"
+            [[ "$candidate_run_id" =~ ^[0-9]{8,20}$ ]]
+            [[ "$candidate_source_sha" =~ ^[0-9a-f]{40}$ ]]
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$candidate_run_id" |
+              jq -e --arg sha "$candidate_source_sha" --arg repo "$GITHUB_REPOSITORY" '
+                .head_sha == $sha and .head_repository.full_name == $repo
+                and .head_branch == "main" and .name == "NATIVE - Device Corpus Tests"
+                and .event == "workflow_dispatch" and .status == "completed"
+              ' >/dev/null
+            count="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$candidate_run_id/artifacts" \
+              --jq '[.artifacts[] | select(.name | startswith("native-candidate-tv-"))] | length')"
+            if [ "$count" = "1" ]; then
+              gh workflow run brain-android-tv-emulator-feedback.yml --repo "$GITHUB_REPOSITORY" --ref main \
+                -f candidate_run_id="$candidate_run_id" -f candidate_source_sha="$candidate_source_sha"
+              echo "FIELD_BRAIN_V30_RECOVERY status=dispatched_negative_feedback run=$candidate_run_id publication=false"
+              exit 0
+            fi
+            echo "FIELD_BRAIN_V30_RECOVERY status=blocked_artifact_count count=$count run=$candidate_run_id"
+          fi
           echo "FIELD_BRAIN_CANDIDATE_RECOVERY status=no_unlearned_candidate"
 
   ingest:

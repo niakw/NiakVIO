@@ -91,6 +91,15 @@ for needle in (
         assert needle in workflow, needle
 assert workflow.count("  ingest:\n") == 1
 assert workflow.count("  recover-missed-candidate:\n") == 1
+assert "FIELD_BRAIN_V30_RECOVERY status=dispatched_negative_feedback" in workflow
+assert "candidateFollowUpExperiments // []" in workflow
+assert 'and .candidateVerdict == "candidate_zero_stream"' in workflow
+assert "and .candidateRestoredObserved == true" in workflow
+assert "candidate_run_id=\"$candidate_run_id\"" in workflow
+assert "candidate_source_sha=\"$candidate_source_sha\"" in workflow
+assert "and .head_branch == \"main\" and .name == \"NATIVE - Device Corpus Tests\"" in workflow
+assert workflow.index("FIELD_BRAIN_V30_RECOVERY status=dispatched_negative_feedback") < workflow.index("  ingest:")
+
 assert workflow.index("Verify upstream native execution provenance") < workflow.index("Detect isolated Brain candidate replay")
 assert 'github.event_name == \'workflow_dispatch\'' in workflow
 assert "github.event.workflow_run.head_sha" in workflow
