@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -12,6 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import prepare_native_candidate_remat as native
+from provider_base_store import build_provider_data_model
 
 ledger = json.loads((ROOT / "automation/brain-native-candidate-experiments.json").read_text())
 assert ledger["authority"] == "candidate-only"
@@ -58,6 +60,53 @@ validated = native._validate_brain_hls_receipt_experiment(
 assert validated["experimentType"] == "native-hls-master-receipt-v30"
 assert validated["experimentFingerprint"] == payload["experimentFingerprint"]
 assert native.V30_MARKER in native.REQUIRED_MARKERS
+
+# Catch the source->DATA serialization gap, not merely a compiled marker.
+# The exact candidate fingerprint must survive ProviderBase normalization;
+# production publication rejects this candidate-only field.
+prev_context = os.environ.get("NUVIO_PROVIDER_V3_CONTEXT")
+try:
+    os.environ["NUVIO_PROVIDER_V3_CONTEXT"] = "workspace"
+    model = build_provider_data_model(
+        "french-manga", {"name": "French Manga", "supportedTypes": ["anime"]},
+        provider_model={"nativeHlsRootReceiptV30": {
+            "experimentFingerprint": payload["experimentFingerprint"],
+        }},
+    )
+    assert model["nativeHlsRootReceiptV30"] == {
+        "experimentFingerprint": payload["experimentFingerprint"]
+    }
+    ordinary = build_provider_data_model("french-manga", {"supportedTypes": ["anime"]})
+    assert "nativeHlsRootReceiptV30" not in ordinary
+    for bad in (
+        {"experimentFingerprint": "not-a-sha"},
+        {"experimentFingerprint": payload["experimentFingerprint"], "url": "https://secret.example"},
+        {"experimentFingerprint": payload["experimentFingerprint"].upper()},
+    ):
+        try:
+            build_provider_data_model(
+                "french-manga", provider_model={"nativeHlsRootReceiptV30": bad},
+            )
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("invalid/private V30 DATA was accepted")
+    os.environ["NUVIO_PROVIDER_V3_CONTEXT"] = "release"
+    try:
+        build_provider_data_model(
+            "french-manga", provider_model={"nativeHlsRootReceiptV30": {
+                "experimentFingerprint": payload["experimentFingerprint"]
+            }},
+        )
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("V30 must not be allowed in production release DATA")
+finally:
+    if prev_context is None:
+        os.environ.pop("NUVIO_PROVIDER_V3_CONTEXT", None)
+    else:
+        os.environ["NUVIO_PROVIDER_V3_CONTEXT"] = prev_context
 
 for key, replacement in [
     ("providerArtifactSha256", "f" * 64),
