@@ -144,6 +144,25 @@ try {
   assert.equal(topology.readerHealthy, 0);
   assert.equal(topology.providerEligibleReaderFailures, 2);
   assert.equal(topology.policy.productionWritesAllowed, false);
+
+  // Multiple evidence files can contain the same client/fixture/provider/index.
+  // Never let one run's HLS expectations contaminate another run's player row.
+  const isolatedLog = path.join(tmp, 'tv-track-topology-isolated-second-run.log');
+  const isolatedOutput = path.join(tmp, 'tv-track-topology-isolated.json');
+  fs.writeFileSync(isolatedLog, common.join('\n') + '\n');
+  spawnSync(process.execPath, [
+    script, '--output', isolatedOutput, topologyLog, isolatedLog,
+  ], { cwd: root, encoding: 'utf8' });
+  const isolated = JSON.parse(fs.readFileSync(isolatedOutput, 'utf8'));
+  const purstreamRows = isolated.observations.filter((row) =>
+    row.provider === 'purstream' && row.observationLayer === 'player');
+  assert.equal(purstreamRows.length, 2);
+  assert.equal(
+    purstreamRows.filter((row) => row.failureClass === 'playback_audio_tracks_unverified').length,
+    1,
+  );
+  assert.equal(purstreamRows.filter((row) => row.failureClass === 'healthy').length, 1);
+
   assert.equal(data.clientRuntimeReaderFailures, 0);
   assert.equal(data.evidenceStats.providerLoads, 2);
   assert.equal(data.evidenceStats.repositoryHttpRequests, 1);
