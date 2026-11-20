@@ -1,3 +1,7 @@
+### 20 novembre — Débloquer le modèle de décision, pas seulement le RAG
+
+Le diagnostic Anime-Sama a une preuve indépendante source-pinnée de protocole inline sur le slug court, mais l'ancien Learning `44801784391` n'a émis que des profils déjà négatifs malgré le témoin visible. Cause structurelle : une confiance prior >=0,90 imposait une stratégie et une couche dans le JSON Schema **et** dans la validation finale. Brain `7eefe860` ouvre un seul cas : un témoin de source contradictoire attesté par parent TV, en mode advisor-only, sans mutation. CI `44802794507`, mémoire `44802796194`, sécurité `44802795417` success. **Suite** : nouvelle exécution Qwen sur ce SHA, distinguer proposition nouvelle de fallback, adapter le Lego/compiler seulement après preuve, replay source-pinned Android TV ; 0 repair certifié.
+
 ### 20 novembre — Prompt témoin source conservé et test intégré réussi
 
 Le test réel `44801579405` sur le Brain `154e80fa` a passé la porte qui échouait `44800473836` : preuve `catalogue_inline_token_episode` bien visible dans le prompt (< 7 600 chars), digest natif/mémoire parent appariés, zéro autorité de mutation/lecture. La capacité générique de raisonnement possède à présent le fait causal. [Learning `44801784391`](https://github.com/niakw/NiakVIO/actions/runs/44801784391) confronte Qwen à cette nouvelle entrée ; seul un candidat Brain généré, compilé, testé sur bytes et lu sur client pourra faire évoluer **0 réparation certifiée**.
