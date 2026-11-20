@@ -83,17 +83,23 @@ candidate_tv = canonical.replace_official_execution(
     candidate_tv_source, "tv", candidate_sha
 )
 assert "officialPluginManager.enabledScrapers.first().any" in candidate_tv
-assert "officialPluginManager.executeScraper(loadedScraper" not in candidate_tv
-assert "candidateRuntime.executePlugin(" in candidate_tv
-assert "code = candidateCode" in candidate_tv
-assert "sha256=$candidateSha matched=true runtime=official_plugin_runtime" in candidate_tv
+assert "officialPluginManager.executeScraper(loadedScraper, tmdbId" in candidate_tv
+assert "candidateRuntime.executePlugin(" not in candidate_tv
+assert "fun pluginDataStore(): com.nuvio.tv.data.local.PluginDataStore" in canonical.tv_helpers(
+    "https://raw.githubusercontent.com/niakw/NiakVIO/0123456789abcdef0123456789abcdef01234567/manifest.json", []
+)
+assert "candidateStore.saveScraperCode(loadedScraper.id, candidateCode)" in candidate_tv
+assert candidate_tv.count("candidateStore.getScraperCode(loadedScraper.id)") == 2
+assert "sha256=$installedSha matched=true runtime=official_plugin_manager" in candidate_tv
 assert "candidate asset byte mismatch" in candidate_tv
+assert "candidate installed code mismatch" in candidate_tv
+assert "candidate changed during official manager invocation" in candidate_tv
 assert "FIELD_NATIVE_CANDIDATE_RUNTIME_RESULT" in candidate_tv
+assert "runtime=official_plugin_manager authority=diagnostic_only" in candidate_tv
 assert "production_playback_authority=false" in candidate_tv
-assert "authority=diagnostic_only" in candidate_tv
 assert candidate_sha in candidate_tv
 assert "https://example.invalid" not in candidate_tv
-assert "candidateRuntime.executePlugin(" not in canonical.replace_official_execution(
+assert "candidateStore.saveScraperCode(" not in canonical.replace_official_execution(
     candidate_tv_source, "tv"
 )
 
