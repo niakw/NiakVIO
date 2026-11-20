@@ -54,7 +54,26 @@ assert "subtitle_track_count=${reader.subtitleTrackCount}" in tv
 assert "video_height=${reader.videoHeight}" in tv
 assert "diagnostic_first_frame_ms=${reader.diagnosticFirstFrameMs}" in tv
 assert "diagnostic_played=${reader.diagnosticPlayed}" in tv
+assert "diagnostic_late_format=${reader.diagnosticLateFormat}" in tv
+assert "initialDiagnostics.videoResolution.isNullOrBlank()" in tv
+assert "withTimeoutOrNull(0L)" in tv
 assert "diagnosticFirstFrameMs = diagnostics.firstFrameMs" in tv
+# The bounded late-format second observation belongs only to the exact-byte
+# native candidate oracle. Normal cohorts must not pay a per-provider wait.
+old_candidate_sha = os.environ.get("NIAKVIO_NATIVE_CANDIDATE_SHA256")
+try:
+    os.environ["NIAKVIO_NATIVE_CANDIDATE_SHA256"] = "a1" * 32
+    tv_candidate = finalizer.finalize_source(
+        mod.augment_android_test(source("tv"), client="tv", expected_duration_minutes=137), "tv"
+    )
+    assert "withTimeoutOrNull(4500L)" in tv_candidate
+    assert "diagnosticLateFormat = diagnostics !== initialDiagnostics" in tv_candidate
+    assert 'row.result.startsWith("Error", ignoreCase = true)' in tv_candidate
+finally:
+    if old_candidate_sha is None:
+        os.environ.pop("NIAKVIO_NATIVE_CANDIDATE_SHA256", None)
+    else:
+        os.environ["NIAKVIO_NATIVE_CANDIDATE_SHA256"] = old_candidate_sha
 assert 'diagnosticPlayed = diagnostics.result.startsWith("Played", ignoreCase = true)' in tv
 assert "R.string.cd_subtitles" in tv
 assert "R.string.subtitle_built_in" in tv

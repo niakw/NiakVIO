@@ -9,6 +9,7 @@ fallback. Independent transport diagnostics run only after the player observatio
 """
 from __future__ import annotations
 
+import os
 from typing import Iterable
 
 ANDROID_IMPORT_ANCHOR = "import android.util.Log\n"
@@ -74,6 +75,7 @@ PROBE_MODEL = r'''
         // tunneled READY. This marker is observational, never decode proof.
         val diagnosticFirstFrameMs: Long = -1L,
         val diagnosticPlayed: Boolean = false,
+        val diagnosticLateFormat: Boolean = false,
     )
 
     private val niakvioPlayerProbeLock = Any()
@@ -200,13 +202,33 @@ TV_HELPERS = PROBE_MODEL + r'''
                     NuvioNavHost(navController = navController, startDestination = route)
                 }
             }
-            val diagnostics = runBlocking {
+            val initialDiagnostics = runBlocking {
                 withTimeout(__PLAYER_TIMEOUT_MS__L) {
                     store.lastPlaybackDiagnostics.first { row ->
                         row.timestampMs > baseline && row.result != "Pending"
                     }
                 }
             }
+            // A first Played event can arrive before NuvioTV publishes its
+            // video format. Candidate-only wait for a later *official*
+            // LastPlaybackDiagnostics update, never fabricate dimensions or
+            // treat the synthetic READY first-frame hint as decoded media.
+            val diagnostics = if (
+                __PLAYER_FORMAT_SETTLE_MS__L > 0L &&
+                initialDiagnostics.result.startsWith("Played", ignoreCase = true) &&
+                initialDiagnostics.videoResolution.isNullOrBlank()
+            ) {
+                runBlocking {
+                    kotlinx.coroutines.withTimeoutOrNull(__PLAYER_FORMAT_SETTLE_MS__L) {
+                        store.lastPlaybackDiagnostics.first { row ->
+                            row.timestampMs > baseline &&
+                                (Regex("""(\\d{2,5})x(\\d{2,5})""")
+                                    .containsMatchIn(row.videoResolution.orEmpty()) ||
+                                 row.result.startsWith("Error", ignoreCase = true))
+                        }
+                    }
+                } ?: initialDiagnostics
+            } else initialDiagnostics
             val durationSeconds = diagnostics.durationMs.takeIf { it > 0L }?.div(1000.0)
             val dimensions = Regex("""(\\d{2,5})x(\\d{2,5})""")
                 .find(diagnostics.videoResolution.orEmpty())
@@ -237,6 +259,7 @@ TV_HELPERS = PROBE_MODEL + r'''
                     videoHeight = videoHeight,
                     diagnosticFirstFrameMs = diagnostics.firstFrameMs,
                     diagnosticPlayed = diagnostics.result.startsWith("Played", ignoreCase = true),
+                    diagnosticLateFormat = diagnostics !== initialDiagnostics,
                 )
             } else result
         } catch (error: kotlinx.coroutines.TimeoutCancellationException) {
@@ -432,7 +455,7 @@ NEW_ANDROID_PROBE_BLOCK = '''                rows.take(__MAX_PROBES__).forEachIn
                     // signed/one-shot URL and manufacture a false failure.
                     emit("FIELD_NATIVE_PLAYER_BEGIN client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index entry=nuvio-production-player")
                     val reader = probeNativePlayer(row.url, row.headers, row.type, __EXPECTED_MINUTES__)
-                    emit("FIELD_NATIVE_PLAYER client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index state=${reader.state} engine=${reader.engine} production_surface=true advertised_quality64=${b64(row.quality)} http_status=${reader.httpStatus} failure_stage=${reader.failureStage} duration_seconds=${reader.durationSeconds ?: 0.0} video_width=${reader.videoWidth} video_height=${reader.videoHeight} diagnostic_first_frame_ms=${reader.diagnosticFirstFrameMs} diagnostic_played=${reader.diagnosticPlayed} host64=${b64(reader.host)} error_class64=${b64(reader.errorClass)} error_code64=${b64(reader.errorCode)} exception_chain64=${b64(reader.exceptionChain)} response_header_names64=${b64(reader.responseHeaderNames)} load_bytes=${reader.loadBytes} load_duration_ms=${reader.loadDurationMs} media_data_type=${reader.mediaDataType} track_type=${reader.trackType} audio_track_count=${reader.audioTrackCount} audio_track_languages64=${b64(reader.audioTrackLanguages)} subtitle_track_count=${reader.subtitleTrackCount} subtitle_track_languages64=${b64(reader.subtitleTrackLanguages)} subtitle_track_labels64=${b64(reader.subtitleTrackLabels)}")
+                    emit("FIELD_NATIVE_PLAYER client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index state=${reader.state} engine=${reader.engine} production_surface=true advertised_quality64=${b64(row.quality)} http_status=${reader.httpStatus} failure_stage=${reader.failureStage} duration_seconds=${reader.durationSeconds ?: 0.0} video_width=${reader.videoWidth} video_height=${reader.videoHeight} diagnostic_first_frame_ms=${reader.diagnosticFirstFrameMs} diagnostic_played=${reader.diagnosticPlayed} diagnostic_late_format=${reader.diagnosticLateFormat} host64=${b64(reader.host)} error_class64=${b64(reader.errorClass)} error_code64=${b64(reader.errorCode)} exception_chain64=${b64(reader.exceptionChain)} response_header_names64=${b64(reader.responseHeaderNames)} load_bytes=${reader.loadBytes} load_duration_ms=${reader.loadDurationMs} media_data_type=${reader.mediaDataType} track_type=${reader.trackType} audio_track_count=${reader.audioTrackCount} audio_track_languages64=${b64(reader.audioTrackLanguages)} subtitle_track_count=${reader.subtitleTrackCount} subtitle_track_languages64=${b64(reader.subtitleTrackLanguages)} subtitle_track_labels64=${b64(reader.subtitleTrackLabels)}")
 __ENGINE_COMPARE_BLOCK__                    val transport = probeTransport(row.url, row.headers)
                     emit("FIELD_NATIVE_TRANSPORT client=__CLIENT__ fixture=$fixtureSlug provider64=${b64(provider.id)} index=$index state=${transport.state} kind=${transport.kind} status=${transport.status} content_type64=${b64(transport.contentType)} extm3u=${transport.extm3u} audio_track_count=${transport.audioTrackCount} audio_track_languages64=${b64(transport.audioTrackLanguages)} subtitle_track_count=${transport.subtitleTrackCount} subtitle_track_languages64=${b64(transport.subtitleTrackLanguages)} audio_variant_matrix64=${b64(transport.audioVariantMatrix)} subtitle_variant_matrix64=${b64(transport.subtitleVariantMatrix)} variant_heights64=${b64(transport.variantHeights)} duration_seconds=${transport.durationSeconds ?: 0.0} host64=${b64(transport.host)} media_hint64=${b64(transport.mediaHint)}")
                 }
@@ -458,6 +481,10 @@ def augment_android_test(
     imports = COMMON_IMPORTS + (TV_IMPORTS if client == "tv" else MOBILE_IMPORTS)
     source = source.replace(ANDROID_IMPORT_ANCHOR, ANDROID_IMPORT_ANCHOR + imports, 1)
     helpers = (TV_HELPERS if client == "tv" else MOBILE_HELPERS).replace("__PLAYER_TIMEOUT_MS__", "25000")
+    # Only an isolated SHA-attested official TV candidate pays the bounded
+    # format-settlement wait; broad provider cohorts remain fast and unchanged.
+    settle_ms = "4500" if (client == "tv" and os.environ.get("NIAKVIO_NATIVE_CANDIDATE_SHA256")) else "0"
+    helpers = helpers.replace("__PLAYER_FORMAT_SETTLE_MS__", settle_ms)
     if source.count(TEST_ANCHOR) != 1:
         raise ValueError("test anchor missing or ambiguous")
     source = source.replace(TEST_ANCHOR, helpers + "\n" + TEST_ANCHOR, 1)
