@@ -12,7 +12,7 @@ from typing import Any
 SHA40 = re.compile(r"[0-9a-f]{40}")
 SHA64 = re.compile(r"[0-9a-f]{64}")
 RUN_ID = re.compile(r"[0-9]{8,20}")
-FIELD = re.compile(r"([A-Za-z0-9_]+)=([^\\s]+)")
+FIELD = re.compile(r"([A-Za-z0-9_]+)=([^\s]+)")
 LANG = re.compile(r"^[a-z]{2,3}(?:-[a-z]{2})?$")
 
 
@@ -39,7 +39,7 @@ def _fields(line: str) -> dict[str, str]:
 def _languages(*values: Any) -> list[str]:
     out: list[str] = []
     for value in values:
-        for token in re.split(r"[,;|\\s]+", str(value or "").strip().lower()):
+        for token in re.split(r"[,;|\s]+", str(value or "").strip().lower()):
             token = token.replace("_", "-")
             if LANG.fullmatch(token) and token not in out:
                 out.append(token)
