@@ -82,6 +82,9 @@ assert "initialDiagnostics.videoResolution.isNullOrBlank()" in tv
 assert "withTimeoutOrNull(0L)" in tv
 assert "__PLAYER_VISIBLE_HOLD_MS__" not in tv
 assert "FIELD_NATIVE_PLAYER_VISUAL_READY client=tv" in tv
+assert tv.index("FIELD_NATIVE_PLAYER_VISUAL_READY client=tv") < tv.index(
+    "val audioTracks = probeTvAudioTracks(instrumentation, context)"
+)
 assert "Thread.sleep(0L)" in tv
 assert "diagnosticFirstFrameMs = diagnostics.firstFrameMs" in tv
 # The bounded late-format second observation belongs only to the exact-byte

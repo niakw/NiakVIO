@@ -320,9 +320,19 @@ TV_HELPERS = PROBE_MODEL + r'''
                 else -> NativePlayerProbe("error", "nuvio-tv-production", "PlayerRuntimeController", sanitizeDiag(diagnostics.result), 0, "player", diagnostics.host.ifBlank { host }, durationSeconds)
             }
             if (result.state == "ready" || result.state == "short_media") {
+                // Capture the still-playing surface before probing audio and
+                // subtitle overlays. UIAutomator pressBack may dismiss Player.
+                if (__PLAYER_VISIBLE_HOLD_MS__L > 0L &&
+                    result.state == "ready" && videoWidth > 0 &&
+                    videoHeight > 0 &&
+                    diagnostics.result.startsWith("Played", ignoreCase = true)) {
+                    Log.i("NiakvioCorpus",
+                        "FIELD_NATIVE_PLAYER_VISUAL_READY client=tv video_width=${videoWidth} video_height=${videoHeight} proof_authority=false")
+                    runCatching { Thread.sleep(__PLAYER_VISIBLE_HOLD_MS__L) }
+                }
                 val audioTracks = probeTvAudioTracks(instrumentation, context)
                 val subtitleTracks = probeTvIntegratedSubtitleTracks(instrumentation, context)
-                val probed = result.copy(
+                result.copy(
                     audioTrackCount = audioTracks.count,
                     audioTrackLanguages = audioTracks.languages,
                     subtitleTrackCount = subtitleTracks.count,
@@ -334,18 +344,6 @@ TV_HELPERS = PROBE_MODEL + r'''
                     diagnosticPlayed = diagnostics.result.startsWith("Played", ignoreCase = true),
                     diagnosticLateFormat = diagnostics !== initialDiagnostics,
                 )
-                // The normal FIELD_NATIVE_PLAYER marker is emitted after
-                // this function's finally block has closed MainActivity.
-                // Signal a bounded live candidate frame before that cleanup,
-                // while preserving the original result and playback semantics.
-                if (__PLAYER_VISIBLE_HOLD_MS__L > 0L &&
-                    probed.state == "ready" && probed.videoWidth > 0 &&
-                    probed.videoHeight > 0 && probed.diagnosticPlayed) {
-                    Log.i("NiakvioCorpus",
-                        "FIELD_NATIVE_PLAYER_VISUAL_READY client=tv video_width=${probed.videoWidth} video_height=${probed.videoHeight} proof_authority=false")
-                    runCatching { Thread.sleep(__PLAYER_VISIBLE_HOLD_MS__L) }
-                }
-                probed
             } else result
         } catch (error: kotlinx.coroutines.TimeoutCancellationException) {
             NativePlayerProbe("timeout", "nuvio-tv-production", error::class.qualifiedName.orEmpty(), "READER_TIMEOUT", 0, "timeout", host, null)
