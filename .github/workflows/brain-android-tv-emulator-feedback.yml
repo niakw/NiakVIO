@@ -161,7 +161,7 @@ jobs:
           if kind not in {"native-blocking-player-origin-priority", "native-hls-master-receipt-v30"}:
               raise SystemExit("unexpected candidate experiment type")
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
-              output.write("candidate_type=" + kind + "\\n")
+              output.write("candidate_type=" + kind + "\n")
           print("FIELD_BRAIN_NATIVE_CANDIDATE_TYPE " + kind)
           PY
 
