@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import subprocess
 import tempfile
@@ -572,7 +573,7 @@ def _normalize_native_hls_root_receipt_v30(value: Any) -> dict[str, str] | None:
     """Carry a candidate fingerprint only in isolated workspace DATA."""
     if value is None:
         return None
-    if materialization_context() != "workspace":
+    if os.environ.get("NUVIO_PROVIDER_V3_CONTEXT", "workspace").strip().casefold() != "workspace":
         raise ValueError("native HLS root receipt cannot enter production DATA")
     if not isinstance(value, dict) or set(value) != {"experimentFingerprint"}:
         raise ValueError("invalid native HLS root receipt DATA shape")
