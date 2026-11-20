@@ -42,7 +42,19 @@ assert mod._requires_new_repair_profile({
         "requiresNewExecutableRepairProfile": True,
     }
 })
-assert mod._model_edits({"edits": [{"operation": "create", "path": "scripts/brain_layers/demo.py", "content": "pass\n"}]}, payload)
+typed_program = {
+    "sourceFamilyProgram": {
+        "moduleCode": "def parse_episode_source(html, episode):\n    return {}\n",
+        "runtimeFind": "source_text = source_bytes.decode",
+        "runtimeReplace": "source_text = source_bytes.decode",
+        "testCode": "assert 'eps1' and 'eps2' and 'lien:'\n",
+    },
+}
+typed_edits = mod._model_edits(typed_program, payload)
+assert [row["operation"] for row in typed_edits] == ["create", "replace", "create"]
+assert typed_edits[1]["path"] == "scripts/brain_repair_runtime.py"
+assert typed_edits[0]["path"].startswith("scripts/brain_layers/")
+assert typed_edits[2]["path"].startswith("tests/brain_")
 try:
     mod._model_edits({"recoveryProgram": {"searchSources": ["peer"]}}, payload)
 except ValueError as exc:
@@ -64,9 +76,7 @@ def fake_urlopen(request, timeout):
     assert timeout == 5
     return FakeHTTP(json.dumps({
         "choices": [{"message": {"content": json.dumps({
-            "edits": [{"operation": "create",
-                       "path": "scripts/brain_layers/source_family_sample.py",
-                       "content": "def parse_episode_source(html, episode):\n    return {}\n"}],
+            "sourceFamilyProgram": typed_program["sourceFamilyProgram"],
         })}}]
     }).encode("utf-8"))
 with patch.object(mod, "urlopen", fake_urlopen):
@@ -76,7 +86,12 @@ with patch.object(mod, "urlopen", fake_urlopen):
     )
 assert response["choices"]
 schema_props = captured["response_format"]["schema"]["properties"]
-assert "edits" in schema_props and "recoveryProgram" not in schema_props
+assert "sourceFamilyProgram" in schema_props
+assert "edits" not in schema_props and "recoveryProgram" not in schema_props
+typed_fields = schema_props["sourceFamilyProgram"]["properties"]
+assert set(typed_fields) == {"moduleCode", "runtimeFind", "runtimeReplace", "testCode"}
+assert captured["response_format"]["schema"]["required"] == ["sourceFamilyProgram"]
+assert "file paths or create/replace operations" in captured["messages"][0]["content"]
 assert "NEW SOURCE FAMILY" in captured["messages"][0]["content"]
 assert "The old recoveryProgram" in captured["messages"][0]["content"]
 assert captured["messages"][1]["content"].find("source-family-representative") >= 0
@@ -167,4 +182,4 @@ assert len(desc["programFingerprint"]) == 64
 assert all("contentSha256" in entry and len(entry["contentSha256"]) == 64
            for entry in desc["editDescriptors"])
 assert "parse_episode_source(html" not in json.dumps(desc)
-print("Source-family Brain FORCE mode: new edit schema, bounded generation, actual wired parser test and hostile negatives passed")
+print("Source-family Brain FORCE mode: typed program compiled into 3 deterministic edits, actual wired parser test and hostile negatives passed")
