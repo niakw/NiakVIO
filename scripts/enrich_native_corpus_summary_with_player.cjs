@@ -50,7 +50,12 @@ function groupBy(items, fn) {
 }
 
 const players = [];
+const transports = new Map();
 const routeTerminals = new Map();
+
+function mediaKey(client, fixture, provider, requestType, index = 0) {
+  return `${client}\u0000${fixture}\u0000${String(provider || '').toLowerCase()}\u0000${requestType}\u0000${index}`;
+}
 for (const file of listFiles(inputDir)) {
   for (const raw of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
     const marker = raw.indexOf('FIELD_NATIVE_');
@@ -76,6 +81,21 @@ for (const file of listFiles(inputDir)) {
       continue;
     }
 
+    if (line.startsWith('FIELD_NATIVE_TRANSPORT ')) {
+      const provider = decode(f.provider64) || String(f.provider || '');
+      const client = f.client || 'unknown';
+      const fixture = f.fixture || 'unknown';
+      const requestType = String(f.request_type || 'unknown').toLowerCase();
+      const index = Number(f.index || 0);
+      transports.set(mediaKey(client, fixture, provider, requestType, index), {
+        audioTrackCount: Number.isFinite(Number(f.audio_track_count)) ? Number(f.audio_track_count) : -1,
+        audioTrackLanguages: decode(f.audio_track_languages64),
+        subtitleTrackCount: Number.isFinite(Number(f.subtitle_track_count)) ? Number(f.subtitle_track_count) : -1,
+        subtitleTrackLanguages: decode(f.subtitle_track_languages64),
+      });
+      continue;
+    }
+
     if (!line.startsWith('FIELD_NATIVE_PLAYER ')) continue;
     const row = {
       client: f.client || 'unknown', fixture: f.fixture || 'unknown', provider: decode(f.provider64),
@@ -93,11 +113,25 @@ for (const file of listFiles(inputDir)) {
         ? Math.min(16384, Number(f.video_width)) : 0,
       videoHeight: Number.isInteger(Number(f.video_height)) && Number(f.video_height) > 0
         ? Math.min(16384, Number(f.video_height)) : 0,
+      audioTrackCount: Number.isFinite(Number(f.audio_track_count)) ? Number(f.audio_track_count) : -1,
+      audioTrackLanguages: decode(f.audio_track_languages64),
+      subtitleTrackCount: Number.isFinite(Number(f.subtitle_track_count)) ? Number(f.subtitle_track_count) : -1,
+      subtitleTrackLanguages: decode(f.subtitle_track_languages64),
     };
-    row.failureClass = readerFailureClass(row);
-    row.signature = readerSignature(row);
     players.push(row);
   }
+}
+
+for (const row of players) {
+  const transport = transports.get(mediaKey(row.client, row.fixture, row.provider, row.requestType, row.index));
+  if (transport) {
+    row.transportAudioTrackCount = transport.audioTrackCount;
+    row.transportAudioTrackLanguages = transport.audioTrackLanguages;
+    row.transportSubtitleTrackCount = transport.subtitleTrackCount;
+    row.transportSubtitleTrackLanguages = transport.subtitleTrackLanguages;
+  }
+  row.failureClass = readerFailureClass(row);
+  row.signature = readerSignature(row);
 }
 
 const failures = players.filter(isReaderFailure);
