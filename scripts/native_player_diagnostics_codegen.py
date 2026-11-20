@@ -140,15 +140,24 @@ TV_HELPERS = PROBE_MODEL + r'''
             ?.lowercase(java.util.Locale.US)
     }
 
+    private fun findTvControlButton(
+        device: UiDevice,
+        label: String,
+    ): android.view.accessibility.AccessibilityNodeInfo? {
+        val visible = device.wait(Until.findObject(By.desc(label)), 500L)
+        if (visible != null) return visible
+        device.pressDPadCenter()
+        return device.wait(Until.findObject(By.desc(label)), 2500L)
+    }
+
     private fun probeTvAudioTracks(
         instrumentation: android.app.Instrumentation,
         context: android.content.Context,
     ): TvAudioTrackProbe {
         return try {
             val device = UiDevice.getInstance(instrumentation)
-            device.pressDPadCenter()
             val label = context.getString(R.string.cd_audio_tracks)
-            val button = device.wait(Until.findObject(By.desc(label)), 2500L)
+            val button = findTvControlButton(device, label)
                 ?: return TvAudioTrackProbe()
             button.click()
             device.waitForIdle()
@@ -179,9 +188,8 @@ TV_HELPERS = PROBE_MODEL + r'''
     ): TvSubtitleTrackProbe {
         return try {
             val device = UiDevice.getInstance(instrumentation)
-            device.pressDPadCenter()
             val controlLabel = context.getString(R.string.cd_subtitles)
-            val button = device.wait(Until.findObject(By.desc(controlLabel)), 2500L)
+            val button = findTvControlButton(device, controlLabel)
                 ?: return TvSubtitleTrackProbe()
             button.click()
             device.waitForIdle()
