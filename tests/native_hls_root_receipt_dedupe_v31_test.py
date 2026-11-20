@@ -119,7 +119,7 @@ async function run(version,{html=false,oversized=false,rewrite=false}={}){
  assert.equal(huge.rows[0].__nuvioCoreMediaProofV1,undefined);
  const rewritten=await run('v31',{rewrite:true});
  assert.equal(rewritten.rows[0].__nuvioCoreMediaProofV1,undefined);
- const ctx={URL,Map,Set,Object,String,Number};
+ const ctx={URL,Map,Set,Object,String,Number,_text:x=>String(x==null?'':x)};
  vm.createContext(ctx);
  vm.runInContext(files.v31.dedupe,ctx);
  const same='https://hls.test/master.m3u8';
