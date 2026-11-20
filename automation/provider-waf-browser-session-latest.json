@@ -22,10 +22,10 @@
     "exact failed provider GET replay is transport differential evidence only; it cannot grant playback proof"
   ],
   "counts": {
-    "browser_challenge_observed": 3,
     "browser_challenge_persisted": 32,
     "browser_content_reached": 19,
-    "browser_inconclusive": 2
+    "browser_inconclusive": 2,
+    "browser_timeout": 3
   },
   "rows": [
     {
@@ -39,7 +39,7 @@
       "challenge": "cloudflare",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_challenge_observed",
+      "outcome": "browser_timeout",
       "attemptCount": 2,
       "attempts": [
         {
@@ -48,8 +48,7 @@
         },
         {
           "attempt": 2,
-          "outcome": "browser_challenge_observed",
-          "exitCode": 0
+          "outcome": "browser_timeout"
         }
       ],
       "ordinarySessionReused": true,
@@ -58,7 +57,7 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_challenge_observed",
+          "outcome": "browser_timeout",
           "attemptCount": 2,
           "attempts": [
             {
@@ -67,8 +66,7 @@
             },
             {
               "attempt": 2,
-              "outcome": "browser_challenge_observed",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             }
           ],
           "ordinarySessionReused": true
@@ -78,9 +76,9 @@
       "okHttpJvmProfile": null,
       "desktopOkHttpJvmProfile": null,
       "contentProfiles": [],
-      "transportDiagnosis": "challenge_observed_unconfirmed",
+      "transportDiagnosis": "transport_inconclusive",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 21962
+      "durationMs": 24108
     },
     {
       "provider": "1jour1film0626",
@@ -93,7 +91,7 @@
       "challenge": "cloudflare",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_challenge_observed",
+      "outcome": "browser_timeout",
       "attemptCount": 2,
       "attempts": [
         {
@@ -102,8 +100,7 @@
         },
         {
           "attempt": 2,
-          "outcome": "browser_challenge_observed",
-          "exitCode": 0
+          "outcome": "browser_timeout"
         }
       ],
       "ordinarySessionReused": true,
@@ -112,7 +109,7 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_challenge_observed",
+          "outcome": "browser_timeout",
           "attemptCount": 2,
           "attempts": [
             {
@@ -121,8 +118,7 @@
             },
             {
               "attempt": 2,
-              "outcome": "browser_challenge_observed",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             }
           ],
           "ordinarySessionReused": true
@@ -132,9 +128,9 @@
       "okHttpJvmProfile": null,
       "desktopOkHttpJvmProfile": null,
       "contentProfiles": [],
-      "transportDiagnosis": "challenge_observed_unconfirmed",
+      "transportDiagnosis": "transport_inconclusive",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 22675
+      "durationMs": 24143
     },
     {
       "provider": "1jour1film0626",
@@ -147,7 +143,7 @@
       "challenge": "cloudflare",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_challenge_observed",
+      "outcome": "browser_timeout",
       "attemptCount": 2,
       "attempts": [
         {
@@ -156,8 +152,7 @@
         },
         {
           "attempt": 2,
-          "outcome": "browser_challenge_observed",
-          "exitCode": 0
+          "outcome": "browser_timeout"
         }
       ],
       "ordinarySessionReused": true,
@@ -166,7 +161,7 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_challenge_observed",
+          "outcome": "browser_timeout",
           "attemptCount": 2,
           "attempts": [
             {
@@ -175,8 +170,7 @@
             },
             {
               "attempt": 2,
-              "outcome": "browser_challenge_observed",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             }
           ],
           "ordinarySessionReused": true
@@ -186,9 +180,9 @@
       "okHttpJvmProfile": null,
       "desktopOkHttpJvmProfile": null,
       "contentProfiles": [],
-      "transportDiagnosis": "challenge_observed_unconfirmed",
+      "transportDiagnosis": "transport_inconclusive",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 22691
+      "durationMs": 24155
     },
     {
       "provider": "allwish",
@@ -616,7 +610,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3424
+      "durationMs": 5492
     },
     {
       "provider": "animejlprovider",
@@ -672,7 +666,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3902
+      "durationMs": 4808
     },
     {
       "provider": "animeonsen",
@@ -728,7 +722,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3711,
+      "durationMs": 5027,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -820,7 +814,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4520,
+      "durationMs": 5479,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -1165,7 +1159,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3942
+      "durationMs": 5018
     },
     {
       "provider": "arrowtv",
@@ -1221,7 +1215,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3854
+      "durationMs": 4760
     },
     {
       "provider": "arrowtv",
@@ -1277,14 +1271,14 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3405
+      "durationMs": 5134
     },
     {
       "provider": "chillflix",
       "lane": "movie",
-      "publicUrl": "https://www.chillflix.lol/movie/27205",
+      "publicUrl": "https://www.chillflix.lol/movie/299534",
       "host": "www.chillflix.lol",
-      "path": "/movie/27205",
+      "path": "/movie/299534",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1333,14 +1327,14 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3819
+      "durationMs": 5066
     },
     {
       "provider": "chillflix",
       "lane": "tv",
-      "publicUrl": "https://www.chillflix.lol/tv/43348",
+      "publicUrl": "https://www.chillflix.lol/tv/44217",
       "host": "www.chillflix.lol",
-      "path": "/tv/43348",
+      "path": "/tv/44217",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1389,7 +1383,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3958
+      "durationMs": 4907
     },
     {
       "provider": "cinegram",
@@ -1445,7 +1439,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3668
+      "durationMs": 4726
     },
     {
       "provider": "cinetimes",
@@ -1501,7 +1495,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4216
+      "durationMs": 5436
     },
     {
       "provider": "cinetimes",
@@ -1557,7 +1551,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4066
+      "durationMs": 5521
     },
     {
       "provider": "coflix",
@@ -2050,7 +2044,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2913
+      "durationMs": 3030
     },
     {
       "provider": "fexini",
@@ -8062,8 +8056,8 @@
   "currentRefreshProviderCount": 10,
   "currentRefreshRowCount": 16,
   "currentRefreshCounts": {
-    "browser_challenge_observed": 3,
-    "browser_challenge_persisted": 13
+    "browser_challenge_persisted": 13,
+    "browser_timeout": 3
   },
   "historicalRetainedRowCount": 40,
   "historicalRetainedCounts": {
