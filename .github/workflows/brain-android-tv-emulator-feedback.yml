@@ -15,6 +15,12 @@ on:
         description: Exact 40-character NiakVIO SHA executed by the native candidate
         required: true
         type: string
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/brain-android-tv-emulator-feedback.yml'
+  schedule:
+    - cron: '17 3 * * *'
 
 permissions:
   contents: write
@@ -27,6 +33,47 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  recover-missed-candidate:
+    # Backfill only an existing, source-pinned native run; never replay provider JS.
+    if: ${{ github.event_name == 'push' || github.event_name == 'schedule' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Recover at most one unlearned candidate verdict from native artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          seen="$(mktemp)"
+          runs="$(mktemp)"
+          gh api "repos/$GITHUB_REPOSITORY/contents/automation/brain-native-candidate-experiments.json" \
+            --jq '.content' | base64 --decode |
+            jq -r '.rows[]? | .candidateAttempts[]? | .candidateRunId // empty' > "$seen"
+          gh api "repos/$GITHUB_REPOSITORY/actions/workflows/native-corpus-device-targeted.yml/runs?per_page=40" \
+            --jq '.workflow_runs[] | select(.head_branch == "main" and .event == "workflow_dispatch" and .status == "completed") | .id' > "$runs"
+          for candidate_run_id in $(cat "$runs"); do
+            [[ "$candidate_run_id" =~ ^[0-9]{8,20}$ ]] || continue
+            if grep -Fxq "$candidate_run_id" "$seen"; then
+              continue
+            fi
+            count="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$candidate_run_id/artifacts" \
+              --jq '[.artifacts[] | select(.name | startswith("native-candidate-tv-"))] | length')"
+            if [ "$count" != "1" ]; then
+              continue
+            fi
+            candidate_source_sha="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$candidate_run_id" --jq '.head_sha')"
+            [[ "$candidate_source_sha" =~ ^[0-9a-f]{40}$ ]]
+            gh workflow run brain-android-tv-emulator-feedback.yml --repo "$GITHUB_REPOSITORY" --ref main \
+              -f candidate_run_id="$candidate_run_id" -f candidate_source_sha="$candidate_source_sha"
+            echo "FIELD_BRAIN_CANDIDATE_RECOVERY status=dispatched run=$candidate_run_id publication=false"
+            exit 0
+          done
+          echo "FIELD_BRAIN_CANDIDATE_RECOVERY status=no_unlearned_candidate"
+
   ingest:
     if: ${{ (github.event_name == 'workflow_dispatch' && inputs.candidate_run_id != '' && inputs.candidate_source_sha != '') || (github.event_name == 'workflow_run' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.head_branch == 'main' && (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')) }}
     runs-on: ubuntu-latest
