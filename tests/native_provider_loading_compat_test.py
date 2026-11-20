@@ -89,7 +89,9 @@ assert "fun pluginDataStore(): com.nuvio.tv.data.local.PluginDataStore" in canon
     "https://raw.githubusercontent.com/niakw/NiakVIO/0123456789abcdef0123456789abcdef01234567/manifest.json", []
 )
 assert "candidateStore.saveScraperCode(loadedScraper.id, candidateCode)" in candidate_tv
-assert candidate_tv.count("candidateStore.getScraperCode(loadedScraper.id)") == 3
+assert candidate_tv.count("candidateStore.getScraperCode(loadedScraper.id)") == 4
+assert "if (restoredCode != previousCode)" in candidate_tv
+assert "FIELD_NATIVE_CANDIDATE_RESTORE_FAILED" in candidate_tv
 assert "kotlinx.coroutines.NonCancellable" in candidate_tv
 assert "candidateStore.deleteScraperCode(loadedScraper.id)" in candidate_tv
 assert "candidateStore.saveScraperCode(loadedScraper.id, previousCode)" in candidate_tv
