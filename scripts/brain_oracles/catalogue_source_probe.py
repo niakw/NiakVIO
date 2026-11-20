@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[2]
 IDENT = re.compile(r"[a-z0-9][a-z0-9-]{0,95}\Z")
 SLUG = re.compile(r"[a-z0-9][a-z0-9-]{0,125}\Z")
 HOST = re.compile(r"(?=.{1,253}\Z)[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?\Z")
-MAX_HOSTS, MAX_REQUESTS, MAX_BODY, TIMEOUT = 3, 12, 524288, 5
+MAX_HOSTS, MAX_REQUESTS, MAX_BODY, TIMEOUT = 3, 16, 524288, 5
 FLAGS = ("proofAuthority", "publicationAuthority", "nativePlaybackAuthority", "providerMutationAuthority")
 
 def load(root: Path, filename: str) -> dict:
@@ -193,57 +193,100 @@ def fetch(url: str) -> tuple[int, str, bool, bool, str]:
     except (TimeoutError, OSError, ValueError):
         return 0, "", False, True, ""
 
-def run(root: Path, request: dict, fetcher: Callable[[str], tuple[int, str, bool, bool, str]] = fetch) -> dict:
+def run(root: Path, request: dict,
+        fetcher: Callable[[str], tuple[int, str, bool, bool, str]] = fetch) -> dict:
     info, hosts = attest(root, request)
     slug, season, voice = info["catalogueSlug"], info["season"], info["voice"]
-    # No redirects, dynamic navigation, token-resolution API, or player/media URL.
+    # Four fixed routes per registered origin. A single same-origin trailing-slash
+    # canonicalization may add a GET, but never an external redirect, media API,
+    # token resolver, login request, or a second navigation step.
     routes = (("catalogue", f"/catalogue/{slug}/"),
               ("season_page", f"/catalogue/{slug}/saison{season}/{voice}/"),
               ("legacy_script", f"/catalogue/{slug}/saison{season}/{voice}/episodes.js"),
               ("language_page", f"/catalogue/{slug}/{voice}/"))
-    rows = []
+    rows: list[dict] = []
+    canonical: list[tuple[str, str, str]] = []
+
+    def record(host: str, kind: str, path: str, followup: bool) -> tuple[int, str, dict]:
+        url = "https://" + host + path
+        status, body, oversized, transport_error, location = fetcher(url)
+        if (type(status) is not int or not 0 <= status <= 599
+                or not isinstance(body, str) or len(body) > MAX_BODY
+                or type(oversized) is not bool or type(transport_error) is not bool
+                or not isinstance(location, str) or len(location) > 2049):
+            raise ValueError("invalid transport adapter result")
+        shape = classify(status, "" if oversized else body)
+        redirect = redirect_target(url, location, hosts) if 300 <= status < 400 else {
+            "redirectHostScope": "not_redirect", "redirectTargetHost": "",
+            "redirectPathScope": "unknown", "redirectPathChangeKind": "unknown",
+            "redirectCandidateCatalogueSlug": "", "redirectQueryPresent": False,
+        }
+        rows.append({
+            "originHost": host, "routeKind": kind,
+            "canonicalFollowup": followup,
+            "httpStatus": status,
+            "httpStatusClass": "3xx" if 300 <= status < 400 else shape["httpStatusClass"],
+            "redirectObserved": 300 <= status < 400,
+            "sourceShape": shape["shape"],
+            "inlineSlotArrayObserved": shape["inlineSlotArrayObserved"],
+            "opaqueLinkTokenObserved": shape["opaqueLinkTokenObserved"],
+            "jetonDeclarationObserved": shape["jetonDeclarationObserved"],
+            "languageListDeclarationObserved": shape["languageListDeclarationObserved"],
+            "responseTooLarge": oversized, "transportError": transport_error,
+            **redirect,
+        })
+        return status, location, redirect
+
     for host in hosts:
         for kind, path in routes:
-            request_url = "https://" + host + path
-            status, body, oversized, transport_error, location = fetcher(request_url)
-            if (type(status) is not int or not 0 <= status <= 599
-                    or not isinstance(body, str) or len(body) > MAX_BODY
-                    or type(oversized) is not bool or type(transport_error) is not bool):
-                raise ValueError("invalid transport adapter result")
-            shape = classify(status, "" if oversized else body)
-            redirect = redirect_target(request_url, location, hosts) if 300 <= status < 400 else {
-                "redirectHostScope": "not_redirect", "redirectTargetHost": "",
-                "redirectPathScope": "unknown", "redirectPathChangeKind": "unknown",
-                "redirectCandidateCatalogueSlug": "", "redirectQueryPresent": False,
-            }
-            rows.append({
-                "originHost": host, "routeKind": kind,
-                "httpStatus": status,
-                "httpStatusClass": "3xx" if 300 <= status < 400 else shape["httpStatusClass"],
-                "redirectObserved": 300 <= status < 400,
-                "sourceShape": shape["shape"],
-                "inlineSlotArrayObserved": shape["inlineSlotArrayObserved"],
-                "opaqueLinkTokenObserved": shape["opaqueLinkTokenObserved"],
-                "jetonDeclarationObserved": shape["jetonDeclarationObserved"],
-                "languageListDeclarationObserved": shape["languageListDeclarationObserved"],
-                "responseTooLarge": oversized, "transportError": transport_error,
-                **redirect,
-            })
+            status, location, redirect = record(host, kind, path, False)
+            if (status in {301, 302, 307, 308}
+                    and kind in {"catalogue", "season_page", "language_page"}
+                    and redirect["redirectHostScope"] == "same_origin"
+                    and redirect["redirectPathChangeKind"] == "trailing_slash_only"
+                    and redirect["redirectQueryPresent"] is False):
+                try:
+                    parsed = urllib.parse.urlsplit(
+                        urllib.parse.urljoin("https://" + host + path, location))
+                    target = parsed.path
+                except (ValueError, TypeError):
+                    target = ""
+                if (target in {path.rstrip("/"), path + "/"}
+                        and target.startswith("/catalogue/")
+                        and re.fullmatch(r"/[a-z0-9/-]+\Z", target)
+                        and (host, kind, target) not in canonical):
+                    canonical.append((host, kind, target))
             if len(rows) >= MAX_REQUESTS:
                 break
         if len(rows) >= MAX_REQUESTS:
             break
-    return {"schemaVersion": 1,
-            "authority": "independent-ci-source-shape-diagnostic-only",
-            **{x: info[x] for x in ("providerId", "fixture", "sourceRunId",
-                                   "sourceNiakvioSha", "providerArtifactSha256", "manifestScope")},
-            "probeRequestCount": len(rows),
-            "inlineTokenResponseCount": sum(x["sourceShape"] == "catalogue_inline_token_episode" for x in rows),
-            "independentNetworkNotOfficialClient": True,
-            "catalogueIdentityVerified": False, "episodeIdentityVerified": False,
-            "sourceContractVerifiedOnOfficialTv": False, "observations": rows,
-            "proofAuthority": False, "publicationAuthority": False,
-            "nativePlaybackAuthority": False, "providerMutationAuthority": False}
+    for host, kind, path in canonical:
+        if len(rows) >= MAX_REQUESTS:
+            break
+        record(host, kind, path, True)
+
+    return {
+        "schemaVersion": 1,
+        "authority": "independent-ci-source-shape-diagnostic-only",
+        **{key: info[key] for key in (
+            "providerId", "fixture", "sourceRunId", "sourceNiakvioSha",
+            "providerArtifactSha256", "manifestScope",
+        )},
+        "probeRequestCount": len(rows),
+        "canonicalFollowupCount": sum(x["canonicalFollowup"] for x in rows),
+        "inlineTokenResponseCount": sum(
+            x["sourceShape"] == "catalogue_inline_token_episode" for x in rows),
+        "independentNetworkNotOfficialClient": True,
+        "catalogueIdentityVerified": False,
+        "episodeIdentityVerified": False,
+        "sourceContractVerifiedOnOfficialTv": False,
+        "observations": rows,
+        "proofAuthority": False,
+        "publicationAuthority": False,
+        "nativePlaybackAuthority": False,
+        "providerMutationAuthority": False,
+    }
+
 
 def main() -> None:
     parser = argparse.ArgumentParser()

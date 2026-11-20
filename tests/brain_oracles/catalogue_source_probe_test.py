@@ -77,6 +77,10 @@ with tempfile.TemporaryDirectory() as temp:
         if url == "https://first.example.org/catalogue/mushoku-tensei-jobless-reincarnation/":
             return (301, "", False, False,
                     "https://fourth.example.org/catalogue/mushoku-tensei-jobless-reincarnation/?token=SECRET")
+        if url == "https://second.example.org/catalogue/mushoku-tensei-jobless-reincarnation/saison1/vostfr/":
+            return 301, "", False, False, "/catalogue/mushoku-tensei-jobless-reincarnation/saison1/vostfr"
+        if url == "https://second.example.org/catalogue/mushoku-tensei-jobless-reincarnation/saison1/vostfr":
+            return 200, TOKEN_PAGE, False, False, ""
         if url.endswith("episodes.js"):
             return 404, "<!doctype html><html><body>not found</body></html>", False, False, ""
         if "/saison1/vostfr/" in url:
@@ -84,11 +88,17 @@ with tempfile.TemporaryDirectory() as temp:
         return 200, "<!doctype html><html><body>shell</body></html>", False, False, ""
 
     result = probe.run(root, request, fake_fetch)
-    assert len(observed_urls) == result["probeRequestCount"] == 12
+    assert len(observed_urls) == result["probeRequestCount"] == 13
+    assert result["canonicalFollowupCount"] == 1
+    assert len([x for x in result["observations"] if x["canonicalFollowup"]]) == 1
+    assert any(x["canonicalFollowup"] and x["sourceShape"] == "catalogue_inline_token_episode"
+               for x in result["observations"])
     assert result["inlineTokenResponseCount"] == 3
     redirected = [row for row in result["observations"] if row["redirectObserved"]]
-    assert len(redirected) == 1
+    assert len(redirected) == 2
     assert redirected[0]["redirectHostScope"] == "unregistered_candidate"
+    assert redirected[1]["redirectHostScope"] == "same_origin"
+    assert redirected[1]["redirectPathChangeKind"] == "trailing_slash_only"
     assert redirected[0]["redirectTargetHost"] == "fourth.example.org"
     assert redirected[0]["redirectQueryPresent"] is True
     assert redirected[0]["redirectPathScope"] == "same_path"

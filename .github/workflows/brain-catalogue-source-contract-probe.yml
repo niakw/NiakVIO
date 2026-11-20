@@ -46,10 +46,12 @@ jobs:
           assert data['publicationAuthority'] is False
           assert data['nativePlaybackAuthority'] is False
           assert data['providerMutationAuthority'] is False
-          assert data['probeRequestCount'] <= 12
+          assert data['probeRequestCount'] <= 16
+          assert data['canonicalFollowupCount'] <= 4
           print('FIELD_CATALOGUE_SOURCE_PROBE_SHAPES ' +
                 json.dumps([{'origin': x['originHost'], 'route': x['routeKind'],
                              'status': x['httpStatus'], 'shape': x['sourceShape'],
+                             'canonicalFollowup': x['canonicalFollowup'],
                              'transportError': x['transportError'],
                              'redirectHost': x['redirectTargetHost'],
                              'redirectHostScope': x['redirectHostScope'],
