@@ -1,3 +1,7 @@
+### 20 novembre — Source indépendante positive sur `mushoku-tensei`, contrat lecteur encore non confirmé
+
+[Probe `44798438960`](https://github.com/niakw/NiakVIO/actions/runs/44798438960) : en changeant **uniquement le slug du test** pour `mushoku-tensei`, fiche et saison VOSTFR 200 sur `.fr` et `.to`; l'ancien script 404/403 ; sur `anime-sama.to` la page saison affiche le contrat inline `epsN`, `lien:`, `epsJeton`. Enregistré dans la mémoire expérimentale après le résultat négatif initial ; toujours aucun lecteur, aucune identité ni audio confirmé. Prochaine porte : faire consommer ce signal Brain comme observation runner indépendant, construire/valider un Lego familial sans hardcode, tester bytes réels côté NuvioTV. **0 réparation validée**.
+
 ### 20 novembre — Oracle réseau source-pinné : origine, slug, contrat d'épisode
 
 `44795490814` puis `44796024215` ont séparé HTTP 3xx, 4xx et HTML ; `44797193595` a introduit la recherche catalogue en GET ; `44797871788` a découvert un candidat `mushoku-tensei` sur deux origines contrôlées, alors que le slug `mushoku-tensei-jobless-reincarnation` donne 404 (origine/titre/saison exacts non prouvés). 12 requêtes depuis un runner GitHub, 0 inline tokens, aucune preuve Android TV. Prochaine porte : source-pinned target slug court -> confirmation identité catalogue/saison -> si positif, nouvelle stratégie Brain de découverte de routes et Lego générique -> compilation/candidat -> test NuvioTV vrai lecteur. Ne pas attribuer une cause commune ou déployer un domaine sur un 301. **Zéro réparation certifiée.**

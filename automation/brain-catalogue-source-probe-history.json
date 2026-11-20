@@ -71,6 +71,73 @@
       "publicationAuthority": false,
       "nativePlaybackAuthority": false,
       "providerMutationAuthority": false
+    },
+    {
+      "providerId": "anime-sama",
+      "fixture": "mushoku-tensei-s01e01",
+      "parentNativeRunId": "44781039914",
+      "parentNativeNiakvioSha": "e7c7c9206182f27df4537465e614b1c5dfacb408",
+      "parentNativeProviderArtifactSha256": "9e917c77346af2a5c88826a5b9f476180a9868c88dde97a45a3a744941aa0c5b",
+      "probeRunIds": [
+        "44798438960"
+      ],
+      "latestProbeRunId": "44798438960",
+      "latestProbeSourceSha": "6bacd08444c5ffd089f8b504a4d9cb7409068d7d",
+      "inputCatalogueSlug": "mushoku-tensei",
+      "independentNetworkNotOfficialClient": true,
+      "probeRequestCount": 12,
+      "inlineTokenResponseCount": 1,
+      "sourceContractVerifiedOnOfficialTv": false,
+      "catalogueIdentityVerified": false,
+      "episodeIdentityVerified": false,
+      "evidence": [
+        {
+          "originHost": "animes-sama.fr",
+          "catalogueStatus": 200,
+          "seasonPageStatus": 200,
+          "seasonSourceShape": "script_html_2xx",
+          "legacyScriptStatus": 404,
+          "searchStatus": 200,
+          "searchLinkCount": 1,
+          "candidateSlugUnverified": "mushoku-tensei",
+          "candidateTokenOverlapPercent": 100
+        },
+        {
+          "originHost": "anime-sama.store",
+          "catalogueStatus": 301,
+          "seasonPageStatus": 301,
+          "legacyScriptStatus": 301,
+          "searchStatus": 301,
+          "redirectTargetHost": "animes-sama.fr",
+          "redirectTargetCurated": true
+        },
+        {
+          "originHost": "anime-sama.to",
+          "catalogueStatus": 200,
+          "seasonPageStatus": 200,
+          "seasonSourceShape": "catalogue_inline_token_episode",
+          "inlineSlotArrayObserved": true,
+          "opaqueLinkTokenObserved": true,
+          "jetonDeclarationObserved": true,
+          "legacyScriptStatus": 403,
+          "searchStatus": 200,
+          "searchLinkCount": 2,
+          "candidateSlugUnverified": "mushoku-tensei",
+          "candidateTokenOverlapPercent": 100
+        }
+      ],
+      "leadHypothesis": "catalogue_slug_and_episode_source_contract_drift_candidate_unverified",
+      "candidateNextSlug": "mushoku-tensei",
+      "nextHypothesisRunId": null,
+      "candidateMutationAllowed": false,
+      "generatedByBrain": false,
+      "modelExecuted": false,
+      "validatedRepair": false,
+      "publicationAllowed": false,
+      "proofAuthority": false,
+      "publicationAuthority": false,
+      "nativePlaybackAuthority": false,
+      "providerMutationAuthority": false
     }
   ]
 }
