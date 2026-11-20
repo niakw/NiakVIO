@@ -67,7 +67,7 @@ function createFixture({native=true, contentType='application/vnd.apple.mpegurl'
     _origin:u=>new URL(u).origin,
     _text:x=>String(x||''),
     _uniq:x=>[...new Set(x)],
-    _directMedia:u=>/\\.m3u8(?:[?#]|$)/.test(u)||/\\.mp4(?:[?#]|$)/.test(u),
+    _directMedia:u=>/\.m3u8(?:[?#]|$)/.test(u)||/\.mp4(?:[?#]|$)/.test(u),
     _streams:urls=>urls.map(x=>({url:rewrite?'https://proxy.example/rewrite.m3u8':x,headers:{Referer:'https://player.example'}})),
     _jsonUrls:()=>[],
     _spv26JsonMediaRows:()=>[],
