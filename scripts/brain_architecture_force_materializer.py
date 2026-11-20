@@ -2166,7 +2166,7 @@ def call_model(endpoint: str, model: str, payload: dict[str, Any]) -> dict[str, 
         try:
             value = _model_request(
                 endpoint, model, _compact_payload(payload),
-                max_tokens=1024, timeout=240, compact=True,
+                max_tokens=1024, timeout=360, compact=True,
             )
             return _parse_model_value(value)
         except (TimeoutError, ValueError) as exc:
@@ -2177,7 +2177,7 @@ def call_model(endpoint: str, model: str, payload: dict[str, Any]) -> dict[str, 
             )
             value = _model_request(
                 endpoint, model, _minimal_payload(payload),
-                max_tokens=1024, timeout=240, compact=True,
+                max_tokens=1024, timeout=360, compact=True,
             )
             return _parse_model_value(value)
 
