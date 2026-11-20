@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44792157962",
-  "sourceTriggerSha": "63fbc896930949276a9f886a8ef8b3aa12238889",
+  "sourceRunId": "44792825789",
+  "sourceTriggerSha": "688e76e49bb456a18881a941b54e9293493b8d35",
   "unresolvedProviderCount": 67,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -37,7 +37,6 @@
     "anisama",
     "arrowtv",
     "boredflix",
-    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -63,15 +62,11 @@
     "fullanime",
     "hexa",
     "hianime",
-    "hindmoviez",
     "ihavenotv",
-    "internet-archive",
     "kehflix",
     "kidraz",
-    "kurage",
     "latestmovies",
     "mallumv",
-    "meowtv",
     "moiflix",
     "moviebite",
     "moviebox",
@@ -119,15 +114,14 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
-    "webflix",
     "wookafr",
     "yflix",
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": false,
-  "groupCount": 8,
+  "dynamicVariantFallbackUsed": true,
+  "groupCount": 9,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -159,7 +153,8 @@
         "native-policy-reachable",
         "no-transport-evidence",
         "residential-exit-all-challenged",
-        "residential-exit-browser-reachable"
+        "residential-exit-browser-reachable",
+        "residential-exit-native-reachable"
       ],
       "transportSignature": "not-applicable",
       "providerCount": 39,
@@ -313,23 +308,17 @@
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "chain",
-        "lookup",
-        "none"
+        "lookup"
       ],
       "dominantIssues": [
         "network_zero_result",
-        "provider_returned_streams, timeout",
-        "timeout",
-        "waf_challenge"
+        "timeout"
       ],
-      "harnessTransportClasses": [
-        "residential-exit-native-reachable"
-      ],
+      "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 4,
+      "providerCount": 3,
       "providers": [
         "anime-sama",
-        "french-anime",
         "frenchstream",
         "sadisflix"
       ],
@@ -362,6 +351,36 @@
         "french-manga"
       ],
       "action": "replay/rematerialize retained candidate knowledge against current bytes before new mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "not-applicable",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-native-reachable"
+      ],
+      "transportSignature": "residential-exit-native-reachable",
+      "providerCount": 1,
+      "providers": [
+        "french-anime"
+      ],
+      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
