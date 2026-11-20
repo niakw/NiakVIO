@@ -141,6 +141,26 @@ with tempfile.TemporaryDirectory() as td:
         "tests/brain_source_family_sample_test.py",
     ]
     mod.validate_source_family_implementation(paths, blueprint, root=root)
+    # A model-authored test with no meaningful fixture must not certify an
+    # incorrect parser. The Brain-owned independent two-index oracle blocks it.
+    valid_layer = layer.read_text(encoding="utf-8")
+    valid_test = test_file.read_text(encoding="utf-8")
+    test_file.write_text("assert True\n", encoding="utf-8")
+    layer.write_text(
+        "def parse_episode_source(html, episode):\n"
+        "    return {'eps1': 'lien:LEGOTEST_ALPHA_1', "
+        "'eps2': 'lien:LEGOTEST_BETA_1'}\n",
+        encoding="utf-8",
+    )
+    try:
+        mod.validate_source_family_implementation(paths, blueprint, root=root)
+    except ValueError as exc:
+        assert "source-family independent episode oracle failed" in str(exc)
+    else:
+        raise AssertionError("vacuous Qwen test let a one-episode parser pass")
+    layer.write_text(valid_layer, encoding="utf-8")
+    test_file.write_text(valid_test, encoding="utf-8")
+    mod.validate_source_family_implementation(paths, blueprint, root=root)
     try:
         mod.validate_source_family_implementation(paths[:2], blueprint, root=root)
     except ValueError as exc:
