@@ -4,6 +4,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+const { readerFailureClass } = require('./native_player_diagnostics.cjs');
 
 const [, , fixture, ...logs] = process.argv;
 if (!fixture || logs.length === 0) {
@@ -23,6 +24,8 @@ const executed = new Map();
 const positive = new Map();
 const mediaVerified = new Map();
 const playerTerminals = new Map();
+const playerRows = new Map();
+const transportRows = new Map();
 const clients = new Set();
 let readableLogs = 0;
 let hasCapabilityProbe = false;
@@ -63,6 +66,17 @@ for (const log of logs) {
           positive.get(key).add(route);
         }
       }
+    } else if (line.startsWith('FIELD_NATIVE_TRANSPORT ')) {
+      const provider = f.provider64 || f.provider || '<unknown>';
+      const requestType = String(f.request_type || 'unknown').toLowerCase();
+      const index = Number(f.index || 0);
+      const playerKey = `${provider}\u0000${requestType}\u0000${index}`;
+      transportRows.set(`${key}\u0000${playerKey}`, {
+        transportAudioTrackCount: Number.isFinite(Number(f.audio_track_count)) ? Number(f.audio_track_count) : -1,
+        transportAudioTrackLanguages: decode(f.audio_track_languages64),
+        transportSubtitleTrackCount: Number.isFinite(Number(f.subtitle_track_count)) ? Number(f.subtitle_track_count) : -1,
+        transportSubtitleTrackLanguages: decode(f.subtitle_track_languages64),
+      });
     } else if (line.startsWith('FIELD_NATIVE_PLAYER ')) {
       if (!playerTerminals.has(key)) playerTerminals.set(key, new Set());
       const provider = f.provider64 || f.provider || '<unknown>';
@@ -72,26 +86,36 @@ for (const log of logs) {
       playerTerminals.get(key).add(playerKey);
       const state = String(f.state || 'unknown').toLowerCase();
       const failureStage = String(f.failure_stage || 'none').toLowerCase();
-      // READY (and a plausible duration) is not decoded video. The former
-      // collection gate counted it as media_verified even when the stricter
-      // production-player gate correctly rejected 0x0 video formats. Keep the
-      // two gates consistent and refuse a synthetic/non-production surface.
       const isProduction = f.production_surface === 'true' ||
         /-production$/i.test(String(f.engine || ''));
-      const videoWidth = Number(f.video_width || 0);
-      const videoHeight = Number(f.video_height || 0);
-      if (
-        isProduction &&
-        (state === 'ready' || state === 'ended') &&
-        (failureStage === 'none' || failureStage === '') &&
-        Number.isFinite(videoWidth) && Number.isFinite(videoHeight) &&
-        videoWidth > 0 && videoHeight > 0
-      ) {
-        if (!mediaVerified.has(key)) mediaVerified.set(key, new Set());
-        mediaVerified.get(key).add(playerKey);
-      }
+      playerRows.set(`${key}\u0000${playerKey}`, {
+        scopeKey: key,
+        playerKey,
+        isProduction,
+        client,
+        state,
+        failureStage,
+        httpStatus: Number(f.http_status || 0),
+        videoWidth: Number(f.video_width || 0),
+        videoHeight: Number(f.video_height || 0),
+        audioTrackCount: Number.isFinite(Number(f.audio_track_count)) ? Number(f.audio_track_count) : -1,
+        audioTrackLanguages: decode(f.audio_track_languages64),
+        subtitleTrackCount: Number.isFinite(Number(f.subtitle_track_count)) ? Number(f.subtitle_track_count) : -1,
+        subtitleTrackLanguages: decode(f.subtitle_track_languages64),
+        errorClass: decode(f.error_class64),
+        errorCode: decode(f.error_code64),
+        exceptionChain: decode(f.exception_chain64),
+      });
     }
   }
+}
+
+for (const [rowKey, row] of playerRows) {
+  if (!row.isProduction) continue;
+  Object.assign(row, transportRows.get(rowKey) || {});
+  if (readerFailureClass(row) !== 'healthy') continue;
+  if (!mediaVerified.has(row.scopeKey)) mediaVerified.set(row.scopeKey, new Set());
+  mediaVerified.get(row.scopeKey).add(row.playerKey);
 }
 
 const problems = [];
@@ -161,6 +185,12 @@ for (const problem of problems) console.log(`FIELD_NATIVE_CORPUS_INFRA_ERROR ${p
 // lower-level analyzer is authoritative for runtime/transport/player anomalies.
 process.exitCode = complete ? 0 : 2;
 
+function decode(value) {
+  if (!value) return '';
+  let text = String(value).replace(/-/g, '+').replace(/_/g, '/');
+  while (text.length % 4) text += '=';
+  try { return Buffer.from(text, 'base64').toString('utf8'); } catch { return ''; }
+}
 function fields(line) {
   const out = {};
   const re = /([A-Za-z0-9_]+)=([^\s]+)/g;
