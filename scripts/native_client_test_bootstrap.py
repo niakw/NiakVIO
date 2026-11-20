@@ -45,6 +45,7 @@ TV_UIAUTOMATOR = 'androidTestImplementation("androidx.test.uiautomator:uiautomat
 TV_DEBUG_ENTRYPOINT = '''package com.nuvio.tv.core.plugin
 
 import com.nuvio.tv.data.local.PlayerSettingsDataStore
+import com.nuvio.tv.data.local.PluginDataStore
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
@@ -55,6 +56,7 @@ import dagger.hilt.components.SingletonComponent
 interface NiakvioPluginManagerEntryPoint {
     fun pluginManager(): PluginManager
     fun pluginRuntime(): PluginRuntime
+    fun pluginDataStore(): PluginDataStore
 }
 
 @EntryPoint

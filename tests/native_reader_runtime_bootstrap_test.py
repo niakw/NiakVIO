@@ -139,6 +139,8 @@ with tempfile.TemporaryDirectory(prefix="niakvio-tv-bootstrap-") as tmp:
     assert "@InstallIn(SingletonComponent::class)" in first_entrypoint
     assert "fun pluginManager(): PluginManager" in first_entrypoint
     assert "fun pluginRuntime(): PluginRuntime" in first_entrypoint
+    assert "fun pluginDataStore(): PluginDataStore" in first_entrypoint
+    assert "import com.nuvio.tv.data.local.PluginDataStore" in first_entrypoint
     assert "probeOfficialTvPromiseBridge(entryPoint.pluginRuntime())" in tv_empty
     assert "fun pluginRuntime(): PluginRuntime" in first_entrypoint
     assert first.count('testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"') == 1
@@ -176,6 +178,7 @@ with tempfile.TemporaryDirectory(prefix="niakvio-tv-hilt-finalize-") as tmp:
     assert "interface NiakvioPluginManagerEntryPoint" not in finalized_source
     assert "interface NiakvioPlayerSettingsEntryPoint" not in finalized_source
     assert "fun pluginRuntime(): com.nuvio.tv.core.plugin.PluginRuntime" not in finalized_source
+    assert "fun pluginDataStore(): com.nuvio.tv.data.local.PluginDataStore" not in finalized_source
     assert "probeOfficialTvPromiseBridge(entryPoint.pluginRuntime())" in finalized_source
     assert "import dagger.hilt.android.EntryPointAccessors" in finalized_source
     assert "@EntryPoint" not in finalized_source
