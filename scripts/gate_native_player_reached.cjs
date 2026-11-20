@@ -1,6 +1,7 @@
 'use strict';
 
 const fs = require('node:fs');
+const { readerFailureClass } = require('./native_player_diagnostics.cjs');
 
 const paths = process.argv.slice(2);
 if (!paths.length) {
@@ -48,6 +49,18 @@ const structuralFailures = [];
 const zeroMediaFixtures = [];
 const executed = new Set();
 const runtimeSentinels = new Set();
+const transportExpectations = new Map();
+const productionPlayers = [];
+
+function mediaKey(parsed) {
+  return [
+    parsed.get('client') || 'unknown',
+    parsed.get('fixture') || 'unknown',
+    parsed.get('provider64') || parsed.get('provider') || 'unknown',
+    parsed.get('request_type') || 'unknown',
+    Number(parsed.get('index') || 0),
+  ].join('\u0000');
+}
 
 for (const file of paths) {
   if (!fs.existsSync(file)) continue;
@@ -97,6 +110,16 @@ for (const file of paths) {
       }
     }
 
+    if (line.startsWith('FIELD_NATIVE_TRANSPORT ')) {
+      transportExpectations.set(mediaKey(parsed), {
+        transportAudioTrackCount: Number.isFinite(Number(parsed.get('audio_track_count'))) ? Number(parsed.get('audio_track_count')) : -1,
+        transportAudioTrackLanguages: decode(parsed.get('audio_track_languages64')),
+        transportSubtitleTrackCount: Number.isFinite(Number(parsed.get('subtitle_track_count'))) ? Number(parsed.get('subtitle_track_count')) : -1,
+        transportSubtitleTrackLanguages: decode(parsed.get('subtitle_track_languages64')),
+      });
+      continue;
+    }
+
     if (!line.startsWith('FIELD_NATIVE_PLAYER ')) continue;
     state.players += 1;
     terminalEvidence += 1;
@@ -113,21 +136,22 @@ for (const file of paths) {
     }
     productionPlayerInvoked += 1;
     invokedByClient.set(client, Number(invokedByClient.get(client) || 0) + 1);
-    // READY/duration can be reported before an actual video track exists,
-    // especially for NuvioTV's TunneledFirstReady fallback. No false FULL.
-    const videoWidth = Number(parsed.get('video_width') || 0);
-    const videoHeight = Number(parsed.get('video_height') || 0);
-    const playbackVerified =
-      (playerState === 'ready' || playerState === 'ended') &&
-      (!failureStage || failureStage === 'none') &&
-      Number.isFinite(videoWidth) && Number.isFinite(videoHeight) &&
-      videoWidth > 0 && videoHeight > 0;
-    if (playbackVerified) {
-      productionPlaybackVerified += 1;
-      verifiedByClient.set(client, Number(verifiedByClient.get(client) || 0) + 1);
-    } else {
-      productionPlaybackFailed += 1;
-    }
+    productionPlayers.push({
+      key: mediaKey(parsed),
+      client,
+      state: playerState,
+      failureStage,
+      httpStatus: Number(parsed.get('http_status') || 0),
+      videoWidth: Number(parsed.get('video_width') || 0),
+      videoHeight: Number(parsed.get('video_height') || 0),
+      audioTrackCount: Number.isFinite(Number(parsed.get('audio_track_count'))) ? Number(parsed.get('audio_track_count')) : -1,
+      audioTrackLanguages: decode(parsed.get('audio_track_languages64')),
+      subtitleTrackCount: Number.isFinite(Number(parsed.get('subtitle_track_count'))) ? Number(parsed.get('subtitle_track_count')) : -1,
+      subtitleTrackLanguages: decode(parsed.get('subtitle_track_languages64')),
+      errorCode: decode(parsed.get('error_code64')) || errorCode,
+      errorClass: decode(parsed.get('error_class64')),
+      exceptionChain: decode(parsed.get('exception_chain64')),
+    });
   }
 
   if (state.placeholder) structuralFailures.push(`${file}:diagnostic_placeholder`);
@@ -139,6 +163,18 @@ for (const file of paths) {
   }
   if (state.executions.size === 0) structuralFailures.push(`${file}:zero_provider_executions`);
   if (state.players === 0) zeroMediaFixtures.push(file);
+}
+
+for (const row of productionPlayers) {
+  Object.assign(row, transportExpectations.get(row.key) || {});
+  const failureClass = readerFailureClass(row);
+  if (failureClass === 'healthy') {
+    productionPlaybackVerified += 1;
+    verifiedByClient.set(row.client, Number(verifiedByClient.get(row.client) || 0) + 1);
+  } else {
+    productionPlaybackFailed += 1;
+    console.error(`FIELD_NATIVE_PLAYER_REACH_BRAIN_OBSERVATION client=${row.client} failure_class=${failureClass}`);
+  }
 }
 
 if (!readable) {
