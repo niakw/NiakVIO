@@ -83,4 +83,28 @@ assert 'github.event_name == \'workflow_dispatch\'' in workflow
 assert "github.event.workflow_run.head_sha" in workflow
 assert 'status=dispatched run=$candidate_run_id' in workflow
 assert '      actions: write' in workflow[workflow.index("  recover-missed-candidate:"):workflow.index("  ingest:")]
+
+# Negative verdicts must be routed on their original official-TV source bytes,
+# with only the exact CI-validated Brain gitlink. No provider retry on this path.
+for needle in (
+    'ref: ${{ env.NATIVE_SOURCE_SHA }}',
+    'ref: ${{ steps.brain_pin.outputs.sha }}',
+    "automation/brain-pinned-source.json",
+    "Resolve source-pinned pre-candidate observation for negative learning",
+    "Checkout exact original provider bytes for post-candidate learning",
+    "Route executed candidate negative through Brain once without rerunning V29",
+    "candidateBrainReroutes",
+    "before-candidate/automation/brain-native-candidate-experiments.json",
+    "FIELD_BRAIN_CANDIDATE_NEXT",
+    "post-candidate route must be one diagnostic-only non-repeat plan",
+    "validatedRepair",
+    "modelExecuted",
+    "publicationAuthority",
+    "providerMutationAuthority",
+):
+    assert needle in workflow, needle
+assert workflow.index("Persist isolated Brain candidate verdict") < workflow.index("Route executed candidate negative through Brain")
+assert workflow.index("Route executed candidate negative through Brain") < workflow.index("Persist non-authoritative Brain TV diagnostic memory on main")
+assert "if: ${{ steps.candidate.outputs.is_candidate != 'true' && hashFiles(" in workflow
+assert "modelExecuted" in workflow[workflow.index("Route executed candidate negative through Brain"):workflow.index("Route the exact TV replay through Brain")]
 print("Brain Android TV source-pinned candidate dispatch workflow contract passed")
