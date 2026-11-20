@@ -37,6 +37,19 @@ assert mod.classify(200, '<!doctype html><html><script>var eps1=[];</script></ht
     "shape"
 ] == "script_html_2xx"
 
+# Production Brain RAG imports markdown in heading-sized chunks. The exact
+# native diagnostic enums and provider must co-occur in the *same* chunk;
+# otherwise a green synthetic Brain test can hide a real cross-repo RAG miss.
+contract_doc = (ROOT / "docs/brain-oracle-catalogue-inline-episode-contract-2026-11-20.md").read_text("utf-8")
+contract_chunks = contract_doc.split("\n## ")
+assert any(
+    "Anime-Sama" in chunk
+    and "script_http_missing" in chunk
+    and "script_html_2xx" in chunk
+    and "catalogue_inline_token_episode" in chunk
+    for chunk in contract_chunks
+), "source-contract RAG lacks exact native-shape + provider keys in one chunk"
+
 declared = mod.current_family(ROOT, "anime-sama")
 assert declared["declaredLegacyEpisodeScriptRoutes"] >= 2
 assert declared["inlineTokenLegoPresent"] is False
