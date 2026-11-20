@@ -50,7 +50,11 @@ jobs:
           print('FIELD_CATALOGUE_SOURCE_PROBE_SHAPES ' +
                 json.dumps([{'origin': x['originHost'], 'route': x['routeKind'],
                              'status': x['httpStatus'], 'shape': x['sourceShape'],
-                             'transportError': x['transportError']}
+                             'transportError': x['transportError'],
+                             'redirectHost': x['redirectTargetHost'],
+                             'redirectHostScope': x['redirectHostScope'],
+                             'redirectPathScope': x['redirectPathScope'],
+                             'redirectQueryPresent': x['redirectQueryPresent']}
                             for x in data['observations']], separators=(',', ':')))
           PY
       - name: Save enum-only independent observations
