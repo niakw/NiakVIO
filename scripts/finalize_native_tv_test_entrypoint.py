@@ -23,7 +23,6 @@ PLUGIN_ENTRYPOINT = re.compile(
     r"        fun pluginManager\(\): PluginManager\n"
     r"        fun pluginRuntime\(\): com\.nuvio\.tv\.core\.plugin\.PluginRuntime\n"
     r"        fun pluginDataStore\(\): com\.nuvio\.tv\.data\.local\.PluginDataStore\n"
-    r"        fun pluginDataStore\(\): com\.nuvio\.tv\.data\.local\.PluginDataStore\n"
     r"    \}\n",
     re.MULTILINE,
 )
