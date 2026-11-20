@@ -471,8 +471,11 @@ try {
 
   const httpLog = path.join(tmp, 'repo-guest-http-observed.log');
   const httpOutput = path.join(tmp, 'repo-guest-http-observed.json');
-  fs.writeFileSync(httpLog, fs.readFileSync(dnsLog, 'utf8')
-    + 'FIELD_NATIVE_REPOSITORY_HTTP_RESPONSE client=tv fixture=sinners-2025 kind=manifest status=404\n');
+  // Restore a complete matched HTTP request+response rather than injecting
+  // an orphan response: the independent evidence-completeness gate rejects it.
+  fs.writeFileSync(httpLog, fs.readFileSync(installFailure, 'utf8')
+    .replace(b64('HTTP 404'), b64('Failed to parse repository: unrecognized format'))
+    .replace(originalLoad, logo + '\n' + originalLoad));
   const httpRun = spawnSync(process.execPath, [script, '--output', httpOutput, httpLog], {cwd: root, encoding: 'utf8'});
   assert.equal(httpRun.status, 0, httpRun.stderr + httpRun.stdout);
   assert.equal(JSON.parse(fs.readFileSync(httpOutput, 'utf8')).providerLoadIssues[0].failureClass,
