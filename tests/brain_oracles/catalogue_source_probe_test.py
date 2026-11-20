@@ -74,20 +74,32 @@ with tempfile.TemporaryDirectory() as temp:
     def fake_fetch(url):
         observed_urls.append(url)
         assert "/api/" not in url and "/player/" not in url
+        if url == "https://first.example.org/catalogue/mushoku-tensei-jobless-reincarnation/":
+            return (301, "", False, False,
+                    "https://fourth.example.org/catalogue/mushoku-tensei-jobless-reincarnation/?token=SECRET")
         if url.endswith("episodes.js"):
-            return 404, "<!doctype html><html><body>not found</body></html>", False, False
+            return 404, "<!doctype html><html><body>not found</body></html>", False, False, ""
         if "/saison1/vostfr/" in url:
-            return 200, TOKEN_PAGE, False, False
-        return 200, "<!doctype html><html><body>shell</body></html>", False, False
+            return 200, TOKEN_PAGE, False, False, ""
+        return 200, "<!doctype html><html><body>shell</body></html>", False, False, ""
 
     result = probe.run(root, request, fake_fetch)
     assert len(observed_urls) == result["probeRequestCount"] == 12
     assert result["inlineTokenResponseCount"] == 3
+    redirected = [row for row in result["observations"] if row["redirectObserved"]]
+    assert len(redirected) == 1
+    assert redirected[0]["redirectHostScope"] == "unregistered_candidate"
+    assert redirected[0]["redirectTargetHost"] == "fourth.example.org"
+    assert redirected[0]["redirectQueryPresent"] is True
+    assert redirected[0]["redirectPathScope"] == "same_path"
+    assert all("fourth.example.org" not in url for url in observed_urls)
     assert sum(x["sourceShape"] == "script_http_missing"
                for x in result["observations"]) == 3
     assert {x["originHost"] for x in result["observations"]} == {
         "first.example.org", "second.example.org", "third.example.org"
     }
+    assert all(row["redirectTargetHost"] == "" for row in result["observations"]
+               if not row["redirectObserved"])
     assert result["independentNetworkNotOfficialClient"] is True
     assert result["sourceContractVerifiedOnOfficialTv"] is False
     assert result["publicationAuthority"] is False
@@ -126,5 +138,11 @@ for url in (
 ):
     assert probe.origin(url) == "", url
 assert probe.origin("https://first.example.org/") == "first.example.org"
+unsafe = probe.redirect_target("https://first.example.org/foo", "http://127.0.0.1/?SECRET", ["first.example.org"])
+assert unsafe["redirectHostScope"] == "unsafe_or_oversized" and unsafe["redirectTargetHost"] == ""
+missing = probe.redirect_target("https://first.example.org/foo", "", ["first.example.org"])
+assert missing["redirectHostScope"] == "location_missing"
+same = probe.redirect_target("https://first.example.org/foo", "../bar?private=SECRET", ["first.example.org"])
+assert same["redirectHostScope"] == "same_origin" and same["redirectQueryPresent"] is True
 
 print("Source contract probe: bounded 12 GET, strict native SHA, privacy and negative tests passed")

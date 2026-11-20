@@ -121,7 +121,35 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, request, fp, code, msg, headers, newurl):
         return None
 
-def fetch(url: str) -> tuple[int, str, bool, bool]:
+def redirect_target(current_url: str, location: str, registered: list[str]) -> dict:
+    """Read-only Location classification: never request or store full target URL."""
+    if not location:
+        return {"redirectHostScope": "location_missing", "redirectTargetHost": "",
+                "redirectPathScope": "unknown", "redirectQueryPresent": False}
+    if not isinstance(location, str) or len(location) > 2048:
+        return {"redirectHostScope": "unsafe_or_oversized", "redirectTargetHost": "",
+                "redirectPathScope": "unknown", "redirectQueryPresent": False}
+    try:
+        target = urllib.parse.urljoin(current_url, location)
+        parsed = urllib.parse.urlsplit(target)
+        current = urllib.parse.urlsplit(current_url)
+        host = origin(target)
+        if not host:
+            raise ValueError("unsafe redirect")
+    except (ValueError, TypeError):
+        return {"redirectHostScope": "unsafe_or_oversized", "redirectTargetHost": "",
+                "redirectPathScope": "unknown", "redirectQueryPresent": False}
+    scope = ("same_origin" if host == current.hostname
+             else "registered_fallback" if host in registered
+             else "unregistered_candidate")
+    route = ("same_path" if parsed.path == current.path
+             else "catalogue_route" if parsed.path.startswith("/catalogue/")
+             else "root" if parsed.path in {"", "/"} else "other_path")
+    return {"redirectHostScope": scope, "redirectTargetHost": host,
+            "redirectPathScope": route, "redirectQueryPresent": bool(parsed.query)}
+
+
+def fetch(url: str) -> tuple[int, str, bool, bool, str]:
     """One GET; no redirects, cookies, browser or secondary requests."""
     req = urllib.request.Request(url, method="GET", headers={
         "User-Agent": "Mozilla/5.0 (compatible; NiakVIO-SourceShape/1.0)",
@@ -132,17 +160,19 @@ def fetch(url: str) -> tuple[int, str, bool, bool]:
     except urllib.error.HTTPError as error:
         response = error
     except (urllib.error.URLError, TimeoutError, OSError, ValueError):
-        return 0, "", False, True
+        return 0, "", False, True, ""
     try:
         with response:
             raw = response.read(MAX_BODY + 1)
             oversized = len(raw) > MAX_BODY
+            location = str(response.headers.get("Location") or "")
             return (int(response.status), "" if oversized
-                    else raw.decode("utf-8", errors="replace"), oversized, False)
+                    else raw.decode("utf-8", errors="replace"), oversized, False,
+                    location[:2049])
     except (TimeoutError, OSError, ValueError):
-        return 0, "", False, True
+        return 0, "", False, True, ""
 
-def run(root: Path, request: dict, fetcher: Callable[[str], tuple[int, str, bool, bool]] = fetch) -> dict:
+def run(root: Path, request: dict, fetcher: Callable[[str], tuple[int, str, bool, bool, str]] = fetch) -> dict:
     info, hosts = attest(root, request)
     slug, season, voice = info["catalogueSlug"], info["season"], info["voice"]
     # No redirects, dynamic navigation, token-resolution API, or player/media URL.
@@ -153,12 +183,17 @@ def run(root: Path, request: dict, fetcher: Callable[[str], tuple[int, str, bool
     rows = []
     for host in hosts:
         for kind, path in routes:
-            status, body, oversized, transport_error = fetcher("https://" + host + path)
+            request_url = "https://" + host + path
+            status, body, oversized, transport_error, location = fetcher(request_url)
             if (type(status) is not int or not 0 <= status <= 599
                     or not isinstance(body, str) or len(body) > MAX_BODY
                     or type(oversized) is not bool or type(transport_error) is not bool):
                 raise ValueError("invalid transport adapter result")
             shape = classify(status, "" if oversized else body)
+            redirect = redirect_target(request_url, location, hosts) if 300 <= status < 400 else {
+                "redirectHostScope": "not_redirect", "redirectTargetHost": "",
+                "redirectPathScope": "unknown", "redirectQueryPresent": False,
+            }
             rows.append({
                 "originHost": host, "routeKind": kind,
                 "httpStatus": status,
@@ -170,6 +205,7 @@ def run(root: Path, request: dict, fetcher: Callable[[str], tuple[int, str, bool
                 "jetonDeclarationObserved": shape["jetonDeclarationObserved"],
                 "languageListDeclarationObserved": shape["languageListDeclarationObserved"],
                 "responseTooLarge": oversized, "transportError": transport_error,
+                **redirect,
             })
             if len(rows) >= MAX_REQUESTS:
                 break
