@@ -151,6 +151,7 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         "subtitle_track_count=${reader.subtitleTrackCount}",
         "video_height=${reader.videoHeight}",
         "audio_variant_matrix64=${b64(transport.audioVariantMatrix)}",
+        "variant_codecs64=${b64(transport.variantCodecs)}",
     ):
         assert required in mobile_out, required
     assert mobile_out.count("FIELD_NATIVE_PLAYER_ENTRY client=mobile") == 1

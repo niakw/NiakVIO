@@ -122,6 +122,7 @@ TRANSPORT_HELPERS = r'''
         val audioVariantMatrix: String = "",
         val subtitleVariantMatrix: String = "",
         val variantHeights: String = "",
+        val variantCodecs: String = "",
     )
 
     data class LogoProbe(
@@ -227,6 +228,7 @@ TRANSPORT_HELPERS = r'''
         val audioGroup: String,
         val subtitleGroup: String,
         val captionsGroup: String,
+        val codecs: String,
     )
 
     private data class HlsTrackTopology(
@@ -237,6 +239,7 @@ TRANSPORT_HELPERS = r'''
         val audioVariantMatrix: String = "",
         val subtitleVariantMatrix: String = "",
         val variantHeights: String = "",
+        val variantCodecs: String = "",
     )
 
     private fun hlsAttribute(attrs: String, name: String): String {
@@ -298,6 +301,12 @@ TRANSPORT_HELPERS = r'''
                 hlsAttribute(attrs, "AUDIO"),
                 hlsAttribute(attrs, "SUBTITLES"),
                 hlsAttribute(attrs, "CLOSED-CAPTIONS").takeUnless { it.equals("NONE", ignoreCase = true) }.orEmpty(),
+                hlsAttribute(attrs, "CODECS")
+                    .split(',')
+                    .map { it.trim() }
+                    .filter { it.matches(Regex("""[A-Za-z0-9._-]{1,64}""")) }
+                    .distinct()
+                    .joinToString("|"),
             )
         }
         fun union(groups: Map<String, List<String>>): List<String> = groups.values.flatten().filter { it.isNotBlank() }.distinct()
@@ -313,6 +322,9 @@ TRANSPORT_HELPERS = r'''
             matrix { audioGroups[it.audioGroup].orEmpty() },
             matrix { (textGroups[it.subtitleGroup].orEmpty() + textGroups[it.captionsGroup].orEmpty()).distinct() },
             variants.map { it.height }.filter { it > 0 }.distinct().joinToString(","),
+            variants.filter { it.height > 0 }.joinToString(";") { variant ->
+                "${variant.height}:${variant.codecs}"
+            },
         )
     }
 
@@ -360,6 +372,7 @@ TRANSPORT_HELPERS = r'''
                         audioVariantMatrix = topology.audioVariantMatrix,
                         subtitleVariantMatrix = topology.subtitleVariantMatrix,
                         variantHeights = topology.variantHeights,
+                        variantCodecs = topology.variantCodecs,
                     )
                 }
             } else if (contentType.contains("text/html", ignoreCase = true) || body.trimStart().startsWith("<!doctype html", ignoreCase = true) || body.trimStart().startsWith("<html", ignoreCase = true)) {
@@ -440,7 +453,7 @@ class NiakvioNativeCorpusDesktopTest {{
                 }}
                 rows.firstOrNull()?.let {{ row ->
                     val probe = probeTransport(row.url, row.headers)
-                    emit("FIELD_NATIVE_TRANSPORT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} audio_track_count=${{probe.audioTrackCount}} audio_track_languages64=${{b64(probe.audioTrackLanguages)}} subtitle_track_count=${{probe.subtitleTrackCount}} subtitle_track_languages64=${{b64(probe.subtitleTrackLanguages)}} audio_variant_matrix64=${{b64(probe.audioVariantMatrix)}} subtitle_variant_matrix64=${{b64(probe.subtitleVariantMatrix)}} variant_heights64=${{b64(probe.variantHeights)}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")
+                    emit("FIELD_NATIVE_TRANSPORT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} audio_track_count=${{probe.audioTrackCount}} audio_track_languages64=${{b64(probe.audioTrackLanguages)}} subtitle_track_count=${{probe.subtitleTrackCount}} subtitle_track_languages64=${{b64(probe.subtitleTrackLanguages)}} audio_variant_matrix64=${{b64(probe.audioVariantMatrix)}} subtitle_variant_matrix64=${{b64(probe.subtitleVariantMatrix)}} variant_heights64=${{b64(probe.variantHeights)}} variant_codecs64=${{b64(probe.variantCodecs)}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")
                 }}
             }} catch (error: Throwable) {{
                 errors += provider.id + ":" + (error.message ?: error::class.simpleName.orEmpty())
@@ -575,7 +588,7 @@ class {klass} {{
                 }}
                 rows.firstOrNull()?.let {{ row ->
                     val probe = probeTransport(row.url, row.headers)
-                    emit("FIELD_NATIVE_TRANSPORT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} audio_track_count=${{probe.audioTrackCount}} audio_track_languages64=${{b64(probe.audioTrackLanguages)}} subtitle_track_count=${{probe.subtitleTrackCount}} subtitle_track_languages64=${{b64(probe.subtitleTrackLanguages)}} audio_variant_matrix64=${{b64(probe.audioVariantMatrix)}} subtitle_variant_matrix64=${{b64(probe.subtitleVariantMatrix)}} variant_heights64=${{b64(probe.variantHeights)}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")
+                    emit("FIELD_NATIVE_TRANSPORT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} audio_track_count=${{probe.audioTrackCount}} audio_track_languages64=${{b64(probe.audioTrackLanguages)}} subtitle_track_count=${{probe.subtitleTrackCount}} subtitle_track_languages64=${{b64(probe.subtitleTrackLanguages)}} audio_variant_matrix64=${{b64(probe.audioVariantMatrix)}} subtitle_variant_matrix64=${{b64(probe.subtitleVariantMatrix)}} variant_heights64=${{b64(probe.variantHeights)}} variant_codecs64=${{b64(probe.variantCodecs)}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")
                 }}
             }} catch (error: Throwable) {{
                 errors += provider.id + ":" + (error.message ?: error::class.simpleName.orEmpty())
