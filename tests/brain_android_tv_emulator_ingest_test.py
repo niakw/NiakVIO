@@ -174,6 +174,50 @@ with tempfile.TemporaryDirectory() as folder:
     script_shape["appSelectionObservations"][0]["eligible"] = False
     assert mod.sanitized_rows(script_shape)[0]["nativeSourceScriptShapePatterns"] == []
 
+    # Whole-catalogue family evidence must reach Learning instead of being
+    # silently truncated after the first 32 selected providers.
+    cohort_root = Path(folder) / "cohort-source"
+    (cohort_root / "providers").mkdir(parents=True)
+    (cohort_root / "vf").mkdir()
+    cohort_names = [f"cohort{i:02d}" for i in range(60)]
+    for name in cohort_names:
+        (cohort_root / "providers" / f"{name}.js").write_text(f"// {name} test fixture")
+    (cohort_root / "manifest.json").write_text(json.dumps({"scrapers": [
+        {"id": name, "enabled": True, "filename": f"providers/{name}.js"}
+        for name in cohort_names
+    ]}))
+    (cohort_root / "vf/manifest.json").write_text('{"scrapers":[]}')
+    cohort_report = {
+        "schemaVersion": 5, "evidenceComplete": True, "officialClientSha": "d" * 40,
+        "appSelectionObservations": [
+            {"client": "tv", "provider": name, "fixture": "jujutsu-kaisen-s01e01",
+             "requestType": "anime", "eligible": True}
+            for name in cohort_names
+        ],
+        "sourceScriptShapeDiagnostics": [
+            {"client": "tv", "provider": name, "fixture": "jujutsu-kaisen-s01e01",
+             "requestType": "anime", "phase": "provider-runtime-pre-player",
+             "expectedResource": "javascript_episode_source",
+             "pattern": "script_html_2xx", "httpStatusClass": "2xx",
+             "proofAuthority": False, "publicationAuthority": False,
+             "nativePlaybackAuthority": False, "providerJsMutationAllowed": False,
+             "coreOrManifestProposalAllowed": False, "rawHtml": "SECRET_HTML"}
+            for name in cohort_names
+        ],
+    }
+    assert len(mod.sanitized_rows(cohort_report)) == 60
+    cohort_memory = mod.merge({}, [cohort_report], source_root=cohort_root,
+                              source_sha=sha, run_id="1013")
+    assert cohort_memory["providerCount"] == 60
+    assert cohort_memory["observationCount"] == 60
+    assert {row["provider"] for row in cohort_memory["rows"]} == set(cohort_names)
+    assert all(row["nativeSourceScriptShapePatterns"] == ["script_html_2xx"]
+               and row["appSelected"] is True
+               and row["providerMutationAuthority"] is False
+               and row["publicationAuthority"] is False
+               for row in cohort_memory["rows"])
+    assert "SECRET_HTML" not in json.dumps(cohort_memory)
+
     assert x["quickJsPhases"] == ["call", "result", "error"]
     assert x["playerStates"] == []
     assert x["readerEvidenceComplete"] is False

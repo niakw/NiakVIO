@@ -248,13 +248,13 @@ for (const [sourceLogIndex, file] of logPaths.entries()) {
               if (!sourceScriptShapeSeen.has(shapeKey)) {
                 sourceScriptShapeSeen.add(shapeKey);
                 sourceScriptShapeDiagnostics.push({
-                ...activeProviderRoute,
-                phase: 'provider-runtime-pre-player',
-                expectedResource: 'javascript_episode_source',
+                  ...activeProviderRoute,
+                  phase: 'provider-runtime-pre-player',
+                  expectedResource: 'javascript_episode_source',
                   pattern,
-                httpStatusClass: htmlAt200 ? '2xx' : '4xx',
-                proofAuthority: false, publicationAuthority: false,
-                nativePlaybackAuthority: false, providerJsMutationAllowed: false,
+                  httpStatusClass: htmlAt200 ? '2xx' : '4xx',
+                  proofAuthority: false, publicationAuthority: false,
+                  nativePlaybackAuthority: false, providerJsMutationAllowed: false,
                   coreOrManifestProposalAllowed: false,
                 });
               }

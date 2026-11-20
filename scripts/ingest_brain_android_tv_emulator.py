@@ -383,7 +383,9 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
             row["playerStates"] = []
             row["playerFailureClasses"] = []
         accepted.append(row)
-    return accepted[:32]
+    # Preserve a complete 60-provider catalogue cohort without permitting
+    # unbounded records from a single diagnostic artifact.
+    return accepted[:96]
 
 
 def merge(previous: dict[str, Any], reports: list[dict[str, Any]], *,
