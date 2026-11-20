@@ -55,7 +55,10 @@ with tempfile.TemporaryDirectory(prefix="niakvio-native-target-matrix-") as dire
     full = run([])
     assert full.returncode == 1, (full.stdout, full.stderr)
     assert "mode=full" in full.stdout and "type=tv" in full.stdout
-    assert "status=PARTIAL" in full.stdout, full.stdout
+    # Missing a declared lane is incomplete harness coverage even if the
+    # observed lane was positive; never report partial provider functionality.
+    assert "status=INCOMPLETE" in full.stdout, full.stdout
+    assert "reason=missing_begin" in full.stdout, full.stdout
 
     targeted = run(["--target-fixture", "jujutsu-kaisen-s01e01"])
     assert targeted.returncode == 0, (targeted.stdout, targeted.stderr)
