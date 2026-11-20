@@ -1,0 +1,67 @@
+name: BRAIN - Catalogue Source Contract Probe
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/brain-catalogue-source-probe.yml'
+      - '.github/triggers/brain-catalogue-source-probe.json'
+      - 'scripts/brain_oracles/catalogue_inline_episode_source.py'
+      - 'scripts/brain_oracles/probe_catalogue_inline_live.py'
+      - 'tests/brain_oracles/catalogue_inline_live_test.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niakvio-catalogue-source-shape-probe-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  read-only-source-shape:
+    name: Independent source shape (not official Android TV)
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+      - name: Validate exact workflow SHA and syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          python -m py_compile scripts/brain_oracles/catalogue_inline_episode_source.py scripts/brain_oracles/probe_catalogue_inline_live.py
+      - name: Prove source-shape and mutation-denial contracts offline
+        run: python tests/brain_oracles/catalogue_inline_live_test.py
+      - name: Probe only curated catalogue paths, without media or raw HTML persistence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/brain_oracles/probe_catalogue_inline_live.py \
+            --request .github/triggers/brain-catalogue-source-probe.json \
+            --source-root . \
+            --output "$RUNNER_TEMP/catalogue-source-shape.json"
+          python - "$RUNNER_TEMP/catalogue-source-shape.json" <<'PY'
+          import json, sys
+          result=json.load(open(sys.argv[1]))
+          assert result["independentNetworkNotOfficialClient"] is True
+          assert result["publicationAuthority"] is False
+          assert result["providerMutationAuthority"] is False
+          assert result["sourceContractVerifiedOnOfficialTv"] is False
+          assert result["probeRequestCount"] <= 12
+          assert len(result["observations"]) == result["probeRequestCount"]
+          print("FIELD_BRAIN_SOURCE_CONTRACT_GATE independent_only=true playback=false publication=false")
+          PY
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: catalogue-source-shape-${{ github.run_id }}
+          path: ${{ runner.temp }}/catalogue-source-shape.json
+          retention-days: 7
+          if-no-files-found: ignore
