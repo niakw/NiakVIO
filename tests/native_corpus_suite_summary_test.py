@@ -129,6 +129,8 @@ with tempfile.TemporaryDirectory() as tmp:
 
     assert data["nativeReaderObserved"] == 3, data
     assert data["nativeReaderHealthy"] == 1, data
+    assert data["mediaVerified"] == 1, data
+    assert data["nativeEvidenceComplete"] is True, data
     assert data["nativeReaderFailures"] == 2, data
     assert data["readerFailureClasses"]["playback_http_access"] == 2, data
     moviesdrive = next(row for row in data["providerReaderFailures"] if row["provider"] == "moviesdrive")
@@ -164,6 +166,9 @@ with tempfile.TemporaryDirectory() as tmp:
     missing = json.loads(negative_output.read_text())
     assert missing["nativeReaderObserved"] == 3, missing
     assert missing["nativeReaderHealthy"] == 0, missing
+    assert missing["mediaVerified"] == 0, missing
+    assert missing["nativeEvidenceComplete"] is True, missing
+    assert "media_verified=0" in negative.stdout, negative.stdout
     assert missing["readerFailureClasses"]["playback_video_format_unverified"] == 1, missing
     assert missing["nativeReaderFailures"] == 3, missing
 
