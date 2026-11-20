@@ -72,6 +72,72 @@ jobs:
             echo "FIELD_BRAIN_CANDIDATE_RECOVERY status=dispatched run=$candidate_run_id publication=false"
             exit 0
           done
+          # Re-use one already executed/restored V29 negative only when its
+          # Brain Core V30 follow-up is still unmaterialized. No V29 replay.
+          ledger_file="$(mktemp)"
+          pending_file="$(mktemp)"
+          gh api "repos/$GITHUB_REPOSITORY/contents/automation/brain-native-candidate-experiments.json" \
+            --jq '.content' | base64 --decode > "$ledger_file"
+          python3 - "$ledger_file" "$pending_file" <<'PY'
+          import json, re, sys
+          from pathlib import Path
+          ledger = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+          if (ledger.get("authority") != "candidate-only" or
+              ledger.get("publicationAuthority") is not False or
+              ledger.get("providerMutationAuthority") is not False):
+              raise SystemExit("untrusted Brain candidate recovery ledger")
+          found = []
+          for parent in ledger.get("rows") or []:
+              if not isinstance(parent, dict) or parent.get("candidateFollowUpExperiments"):
+                  continue
+              if parent.get("candidateOnly") is not True or parent.get("generatedByBrain") is not True:
+                  continue
+              attempts = parent.get("candidateAttempts") or []
+              for route in parent.get("candidateBrainReroutes") or []:
+                  if (not isinstance(route, dict) or
+                      route.get("strategy") != "reuse_successful_hls_root_across_core_validation" or
+                      route.get("targetLayer") != "core" or
+                      route.get("modelExecuted") is not False or
+                      route.get("validatedRepair") is not False):
+                      continue
+                  for attempt in attempts:
+                      if (not isinstance(attempt, dict) or
+                          str(attempt.get("candidateRunId")) != str(route.get("candidateRunId")) or
+                          attempt.get("candidateSourceSha") != route.get("candidateSourceSha") or
+                          attempt.get("candidateVerdict") != "candidate_zero_stream" or
+                          attempt.get("candidateExecutionObserved") is not True or
+                          attempt.get("candidateRestoredObserved") is not True or
+                          attempt.get("candidateDecodedVideoObserved") is not False or
+                          attempt.get("validatedRepair") is not False or
+                          attempt.get("publicationAllowed") is not False):
+                          continue
+                      run = str(attempt["candidateRunId"])
+                      sha = str(attempt["candidateSourceSha"])
+                      if re.fullmatch(r"[0-9]{8,20}", run) and re.fullmatch(r"[0-9a-f]{40}", sha):
+                          found.append((int(run), sha))
+          if found:
+              run, sha = sorted(set(found), reverse=True)[0]
+              Path(sys.argv[2]).write_text(str(run)+" "+sha+"\\n", encoding="utf-8")
+          PY
+          if [ -s "$pending_file" ]; then
+            read -r candidate_run_id candidate_source_sha < "$pending_file"
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$candidate_run_id" |
+              jq -e --arg sha "$candidate_source_sha" --arg repo "$GITHUB_REPOSITORY" '
+                .head_sha == $sha and .head_repository.full_name == $repo
+                and .head_branch == "main" and .event == "workflow_dispatch"
+                and .status == "completed" and .name == "NATIVE - Device Corpus Tests"
+              ' >/dev/null
+            count="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$candidate_run_id/artifacts" \
+              --jq '[.artifacts[] | select(.name | startswith("native-candidate-tv-"))] | length')"
+            if [ "$count" != "1" ]; then
+              echo "FIELD_BRAIN_V30_RECOVERY status=missing_exact_candidate_artifact run=$candidate_run_id"
+              exit 0
+            fi
+            gh workflow run brain-android-tv-emulator-feedback.yml --repo "$GITHUB_REPOSITORY" --ref main \
+              -f candidate_run_id="$candidate_run_id" -f candidate_source_sha="$candidate_source_sha"
+            echo "FIELD_BRAIN_V30_RECOVERY status=dispatched_existing_negative run=$candidate_run_id publication=false"
+            exit 0
+          fi
           echo "FIELD_BRAIN_CANDIDATE_RECOVERY status=no_unlearned_candidate"
 
   ingest:
