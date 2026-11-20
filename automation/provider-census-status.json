@@ -1847,7 +1847,7 @@
       ],
       "harnessTransportClass": "residential-exit-native-reachable",
       "harnessTransportEvidence": [
-        "anime: browser=browser_challenge_persisted, tv-browser=browser_challenge_observed, okhttp=okhttp_jvm_challenge_persisted, desktop-okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
+        "anime: browser=browser_challenge_persisted, tv-browser=browser_challenge_observed, okhttp=okhttp_jvm_challenge_persisted, desktop-okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
       ],
       "authorityRepairEligible": true,
       "authorityAction": "KEEP_ROUTE_AUTHORITY",
@@ -1865,7 +1865,11 @@
       "brainCheckRequired": true,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": false
+      "testedThisRun": false,
+      "residentialProviderReplayClass": "playable-unverified",
+      "residentialProviderReplayEvidence": [
+        "anime: status=wrong_content, stage=provider_returned_wrong_content, raw=1, playable=1, verified=0, identitySafe=false"
+      ]
     },
     {
       "provider": "french-manga",
@@ -3850,9 +3854,9 @@
     },
     {
       "provider": "streamzo",
-      "status": "PARTIAL OK",
-      "underlyingStatus": "",
-      "color": "🟡",
+      "status": "DISABLED",
+      "underlyingStatus": "PARTIAL OK",
+      "color": "⚫",
       "declaredLanes": [
         "anime",
         "movie",
@@ -3888,20 +3892,16 @@
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
-      "authorityRepairEligible": true,
-      "authorityAction": "KEEP_DIRECT",
-      "authorityClass": "direct",
-      "authorityConfidence": "medium",
+      "authorityRepairEligible": false,
+      "authorityAction": "KEEP_DISABLED",
+      "authorityClass": "disabled",
+      "authorityConfidence": "terminal",
       "authorityReasons": [
-        "curated_direct",
-        "existing_positive_route_prior",
-        "current_bytes_lack_production_freshness_authority",
-        "production_proof:no-current-byte-production-proof",
-        "current_status:PARTIAL OK"
+        "already_disabled"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
-      "action": "protect green lanes; BRAIN checks missing lanes",
+      "action": "provider lifecycle/authority blocks Repair; keep disabled until a new authoritative provider address/backend is qualified",
       "brainCheckRequired": false,
       "statusRepairEligible": false,
       "repairEligible": false,
@@ -5277,12 +5277,11 @@
   "counts": {
     "CANDIDATE OK": 1,
     "CHAIN REACHED": 22,
-    "DISABLED": 35,
+    "DISABLED": 36,
     "FULL OK": 7,
     "HARNESS MISMATCH": 5,
     "HARNESS/ENV BLOCKED": 14,
     "NO PROOF": 9,
-    "PARTIAL OK": 1,
     "PROOF REFRESH REQUIRED": 4,
     "PROVIDER NETWORK BLOCKED": 8,
     "REGRESSION PROVIDER": 4,
@@ -5498,6 +5497,7 @@
     "showbox",
     "skstream",
     "stigstream",
+    "streamzo",
     "topcartoons",
     "uhdmovies",
     "videasy",
@@ -5543,6 +5543,7 @@
     "persianstremio",
     "playimdb",
     "sekai",
+    "streamzo",
     "topcartoons",
     "uhdmovies",
     "vidfast",
@@ -5638,9 +5639,11 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "44793877717-sharded-waf",
-  "harnessEvidenceSha": "697f123c74e4070c251d02c9113437408c8f209f",
-  "authorityRefreshedProviders": [],
+  "harnessEvidenceRunId": "44794800400-waf-transport",
+  "harnessEvidenceSha": "497cc002b3bd53563bface80e308b13c672b5d51",
+  "authorityRefreshedProviders": [
+    "streamzo"
+  ],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
     "aniflix-uno",
@@ -5741,17 +5744,21 @@
       "yflix"
     ],
     "rawProviders": [
+      "french-anime",
       "purstream",
       "vostfree"
     ],
     "playableProviders": [
+      "french-anime",
       "purstream",
       "vostfree"
     ],
     "verifiedProviders": [
       "vostfree"
     ],
-    "wrongContentProviders": [],
+    "wrongContentProviders": [
+      "french-anime"
+    ],
     "rows": [
       {
         "provider": "1jour1film0626",
@@ -6824,27 +6831,27 @@
         "provider": "french-anime",
         "providerArtifactSha256": "0d571fa4301a0e4e71147fb8586308837fa5b970006e0907b69b1f707e3b29e3",
         "lane": "anime",
-        "status": "no_streams",
-        "debugStage": "provider_zero_before_provider_network",
-        "sampleCount": 4,
+        "status": "wrong_content",
+        "debugStage": "provider_returned_wrong_content",
+        "sampleCount": 1,
         "sampleDebugStages": [
-          "provider_zero_before_provider_network"
+          "provider_returned_wrong_content"
         ],
         "sampleStatuses": [
-          "no_streams"
+          "wrong_content"
         ],
         "sampleProgressStages": [
-          "none"
+          "chain_reached"
         ],
-        "raw": 0,
-        "playable": 0,
+        "raw": 1,
+        "playable": 1,
         "verified": 0,
-        "contradictions": 0,
-        "identitySafe": true,
+        "contradictions": 1,
+        "identitySafe": false,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "c256398d631615fd543c7323a0f4d244367506eb",
+          "sourceNiakvioSha": "497cc002b3bd53563bface80e308b13c672b5d51",
           "providerBundleSha256": "0d571fa4301a0e4e71147fb8586308837fa5b970006e0907b69b1f707e3b29e3",
-          "runId": "44793003848",
+          "runId": "44794800400",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7755,26 +7762,26 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": false,
-      "providerCount": 0,
+      "available": true,
+      "providerCount": 1,
       "refreshedProviders": [
-        "1jour1film0626",
-        "aniflix-uno",
-        "animejlprovider",
-        "animeonsen",
-        "animesalt",
-        "arrowtv",
-        "chillflix",
-        "cinegram",
-        "cinetimes",
-        "corsflix"
+        "french-anime"
       ],
-      "replayedProviders": [],
-      "rawProviders": [],
-      "playableProviders": [],
+      "replayedProviders": [
+        "french-anime"
+      ],
+      "rawProviders": [
+        "french-anime"
+      ],
+      "playableProviders": [
+        "french-anime"
+      ],
       "verifiedProviders": [],
-      "sourceNiakvioSha": "",
-      "runId": "",
+      "byteMatchedProviders": [
+        "french-anime"
+      ],
+      "sourceNiakvioSha": "497cc002b3bd53563bface80e308b13c672b5d51",
+      "runId": "44794800400",
       "proofAuthority": false,
       "publicationAuthority": false
     },
