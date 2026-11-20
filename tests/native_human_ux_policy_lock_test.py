@@ -96,6 +96,7 @@ for workflow in ANDROID_WORKFLOWS:
     assert "restore-keys:" not in workflow
     assert workflow.count("Prime Android adb server") == 1
     assert "prime_android_lab_adb.sh" in workflow
+    assert workflow.count("~/.android/adb*") == 1
     assert workflow.count("~/.android/debug.keystore") == 1
 
 tv_cache_lines = [

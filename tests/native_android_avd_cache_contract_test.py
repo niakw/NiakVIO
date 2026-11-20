@@ -17,6 +17,7 @@ for workflow in (TV, ANDROID):
     for line in workflow.splitlines():
         if "key: avd-v6-" in line:
             assert "needs.resolve.outputs" not in line
+    assert "~/.android/adb*" in workflow
     assert "~/.android/debug.keystore" in workflow
     assert "-no-snapshot-load -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim" in workflow
     assert "-no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim" in workflow

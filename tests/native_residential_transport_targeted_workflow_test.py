@@ -105,7 +105,9 @@ assert "Prime Android adb server" in workflow
 assert "prime_android_lab_adb.sh" in workflow
 assert "avd-v6-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2" in workflow
 assert "avd-v6-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p" in workflow
+assert "~/.android/adb*" in workflow
 assert "~/.android/debug.keystore" in workflow
+assert "avd-v5-" not in workflow
 assert "avd-v2-" not in workflow
 assert "harden_nuvio_mobile_device_test.py" not in workflow
 assert "prepare_native_corpus_client.py mobile" in workflow
