@@ -67,6 +67,8 @@ SOURCE_FAMILY_CORRECTION_RETRY_TIMEOUT_SECONDS = 600
 EDIT_VALIDATION_CORRECTION_ROUNDS = 2
 MATERIALIZED_CORRECTION_ROUNDS = 3
 MAX_MATERIALIZED_FAILURE_CONTEXT = 3200
+# The model may extend the Brain diagnostic body, never rewrite its signature.
+SOURCE_FAMILY_RUNTIME_ANCHOR = '        source_text = source_bytes.decode("utf-8")'
 
 
 class MaterializedValidationError(ValueError):
@@ -1638,6 +1640,21 @@ def _compile_source_family_program(
             or len(values["runtimeFind"]) > MAX_FIND
             or len(values["runtimeReplace"]) > MAX_REPLACE):
         raise ValueError("source-family program exceeds bounded edit limits")
+    # Make the splice Brain-owned: never let Qwen remove a function signature,
+    # change source decoding, or choose an unrelated runtime edit target.
+    anchor = SOURCE_FAMILY_RUNTIME_ANCHOR
+    if values["runtimeFind"] != anchor:
+        raise ValueError(
+            "source-family runtimeFind must equal the Brain-owned decode anchor; "
+            "never replace a def header or unrelated source"
+        )
+    if (not values["runtimeReplace"].startswith(anchor + "\n")
+            or values["runtimeReplace"].count(anchor) != 1
+            or not values["runtimeReplace"][len(anchor):].strip()):
+        raise ValueError(
+            "source-family runtimeReplace must retain the exact decode anchor "
+            "once, followed by the additional indented Brain hook"
+        )
     paths = _source_family_artifact_paths(payload)
     return [
         {"operation": "create", "path": paths["modulePath"],
@@ -1770,9 +1787,12 @@ def _model_request(
             "Code must preserve season, episode index and language, return "
             "opaque tokens only, never invent player URLs, media proof, "
             "hosts, secrets, signed links, or author provider JS. "
-            "Use exact substring from supplied runtime source for replace "
-            "(max 600 characters). New module plus real Brain wiring plus "
-            "test must execute and pass; do not claim publication or playback."
+            "Use sourceFamilyRuntimeAnchor EXACTLY as runtimeFind, including "
+            "its indentation. runtimeReplace MUST begin with that unchanged "
+            "anchor followed by a newline and correctly indented new Python "
+            "hook statements. Never replace an existing def header, "
+            "function signature or unrelated runtime source. Module, Brain "
+            "hook and independent episode test must pass. No claimed playback."
         )
     else:
         system = (
@@ -2109,6 +2129,7 @@ def _compact_payload(payload: dict[str, Any]) -> dict[str, Any]:
     compact["sources"] = sources
     if _requires_new_source_family_lego(payload):
         compact["sourceFamilyArtifactPaths"] = _source_family_artifact_paths(payload)
+        compact["sourceFamilyRuntimeAnchor"] = SOURCE_FAMILY_RUNTIME_ANCHOR
     keep = {
         "capability_gap_detector",
         "meta_learning_gap_synthesis",
@@ -2141,6 +2162,7 @@ def _minimal_payload(payload: dict[str, Any]) -> dict[str, Any]:
     minimal["sources"] = sources
     if _requires_new_source_family_lego(payload):
         minimal["sourceFamilyArtifactPaths"] = _source_family_artifact_paths(payload)
+        minimal["sourceFamilyRuntimeAnchor"] = SOURCE_FAMILY_RUNTIME_ANCHOR
     return minimal
 
 
@@ -2560,11 +2582,33 @@ def _validated_generated_edits(
     validation gates remain mandatory and can reject every candidate.
     """
     new_profile = _requires_new_repair_profile(payload)
-    max_corrections = 2 if new_profile else 0
+    source_family = _requires_new_source_family_lego(payload)
+    max_corrections = 2 if new_profile else 1 if source_family else 0
     for round_index in range(max_corrections + 1):
         try:
             return planned, _model_edits(planned, payload, root=root)
         except ValueError as error:
+            if source_family:
+                if round_index >= max_corrections:
+                    raise
+                print(
+                    "FIELD_BRAIN_ARCH_FORCE_MODEL_RETRY "
+                    f"reason=source-family-typed-contract round={round_index + 1} "
+                    f"error={str(error)[:220]}",
+                    flush=True,
+                )
+                correction = _minimal_payload(payload)
+                correction["correctionReason"] = "source-family-typed-contract"
+                correction["validationError"] = str(error)[:400]
+                correction["correctionContract"] = {
+                    "keepExactRuntimeDecodeAnchor": SOURCE_FAMILY_RUNTIME_ANCHOR,
+                    "neverReplaceFunctionHeader": True,
+                    "mustProducePureParserAndExecutableHook": True,
+                    "mustReturnSourceFamilyProgram": True,
+                    "providerPublicationAuthority": False,
+                }
+                planned = _request_corrected_plan(endpoint, model, correction)
+                continue
             numeric_clone = "numeric-only strategy clone" in str(error).casefold()
             if new_profile and numeric_clone and round_index >= 1:
                 fallback = _brain_lego_recovery_fallback(payload, root=root)
