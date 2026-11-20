@@ -11,6 +11,8 @@ for needle in (
     "status=skipped_candidate_source",
     "candidate dispatch is bounded to exactly one provider/fixture",
     "candidate route provenance mismatch",
+    "brain-native-candidate-experiments.json",
+    "tested-source/automation/brain-native-candidate-experiments.json",
     "candidateOnly",
     "generatedByBrain",
     "providerMutationAuthority",
