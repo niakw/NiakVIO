@@ -1266,11 +1266,11 @@ fixture = (
 )
 first = repr(parser(fixture, 1))
 second = repr(parser(fixture, 2))
-for token in ("LEGOTEST_ALPHA_1", "LEGOTEST_BETA_1"):
-    assert token in first, "episode 1 omitted its distinct source group"
+for token in ("LEGOTEST_ALPHA_1", "LEGOTEST_ALPHA_2"):
+    assert token in first, "episode 1 omitted its reader group"
     assert token not in second, "episode 1 leaked into episode 2"
-for token in ("LEGOTEST_ALPHA_2", "LEGOTEST_BETA_2"):
-    assert token in second, "episode 2 omitted its distinct source group"
+for token in ("LEGOTEST_BETA_1", "LEGOTEST_BETA_2"):
+    assert token in second, "episode 2 omitted its reader group"
     assert token not in first, "episode 2 leaked into episode 1"
 assert first != second, "both episode indices produced the same source output"
 assert "PRIVATE_TEST_JETON" not in first + second, "token credential returned"
@@ -1628,8 +1628,8 @@ def _source_family_contract_test(module_name: str) -> str:
         raise ValueError("source-family generated test module identifier invalid")
     fixture = (
         '<html><script>'
-        'var eps1 = ["lien:LEGOTEST_ALPHA_1","lien:LEGOTEST_BETA_1"];'
-        'var eps2 = ["lien:LEGOTEST_ALPHA_2","lien:LEGOTEST_BETA_2"];'
+        'var eps1 = ["lien:LEGOTEST_ALPHA_1","lien:LEGOTEST_ALPHA_2"];'
+        'var eps2 = ["lien:LEGOTEST_BETA_1","lien:LEGOTEST_BETA_2"];'
         'var epsJeton = "PRIVATE_TEST_JETON";'
         '</script></html>'
     )
@@ -1638,9 +1638,9 @@ def _source_family_contract_test(module_name: str) -> str:
         f"html = {fixture!r}",
         "first = repr(parse_episode_source(html, 1))",
         "second = repr(parse_episode_source(html, 2))",
-        "for token in ('LEGOTEST_ALPHA_1', 'LEGOTEST_BETA_1'):",
+        "for token in ('LEGOTEST_ALPHA_1', 'LEGOTEST_ALPHA_2'):",
         "    assert token in first and token not in second, token",
-        "for token in ('LEGOTEST_ALPHA_2', 'LEGOTEST_BETA_2'):",
+        "for token in ('LEGOTEST_BETA_1', 'LEGOTEST_BETA_2'):",
         "    assert token in second and token not in first, token",
         "assert first != second",
         "assert 'PRIVATE_TEST_JETON' not in first + second",
@@ -1810,9 +1810,11 @@ def _model_request(
             "In addition, Brain independently executes a trusted two-episode "
             "fixture: eps1 has lien:LEGOTEST_ALPHA_1 and _2, eps2 has "
             "lien:LEGOTEST_BETA_1 and _2. Parsing episode=1 must return both "
-            "index-1 opaque identifiers but neither index-2 identifier; "
-            "episode=2 must do the reverse. eps1/eps2 are separate reader "
-            "groups, and the array index is the episode. Avoid returning "
+            "ALPHA opaque reader identifiers but no BETA identifiers; "
+            "episode=2 must return both BETA identifiers but no ALPHA. "
+            "The number in epsN is the EPISODE index; array items are "
+            "independent reader sources for that episode, NOT episodes. "
+            "Do not select array[episode-1] from every epsN. Avoid returning "
             "epsJeton or fabricating URLs. "
             "Code must preserve season, episode index and language, return "
             "opaque tokens only, never invent player URLs, media proof, "
