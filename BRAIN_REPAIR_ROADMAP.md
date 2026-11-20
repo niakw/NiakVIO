@@ -1,3 +1,9 @@
+### 20 novembre — Capacité du pipeline par cohorte et stratégie Brain 404/410 seule
+
+Le collecteur `13153c1c` conserve 96 signatures distinctes sans saturation par les retries ; `fe12982b` passe de 32 à 96 observations source-scopées par rapport (test 60 providers fictifs), et le Brain CI-validé `ba2ba1d` différencie désormais `script_http_missing` (404/410) de `script_html_2xx` (200 HTML). Les deux branches restent en `llm_diagnose` sans mutation, sans amalgame WAF/route/slug ; ni ces tests ni les états d'availability ne prouvent une lecture.
+
+**Prochaine porte produit** : attester les gates sur le SHA NiakVIO final, puis produire de nouvelles preuves source-pinnées via NuvioTV officiel pour Anime-Sama, franchir Learning→Brain→candidat→retour lecteur ; vérifier vidéo effective, bon épisode, pistes FR/JA, qualité et un sibling réellement de la même signature avant diffusion. V31 demeure candidat non publié : deux flux et décodeur instrumenté, zéro screenshot du film certifié. **0 réparation validée.**
+
 ### 20 novembre — Familles native TV : dépôt DNS ≠ source épisodes 404/200 HTML ≠ HLS V31
 
 **Observé et testé** : la cohorte source-pinnée `44765346840` (Mushoku S01E01) a rétabli le démarrage ADB, mais French-Manga n'a pas passé l'installation du dépôt (`unrecognized format`, `UnknownHostException` sur une autre ressource du même hôte), alors qu'Anime-Sama a passé l'installation et exécuté ~26,4 s pour zéro flux. Les 404 de `episodes.js` et les 200 contenant du HTML chez Anime-Sama signalent une **mauvaise forme de réponse**, sans démontrer l'origine WAF/slug/route. Ne pas assimiler ces providers ni appliquer le Lego V31 HLS aux symptômes 404/HTML.
