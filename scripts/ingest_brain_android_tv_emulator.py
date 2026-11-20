@@ -114,6 +114,7 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
                 "sameMediaRootSuccessThenForbidden": False,
                 "hlsPlaylist2xxNearProviderBudgetZeroObserved": False,
                 "nativePrePlayerHostOutcomes": [],
+                "nativeSourceScriptShapePatterns": [],
                 "playerVideoFormatUnverified": False,
                 "independentTerminalHttpStatuses": [],
                 "playerStates": [], "playerFailureClasses": [],
@@ -267,6 +268,32 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
     for row in samples.values():
         row["nativePrePlayerHostOutcomes"].sort(key=lambda value: value["sequence"])
 
+
+    # Preserve only enum-only, source-scoped evidence for expected scripts:
+    # HTTP 404/410 or HTTP 2xx whose body is HTML, not valid episodes.js.
+    for item in (report.get("sourceScriptShapeDiagnostics") or [])[:96]:
+        if not isinstance(item, dict):
+            continue
+        row = get(item)
+        pattern = item.get("pattern")
+        if (
+            row is None
+            or pattern not in {"script_html_2xx", "script_http_missing"}
+            or item.get("phase") != "provider-runtime-pre-player"
+            or item.get("expectedResource") != "javascript_episode_source"
+            or item.get("httpStatusClass") != (
+                "2xx" if pattern == "script_html_2xx" else "4xx"
+            )
+            or any(item.get(key) is not False for key in (
+                "proofAuthority", "publicationAuthority",
+                "nativePlaybackAuthority", "providerJsMutationAllowed",
+                "coreOrManifestProposalAllowed",
+            ))
+        ):
+            continue
+        if pattern not in row["nativeSourceScriptShapePatterns"]:
+            row["nativeSourceScriptShapePatterns"].append(pattern)
+
     # HTTP status comes from an independent network probe, NOT an observed
     # player decoder/network result; it remains a bounded negative hypothesis.
     for item in (report.get("terminalTransportDiagnostics") or [])[:128]:
@@ -348,6 +375,7 @@ def sanitized_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
             row["nativeExtractionPositiveObserved"] = False
             row["nativeExtractionReturnedCount"] = 0
             row["nativePrePlayerHostOutcomes"] = []
+            row["nativeSourceScriptShapePatterns"] = []
             row["playerVideoFormatUnverified"] = False
             row["independentTerminalHttpStatuses"] = []
             row["nativeHardTimeoutObserved"] = False
@@ -430,6 +458,10 @@ def merge(previous: dict[str, Any], reports: list[dict[str, Any]], *,
                 )
                 and type(value.get("httpStatus")) is int and 200 <= value.get("httpStatus") <= 599
             ],
+            "nativeSourceScriptShapePatterns": [
+                x for x in (record.get("nativeSourceScriptShapePatterns") or [])
+                if x in {"script_html_2xx", "script_http_missing"}
+            ][:2],
             "playerVideoFormatUnverified": record.get("playerVideoFormatUnverified") is True,
             "independentTerminalHttpStatuses": sorted({
                 v for v in (record.get("independentTerminalHttpStatuses") or [])
