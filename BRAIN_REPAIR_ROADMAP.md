@@ -1,5 +1,10 @@
 # NiakVIO — Brain Repair Roadmap and Decision Register
 
+### 20 November — V29 negative-memory routing correction (unit-tested, not a provider repair)
+
+Brain-LLM `761a90e` fixes a dead branch following V29: when the candidate runtime returned data but sanitized extraction was unconfirmed, the harness fallback previously returned before independent official-TV evidence of the *same HLS root* succeeding and then returning 403 could reach Core. The router now prefers that explicit 200→403 discriminator, but without it still selects harness observability; both paths have test coverage in [Brain CI 44697912505](https://github.com/niakw/NiakVIO-Brain-LLM/actions/runs/44697912505) (**SUCCESS**, exact `761a90e`). Parent gitlink advanced in `cd4e55e`. Native V29 re-execution, actual Core duplicate-fetch correction and terminal decoded correct episode/FR audio remain **not tested** by these commits. **0 Brain provider repairs certified.**
+
+
 ## Current checkpoint — 20 November 2026 (supersedes old dashboard, not historical evidence)
 
 **0 new provider repairs certified by the Brain.** The old 7 November matrix below is retained as historical provenance, *not* a current census. Current production projections observed on `main`: Global 45 enabled / 95 entries, France 37 / 67; no-anime 36 / 71 and VF no-anime 26 / 43 (four preserved manifests; none of these counts proves decoded playback). The 600–1,000+ provider objective remains an architecture target, not an achieved functional cohort.
