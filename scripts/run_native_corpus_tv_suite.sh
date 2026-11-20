@@ -63,7 +63,7 @@ if [[ -n "${NIAKVIO_NATIVE_CANDIDATE_SHA256:-}" ]]; then
     exit 2
   fi
   PROVIDER_LOADING_URL_ARGS+=(--candidate-execution-sha256 "$NIAKVIO_NATIVE_CANDIDATE_SHA256")
-  echo "FIELD_NATIVE_CANDIDATE_ORACLE_ENABLED sha256=$NIAKVIO_NATIVE_CANDIDATE_SHA256 official_plugin_runtime=true production_playback_authority=false"
+  echo "FIELD_NATIVE_CANDIDATE_ORACLE_ENABLED sha256=$NIAKVIO_NATIVE_CANDIDATE_SHA256 official_plugin_manager=true production_playback_authority=false"
 fi
 CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE="$(python3 - <<'PY' 2>/dev/null || true
 import json
@@ -219,7 +219,7 @@ for fixture in "${FIXTURES[@]}"; do
   # This is a separate oracle from production playback verification.
   if [[ -n "${NIAKVIO_NATIVE_CANDIDATE_SHA256:-}" ]]; then
     if ! grep -Fq "FIELD_NATIVE_CANDIDATE_RUNTIME_BYTE_CHECK client=tv" "$LOG" \
-      || ! grep -Fq "sha256=$NIAKVIO_NATIVE_CANDIDATE_SHA256 matched=true runtime=official_plugin_runtime" "$LOG" \
+      || ! grep -Fq "sha256=$NIAKVIO_NATIVE_CANDIDATE_SHA256 matched=true runtime=official_plugin_manager" "$LOG" \
       || ! grep -Fq "FIELD_NATIVE_CANDIDATE_RUNTIME_RESULT client=tv" "$LOG"; then
       echo "FIELD_NATIVE_CANDIDATE_ORACLE_FAILED fixture=$fixture reason=exact_candidate_execution_or_terminal_missing authority=none" | tee -a "$LOG"
       SOFT_FAILURES=$((SOFT_FAILURES+1))
