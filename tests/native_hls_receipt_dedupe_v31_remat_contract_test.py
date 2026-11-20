@@ -104,6 +104,13 @@ with tempfile.TemporaryDirectory() as d:
     path = Path(d) / "ledger.json"
     copy_ledger = copy.deepcopy(ledger)
     copy_parent = next(x for x in copy_ledger["rows"] if x["providerId"] == parent["providerId"])
+    # The production ledger can now contain a persisted V31 plan. This unit
+    # test constructs an isolated *single-plan* selection from V30 evidence;
+    # it must never duplicate the real plan inside its temporary copy.
+    copy_parent["candidateFollowUpExperiments"] = [
+        x for x in copy_parent["candidateFollowUpExperiments"]
+        if x.get("experimentType") != "native-hls-master-receipt-dedupe-v31"
+    ]
     copy_parent["candidateFollowUpExperiments"].append({**plan, "brainSha": "1"*40})
     path.write_text(json.dumps(copy_ledger), encoding="utf-8")
     original_ledger = native.BRAIN_LEDGER
