@@ -1,3 +1,7 @@
+### 20 novembre — Prompt LLM perdit la preuve inline, cause générique observée et fixée en code
+
+`44800473836` : `prompt_observations=2, source_visible=false` malgré deux expériences catalogue réellement ingestées ; bug situé dans `prompting.build_prompt_payload` et non dans le provider. Brain `154e80fa` conserve désormais un témoin natif/indépendant exactement source-pinné à travers la compaction LLM, sans droits média ni mutation. CI Brain `44801155443` et sécurité `44801155522` vertes. Gate suivant : test de prompt NiakVIO sur exact SHA, puis un nouveau Learning ciblé utilisant la preuve. Aucune réparation réelle, aucune activation pour quota.
+
 ### 20 novembre — Source indépendante positive sur `mushoku-tensei`, contrat lecteur encore non confirmé
 
 [Probe `44798438960`](https://github.com/niakw/NiakVIO/actions/runs/44798438960) : en changeant **uniquement le slug du test** pour `mushoku-tensei`, fiche et saison VOSTFR 200 sur `.fr` et `.to`; l'ancien script 404/403 ; sur `anime-sama.to` la page saison affiche le contrat inline `epsN`, `lien:`, `epsJeton`. Enregistré dans la mémoire expérimentale après le résultat négatif initial ; toujours aucun lecteur, aucune identité ni audio confirmé. Prochaine porte : faire consommer ce signal Brain comme observation runner indépendant, construire/valider un Lego familial sans hardcode, tester bytes réels côté NuvioTV. **0 réparation validée**.
