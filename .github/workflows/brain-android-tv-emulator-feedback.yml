@@ -138,6 +138,74 @@ jobs:
             echo "FIELD_BRAIN_V30_RECOVERY status=dispatched_existing_negative run=$candidate_run_id publication=false"
             exit 0
           fi
+          # On a new workflow-source push, retry one *not yet executed* V30
+          # candidate after a prior preflight failure. Never repeat it on an
+          # unchanged source SHA or an already recorded V30 attempt.
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            v30_file="$(mktemp)"
+            python3 - "$ledger_file" "$v30_file" <<'PY'
+          import json, re, sys
+          from pathlib import Path
+          ledger = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+          pins = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+          found = []
+          for parent in ledger.get("rows") or []:
+              if not isinstance(parent, dict):
+                  continue
+              if parent.get("candidateOnly") is not True or parent.get("generatedByBrain") is not True:
+                  continue
+              for child in parent.get("candidateFollowUpExperiments") or []:
+                  if not isinstance(child, dict) or child.get("candidateAttempts"):
+                      continue
+                  if (child.get("experimentType") != "native-hls-master-receipt-v30"
+                      or child.get("candidateOnly") is not True
+                      or child.get("generatedByBrain") is not True
+                      or child.get("publicationAuthority") is not False
+                      or child.get("providerMutationAuthority") is not False
+                      or child.get("providerArtifactSha256") != parent.get("providerArtifactSha256")
+                      or child.get("providerId") != parent.get("providerId")
+                      or child.get("fixture") != parent.get("fixture")):
+                      continue
+                  if not any(
+                      isinstance(a, dict)
+                      and str(a.get("candidateRunId")) == str(child.get("priorCandidateRunId"))
+                      and a.get("candidateSourceSha") == child.get("priorCandidateSourceSha")
+                      and a.get("candidateJsSha256") == child.get("priorCandidateJsSha256")
+                      and a.get("candidateVerdict") == "candidate_zero_stream"
+                      and a.get("candidateExecutionObserved") is True
+                      and a.get("candidateRestoredObserved") is True
+                      and a.get("validatedRepair") is False
+                      for a in parent.get("candidateAttempts") or []
+                  ):
+                      continue
+                  provider, fixture = str(child["providerId"]), str(child["fixture"])
+                  if re.fullmatch(r"[a-z][a-z0-9-]{1,79}", provider) and re.fullmatch(r"[a-z0-9][a-z0-9-]{0,95}", fixture):
+                      found.append((provider, fixture))
+          if len(found) == 1:
+              Path(sys.argv[2]).write_text(" ".join(found[0]) + "\\n", encoding="utf-8")
+          PY
+            if [ -s "$v30_file" ]; then
+              read -r provider fixture < "$v30_file"
+              candidate_source_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')"
+              [[ "$candidate_source_sha" =~ ^[0-9a-f]{40}$ ]]
+              existing="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/native-corpus-device-targeted.yml/runs?per_page=40" \
+                --jq '[.workflow_runs[] | select(.head_sha == "'"$candidate_source_sha"'" and .event == "workflow_dispatch")] | length')"
+              if [ "$existing" = "0" ]; then
+                gh workflow run native-corpus-device-targeted.yml --repo "$GITHUB_REPOSITORY" --ref main \
+                  -f device=tv \
+                  -f target_providers="$provider" \
+                  -f target_fixture="$fixture" \
+                  -f residential_exit=false \
+                  -f candidate_rematerialize=true \
+                  -f candidate_required_marker=NIAKVIO_PROVIDER_NATIVE_HLS_ROOT_RECEIPT_V30 \
+                  -f source_sha="$candidate_source_sha"
+                echo "FIELD_BRAIN_V30_RECOVERY status=dispatched_one_per_source provider=$provider source=$candidate_source_sha publication=false"
+                exit 0
+              fi
+              echo "FIELD_BRAIN_V30_RECOVERY status=already_dispatched_this_sha source=$candidate_source_sha"
+              exit 0
+            fi
+          fi
           echo "FIELD_BRAIN_CANDIDATE_RECOVERY status=no_unlearned_candidate"
 
   ingest:
