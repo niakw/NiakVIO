@@ -7,10 +7,10 @@
   ],
   "targetFixture": "interstellar",
   "residentialExit": false,
-  "reason": "Purstream Interstellar official NuvioTV Android TV Core V20 exact-byte PluginManager replay after v34 produced no provider/player evidence because the restored avd-v5 TV snapshot stayed adb unauthorized until emulator boot timeout. Main now rotates the shared Android snapshot lineage to avd-v6 with AVD + adb host identity + debug keystore cached together, keeps transport-to-player track-topology gates fail-closed, and fixes the TV audio/subtitle UI observer to settle asynchronous overlays and avoid reopening the focused audio overlay before probing subtitles. No provider bytes or manifests changed.",
-  "requestVersion": 35,
-  "retryCause": "v34 run 44654928233 failed before Nuvio/provider runtime: repeated adb device unauthorized/offline ended in Timeout waiting for emulator to boot. Rebuild a fresh avd-v6 snapshot and replay the same exact V20 candidate. Success requires official PluginManager execution, decoded video, transport-declared FR+EN audio and FR integrated subtitle visible in the production TV player, correct content identity/duration, exact candidate rollback, and no publication.",
-  "sourceImplementationSha": "bfad0655c7c893bbae8396ad7646b724a425c7b6",
+  "reason": "Purstream Interstellar official NuvioTV Android TV Core V20 exact-byte replay after v35 proved official PluginManager execution, a 1280x720 production video format and correct 10143.925s duration while independent HLS topology exposed FR+EN audio plus integrated FR subtitle but the production UI observer exposed 0/0 tracks. v36 adds source-owned sanitized per-variant CODECS evidence so the next verdict can distinguish malformed HLS codec declarations / Media3 preparation from an observer-only collapse. No provider bytes or production manifests changed.",
+  "requestVersion": 36,
+  "retryCause": "v35 run 44657078785 reached the real production player and decoded video but failed closed on player track topology: transport expected audio=2(fr,en), subtitles=1(fr), player observer returned audio=0, subtitles=0. Replay the exact V20 candidate with variant CODECS evidence; require exact candidate byte check + PluginManager execution + rollback and keep publication blocked unless decoded video and FR+EN/subtitle controls are demonstrated.",
+  "sourceImplementationSha": "0d66e9e4a5d65745074c5669d84dc3c90c3400d7",
   "candidateRematerialize": true,
   "candidateRequiredMarker": "NIAKVIO_HLS_TS_WRAPPED_AAC_RENDITION_V20"
 }
