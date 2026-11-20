@@ -1,8 +1,8 @@
 {
   "schemaVersion": 3,
-  "sourceSha": "7b74889e0252ad0223b9ccef5c26f05eb075f213",
+  "sourceSha": "71d882c8aac9b4bf1c557bd2fc86d3de573e5022",
   "context": "main",
-  "generation": "1f47b7f72d5c495b4ee74fb1897d46d76fe87a4ee412d54b3c855a66f3d64ca7",
+  "generation": "123d698c364aad26f586ab3d25faeb9bb3a0814340f43ea35d0c68cc8ddf04e8",
   "providerCount": 76,
   "activeProviderIdentityCount": 76,
   "expectedProviderCount": 76,
@@ -759,8 +759,9 @@
     },
     {
       "provider": "anime-sama",
-      "file": "providers/anime-sama--nuvio--6f4de85fc5103e71.js",
-      "sha256": "6f4de85fc5103e71205bb5713d0f3be530a665182062a9076760cc6e4e1df0b2",
+      "entryAuthority": "global-manifest",
+      "file": "providers/anime-sama--nuvio--9e917c77346af2a5.js",
+      "sha256": "9e917c77346af2a5c88826a5b9f476180a9868c88dde97a45a3a744941aa0c5b",
       "providerDataSha256": "e176c156e2f8b59c20716959384feae021dab36b96450bd3c0f1d55d9967afb5",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -783,7 +784,104 @@
         "PROVIDER.ANIME-SAMA.RUNTIME.V1"
       ],
       "coreCount": 15,
-      "applied": [],
+      "applied": [
+        {
+          "type": "provider_lego",
+          "path": "scripts/provider_patches/anime_sama_runtime_v1.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.ANIME-SAMA.RUNTIME.V1"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
+          "phase": "discovery",
+          "scope": "global_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_runtime_dispatch_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_runtime_dispatch"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_facts_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_facts"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v12.py",
+          "phase": "discovery",
+          "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_identity_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_identity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_presentation"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_score_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_score"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_telemetry_v1.py",
+          "phase": "discovery",
+          "scope": "global_telemetry"
+        }
+      ],
       "deviceSpecificJs": false,
       "devices": [
         "tv",
@@ -792,15 +890,32 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false,
-      "staticAuthorityReconciledProviders": [
-        "anime-sama"
-      ],
-      "materializationRecoveredFromExactPublishedBytes": true,
+      "brainCandidateOriginPriority": false,
+      "brainCandidateExperimentFingerprint": "",
+      "securityHardening": {
+        "changed": false,
+        "alreadyHardened": false,
+        "literalDecodeChanges": 0,
+        "hostnameChanges": 0,
+        "percentDecodeChanges": 0,
+        "htmlEntityDecodeReorders": 0,
+        "consoleSinkChanges": 0,
+        "consoleShadow": false
+      },
+      "byteValidation": {
+        "tool": "raw-bytes",
+        "toolVersion": "raw-v1",
+        "phase": "provider-byte-stability-v1",
+        "sourceSha256": "9e917c77346af2a5c88826a5b9f476180a9868c88dde97a45a3a744941aa0c5b",
+        "fixedPointVerified": true
+      },
+      "staticAuthorityReconciledProviders": [],
+      "domainSubstitutionReconciledProviders": [],
       "minimizer": {
         "enabled": true,
-        "savedBytes": 0,
-        "transformedLines": 0,
-        "skippedReason": "published-byte-recovery"
+        "savedBytes": 39706,
+        "transformedLines": 6777,
+        "skippedReason": ""
       }
     },
     {
@@ -11253,81 +11368,7 @@
   "staticKnowledgeFile": "automation/provider-v3-static-knowledge.json",
   "staticKnowledgeProviderCount": 109,
   "targetedPublicationFixedPointProviders": [
-    "1jour1film0626",
-    "67movies",
-    "anidb",
-    "aniflix-uno",
-    "anikototv",
-    "animejlprovider",
-    "animeonsen",
-    "anisama",
-    "arrowtv",
-    "boredflix",
-    "castle",
-    "cinegram",
-    "cinemabz",
-    "cinematheque-de-bretagne",
-    "cinetimes",
-    "corsflix",
-    "documentary-area",
-    "dulourd",
-    "emnexmovies",
-    "fawesome",
-    "fexini",
-    "film-a-revoir",
-    "flixer",
-    "flixhq",
-    "franime",
-    "frembed",
-    "french-anime",
-    "french-manga",
-    "frenchstream",
-    "fsharetv",
-    "fullanime",
-    "hexa",
-    "hianime",
-    "hindmoviez",
-    "ihavenotv",
-    "internet-archive",
-    "kidraz",
-    "kurage",
-    "latestmovies",
-    "meowtv",
-    "moiflix",
-    "moviebite",
-    "movish",
-    "movix-fr",
-    "mugiwarastream",
-    "nakios",
-    "neko-sama",
-    "neobam",
-    "neonflix",
-    "overlook",
-    "papadustream",
-    "primewire",
-    "pstream",
-    "purstream",
-    "rarefilmm",
-    "reanime-to",
-    "rivestream-app",
-    "rivestream-ru",
-    "sadisflix",
-    "showbox",
-    "shuttletv",
-    "skstream",
-    "stigstream",
-    "streamzo",
-    "videasy",
-    "vidlink",
-    "voirserie",
-    "vuflix",
-    "watch-cartoon-online",
-    "watchott",
-    "waveanime",
-    "webflix",
-    "youtitou",
-    "zone-streaming",
-    "zone-telechargement"
+    "anime-sama"
   ],
   "targetedPublicationComplete": true,
   "targetedPublicationReconciledProviders": [
@@ -11377,6 +11418,7 @@
     "anidb",
     "aniflix-uno",
     "anikototv",
+    "anime-sama",
     "animejlprovider",
     "animeonsen",
     "anisama",
