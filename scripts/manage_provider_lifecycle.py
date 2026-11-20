@@ -387,6 +387,48 @@ def reconcile_materialization_report(
     return {"providerCount": len(rows), "removed": removed, "generation": doc["generation"]}
 
 
+def reconcile_verified_common_provider_base(
+    provider_id: str,
+    row: dict[str, Any],
+    canonical_seed: bytes,
+    *,
+    apply: bool,
+) -> bool:
+    """Heal a verified-but-stale common ProviderBase from owned source.
+
+    This never executes or recovers published JavaScript, mutates provider DATA,
+    or changes publication authority. The prior version remains on disk. Only
+    a verified clean reconstruction may be rebound to the exact shared seed;
+    unverified candidates still require their independent Learning proof.
+    """
+    if not base_store.is_clean_reconstructed(row):
+        return False
+    old_path, _ = base_store.resolve_base(provider_id, row, require=True)
+    if old_path is None:
+        raise RuntimeError(f"{provider_id}: verified ProviderBase unavailable")
+    if old_path.read_bytes() == canonical_seed:
+        return False
+    if not apply:
+        return True
+    relative, digest = base_store.write_base(provider_id, canonical_seed)
+    if (
+        not relative.startswith(f"provider-bases/{provider_id}--base--")
+        or digest != base_store.sha256(canonical_seed)
+    ):
+        raise RuntimeError(f"{provider_id}: common ProviderBase materialization mismatch")
+    # Only update the canonical source pointer; historical generated versions
+    # are retained by write_base and the established retention policy.
+    old_digest = str(row.get("base_sha256") or "")
+    row["base_filename"] = relative
+    row["base_sha256"] = digest
+    print(
+        f"FIELD_PROVIDER_BASE_COMMON_REBOUND provider={provider_id} "
+        f"previous_sha256={old_digest} canonical_sha256={digest} "
+        "published_provider_unchanged=true"
+    )
+    return True
+
+
 def reconcile_provider_base_store_metadata(
     active_ids: set[str],
     *,
@@ -406,6 +448,11 @@ def reconcile_provider_base_store_metadata(
 
     clean = 0
     bases: set[str] = set()
+    rebound: list[str] = []
+    # ProviderBase v3 is one immutable common skeleton for all active ids.
+    # Lifecycle may restore historical clean bytes on reactivation; close that
+    # drift generically instead of leaving a stale verified SHA in PROVENANCE.
+    canonical_seed = base_store.build_clean_provider_seed("common-provider-base-v3")
     for pid in sorted(active_ids):
         row = rows.get(pid)
         if not isinstance(row, dict):
@@ -418,6 +465,9 @@ def reconcile_provider_base_store_metadata(
             assert path is not None
             if path.parent.resolve() != ACTIVE_BASE_DIR.resolve():
                 raise RuntimeError(f"{pid}: active ProviderBase resolved outside active store: {path}")
+            if reconcile_verified_common_provider_base(pid, row, canonical_seed, apply=True):
+                rebound.append(pid)
+                relative = str(row["base_filename"])
         bases.add(relative)
         if base_store.is_clean_reconstructed(row):
             clean += 1
@@ -441,6 +491,8 @@ def reconcile_provider_base_store_metadata(
         "uniqueBaseCount": len(bases),
         "cleanReconstructed": clean,
         "reconstructionRequired": len(active_ids) - clean,
+        "commonBaseReboundCount": len(rebound),
+        "commonBaseReboundProviders": rebound,
     }
 
 
