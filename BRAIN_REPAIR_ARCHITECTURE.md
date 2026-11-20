@@ -1,3 +1,9 @@
+## 2026-11-20 — Routage mult-providers après ingestion native
+
+Le replay officiel Android TV 44781039914 (source e7c7c920, Anime-Sama Mushoku S01E01) a prouvé 0 flux et zéro lecteur atteint malgré une sélection client et un contrôle QuickJS 1/1 corrects. Le feedback 44784359819 a effectivement importé les signatures script_http_missing et script_html_2xx dans le ledger et choisi llm_diagnose. Son plan est diagnostique seulement : modelExecuted=false.
+
+Le connecteur Brain de feedback plafonnait à quatre premiers couples provider/fixture après une ingestion jusqu'à 96 observations. La correction Brain 5d0e1448 retient jusqu'à 96 enregistrements préfiltrés du même SHA/run, regroupe par type de média et forme de symptôme, puis sélectionne au plus 12 représentants vérifiés par l'adaptateur source/manifest/digest. Les compteurs de groupes et observations non routés restent explicites. Une signature commune n'est PAS une preuve de cause commune et ne donne pas autorité pour modifier d'autres providers. Le modèle n'est toujours pas exécuté dans ce pipeline de feedback ; la génération, la compilation et la validation native d'une réparation sont des portes supplémentaires.
+
 ## 2026-11-20 — Chaîne de preuves mult providers et discrimination script manquant/HTML
 
 Le collecteur Android TV conserve un ensemble borné de 96 signatures uniques `sourceLogIndex + route provider/fixture/type + pattern`, ce qui empêche les retries d'un provider d'effacer les preuves des siblings. Le convertisseur Learning conserve jusqu'à 96 observations source-pinnées par rapport au lieu de 32. Les deux étapes transmettent des énumérations privées de tout URL, hostname, HTML et autorité réparation ; une cohorte synthétique de 60 providers est contrôlée par test.

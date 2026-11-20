@@ -1,3 +1,11 @@
+### 20 novembre — V42 observé, feedback validé, routage par signatures
+
+Observation native : Anime-Sama sur NuvioTV officiel, run 44781039914 (source e7c7c920), 0 flux en 25,6 secondes, aucun lecteur ; les contrôles repository, sélection et QuickJS sont passés. Feedback 44784359819 SUCCESS, signatures 404/410 et 200 HTML désormais réellement persistées et décision Brain llm_diagnose / modelExecuted=false.
+
+Correction générique Brain 5d0e1448 : l'arbitraire plafond des 4 premiers providers est remplacé par au plus 12 représentants de signatures diagnostiques distinctes issus de 96 observations, avec non-routés explicites et sans présumer la causalité commune. CI 44785234494 et sécurité 44785234544 SUCCESS.
+
+La priorité restante : exécuter la discrimination causale via Brain/outils réels, générer un candidat réutilisable, compiler, appliquer/rematérialiser, prouver le bon épisode, la lecture/qualité, les pistes audio, puis valider au moins un sibling avant toute promotion. Zéro réparation produit certifiée.
+
 ### 20 novembre — Capacité du pipeline par cohorte et stratégie Brain 404/410 seule
 
 Le collecteur `13153c1c` conserve 96 signatures distinctes sans saturation par les retries ; `fe12982b` passe de 32 à 96 observations source-scopées par rapport (test 60 providers fictifs), et le Brain CI-validé `ba2ba1d` différencie désormais `script_http_missing` (404/410) de `script_html_2xx` (200 HTML). Les deux branches restent en `llm_diagnose` sans mutation, sans amalgame WAF/route/slug ; ni ces tests ni les états d'availability ne prouvent une lecture.
