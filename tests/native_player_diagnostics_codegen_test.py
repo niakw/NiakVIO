@@ -50,6 +50,11 @@ assert 'By.clazz("android.widget.RadioButton")' in tv
 assert "val audioTracks = probeTvAudioTracks" in tv
 assert "track.contentDescription" in tv
 assert "findTvControlButton" in tv
+assert "visibleTvLanguageNodes" in tv
+assert 'By.text(java.util.regex.Pattern.compile(".+"))' in tv
+assert "maxOf(radioRows.size, languages.size)" in tv
+assert "visibleLanguages.first().second.click()" in tv
+assert "Compose TV exposes Role.RadioButton inconsistently" in tv
 assert "device.wait(Until.findObject(By.desc(label)), 500L)" in tv
 assert "androidx.test.uiautomator.UiObject2?" in tv
 assert 'Until.hasObject(By.clazz("android.widget.RadioButton")), 4500L' in tv

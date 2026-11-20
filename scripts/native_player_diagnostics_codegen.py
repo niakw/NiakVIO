@@ -150,6 +150,16 @@ TV_HELPERS = PROBE_MODEL + r'''
         return device.wait(Until.findObject(By.desc(label)), 2500L)
     }
 
+    private fun visibleTvLanguageNodes(
+        device: UiDevice,
+    ): List<Pair<String, androidx.test.uiautomator.UiObject2>> {
+        return device.findObjects(By.text(java.util.regex.Pattern.compile(".+")))
+            .mapNotNull { node ->
+                normalizeTvVisibleLanguage(node.text)?.let { language -> language to node }
+            }
+            .distinctBy { it.first }
+    }
+
     private fun probeTvAudioTracks(
         instrumentation: android.app.Instrumentation,
         context: android.content.Context,
@@ -161,16 +171,27 @@ TV_HELPERS = PROBE_MODEL + r'''
                 ?: return TvAudioTrackProbe()
             button.click()
             device.waitForIdle()
-            device.wait(Until.hasObject(By.clazz("android.widget.RadioButton")), 4500L)
-            Thread.sleep(250L)
-            val tracks = device.findObjects(By.clazz("android.widget.RadioButton"))
-            val languages = tracks.mapNotNull { track ->
+            device.wait(Until.hasObject(By.clazz("android.widget.RadioButton")), 1200L)
+            Thread.sleep(500L)
+            val radioRows = device.findObjects(By.clazz("android.widget.RadioButton"))
+            val semanticLanguages = radioRows.mapNotNull { track ->
                 sequenceOf(track.text, track.contentDescription)
                     .mapNotNull(::normalizeTvVisibleLanguage)
                     .firstOrNull()
-            }.distinct().joinToString(",")
+            }
+            // Compose TV exposes Role.RadioButton inconsistently through UiAutomator.
+            // The production overlay always renders the track language as Text, so
+            // visible language rows are the authoritative fallback when the role
+            // semantics are absent from the Android accessibility class tree.
+            val visibleLanguages = visibleTvLanguageNodes(device).map { it.first }
+            val languages = (semanticLanguages + visibleLanguages).distinct()
+            val count = if (radioRows.isNotEmpty()) {
+                maxOf(radioRows.size, languages.size)
+            } else {
+                languages.size
+            }
             device.pressBack()
-            TvAudioTrackProbe(tracks.size, languages)
+            TvAudioTrackProbe(count, languages.joinToString(","))
         } catch (_: Throwable) {
             TvAudioTrackProbe()
         }
@@ -194,21 +215,27 @@ TV_HELPERS = PROBE_MODEL + r'''
             button.click()
             device.waitForIdle()
             val builtIn = context.getString(R.string.subtitle_built_in)
-            device.wait(Until.hasObject(By.clazz("android.widget.RadioButton")), 4500L)
-            device.wait(Until.hasObject(By.text(builtIn)), 2500L)
-            Thread.sleep(250L)
-            val internalNodes = device.findObjects(By.text(builtIn))
-            val radioRows = device.findObjects(By.clazz("android.widget.RadioButton"))
-            val candidates = radioRows.mapNotNull { track ->
-                sequenceOf(track.text, track.contentDescription)
-                    .mapNotNull(::normalizeTvVisibleLanguage)
-                    .firstOrNull()
-            }.distinct()
+            Thread.sleep(500L)
+
+            // The subtitle overlay first presents a language rail. If "Off" is
+            // selected, no Built-in option row exists yet. Select the first real
+            // visible language so the production UI materializes its source rows.
+            var internalNodes = device.findObjects(By.text(builtIn))
+            var visibleLanguages = visibleTvLanguageNodes(device)
+            if (internalNodes.isEmpty() && visibleLanguages.isNotEmpty()) {
+                visibleLanguages.first().second.click()
+                device.waitForIdle()
+                device.wait(Until.hasObject(By.text(builtIn)), 2500L)
+                Thread.sleep(350L)
+                internalNodes = device.findObjects(By.text(builtIn))
+                visibleLanguages = visibleTvLanguageNodes(device)
+            }
+            val languages = visibleLanguages.map { it.first }.distinct()
             device.pressBack()
             TvSubtitleTrackProbe(
                 count = internalNodes.size,
-                languages = candidates.joinToString(","),
-                labels = candidates.joinToString(" | "),
+                languages = languages.joinToString(","),
+                labels = languages.joinToString(" | "),
             )
         } catch (_: Throwable) {
             TvSubtitleTrackProbe()
