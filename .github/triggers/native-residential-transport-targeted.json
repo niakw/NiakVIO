@@ -3,16 +3,16 @@
   "requestedAt": "2026-11-20",
   "device": "tv",
   "targetProviders": [
-    "purstream"
+    "french-manga"
   ],
-  "targetFixture": "interstellar",
+  "targetFixture": "jujutsu-kaisen-s01e01",
   "residentialExit": false,
-  "reason": "Purstream Interstellar official NuvioTV Android TV Core V20 exact-byte replay after v37 proved exact PluginManager execution, 1 returned source, decoded 1280x720 video, coherent HLS CODECS avc1.640028 + mp4a.40.2, FR+EN audio topology and integrated FR subtitle topology. v38 uses the corrected Compose TV observer on current main: visible language text fallback for Audio rows plus two-stage subtitle language/source materialization. Brain now classifies TV zero-after-control-found as harness_observation rather than provider/Media3 collapse. No provider source or production manifest mutation.",
-  "requestVersion": 38,
-  "retryCause": "v37 run 44663988153 executed exact candidate b33f770216b48099dbe1e64ed3b7b3a8ae54b6de3cb3cd4148c408b0012b9a24 via official PluginManager and restored exact previous bytes. Production player decoded 1280x720 for 10143.925s; transport exposed audio=2(fr,en), subtitles=1(fr), variant CODECS 720:avc1.640028|mp4a.40.2. v37 still used the old UiAutomator RadioButton-only observer and returned audio=0/subtitle=-1. v38 must prove production-visible FR+EN audio and integrated FR subtitle using current Compose-aware observer, while remaining fail-closed and publication=false unless all playback gates pass.",
-  "sourceImplementationSha": "bb71ecf9149bb5f24b2fad5e7736e4014d13f96b",
-  "candidateRematerialize": true,
-  "candidateRequiredMarker": "NIAKVIO_HLS_TS_WRAPPED_AAC_RENDITION_V20",
-  "provider": "purstream",
-  "fixture": "interstellar"
+  "reason": "French-Manga Jujutsu Kaisen S01E01 official NuvioTV Android TV baseline on current published provider bytes. Source now records only sanitized pre-player ordering: player-page hostname/status/sequence and anonymous HLS status/sequence, with every authority false. Historical run 44610510286 showed Vidzy 522 then LPlayGo 200 then HLS 200 before a completed zero near the provider budget, while Node currently returns two playable HLS. This run must reproduce or falsify that causal family on current bytes before Brain may generate a candidate-only V29 origin-priority experiment.",
+  "requestVersion": 39,
+  "retryCause": "Fresh baseline required because historical Android TV evidence predates the sanitized host-outcome schema and therefore cannot itself authorize a V29 experiment. Do not rematerialize or mutate the provider. Require official PluginManager execution on current manifest bytes; capture exact providerArtifactSha256, tvPromiseControl, timeout/zero status, sanitized player host order and terminal playback evidence. Any generated experiment must remain candidate-only and non-publishable.",
+  "sourceImplementationSha": "3b43af63b34898c3cd8ffa6a44adf9694a8aebb3",
+  "candidateRematerialize": false,
+  "candidateRequiredMarker": "",
+  "provider": "french-manga",
+  "fixture": "jujutsu-kaisen-s01e01"
 }
