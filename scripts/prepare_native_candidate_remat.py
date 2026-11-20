@@ -21,6 +21,7 @@ REQUIRED_MARKERS = {
     "NIAKVIO_PROVIDER_NATIVE_FETCH_CAPABILITY_GATE_V28",
     "NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29",
     "NIAKVIO_PROVIDER_NATIVE_HLS_ROOT_RECEIPT_V30",
+    "NIAKVIO_PROVIDER_NATIVE_HLS_RECEIPT_DEDUPE_V31",
 }
 
 
@@ -238,6 +239,148 @@ def _select_persisted_brain_hls_receipt_experiment(provider: str, baseline_sha: 
     return plans[0]
 
 
+V31_MARKER = "NIAKVIO_PROVIDER_NATIVE_HLS_RECEIPT_DEDUPE_V31"
+V31_EXPERIMENT_TYPE = "native-hls-master-receipt-dedupe-v31"
+V31_EVIDENCE_PATTERN = "v30-zero-after-same-hls-root-2xx-403-first-wins-dedupe"
+V31_FINGERPRINT_KEYS = (
+    "experimentType", "providerId", "fixture", "requestType",
+    "sourceNiakvioSha", "sourceRunId", "providerArtifactSha256",
+    "officialClientSha", "runtimeScope", "evidencePattern",
+    "parentExperimentFingerprint", "priorCandidateRunId",
+    "priorCandidateSourceSha", "priorCandidateJsSha256",
+)
+
+
+def _validate_brain_hls_dedupe_experiment(raw: str, provider: str, baseline_sha: str) -> dict:
+    """Fail closed unless V31 follows exactly one executed/restored V30 zero."""
+    value = json.loads(raw)
+    permitted = set(V31_FINGERPRINT_KEYS) | {
+        "schemaVersion", "experimentFingerprint", "candidateOnly",
+        "generatedByBrain", "modelExecuted", "proofAuthority",
+        "publicationAuthority", "nativePlaybackAuthority",
+        "providerMutationAuthority", "brainSha",
+    }
+    if not isinstance(value, dict) or set(value) - permitted:
+        raise ValueError("Brain V31 object contains unknown/private fields")
+    if (
+        value.get("schemaVersion") != 1
+        or value.get("experimentType") != V31_EXPERIMENT_TYPE
+        or value.get("evidencePattern") != V31_EVIDENCE_PATTERN
+        or value.get("runtimeScope") != BRAIN_RUNTIME_SCOPE
+        or value.get("providerId") != provider
+        or value.get("providerArtifactSha256") != baseline_sha
+        or value.get("candidateOnly") is not True
+        or value.get("generatedByBrain") is not True
+        or value.get("modelExecuted") is not False
+        or any(value.get(flag) is not False for flag in (
+            "proofAuthority", "publicationAuthority", "nativePlaybackAuthority",
+            "providerMutationAuthority",
+        ))
+    ):
+        raise ValueError("Brain V31 provenance or authority mismatch")
+    for key in ("sourceNiakvioSha", "officialClientSha", "priorCandidateSourceSha"):
+        if not SHA40.fullmatch(str(value.get(key) or "")):
+            raise ValueError("Brain V31 source/client SHA invalid")
+    for key in ("providerArtifactSha256", "priorCandidateJsSha256", "parentExperimentFingerprint"):
+        if not SHA64.fullmatch(str(value.get(key) or "")):
+            raise ValueError("Brain V31 artifact/parent fingerprint invalid")
+    for key in ("sourceRunId", "priorCandidateRunId"):
+        if not re.fullmatch(r"[0-9]{8,20}", str(value.get(key) or "")):
+            raise ValueError("Brain V31 exact run invalid")
+    expected = hashlib.sha256(json.dumps(
+        {key: value.get(key) for key in V31_FINGERPRINT_KEYS},
+        sort_keys=True, separators=(",", ":"),
+    ).encode("ascii")).hexdigest()
+    if value.get("experimentFingerprint") != expected:
+        raise ValueError("Brain V31 deterministic fingerprint mismatch")
+    brain_sha = str(value.get("brainSha") or "")
+    if brain_sha and not SHA40.fullmatch(brain_sha):
+        raise ValueError("Brain V31 validated Brain SHA invalid")
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,95}", str(value.get("fixture") or "")):
+        raise ValueError("Brain V31 fixture invalid")
+    if value.get("requestType") not in {"anime", "tv", "movie"}:
+        raise ValueError("Brain V31 request type invalid")
+    ledger = json.loads(BRAIN_LEDGER.read_text(encoding="utf-8"))
+    if (ledger.get("authority") != "candidate-only"
+        or ledger.get("publicationAuthority") is not False
+        or ledger.get("providerMutationAuthority") is not False):
+        raise ValueError("Brain V31 ledger authority invalid")
+    witnesses = []
+    for parent in (ledger.get("rows") or [])[:512]:
+        if not isinstance(parent, dict) or any(
+            str(parent.get(key) or "") != str(value.get(key) or "")
+            for key in ("providerId", "providerArtifactSha256", "sourceNiakvioSha",
+                        "sourceRunId", "officialClientSha", "fixture", "requestType")
+        ):
+            continue
+        if any(parent.get(flag) is not False for flag in (
+            "proofAuthority", "publicationAuthority",
+            "nativePlaybackAuthority", "providerMutationAuthority",
+        )):
+            continue
+        for follow in (parent.get("candidateFollowUpExperiments") or [])[:8]:
+            if not isinstance(follow, dict) or (
+                follow.get("experimentType") != "native-hls-master-receipt-v30"
+                or follow.get("experimentFingerprint") != value.get("parentExperimentFingerprint")
+                or follow.get("candidateOnly") is not True
+                or follow.get("generatedByBrain") is not True
+                or any(follow.get(flag) is not False for flag in (
+                    "proofAuthority", "publicationAuthority",
+                    "nativePlaybackAuthority", "providerMutationAuthority",
+                ))
+            ):
+                continue
+            for a in (follow.get("candidateAttempts") or [])[-8:]:
+                if not isinstance(a, dict):
+                    continue
+                if (
+                    a.get("candidateExperimentType") == "native-hls-master-receipt-v30"
+                    and a.get("candidateVerdict") == "candidate_zero_stream"
+                    and a.get("candidateExecutionObserved") is True
+                    and a.get("candidateRestoredObserved") is True
+                    and a.get("candidateDecodedVideoObserved") is False
+                    and a.get("validatedRepair") is False
+                    and a.get("publicationAllowed") is False
+                    and str(a.get("candidateRunId") or "") == str(value.get("priorCandidateRunId"))
+                    and a.get("candidateSourceSha") == value.get("priorCandidateSourceSha")
+                    and a.get("candidateJsSha256") == value.get("priorCandidateJsSha256")
+                ):
+                    witnesses.append((parent, follow, a))
+    if len(witnesses) != 1:
+        raise ValueError("Brain V31 lacks unique V30 executed/restored zero witness")
+    return {**{key: value.get(key) for key in V31_FINGERPRINT_KEYS},
+            "schemaVersion": 1, "experimentFingerprint": expected,
+            "brainSha": brain_sha, "candidateOnly": True,
+            "generatedByBrain": True, "modelExecuted": False,
+            "proofAuthority": False, "publicationAuthority": False,
+            "nativePlaybackAuthority": False, "providerMutationAuthority": False}
+
+
+def _select_persisted_brain_hls_dedupe_experiment(provider: str, baseline_sha: str) -> dict:
+    """Compile only one never-executed persisted V31 follow-up."""
+    ledger = json.loads(BRAIN_LEDGER.read_text(encoding="utf-8"))
+    plans = []
+    for parent in (ledger.get("rows") or [])[:512]:
+        if not isinstance(parent, dict) or parent.get("providerId") != provider:
+            continue
+        for plan in (parent.get("candidateFollowUpExperiments") or [])[:8]:
+            if not isinstance(plan, dict) or plan.get("experimentType") != V31_EXPERIMENT_TYPE:
+                continue
+            if plan.get("candidateAttempts"):
+                continue
+            try:
+                checked = _validate_brain_hls_dedupe_experiment(
+                    json.dumps(plan, sort_keys=True), provider, baseline_sha,
+                )
+            except (ValueError, KeyError, TypeError, json.JSONDecodeError):
+                continue
+            if SHA40.fullmatch(str(checked.get("brainSha") or "")):
+                plans.append(checked)
+    if len(plans) != 1:
+        raise ValueError("Brain V31 requires unique persisted, unexecuted Core experiment")
+    return plans[0]
+
+
 def _select_persisted_brain_experiment(provider: str, baseline_sha: str) -> dict:
     if not BRAIN_LEDGER.is_file():
         raise ValueError("Brain native candidate experiment ledger missing")
@@ -388,7 +531,11 @@ def main() -> None:
         raise ValueError("candidate requires ephemeral workspace materialization")
     baseline_sha = sha256(local_js)
     if args.brain_experiment_json.strip():
-        if required_marker == V30_MARKER:
+        if required_marker == V31_MARKER:
+            brain_experiment = _validate_brain_hls_dedupe_experiment(
+                args.brain_experiment_json, provider, baseline_sha
+            )
+        elif required_marker == V30_MARKER:
             brain_experiment = _validate_brain_hls_receipt_experiment(
                 args.brain_experiment_json, provider, baseline_sha
             )
@@ -401,19 +548,22 @@ def main() -> None:
         brain_experiment = _select_persisted_brain_experiment(provider, baseline_sha)
     elif required_marker == V30_MARKER:
         brain_experiment = _select_persisted_brain_hls_receipt_experiment(provider, baseline_sha)
+    elif required_marker == V31_MARKER:
+        brain_experiment = _select_persisted_brain_hls_dedupe_experiment(provider, baseline_sha)
     else:
         brain_experiment = None
-    if brain_experiment and required_marker not in {BRAIN_MARKER, V30_MARKER}:
+    if brain_experiment and required_marker not in {BRAIN_MARKER, V30_MARKER, V31_MARKER}:
         raise ValueError("Brain native experiment requires its source-owned Core marker")
-    if not brain_experiment and required_marker in {BRAIN_MARKER, V30_MARKER}:
+    if not brain_experiment and required_marker in {BRAIN_MARKER, V30_MARKER, V31_MARKER}:
         raise ValueError("Brain native marker requires a Brain experiment")
     child_env = os.environ.copy()
     if brain_experiment:
         if brain_experiment["providerArtifactSha256"] != baseline_sha:
             raise ValueError("Brain candidate observed artifact is not the current published baseline")
         selected_env = (
-            "NIAKVIO_NATIVE_BRAIN_HLS_ROOT_RECEIPT"
-            if required_marker == V30_MARKER else "NIAKVIO_NATIVE_BRAIN_ORIGIN_PRIORITY"
+            "NIAKVIO_NATIVE_BRAIN_HLS_RECEIPT_DEDUPE" if required_marker == V31_MARKER
+            else "NIAKVIO_NATIVE_BRAIN_HLS_ROOT_RECEIPT" if required_marker == V30_MARKER
+            else "NIAKVIO_NATIVE_BRAIN_ORIGIN_PRIORITY"
         )
         child_env[selected_env] = json.dumps(
             brain_experiment, sort_keys=True, separators=(",", ":")
@@ -433,7 +583,8 @@ def main() -> None:
     if brain_experiment:
         fingerprint = brain_experiment["experimentFingerprint"]
         data_marker = (
-            "nativeHlsRootReceiptV30" if required_marker == V30_MARKER
+            "nativeHlsReceiptDedupeV31" if required_marker == V31_MARKER
+            else "nativeHlsRootReceiptV30" if required_marker == V30_MARKER
             else "nativeBlockingOriginPriority"
         )
         if data_marker not in candidate_source or fingerprint not in candidate_source:

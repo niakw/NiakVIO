@@ -171,8 +171,10 @@ assert "brain_candidate_experiment_json:" in workflow
 assert "candidateRequiredMarker" in workflow
 assert "candidate marker without isolated candidate materialization" in workflow
 assert "Brain candidate experiment exceeds bounded input" in workflow
-assert "Brain candidate experiment requires isolated V29 or V30 materialization" in workflow
+assert "Brain candidate experiment requires isolated V29, V30 or V31 materialization" in workflow
 assert "NIAKVIO_PROVIDER_NATIVE_HLS_ROOT_RECEIPT_V30" in workflow
+assert "NIAKVIO_PROVIDER_NATIVE_HLS_RECEIPT_DEDUPE_V31" in workflow
+assert "NIAKVIO_PROVIDER_NATIVE_HLS_RECEIPT_DEDUPE_V31" in helper
 assert 'ref: ${{ inputs.source_sha || github.sha }}' in workflow
 assert 'ref: ${{ matrix.sourceSha }}' in workflow
 assert 'NIAKVIO_SOURCE_SHA: ${{ matrix.sourceSha }}' in workflow

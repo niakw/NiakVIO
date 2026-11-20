@@ -591,6 +591,32 @@ def _native_brain_hls_root_receipt(provider_id: str) -> dict[str, object] | None
     return {"experimentFingerprint": fingerprint}
 
 
+def _native_brain_hls_receipt_dedupe(provider_id: str) -> dict[str, object] | None:
+    """Only typed and externally validated Brain V31 plan may enter workspace."""
+    raw = os.environ.get("NIAKVIO_NATIVE_BRAIN_HLS_RECEIPT_DEDUPE", "").strip()
+    if not raw:
+        return None
+    if allmat.materialization_context() != "workspace":
+        raise ValueError("Brain V31 experiment is candidate-workspace only")
+    value = json.loads(raw)
+    if not isinstance(value, dict) or value.get("experimentType") != "native-hls-master-receipt-dedupe-v31":
+        raise ValueError("unsupported Brain V31 experiment")
+    if allmat.canonical_id(str(value.get("providerId") or "")) != allmat.canonical_id(provider_id):
+        raise ValueError("Brain V31 provider mismatch")
+    if value.get("runtimeScope") != "native-blocking-fetch":
+        raise ValueError("Brain V31 runtime scope mismatch")
+    if value.get("candidateOnly") is not True or value.get("generatedByBrain") is not True or value.get("modelExecuted") is not False:
+        raise ValueError("Brain V31 provenance mismatch")
+    if any(value.get(flag) is not False for flag in (
+        "proofAuthority", "publicationAuthority", "nativePlaybackAuthority", "providerMutationAuthority",
+    )):
+        raise ValueError("Brain V31 cannot carry playback or publication authority")
+    fingerprint = str(value.get("experimentFingerprint") or "").strip()
+    if not re.fullmatch(r"[a-f0-9]{64}", fingerprint):
+        raise ValueError("Brain V31 fingerprint invalid")
+    return {"experimentFingerprint": fingerprint}
+
+
 def _apply_native_brain_origin_priority_candidate(base: bytes) -> bytes:
     """Compile V29 only into ephemeral candidate ProviderBase bytes."""
     text = base.decode("utf-8", errors="strict")
@@ -742,12 +768,17 @@ def materialize_one(
     model = allmat.provider_model(provider_id, patch, capability, static_row)
     native_brain_origin_priority = _native_brain_origin_priority(provider_id)
     native_brain_hls_receipt = _native_brain_hls_root_receipt(provider_id)
-    if native_brain_origin_priority and native_brain_hls_receipt:
+    native_brain_hls_dedupe = _native_brain_hls_receipt_dedupe(provider_id)
+    if sum(bool(x) for x in (
+        native_brain_origin_priority, native_brain_hls_receipt, native_brain_hls_dedupe
+    )) > 1:
         raise ValueError("only one native Brain experiment per candidate")
     if native_brain_origin_priority:
         model["nativeBlockingOriginPriority"] = native_brain_origin_priority
     if native_brain_hls_receipt:
         model["nativeHlsRootReceiptV30"] = native_brain_hls_receipt
+    if native_brain_hls_dedupe:
+        model["nativeHlsReceiptDedupeV31"] = native_brain_hls_dedupe
     if preserve_structured_data:
         # Provider-owned runtime Legos are executable authority in their own
         # right when the structured identity contract is explicit. This applies
@@ -778,6 +809,9 @@ def materialize_one(
     if native_brain_hls_receipt:
         from provider_patches.native_hls_root_receipt_v1 import apply as apply_native_hls_receipt
         base = apply_native_hls_receipt(base)
+    if native_brain_hls_dedupe:
+        from provider_patches.native_hls_root_receipt_dedupe_v31 import apply as apply_native_hls_dedupe
+        base = apply_native_hls_dedupe(base)
     data = allmat.build_provider_data_model(
         provider_id,
         entry,

@@ -583,6 +583,20 @@ def _normalize_native_hls_root_receipt_v30(value: Any) -> dict[str, str] | None:
     return {"experimentFingerprint": fingerprint}
 
 
+def _normalize_native_hls_receipt_dedupe_v31(value: Any) -> dict[str, str] | None:
+    """V31 is candidate DATA only; never serialize signed HLS URLs."""
+    if value is None:
+        return None
+    if os.environ.get("NUVIO_PROVIDER_V3_CONTEXT", "").strip().casefold() != "workspace":
+        raise ValueError("native V31 HLS receipt dedupe cannot enter production DATA")
+    if not isinstance(value, dict) or set(value) != {"experimentFingerprint"}:
+        raise ValueError("invalid V31 HLS receipt dedupe DATA shape")
+    fingerprint = value["experimentFingerprint"]
+    if not isinstance(fingerprint, str) or not re.fullmatch(r"[a-f0-9]{64}", fingerprint):
+        raise ValueError("invalid V31 HLS receipt dedupe fingerprint")
+    return {"experimentFingerprint": fingerprint}
+
+
 def build_provider_data_model(
     provider_id: str,
     manifest_entry: dict[str, Any] | None = None,
@@ -610,6 +624,9 @@ def build_provider_data_model(
     )
     native_hls_receipt = _normalize_native_hls_root_receipt_v30(
         incoming_model.get("nativeHlsRootReceiptV30")
+    )
+    native_hls_dedupe = _normalize_native_hls_receipt_dedupe_v31(
+        incoming_model.get("nativeHlsReceiptDedupeV31")
     )
     return {
         "providerId": canonical_id(provider_id),
@@ -664,6 +681,10 @@ def build_provider_data_model(
         **(
             {"nativeHlsRootReceiptV30": native_hls_receipt}
             if native_hls_receipt else {}
+        ),
+        **(
+            {"nativeHlsReceiptDedupeV31": native_hls_dedupe}
+            if native_hls_dedupe else {}
         ),
         "searchRequestPlan": [
             {
