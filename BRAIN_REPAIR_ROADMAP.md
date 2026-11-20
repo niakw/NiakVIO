@@ -1,6 +1,14 @@
 # NiakVIO — Brain Repair Roadmap and Decision Register
 
-### 20 novembre — V31 : décodage natif confirmé dans l'oracle, généralisation non acquise
+### 20 novembre — Contrôle de preuve visuelle et transition Brain V31 après succès diagnostique
+
+**Révision du statut V31 :** le run 44753273273 a bel et bien retourné 2 flux et la télémétrie du lecteur officiel signale Played, format 864×488, durée 1 435 s et première image 2,733 s. Mais l'inspection manuelle de l'ensemble des 10 captures de l'artefact 14639052130 révèle **aucune image du contenu** : écran de connexion Nuvio, splash et launcher uniquement. Le résultat est **décodage signalé par la télémétrie**, non *affichage terminal vérifié*. Pas d'identité S01E01 ni audio FR/JA sélectionnable prouvés ; effet causal V31 non isolé d'un changement d'accessibilité Vidzy HTTP. **0 réparation certifiée**.
+
+Corrections structurelles : `26ed7a946` (langues UI ISO complètes), `04f229634` (marqueur terminal `PLAYER` exact), `fae054420` et `a2fb5d3b` (capture candidat *avant* menu audio/sous-titres et fermeture du lecteur). La cohorte de deux providers sur Mushoku, native run 44762494993, a échoué **ENV 2/2** au boot AVD (`adb unauthorized` après restauration du cache). Rebind ADB après restauration dans `eaddb9d8`, retry 44765346840 sur exact `fd1fb075`, pas de preuve produit tant que le run ne publie pas de verdict.
+
+Brain `69c45641` CI 44766823824 verte → pin NiakVIO `61777e41`. Il reconnaît désormais le candidat V31 positif et choisit **validation visuelle/son/même famille** au lieu de revenir à V29/V30. Aucun patch provider ni promotion n'a été effectué. La suite du plan dépend des traces exact-source, pas du quota 60.
+
+### 20 novembre — V31 : télémétrie de décodage dans l'oracle, pixels non capturés
 
 Le Brain déterministe `9461b1ab` ([CI 44750602403](https://github.com/niakw/NiakVIO-Brain-LLM/actions/runs/44750602403) SUCCESS) a produit un **plan de Lego Core distinct V31**, fingerprint `e2e87920…327e3d6`, parce que V30 exécuté/restauré retournait encore 0. La cause commune est la déduplication des flux qui éliminait la seconde ligne portant la preuve du master HLS HTTP 200. Le test causal JS est vert ; le run officiel NuvioTV [44753273273](https://github.com/niakw/NiakVIO/actions/runs/44753273273), source exacte `2d19e9ec`, JS candidat SHA256 `fbcda2d8…270d5497`, a **retourné 2 flux** et atteint le lecteur `ready` avec `diagnostic_played=true`, première image 2,733 s, vidéo 864×488 et durée 1 435 s. Résultat persisté : `candidate_terminal_decode_observed`, baseline restaurée, `validatedRepair=false`, `publicationAllowed=false`. **Bilan : 1 décodage candidat, 0 réparation Brain publiée et certifiée.**
 
