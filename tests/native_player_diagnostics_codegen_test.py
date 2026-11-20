@@ -49,6 +49,9 @@ assert "R.string.cd_audio_tracks" in tv
 assert 'By.clazz("android.widget.RadioButton")' in tv
 assert "val audioTracks = probeTvAudioTracks" in tv
 assert "track.contentDescription" in tv
+assert "findTvControlButton" in tv
+assert "device.wait(Until.findObject(By.desc(label)), 500L)" in tv
+assert "androidx.test.uiautomator.UiObject2?" in tv
 assert 'Until.hasObject(By.clazz("android.widget.RadioButton")), 4500L' in tv
 assert "Until.hasObject(By.text(builtIn)), 2500L" in tv
 assert "normalizeTvVisibleLanguage" in tv
