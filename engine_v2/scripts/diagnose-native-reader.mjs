@@ -507,8 +507,9 @@ const declaredRows = brainReaderRows.filter((row) => row.routeMode !== 'capabili
 const capabilityRows = brainReaderRows.filter((row) => row.routeMode === 'capability_probe');
 const failures = declaredRows.filter(isReaderFailure);
 const providerEligibleFailures = failures.filter((row) => row.providerMutationEligible);
+const harnessObservationFailures = failures.filter((row) => row.failureDomain === 'harness_observation');
 const clientRuntimeFailures = [
-  ...failures.filter((row) => !row.providerMutationEligible),
+  ...failures.filter((row) => !row.providerMutationEligible && row.failureDomain !== 'harness_observation'),
   ...runtimeSentinelObservations,
 ];
 const declaredHealthy = declaredRows.filter((row) => !isReaderFailure(row));
@@ -804,7 +805,7 @@ function ensureProviderOutcome(provider) {
   if (!providerMap.has(key)) {
     providerMap.set(key, {
       provider: key, observed: 0, healthy: 0, failures: 0,
-      providerEligibleFailures: 0, clientRuntimeFailures: 0,
+      providerEligibleFailures: 0, clientRuntimeFailures: 0, harnessObservationFailures: 0,
       extractionExecutions: 0, extractionHealthy: 0, extractionFailures: 0,
       capabilityProbes: 0, capabilityHealthy: 0, capabilityFailures: 0,
       loadFailures: 0, loadFailureClasses: {}, nativeExecutionTimeouts: 0,
@@ -828,6 +829,7 @@ for (const row of playerObservations) {
   } else {
     current.failures += 1;
     if (row.providerMutationEligible) current.providerEligibleFailures += 1;
+    else if (row.failureDomain === 'harness_observation') current.harnessObservationFailures += 1;
     else current.clientRuntimeFailures += 1;
     current.failureClasses[row.failureClass] = Number(current.failureClasses[row.failureClass] || 0) + 1;
   }
@@ -894,6 +896,7 @@ const providerOutcomes = [...providerMap.values()].map((row) => ({
   failures: row.failures,
   providerEligibleFailures: row.providerEligibleFailures,
   clientRuntimeFailures: row.clientRuntimeFailures,
+  harnessObservationFailures: row.harnessObservationFailures,
   extractionExecutions: row.extractionExecutions,
   extractionHealthy: row.extractionHealthy,
   extractionFailures: row.extractionFailures,
@@ -935,6 +938,7 @@ const payload = {
   readerFailures: failures.length,
   providerEligibleReaderFailures: providerEligibleFailures.length,
   clientRuntimeReaderFailures: clientRuntimeFailures.length,
+  harnessObservationReaderFailures: harnessObservationFailures.length,
   extractionResultObserved: enabledDeclaredResults.length,
   extractionHealthy: extractionHealthy.length,
   extractionFailures: extractionFailures.length,

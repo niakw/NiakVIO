@@ -47,15 +47,29 @@ const UNRESOLVED_MEDIA_FAILURE_CLASSES = new Set([
   'playback_subtitle_languages_unverified',
 ]);
 
+const HARNESS_OBSERVATION_FAILURE_CLASSES = new Set([
+  'playback_audio_ui_observer_empty',
+  'playback_subtitle_ui_observer_empty',
+]);
+
 function normalizedLanguages(value) {
   const values = Array.isArray(value) ? value : String(value || '').split(/[|,\s]+/);
   return [...new Set(values.map((entry) => String(entry || '').trim().toLowerCase()).filter(Boolean))].sort();
 }
 
 function mediaTopologyFailureClass(row = {}) {
+  const client = String(row.client || '').trim().toLowerCase();
   const expectedAudioCount = Number(row.transportAudioTrackCount ?? row.expectedAudioTrackCount ?? -1);
   const observedAudioCount = Number(row.audioTrackCount ?? row.audio_track_count ?? -1);
   if (Number.isFinite(expectedAudioCount) && expectedAudioCount > 0) {
+    // On official NuvioTV, count=0 is emitted only after the Audio control was
+    // found and opened. That control itself is rendered only when the production
+    // UI owns at least one audio track, so zero here means the UiAutomator row
+    // observer failed to materialize Compose semantics. Do not blame Media3 or
+    // authorize provider repair from that contradictory observation.
+    if (client === 'tv' && observedAudioCount === 0) {
+      return 'playback_audio_ui_observer_empty';
+    }
     if (!(Number.isFinite(observedAudioCount) && observedAudioCount >= expectedAudioCount)) {
       return 'playback_audio_tracks_unverified';
     }
@@ -71,6 +85,12 @@ function mediaTopologyFailureClass(row = {}) {
   const expectedSubtitleCount = Number(row.transportSubtitleTrackCount ?? row.expectedSubtitleTrackCount ?? -1);
   const observedSubtitleCount = Number(row.subtitleTrackCount ?? row.subtitle_track_count ?? -1);
   if (Number.isFinite(expectedSubtitleCount) && expectedSubtitleCount > 0) {
+    // The TV subtitle overlay is a two-stage Compose language/source rail.
+    // A zero source-row observation can be an accessibility/materialization
+    // gap; keep the gate closed but classify the evidence layer correctly.
+    if (client === 'tv' && observedSubtitleCount === 0) {
+      return 'playback_subtitle_ui_observer_empty';
+    }
     if (!(Number.isFinite(observedSubtitleCount) && observedSubtitleCount >= expectedSubtitleCount)) {
       return 'playback_subtitle_tracks_unverified';
     }
@@ -121,6 +141,7 @@ function readerFailureClass(row = {}) {
 function readerFailureDomain(row = {}) {
   const cls = readerFailureClass(row);
   if (cls === 'healthy') return 'healthy';
+  if (HARNESS_OBSERVATION_FAILURE_CLASSES.has(cls)) return 'harness_observation';
   if (UNRESOLVED_MEDIA_FAILURE_CLASSES.has(cls)) return 'unresolved_media';
 
   if (CLIENT_RUNTIME_FAILURE_CLASSES.has(cls)) return 'client_runtime';
@@ -158,6 +179,7 @@ module.exports = {
   READER_FAILURE_CLASSES,
   CLIENT_RUNTIME_FAILURE_CLASSES,
   UNRESOLVED_MEDIA_FAILURE_CLASSES,
+  HARNESS_OBSERVATION_FAILURE_CLASSES,
   mediaTopologyFailureClass,
   readerFailureClass,
   readerFailureDomain,

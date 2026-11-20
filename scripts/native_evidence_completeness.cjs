@@ -498,6 +498,8 @@ function assessNativeEvidence(logPaths) {
       const observed = playerAudioTracks.get(key);
       if (!Number.isFinite(observed) || observed < 0) {
         problems.push(`multi_audio_player_observation_missing:${label}:expected=${expectedAudioCount}:height=${actualHeight || 0}`);
+      } else if (label.startsWith('tv:') && observed === 0) {
+        problems.push(`multi_audio_player_ui_observation_empty:${label}:expected=${expectedAudioCount}:height=${actualHeight || 0}`);
       } else if (observed < expectedAudioCount) {
         problems.push(`multi_audio_player_collapsed:${label}:expected=${expectedAudioCount}:player=${observed}:height=${actualHeight || 0}`);
       } else {
@@ -528,6 +530,8 @@ function assessNativeEvidence(logPaths) {
       const observedLanguages = playerSubtitleLanguages.get(key) || [];
       if (!Number.isFinite(observedCount) || observedCount < 0) {
         problems.push(`integrated_subtitle_player_observation_missing:${label}:expected=${expectedSubtitleCount}`);
+      } else if (label.startsWith('tv:') && observedCount === 0) {
+        problems.push(`integrated_subtitle_ui_observation_empty:${label}:expected=${expectedSubtitleCount}:height=${actualHeight || 0}`);
       } else if (observedCount < expectedSubtitleCount) {
         problems.push(`integrated_subtitle_player_collapsed:${label}:expected=${expectedSubtitleCount}:player=${observedCount}:height=${actualHeight || 0}`);
       } else if (expectedSubtitleLanguages.length > 0 && observedLanguages.length > 0 && !languageCoverage(expectedSubtitleLanguages, observedLanguages)) {

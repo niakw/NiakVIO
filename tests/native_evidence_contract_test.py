@@ -327,7 +327,9 @@ for required in (
     "http_terminal:",
     "missing_frontend_phase:",
     "multi_audio_player_observation_missing:",
+    "multi_audio_player_ui_observation_empty:",
     "multi_audio_player_collapsed:",
+    "integrated_subtitle_ui_observation_empty:",
     "multiAudioVerified",
 ):
     assert required in completeness, required
@@ -337,6 +339,7 @@ for required in (
     "learningAllowed: providerLearningAllowed",
     "repairPlanningAllowed: providerLearningAllowed",
     "providerMutationRequiresCrossClientConsensus: true",
+    "harnessObservationReaderFailures",
     "clientRuntimeFailureLearningAllowed: false",
     "providerLoadJsMutationAllowed: false",
     "const nonblockingSmoke = process.env.NIAKVIO_BRAIN_NONBLOCKING === '1'",

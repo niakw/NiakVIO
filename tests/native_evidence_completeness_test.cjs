@@ -82,6 +82,29 @@ try {
   assert.equal(collapsedAssessment.stats.multiAudioExpected, 1);
   assert.equal(collapsedAssessment.stats.multiAudioVerified, 0);
 
+  const emptyTvObserver = writeLog(tmp, 'tv-track-observer-empty.log', baseEvidence([
+    'FIELD_NATIVE_PROVIDER_BEGIN client=tv fixture=sinners-2025 provider=test request_type=movie',
+    'FIELD_NATIVE_RESULT client=tv fixture=sinners-2025 provider=test request_type=movie returned=1',
+    'FIELD_NATIVE_PLAYER_BEGIN client=tv fixture=sinners-2025 provider=test request_type=movie index=0',
+    'FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider=test request_type=movie index=0 state=ready video_height=720 audio_track_count=0 subtitle_track_count=0',
+    'FIELD_NATIVE_TRANSPORT client=tv fixture=sinners-2025 provider=test request_type=movie index=0 state=ok kind=hls audio_track_count=2 audio_track_languages64=ZnIsZW4 subtitle_track_count=1 subtitle_track_languages64=ZnI',
+  ], [
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=provider-loading',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=provider-result',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=player-start',
+    'FIELD_NATIVE_FRONTEND_CAPTURE client=tv fixture=sinners-2025 phase=player-result',
+  ]));
+  const emptyTvObserverAssessment = assessNativeEvidence([emptyTvObserver]);
+  assert.equal(emptyTvObserverAssessment.complete, false);
+  assert.ok(emptyTvObserverAssessment.problems.some((row) =>
+    row.startsWith('multi_audio_player_ui_observation_empty:tv:sinners-2025:test:0:')));
+  assert.ok(emptyTvObserverAssessment.problems.some((row) =>
+    row.startsWith('integrated_subtitle_ui_observation_empty:tv:sinners-2025:test:0:')));
+  assert.ok(!emptyTvObserverAssessment.problems.some((row) =>
+    row.startsWith('multi_audio_player_collapsed:tv:sinners-2025:test:0:')));
+  assert.ok(!emptyTvObserverAssessment.problems.some((row) =>
+    row.startsWith('integrated_subtitle_player_collapsed:tv:sinners-2025:test:0:')));
+
   const languageCollapsedMultiAudio = writeLog(tmp, 'multi-audio-language-collapsed.log', baseEvidence([
     'FIELD_NATIVE_PROVIDER_BEGIN client=tv fixture=sinners-2025 provider=test request_type=movie',
     'FIELD_NATIVE_RESULT client=tv fixture=sinners-2025 provider=test request_type=movie returned=1',

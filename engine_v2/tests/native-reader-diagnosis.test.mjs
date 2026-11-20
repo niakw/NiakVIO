@@ -104,10 +104,10 @@ try {
   assert.equal(data.readerFailures, 2);
   assert.equal(data.providerEligibleReaderFailures, 2);
 
-  // Exact v33 family: production video decoded, but the HLS master advertises
-  // two audio languages + one subtitle while the user-visible TV player exposes
-  // no audio tracks and no integrated subtitle observation. Brain must retain
-  // this as Core/client unresolved media, never as provider repair authority.
+  // Exact v35 family: production video decoded and the HLS master advertises
+  // two audio languages + one subtitle. A TV audio count of zero is contradictory
+  // because the Audio control had to exist for the probe to emit zero. Brain must
+  // retain this as a harness observation failure, never as provider repair authority.
   const topologyLog = path.join(tmp, 'tv-track-topology-collapse.log');
   const topologyOutput = path.join(tmp, 'tv-track-topology-collapse.json');
   const topologyLines = [];
@@ -134,8 +134,8 @@ try {
   const collapsed = topology.observations.find((row) =>
     row.provider === 'purstream' && row.observationLayer === 'player');
   assert.ok(collapsed);
-  assert.equal(collapsed.failureClass, 'playback_audio_tracks_unverified');
-  assert.equal(collapsed.failureDomain, 'unresolved_media');
+  assert.equal(collapsed.failureClass, 'playback_audio_ui_observer_empty');
+  assert.equal(collapsed.failureDomain, 'harness_observation');
   assert.equal(collapsed.providerMutationEligible, false);
   assert.equal(collapsed.playerAudioTrackCount, 0);
   assert.equal(collapsed.transportAudioTrackCount, 2);
@@ -143,6 +143,7 @@ try {
   assert.equal(collapsed.transportSubtitleTrackCount, 1);
   assert.equal(topology.readerHealthy, 0);
   assert.equal(topology.providerEligibleReaderFailures, 2);
+  assert.equal(topology.harnessObservationReaderFailures, 1);
   assert.equal(topology.policy.productionWritesAllowed, false);
 
   // Multiple evidence files can contain the same client/fixture/provider/index.
@@ -158,7 +159,7 @@ try {
     row.provider === 'purstream' && row.observationLayer === 'player');
   assert.equal(purstreamRows.length, 2);
   assert.equal(
-    purstreamRows.filter((row) => row.failureClass === 'playback_audio_tracks_unverified').length,
+    purstreamRows.filter((row) => row.failureClass === 'playback_audio_ui_observer_empty').length,
     1,
   );
   assert.equal(purstreamRows.filter((row) => row.failureClass === 'healthy').length, 1);
