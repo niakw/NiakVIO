@@ -119,6 +119,7 @@ function runtimeExecutionKey(row) {
 
 function mediaProbeKey(row) {
   return [
+    Number.isInteger(Number(row.sourceLogIndex)) ? Number(row.sourceLogIndex) : -1,
     String(row.client || 'unknown').trim().toLowerCase(),
     String(row.fixture || 'unknown').trim().toLowerCase(),
     String(row.provider || '').trim().toLowerCase(),
@@ -152,7 +153,7 @@ const APP_SELECTION_REASONS = new Set([
   'unsupported_media_type', 'not_selected_by_app',
 ]);
 const runtimeSentinelByKey = new Map();
-for (const file of logPaths) {
+for (const [sourceLogIndex, file] of logPaths.entries()) {
   if (!fs.existsSync(file)) continue;
   // Raw signed URLs exist only in this process-local map. The emitted report
   // retains no URL/host/token, only a route-bound transition classification.
@@ -401,7 +402,7 @@ for (const file of logPaths) {
         && Number.isInteger(index) && index >= 0 && index <= 40
       ) {
         transportTopologyByMedia.set(mediaProbeKey({
-          client: t.client, fixture, provider, requestType, index,
+          sourceLogIndex, client: t.client, fixture, provider, requestType, index,
         }), {
           transportAudioTrackCount: Number.isFinite(Number(t.audio_track_count)) ? Number(t.audio_track_count) : -1,
           transportAudioTrackLanguages: decode(t.audio_track_languages64),
@@ -461,6 +462,7 @@ for (const file of logPaths) {
     if (marker < 0) continue;
     const f = fields(raw.slice(marker).trim());
     const row = {
+      sourceLogIndex,
       client: f.client || 'unknown', fixture: f.fixture || 'unknown', provider: decode(f.provider64),
       requestType: String(f.request_type || 'unknown').toLowerCase(),
       routeMode: String(f.route_mode || 'declared').toLowerCase(),
