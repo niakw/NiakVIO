@@ -150,6 +150,12 @@ const providerLoadObservations = [];
 // Comparing hosts is process-local. Never persist endpoint, URL or manifest
 // response bytes; only the bounded correlated-failure classification survives.
 const repositoryLoadContexts = new Map();
+// Native repository HTTP markers may omit fixture, unlike manager load markers.
+// Correlate only within the same log file, client and manifest hostname.
+const repositoryHttpByHost = new Map();
+function repositoryHttpKey(index, client, host) {
+  return [index, String(client || ''), String(host || '')].join('|');
+}
 function repositoryKey(index, f) {
   return [index, String(f.client || ''), String(f.fixture || '')].join('|');
 }
@@ -311,11 +317,13 @@ for (const [sourceLogIndex, file] of logPaths.entries()) {
     if (httpAt >= 0) {
       const f = fields(raw.slice(httpAt).trim());
       const status = Number(f.status);
-      if (f.kind === 'manifest' && Number.isInteger(status) && status >= 200 && status <= 599) {
-        const key = repositoryKey(sourceLogIndex, f);
-        const context = repositoryLoadContexts.get(key) || {};
-        context.explicitManifestHttpStatus = status;
-        repositoryLoadContexts.set(key, context);
+      let httpHost = '';
+      try { httpHost = safeRepositoryHost(new URL(f.endpoint).hostname); } catch (_) {}
+      if (f.kind === 'manifest' && httpHost
+          && Number.isInteger(status) && status >= 200 && status <= 599
+          && ['tv', 'mobile', 'desktop'].includes(f.client)) {
+        const key = repositoryHttpKey(sourceLogIndex, f.client, httpHost);
+        repositoryHttpByHost.set(key, status);
       }
     }
     const loadAt = raw.indexOf('FIELD_NATIVE_PROVIDER_LOAD_ERROR ');
@@ -759,7 +767,9 @@ const providerLoadIssues = evidence.complete ? [
       && correlation.unrecognizedFormat === true
       && correlation.manifestHost
       && correlation.manifestHost === correlation.logoDnsHost
-      && correlation.explicitManifestHttpStatus === undefined;
+      && !repositoryHttpByHost.has(repositoryHttpKey(
+        Number(__repositoryKey.split('|')[0]), row.client, correlation.manifestHost
+      ));
     const classified = corroboratedDns
       ? {...row, failureClass: 'provider_repository_transport_dns_correlated'}
       : row;
