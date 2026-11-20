@@ -679,6 +679,45 @@ jobs:
           retention-days: 8
           if-no-files-found: warn
 
+  brain-candidate-feedback:
+    # Separate privileged coordinator: native app builds retain read-only tokens.
+    # workflow_run chains can terminate before the negative V29 result is learned.
+    needs: [resolve, native-corpus]
+    if: ${{ always() && needs.resolve.result == 'success' && needs.native-corpus.result != 'cancelled' && inputs.candidate_rematerialize == true }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Dispatch exact completed TV candidate verdict without workflow_run chaining
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CANDIDATE_TARGETS_JSON: ${{ needs.resolve.outputs.targets }}
+        run: |
+          set -euo pipefail
+          source_sha="$(jq -er '
+            .include |
+            if length == 1 and .[0].candidateRematerialize == true and .[0].device == "tv"
+            then .[0].sourceSha else error("candidate must have exactly one TV scope") end
+          ' <<< "$CANDIDATE_TARGETS_JSON")"
+          [[ "$source_sha" =~ ^[0-9a-f]{40}$ ]]
+          count="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" \
+            --jq '[.artifacts[] | select(.name | startswith("native-candidate-tv-"))] | length')"
+          if [ "$count" != "1" ]; then
+            echo "FIELD_BRAIN_NATIVE_VERDICT_DISPATCH status=blocked_artifacts count=$count" >&2
+            exit 1
+          fi
+          run_sha="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" --jq '.head_sha')"
+          if [ "$run_sha" != "$source_sha" ]; then
+            echo "FIELD_BRAIN_NATIVE_VERDICT_DISPATCH status=blocked_sha_mismatch" >&2
+            exit 1
+          fi
+          gh workflow run brain-android-tv-emulator-feedback.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f candidate_run_id="$GITHUB_RUN_ID" -f candidate_source_sha="$source_sha"
+          echo "FIELD_BRAIN_NATIVE_VERDICT_DISPATCH status=dispatched run=$GITHUB_RUN_ID sha=$source_sha publication=false"
+
   cross-runtime-gate:
     if: ${{ always() && inputs.device == 'all' && inputs.target_providers == '' && inputs.target_fixture == '' }}
     needs: [native-corpus]
