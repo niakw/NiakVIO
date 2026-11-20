@@ -56,6 +56,14 @@ assert typed_edits[1]["path"] == "scripts/brain_repair_runtime.py"
 assert typed_edits[0]["path"].startswith("scripts/brain_layers/")
 assert typed_edits[2]["path"].startswith("tests/brain_")
 try:
+    mod._model_edits({"edits": [
+        {"operation": "create", "path": "scripts/brain_repair_runtime.py", "content": "pass"}
+    ]}, payload)
+except ValueError as exc:
+    assert "typed sourceFamilyProgram" in str(exc)
+else:
+    raise AssertionError("live source-family compiler accepted untyped filesystem operations")
+try:
     mod._model_edits({"recoveryProgram": {"searchSources": ["peer"]}}, payload)
 except ValueError as exc:
     assert "legacy route recoveryProgram" in str(exc)

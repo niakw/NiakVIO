@@ -2152,6 +2152,9 @@ try:
     assert provenance["editCount"] == 3 and len(provenance["editDescriptors"]) == 3
     assert provenance["providerMutationAuthority"] is False
     for unsafe in ({"sourceFamilyProgram": {"moduleCode": "x"}},
+                   {"edits": [{"operation": "create",
+                               "path": "scripts/brain_repair_runtime.py",
+                               "content": "pass"}]},
                    {"sourceFamilyProgram": {**typed_source_program["sourceFamilyProgram"],
                                             "operation": "create"}}):
         try:

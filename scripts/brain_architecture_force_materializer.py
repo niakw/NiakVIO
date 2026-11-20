@@ -1607,11 +1607,10 @@ def _model_edits(
             )
         if "sourceFamilyProgram" in planned:
             return _compile_source_family_program(planned["sourceFamilyProgram"], payload)
-        # Historical source-pinned response fixtures are read-only test oracles.
-        # Live model requests use the typed sourceFamilyProgram schema below.
-        if isinstance(planned.get("edits"), list):
-            return [dict(row) for row in planned["edits"] if isinstance(row, dict)]
-        raise ValueError("new source-family model must return sourceFamilyProgram")
+        # Live Qwen responses are never permitted to choose a filesystem
+        # operation or path. Only the --response-file offline replay branch
+        # below may inspect historical allowlisted edit fixtures.
+        raise ValueError("new source-family model must return typed sourceFamilyProgram")
     if _requires_new_repair_profile(payload):
         if isinstance(planned.get("recoveryProgram"), dict):
             body = compile_recovery_program(planned["recoveryProgram"], max_chars=4200)
@@ -2795,7 +2794,15 @@ def _program_provenance(
 ) -> dict[str, Any]:
     """Persist non-sensitive program/diff fingerprints, never private media."""
     if _requires_new_source_family_lego(blueprint or {}):
-        edits = _model_edits(planned, {"blueprint": blueprint or {}})
+        if isinstance(planned.get("sourceFamilyProgram"), dict):
+            edits = _model_edits(planned, {"blueprint": blueprint or {}})
+        else:
+            # Offline historical --response-file fixture only; the live model
+            # path has already rejected legacy edits in _model_edits.
+            edits = [
+                dict(row) for row in (planned.get("edits") or [])
+                if isinstance(row, dict)
+            ]
         descriptors = [
             {
                 "operation": str(row.get("operation") or ""),
