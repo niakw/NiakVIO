@@ -1,15 +1,16 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44793877717",
-  "sourceTriggerSha": "697f123c74e4070c251d02c9113437408c8f209f",
+  "sourceRunId": "44803010091",
+  "sourceTriggerSha": "c4e626fb726b045ddf11bebe2f2b2d5147dfc31c",
   "unresolvedProviderCount": 67,
-  "dynamicVariantProviderCount": 6,
+  "dynamicVariantProviderCount": 7,
   "dynamicVariantProviders": [
     "hindmoviez",
     "meowtv",
     "movix-fr",
     "nakios",
     "papadustream",
+    "sadisflix",
     "stigstream"
   ],
   "lifecycleSuppressedDynamicProviders": [
@@ -37,7 +38,6 @@
     "anisama",
     "arrowtv",
     "boredflix",
-    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -63,15 +63,11 @@
     "fullanime",
     "hexa",
     "hianime",
-    "hindmoviez",
     "ihavenotv",
-    "internet-archive",
     "kehflix",
     "kidraz",
-    "kurage",
     "latestmovies",
     "mallumv",
-    "meowtv",
     "moiflix",
     "moviebite",
     "moviebox",
@@ -82,7 +78,6 @@
     "movy",
     "mugiwarastream",
     "nakios",
-    "neko-sama",
     "neobam",
     "neonflix",
     "overlook",
@@ -119,14 +114,13 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
-    "webflix",
     "wookafr",
     "yflix",
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": false,
+  "dynamicVariantFallbackUsed": true,
   "groupCount": 9,
   "executionModel": {
     "default": "family/signature batch",
@@ -159,8 +153,7 @@
         "native-policy-reachable",
         "no-transport-evidence",
         "residential-exit-all-challenged",
-        "residential-exit-browser-reachable",
-        "residential-exit-native-reachable"
+        "residential-exit-browser-reachable"
       ],
       "transportSignature": "not-applicable",
       "providerCount": 39,
@@ -281,8 +274,7 @@
       ],
       "dominantIssues": [
         "network_http_error",
-        "network_zero_result",
-        "waf_challenge"
+        "network_zero_result"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
@@ -332,7 +324,9 @@
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [],
+      "dynamicVariantProviders": [
+        "sadisflix"
+      ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -348,7 +342,7 @@
         "lookup"
       ],
       "dominantIssues": [
-        "timeout"
+        "provider_returned_streams"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
