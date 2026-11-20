@@ -99,6 +99,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if ! grep -q '_apply_native_brain_origin_priority_candidate' tested-source/scripts/materialize_provider_v3_one.py; then
+            echo "FIELD_BRAIN_NATIVE_CANDIDATE_DISPATCH status=skipped_superseded_source source_sha=$NATIVE_SOURCE_SHA reason=predates_candidate_only_compiler"
+            exit 0
+          fi
           candidate_count="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$NATIVE_RUN_ID/artifacts" \
             --jq '[.artifacts[].name | select(startswith("native-candidate-tv-"))] | length')"
           if [ "$candidate_count" != "0" ]; then
