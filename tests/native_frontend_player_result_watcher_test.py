@@ -62,6 +62,9 @@ assert observed([entry]) == [], "player entry is not a terminal screenshot"
 assert observed([begin]) == ["player-start"], "begin is not a result"
 assert observed([actual]) == ["player-result"], "only a terminal field permits result"
 assert observed([entry, begin, actual]) == ["player-start", "player-result"]
+visible = "I/NiakvioCorpus: FIELD_NATIVE_PLAYER_VISUAL_READY client=tv video_width=864 video_height=488 proof_authority=false"
+assert observed([visible]) == ["player-visible"]
+assert observed([entry, begin, visible, actual]) == ["player-start", "player-visible", "player-result"]
 assert observed([entry, fail]) == ["player-result"], "failed player still needs a terminal screenshot"
 assert observed([entry, begin, entry, begin, actual, actual]) == [
     "player-start", "player-result"

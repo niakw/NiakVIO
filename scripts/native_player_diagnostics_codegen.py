@@ -322,7 +322,7 @@ TV_HELPERS = PROBE_MODEL + r'''
             if (result.state == "ready" || result.state == "short_media") {
                 val audioTracks = probeTvAudioTracks(instrumentation, context)
                 val subtitleTracks = probeTvIntegratedSubtitleTracks(instrumentation, context)
-                result.copy(
+                val probed = result.copy(
                     audioTrackCount = audioTracks.count,
                     audioTrackLanguages = audioTracks.languages,
                     subtitleTrackCount = subtitleTracks.count,
@@ -334,6 +334,18 @@ TV_HELPERS = PROBE_MODEL + r'''
                     diagnosticPlayed = diagnostics.result.startsWith("Played", ignoreCase = true),
                     diagnosticLateFormat = diagnostics !== initialDiagnostics,
                 )
+                // The normal FIELD_NATIVE_PLAYER marker is emitted after
+                // this function's finally block has closed MainActivity.
+                // Signal a bounded live candidate frame before that cleanup,
+                // while preserving the original result and playback semantics.
+                if (__PLAYER_VISIBLE_HOLD_MS__L > 0L &&
+                    probed.state == "ready" && probed.videoWidth > 0 &&
+                    probed.videoHeight > 0 && probed.diagnosticPlayed) {
+                    Log.i("NiakvioCorpus",
+                        "FIELD_NATIVE_PLAYER_VISUAL_READY client=tv video_width=${probed.videoWidth} video_height=${probed.videoHeight} proof_authority=false")
+                    runCatching { Thread.sleep(__PLAYER_VISIBLE_HOLD_MS__L) }
+                }
+                probed
             } else result
         } catch (error: kotlinx.coroutines.TimeoutCancellationException) {
             NativePlayerProbe("timeout", "nuvio-tv-production", error::class.qualifiedName.orEmpty(), "READER_TIMEOUT", 0, "timeout", host, null)
@@ -558,6 +570,8 @@ def augment_android_test(
     # format-settlement wait; broad provider cohorts remain fast and unchanged.
     settle_ms = "4500" if (client == "tv" and os.environ.get("NIAKVIO_NATIVE_CANDIDATE_SHA256")) else "0"
     helpers = helpers.replace("__PLAYER_FORMAT_SETTLE_MS__", settle_ms)
+    visible_hold_ms = "2400" if (client == "tv" and os.environ.get("NIAKVIO_NATIVE_CANDIDATE_SHA256")) else "0"
+    helpers = helpers.replace("__PLAYER_VISIBLE_HOLD_MS__", visible_hold_ms)
     if source.count(TEST_ANCHOR) != 1:
         raise ValueError("test anchor missing or ambiguous")
     source = source.replace(TEST_ANCHOR, helpers + "\n" + TEST_ANCHOR, 1)

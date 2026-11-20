@@ -43,6 +43,8 @@ adb logcat -v brief -s NiakvioCorpus:I NiakvioEvidence:I '*:S' | while IFS= read
     *FIELD_NATIVE_HTTP_REQUEST*) capture_once "provider-http-request" ;;
     *FIELD_NATIVE_HTTP_RESPONSE*|*FIELD_NATIVE_HTTP_ERROR*) capture_http_terminal "provider" ;;
     *FIELD_NATIVE_RESULT*) capture_once "provider-result" ;;
+    # Candidate-only marker arrives while the real player activity is open.
+    *FIELD_NATIVE_PLAYER_VISUAL_READY*) capture_once "player-visible" ;;
     *FIELD_NATIVE_PLAYER_BEGIN*) capture_once "player-start" ;;
     # Require the exact terminal marker followed by a space. The previous
     # wildcard matched FIELD_NATIVE_PLAYER_ENTRY / _BEGIN and captured the

@@ -80,6 +80,9 @@ assert "diagnostic_played=${reader.diagnosticPlayed}" in tv
 assert "diagnostic_late_format=${reader.diagnosticLateFormat}" in tv
 assert "initialDiagnostics.videoResolution.isNullOrBlank()" in tv
 assert "withTimeoutOrNull(0L)" in tv
+assert "__PLAYER_VISIBLE_HOLD_MS__" not in tv
+assert "FIELD_NATIVE_PLAYER_VISUAL_READY client=tv" in tv
+assert "Thread.sleep(0L)" in tv
 assert "diagnosticFirstFrameMs = diagnostics.firstFrameMs" in tv
 # The bounded late-format second observation belongs only to the exact-byte
 # native candidate oracle. Normal cohorts must not pay a per-provider wait.
@@ -90,6 +93,9 @@ try:
         mod.augment_android_test(source("tv"), client="tv", expected_duration_minutes=137), "tv"
     )
     assert "withTimeoutOrNull(4500L)" in tv_candidate
+    assert "Thread.sleep(2400L)" in tv_candidate
+    assert "FIELD_NATIVE_PLAYER_VISUAL_READY client=tv" in tv_candidate
+    assert "__PLAYER_VISIBLE_HOLD_MS__" not in tv_candidate
     assert "diagnosticLateFormat = diagnostics !== initialDiagnostics" in tv_candidate
     assert 'row.result.startsWith("Error", ignoreCase = true)' in tv_candidate
 finally:
