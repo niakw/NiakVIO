@@ -45,9 +45,11 @@ assert mod._requires_new_repair_profile({
 typed_program = {
     "sourceFamilyProgram": {
         "moduleCode": "def parse_episode_source(html, episode):\n    return {}\n",
-        "runtimeFind": "source_text = source_bytes.decode",
-        "runtimeReplace": "source_text = source_bytes.decode",
-        "testCode": "assert 'eps1' and 'eps2' and 'lien:'\n",
+        "runtimeFind": mod.SOURCE_FAMILY_RUNTIME_ANCHOR,
+        "runtimeReplace": (
+            mod.SOURCE_FAMILY_RUNTIME_ANCHOR
+            + "\n        from brain_layers.generated_source import parse_episode_source"
+        ),
     },
 }
 typed_edits = mod._model_edits(typed_program, payload)
@@ -55,6 +57,9 @@ assert [row["operation"] for row in typed_edits] == ["create", "replace", "creat
 assert typed_edits[1]["path"] == "scripts/brain_repair_runtime.py"
 assert typed_edits[0]["path"].startswith("scripts/brain_layers/")
 assert typed_edits[2]["path"].startswith("tests/brain_")
+assert "LEGOTEST_ALPHA_1" in typed_edits[2]["content"]
+assert "LEGOTEST_BETA_2" in typed_edits[2]["content"]
+compile(typed_edits[2]["content"], typed_edits[2]["path"], "exec")
 try:
     mod._model_edits({"edits": [
         {"operation": "create", "path": "scripts/brain_repair_runtime.py", "content": "pass"}
@@ -97,7 +102,7 @@ schema_props = captured["response_format"]["schema"]["properties"]
 assert "sourceFamilyProgram" in schema_props
 assert "edits" not in schema_props and "recoveryProgram" not in schema_props
 typed_fields = schema_props["sourceFamilyProgram"]["properties"]
-assert set(typed_fields) == {"moduleCode", "runtimeFind", "runtimeReplace", "testCode"}
+assert set(typed_fields) == {"moduleCode", "runtimeFind", "runtimeReplace"}
 assert captured["response_format"]["schema"]["required"] == ["sourceFamilyProgram"]
 assert "file paths or create/replace operations" in captured["messages"][0]["content"]
 assert "NEW SOURCE FAMILY" in captured["messages"][0]["content"]
@@ -141,8 +146,8 @@ with tempfile.TemporaryDirectory() as td:
         "tests/brain_source_family_sample_test.py",
     ]
     mod.validate_source_family_implementation(paths, blueprint, root=root)
-    # A model-authored test with no meaningful fixture must not certify an
-    # incorrect parser. The Brain-owned independent two-index oracle blocks it.
+    # Even a vacuous legacy test cannot certify a parser with incorrect
+    # episode separation: the independent Brain oracle must reject it.
     valid_layer = layer.read_text(encoding="utf-8")
     valid_test = test_file.read_text(encoding="utf-8")
     test_file.write_text("assert True\n", encoding="utf-8")
