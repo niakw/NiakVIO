@@ -30,7 +30,7 @@ persist = workflow.index("Persist non-authoritative Brain TV diagnostic memory o
 assert route < upload < persist < dispatch
 assert workflow.count("Dispatch one source-pinned Brain candidate experiment") == 1
 assert "NIAKVIO_BRAIN_CANDIDATE_SOURCE_SHA=$(git rev-parse HEAD)" in workflow
-assert "candidate_source_sha=$(git rev-parse HEAD)" in workflow
+assert 'candidate_source_sha="$(git rev-parse HEAD)"' in workflow
 assert "brain_candidate_experiment_json" not in workflow[dispatch:]
 assert "_apply_native_brain_origin_priority_candidate" in workflow[persist:dispatch]
 print("Brain Android TV source-pinned candidate dispatch workflow contract passed")
