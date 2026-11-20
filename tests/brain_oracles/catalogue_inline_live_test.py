@@ -108,7 +108,7 @@ with tempfile.TemporaryDirectory() as td:
             return 404, "<html>PRIVATE 404</html>", False, "", ""
         if "/catalogue/?search=" in url:
             return 200, ('<!doctype html><html>'
-                         '<a href="/catalogue/mushoku-tensei/">matching</a>'
+                         '<a href="/catalogue/mushoku-tensei-extra/">matching</a>'
                          '<a href="https://evil.example/catalogue/private/">bad</a>'
                          '</html>'), False, "", ""
         if url.endswith("/vostfr/"):
@@ -118,8 +118,20 @@ with tempfile.TemporaryDirectory() as td:
     report = probe.run(root, request, fetcher=fake_fetch)
     assert report["probeRequestCount"] == 12
     assert sum(x["catalogueSearchLinkCount"] == 1 for x in report["observations"]) == 3
-    assert sum(x["catalogueSearchExactSlugPresent"] for x in report["observations"]) == 3
+    assert sum(x["catalogueSearchExactSlugPresent"] for x in report["observations"]) == 0
+    assert sum(x["catalogueCandidateSlugUnverified"] == "mushoku-tensei-extra"
+               for x in report["observations"]) == 3
+    assert sum(x["catalogueCandidateTokenOverlapPercent"] == 100
+               for x in report["observations"]) == 3
     assert report["inlineTokenResponseCount"] == 3
+    assert probe.catalogue_search_matches(
+        '<!doctype html><a href="/catalogue/mushoku-tensei/">exact</a>',
+        "mushoku-tensei", "current.example"
+    )[1] is True
+    assert probe.catalogue_search_matches(
+        '<!doctype html><a href="https://evil.example/catalogue/mushoku-tensei/">evil</a>',
+        "mushoku-tensei", "current.example"
+    ) == (0, False, "", 0)
     assert report["independentNetworkNotOfficialClient"] is True
     assert report["sourceContractVerifiedOnOfficialTv"] is False
     assert report["catalogueIdentityVerified"] is False

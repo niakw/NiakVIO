@@ -224,10 +224,11 @@ def fetch(url: str, *, approved_hosts: tuple[str, ...] = (),
         return 0, "", False, "transport_error", ""
 
 
-def catalogue_search_matches(body: str, expected: str, origin: str) -> tuple[int, bool]:
-    """Extract only link count and exact slug match, never URLs or page text."""
-    if not isinstance(body, str) or len(body) > MAX_BODY or not body.lstrip().lower().startswith(("<!doctype", "<html")):
-        return 0, False
+def catalogue_search_matches(body: str, expected: str, origin: str) -> tuple[int, bool, str, int]:
+    """Only same-host catalogue slugs: source candidates are never identity proof."""
+    if (not isinstance(body, str) or len(body) > MAX_BODY
+            or not body.lstrip().lower().startswith(("<!doctype", "<html"))):
+        return 0, False, "", 0
     slugs: set[str] = set()
     for match in re.finditer(r"""href\s*=\s*["']([^"']{1,1024})["']""", body, re.I):
         uri = match.group(1).replace("&amp;", "&")
@@ -239,7 +240,17 @@ def catalogue_search_matches(body: str, expected: str, origin: str) -> tuple[int
             slugs.add(stem.group(1).lower())
         if len(slugs) >= 32:
             break
-    return min(32, len(slugs)), expected in slugs
+    wanted = {part for part in expected.split("-") if len(part) > 2}
+    ranked = []
+    for name in slugs:
+        common = wanted & {part for part in name.split("-") if len(part) > 2}
+        overlap = round(100 * len(common) / max(1, len(wanted)))
+        if overlap >= 50 and len(common) >= min(2, len(wanted)):
+            ranked.append((overlap, name))
+    ranked.sort(key=lambda row: (-row[0], len(row[1]), row[1]))
+    candidate = ranked[0][1] if ranked else ""
+    score = ranked[0][0] if ranked else 0
+    return min(32, len(slugs)), expected in slugs, candidate, score
 
 
 def run(root: Path, request: dict, *, fetcher: Callable[[str], tuple[int, str, bool, str, str]] = fetch) -> dict:
@@ -269,18 +280,20 @@ def run(root: Path, request: dict, *, fetcher: Callable[[str], tuple[int, str, b
             if not isinstance(redirect_host, str) or (redirect_host and not HOST.fullmatch(redirect_host)):
                 raise ValueError("invalid sanitized redirect host")
             result = classify(status, "" if oversized else body)
-            search_count, search_exact = (
+            search_count, search_exact, candidate_slug, candidate_score = (
                 catalogue_search_matches(
                     "" if oversized or status < 200 or status >= 300 else body,
                     slug,
                     redirect_host if redirect_host in hosts else host,
-                ) if kind == "catalogue_search" else (0, False)
+                ) if kind == "catalogue_search" else (0, False, "", 0)
             )
             observations.append({
                 "originHost": host,
                 "routeKind": kind,
                 "catalogueSearchLinkCount": search_count,
                 "catalogueSearchExactSlugPresent": search_exact,
+                "catalogueCandidateSlugUnverified": candidate_slug,
+                "catalogueCandidateTokenOverlapPercent": candidate_score,
                 "responseHost": (redirect_host if not 300 <= status < 400
                                  and redirect_host in hosts else host),
                 "httpStatus": status,
