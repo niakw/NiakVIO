@@ -120,10 +120,8 @@ with tempfile.TemporaryDirectory() as td:
     layer.write_text(
         "import json\nimport re\n"
         "def parse_episode_source(html, episode):\n"
-        "    out = {}\n"
-        "    for slot, vals in re.findall(r'var (eps[0-9]+) = (\\[[^]]+\\]);', html):\n"
-        "        out[slot] = json.loads(vals)[episode - 1]\n"
-        "    return out\n",
+        "    match = re.search(r'var eps' + str(int(episode)) + r'\\s*=\\s*(\\[[^]]+\\])', html)\n"
+        "    return json.loads(match.group(1)) if match else []\n",
         encoding="utf-8",
     )
     runtime.write_text(
@@ -136,8 +134,8 @@ with tempfile.TemporaryDirectory() as td:
         "from brain_layers.source_family_sample import parse_episode_source\n"
         "html = '<script>var eps1 = [\"lien:a1\",\"lien:a2\"];"
         "var eps2 = [\"lien:b1\",\"lien:b2\"];</script>'\n"
-        "assert parse_episode_source(html, 1) == {'eps1':'lien:a1','eps2':'lien:b1'}\n"
-        "assert parse_episode_source(html, 2) == {'eps1':'lien:a2','eps2':'lien:b2'}\n",
+        "assert parse_episode_source(html, 1) == ['lien:a1','lien:a2']\n"
+        "assert parse_episode_source(html, 2) == ['lien:b1','lien:b2']\n",
         encoding="utf-8",
     )
     paths = [
@@ -146,8 +144,8 @@ with tempfile.TemporaryDirectory() as td:
         "tests/brain_source_family_sample_test.py",
     ]
     mod.validate_source_family_implementation(paths, blueprint, root=root)
-    # Even a vacuous legacy test cannot certify a parser with incorrect
-    # episode separation: the independent Brain oracle must reject it.
+    # A parser that mixes eps1/eps2 array columns is not a valid episode
+    # extractor: the trusted independent oracle must reject it.
     valid_layer = layer.read_text(encoding="utf-8")
     valid_test = test_file.read_text(encoding="utf-8")
     test_file.write_text("assert True\n", encoding="utf-8")
