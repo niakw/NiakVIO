@@ -3,16 +3,17 @@
   "requestedAt": "2026-11-20",
   "device": "tv",
   "targetProviders": [
-    "french-manga"
+    "french-manga",
+    "anime-sama"
   ],
-  "targetFixture": "jujutsu-kaisen-s01e01",
+  "targetFixture": "mushoku-tensei-s01e01",
   "residentialExit": false,
-  "reason": "French-Manga Jujutsu Kaisen S01E01 official NuvioTV Android TV baseline on current published provider bytes. Source now records only sanitized pre-player ordering: player-page hostname/status/sequence and anonymous HLS status/sequence, with every authority false. Historical run 44610510286 showed Vidzy 522 then LPlayGo 200 then HLS 200 before a completed zero near the provider budget, while Node currently returns two playable HLS. This run must reproduce or falsify that causal family on current bytes before Brain may generate a candidate-only V29 origin-priority experiment.",
-  "requestVersion": 39,
-  "retryCause": "Fresh baseline required because historical Android TV evidence predates the sanitized host-outcome schema and therefore cannot itself authorize a V29 experiment. Do not rematerialize or mutate the provider. Require official PluginManager execution on current manifest bytes; capture exact providerArtifactSha256, tvPromiseControl, timeout/zero status, sanitized player host order and terminal playback evidence. Any generated experiment must remain candidate-only and non-publishable.",
-  "sourceImplementationSha": "3b43af63b34898c3cd8ffa6a44adf9694a8aebb3",
+  "reason": "V31 native candidate on Jujutsu S01E01 (run 44753273273, exact NiakVIO 2d19e9ec, JS fbcda2d8) returned two streams and decoded real video in the official Android TV player. Compare the unmodified/current published French-Manga on a second title and anime-sama on the same Mushoku S01E01 fixture to classify distinct provider/identity/transport roots; this is a two-provider source-pinned native baseline cohort, not a V31 publication or same-cause assumption.",
+  "requestVersion": 40,
+  "retryCause": "Independent *non-candidate* TV control: check current published JS hash, exact anime S01E01 identity, result/reader/segment/duration, native HTTP/WAF phase and UI language list after the strict ISO label fix. Do not count HLS 200/reader launch as decoded video or treat the other provider's failure as proof of a shared cause. Candidate JS and manifest remain unchanged.",
+  "sourceImplementationSha": "c2fd543e6366c88f883748b55fd0ce884fe01f45",
   "candidateRematerialize": false,
   "candidateRequiredMarker": "",
   "provider": "french-manga",
-  "fixture": "jujutsu-kaisen-s01e01"
+  "fixture": "mushoku-tensei-s01e01"
 }
