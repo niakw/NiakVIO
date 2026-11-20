@@ -26,7 +26,7 @@ NEW = """      /* NIAKVIO_PROVIDER_NATIVE_HLS_ROOT_RECEIPT_V30 */
         // cache errors, arbitrary HTML, non-HLS media or a rewritten URL.
         const hlsRoot = /\\.m3u8(?:[?#]|$)/i.test(responseUrl) ||
           /(?:mpegurl|vnd\\.apple)/i.test(contentType);
-        if (hlsRoot && response && typeof response.text === "function") {
+        if (hlsRoot && typeof globalThis.__native_fetch === "function" &&\n            response && typeof response.text === "function") {
           let allowed = true;
           try {
             const size = Number(response.headers && response.headers.get
