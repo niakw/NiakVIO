@@ -102,42 +102,40 @@ TV_HELPERS = PROBE_MODEL + r'''
     private fun normalizeTvVisibleLanguage(label: String?): String? {
         val raw = label?.trim().orEmpty()
         if (raw.isBlank()) return null
-        val lowered = raw.lowercase(java.util.Locale.getDefault())
-        val byDisplayName = java.util.Locale.getAvailableLocales().asSequence()
-            .map { it.language.lowercase(java.util.Locale.US) }
-            .filter { it.length == 2 }
-            .distinct()
-            .firstOrNull { code ->
-                val locale = java.util.Locale.forLanguageTag(code)
-                sequenceOf(
-                    locale.getDisplayLanguage(java.util.Locale.getDefault()),
-                    locale.getDisplayLanguage(java.util.Locale.ENGLISH),
-                    locale.getDisplayLanguage(locale),
-                )
-                    .map { it.trim().lowercase(java.util.Locale.getDefault()) }
-                    .filter { it.length >= 3 }
-                    .distinct()
-                    .any { alias ->
-                        Regex("""(^|[^\p{L}])${Regex.escape(alias)}([^\p{L}]|$)""")
-                            .containsMatchIn(lowered)
-                    }
-            }
-        if (byDisplayName != null) return byDisplayName
+        val locales = java.util.Locale.getAvailableLocales()
+        val isoCodes = locales.asSequence().map { it.language.lowercase(java.util.Locale.US) }
+            .filter { it.length == 2 }.distinct().toSet()
+        // An unanchored match over every visible accessibility label used to
+        // report "pm,at" from unrelated playback controls as audio tracks.
+        // Accept tags only when the *entire* label is a recognized ISO tag.
+        val direct = Regex("""(?i)^[a-z]{2,3}(?:[-_][a-z]{2})?$""")
+            .matchEntire(raw)?.value?.replace('_', '-')?.lowercase(java.util.Locale.US)
+        if (direct != null) {
+            val code = direct.substringBefore('-')
+            if (code.length == 2) return code.takeIf { it in isoCodes }
+            return locales.firstOrNull { locale ->
+                runCatching { locale.isO3Language.equals(code, ignoreCase = true) }
+                    .getOrDefault(false)
+            }?.language?.lowercase(java.util.Locale.US)?.takeIf { it in isoCodes }
+        }
 
-        val direct = Regex("""(?i)(?:^|[^a-z])([a-z]{2,3})(?:[^a-z]|$)""")
-            .find(raw)
-            ?.groupValues
-            ?.getOrNull(1)
-            ?.lowercase(java.util.Locale.US)
-            ?: return null
-        if (direct.length == 2) return direct
-        return java.util.Locale.getAvailableLocales().asSequence()
-            .firstOrNull { locale ->
-                runCatching { locale.isO3Language.equals(direct, ignoreCase = true) }.getOrDefault(false)
-            }
-            ?.language
-            ?.takeIf { it.length == 2 }
-            ?.lowercase(java.util.Locale.US)
+        // Exact, localized names may have a non-language codec qualifier:
+        // "Français (stéréo)", "日本語 · AAC", "English - Stereo".
+        // Reject words embedded elsewhere in a generic UI control.
+        val surface = raw.substringBefore('(').substringBefore('—')
+            .substringBefore(" - ").substringBefore(" · ")
+            .trim().lowercase(java.util.Locale.ROOT)
+        if (surface.length < 3) return null
+        return isoCodes.asSequence().mapNotNull { code ->
+            val locale = java.util.Locale.forLanguageTag(code)
+            val names = sequenceOf(
+                locale.getDisplayLanguage(java.util.Locale.getDefault()),
+                locale.getDisplayLanguage(java.util.Locale.ENGLISH),
+                locale.getDisplayLanguage(locale),
+            ).map { it.trim().lowercase(java.util.Locale.ROOT) }
+                .filter { it.length >= 3 }.distinct()
+            if (names.any { it == surface }) code else null
+        }.firstOrNull()
     }
 
     private fun findTvControlButton(

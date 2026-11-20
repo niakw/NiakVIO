@@ -62,9 +62,16 @@ assert "Until.hasObject(By.text(builtIn)), 2500L" in tv
 assert "normalizeTvVisibleLanguage" in tv
 assert "Locale.getAvailableLocales()" in tv
 assert "locale.getDisplayLanguage(java.util.Locale.ENGLISH)" in tv
-assert r'Regex("""(^|[^\p{L}])${Regex.escape(alias)}([^\p{L}]|$)""")' in tv
-assert r'Regex("""(^|[^\\p{L}])${Regex.escape(alias)}([^\\p{L}]|$)""")' not in tv
-assert "locale.isO3Language.equals(direct" in tv
+# Full-match language labels only: two-letter UI fragments (PM, AT) are not
+# audio track proof. Preserve recognized ISO tags and full localized names.
+assert "matchEntire(raw)" in tv
+assert "val isoCodes = locales.asSequence()" in tv
+assert "return code.takeIf { it in isoCodes }" in tv
+assert "surface.length < 3" in tv
+assert "names.any { it == surface }" in tv
+assert "locale.isO3Language.equals(code" in tv
+assert 'Regex("""(?i)(?:^|[^a-z])' not in tv
+assert "containsMatchIn(lowered)" not in tv
 assert "audio_track_count=${reader.audioTrackCount}" in tv
 assert "subtitle_track_count=${reader.subtitleTrackCount}" in tv
 assert "video_height=${reader.videoHeight}" in tv
