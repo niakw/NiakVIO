@@ -7,10 +7,10 @@
   ],
   "targetFixture": "interstellar",
   "residentialExit": false,
-  "reason": "Re-run isolated Core HLS V20 official TV Purstream Interstellar, full PluginManager with SHA-attested PluginDataStore candidate override and finally restore. v31 (run 44645567286) was harness-only failure before Gradle/native execution: finalize_native_tv_test_entrypoint.py old regex could not strip newly expanded debug-only EntryPoint. Updated finalizer/bootstrap and tests on current main; do not infer provider behavior from v31. Require exact byte check+runtime terminal+rollback, then decoded video/FR-EN audio and identity.",
-  "requestVersion": 32,
-  "retryCause": "v31 unexpected nested TV PluginManager EntryPoint count=0, status=TARGETED_UNOBSERVED, runtime=not_started. Updated debug APK Hilt accessor + finalizer regex. v30 direct official PluginRuntime on exact V20 yielded 1 stream but unverified video dimensions/audio tracks. No production provider bytes published.",
-  "sourceImplementationSha": "6a22d4edcf65f55111d9bdbee3fce414ca3512c6",
+  "reason": "Purstream Interstellar official NuvioTV Android TV V20 exact-byte full PluginManager retest. v32 run 44646352512 executed matching Core candidate SHA b33f7702 via official PluginManager, returned 1 media row, restored original PluginDataStore and reached official video reader with Played/firstFrameMs=1788. However the tested source contained DOUBLE-ESCAPED Kotlin RAW regex causing reported video_width=0/video_height=0 and HLS audio/variant matrices empty despite valid media declarations. v33 executes the two SOURCE-OWNED regex repairs 24912d1 and d3ca09d + late video-format snapshot settle, strict decoding/FR-EN tracks/quality/identity gate unchanged; no production publication.",
+  "requestVersion": 33,
+  "retryCause": "v32 official manager 1 stream with matched candidate bytes and restored original code; playback READY Played firstFrame=1788ms but older harness videoResolution and HlsTrackTopology Regex raw double-escapes produce false zero metrics. Native v33 must demonstrate actual nonzero format plus audio/subtitle/quality evidence and visual terminal behavior; never count firstFrame as decode alone.",
+  "sourceImplementationSha": "9050e286d63f7a755622f1043ac7988541d31e4e",
   "candidateRematerialize": true,
   "candidateRequiredMarker": "NIAKVIO_HLS_TS_WRAPPED_AAC_RENDITION_V20"
 }
