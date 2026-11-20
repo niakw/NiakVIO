@@ -11,6 +11,7 @@ already present. This closes Learning-runtime -> persisted-guidance handoff.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -22,6 +23,129 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0,str(SCRIPT_DIR))
 
 from brain_layers.declarative_gap_strategy import synthesize_rows
+
+SOURCE_SHAPES = frozenset({"script_http_missing", "script_html_2xx"})
+SOURCE_INLINE = "catalogue_inline_token_episode"
+FRONTIER_FLAGS = (
+    "proofAuthority", "publicationAuthority",
+    "nativePlaybackAuthority", "providerMutationAuthority",
+)
+
+
+def attested_source_contract_frontier(
+    source_history: dict[str, Any],
+    native_history: dict[str, Any],
+    manifest: dict[str, Any],
+    root: Path,
+) -> set[str]:
+    """A read-only CI source witness can defer generic executors, never repair.
+
+    Require current published JS bytes and exact official-TV native parent.
+    Missing/forged/stale evidence must not interfere with other providers.
+    """
+    if (
+        not isinstance(source_history, dict)
+        or source_history.get("schemaVersion") != 1
+        or source_history.get("authority") != "independent-ci-source-shape-diagnostic-only"
+        or source_history.get("primaryClient")
+            != "independent-github-runner-not-official-android-tv"
+        or not isinstance(native_history, dict)
+        or native_history.get("schemaVersion") != 1
+        or native_history.get("authority") != "official-android-tv-emulator-diagnostic-only"
+        or native_history.get("primaryClient") != "tv"
+        or any(source_history.get(k) is not False for k in FRONTIER_FLAGS)
+        or any(native_history.get(k) is not False for k in FRONTIER_FLAGS)
+        or not isinstance(manifest, dict)
+    ):
+        return set()
+    rows = manifest.get("scrapers")
+    if not isinstance(rows, list):
+        return set()
+    owned: dict[str, str] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        provider = canon(row.get("id"))
+        relative = str(row.get("filename") or "")
+        if (not re.fullmatch(r"[a-z0-9][a-z0-9_-]{1,79}", provider)
+                or not relative.startswith("providers/") or not relative.endswith(".js")
+                or ".." in Path(relative).parts):
+            continue
+        try:
+            file = (root / relative).resolve()
+            file.relative_to(root.resolve())
+            if file.is_file():
+                owned[provider] = hashlib.sha256(file.read_bytes()).hexdigest()
+        except (ValueError, OSError):
+            continue
+    out: set[str] = set()
+    native = native_history.get("rows")
+    if not isinstance(native, list):
+        return out
+    for row in (source_history.get("rows") or [])[-1400:]:
+        if not isinstance(row, dict):
+            continue
+        provider = canon(row.get("providerId"))
+        artifact = str(row.get("parentNativeProviderArtifactSha256") or "").lower()
+        native_run = str(row.get("parentNativeRunId") or "")
+        source_sha = str(row.get("parentNativeNiakvioSha") or "")
+        fixture = str(row.get("fixture") or "")
+        scope = str(row.get("manifestScope") or "manifest.json")
+        evidence = row.get("evidence")
+        inline_count = row.get("inlineTokenResponseCount")
+        requests = row.get("probeRequestCount")
+        probe_run = str(row.get("latestProbeRunId") or "")
+        probe_sha = str(row.get("latestProbeSourceSha") or "")
+        if (owned.get(provider) != artifact
+                or not re.fullmatch(r"[a-f0-9]{64}", artifact)
+                or not re.fullmatch(r"[a-f0-9]{40}", source_sha)
+                or not re.fullmatch(r"[0-9]{8,20}", native_run)
+                or not re.fullmatch(r"[0-9]{8,20}", probe_run)
+                or not re.fullmatch(r"[a-f0-9]{40}", probe_sha)
+                or not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,95}", fixture)
+                or scope != "manifest.json"
+                or type(requests) is not int or not 1 <= requests <= 12
+                or type(inline_count) is not int or not 1 <= inline_count <= requests
+                or row.get("independentNetworkNotOfficialClient") is not True
+                or row.get("sourceContractVerifiedOnOfficialTv") is not False
+                or row.get("catalogueIdentityVerified") is not False
+                or row.get("episodeIdentityVerified") is not False
+                or row.get("candidateMutationAllowed") is not False
+                or row.get("publicationAllowed") is not False
+                or row.get("generatedByBrain") is not False
+                or row.get("modelExecuted") is not False
+                or row.get("validatedRepair") is not False
+                or any(row.get(k) is not False for k in FRONTIER_FLAGS)
+                or not isinstance(evidence, list)
+                or not any(
+                    isinstance(e, dict)
+                    and e.get("seasonSourceShape") == SOURCE_INLINE
+                    and e.get("seasonPageStatus") == 200
+                    and e.get("inlineSlotArrayObserved") is True
+                    and e.get("opaqueLinkTokenObserved") is True
+                    and e.get("jetonDeclarationObserved") is True
+                    for e in evidence
+                )):
+            continue
+        if any(
+            isinstance(native_row, dict)
+            and canon(native_row.get("provider")) == provider
+            and native_row.get("nativeRunId") == native_run
+            and native_row.get("sourceNiakvioSha") == source_sha
+            and native_row.get("providerArtifactSha256") == artifact
+            and native_row.get("fixture") == fixture
+            and native_row.get("manifestScope") == scope
+            and native_row.get("appSelected") is True
+            and native_row.get("readerEvidenceComplete") is True
+            and native_row.get("nativeExtractionZeroObserved") is True
+            and any(x in SOURCE_SHAPES
+                    for x in native_row.get("nativeSourceScriptShapePatterns") or [])
+            and all(native_row.get(k) is False for k in FRONTIER_FLAGS)
+            for native_row in native[:1400]
+        ):
+            out.add(provider)
+    return out
+
 
 ROW_FIELDS={
     "providerId","failureClass","targetLayer","strategy","profile",
@@ -62,6 +186,7 @@ def fill(
     current_sha:str,
     census:dict[str,Any],
     memory:dict[str,Any],
+    source_frontier:set[str] | frozenset[str] = frozenset(),
 )->tuple[dict[str,Any],list[str]]:
     wanted=[]
     seen_wanted=set()
@@ -70,7 +195,11 @@ def fill(
         if provider and provider not in seen_wanted:
             seen_wanted.add(provider);wanted.append(provider)
     out=json.loads(json.dumps(payload))
-    rows=[row for row in out.get("rows") or [] if isinstance(row,dict)]
+    # An exact-byte, native-parent-attested inline episode contract is a
+    # *different causal family*. Do not recycle generic route/traversal
+    # executor guidance before a dedicated source-family Lego exists.
+    rows=[row for row in out.get("rows") or []
+          if isinstance(row,dict) and canon(row.get("providerId")) not in source_frontier]
     existing_keys={
         (
             canon(row.get("providerId")),
@@ -91,6 +220,8 @@ def fill(
 
     added=[]
     for provider in wanted:
+        if provider in source_frontier:
+            continue
         row=by_provider.get(provider)
         if row is None:
             continue
@@ -117,6 +248,7 @@ def exhaustion_report(
     current_sha:str,
     census:dict[str,Any],
     memory:dict[str,Any],
+    source_frontier:set[str] | frozenset[str] = frozenset(),
 )->dict[str,Any]:
     wanted=[]
     seen=set()
@@ -133,8 +265,10 @@ def exhaustion_report(
     }
     exhausted=[
         provider for provider in wanted
-        if provider in repair_queue and provider not in synthesized_providers
+        if provider in repair_queue
+        and (provider not in synthesized_providers or provider in source_frontier)
     ]
+    deferred=[p for p in wanted if p in repair_queue and p in source_frontier]
     return {
         "schemaVersion":1,
         "role":"architecture-escalation-signal-only",
@@ -143,6 +277,8 @@ def exhaustion_report(
         "requestedProviders":wanted,
         "synthesizedProviders":sorted(synthesized_providers & set(wanted)),
         "exhaustedProviders":exhausted,
+        "deferredSourceContractProviders":deferred,
+        "sourceContractExecutorStatus":("new_family_required" if deferred else "not_attested"),
         "architectureForceRecommended":bool(exhausted),
     }
 
@@ -162,9 +298,23 @@ def main()->int:
     payload=load(a.input)
     census=json.loads(a.census.read_text(encoding="utf-8"))
     memory=json.loads(a.memory.read_text(encoding="utf-8"))
-    output,added=fill(payload,providers=providers,current_sha=a.current_sha,census=census,memory=memory)
+    def optional_json(path:Path)->dict[str,Any]:
+        try:
+            value=json.loads(path.read_text(encoding="utf-8"))
+            return value if isinstance(value,dict) else {}
+        except (OSError,ValueError):
+            return {}
+    root=Path(__file__).resolve().parents[1]
+    source_frontier=attested_source_contract_frontier(
+        optional_json(root/"automation/brain-catalogue-source-probe-history.json"),
+        optional_json(root/"automation/brain-android-tv-emulator-history.json"),
+        optional_json(root/"manifest.json"),root,
+    )
+    output,added=fill(payload,providers=providers,current_sha=a.current_sha,census=census,memory=memory,
+                      source_frontier=source_frontier)
     report=exhaustion_report(
-        providers=providers,current_sha=a.current_sha,census=census,memory=memory
+        providers=providers,current_sha=a.current_sha,census=census,memory=memory,
+        source_frontier=source_frontier
     )
     a.output.parent.mkdir(parents=True,exist_ok=True)
     a.output.write_text(json.dumps(output,indent=2,sort_keys=True)+"\n",encoding="utf-8")
@@ -177,7 +327,8 @@ def main()->int:
         f"advanced={len(added)} providers={','.join(added) or 'none'} "
         f"exhausted={len(report['exhaustedProviders'])} "
         f"exhausted_providers={','.join(report['exhaustedProviders']) or 'none'} "
-        f"final={output.get('providerCount',0)}"
+        f"final={output.get('providerCount',0)} "
+        f"deferred_source_contract={','.join(report['deferredSourceContractProviders']) or 'none'}"
     )
     return 0
 

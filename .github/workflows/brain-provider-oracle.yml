@@ -9,6 +9,8 @@ on:
       - 'tests/brain_oracles/**'
       - 'scripts/provider_patches/anime_catalogue_runtime_common.py'
       - 'scripts/brain_oracles/catalogue_inline_episode_source.py'
+      - 'scripts/fill_brain_learning_guidance_gaps.py'
+      - 'tests/brain_learning_source_contract_frontier_test.py'
       - 'scripts/compile_brain_accepted_program_v3.py'
       - 'scripts/brain_positive_program_memory.py'
       - 'scripts/brain_repair_runtime.py'
@@ -55,6 +57,11 @@ jobs:
         run: python tests/brain_positive_program_episode_replay_test.py
       - name: Verify shared Lego source drift invalidates only registered importing providers
         run: python tests/brain_family_renderer_drift_scope_test.py
+      - name: Reject generic Learning guidance replay for a native-attested new source contract
+        run: |
+          python tests/brain_learning_source_contract_frontier_test.py
+          python tests/brain_learning_guidance_gap_fill_test.py
+          python tests/brain_learning_guidance_executor_advance_test.py
       - name: Differentiate old episode scripts and inline-token source without media or secrets
         run: python tests/brain_oracles/catalogue_inline_episode_source_test.py
       - name: Prove real parser source signature reaches Brain strategy selection and respects negative memory
