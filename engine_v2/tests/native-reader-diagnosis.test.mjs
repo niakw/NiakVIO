@@ -79,6 +79,44 @@ try {
   assert.equal(data.crossClientProviderFailureGroups, 0);
   assert.equal(data.policy.providerLoadJsMutationAllowed, false);
   assert.equal(data.readerObserved, 3);
+  // Brain must not confuse HTTP success with an executable episodes.js.
+  // This is a generic response-shape observation, not a WAF verdict or
+  // authority to mutate an Anime-Sama-specific provider.
+  const scriptShapeLog = path.join(tmp, 'tv-script-html-shape.log');
+  const scriptShapeOutput = path.join(tmp, 'tv-script-html-shape.json');
+  const beforeMoviesDriveResult = common.find((line) =>
+    line.startsWith('FIELD_NATIVE_RESULT client=tv') && line.includes('provider64=' + b64('MOVIESDRIVE')));
+  assert.ok(beforeMoviesDriveResult);
+  const syntheticShapes = [
+    'D/PluginRuntime: Fetch result: 404  url=https://source.invalid/catalogue/example/saison1/vf/episodes.js bodyLen=3 bodyPreview=404',
+    'D/PluginRuntime: Fetch result: 200 OK url=https://source.invalid/catalogue/example/saison1/vf/episodes.js bodyLen=700 bodyPreview=<!doctype html>',
+    'D/PluginRuntime: Fetch result: 200 url=https://source.invalid/template-php/defaut/fetch.php bodyLen=700 bodyPreview=<!doctype html>',
+    'D/PluginRuntime: Fetch result: 200 url=https://source.invalid/catalogue/example/other.js bodyLen=700 bodyPreview=<!doctype html>',
+    'D/PluginRuntime: Fetch result: 200 url=https://source.invalid/catalogue/example/vostfr/sources.js bodyLen=500 bodyPreview=var videos = []',
+  ];
+  fs.writeFileSync(scriptShapeLog, common.flatMap((line) =>
+    line === beforeMoviesDriveResult ? [...syntheticShapes, line] : [line]
+  ).join('\n') + '\n');
+  const scriptShapeRun = spawnSync(process.execPath,
+    [script, '--output', scriptShapeOutput, scriptShapeLog], {cwd: root, encoding: 'utf8'});
+  assert.equal(scriptShapeRun.status, 0, scriptShapeRun.stderr + scriptShapeRun.stdout);
+  const scriptShape = JSON.parse(fs.readFileSync(scriptShapeOutput, 'utf8'));
+  const shapeRows = scriptShape.sourceScriptShapeDiagnostics;
+  assert.equal(shapeRows.length, 2);
+  assert.deepEqual(shapeRows.map((x) => x.pattern), ['script_http_missing', 'script_html_2xx']);
+  assert.deepEqual(shapeRows.map((x) => x.httpStatusClass), ['4xx', '2xx']);
+  assert.ok(shapeRows.every((x) => x.provider === 'moviesdrive'
+    && x.requestType === 'movie' && x.fixture === 'sinners-2025'
+    && x.providerJsMutationAllowed === false && x.publicationAuthority === false
+    && x.coreOrManifestProposalAllowed === false));
+  assert.equal(JSON.stringify(shapeRows).includes('https://'), false);
+  assert.equal(JSON.stringify(shapeRows).includes('source.invalid'), false);
+  assert.equal(scriptShape.sourceScriptShapeDiagnostics.some((x) => x.provider === 'purstream'), false);
+  // A known 200 with JavaScript-looking body never implies an HTML mismatch.
+  // Likewise unrelated .js assets and HTML returned from a PHP search endpoint
+  // must not borrow the episodes.js response classification.
+
+
   assert.equal(data.readerHealthy, 1);
   // Android TV READY and plausible duration are not decoded playback when
   // width and height are zero. This remains an owner-unknown Brain diagnosis.
