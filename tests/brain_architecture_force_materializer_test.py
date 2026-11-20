@@ -2124,7 +2124,6 @@ typed_source_program = {
         "moduleCode": "def parse_episode_source(html, episode):\n    return []\n",
         "runtimeFind": mod.SOURCE_FAMILY_RUNTIME_ANCHOR,
         "runtimeReplace": mod.SOURCE_FAMILY_RUNTIME_ANCHOR + "\n        from brain_layers.generated_source import parse_episode_source",
-        "testCode": "assert 'eps1' and 'eps2' and 'lien:'\n",
     },
 }
 try:
@@ -2146,6 +2145,13 @@ try:
         chosen_paths["modulePath"], chosen_paths["runtimePath"], chosen_paths["testPath"],
     ]
     assert chosen_paths["moduleName"] in chosen_paths["moduleImport"]
+    trusted_test = compiled_source_edits[2]["content"]
+    assert "testCode" not in source_generated["sourceFamilyProgram"]
+    assert f"from {chosen_paths['moduleImport']} import parse_episode_source" in trusted_test
+    assert "'LEGOTEST_ALPHA_1'" in trusted_test
+    assert "'LEGOTEST_BETA_2'" in trusted_test
+    compile(trusted_test, chosen_paths["testPath"], "exec")
+    assert trusted_test == mod._source_family_contract_test(chosen_paths["moduleName"])
     assert compiled_source_edits[1]["find"] == mod.SOURCE_FAMILY_RUNTIME_ANCHOR
     assert compiled_source_edits[1]["replace"].startswith(mod.SOURCE_FAMILY_RUNTIME_ANCHOR + "\n")
     assert mod._source_family_response_format()["schema"]["required"] == ["sourceFamilyProgram"]
@@ -2158,7 +2164,9 @@ try:
                                "path": "scripts/brain_repair_runtime.py",
                                "content": "pass"}]},
                    {"sourceFamilyProgram": {**typed_source_program["sourceFamilyProgram"],
-                                            "operation": "create"}}):
+                                            "operation": "create"}},
+                   {"sourceFamilyProgram": {**typed_source_program["sourceFamilyProgram"],
+                                            "testCode": "assert True"}}):
         try:
             mod._model_edits(unsafe, source_family_payload)
         except ValueError:
