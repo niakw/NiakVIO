@@ -58,17 +58,18 @@ try {
   assert.match(decodedFormat.playerOutput, /playback_verified=1/);
   assert.equal(decodedFormat.authoritative.status, 0, decodedFormat.playerOutput);
 
-  // v33 regression: the HLS transport advertised FR+EN plus one integrated FR
-  // subtitle while the production TV player exposed zero audio tracks and no
-  // subtitle observation. Decoded video alone must never certify FULL media.
+  // v35 regression: the HLS transport advertises FR+EN plus one integrated FR
+  // subtitle while the TV observer extracts zero audio rows after the production
+  // Audio control was found. Keep media fail-closed, but attribute this exact
+  // contradiction to the Compose observer layer rather than provider/Media3.
   const collapsedTracks = run(
     'video_width=1280 video_height=720 audio_track_count=0 audio_track_languages64=AA subtitle_track_count=-1 subtitle_track_languages64=AA',
     'audio_track_count=2 audio_track_languages64=ZnIsZW4 subtitle_track_count=1 subtitle_track_languages64=ZnI',
   );
   assert.match(collapsedTracks.collectionOutput, /media_verified=0/);
-  assert.match(collapsedTracks.collectionOutput, /playback_audio_tracks_unverified/);
+  assert.match(collapsedTracks.collectionOutput, /playback_audio_ui_observer_empty/);
   assert.notEqual(collapsedTracks.observed.status, 0);
-  assert.match(collapsedTracks.playerOutput, /failure_class=playback_audio_tracks_unverified/);
+  assert.match(collapsedTracks.playerOutput, /failure_class=playback_audio_ui_observer_empty/);
   assert.match(collapsedTracks.playerOutput, /playback_verified=0/);
   assert.notEqual(collapsedTracks.authoritative.status, 0);
 
