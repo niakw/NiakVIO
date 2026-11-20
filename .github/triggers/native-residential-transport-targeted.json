@@ -7,10 +7,10 @@
   ],
   "targetFixture": "interstellar",
   "residentialExit": false,
-  "reason": "Purstream Interstellar official NuvioTV Android TV Core V20 exact-byte replay after v35 proved official PluginManager execution, a 1280x720 production video format and correct 10143.925s duration while independent HLS topology exposed FR+EN audio plus integrated FR subtitle but the production UI observer exposed 0/0 tracks. v36 adds source-owned sanitized per-variant CODECS evidence so the next verdict can distinguish malformed HLS codec declarations / Media3 preparation from an observer-only collapse. No provider bytes or production manifests changed.",
-  "requestVersion": 36,
-  "retryCause": "v35 run 44657078785 reached the real production player and decoded video but failed closed on player track topology: transport expected audio=2(fr,en), subtitles=1(fr), player observer returned audio=0, subtitles=0. Replay the exact V20 candidate with variant CODECS evidence; require exact candidate byte check + PluginManager execution + rollback and keep publication blocked unless decoded video and FR+EN/subtitle controls are demonstrated.",
-  "sourceImplementationSha": "0d66e9e4a5d65745074c5669d84dc3c90c3400d7",
+  "reason": "Purstream Interstellar official NuvioTV Android TV Core V20 exact-byte replay. v36 was a harness-only failure before Gradle/runtime because the player augmentation anchor did not yet include the newly added sanitized HLS variant CODECS field. Main now updates the producer, augmentation anchor and source-derived tests together, and fixes the TV language observer raw Unicode regex contract. No provider JS or production manifest changed.",
+  "requestVersion": 37,
+  "retryCause": "v36 run 44663739770 rematerialized exact V20 candidate b33f770216b48099... but aborted at prepare_native_corpus_validation augmentation with transport probe anchor count=0, before app/provider/player execution. v37 must reach official PluginManager exact candidate execution, production player, decoded video, FR+EN audio and integrated FR subtitle controls, emit variant_codecs64, restore exact prior provider bytes, and remain publication-blocked unless all media gates pass.",
+  "sourceImplementationSha": "f86d11811021c7eb8fcddcc1f1c6c0d414e33570",
   "candidateRematerialize": true,
   "candidateRequiredMarker": "NIAKVIO_HLS_TS_WRAPPED_AAC_RENDITION_V20"
 }
