@@ -89,6 +89,10 @@ jobs:
             --source-sha "$NATIVE_SOURCE_SHA" \
             --run-id "$NATIVE_RUN_ID" \
             --output "$RUNNER_TEMP/brain-tv-route.json"
+          python3 scripts/persist_brain_native_candidate_experiments.py \
+            --route "$RUNNER_TEMP/brain-tv-route.json" \
+            --ledger automation/brain-native-candidate-experiments.json \
+            --brain-sha "$brain_sha"
 
       - name: Upload bounded Brain TV next-action plan
         if: always()
@@ -110,6 +114,9 @@ jobs:
             exit 0
           fi
           git add automation/brain-android-tv-emulator-history.json
+          if [ -f automation/brain-native-candidate-experiments.json ]; then
+            git add automation/brain-native-candidate-experiments.json
+          fi
           if git diff --cached --quiet; then
             echo "FIELD_BRAIN_ANDROID_TV_PERSIST status=no_new_observation"
             exit 0
