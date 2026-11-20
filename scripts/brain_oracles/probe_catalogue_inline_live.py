@@ -22,6 +22,10 @@ from typing import Any, Callable
 try:
     from .catalogue_inline_episode_source import classify
 except ImportError:
+    # importlib.spec_from_file_location (offline tests) does not add this
+    # script's sibling directory to sys.path; CLI execution does.
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
     from catalogue_inline_episode_source import classify
 
 ROOT = Path(__file__).resolve().parents[2]
