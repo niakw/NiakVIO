@@ -220,7 +220,8 @@ for fixture in "${FIXTURES[@]}"; do
   if [[ -n "${NIAKVIO_NATIVE_CANDIDATE_SHA256:-}" ]]; then
     if ! grep -Fq "FIELD_NATIVE_CANDIDATE_RUNTIME_BYTE_CHECK client=tv" "$LOG" \
       || ! grep -Fq "sha256=$NIAKVIO_NATIVE_CANDIDATE_SHA256 matched=true runtime=official_plugin_manager" "$LOG" \
-      || ! grep -Fq "FIELD_NATIVE_CANDIDATE_RUNTIME_RESULT client=tv" "$LOG"; then
+      || ! grep -Fq "FIELD_NATIVE_CANDIDATE_RUNTIME_RESULT client=tv" "$LOG" \
+      || ! grep -Fq "FIELD_NATIVE_CANDIDATE_RESTORED client=tv" "$LOG"; then
       echo "FIELD_NATIVE_CANDIDATE_ORACLE_FAILED fixture=$fixture reason=exact_candidate_execution_or_terminal_missing authority=none" | tee -a "$LOG"
       SOFT_FAILURES=$((SOFT_FAILURES+1))
     else
