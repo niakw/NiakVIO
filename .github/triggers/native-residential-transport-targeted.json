@@ -7,10 +7,10 @@
   ],
   "targetFixture": "interstellar",
   "residentialExit": false,
-  "reason": "Purstream Interstellar official NuvioTV Android TV Core V20 exact-byte PluginManager replay after v33 exposed a false-positive media gate. v33 run 44649216583 decoded 1280x720 with first frame, while HLS transport advertised audio fr+en and subtitle fr but production player exposed audio_track_count=0 and no integrated subtitle observation. Main now correlates transport topology with production-player tracks and refuses media_verified/healthy when those tracks collapse. v34 must show whether the official player actually preserves FR+EN/subtitle topology or correctly fails unresolved_media; no provider publication.",
-  "requestVersion": 34,
-  "retryCause": "v33 proved candidate bytes and 0->1 stream plus decoded 1280x720, but old collection/player gates incorrectly passed despite HLS expected audio=2 fr,en + subtitle=1 fr versus player audio=0/subtitle=-1. Replay exact candidate under topology-aware gates; success requires nonzero decoded video plus player-observed expected audio/languages/subtitle, identity and exact rollback.",
-  "sourceImplementationSha": "99f10c5a24d57c0bd067c1e6bf925fe6260624ee",
+  "reason": "Purstream Interstellar official NuvioTV Android TV Core V20 exact-byte PluginManager replay after v34 produced no provider/player evidence because the restored avd-v5 TV snapshot stayed adb unauthorized until emulator boot timeout. Main now rotates the shared Android snapshot lineage to avd-v6 with AVD + adb host identity + debug keystore cached together, keeps transport-to-player track-topology gates fail-closed, and fixes the TV audio/subtitle UI observer to settle asynchronous overlays and avoid reopening the focused audio overlay before probing subtitles. No provider bytes or manifests changed.",
+  "requestVersion": 35,
+  "retryCause": "v34 run 44654928233 failed before Nuvio/provider runtime: repeated adb device unauthorized/offline ended in Timeout waiting for emulator to boot. Rebuild a fresh avd-v6 snapshot and replay the same exact V20 candidate. Success requires official PluginManager execution, decoded video, transport-declared FR+EN audio and FR integrated subtitle visible in the production TV player, correct content identity/duration, exact candidate rollback, and no publication.",
+  "sourceImplementationSha": "bfad0655c7c893bbae8396ad7646b724a425c7b6",
   "candidateRematerialize": true,
   "candidateRequiredMarker": "NIAKVIO_HLS_TS_WRAPPED_AAC_RENDITION_V20"
 }
