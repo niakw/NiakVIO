@@ -65,6 +65,29 @@ body = json.dumps(probes)
 for secret in ("rawHtml", "signedUrl", "bodyPreview", "access_token", "cookie="):
     assert secret not in body
 assert request.advisor_only is False  # caller decides whether to run advisory
+request.advisor_only = True
+from niakvio_brain_llm.prompting import build_prompt_payload  # noqa:E402
+prompt = build_prompt_payload(
+    request, experiences=[], documents=[],
+    causal_prior={"confidence": 0.91, "target_layer": "unknown",
+                  "strategy_prior": "source-contract-diagnose"},
+    mutation_policy={"allow_mutations": False, "allowed_scopes": []},
+)
+prompt_observations = prompt.get("request", {}).get("observations") or []
+has_causal_source = any(
+    item.get("source") == "independent-catalogue-source-probe"
+    and "catalogue_inline_token_episode" in json.dumps(item)
+    for item in prompt_observations
+)
+print(
+    "FIELD_BRAIN_CATALOGUE_PROMPT_WITNESS "
+    f"prompt_observations={len(prompt_observations)} "
+    f"source_visible={str(has_causal_source).lower()} "
+    f"chars={prompt.get('context_budget', {}).get('serialized_user_chars')} "
+    "authority=false",
+    flush=True,
+)
+assert has_causal_source, "Brain LLM prompt lost the actual inline source contract"
 print(
     "FIELD_BRAIN_CATALOGUE_ADAPTER_INTEGRATION "
     f"brain_sha={sha[:12]} provider=anime-sama native_parents={len(native)} "
