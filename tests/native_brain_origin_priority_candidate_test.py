@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import prepare_native_candidate_remat as candidate
 from provider_base_store import build_clean_provider_seed, build_provider_data_model
+from materialize_provider_v3_one import _apply_native_brain_origin_priority_candidate
 
 provider = "demo-provider"
 source_sha = "a" * 40
@@ -75,10 +76,12 @@ model = build_provider_data_model(
 )
 assert model["nativeBlockingOriginPriority"]["preferredHosts"] == ["fast.example"]
 base = build_clean_provider_seed(provider)
-text = base.decode("utf-8")
-assert "NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29" in text
-assert "_spv29NativeBlockingQueueScore" in text
-assert "fast.example" not in text and "slow.example" not in text
+production_text = base.decode("utf-8")
+assert "NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29" not in production_text
+candidate_text = _apply_native_brain_origin_priority_candidate(base).decode("utf-8")
+assert "NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29" in candidate_text
+assert "_spv29NativeBlockingQueueScore" in candidate_text
+assert "fast.example" not in candidate_text and "slow.example" not in candidate_text
 
 for mutation in (
     {**payload, "sourceNiakvioSha": "d" * 40},

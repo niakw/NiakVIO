@@ -1208,23 +1208,6 @@ function _spv187QueueScore(url) {
   } catch (_) {}
   return _crawlUrlScore(url) + bonus;
 }
-/* NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29 */
-function _spv29NativeBlockingQueueScore(url) {
-  let score = _spv187QueueScore(url);
-  try {
-    if (typeof globalThis.__native_fetch !== "function" ||
-        globalThis.__nuvioNonBlockingNativeFetchV1 === true) return score;
-    const rule = NIAKVIO_PROVIDER_MODEL &&
-      NIAKVIO_PROVIDER_MODEL.nativeBlockingOriginPriority;
-    if (!rule || typeof rule !== "object") return score;
-    const host = _text(new URL(url).hostname).toLowerCase().replace(/\.$/, "");
-    const preferred = Array.isArray(rule.preferredHosts) ? rule.preferredHosts : [];
-    const deprioritized = Array.isArray(rule.deprioritizedHosts) ? rule.deprioritizedHosts : [];
-    if (preferred.includes(host)) score += 6000;
-    if (deprioritized.includes(host)) score -= 6000;
-  } catch (_) {}
-  return score;
-}
 /* NIAKVIO_PROVIDER_PLAYER_FORM_HANDOFF_V18_8 */
 function _spv188DecodeAttr(value) {
   return _text(value).replace(/&(amp|quot|#39);/gi, function(_match, entity) {
@@ -1357,7 +1340,7 @@ function _spv241ExplicitPlayerPayloadUrls(text, base) {
 /* NIAKVIO_PROVIDER_ADAPTIVE_PLAYER_FANOUT_V25 */
 /* NIAKVIO_PROVIDER_MULTI_VARIANT_FANOUT_V26 */
 async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
-  const rankedSeeds = _spv187PrioritizedPlayerRoutes(seedUrls).filter(_crawlEligible).sort((a,b)=>_spv29NativeBlockingQueueScore(b)-_spv29NativeBlockingQueueScore(a));
+  const rankedSeeds = _spv187PrioritizedPlayerRoutes(seedUrls).filter(_crawlEligible).sort((a,b)=>_spv187QueueScore(b)-_spv187QueueScore(a));
   // Enumerate bounded announced readers/sources before the final stream cap.
   // A page may legitimately expose 20+ language/server/quality choices.
   const seedCap = Math.min(32, Math.max(8, rankedSeeds.length));
@@ -1396,7 +1379,7 @@ async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
   }
   async function crawlWorker() {
   while (!hedgeStopped && queue.length && requests < requestBudget && streams.length < 40) {
-    queue.sort((a,b)=>_spv29NativeBlockingQueueScore(b.url)-_spv29NativeBlockingQueueScore(a.url));
+    queue.sort((a,b)=>_spv187QueueScore(b.url)-_spv187QueueScore(a.url));
     const row = queue.shift();
     if (!row || seen.has(row.url)) continue;
     seen.add(row.url);

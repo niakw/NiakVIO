@@ -564,6 +564,59 @@ def _native_brain_origin_priority(provider_id: str) -> dict[str, object] | None:
     }
 
 
+def _apply_native_brain_origin_priority_candidate(base: bytes) -> bytes:
+    """Compile V29 only into ephemeral candidate ProviderBase bytes."""
+    text = base.decode("utf-8", errors="strict")
+    marker = "NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29"
+    if marker in text:
+        raise ValueError("V29 candidate logic leaked into production ProviderBase seed")
+    score_anchor = """function _spv187QueueScore(url) {
+  let bonus = 0;
+  try {
+    const path = _text(new URL(url).pathname);
+    if (/^\\/v\\/[A-Za-z0-9_-]{3,160}\\/?$/i.test(path)) bonus = 1000;
+  } catch (_) {}
+  return _crawlUrlScore(url) + bonus;
+}
+"""
+    candidate_helper = score_anchor + """/* NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29 */
+function _spv29NativeBlockingQueueScore(url) {
+  let score = _spv187QueueScore(url);
+  try {
+    if (typeof globalThis.__native_fetch !== "function" ||
+        globalThis.__nuvioNonBlockingNativeFetchV1 === true) return score;
+    const rule = NIAKVIO_PROVIDER_MODEL &&
+      NIAKVIO_PROVIDER_MODEL.nativeBlockingOriginPriority;
+    if (!rule || typeof rule !== "object") return score;
+    const host = _text(new URL(url).hostname).toLowerCase().replace(/\\.$/, "");
+    const preferred = Array.isArray(rule.preferredHosts) ? rule.preferredHosts : [];
+    const deprioritized = Array.isArray(rule.deprioritizedHosts) ? rule.deprioritizedHosts : [];
+    if (preferred.includes(host)) score += 6000;
+    if (deprioritized.includes(host)) score -= 6000;
+  } catch (_) {}
+  return score;
+}
+"""
+    if text.count(score_anchor) != 1:
+        raise ValueError("candidate ProviderBase queue score anchor drift")
+    text = text.replace(score_anchor, candidate_helper, 1)
+    initial = "sort((a,b)=>_spv187QueueScore(b)-_spv187QueueScore(a))"
+    iterative = "queue.sort((a,b)=>_spv187QueueScore(b.url)-_spv187QueueScore(a.url));"
+    if text.count(initial) != 1 or text.count(iterative) != 1:
+        raise ValueError("candidate ProviderBase queue ordering anchor drift")
+    text = text.replace(
+        initial,
+        "sort((a,b)=>_spv29NativeBlockingQueueScore(b)-_spv29NativeBlockingQueueScore(a))",
+        1,
+    )
+    text = text.replace(
+        iterative,
+        "queue.sort((a,b)=>_spv29NativeBlockingQueueScore(b.url)-_spv29NativeBlockingQueueScore(a.url));",
+        1,
+    )
+    return text.encode("utf-8")
+
+
 def materialize_one(
     provider_id: str,
     *,
@@ -688,6 +741,8 @@ def materialize_one(
         seed,
         overrides_path=allmat.DEFAULT_OVERRIDES,
     )
+    if native_brain_origin_priority:
+        base = _apply_native_brain_origin_priority_candidate(base)
     data = allmat.build_provider_data_model(
         provider_id,
         entry,

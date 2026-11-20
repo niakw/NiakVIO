@@ -3,9 +3,18 @@
 from pathlib import Path
 import json
 import subprocess
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-source = (ROOT / "scripts/provider_base_store.py").read_text(encoding="utf-8")
+sys.path.insert(0, str(ROOT / "scripts"))
+from provider_base_store import build_clean_provider_seed
+from materialize_provider_v3_one import _apply_native_brain_origin_priority_candidate
+
+production_source = build_clean_provider_seed("contract").decode("utf-8")
+assert "NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29" not in production_source
+source = _apply_native_brain_origin_priority_candidate(
+    production_source.encode("utf-8")
+).decode("utf-8")
 priority_start = source.index("function _spv29NativeBlockingQueueScore(url) {")
 priority_end = source.index("/* NIAKVIO_PROVIDER_PLAYER_FORM_HANDOFF_V18_8 */", priority_start)
 priority = source[priority_start:priority_end]
@@ -71,13 +80,11 @@ function make(native, slowHost, fastHost, blockingNativeBridge=false, nonBlockin
       return {url:u,headers:{get:()=> 'text/html'},text:async()=> 'fast-master'};
     },
   };
-  f.globalThis = native
-    ? {
-        __native_fetch:()=>{},
-        __nuvioProviderDeadlineMs:Date.now()+25000,
-        ...(nonBlockingCapability ? {__nuvioNonBlockingNativeFetchV1:true} : {})
-      }
-    : {};
+  if (native) {
+    f.__native_fetch=()=>{};
+    f.__nuvioProviderDeadlineMs=Date.now()+25000;
+    if (nonBlockingCapability) f.__nuvioNonBlockingNativeFetchV1=true;
+  }
   vm.createContext(f);
   f.testCrawl=vm.runInContext(crawler+';_crawlDirectMedia;',f);
   return {f, requests, starts};
