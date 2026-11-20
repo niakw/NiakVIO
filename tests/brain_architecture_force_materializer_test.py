@@ -2148,8 +2148,9 @@ try:
     trusted_test = compiled_source_edits[2]["content"]
     assert "testCode" not in source_generated["sourceFamilyProgram"]
     assert f"from {chosen_paths['moduleImport']} import parse_episode_source" in trusted_test
-    assert "'LEGOTEST_ALPHA_1'" in trusted_test
-    assert "'LEGOTEST_BETA_2'" in trusted_test
+    assert "('LEGOTEST_ALPHA_1', 'LEGOTEST_ALPHA_2')" in trusted_test
+    assert "('LEGOTEST_BETA_1', 'LEGOTEST_BETA_2')" in trusted_test
+    assert "var eps1 =" in trusted_test and "var eps2 =" in trusted_test
     compile(trusted_test, chosen_paths["testPath"], "exec")
     assert trusted_test == mod._source_family_contract_test(chosen_paths["moduleName"])
     assert compiled_source_edits[1]["find"] == mod.SOURCE_FAMILY_RUNTIME_ANCHOR
