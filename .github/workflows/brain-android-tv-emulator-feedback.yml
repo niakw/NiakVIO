@@ -111,7 +111,7 @@ jobs:
       - name: Checkout exact source executed by the native client
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ env.NATIVE_SOURCE_SHA }}
           path: tested-source
           persist-credentials: false
 
@@ -177,14 +177,122 @@ jobs:
             --run-id "$NATIVE_RUN_ID" \
             --ledger automation/brain-android-tv-emulator-history.json
 
-      - name: Checkout the Brain causal router (never run a model here)
-        if: ${{ steps.candidate.outputs.is_candidate != 'true' }}
+      - name: Resolve exact validated Brain router source
+        id: brain_pin
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          pin = json.loads(Path("automation/brain-pinned-source.json").read_text())
+          sha = str(pin.get("sha") or "")
+          if (pin.get("role") != "validated-external-brain-gitlink"
+              or pin.get("brainCiConclusion") != "success"
+              or pin.get("brainSecurityConclusion") != "success"
+              or re.fullmatch(r"[a-f0-9]{40}", sha) is None):
+              raise SystemExit("invalid validated Brain router source pin")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write("sha=" + sha + "\n")
+          PY
+
+      - name: Checkout the exact validated Brain causal router (advisor only)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: niakw/NiakVIO-Brain-LLM
-          ref: main
+          ref: ${{ steps.brain_pin.outputs.sha }}
           path: brain
           persist-credentials: false
+
+      - name: Resolve source-pinned pre-candidate observation for negative learning
+        if: ${{ steps.candidate.outputs.is_candidate == 'true' }}
+        id: prior_tv
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          experiment = json.loads(Path("automation/brain-native-candidate-experiments.json").read_text())
+          history = json.loads(Path("automation/brain-android-tv-emulator-history.json").read_text())
+          if (experiment.get("authority") != "candidate-only"
+              or history.get("authority") != "official-android-tv-emulator-diagnostic-only"):
+              raise SystemExit("candidate or native observation authority invalid")
+          matches = []
+          for row in experiment.get("rows", []):
+              for attempt in row.get("candidateAttempts", []):
+                  if (str(attempt.get("candidateRunId")) == os.environ["NATIVE_RUN_ID"]
+                      and attempt.get("candidateSourceSha") == os.environ["NATIVE_SOURCE_SHA"]
+                      and attempt.get("candidateExecutionObserved") is True
+                      and attempt.get("validatedRepair") is False
+                      and attempt.get("publicationAllowed") is False):
+                      matches.append(row)
+          if len(matches) != 1:
+              raise SystemExit("candidate verdict lacks unique source-pinned experiment")
+          exp = matches[0]
+          source, run = str(exp.get("sourceNiakvioSha") or ""), str(exp.get("sourceRunId") or "")
+          if not re.fullmatch(r"[a-f0-9]{40}", source) or not re.fullmatch(r"[0-9]{8,20}", run):
+              raise SystemExit("invalid original official-TV source provenance")
+          observed = [row for row in history.get("rows", []) if (
+              row.get("provider") == exp.get("providerId")
+              and row.get("fixture") == exp.get("fixture")
+              and row.get("sourceNiakvioSha") == source
+              and str(row.get("nativeRunId")) == run
+              and row.get("providerArtifactSha256") == exp.get("providerArtifactSha256")
+              and all(row.get(k) is False for k in (
+                  "proofAuthority", "publicationAuthority",
+                  "nativePlaybackAuthority", "providerMutationAuthority"
+              ))
+          )]
+          if len(observed) != 1:
+              raise SystemExit("original native observation/provenance not uniquely recoverable")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write("source_sha=" + source + "\n")
+              out.write("run_id=" + run + "\n")
+          print("FIELD_BRAIN_CANDIDATE_PRIOR_EVIDENCE source=" + source + " run=" + run
+                + " fixture=" + str(exp["fixture"]) + " authority=diagnostic_only")
+          PY
+
+      - name: Checkout exact original provider bytes for post-candidate learning
+        if: ${{ steps.candidate.outputs.is_candidate == 'true' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ steps.prior_tv.outputs.source_sha }}
+          path: before-candidate
+          persist-credentials: false
+
+      - name: Route executed candidate negative through Brain once without rerunning V29
+        if: ${{ steps.candidate.outputs.is_candidate == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp automation/brain-android-tv-emulator-history.json \
+            before-candidate/automation/brain-android-tv-emulator-history.json
+          cp automation/brain-native-candidate-experiments.json \
+            before-candidate/automation/brain-native-candidate-experiments.json
+          brain_sha="$(git -C brain rev-parse HEAD)"
+          test "$brain_sha" = "${{ steps.brain_pin.outputs.sha }}"
+          PYTHONPATH=brain/src python3 brain/scripts/route_android_tv_emulator_feedback.py \
+            --niakvio-root before-candidate \
+            --source-sha "${{ steps.prior_tv.outputs.source_sha }}" \
+            --run-id "${{ steps.prior_tv.outputs.run_id }}" \
+            --output "$RUNNER_TEMP/brain-tv-route.json"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          plan = json.loads((Path(os.environ["RUNNER_TEMP"]) / "brain-tv-route.json").read_text())
+          routes = plan.get("routes", [])
+          if (len(routes) != 1
+              or plan.get("providerMutationAuthority") is not False
+              or plan.get("publicationAuthority") is not False
+              or plan.get("modelExecuted") is not False
+              or any(row.get("candidateExperiment") for row in routes)):
+              raise SystemExit("post-candidate route must be one diagnostic-only non-repeat plan")
+          row = routes[0]
+          print("FIELD_BRAIN_CANDIDATE_NEXT provider=" + str(row["provider"])
+                + " layer=" + str(row["targetLayer"]) + " strategy=" + str(row["strategy"])
+                + " generated_candidate=false publication=false")
+          PY
 
       - name: Route the exact TV replay through Brain as diagnosis only
         if: ${{ steps.candidate.outputs.is_candidate != 'true' && hashFiles('automation/brain-android-tv-emulator-history.json') != '' }}
