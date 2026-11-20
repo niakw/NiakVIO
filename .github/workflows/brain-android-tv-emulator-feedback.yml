@@ -139,6 +139,7 @@ jobs:
 
       - name: Persist isolated Brain candidate verdict
         if: ${{ steps.candidate.outputs.is_candidate == 'true' }}
+        id: verdict
         shell: bash
         run: |
           set -euo pipefail
@@ -147,6 +148,22 @@ jobs:
             --ledger automation/brain-native-candidate-experiments.json \
             --candidate-source-sha "$NATIVE_SOURCE_SHA" \
             --candidate-run-id "$NATIVE_RUN_ID"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          proofs = list(Path(os.environ["RUNNER_TEMP"], "native-candidate-evidence").rglob(
+              "native-candidate-remat-proof.json"
+          ))
+          if len(proofs) != 1:
+              raise SystemExit("native followup requires exactly one source-checked proof")
+          payload = json.loads(proofs[0].read_text(encoding="utf-8"))
+          kind = payload.get("brainExperimentType") or "native-blocking-player-origin-priority"
+          if kind not in {"native-blocking-player-origin-priority", "native-hls-master-receipt-v30"}:
+              raise SystemExit("unexpected candidate experiment type")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write("candidate_type=" + kind + "\\n")
+          print("FIELD_BRAIN_NATIVE_CANDIDATE_TYPE " + kind)
+          PY
 
       - name: Validate ingest and safe history contracts
         shell: bash
@@ -205,7 +222,7 @@ jobs:
           persist-credentials: false
 
       - name: Resolve source-pinned pre-candidate observation for negative learning
-        if: ${{ steps.candidate.outputs.is_candidate == 'true' }}
+        if: ${{ steps.candidate.outputs.is_candidate == 'true' && steps.verdict.outputs.candidate_type == 'native-blocking-player-origin-priority' }}
         id: prior_tv
         shell: bash
         run: |
@@ -254,7 +271,7 @@ jobs:
           PY
 
       - name: Checkout exact original provider bytes for post-candidate learning
-        if: ${{ steps.candidate.outputs.is_candidate == 'true' }}
+        if: ${{ steps.candidate.outputs.is_candidate == 'true' && steps.verdict.outputs.candidate_type == 'native-blocking-player-origin-priority' }}
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ steps.prior_tv.outputs.source_sha }}
@@ -262,7 +279,7 @@ jobs:
           persist-credentials: false
 
       - name: Route executed candidate negative through Brain once without rerunning V29
-        if: ${{ steps.candidate.outputs.is_candidate == 'true' }}
+        if: ${{ steps.candidate.outputs.is_candidate == 'true' && steps.verdict.outputs.candidate_type == 'native-blocking-player-origin-priority' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -330,6 +347,12 @@ jobs:
                 + " layer=" + str(row["targetLayer"]) + " strategy=" + str(row["strategy"])
                 + " generated_candidate=false publication=false")
           PY
+          PYTHONPATH=scripts python3 scripts/persist_brain_native_hls_followup.py \
+            --route "$RUNNER_TEMP/brain-tv-route.json" \
+            --ledger automation/brain-native-candidate-experiments.json \
+            --brain-sha "$brain_sha" \
+            --candidate-run-id "$NATIVE_RUN_ID" \
+            --candidate-source-sha "$NATIVE_SOURCE_SHA"
 
       - name: Route the exact TV replay through Brain as diagnosis only
         if: ${{ steps.candidate.outputs.is_candidate != 'true' && hashFiles('automation/brain-android-tv-emulator-history.json') != '' }}
@@ -391,6 +414,63 @@ jobs:
           grep -q '_apply_native_brain_origin_priority_candidate' scripts/materialize_provider_v3_one.py
           echo "NIAKVIO_BRAIN_CANDIDATE_SOURCE_SHA=$candidate_source_sha" >> "$GITHUB_ENV"
           echo "FIELD_BRAIN_ANDROID_TV_PERSIST status=committed mutation_authority=false candidate_source_sha=$candidate_source_sha"
+
+      - name: Dispatch once the distinct Brain V30 Core receipt candidate
+        if: ${{ steps.candidate.outputs.is_candidate == 'true' && steps.verdict.outputs.candidate_type == 'native-blocking-player-origin-priority' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$RUNNER_TEMP/brain-tv-route.json" "$RUNNER_TEMP/brain-v30-dispatch.json" <<'PY'
+          import json, os, re, sys
+          from pathlib import Path
+          route_path, output_path = map(Path, sys.argv[1:])
+          if not route_path.is_file():
+              raise SystemExit(0)
+          plan = json.loads(route_path.read_text(encoding="utf-8"))
+          rows = plan.get("routes") or []
+          if len(rows) != 1 or not isinstance(rows[0], dict):
+              raise SystemExit("V30 dispatch requires exactly one official-TV route")
+          follow = rows[0].get("followupCoreExperiment")
+          if not follow:
+              raise SystemExit(0)
+          provider, fixture = str(follow.get("providerId") or ""), str(follow.get("fixture") or "")
+          if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,95}", provider) or not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,95}", fixture):
+              raise SystemExit("V30 dispatch has invalid provider/fixture")
+          ledger = json.loads(Path("automation/brain-native-candidate-experiments.json").read_text(encoding="utf-8"))
+          matches = [
+              candidate for row in ledger.get("rows") or []
+              if isinstance(row, dict) and row.get("providerId") == provider
+              for candidate in row.get("candidateFollowUpExperiments") or []
+              if isinstance(candidate, dict)
+              and candidate.get("experimentType") == "native-hls-master-receipt-v30"
+              and candidate.get("experimentFingerprint") == follow.get("experimentFingerprint")
+              and candidate.get("candidateOnly") is True
+              and candidate.get("generatedByBrain") is True
+              and candidate.get("publicationAuthority") is False
+              and candidate.get("providerMutationAuthority") is False
+          ]
+          if len(matches) != 1:
+              raise SystemExit("V30 dispatch has no unique persisted follow-up")
+          if matches[0].get("candidateAttempts"):
+              print("FIELD_BRAIN_V30_DISPATCH status=already_executed")
+              raise SystemExit(0)
+          output_path.write_text(json.dumps({"provider": provider, "fixture": fixture}, sort_keys=True), encoding="utf-8")
+          PY
+          if [ ! -s "$RUNNER_TEMP/brain-v30-dispatch.json" ]; then
+            echo "FIELD_BRAIN_V30_DISPATCH status=no_new_unexecuted_candidate publication=false"
+            exit 0
+          fi
+          provider="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["provider"])' "$RUNNER_TEMP/brain-v30-dispatch.json")"
+          fixture="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["fixture"])' "$RUNNER_TEMP/brain-v30-dispatch.json")"
+          gh workflow run native-corpus-device-targeted.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f device=tv \
+            -f target_providers="$provider" \
+            -f target_fixture="$fixture" \
+            -f residential_exit=false \
+            -f candidate_rematerialize=true \
+            -f candidate_required_marker=NIAKVIO_PROVIDER_NATIVE_HLS_ROOT_RECEIPT_V30 \
+            -f source_sha="$NIAKVIO_BRAIN_CANDIDATE_SOURCE_SHA"
+          echo "FIELD_BRAIN_V30_DISPATCH status=dispatched provider=$provider fixture=$fixture candidate_source_sha=$NIAKVIO_BRAIN_CANDIDATE_SOURCE_SHA publication=false"
 
       - name: Dispatch one source-pinned Brain candidate experiment
         if: ${{ steps.candidate.outputs.is_candidate != 'true' && hashFiles('automation/brain-android-tv-emulator-history.json') != '' }}
