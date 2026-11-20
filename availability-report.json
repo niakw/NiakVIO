@@ -1,17 +1,17 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-11-19T23:09:49.970100+00:00",
+  "generated_at": "2026-11-20T07:35:02.323164+00:00",
   "test_environment": "github-actions-node",
-  "checked_providers": 75,
+  "checked_providers": 76,
   "status_counts": {
-    "healthy": 7,
+    "healthy": 6,
     "reachable": 0,
     "blocked": 17,
     "degraded": 0,
-    "no_streams": 46,
+    "no_streams": 47,
     "provider_unreachable": 0,
     "runtime_error": 0,
-    "unavailable": 5,
+    "unavailable": 6,
     "excluded": 0
   },
   "policy": {
@@ -469,9 +469,9 @@
     },
     {
       "id": "anime-sama",
-      "status": "not-checked",
+      "status": "no_streams",
       "action": "unchanged",
-      "enabled": false,
+      "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
@@ -632,7 +632,9 @@
           "consecutive_successes": 0,
           "consecutive_blocked": 0
         }
-      }
+      },
+      "activation_eligible": false,
+      "activation_mode": "preserved_current_ci_uncertain"
     },
     {
       "id": "anime-ultime",
@@ -1312,7 +1314,7 @@
     },
     {
       "id": "documentary-area",
-      "status": "no_streams",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1406,7 +1408,7 @@
     },
     {
       "id": "film-a-revoir",
-      "status": "blocked",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1666,18 +1668,14 @@
     },
     {
       "id": "hindmoviez",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "abc.mutuyuffouhe-4918.workers.dev"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "share.kujeucoixeti-6043.workers.dev": {
           "last_checked_at": "2026-11-19T23:09:49.970100+00:00",
@@ -2509,7 +2507,7 @@
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 2,
       "hosts": [
         "cdn2.ngcloud.tech"
       ],
@@ -2518,7 +2516,7 @@
       ],
       "host_health": {
         "cdn2.slowcloud.live": {
-          "last_checked_at": "2026-11-19T23:09:49.970100+00:00",
+          "last_checked_at": "2026-11-20T07:35:02.323164+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2529,14 +2527,14 @@
           "consecutive_blocked": 0
         },
         "cdn2.ngcloud.tech": {
-          "last_checked_at": "2026-11-19T23:09:49.970100+00:00",
+          "last_checked_at": "2026-11-20T07:35:02.323164+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 200,
-          "latency_ms": 550,
+          "latency_ms": 231,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
+          "consecutive_successes": 2,
           "consecutive_blocked": 0
         }
       },
@@ -4776,7 +4774,7 @@
     },
     {
       "id": "webflix",
-      "status": "no_streams",
+      "status": "unavailable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
