@@ -2122,8 +2122,8 @@ source_family_calls = []
 typed_source_program = {
     "sourceFamilyProgram": {
         "moduleCode": "def parse_episode_source(html, episode):\n    return []\n",
-        "runtimeFind": "source_text = source_bytes.decode",
-        "runtimeReplace": "source_text = source_bytes.decode",
+        "runtimeFind": mod.SOURCE_FAMILY_RUNTIME_ANCHOR,
+        "runtimeReplace": mod.SOURCE_FAMILY_RUNTIME_ANCHOR + "\n        from brain_layers.generated_source import parse_episode_source",
         "testCode": "assert 'eps1' and 'eps2' and 'lien:'\n",
     },
 }
@@ -2146,6 +2146,8 @@ try:
         chosen_paths["modulePath"], chosen_paths["runtimePath"], chosen_paths["testPath"],
     ]
     assert chosen_paths["moduleName"] in chosen_paths["moduleImport"]
+    assert compiled_source_edits[1]["find"] == mod.SOURCE_FAMILY_RUNTIME_ANCHOR
+    assert compiled_source_edits[1]["replace"].startswith(mod.SOURCE_FAMILY_RUNTIME_ANCHOR + "\n")
     assert mod._source_family_response_format()["schema"]["required"] == ["sourceFamilyProgram"]
     provenance = mod._program_provenance(source_generated, source_family_blueprint)
     assert provenance["generatorFormat"] == "source-family-brain-typed-compiler"
@@ -2169,6 +2171,21 @@ try:
     assert [row[2] for row in source_family_calls] == [
         mod.SOURCE_FAMILY_MODEL_TIMEOUT_SECONDS, mod.SOURCE_FAMILY_RETRY_TIMEOUT_SECONDS
     ]
+    # A model that destroys a function signature can never get past the
+    # typed Brain compiler, even if it returns schema-valid JSON.
+    for invalid_wiring in (
+        {"runtimeFind": "def _current_source_structural_repair_evidence("},
+        {"runtimeReplace": "def _current_source_structural_repair_evidence("},
+        {"runtimeReplace": mod.SOURCE_FAMILY_RUNTIME_ANCHOR},
+    ):
+        invalid = dict(typed_source_program["sourceFamilyProgram"])
+        invalid.update(invalid_wiring)
+        try:
+            mod._model_edits({"sourceFamilyProgram": invalid}, source_family_payload)
+        except ValueError as exc:
+            assert "source-family" in str(exc)
+        else:
+            raise AssertionError("unsafe source-family runtime signature replacement accepted")
     assert source_family_calls[0][3] == 0.0
     assert source_family_calls[1][3] == 0.2
     retry = source_family_calls[1][0]
