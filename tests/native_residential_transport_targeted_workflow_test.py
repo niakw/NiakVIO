@@ -103,8 +103,8 @@ assert 'prepare_native_tv_tmdb_contract.py --repo-root niakvio --client-root nuv
 assert "matrix.manifest" in workflow and "matrix.projection" in workflow
 assert "Prime Android adb server" in workflow
 assert "prime_android_lab_adb.sh" in workflow
-assert "avd-v5-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2" in workflow
-assert "avd-v5-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p" in workflow
+assert "avd-v6-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2" in workflow
+assert "avd-v6-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p" in workflow
 assert "~/.android/debug.keystore" in workflow
 assert "avd-v2-" not in workflow
 assert "harden_nuvio_mobile_device_test.py" not in workflow

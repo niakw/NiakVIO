@@ -100,11 +100,11 @@ for workflow in ANDROID_WORKFLOWS:
 
 tv_cache_lines = [
     line.strip() for line in TV_WORKFLOW.splitlines()
-    if line.strip().startswith("key: avd-v5-")
+    if line.strip().startswith("key: avd-v6-")
 ]
 mobile_cache_lines = [
     line.strip() for line in MOBILE_ANDROID_WORKFLOW.splitlines()
-    if line.strip().startswith("key: avd-v5-")
+    if line.strip().startswith("key: avd-v6-")
 ]
 assert len(tv_cache_lines) == 1, tv_cache_lines
 assert len(mobile_cache_lines) == 1, mobile_cache_lines

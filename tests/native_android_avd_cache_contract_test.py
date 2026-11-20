@@ -11,11 +11,11 @@ tv_suite = (ROOT / "scripts/run_native_corpus_tv_suite.sh").read_text(encoding="
 mobile_suite = (ROOT / "scripts/run_native_corpus_mobile_suite.sh").read_text(encoding="utf-8")
 ios_suite = (ROOT / "scripts/run_native_corpus_ios_suite.sh").read_text(encoding="utf-8")
 
-assert "avd-v5-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p" in TV
-assert "avd-v5-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2" in ANDROID
+assert "avd-v6-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p" in TV
+assert "avd-v6-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2" in ANDROID
 for workflow in (TV, ANDROID):
     for line in workflow.splitlines():
-        if "key: avd-v5-" in line:
+        if "key: avd-v6-" in line:
             assert "needs.resolve.outputs" not in line
     assert "~/.android/debug.keystore" in workflow
     assert "-no-snapshot-load -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim" in workflow
@@ -32,7 +32,7 @@ assert "manifest: vf/manifest.json" in TV
 assert "NIAKVIO_TARGET_MANIFEST: ${{ matrix.manifest }}" in TV
 # Projection matrices must not fragment the expensive Android AVD caches.
 for line in TV.splitlines():
-    if "key: avd-v5-" in line:
+    if "key: avd-v6-" in line:
         assert "matrix.projection" not in line
         assert "matrix.manifest" not in line
 assert "Execute rotating movie TV anime in one TV boot" in TV
