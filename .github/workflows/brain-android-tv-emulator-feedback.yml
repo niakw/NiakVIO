@@ -292,7 +292,11 @@ jobs:
               raise SystemExit("native followup requires exactly one source-checked proof")
           payload = json.loads(proofs[0].read_text(encoding="utf-8"))
           kind = payload.get("brainExperimentType") or "native-blocking-player-origin-priority"
-          if kind not in {"native-blocking-player-origin-priority", "native-hls-master-receipt-v30"}:
+          if kind not in {
+              "native-blocking-player-origin-priority",
+              "native-hls-master-receipt-v30",
+              "native-hls-master-receipt-dedupe-v31",
+          }:
               raise SystemExit("unexpected candidate experiment type")
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
               output.write("candidate_type=" + kind + "\n")
@@ -482,6 +486,84 @@ jobs:
                 + " generated_candidate=false publication=false")
           PY
           PYTHONPATH=scripts python3 scripts/persist_brain_native_hls_followup.py \
+            --route "$RUNNER_TEMP/brain-tv-route.json" \
+            --ledger automation/brain-native-candidate-experiments.json \
+            --brain-sha "$brain_sha" \
+            --candidate-run-id "$NATIVE_RUN_ID" \
+            --candidate-source-sha "$NATIVE_SOURCE_SHA"
+
+      - name: Route executed V30 zero to distinct Brain V31 Core experiment
+        if: ${{ steps.candidate.outputs.is_candidate == 'true' && steps.verdict.outputs.candidate_type == 'native-hls-master-receipt-v30' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The original official-TV observation, not the transient V30 fetch,
+          # owns the signed-HLS causal discriminator and immutable baseline.
+          python3 - "$RUNNER_TEMP/brain-v31-origin.txt" <<'PY'
+          import json,os,re,sys
+          from pathlib import Path
+          ledger=json.loads(Path("automation/brain-native-candidate-experiments.json").read_text(encoding="utf-8"))
+          history=json.loads(Path("automation/brain-android-tv-emulator-history.json").read_text(encoding="utf-8"))
+          if (ledger.get("authority")!="candidate-only"
+              or ledger.get("publicationAuthority") is not False
+              or ledger.get("providerMutationAuthority") is not False
+              or history.get("authority")!="official-android-tv-emulator-diagnostic-only"):
+              raise SystemExit("V31 source ledger authority mismatch")
+          found=[]
+          for parent in ledger.get("rows") or []:
+              if not isinstance(parent,dict): continue
+              for child in parent.get("candidateFollowUpExperiments") or []:
+                  if not isinstance(child,dict) or child.get("experimentType")!="native-hls-master-receipt-v30":
+                      continue
+                  for a in child.get("candidateAttempts") or []:
+                      if (not isinstance(a,dict)
+                          or str(a.get("candidateRunId"))!=os.environ["NATIVE_RUN_ID"]
+                          or a.get("candidateSourceSha")!=os.environ["NATIVE_SOURCE_SHA"]
+                          or a.get("candidateExperimentType")!="native-hls-master-receipt-v30"
+                          or a.get("candidateVerdict")!="candidate_zero_stream"
+                          or a.get("candidateExecutionObserved") is not True
+                          or a.get("candidateRestoredObserved") is not True
+                          or a.get("candidateDecodedVideoObserved") is not False
+                          or a.get("validatedRepair") is not False
+                          or a.get("publicationAllowed") is not False):
+                          continue
+                      source=str(parent.get("sourceNiakvioSha") or "")
+                      run=str(parent.get("sourceRunId") or "")
+                      if not re.fullmatch(r"[0-9a-f]{40}",source) or not re.fullmatch(r"[0-9]{8,20}",run):
+                          continue
+                      original=[r for r in history.get("rows") or [] if (
+                          isinstance(r,dict)
+                          and r.get("provider")==parent.get("providerId")
+                          and r.get("fixture")==parent.get("fixture")
+                          and r.get("sourceNiakvioSha")==source
+                          and str(r.get("nativeRunId"))==run
+                          and r.get("providerArtifactSha256")==parent.get("providerArtifactSha256")
+                          and r.get("sameMediaRootSuccessThenForbidden") is True
+                          and r.get("officialClientSha")==parent.get("officialClientSha")
+                          and all(r.get(k) is False for k in (
+                              "proofAuthority","publicationAuthority",
+                              "nativePlaybackAuthority","providerMutationAuthority"
+                          ))
+                      )]
+                      if len(original)==1: found.append((source,run))
+          if len(found)!=1:
+              raise SystemExit("V31 needs one exact restored V30 zero + original TV HLS witness")
+          Path(sys.argv[1]).write_text("\n".join(found[0])+"\n",encoding="utf-8")
+          PY
+          mapfile -t original < "$RUNNER_TEMP/brain-v31-origin.txt"
+          test "${#original[@]}" -eq 2
+          cp automation/brain-android-tv-emulator-history.json \
+            tested-source/automation/brain-android-tv-emulator-history.json
+          cp automation/brain-native-candidate-experiments.json \
+            tested-source/automation/brain-native-candidate-experiments.json
+          brain_sha="$(git -C brain rev-parse HEAD)"
+          test "$brain_sha" = "${{ steps.brain_pin.outputs.sha }}"
+          PYTHONPATH=brain/src python3 brain/scripts/route_android_tv_emulator_feedback.py \
+            --niakvio-root tested-source \
+            --source-sha "${original[0]}" \
+            --run-id "${original[1]}" \
+            --output "$RUNNER_TEMP/brain-tv-route.json"
+          PYTHONPATH=scripts python3 scripts/persist_brain_native_hls_dedupe_followup.py \
             --route "$RUNNER_TEMP/brain-tv-route.json" \
             --ledger automation/brain-native-candidate-experiments.json \
             --brain-sha "$brain_sha" \
