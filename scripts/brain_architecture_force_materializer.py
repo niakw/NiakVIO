@@ -1479,6 +1479,29 @@ def _response_format(exact_paths: list[str] | None = None) -> dict[str, Any]:
     }
 
 
+
+def _source_family_response_format() -> dict[str, Any]:
+    """Qwen generates algorithms; Brain deterministically owns create/replace."""
+    return {"type": "json_object", "schema": {
+        "type": "object",
+        "properties": {
+            "sourceFamilyProgram": {
+                "type": "object",
+                "properties": {
+                    "moduleCode": {"type": "string", "minLength": 1, "maxLength": MAX_CREATE},
+                    "runtimeFind": {"type": "string", "minLength": 1, "maxLength": MAX_FIND},
+                    "runtimeReplace": {"type": "string", "minLength": 1, "maxLength": MAX_REPLACE},
+                    "testCode": {"type": "string", "minLength": 1, "maxLength": MAX_CREATE},
+                },
+                "required": ["moduleCode", "runtimeFind", "runtimeReplace", "testCode"],
+                "additionalProperties": False,
+            },
+        },
+        "required": ["sourceFamilyProgram"],
+        "additionalProperties": False,
+    }}
+
+
 def _branch_body_response_format() -> dict[str, Any]:
     """Typed Lego program: 7B chooses strategy, Brain writes executable bytes."""
     src = lambda values: {
@@ -1527,6 +1550,53 @@ def _branch_body_response_format() -> dict[str, Any]:
     }}
 
 
+
+def _source_family_artifact_paths(payload: dict[str, Any]) -> dict[str, str]:
+    """Brain, not Qwen, owns artifact paths and filesystem operations."""
+    blueprint = payload.get("blueprint", payload)
+    strategy = str(blueprint.get("strategyId") or "").strip().lower()
+    if not re.fullmatch(r"[a-z0-9][a-z0-9_-]{2,79}", strategy):
+        raise ValueError("new source-family strategy ID is not a bounded identifier")
+    normalized = re.sub(r"[^a-z0-9_]", "_", strategy)
+    name = "source_" + normalized[:42] + "_" + hashlib.sha256(
+        strategy.encode("utf-8")).hexdigest()[:8]
+    return {
+        "modulePath": f"scripts/brain_layers/{name}.py",
+        "moduleImport": f"brain_layers.{name}",
+        "moduleName": name,
+        "runtimePath": "scripts/brain_repair_runtime.py",
+        "testPath": f"tests/brain_{name}_test.py",
+    }
+
+
+def _compile_source_family_program(
+    program: Any, payload: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Compile a model-owned parser/test and exact runtime edit into 3 safe ops."""
+    if not isinstance(program, dict):
+        raise ValueError("source-family model must emit sourceFamilyProgram object")
+    required = ("moduleCode", "runtimeFind", "runtimeReplace", "testCode")
+    if set(program) != set(required):
+        raise ValueError("source-family program requires exactly four typed code fields")
+    values = {key: program[key] for key in required}
+    for key, value in values.items():
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(f"source-family program field missing: {key}")
+    if (len(values["moduleCode"]) > MAX_CREATE or len(values["testCode"]) > MAX_CREATE
+            or len(values["runtimeFind"]) > MAX_FIND
+            or len(values["runtimeReplace"]) > MAX_REPLACE):
+        raise ValueError("source-family program exceeds bounded edit limits")
+    paths = _source_family_artifact_paths(payload)
+    return [
+        {"operation": "create", "path": paths["modulePath"],
+         "content": values["moduleCode"]},
+        {"operation": "replace", "path": paths["runtimePath"],
+         "find": values["runtimeFind"], "replace": values["runtimeReplace"]},
+        {"operation": "create", "path": paths["testPath"],
+         "content": values["testCode"]},
+    ]
+
+
 def _model_edits(
     planned: dict[str, Any], payload: dict[str, Any], *, root: Path = ROOT,
 ) -> list[dict[str, Any]]:
@@ -1535,7 +1605,13 @@ def _model_edits(
             raise ValueError(
                 "new source family cannot be represented as legacy route recoveryProgram"
             )
-        return [dict(row) for row in planned.get("edits") or [] if isinstance(row, dict)]
+        if "sourceFamilyProgram" in planned:
+            return _compile_source_family_program(planned["sourceFamilyProgram"], payload)
+        # Historical source-pinned response fixtures are read-only test oracles.
+        # Live model requests use the typed sourceFamilyProgram schema below.
+        if isinstance(planned.get("edits"), list):
+            return [dict(row) for row in planned["edits"] if isinstance(row, dict)]
+        raise ValueError("new source-family model must return sourceFamilyProgram")
     if _requires_new_repair_profile(payload):
         if isinstance(planned.get("recoveryProgram"), dict):
             body = compile_recovery_program(planned["recoveryProgram"], max_chars=4200)
@@ -1621,7 +1697,10 @@ def _model_request(
     elif source_family:
         system = (
             "You are NiakVIO Brain's NEW SOURCE FAMILY Lego generator, NOT a "
-            "route traversal tuner. Return JSON {edits:[...]} only. "
+            "route traversal tuner. Return JSON sourceFamilyProgram with only "
+            "moduleCode, runtimeFind, runtimeReplace and testCode. "
+            "Never output file paths or create/replace operations: Brain "
+            "compiles those deterministically from sourceFamilyArtifactPaths. "
             "The old recoveryProgram cannot parse inline epsN, lien: tokens "
             "or epsJeton; it is INVALID for this task. Make a reusable "
             "network-free Brain layer under scripts/brain_layers/ with a "
@@ -1659,7 +1738,11 @@ def _model_request(
         "model": model,
         "temperature": _force_generation_temperature(payload),
         "max_tokens": max_tokens,
-        "response_format": _branch_body_response_format() if requires_new_profile else _response_format(exact_paths),
+        "response_format": (
+            _branch_body_response_format() if requires_new_profile
+            else _source_family_response_format() if source_family
+            else _response_format(exact_paths)
+        ),
         "messages": [
             {"role": "system", "content": system},
             {
@@ -1966,6 +2049,8 @@ def _compact_payload(payload: dict[str, Any]) -> dict[str, Any]:
             sources[str(path)] = snippet
             remaining -= len(snippet)
     compact["sources"] = sources
+    if _requires_new_source_family_lego(payload):
+        compact["sourceFamilyArtifactPaths"] = _source_family_artifact_paths(payload)
     keep = {
         "capability_gap_detector",
         "meta_learning_gap_synthesis",
@@ -1996,6 +2081,8 @@ def _minimal_payload(payload: dict[str, Any]) -> dict[str, Any]:
             sources[str(path)] = snippet
             remaining -= len(snippet)
     minimal["sources"] = sources
+    if _requires_new_source_family_lego(payload):
+        minimal["sourceFamilyArtifactPaths"] = _source_family_artifact_paths(payload)
     return minimal
 
 
@@ -2198,7 +2285,8 @@ def call_model(endpoint: str, model: str, payload: dict[str, Any]) -> dict[str, 
                 "mustGenerateNewBrainSourceModule": True,
                 "mustWireRealBrainRuntime": True,
                 "mustGenerateTwoEpisodeRegression": True,
-                "mustReturnExactlyThreeEdits": True,
+                "compilerExpandsToThreeEdits": True,
+                "mustReturnSourceFamilyProgram": True,
                 "mustNotEmitRecoveryProgram": True,
                 "providerPublicationAuthority": False,
             }
@@ -2707,10 +2795,7 @@ def _program_provenance(
 ) -> dict[str, Any]:
     """Persist non-sensitive program/diff fingerprints, never private media."""
     if _requires_new_source_family_lego(blueprint or {}):
-        edits = [
-            row for row in planned.get("edits") or []
-            if isinstance(row, dict)
-        ]
+        edits = _model_edits(planned, {"blueprint": blueprint or {}})
         descriptors = [
             {
                 "operation": str(row.get("operation") or ""),
@@ -2723,7 +2808,11 @@ def _program_provenance(
         ]
         encoded = json.dumps(descriptors, sort_keys=True, separators=(",", ":"))
         return {
-            "generatorFormat": "source-family-brain-allowlisted-edits",
+            "generatorFormat": (
+                "source-family-brain-typed-compiler"
+                if isinstance(planned.get("sourceFamilyProgram"), dict)
+                else "source-family-brain-allowlisted-edits"
+            ),
             "programFingerprint": hashlib.sha256(encoded.encode("utf-8")).hexdigest(),
             "editCount": len(descriptors),
             "editDescriptors": descriptors,
@@ -2786,7 +2875,9 @@ def main() -> int:
     }
     if a.response_file:
         planned = load(a.response_file)
-        if isinstance(planned.get("recoveryProgram"), dict) or isinstance(planned.get("branchBody"), str):
+        if (isinstance(planned.get("recoveryProgram"), dict)
+                or isinstance(planned.get("branchBody"), str)
+                or isinstance(planned.get("sourceFamilyProgram"), dict)):
             edits = _model_edits(planned, payload)
         else:
             # Preserve strict legacy approved-edit replay while typed Lego

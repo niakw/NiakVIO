@@ -2119,18 +2119,47 @@ source_family_payload = {
 }
 saved_source_family_request = mod._model_request
 source_family_calls = []
+typed_source_program = {
+    "sourceFamilyProgram": {
+        "moduleCode": "def parse_episode_source(html, episode):\n    return []\n",
+        "runtimeFind": "source_text = source_bytes.decode",
+        "runtimeReplace": "source_text = source_bytes.decode",
+        "testCode": "assert 'eps1' and 'eps2' and 'lien:'\n",
+    },
+}
 try:
     def fake_source_family_request(endpoint, model, payload, *, max_tokens, timeout, compact=False):
         source_family_calls.append((payload, max_tokens, timeout,
                                     mod._force_generation_temperature(payload)))
         if len(source_family_calls) == 1:
             raise ValueError("synthetic truncated source-family response")
-        return {"choices": [{"message": {"content":
-            '{"edits":[{"operation":"create","path":"scripts/brain_layers/demo.py","content":"pass"}]}'
-        }}]}
+        return {"choices": [{"message": {"content": json.dumps(typed_source_program)}}]}
     mod._model_request = fake_source_family_request
     source_generated = mod.call_model("offline", "synthetic", source_family_payload)
-    assert len(source_generated["edits"]) == 1
+    assert "sourceFamilyProgram" in source_generated
+    compiled_source_edits = mod._model_edits(source_generated, source_family_payload)
+    assert [e["operation"] for e in compiled_source_edits] == [
+        "create", "replace", "create",
+    ]
+    chosen_paths = mod._source_family_artifact_paths(source_family_payload)
+    assert [e["path"] for e in compiled_source_edits] == [
+        chosen_paths["modulePath"], chosen_paths["runtimePath"], chosen_paths["testPath"],
+    ]
+    assert chosen_paths["moduleName"] in chosen_paths["moduleImport"]
+    assert mod._source_family_response_format()["schema"]["required"] == ["sourceFamilyProgram"]
+    provenance = mod._program_provenance(source_generated, source_family_blueprint)
+    assert provenance["generatorFormat"] == "source-family-brain-typed-compiler"
+    assert provenance["editCount"] == 3 and len(provenance["editDescriptors"]) == 3
+    assert provenance["providerMutationAuthority"] is False
+    for unsafe in ({"sourceFamilyProgram": {"moduleCode": "x"}},
+                   {"sourceFamilyProgram": {**typed_source_program["sourceFamilyProgram"],
+                                            "operation": "create"}}):
+        try:
+            mod._model_edits(unsafe, source_family_payload)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("untyped or extra source-family operation accepted")
     assert [row[1] for row in source_family_calls] == [
         mod.SOURCE_FAMILY_MODEL_TOKENS, mod.SOURCE_FAMILY_RETRY_MODEL_TOKENS
     ]
@@ -2141,14 +2170,16 @@ try:
     assert source_family_calls[1][3] == 0.2
     retry = source_family_calls[1][0]
     assert retry["correctionReason"] == "source-family-generation-format"
-    assert retry["correctionContract"]["mustReturnExactlyThreeEdits"] is True
+    assert retry["correctionContract"]["compilerExpandsToThreeEdits"] is True
+    assert retry["correctionContract"]["mustReturnSourceFamilyProgram"] is True
     assert retry["contract"]["productionProviderWritesAllowed"] is False
     source_family_calls.clear()
     corrected = mod._request_corrected_plan(
         "offline", "synthetic",
         {**source_family_payload, "correctionReason": "materialized-source-validation"},
     )
-    assert len(corrected["edits"]) == 1
+    assert "sourceFamilyProgram" in corrected
+    assert len(mod._model_edits(corrected, source_family_payload)) == 3
     assert source_family_calls[0][1] == mod.SOURCE_FAMILY_CORRECTION_MODEL_TOKENS
     assert source_family_calls[0][2] == mod.SOURCE_FAMILY_CORRECTION_TIMEOUT_SECONDS
     assert source_family_calls[0][3] == 0.2
