@@ -4,20 +4,20 @@
   "acceptedRepairCount": 0,
   "acceptedRepairs": [],
   "advisorDynamicWaveCeiling": 6,
-  "advisorHypothesisWaveBudget": 1,
+  "advisorHypothesisWaveBudget": 2,
   "batchSize": 48,
   "deferredLearningProviders": [
     "anime-sama"
   ],
-  "effectiveWaves": 1,
-  "elapsedSeconds": 116.809,
+  "effectiveWaves": 2,
+  "elapsedSeconds": 233.592,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 5,
     "providerCount": 142,
     "schemaVersion": 2,
-    "sourceRunId": "44726897485",
-    "sourceSha": "f72ca87a75621c6e0143929131203d6c313717eb",
+    "sourceRunId": "44786398747",
+    "sourceSha": "a44d650e47454828cb01aeebde2fca639dbfef5d",
     "strategyCount": 3
   },
   "familyFrontierPendingProviders": [],
@@ -40,8 +40,8 @@
     "anime-sama"
   ],
   "maxRoundsPerBatch": 1,
-  "maxWaves": 1,
-  "noProgressReason": "experiment_variants_exhausted",
+  "maxWaves": 2,
+  "noProgressReason": "causal_frontier_stalled_after_repeated_waves",
   "positiveProgramRecovery": {
     "durableProviders": [],
     "durableRecordCount": 0,
@@ -81,7 +81,7 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "44726897485",
+  "sourceCensusRunId": "44786398747",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 900,
   "unvisitedProviders": [],
@@ -106,7 +106,7 @@
                 "profile": "adaptive_runtime_recovery",
                 "provider": "anime-sama",
                 "reasonCode": "",
-                "repairSha256": "f9940f8ee15ffbb951d36fe8972bb98d03b3b9028441829017575a96ea4406bd",
+                "repairSha256": "09d8ec446592253c4442ae5ea44a1223d88635fd695959d7289f4c91bdf8ec1c",
                 "round": 1,
                 "status": "generated"
               },
@@ -116,7 +116,7 @@
                 "profile": "adaptive_runtime_recovery",
                 "provider": "anime-sama",
                 "reasonCode": "sandbox_diagnostic_progress",
-                "repairSha256": "f9940f8ee15ffbb951d36fe8972bb98d03b3b9028441829017575a96ea4406bd",
+                "repairSha256": "09d8ec446592253c4442ae5ea44a1223d88635fd695959d7289f4c91bdf8ec1c",
                 "round": 1,
                 "status": ""
               }
@@ -133,7 +133,7 @@
                 "exitReason": null,
                 "experimentExhausted": false,
                 "experimentGeneration": 1,
-                "experimentVariant": 0,
+                "experimentVariant": 1,
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
@@ -154,18 +154,18 @@
                 "llmAdvisorApplied": true,
                 "llmAdvisorConfidence": 0.86,
                 "llmAdvisorExperiment": {
-                  "aliasSearch": false,
+                  "aliasSearch": true,
                   "documentRequestMining": true,
-                  "maxDepth": 4,
-                  "maxEmbeds": 16,
-                  "maxPages": 18,
+                  "maxDepth": 5,
+                  "maxEmbeds": 24,
+                  "maxPages": 24,
                   "maxRecipePasses": 5,
                   "recipePolicy": "current_plus_provider_peer",
                   "responseSalvage": true,
                   "roleOrder": [
                     "api",
-                    "detail",
                     "search",
+                    "detail",
                     "player",
                     "source",
                     "episode",
@@ -175,16 +175,16 @@
                   "sessionBootstrap": true,
                   "terminalOnly": false
                 },
-                "llmAdvisorExperimentFingerprint": "d90c9a08da4b3fcf03bea245c8e9798fc21c85ed70426a45212b85c10e645d98",
+                "llmAdvisorExperimentFingerprint": "9fa6f86a955d12e4e680adca807f3aaf874722bff9ba883f7bfc59b3dcf63b24",
                 "llmAdvisorExplorationRescue": false,
-                "llmAdvisorFailureCompatibility": "exact-rebound",
+                "llmAdvisorFailureCompatibility": "exact",
                 "llmAdvisorGuidanceKind": "meta-gap-synthesis",
                 "llmAdvisorProfile": "adaptive_runtime_recovery",
                 "llmAdvisorRescue": false,
                 "llmAdvisorSourceFailureClass": "unknown_failure",
-                "llmAdvisorStrategy": "meta-gap-provider-transport-composition",
+                "llmAdvisorStrategy": "meta_gap_unknown_runtime_composition",
                 "metaGapEscalated": true,
-                "negativeMemoryMatches": 0,
+                "negativeMemoryMatches": 1,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [],
                 "postExhaustionSourceFailureClass": "",
@@ -261,6 +261,210 @@
       "timeBudgetExhausted": false,
       "trustedFamilyFanoutGroups": [],
       "wave": 1
+    },
+    {
+      "acceptedCount": 0,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [],
+      "advisorRotationPending": [],
+      "batches": [
+        {
+          "accepted": [],
+          "acceptedCount": 0,
+          "advisorRemainingFingerprintCounts": {},
+          "advisorRotationPending": [],
+          "batch": 1,
+          "brain": {
+            "attemptDiagnostics": [
+              {
+                "parentSha256": "09d8ec446592253c4442ae5ea44a1223d88635fd695959d7289f4c91bdf8ec1c",
+                "phase": "attempts",
+                "profile": "proven_route_terminal_traversal_v1",
+                "provider": "anime-sama",
+                "reasonCode": "",
+                "repairSha256": "8b58c29782dcc25df31d9b37d5e765134c8baf8fb0e7276b2e8b6bd1f8055366",
+                "round": 1,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "proven_route_terminal_traversal_v1",
+                "provider": "anime-sama",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 1,
+                "status": "no_streams"
+              }
+            ],
+            "harnessDifferentialProviders": [],
+            "learnedEvents": 0,
+            "plans": {
+              "published:anime-sama": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "proven_route_terminal_traversal_v1"
+                ],
+                "baseExperimentExhausted": false,
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 1,
+                "experimentVariant": 0,
+                "experimentVariantCount": 5,
+                "explorationChainEnabled": true,
+                "explorationModeEnabled": true,
+                "failureClass": "transport_blocked",
+                "forcePreferredRequested": "",
+                "forcePreferredSelected": false,
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "bootstrap-session",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "alternate-official-route",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": true,
+                "llmAdvisorConfidence": 0.96,
+                "llmAdvisorExperiment": {
+                  "aliasSearch": true,
+                  "documentRequestMining": true,
+                  "maxDepth": 3,
+                  "maxEmbeds": 10,
+                  "maxPages": 10,
+                  "maxRecipePasses": 3,
+                  "recipePolicy": "current_only",
+                  "responseSalvage": true,
+                  "roleOrder": [
+                    "detail",
+                    "episode"
+                  ],
+                  "routePolicy": "owned_only",
+                  "sessionBootstrap": true,
+                  "terminalOnly": true
+                },
+                "llmAdvisorExperimentFingerprint": "168301f9066d24c7276af670e2567c9da3d6471d5076e1b6d3aa6f330469d5e0",
+                "llmAdvisorExplorationRescue": false,
+                "llmAdvisorFailureCompatibility": "family",
+                "llmAdvisorGuidanceKind": "external-brain-llm",
+                "llmAdvisorProfile": "proven_route_terminal_traversal_v1",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "route_proven_gap",
+                "llmAdvisorStrategy": "search_detail_player_terminal_traversal",
+                "metaGapEscalated": false,
+                "negativeMemoryMatches": 0,
+                "positiveProgramFingerprint": "",
+                "postExhaustionCandidateProfiles": [
+                  "transport_request_differential_v1",
+                  "provider_session_bootstrap_replay_v1",
+                  "runtime_response_salvage_v1",
+                  "transport_request_differential_v2",
+                  "route_transition_graph_v2",
+                  "route_transition_graph_v3",
+                  "route_transition_graph_v4",
+                  "route_transition_graph_v5",
+                  "route_transition_graph_v6",
+                  "route_transition_graph_v7",
+                  "route_transition_graph_v8",
+                  "route_transition_graph_v9",
+                  "route_transition_graph_v10",
+                  "route_transition_graph_v11",
+                  "route_transition_graph_v12",
+                  "route_transition_graph_v13",
+                  "route_transition_graph_v14",
+                  "route_transition_graph_v15",
+                  "route_transition_graph_v16",
+                  "route_transition_graph_v17",
+                  "route_transition_graph_v18",
+                  "route_transition_graph_v19",
+                  "route_transition_graph_v20",
+                  "route_transition_graph_v21"
+                ],
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "anime-sama",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "capability",
+                "repairType": "session_transport",
+                "signature": "ac5f8426938872bee42dae1d",
+                "strategyEscalated": false,
+                "targetCategories": []
+              }
+            },
+            "queuedForLearning": [],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "mixed_embed_resolver",
+          "causalProgressCount": 0,
+          "causalProgressObserved": true,
+          "crossWaveExplorationCarryoverApplied": [
+            "anime-sama"
+          ],
+          "crossWaveExplorationCarryoverCaptured": [
+            "anime-sama"
+          ],
+          "deferredToLearning": [],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+              "providers": [
+                "anime-sama"
+              ],
+              "repairScope": "learning"
+            }
+          ],
+          "fixedInLab": [],
+          "genericLearningHandoff": [],
+          "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+          "harnessDifferentialProviders": [],
+          "healthConcurrency": 1,
+          "providerCount": 1,
+          "providers": [
+            "anime-sama"
+          ],
+          "repairScope": "learning",
+          "unexecutableLlmHandoff": []
+        }
+      ],
+      "causalProgressCount": 0,
+      "causalProgressObserved": true,
+      "compileRejectedToLearning": [],
+      "deferredToLearning": [],
+      "deferredToLearningCount": 0,
+      "durableMaterializeTargets": [],
+      "experimentMemoryAdvanced": true,
+      "familyFrontierDeferredProviders": [],
+      "familyFrontierGroups": [
+        "learning|mixed_embed_resolver|runtime:mixed_embed_resolver"
+      ],
+      "familyFrontierSelectedProviders": [
+        "anime-sama"
+      ],
+      "fixedInLab": [],
+      "fixedInLabCount": 0,
+      "inputProviderCount": 1,
+      "labOnlyWithoutCompiledRepair": [],
+      "pinnedAdvisorFamilyGroups": [],
+      "rawFixedInLab": [],
+      "rawLabAcceptedCount": 0,
+      "remainingProviderCount": 1,
+      "timeBudgetExhausted": false,
+      "trustedFamilyFanoutGroups": [],
+      "wave": 2
     }
   ]
 }
