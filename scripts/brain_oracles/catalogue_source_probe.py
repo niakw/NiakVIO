@@ -125,10 +125,12 @@ def redirect_target(current_url: str, location: str, registered: list[str]) -> d
     """Read-only Location classification: never request or store full target URL."""
     if not location:
         return {"redirectHostScope": "location_missing", "redirectTargetHost": "",
-                "redirectPathScope": "unknown", "redirectQueryPresent": False}
+                "redirectPathScope": "unknown", "redirectPathChangeKind": "unknown",
+                "redirectCandidateCatalogueSlug": "", "redirectQueryPresent": False}
     if not isinstance(location, str) or len(location) > 2048:
         return {"redirectHostScope": "unsafe_or_oversized", "redirectTargetHost": "",
-                "redirectPathScope": "unknown", "redirectQueryPresent": False}
+                "redirectPathScope": "unknown", "redirectPathChangeKind": "unknown",
+                "redirectCandidateCatalogueSlug": "", "redirectQueryPresent": False}
     try:
         target = urllib.parse.urljoin(current_url, location)
         parsed = urllib.parse.urlsplit(target)
@@ -138,15 +140,34 @@ def redirect_target(current_url: str, location: str, registered: list[str]) -> d
             raise ValueError("unsafe redirect")
     except (ValueError, TypeError):
         return {"redirectHostScope": "unsafe_or_oversized", "redirectTargetHost": "",
-                "redirectPathScope": "unknown", "redirectQueryPresent": False}
+                "redirectPathScope": "unknown", "redirectPathChangeKind": "unknown",
+                "redirectCandidateCatalogueSlug": "", "redirectQueryPresent": False}
     scope = ("same_origin" if host == current.hostname
              else "registered_fallback" if host in registered
              else "unregistered_candidate")
     route = ("same_path" if parsed.path == current.path
              else "catalogue_route" if parsed.path.startswith("/catalogue/")
              else "root" if parsed.path in {"", "/"} else "other_path")
+    target_parts = parsed.path.strip("/").split("/")
+    original_parts = current.path.strip("/").split("/")
+    target_slug = (target_parts[1] if len(target_parts) >= 2
+                   and target_parts[0] == "catalogue"
+                   and SLUG.fullmatch(target_parts[1]) else "")
+    previous_slug = (original_parts[1] if len(original_parts) >= 2
+                     and original_parts[0] == "catalogue" else "")
+    path_change = (
+        "exact_path" if parsed.path == current.path
+        else "trailing_slash_only" if parsed.path.rstrip("/") == current.path.rstrip("/")
+        else "catalogue_slug_changed" if target_slug and target_slug != previous_slug
+        else "same_catalogue_other_path" if target_slug and target_slug == previous_slug
+        else "root" if parsed.path in {"", "/"} else "other_path"
+    )
     return {"redirectHostScope": scope, "redirectTargetHost": host,
-            "redirectPathScope": route, "redirectQueryPresent": bool(parsed.query)}
+            "redirectPathScope": route, "redirectPathChangeKind": path_change,
+            "redirectCandidateCatalogueSlug": (
+                target_slug if path_change == "catalogue_slug_changed" else ""
+            ),
+            "redirectQueryPresent": bool(parsed.query)}
 
 
 def fetch(url: str) -> tuple[int, str, bool, bool, str]:
@@ -192,7 +213,8 @@ def run(root: Path, request: dict, fetcher: Callable[[str], tuple[int, str, bool
             shape = classify(status, "" if oversized else body)
             redirect = redirect_target(request_url, location, hosts) if 300 <= status < 400 else {
                 "redirectHostScope": "not_redirect", "redirectTargetHost": "",
-                "redirectPathScope": "unknown", "redirectQueryPresent": False,
+                "redirectPathScope": "unknown", "redirectPathChangeKind": "unknown",
+                "redirectCandidateCatalogueSlug": "", "redirectQueryPresent": False,
             }
             rows.append({
                 "originHost": host, "routeKind": kind,

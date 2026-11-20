@@ -54,6 +54,8 @@ jobs:
                              'redirectHost': x['redirectTargetHost'],
                              'redirectHostScope': x['redirectHostScope'],
                              'redirectPathScope': x['redirectPathScope'],
+                             'redirectPathChangeKind': x['redirectPathChangeKind'],
+                             'redirectCandidateCatalogueSlug': x['redirectCandidateCatalogueSlug'],
                              'redirectQueryPresent': x['redirectQueryPresent']}
                             for x in data['observations']], separators=(',', ':')))
           PY

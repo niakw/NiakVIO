@@ -92,6 +92,8 @@ with tempfile.TemporaryDirectory() as temp:
     assert redirected[0]["redirectTargetHost"] == "fourth.example.org"
     assert redirected[0]["redirectQueryPresent"] is True
     assert redirected[0]["redirectPathScope"] == "same_path"
+    assert redirected[0]["redirectPathChangeKind"] == "exact_path"
+    assert redirected[0]["redirectCandidateCatalogueSlug"] == ""
     assert all("fourth.example.org" not in url for url in observed_urls)
     assert sum(x["sourceShape"] == "script_http_missing"
                for x in result["observations"]) == 3
@@ -144,5 +146,19 @@ missing = probe.redirect_target("https://first.example.org/foo", "", ["first.exa
 assert missing["redirectHostScope"] == "location_missing"
 same = probe.redirect_target("https://first.example.org/foo", "../bar?private=SECRET", ["first.example.org"])
 assert same["redirectHostScope"] == "same_origin" and same["redirectQueryPresent"] is True
+trailing = probe.redirect_target("https://first.example.org/catalogue/old/", "/catalogue/old", ["first.example.org"])
+assert trailing["redirectPathChangeKind"] == "trailing_slash_only"
+new_slug = probe.redirect_target(
+    "https://first.example.org/catalogue/old/",
+    "/catalogue/new-slug/?private=SECRET", ["first.example.org"]
+)
+assert new_slug["redirectPathChangeKind"] == "catalogue_slug_changed"
+assert new_slug["redirectCandidateCatalogueSlug"] == "new-slug"
+assert "SECRET" not in json.dumps(new_slug)
+other_route = probe.redirect_target(
+    "https://first.example.org/catalogue/old/saison1/vostfr/",
+    "/catalogue/old/saison2/vostfr/", ["first.example.org"]
+)
+assert other_route["redirectPathChangeKind"] == "same_catalogue_other_path"
 
 print("Source contract probe: bounded 12 GET, strict native SHA, privacy and negative tests passed")
