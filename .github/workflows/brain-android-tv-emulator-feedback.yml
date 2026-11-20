@@ -5,6 +5,16 @@ on:
     workflows:
       - NATIVE - Device Corpus Tests
     types: [completed]
+  workflow_dispatch:
+    inputs:
+      candidate_run_id:
+        description: Exact native candidate run ID for independent verdict ingestion
+        required: true
+        type: string
+      candidate_source_sha:
+        description: Exact 40-character NiakVIO SHA executed by the native candidate
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -18,14 +28,33 @@ concurrency:
 
 jobs:
   ingest:
-    if: ${{ github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.head_branch == 'main' && (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch') }}
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.candidate_run_id != '' && inputs.candidate_source_sha != '') || (github.event_name == 'workflow_run' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.head_branch == 'main' && (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 14
     env:
       GH_TOKEN: ${{ github.token }}
-      NATIVE_RUN_ID: ${{ github.event.workflow_run.id }}
-      NATIVE_SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+      NATIVE_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.candidate_run_id || github.event.workflow_run.id }}
+      NATIVE_SOURCE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.candidate_source_sha || github.event.workflow_run.head_sha }}
     steps:
+      - name: Verify upstream native execution provenance before loading artifacts
+        shell: bash
+        env:
+          FEEDBACK_EVENT: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          [[ "$NATIVE_RUN_ID" =~ ^[0-9]{8,20}$ ]]
+          [[ "$NATIVE_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$NATIVE_RUN_ID" |
+            jq -e --arg repo "$GITHUB_REPOSITORY" --arg sha "$NATIVE_SOURCE_SHA" --arg event "$FEEDBACK_EVENT" '
+              .head_repository.full_name == $repo
+              and .head_branch == "main"
+              and .head_sha == $sha
+              and .name == "NATIVE - Device Corpus Tests"
+              and (.event == "push" or .event == "workflow_dispatch")
+              and (.status == "completed" or ($event == "workflow_dispatch" and .status == "in_progress"))
+            ' >/dev/null
+          echo "FIELD_BRAIN_NATIVE_SOURCE_ATTESTED run=$NATIVE_RUN_ID sha=$NATIVE_SOURCE_SHA event=$FEEDBACK_EVENT"
+
       - name: Checkout trusted current Brain control scripts
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -137,7 +166,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: brain-tv-route-${{ github.event.workflow_run.id }}
+          name: brain-tv-route-${{ env.NATIVE_RUN_ID }}
           path: ${{ runner.temp }}/brain-tv-route.json
           if-no-files-found: ignore
           retention-days: 14
@@ -148,7 +177,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if [ ! -f automation/brain-android-tv-emulator-history.json ]; then
+          if [ ! -f automation/brain-android-tv-emulator-history.json ] && [ ! -f automation/brain-native-candidate-experiments.json ]; then
             echo "NIAKVIO_BRAIN_CANDIDATE_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
             echo "FIELD_BRAIN_ANDROID_TV_PERSIST status=no_diagnostic"
             exit 0
