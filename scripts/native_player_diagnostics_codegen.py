@@ -143,7 +143,7 @@ TV_HELPERS = PROBE_MODEL + r'''
     private fun findTvControlButton(
         device: UiDevice,
         label: String,
-    ): android.view.accessibility.AccessibilityNodeInfo? {
+    ): androidx.test.uiautomator.UiObject2? {
         val visible = device.wait(Until.findObject(By.desc(label)), 500L)
         if (visible != null) return visible
         device.pressDPadCenter()
