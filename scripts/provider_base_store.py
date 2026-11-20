@@ -567,6 +567,21 @@ def _normalize_native_blocking_origin_priority(value: Any) -> dict[str, Any] | N
     }
 
 
+
+def _normalize_native_hls_root_receipt_v30(value: Any) -> dict[str, str] | None:
+    """Carry a candidate fingerprint only in isolated workspace DATA."""
+    if value is None:
+        return None
+    if materialization_context() != "workspace":
+        raise ValueError("native HLS root receipt cannot enter production DATA")
+    if not isinstance(value, dict) or set(value) != {"experimentFingerprint"}:
+        raise ValueError("invalid native HLS root receipt DATA shape")
+    fingerprint = value["experimentFingerprint"]
+    if not isinstance(fingerprint, str) or not re.fullmatch(r"[a-f0-9]{64}", fingerprint):
+        raise ValueError("invalid native HLS root receipt fingerprint")
+    return {"experimentFingerprint": fingerprint}
+
+
 def build_provider_data_model(
     provider_id: str,
     manifest_entry: dict[str, Any] | None = None,
@@ -591,6 +606,9 @@ def build_provider_data_model(
     incoming_model = provider_model if isinstance(provider_model, dict) else {}
     native_origin_priority = _normalize_native_blocking_origin_priority(
         incoming_model.get("nativeBlockingOriginPriority")
+    )
+    native_hls_receipt = _normalize_native_hls_root_receipt_v30(
+        incoming_model.get("nativeHlsRootReceiptV30")
     )
     return {
         "providerId": canonical_id(provider_id),
@@ -641,6 +659,10 @@ def build_provider_data_model(
         **(
             {"nativeBlockingOriginPriority": native_origin_priority}
             if native_origin_priority else {}
+        ),
+        **(
+            {"nativeHlsRootReceiptV30": native_hls_receipt}
+            if native_hls_receipt else {}
         ),
         "searchRequestPlan": [
             {
