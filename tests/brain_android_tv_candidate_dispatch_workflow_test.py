@@ -35,4 +35,52 @@ assert "NIAKVIO_BRAIN_CANDIDATE_SOURCE_SHA=$(git rev-parse HEAD)" in workflow
 assert 'candidate_source_sha="$(git rev-parse HEAD)"' in workflow
 assert "brain_candidate_experiment_json" not in workflow[dispatch:]
 assert "_apply_native_brain_origin_priority_candidate" in workflow[persist:dispatch]
+
+# Closing the loop on a failing, exact-byte official TV candidate must not rely
+# solely on workflow_run chaining (which can silently stop at GitHub depth).
+native = (ROOT / ".github/workflows/native-corpus-device-targeted.yml").read_text(encoding="utf-8")
+for needle in (
+    "brain-candidate-feedback:",
+    "needs: [resolve, native-corpus]",
+    "Dispatch exact completed TV candidate verdict without workflow_run chaining",
+    "native-candidate-tv-",
+    "candidateRematerialize == true",
+    "candidate_run_id=",
+    "candidate_source_sha=",
+    'gh workflow run brain-android-tv-emulator-feedback.yml',
+):
+    assert needle in native, needle
+assert native.index("Upload isolated candidate evidence (never production proof)") < native.index("brain-candidate-feedback:")
+privileged = native[native.index("  brain-candidate-feedback:"):native.index("  cross-runtime-gate:")]
+assert "      actions: write" in privileged
+assert "      contents: read" in privileged
+assert "actions/checkout@" not in privileged
+assert "        env:" in privileged
+assert "  native-corpus:\n" in native
+build_section = native[native.index("  native-corpus:\n"):native.index("  brain-candidate-feedback:\n")]
+assert "      actions: write" not in build_section
+
+for needle in (
+    "workflow_dispatch:",
+    "candidate_run_id:",
+    "candidate_source_sha:",
+    "Verify upstream native execution provenance before loading artifacts",
+    'gh api "repos/$GITHUB_REPOSITORY/actions/runs/$NATIVE_RUN_ID"',
+    "FIELD_BRAIN_NATIVE_SOURCE_ATTESTED",
+    "recover-missed-candidate:",
+    "status=no_unlearned_candidate",
+    "FIELD_BRAIN_CANDIDATE_RECOVERY",
+    "Persist isolated Brain candidate verdict",
+    "candidateAttempts",
+):
+    # candidateAttempts is a schema element of the verifier, not the workflow.
+    if needle != "candidateAttempts":
+        assert needle in workflow, needle
+assert workflow.count("  ingest:\n") == 1
+assert workflow.count("  recover-missed-candidate:\n") == 1
+assert workflow.index("Verify upstream native execution provenance") < workflow.index("Detect isolated Brain candidate replay")
+assert 'github.event_name == \'workflow_dispatch\'' in workflow
+assert "github.event.workflow_run.head_sha" in workflow
+assert 'status=dispatched run=$candidate_run_id' in workflow
+assert '      actions: write' in workflow[workflow.index("  recover-missed-candidate:"):workflow.index("  ingest:")]
 print("Brain Android TV source-pinned candidate dispatch workflow contract passed")
