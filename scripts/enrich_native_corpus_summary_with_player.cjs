@@ -176,11 +176,17 @@ summary.schemaVersion = Math.max(4, Number(summary.schemaVersion || 0));
 summary.clients = observedClients.length ? observedClients : (Array.isArray(summary.clients) ? summary.clients : []);
 summary.providersObserved = executedProviders.length;
 summary.executions = routeTerminals.size;
-summary.mediaVerified = players.length;
-summary.nativeEvidenceComplete = summary.providersObserved > 0 && summary.executions > 0 && summary.mediaVerified > 0;
 summary.nativeReaderObserved = players.length;
 summary.nativeReaderHealthy = healthy.length;
 summary.nativeReaderFailures = failures.length;
+// A returned PLAYER event is an observation, not proof of decoded media.
+// Keep negative-only collections visible to Learning but do not credit READY
+// without a verified format/track topology as a successfully played stream.
+summary.mediaVerified = healthy.length;
+summary.nativeEvidenceComplete = (
+  summary.providersObserved > 0 && summary.executions > 0 &&
+  summary.nativeReaderObserved > 0
+);
 summary.readerFailureClasses = Object.fromEntries(byClass.map((row) => [row.failureClass, row.occurrences]));
 summary.readerFailureSignals = byClass;
 summary.providerReaderFailures = byProvider;
