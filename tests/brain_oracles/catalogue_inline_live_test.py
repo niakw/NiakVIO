@@ -106,12 +106,19 @@ with tempfile.TemporaryDirectory() as td:
             return 200, INLINE, False, "", ""
         if url.endswith("/episodes.js"):
             return 404, "<html>PRIVATE 404</html>", False, "", ""
+        if "/catalogue/?search=" in url:
+            return 200, ('<!doctype html><html>'
+                         '<a href="/catalogue/mushoku-tensei/">matching</a>'
+                         '<a href="https://evil.example/catalogue/private/">bad</a>'
+                         '</html>'), False, "", ""
         if url.endswith("/vostfr/"):
             return 200, "<!doctype html><html>fallback</html>", False, "", ""
         return 200, LEGACY, False, "", ""
 
     report = probe.run(root, request, fetcher=fake_fetch)
     assert report["probeRequestCount"] == 12
+    assert sum(x["catalogueSearchLinkCount"] == 1 for x in report["observations"]) == 3
+    assert sum(x["catalogueSearchExactSlugPresent"] for x in report["observations"]) == 3
     assert report["inlineTokenResponseCount"] == 3
     assert report["independentNetworkNotOfficialClient"] is True
     assert report["sourceContractVerifiedOnOfficialTv"] is False
@@ -123,7 +130,7 @@ with tempfile.TemporaryDirectory() as td:
                for x in report["observations"]) == 3
     for row_out in report["observations"]:
         assert row_out["routeKind"] in {
-            "catalogue", "season_page", "legacy_script", "language_page"
+            "catalogue", "season_page", "legacy_script", "catalogue_search"
         }
         assert row_out["originHost"] in hosts
         assert row_out["httpStatusClass"] in {"2xx", "4xx"}
@@ -183,6 +190,20 @@ with tempfile.TemporaryDirectory() as td:
     assert redirect("http://fallback.example/catalogue/mushoku-tensei/") is None
     assert redirect("https://fallback.example/catalogue/mushoku-tensei/?token=SECRET") is None
     assert redirect("/catalogue/mushoku-tensei/saison1/vostfr/") is not None
+    search_handler = probe._CuratedRedirect(
+        ("current.example",), "mushoku-tensei"
+    )
+    search_request = urllib.request.Request(
+        "https://current.example/catalogue/?search=mushoku%20tensei"
+    )
+    assert search_handler.redirect_request(
+        search_request, None, 301, "Moved", {},
+        "/catalogue/?search=mushoku%20tensei"
+    ) is not None
+    assert search_handler.redirect_request(
+        search_request, None, 301, "Moved", {},
+        "/api/lien.php?token=PRIVATE"
+    ) is None
     assert redirect("https://fallback.example/catalogue/mushoku-tensei/saison1/vostfr/") is not None
     (root / "providers/sample.js").write_bytes(b"modified!")
     try:

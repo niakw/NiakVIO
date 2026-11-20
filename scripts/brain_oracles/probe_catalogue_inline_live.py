@@ -182,11 +182,17 @@ class _CuratedRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         dest = urllib.parse.urljoin(req.full_url, newurl)
         parsed = urllib.parse.urlsplit(dest)
+        original = urllib.parse.urlsplit(req.full_url)
+        is_search = original.path.rstrip("/") == "/catalogue"
         valid_path = (
-            parsed.path == self.prefix
-            or parsed.path.startswith(self.prefix + "/")
+            parsed.path.rstrip("/") == "/catalogue" if is_search
+            else parsed.path == self.prefix or parsed.path.startswith(self.prefix + "/")
         )
-        if (not valid_path or parsed.query or parsed.fragment
+        valid_query = (
+            parsed.query in {"", original.query} if is_search
+            else not parsed.query
+        )
+        if (not valid_path or not valid_query or parsed.fragment
                 or origin_host(dest) not in self.approved_hosts):
             return None
         return super().redirect_request(req, fp, code, msg, headers, dest)
@@ -218,6 +224,24 @@ def fetch(url: str, *, approved_hosts: tuple[str, ...] = (),
         return 0, "", False, "transport_error", ""
 
 
+def catalogue_search_matches(body: str, expected: str, origin: str) -> tuple[int, bool]:
+    """Extract only link count and exact slug match, never URLs or page text."""
+    if not isinstance(body, str) or len(body) > MAX_BODY or not body.lstrip().lower().startswith(("<!doctype", "<html")):
+        return 0, False
+    slugs: set[str] = set()
+    for match in re.finditer(r"""href\s*=\s*["']([^"']{1,1024})["']""", body, re.I):
+        uri = match.group(1).replace("&amp;", "&")
+        parsed = urllib.parse.urlsplit(urllib.parse.urljoin("https://" + origin + "/", uri))
+        if parsed.scheme != "https" or parsed.hostname != origin:
+            continue
+        stem = re.match(r"^/catalogue/([a-z0-9][a-z0-9-]{0,125})(?:/|$)", parsed.path, re.I)
+        if stem:
+            slugs.add(stem.group(1).lower())
+        if len(slugs) >= 32:
+            break
+    return min(32, len(slugs)), expected in slugs
+
+
 def run(root: Path, request: dict, *, fetcher: Callable[[str], tuple[int, str, bool, str, str]] = fetch) -> dict:
     details, hosts = attest(root, request)
     slug, season, voice = details["catalogueSlug"], details["season"], details["voice"]
@@ -226,7 +250,7 @@ def run(root: Path, request: dict, *, fetcher: Callable[[str], tuple[int, str, b
         ("catalogue", f"/catalogue/{slug}/"),
         ("season_page", f"/catalogue/{slug}/saison{season}/{voice}/"),
         ("legacy_script", f"/catalogue/{slug}/saison{season}/{voice}/episodes.js"),
-        ("language_page", f"/catalogue/{slug}/{voice}/"),
+        ("catalogue_search", "/catalogue/?search=" + urllib.parse.quote(slug.replace("-", " "), safe="")),
     )
     observations = []
     for host in hosts:
@@ -245,9 +269,18 @@ def run(root: Path, request: dict, *, fetcher: Callable[[str], tuple[int, str, b
             if not isinstance(redirect_host, str) or (redirect_host and not HOST.fullmatch(redirect_host)):
                 raise ValueError("invalid sanitized redirect host")
             result = classify(status, "" if oversized else body)
+            search_count, search_exact = (
+                catalogue_search_matches(
+                    "" if oversized or status < 200 or status >= 300 else body,
+                    slug,
+                    redirect_host if redirect_host in hosts else host,
+                ) if kind == "catalogue_search" else (0, False)
+            )
             observations.append({
                 "originHost": host,
                 "routeKind": kind,
+                "catalogueSearchLinkCount": search_count,
+                "catalogueSearchExactSlugPresent": search_exact,
                 "responseHost": (redirect_host if not 300 <= status < 400
                                  and redirect_host in hosts else host),
                 "httpStatus": status,
