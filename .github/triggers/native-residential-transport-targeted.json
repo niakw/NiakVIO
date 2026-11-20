@@ -7,10 +7,10 @@
   ],
   "targetFixture": "interstellar",
   "residentialExit": false,
-  "reason": "Purstream Interstellar official NuvioTV Android TV V20 exact-byte full PluginManager retest. v32 run 44646352512 executed matching Core candidate SHA b33f7702 via official PluginManager, returned 1 media row, restored original PluginDataStore and reached official video reader with Played/firstFrameMs=1788. However the tested source contained DOUBLE-ESCAPED Kotlin RAW regex causing reported video_width=0/video_height=0 and HLS audio/variant matrices empty despite valid media declarations. v33 executes the two SOURCE-OWNED regex repairs 24912d1 and d3ca09d + late video-format snapshot settle, strict decoding/FR-EN tracks/quality/identity gate unchanged; no production publication.",
-  "requestVersion": 33,
-  "retryCause": "v32 official manager 1 stream with matched candidate bytes and restored original code; playback READY Played firstFrame=1788ms but older harness videoResolution and HlsTrackTopology Regex raw double-escapes produce false zero metrics. Native v33 must demonstrate actual nonzero format plus audio/subtitle/quality evidence and visual terminal behavior; never count firstFrame as decode alone.",
-  "sourceImplementationSha": "9050e286d63f7a755622f1043ac7988541d31e4e",
+  "reason": "Purstream Interstellar official NuvioTV Android TV Core V20 exact-byte PluginManager replay after v33 exposed a false-positive media gate. v33 run 44649216583 decoded 1280x720 with first frame, while HLS transport advertised audio fr+en and subtitle fr but production player exposed audio_track_count=0 and no integrated subtitle observation. Main now correlates transport topology with production-player tracks and refuses media_verified/healthy when those tracks collapse. v34 must show whether the official player actually preserves FR+EN/subtitle topology or correctly fails unresolved_media; no provider publication.",
+  "requestVersion": 34,
+  "retryCause": "v33 proved candidate bytes and 0->1 stream plus decoded 1280x720, but old collection/player gates incorrectly passed despite HLS expected audio=2 fr,en + subtitle=1 fr versus player audio=0/subtitle=-1. Replay exact candidate under topology-aware gates; success requires nonzero decoded video plus player-observed expected audio/languages/subtitle, identity and exact rollback.",
+  "sourceImplementationSha": "99f10c5a24d57c0bd067c1e6bf925fe6260624ee",
   "candidateRematerialize": true,
   "candidateRequiredMarker": "NIAKVIO_HLS_TS_WRAPPED_AAC_RENDITION_V20"
 }
