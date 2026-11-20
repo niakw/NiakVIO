@@ -20,6 +20,7 @@ REQUIRED_MARKERS = {
     "NIAKVIO_HLS_TS_WRAPPED_AAC_RENDITION_V20",
     "NIAKVIO_PROVIDER_NATIVE_FETCH_CAPABILITY_GATE_V28",
     "NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29",
+    "NIAKVIO_PROVIDER_NATIVE_HLS_ROOT_RECEIPT_V30",
 }
 
 
@@ -105,6 +106,136 @@ def _validate_brain_experiment(raw: str, provider: str, source_sha: str | None =
     }
 
 
+
+
+V30_MARKER = "NIAKVIO_PROVIDER_NATIVE_HLS_ROOT_RECEIPT_V30"
+V30_EXPERIMENT_TYPE = "native-hls-master-receipt-v30"
+V30_EVIDENCE_PATTERN = "same-hls-root-2xx-then-403-pre-player"
+V30_FINGERPRINT_KEYS = (
+    "experimentType", "providerId", "fixture", "requestType",
+    "sourceNiakvioSha", "sourceRunId", "providerArtifactSha256",
+    "officialClientSha", "runtimeScope", "evidencePattern",
+    "priorCandidateRunId", "priorCandidateSourceSha",
+    "priorCandidateJsSha256",
+)
+
+
+def _validate_brain_hls_receipt_experiment(raw: str, provider: str, baseline_sha: str) -> dict:
+    """Reject V30 if the original exact source and restored V29 failure are not persisted."""
+    value = json.loads(raw)
+    if not isinstance(value, dict):
+        raise ValueError("Brain V30 must be an object")
+    permitted = set(V30_FINGERPRINT_KEYS) | {
+        "schemaVersion", "experimentFingerprint", "candidateOnly", "generatedByBrain",
+        "modelExecuted", "proofAuthority", "publicationAuthority",
+        "nativePlaybackAuthority", "providerMutationAuthority", "brainSha",
+    }
+    if set(value) - permitted:
+        raise ValueError("Brain V30 contains unknown/private fields")
+    if (
+        value.get("schemaVersion") != 1
+        or value.get("experimentType") != V30_EXPERIMENT_TYPE
+        or value.get("evidencePattern") != V30_EVIDENCE_PATTERN
+        or value.get("runtimeScope") != BRAIN_RUNTIME_SCOPE
+        or value.get("providerId") != provider
+        or value.get("providerArtifactSha256") != baseline_sha
+        or value.get("candidateOnly") is not True
+        or value.get("generatedByBrain") is not True
+        or value.get("modelExecuted") is not False
+        or any(value.get(flag) is not False for flag in (
+            "proofAuthority", "publicationAuthority", "nativePlaybackAuthority",
+            "providerMutationAuthority",
+        ))
+    ):
+        raise ValueError("Brain V30 provenance or authority mismatch")
+    for field in ("sourceNiakvioSha", "officialClientSha", "priorCandidateSourceSha"):
+        if not SHA40.fullmatch(str(value.get(field) or "")):
+            raise ValueError("Brain V30 source/client SHA invalid")
+    for field in ("providerArtifactSha256", "priorCandidateJsSha256"):
+        if not SHA64.fullmatch(str(value.get(field) or "")):
+            raise ValueError("Brain V30 bundle SHA invalid")
+    for field in ("sourceRunId", "priorCandidateRunId"):
+        if not re.fullmatch(r"[0-9]{8,20}", str(value.get(field) or "")):
+            raise ValueError("Brain V30 run ID invalid")
+    fingerprint = str(value.get("experimentFingerprint") or "")
+    expected = hashlib.sha256(json.dumps(
+        {key: value.get(key) for key in V30_FINGERPRINT_KEYS},
+        sort_keys=True, separators=(",", ":"),
+    ).encode("ascii")).hexdigest()
+    if fingerprint != expected:
+        raise ValueError("Brain V30 fingerprint invalid")
+    brain_sha = str(value.get("brainSha") or "")
+    if brain_sha and not SHA40.fullmatch(brain_sha):
+        raise ValueError("Brain V30 Brain SHA invalid")
+
+    ledger = json.loads(BRAIN_LEDGER.read_text(encoding="utf-8"))
+    if (
+        ledger.get("authority") != "candidate-only"
+        or ledger.get("publicationAuthority") is not False
+        or ledger.get("providerMutationAuthority") is not False
+    ):
+        raise ValueError("Brain V30 native candidate ledger untrusted")
+    witnesses = []
+    for row in ledger.get("rows") or []:
+        if not isinstance(row, dict):
+            continue
+        if any(str(row.get(k) or "") != str(value.get(k) or "") for k in (
+            "providerId", "sourceNiakvioSha", "sourceRunId",
+            "providerArtifactSha256", "officialClientSha",
+        )):
+            continue
+        if any(row.get(flag) is not False for flag in (
+            "proofAuthority", "publicationAuthority",
+            "nativePlaybackAuthority", "providerMutationAuthority",
+        )):
+            continue
+        matches = [
+            attempt for attempt in (row.get("candidateAttempts") or [])
+            if isinstance(attempt, dict)
+            and attempt.get("candidateVerdict") == "candidate_zero_stream"
+            and attempt.get("candidateExecutionObserved") is True
+            and attempt.get("candidateRestoredObserved") is True
+            and attempt.get("candidateDecodedVideoObserved") is False
+            and str(attempt.get("candidateRunId") or "") == str(value.get("priorCandidateRunId"))
+            and attempt.get("candidateSourceSha") == value.get("priorCandidateSourceSha")
+            and attempt.get("candidateJsSha256") == value.get("priorCandidateJsSha256")
+            and attempt.get("validatedRepair") is False
+            and attempt.get("publicationAllowed") is False
+        ]
+        if len(matches) == 1:
+            witnesses.append(row)
+    if len(witnesses) != 1:
+        raise ValueError("Brain V30 lacks unique executed/restored V29 negative witness")
+    return {**{key: value.get(key) for key in V30_FINGERPRINT_KEYS},
+            "schemaVersion": 1, "experimentFingerprint": expected,
+            "brainSha": brain_sha, "candidateOnly": True,
+            "generatedByBrain": True, "modelExecuted": False,
+            "proofAuthority": False, "publicationAuthority": False,
+            "nativePlaybackAuthority": False, "providerMutationAuthority": False}
+
+
+def _select_persisted_brain_hls_receipt_experiment(provider: str, baseline_sha: str) -> dict:
+    """Recompile only an immutable Brain V30 plan already persisted in Learning."""
+    ledger = json.loads(BRAIN_LEDGER.read_text(encoding="utf-8"))
+    plans = []
+    for row in ledger.get("rows") or []:
+        if not isinstance(row, dict) or row.get("providerId") != provider:
+            continue
+        for plan in row.get("candidateFollowUpExperiments") or []:
+            if not isinstance(plan, dict):
+                continue
+            try:
+                validated = _validate_brain_hls_receipt_experiment(
+                    json.dumps(plan, sort_keys=True), provider, baseline_sha,
+                )
+            except (ValueError, KeyError, TypeError, json.JSONDecodeError):
+                continue
+            if not SHA40.fullmatch(str(validated.get("brainSha") or "")):
+                continue
+            plans.append(validated)
+    if len(plans) != 1:
+        raise ValueError("Brain V30 requires one exact persisted HLS receipt experiment")
+    return plans[0]
 
 
 def _select_persisted_brain_experiment(provider: str, baseline_sha: str) -> dict:
@@ -257,25 +388,34 @@ def main() -> None:
         raise ValueError("candidate requires ephemeral workspace materialization")
     baseline_sha = sha256(local_js)
     if args.brain_experiment_json.strip():
-        brain_experiment = _validate_brain_experiment(
-            args.brain_experiment_json, provider, source_sha
-        )
+        if required_marker == V30_MARKER:
+            brain_experiment = _validate_brain_hls_receipt_experiment(
+                args.brain_experiment_json, provider, baseline_sha
+            )
+        else:
+            brain_experiment = _validate_brain_experiment(
+                args.brain_experiment_json, provider, source_sha
+            )
     elif required_marker == BRAIN_MARKER:
-        # A persisted experiment may come from an earlier source-pinned native
-        # run. Its authority is the exact published bundle digest it observed;
-        # V29 itself necessarily lives on a newer source SHA.
+        # Older source-pinned native evidence is bound to exact published JS.
         brain_experiment = _select_persisted_brain_experiment(provider, baseline_sha)
+    elif required_marker == V30_MARKER:
+        brain_experiment = _select_persisted_brain_hls_receipt_experiment(provider, baseline_sha)
     else:
         brain_experiment = None
-    if brain_experiment and required_marker != BRAIN_MARKER:
-        raise ValueError("Brain native origin experiment requires its source-owned Core marker")
-    if not brain_experiment and required_marker == BRAIN_MARKER:
-        raise ValueError("Brain native origin marker requires a Brain experiment")
+    if brain_experiment and required_marker not in {BRAIN_MARKER, V30_MARKER}:
+        raise ValueError("Brain native experiment requires its source-owned Core marker")
+    if not brain_experiment and required_marker in {BRAIN_MARKER, V30_MARKER}:
+        raise ValueError("Brain native marker requires a Brain experiment")
     child_env = os.environ.copy()
     if brain_experiment:
         if brain_experiment["providerArtifactSha256"] != baseline_sha:
             raise ValueError("Brain candidate observed artifact is not the current published baseline")
-        child_env["NIAKVIO_NATIVE_BRAIN_ORIGIN_PRIORITY"] = json.dumps(
+        selected_env = (
+            "NIAKVIO_NATIVE_BRAIN_HLS_ROOT_RECEIPT"
+            if required_marker == V30_MARKER else "NIAKVIO_NATIVE_BRAIN_ORIGIN_PRIORITY"
+        )
+        child_env[selected_env] = json.dumps(
             brain_experiment, sort_keys=True, separators=(",", ":")
         )
     subprocess.run(
@@ -292,7 +432,11 @@ def main() -> None:
         raise ValueError("candidate did not materialize required source-owned Core marker")
     if brain_experiment:
         fingerprint = brain_experiment["experimentFingerprint"]
-        if "nativeBlockingOriginPriority" not in candidate_source or fingerprint not in candidate_source:
+        data_marker = (
+            "nativeHlsRootReceiptV30" if required_marker == V30_MARKER
+            else "nativeBlockingOriginPriority"
+        )
+        if data_marker not in candidate_source or fingerprint not in candidate_source:
             raise ValueError("Brain candidate experiment was not compiled into Provider DATA")
     proof = {
         "schemaVersion": 1, "provider": provider, "manifest": args.manifest,
@@ -304,10 +448,13 @@ def main() -> None:
             brain_experiment["experimentFingerprint"] if brain_experiment else ""
         ),
         "brainPreferredHosts": (
-            brain_experiment["preferredHosts"] if brain_experiment else []
+            brain_experiment.get("preferredHosts", []) if brain_experiment else []
         ),
         "brainDeprioritizedHosts": (
-            brain_experiment["deprioritizedHosts"] if brain_experiment else []
+            brain_experiment.get("deprioritizedHosts", []) if brain_experiment else []
+        ),
+        "brainExperimentType": (
+            str(brain_experiment.get("experimentType") or "") if brain_experiment else ""
         ),
         "brainSha": (
             str(brain_experiment.get("brainSha") or "") if brain_experiment else ""
