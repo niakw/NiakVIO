@@ -127,8 +127,20 @@ def persist(route_path: Path, ledger_path: Path, brain_sha: str) -> dict:
             str(row.get("experimentFingerprint") or "").lower())
     ]
     by_id = {str(row["experimentFingerprint"]): row for row in rows}
+    verdict_keys = (
+        "candidateAttempts", "lastCandidateRunId", "lastCandidateSourceSha",
+        "lastCandidateJsSha256", "lastCandidateVerdict",
+        "lastCandidateExecutionObserved", "lastCandidateExtractionNonEmpty",
+        "lastCandidateTerminalReaderHealthy", "lastCandidateDecodedVideoObserved",
+        "lastCandidateFrAudioObserved", "lastCandidateValidatedRepair",
+    )
     for row in incoming:
-        by_id[row["experimentFingerprint"]] = row
+        fingerprint = row["experimentFingerprint"]
+        previous = by_id.get(fingerprint) or {}
+        for key in verdict_keys:
+            if key in previous:
+                row[key] = previous[key]
+        by_id[fingerprint] = row
     bounded = sorted(
         by_id.values(),
         key=lambda row: (int(row.get("sourceRunId") or 0),

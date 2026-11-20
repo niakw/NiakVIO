@@ -39,6 +39,39 @@ jobs:
           path: tested-source
           persist-credentials: false
 
+      - name: Detect isolated Brain candidate replay
+        id: candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          count="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$NATIVE_RUN_ID/artifacts" \
+            --jq '[.artifacts[].name | select(startswith("native-candidate-tv-"))] | length')"
+          if [ "$count" = "0" ]; then
+            echo "is_candidate=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "$count" != "1" ]; then
+            echo "unexpected native candidate artifact count: $count" >&2
+            exit 1
+          fi
+          mkdir -p "$RUNNER_TEMP/native-candidate-evidence"
+          gh run download "$NATIVE_RUN_ID" --repo "$GITHUB_REPOSITORY" \
+            --pattern 'native-candidate-tv-*' \
+            --dir "$RUNNER_TEMP/native-candidate-evidence"
+          echo "is_candidate=true" >> "$GITHUB_OUTPUT"
+          echo "FIELD_BRAIN_NATIVE_CANDIDATE_SOURCE run=$NATIVE_RUN_ID artifact_count=1"
+
+      - name: Persist isolated Brain candidate verdict
+        if: ${{ steps.candidate.outputs.is_candidate == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/persist_brain_native_candidate_verdict.py \
+            --artifacts "$RUNNER_TEMP/native-candidate-evidence" \
+            --ledger automation/brain-native-candidate-experiments.json \
+            --candidate-source-sha "$NATIVE_SOURCE_SHA" \
+            --candidate-run-id "$NATIVE_RUN_ID"
+
       - name: Validate ingest and safe history contracts
         shell: bash
         run: |
@@ -46,6 +79,7 @@ jobs:
           python3 tests/brain_android_tv_emulator_ingest_test.py
 
       - name: Import only already-sanitized official TV native diagnostic JSON
+        if: ${{ steps.candidate.outputs.is_candidate != 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -68,6 +102,7 @@ jobs:
             --ledger automation/brain-android-tv-emulator-history.json
 
       - name: Checkout the Brain causal router (never run a model here)
+        if: ${{ steps.candidate.outputs.is_candidate != 'true' }}
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: niakw/NiakVIO-Brain-LLM
@@ -76,7 +111,7 @@ jobs:
           persist-credentials: false
 
       - name: Route the exact TV replay through Brain as diagnosis only
-        if: ${{ hashFiles('automation/brain-android-tv-emulator-history.json') != '' }}
+        if: ${{ steps.candidate.outputs.is_candidate != 'true' && hashFiles('automation/brain-android-tv-emulator-history.json') != '' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -133,7 +168,7 @@ jobs:
           echo "FIELD_BRAIN_ANDROID_TV_PERSIST status=committed mutation_authority=false candidate_source_sha=$candidate_source_sha"
 
       - name: Dispatch one source-pinned Brain candidate experiment
-        if: ${{ hashFiles('automation/brain-android-tv-emulator-history.json') != '' }}
+        if: ${{ steps.candidate.outputs.is_candidate != 'true' && hashFiles('automation/brain-android-tv-emulator-history.json') != '' }}
         shell: bash
         run: |
           set -euo pipefail
