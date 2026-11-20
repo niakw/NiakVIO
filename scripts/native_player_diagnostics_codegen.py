@@ -102,39 +102,42 @@ TV_HELPERS = PROBE_MODEL + r'''
     private fun normalizeTvVisibleLanguage(label: String?): String? {
         val raw = label?.trim().orEmpty()
         if (raw.isBlank()) return null
-        val direct = Regex("""(?i)(?:^|[^a-z])([a-z]{2,3}(?:-[a-z0-9]{2,4})?)(?:[^a-z0-9]|$)""")
+        val lowered = raw.lowercase(java.util.Locale.getDefault())
+        val byDisplayName = java.util.Locale.getAvailableLocales().asSequence()
+            .map { it.language.lowercase(java.util.Locale.US) }
+            .filter { it.length == 2 }
+            .distinct()
+            .firstOrNull { code ->
+                val locale = java.util.Locale.forLanguageTag(code)
+                sequenceOf(
+                    locale.getDisplayLanguage(java.util.Locale.getDefault()),
+                    locale.getDisplayLanguage(java.util.Locale.ENGLISH),
+                    locale.getDisplayLanguage(locale),
+                )
+                    .map { it.trim().lowercase(java.util.Locale.getDefault()) }
+                    .filter { it.length >= 3 }
+                    .distinct()
+                    .any { alias ->
+                        Regex("""(^|[^\\p{L}])${Regex.escape(alias)}([^\\p{L}]|$)""")
+                            .containsMatchIn(lowered)
+                    }
+            }
+        if (byDisplayName != null) return byDisplayName
+
+        val direct = Regex("""(?i)(?:^|[^a-z])([a-z]{2,3})(?:[^a-z]|$)""")
             .find(raw)
             ?.groupValues
             ?.getOrNull(1)
             ?.lowercase(java.util.Locale.US)
-        if (direct != null && direct.length >= 2) {
-            val directLocale = java.util.Locale.forLanguageTag(direct)
-            if (directLocale.language.isNotBlank()) return directLocale.language.lowercase(java.util.Locale.US)
-        }
-        val lowered = raw.lowercase(java.util.Locale.getDefault())
+            ?: return null
+        if (direct.length == 2) return direct
         return java.util.Locale.getAvailableLocales().asSequence()
-            .map { it.language.lowercase(java.util.Locale.US) }
-            .filter { it.length == 2 }
-            .distinct()
-            .mapNotNull { code ->
-                val locale = java.util.Locale.forLanguageTag(code)
-                val aliases = sequenceOf(
-                    locale.getDisplayLanguage(java.util.Locale.getDefault()),
-                    locale.getDisplayLanguage(java.util.Locale.ENGLISH),
-                    locale.getDisplayLanguage(locale),
-                ).map { it.trim().lowercase(java.util.Locale.getDefault()) }
-                    .filter { it.length >= 3 }
-                    .distinct()
-                    .toList()
-                code to aliases
+            .firstOrNull { locale ->
+                runCatching { locale.isO3Language.equals(direct, ignoreCase = true) }.getOrDefault(false)
             }
-            .firstOrNull { (_, aliases) ->
-                aliases.any { alias ->
-                    Regex("""(^|[^\p{L}])${Regex.escape(alias)}([^\p{L}]|$)""")
-                        .containsMatchIn(lowered)
-                }
-            }
-            ?.first
+            ?.language
+            ?.takeIf { it.length == 2 }
+            ?.lowercase(java.util.Locale.US)
     }
 
     private fun probeTvAudioTracks(
