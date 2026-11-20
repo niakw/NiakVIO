@@ -117,7 +117,7 @@ jobs:
                           found.append((int(run), sha))
           if found:
               run, sha = sorted(set(found), reverse=True)[0]
-              Path(sys.argv[2]).write_text(str(run)+" "+sha+"\\n", encoding="utf-8")
+              Path(sys.argv[2]).write_text(str(run)+" "+sha+"\n", encoding="utf-8")
           PY
           if [ -s "$pending_file" ]; then
             read -r candidate_run_id candidate_source_sha < "$pending_file"
