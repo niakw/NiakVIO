@@ -26,12 +26,13 @@ REQUIRED_MARKERS = {
 BRAIN_EXPERIMENT_TYPE = "native-blocking-player-origin-priority"
 BRAIN_RUNTIME_SCOPE = "native-blocking-fetch"
 BRAIN_MARKER = "NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29"
+BRAIN_LEDGER = ROOT / "automation" / "brain-native-candidate-experiments.json"
 HOST = re.compile(r"(?=.{1,253}$)[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?")
 SHA40 = re.compile(r"[a-f0-9]{40}")
 SHA64 = re.compile(r"[a-f0-9]{64}")
 
 
-def _validate_brain_experiment(raw: str, provider: str, source_sha: str) -> dict:
+def _validate_brain_experiment(raw: str, provider: str, source_sha: str | None = None) -> dict:
     value = json.loads(raw)
     if not isinstance(value, dict):
         raise ValueError("Brain candidate experiment must be an object")
@@ -52,8 +53,10 @@ def _validate_brain_experiment(raw: str, provider: str, source_sha: str) -> dict
     artifact_sha = str(value.get("providerArtifactSha256") or "").strip().lower()
     run_id = str(value.get("sourceRunId") or "").strip()
     client_sha = str(value.get("officialClientSha") or "").strip().lower()
-    if evidence_sha != source_sha or not SHA40.fullmatch(evidence_sha):
-        raise ValueError("Brain candidate must target the exact observed NiakVIO SHA")
+    if not SHA40.fullmatch(evidence_sha):
+        raise ValueError("Brain candidate source NiakVIO SHA invalid")
+    if source_sha is not None and evidence_sha != source_sha:
+        raise ValueError("explicit Brain candidate must target the exact observed NiakVIO SHA")
     if not SHA64.fullmatch(artifact_sha) or not run_id.isdigit():
         raise ValueError("Brain candidate source provenance invalid")
     if client_sha and not SHA40.fullmatch(client_sha):
@@ -84,8 +87,12 @@ def _validate_brain_experiment(raw: str, provider: str, source_sha: str) -> dict
     ).hexdigest()
     if not SHA64.fullmatch(fingerprint) or fingerprint != expected:
         raise ValueError("Brain candidate fingerprint mismatch")
+    brain_sha = str(value.get("brainSha") or "").strip().lower()
+    if brain_sha and not SHA40.fullmatch(brain_sha):
+        raise ValueError("Brain candidate Brain SHA invalid")
     return {
         **{key: value.get(key) for key in basis_keys},
+        "brainSha": brain_sha,
         "preferredHosts": preferred,
         "deprioritizedHosts": deprioritized,
         "experimentFingerprint": fingerprint,
@@ -96,6 +103,48 @@ def _validate_brain_experiment(raw: str, provider: str, source_sha: str) -> dict
         "nativePlaybackAuthority": False,
         "providerMutationAuthority": False,
     }
+
+
+
+
+def _select_persisted_brain_experiment(provider: str, baseline_sha: str) -> dict:
+    if not BRAIN_LEDGER.is_file():
+        raise ValueError("Brain native candidate experiment ledger missing")
+    ledger = json.loads(BRAIN_LEDGER.read_text(encoding="utf-8"))
+    if not isinstance(ledger, dict):
+        raise ValueError("Brain native candidate experiment ledger invalid")
+    if (
+        ledger.get("authority") != "candidate-only"
+        or ledger.get("publicationAuthority") is not False
+        or ledger.get("providerMutationAuthority") is not False
+    ):
+        raise ValueError("Brain native candidate ledger authority mismatch")
+    matches: list[dict] = []
+    for row in ledger.get("rows") or []:
+        if not isinstance(row, dict):
+            continue
+        if str(row.get("providerId") or "").strip().lower() != provider:
+            continue
+        if str(row.get("providerArtifactSha256") or "").strip().lower() != baseline_sha:
+            continue
+        try:
+            validated = _validate_brain_experiment(
+                json.dumps(row, sort_keys=True, separators=(",", ":")),
+                provider,
+                None,
+            )
+        except (ValueError, TypeError, json.JSONDecodeError):
+            continue
+        if not SHA40.fullmatch(str(validated.get("brainSha") or "")):
+            continue
+        matches.append(validated)
+    if not matches:
+        raise ValueError("no persisted Brain experiment matches exact published provider bytes")
+    matches.sort(key=lambda row: (
+        int(str(row.get("sourceRunId") or "0")),
+        str(row.get("experimentFingerprint") or ""),
+    ))
+    return matches[-1]
 
 
 def rows(manifest: Path, provider: str) -> tuple[dict, int]:
@@ -204,17 +253,24 @@ def main() -> None:
     actual_source = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip().lower()
     if not re.fullmatch(r"[a-f0-9]{40}", source_sha) or source_sha != actual_source:
         raise ValueError("candidate requires exact source checkout SHA")
-    brain_experiment = (
-        _validate_brain_experiment(args.brain_experiment_json, provider, source_sha)
-        if args.brain_experiment_json.strip() else None
-    )
+    if os.environ.get("NUVIO_PROVIDER_V3_CONTEXT") != "workspace":
+        raise ValueError("candidate requires ephemeral workspace materialization")
+    baseline_sha = sha256(local_js)
+    if args.brain_experiment_json.strip():
+        brain_experiment = _validate_brain_experiment(
+            args.brain_experiment_json, provider, source_sha
+        )
+    elif required_marker == BRAIN_MARKER:
+        # A persisted experiment may come from an earlier source-pinned native
+        # run. Its authority is the exact published bundle digest it observed;
+        # V29 itself necessarily lives on a newer source SHA.
+        brain_experiment = _select_persisted_brain_experiment(provider, baseline_sha)
+    else:
+        brain_experiment = None
     if brain_experiment and required_marker != BRAIN_MARKER:
         raise ValueError("Brain native origin experiment requires its source-owned Core marker")
     if not brain_experiment and required_marker == BRAIN_MARKER:
         raise ValueError("Brain native origin marker requires a Brain experiment")
-    if os.environ.get("NUVIO_PROVIDER_V3_CONTEXT") != "workspace":
-        raise ValueError("candidate requires ephemeral workspace materialization")
-    baseline_sha = sha256(local_js)
     child_env = os.environ.copy()
     if brain_experiment:
         if brain_experiment["providerArtifactSha256"] != baseline_sha:
@@ -252,6 +308,18 @@ def main() -> None:
         ),
         "brainDeprioritizedHosts": (
             brain_experiment["deprioritizedHosts"] if brain_experiment else []
+        ),
+        "brainSha": (
+            str(brain_experiment.get("brainSha") or "") if brain_experiment else ""
+        ),
+        "brainEvidenceSourceNiakvioSha": (
+            str(brain_experiment.get("sourceNiakvioSha") or "") if brain_experiment else ""
+        ),
+        "brainEvidenceSourceRunId": (
+            str(brain_experiment.get("sourceRunId") or "") if brain_experiment else ""
+        ),
+        "brainObservedBaselineJsSha256": (
+            str(brain_experiment.get("providerArtifactSha256") or "") if brain_experiment else ""
         ),
         "officialTvTestAssetByteMatched": False, "productionPlaybackVerified": False,
         "publicationAllowed": False,

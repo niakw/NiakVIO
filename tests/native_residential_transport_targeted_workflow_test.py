@@ -145,6 +145,7 @@ for needle in (
     "NIAKVIO_PROVIDER_NATIVE_PLAYER_HEDGE_V27",
     "NIAKVIO_HLS_TS_WRAPPED_AAC_RENDITION_V20",
     "NIAKVIO_PROVIDER_NATIVE_FETCH_CAPABILITY_GATE_V28",
+    "NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29",
     "requiredCoreMarker",
     "unsupported source-owned native candidate marker",
     "candidate did not materialize required source-owned Core marker",

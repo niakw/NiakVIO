@@ -47,6 +47,20 @@ validated = candidate._validate_brain_experiment(json.dumps(payload), provider, 
 assert validated["preferredHosts"] == ["fast.example"]
 assert validated["deprioritizedHosts"] == ["slow.example"]
 
+# Persisted candidate authority follows exact observed bundle bytes, not the
+# necessarily newer V29 source checkout SHA.
+persisted = {**payload, "brainSha": "e" * 40}
+persisted["sourceNiakvioSha"] = "d" * 40
+persisted["experimentFingerprint"] = hashlib.sha256(
+    json.dumps({key: persisted[key] for key in keys},
+               sort_keys=True, separators=(",", ":")).encode("ascii")
+).hexdigest()
+validated_persisted = candidate._validate_brain_experiment(
+    json.dumps(persisted), provider, None
+)
+assert validated_persisted["sourceNiakvioSha"] == "d" * 40
+assert validated_persisted["brainSha"] == "e" * 40
+
 model = build_provider_data_model(
     provider,
     {"name": "Demo", "supportedTypes": ["movie"]},
