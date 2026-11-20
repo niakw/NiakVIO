@@ -24,8 +24,9 @@ NEW = """      /* NIAKVIO_PROVIDER_NATIVE_HLS_ROOT_RECEIPT_V30 */
         // A GET already succeeded: retain the bounded body locally rather
         // than force a second signed-root GET, which may return 403. Never
         // cache errors, arbitrary HTML, non-HLS media or a rewritten URL.
-        const hlsRoot = /\\.m3u8(?:[?#]|$)/i.test(responseUrl) ||
-          /(?:mpegurl|vnd\\.apple)/i.test(contentType);
+        const explicitNonHls = /\\.(?:mp4|mkv|webm|mpd)(?:[?#]|$)/i.test(responseUrl);
+        const hlsRoot = !explicitNonHls && (/\\.m3u8(?:[?#]|$)/i.test(responseUrl) ||
+          /(?:mpegurl|vnd\\.apple)/i.test(contentType));
         if (hlsRoot && typeof globalThis.__native_fetch === "function" &&\n            response && typeof response.text === "function") {
           let allowed = true;
           try {
