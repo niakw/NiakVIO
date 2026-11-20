@@ -21,6 +21,13 @@ for needle in (
     "-f candidate_rematerialize=true",
     "NIAKVIO_PROVIDER_NATIVE_BLOCKING_ORIGIN_PRIORITY_EXPERIMENT_V29",
     "persisted_experiment=true",
+    "persist_brain_native_hls_followup.py",
+    "followupCoreExperiment",
+    "candidate_type",
+    "native-hls-master-receipt-v30",
+    "NIAKVIO_PROVIDER_NATIVE_HLS_ROOT_RECEIPT_V30",
+    "Dispatch once the distinct Brain V30 Core receipt candidate",
+    "FIELD_BRAIN_V30_DISPATCH status=dispatched",
     "publication=false",
 ):
     assert needle in workflow, needle
@@ -35,6 +42,12 @@ assert "NIAKVIO_BRAIN_CANDIDATE_SOURCE_SHA=$(git rev-parse HEAD)" in workflow
 assert 'candidate_source_sha="$(git rev-parse HEAD)"' in workflow
 assert "brain_candidate_experiment_json" not in workflow[dispatch:]
 assert "_apply_native_brain_origin_priority_candidate" in workflow[persist:dispatch]
+v30 = workflow.index("Dispatch once the distinct Brain V30 Core receipt candidate")
+assert persist < v30 < dispatch
+assert workflow.count("Dispatch once the distinct Brain V30 Core receipt candidate") == 1
+assert "steps.verdict.outputs.candidate_type == 'native-blocking-player-origin-priority'" in workflow
+assert "brainCandidateHlsRootReceipt" in (ROOT / "scripts/materialize_provider_v3_one.py").read_text()
+assert "native-hls-master-receipt-v30" in (ROOT / "scripts/persist_brain_native_candidate_verdict.py").read_text()
 
 # Closing the loop on a failing, exact-byte official TV candidate must not rely
 # solely on workflow_run chaining (which can silently stop at GitHub depth).
