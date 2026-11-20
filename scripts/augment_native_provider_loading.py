@@ -455,8 +455,16 @@ def replace_official_execution(text: str, client: str, candidate_execution_sha25
                         } else {
                             candidateStore.saveScraperCode(loadedScraper.id, previousCode)
                         }
+                        // The successful write/delete alone is not restoration
+                        // proof: compare the exact stored bytes (or absence)
+                        // after the operation before emitting RESTORED.
+                        val restoredCode = candidateStore.getScraperCode(loadedScraper.id)
+                        if (restoredCode != previousCode) {
+                            emit("FIELD_NATIVE_CANDIDATE_RESTORE_FAILED client=tv provider64=${b64(provider.id)} exact_previous_state=false authority=none")
+                            throw IllegalStateException("native candidate cache restoration byte mismatch")
+                        }
+                        emit("FIELD_NATIVE_CANDIDATE_RESTORED client=tv provider64=${b64(provider.id)} exact_previous_state=true diagnostic_only=true")
                     }
-                    emit("FIELD_NATIVE_CANDIDATE_RESTORED client=tv provider64=${b64(provider.id)} exact_previous_state=true diagnostic_only=true")
                 }
             }""".replace("EXPECTED_SHA", kotlin_string(candidate_execution_sha256))
             if replacement.count(baseline_call) != 1:
