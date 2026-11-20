@@ -170,6 +170,9 @@ const nativeExecutionDiagnostics = [];
 const terminalTransportDiagnostics = [];
 const prePlayerMediaRootTransitions = [];
 const prePlayerFetchHostOutcomes = [];
+// Network metadata is reduced to enum-only Core script response shape.
+// Never persist source URL, signed query, page HTML or domain in this report.
+const sourceScriptShapeDiagnostics = [];
 const transportTopologyByMedia = new Map();
 const TERMINAL_TRANSPORT_KINDS = new Set(['hls', 'dash', 'video', 'html', 'unknown']);
 const TERMINAL_TRANSPORT_STATES = new Set(['dead', 'error']);
@@ -229,6 +232,27 @@ for (const [sourceLogIndex, file] of logPaths.entries()) {
         if (parsedUrl && Number.isInteger(status) && status >= 200 && status <= 599) {
           const rawHost = String(parsedUrl.hostname || '').trim().toLowerCase();
           const pathname = String(parsedUrl.pathname || '/');
+          // A 200 from an expected provider data script can be an HTML
+          // shell/challenge. Distinguish response shape from HTTP success
+          // without calling it WAF, incorrect episode or playable video.
+          if (/\/(?:episodes?|sources?|players?)\.js$/i.test(pathname)
+              && sourceScriptShapeDiagnostics.length < 24) {
+            const htmlAt200 = status >= 200 && status < 300
+              && /\bbodyPreview=\s*(?:<!doctype\s+html\b|<html\b)/i.test(raw);
+            const missingScript = status === 404 || status === 410;
+            if (htmlAt200 || missingScript) {
+              sourceScriptShapeDiagnostics.push({
+                ...activeProviderRoute,
+                phase: 'provider-runtime-pre-player',
+                expectedResource: 'javascript_episode_source',
+                pattern: htmlAt200 ? 'script_html_2xx' : 'script_http_missing',
+                httpStatusClass: htmlAt200 ? '2xx' : '4xx',
+                proofAuthority: false, publicationAuthority: false,
+                nativePlaybackAuthority: false, providerJsMutationAllowed: false,
+                coreOrManifestProposalAllowed: false,
+              });
+            }
+          }
           const kind = /\.m3u8$/i.test(pathname)
             ? 'hls'
             : /(?:\/embed(?:[-/]|$)|\/e\/[^/]+)/i.test(pathname)
@@ -686,6 +710,10 @@ const readerPlans = evidence.complete ? providerEligibleFailures.map((row) => {
 
 const extractionPlans = evidence.complete ? providerExtractionFailures.map((row) => {
   const signature = extractionSignature(row);
+  const sourceScriptShapes = sourceScriptShapeDiagnostics.filter((item) =>
+    item.client === row.client && item.provider === String(row.provider || '').toLowerCase()
+    && item.fixture === row.fixture && item.requestType === row.requestType
+  ).map((item) => item.pattern).slice(0, 12);
   const failureEvidence = {
     invoked: true,
     signature,
@@ -701,6 +729,9 @@ const extractionPlans = evidence.complete ? providerExtractionFailures.map((row)
     httpStatus: 0, errorCode: '', errorClass: '', host: '', durationSeconds: null,
     loadBytes: 0, loadDurationMs: 0, mediaDataType: -1, trackType: -1, returnedCount: 0,
     signature, action: plan.action, exitReason: plan.exitReason,
+    sourceScriptShapePatterns: [...new Set(sourceScriptShapes)],
+    sourceScriptShapeNextAction: sourceScriptShapes.length
+      ? 'inspect_current_catalogue_script_response_before_provider_mutation' : null,
     hypotheses: plan.hypotheses.map((hypothesis) => ({
       id: hypothesis.id,
       capabilities: [...(hypothesis.capabilities || [])],
@@ -1099,6 +1130,7 @@ const payload = {
   terminalTransportDiagnostics,
   prePlayerMediaRootTransitions,
   prePlayerFetchHostOutcomes,
+  sourceScriptShapeDiagnostics,
   quickJsUnverifiedObservations,
   appSelectionObservations,
   appSelectionIssues,
