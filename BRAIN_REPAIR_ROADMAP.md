@@ -1,3 +1,11 @@
+### 20 novembre — Causalité des épisodes inline et documents Brain retrouvables
+
+La famille réelle Anime-Sama Android TV V42 a échoué (0 flux). Les deux Fast profils `adaptive_runtime_recovery` et `proven_route_terminal_traversal_v1` ont échoué malgré leur exécution. Le Learning `44790842551` a réellement appelé Qwen mais, sur Brain `5d0e1448`, n'a pas conçu de mécanisme inédit : il a gardé ces profils ou `search_contract_inference_v1` sans gain. **0 réparation**.
+
+Le nouveau référentiel upstream du 13 novembre décrit `epsN`/identifiants opaques/`epsJeton` inline, incompatibles avec l'attente `episodes.js` actuelle ; oracle familial `af6c5ab3` **testé et vert** ; cause live encore à prouver. Brain RAG `fadebb10` corrige la disparition des documents de forme de source derrière les quatre résultats génériques : signatures TV source-pinnées et référence `docs/brain-oracle-*.md` avec contrôles négatifs. CI `44791942466`, sécurité `44791942523`, mémoire privée `44791942085` vertes.
+
+**Prochaine preuve** : effectuer un Learning réellement exécuté avec Brain `fadebb10`, vérifier la référence RAG source-contrat retenue, puis uniquement si la forme est confirmée sur le domaine/épisode du client, autoriser un Lego familial candidat compilé et testé sur les bytes réellement rematérialisés NuvioTV. Contrôler saison, langue, audio/sous-titres, images et segments, puis sibling et non-régression ; aucun changement de domaine ou publication présumés.
+
 ### 20 novembre — V42 observé, feedback validé, routage par signatures
 
 Observation native : Anime-Sama sur NuvioTV officiel, run 44781039914 (source e7c7c920), 0 flux en 25,6 secondes, aucun lecteur ; les contrôles repository, sélection et QuickJS sont passés. Feedback 44784359819 SUCCESS, signatures 404/410 et 200 HTML désormais réellement persistées et décision Brain llm_diagnose / modelExecuted=false.
