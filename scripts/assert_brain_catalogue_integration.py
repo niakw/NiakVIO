@@ -100,3 +100,97 @@ print(
     "byte_matched=true independent_not_tv=true publication=false mutation=false "
     "terminal_playback=false"
 )
+
+
+# Close the Brain-first decision/guidance loop on actual published provider JS.
+# This model is a *local deterministic fake*, never mistaken for real Qwen or
+# video playback. Only the real Brain validator and real source ledger run.
+from unittest.mock import patch  # noqa:E402
+from niakvio_brain_llm.planner import BrainPlanner  # noqa:E402
+sys.path.insert(0, str(ROOT / "scripts"))
+from fill_brain_learning_guidance_gaps import (  # noqa:E402
+    attested_source_contract_frontier, fill, exhaustion_report,
+)
+
+
+class IncompleteSourceHypothesis:
+    max_tokens = 256
+
+    def complete(self, *, system, user, response_schema=None):
+        return json.dumps({
+            "provider_id": "anime-sama",
+            "strategy": "catalogue-inline-token-family-synthesis",
+            "target_layer": "provider",
+            "confidence": 0.94,
+            "experiment": {},
+            "abstain": False,
+            "abstain_reason": "",
+        })
+
+
+with (
+    patch("niakvio_brain_llm.planner.build_causal_prior",
+          return_value={
+              "confidence": 0.96,
+              "target_layer": "provider",
+              "strategy_prior": "search-detail-player-terminal-traversal",
+          }),
+    patch("niakvio_brain_llm.planner.failed_advisor_fingerprints",
+          return_value={"f" * 64}),
+):
+    model_proposal = BrainPlanner(IncompleteSourceHypothesis()).plan(request)
+
+assert model_proposal.strategy == "catalogue-inline-token-family-synthesis"
+assert model_proposal.abstain is True
+assert model_proposal.experiment == {}
+assert model_proposal.mutations == []
+assert "requires new family Lego" in model_proposal.abstain_reason
+
+catalogue_ledger = json.loads(
+    (ROOT / "automation/brain-catalogue-source-probe-history.json").read_text("utf-8")
+)
+native_ledger = json.loads(
+    (ROOT / "automation/brain-android-tv-emulator-history.json").read_text("utf-8")
+)
+manifest = json.loads((ROOT / "manifest.json").read_text("utf-8"))
+frontier = attested_source_contract_frontier(
+    catalogue_ledger, native_ledger, manifest, ROOT
+)
+assert "anime-sama" in frontier, (
+    "current bytes/native parent/source response no longer attest inline family"
+)
+original_rows = {
+    "schemaVersion": 2, "brainLlmSha": sha, "sourceSha": "a" * 40,
+    "providerCount": 1, "rows": [{
+        "providerId": "anime-sama",
+        "profile": "adaptive_runtime_recovery",
+        "strategy": "meta-gap-unknown-runtime-composition",
+        "targetLayer": "provider",
+        "priorOnly": True,
+        "experiment": {},
+        "experimentFingerprint": "f" * 64,
+    }]
+}
+census = {"repairQueue": ["anime-sama"],
+          "providers": [{"provider": "anime-sama", "status": "REGRESSION PROVIDER"}]}
+filtered, added = fill(
+    original_rows, providers=["anime-sama"],
+    current_sha="a" * 40, census=census, memory={"entries": []},
+    source_frontier=frontier,
+)
+assert not added and filtered["rows"] == [] and filtered["providerCount"] == 0
+report = exhaustion_report(
+    providers=["anime-sama"], current_sha="a" * 40,
+    census=census, memory={"entries": []}, source_frontier=frontier,
+)
+assert report["deferredSourceContractProviders"] == ["anime-sama"]
+assert report["sourceContractExecutorStatus"] == "new_family_required"
+assert report["publicationAuthority"] is False
+print(
+    "FIELD_BRAIN_CATALOGUE_EXACT_SOURCE_CLOSED_LOOP "
+    "model=fake-stub real_brain_validator=true native_parent_attested=true "
+    "current_provider_js_attested=true source_contract_inline=true "
+    "proposal_abstain=true legacy_profile_count=0 "
+    "requires_new_family=true accepted_repairs=0 publication=false",
+    flush=True,
+)
