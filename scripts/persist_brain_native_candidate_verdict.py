@@ -105,7 +105,7 @@ def persist_verdict(
         raise ValueError("candidate experiment ledger authority mismatch")
     rows = [row for row in (ledger.get("rows") or []) if isinstance(row, dict)]
     experiment_type = str(proof.get("brainExperimentType") or "native-blocking-player-origin-priority")
-    if experiment_type == "native-hls-master-receipt-v30":
+    if experiment_type in {"native-hls-master-receipt-v30", "native-hls-master-receipt-dedupe-v31"}:
         matches = [
             (parent, followup)
             for parent in rows
@@ -124,7 +124,7 @@ def persist_verdict(
             ))
         ]
         if len(matches) != 1:
-            raise ValueError("V30 candidate proof has no uniquely persisted Brain follow-up")
+            raise ValueError("V30/V31 candidate proof has no uniquely persisted Brain follow-up")
         parent, row = matches[0]
         prior = [
             attempt for attempt in (parent.get("candidateAttempts") or [])
@@ -136,8 +136,36 @@ def persist_verdict(
             and attempt.get("candidateExecutionObserved") is True
             and attempt.get("candidateRestoredObserved") is True
         ]
-        if len(prior) != 1:
-            raise ValueError("V30 candidate lost exact V29 negative witness")
+        if experiment_type == "native-hls-master-receipt-v30":
+            if len(prior) != 1:
+                raise ValueError("V30 candidate lost exact V29 negative witness")
+        else:
+            # V31 must follow a distinct *executed* V30 zero. It cannot be
+            # attributed to the V29 parent or to an arbitrary candidate.
+            v30 = [
+                child for child in (parent.get("candidateFollowUpExperiments") or [])
+                if isinstance(child, dict)
+                and child.get("experimentType") == "native-hls-master-receipt-v30"
+                and child.get("experimentFingerprint") == row.get("parentExperimentFingerprint")
+                and child.get("candidateOnly") is True
+                and child.get("generatedByBrain") is True
+            ]
+            witnesses = [
+                a for child in v30 for a in (child.get("candidateAttempts") or [])
+                if isinstance(a, dict)
+                and a.get("candidateExperimentType") == "native-hls-master-receipt-v30"
+                and a.get("candidateVerdict") == "candidate_zero_stream"
+                and a.get("candidateExecutionObserved") is True
+                and a.get("candidateRestoredObserved") is True
+                and a.get("candidateDecodedVideoObserved") is False
+                and a.get("validatedRepair") is False
+                and a.get("publicationAllowed") is False
+                and str(a.get("candidateRunId") or "") == str(row.get("priorCandidateRunId") or "")
+                and a.get("candidateSourceSha") == row.get("priorCandidateSourceSha")
+                and a.get("candidateJsSha256") == row.get("priorCandidateJsSha256")
+            ]
+            if len(v30) != 1 or len(witnesses) != 1:
+                raise ValueError("V31 candidate lacks exact executed/restored V30 zero witness")
     elif experiment_type == "native-blocking-player-origin-priority":
         matches = [row for row in rows if str(row.get("experimentFingerprint") or "").lower() == fingerprint]
         if len(matches) != 1:
