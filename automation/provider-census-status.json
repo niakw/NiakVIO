@@ -1847,7 +1847,7 @@
       ],
       "harnessTransportClass": "residential-exit-native-reachable",
       "harnessTransportEvidence": [
-        "anime: browser=browser_challenge_observed, tv-browser=browser_challenge_observed, okhttp=okhttp_jvm_challenge_persisted, desktop-okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
+        "anime: browser=browser_challenge_persisted, tv-browser=browser_challenge_observed, okhttp=okhttp_jvm_challenge_persisted, desktop-okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
       ],
       "authorityRepairEligible": true,
       "authorityAction": "KEEP_ROUTE_AUTHORITY",
@@ -1865,7 +1865,11 @@
       "brainCheckRequired": true,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": false
+      "testedThisRun": false,
+      "residentialProviderReplayClass": "playable-unverified",
+      "residentialProviderReplayEvidence": [
+        "anime: status=wrong_content, stage=provider_returned_wrong_content, raw=1, playable=1, verified=0, identitySafe=false"
+      ]
     },
     {
       "provider": "french-manga",
@@ -5630,8 +5634,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "44726897485-sharded-waf",
-  "harnessEvidenceSha": "f72ca87a75621c6e0143929131203d6c313717eb",
+  "harnessEvidenceRunId": "44727591780-waf-transport",
+  "harnessEvidenceSha": "439333e38166d8e12b94c3feced4c792c3eacb3d",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
@@ -5733,17 +5737,21 @@
       "yflix"
     ],
     "rawProviders": [
+      "french-anime",
       "purstream",
       "vostfree"
     ],
     "playableProviders": [
+      "french-anime",
       "purstream",
       "vostfree"
     ],
     "verifiedProviders": [
       "vostfree"
     ],
-    "wrongContentProviders": [],
+    "wrongContentProviders": [
+      "french-anime"
+    ],
     "rows": [
       {
         "provider": "1jour1film0626",
@@ -6814,29 +6822,29 @@
       },
       {
         "provider": "french-anime",
-        "providerArtifactSha256": "7c7b6d29acbdc8eb9367b1f20ee3e76eaa0c289779b1958d0484af67c800d41d",
+        "providerArtifactSha256": "0d571fa4301a0e4e71147fb8586308837fa5b970006e0907b69b1f707e3b29e3",
         "lane": "anime",
-        "status": "no_streams",
-        "debugStage": "provider_zero_before_provider_network",
-        "sampleCount": 4,
+        "status": "wrong_content",
+        "debugStage": "provider_returned_wrong_content",
+        "sampleCount": 1,
         "sampleDebugStages": [
-          "provider_zero_before_provider_network"
+          "provider_returned_wrong_content"
         ],
         "sampleStatuses": [
-          "no_streams"
+          "wrong_content"
         ],
         "sampleProgressStages": [
-          "none"
+          "chain_reached"
         ],
-        "raw": 0,
-        "playable": 0,
+        "raw": 1,
+        "playable": 1,
         "verified": 0,
-        "contradictions": 0,
-        "identitySafe": true,
+        "contradictions": 1,
+        "identitySafe": false,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "d2f0a378369e32c67581a668b981a3bd0764275c",
-          "providerBundleSha256": "7c7b6d29acbdc8eb9367b1f20ee3e76eaa0c289779b1958d0484af67c800d41d",
-          "runId": "44631470665",
+          "sourceNiakvioSha": "0542b29ac85c60f61e485845b5ff860aa0d261f3",
+          "providerBundleSha256": "0d571fa4301a0e4e71147fb8586308837fa5b970006e0907b69b1f707e3b29e3",
+          "runId": "44727591780",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7747,26 +7755,26 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": false,
-      "providerCount": 0,
+      "available": true,
+      "providerCount": 1,
       "refreshedProviders": [
-        "1jour1film0626",
-        "aniflix-uno",
-        "animejlprovider",
-        "animeonsen",
-        "animesalt",
-        "arrowtv",
-        "chillflix",
-        "cinegram",
-        "cinetimes",
-        "dulourd"
+        "french-anime"
       ],
-      "replayedProviders": [],
-      "rawProviders": [],
-      "playableProviders": [],
+      "replayedProviders": [
+        "french-anime"
+      ],
+      "rawProviders": [
+        "french-anime"
+      ],
+      "playableProviders": [
+        "french-anime"
+      ],
       "verifiedProviders": [],
-      "sourceNiakvioSha": "",
-      "runId": "",
+      "byteMatchedProviders": [
+        "french-anime"
+      ],
+      "sourceNiakvioSha": "0542b29ac85c60f61e485845b5ff860aa0d261f3",
+      "runId": "44727591780",
       "proofAuthority": false,
       "publicationAuthority": false
     },
