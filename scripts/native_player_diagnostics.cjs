@@ -39,6 +39,52 @@ const CLIENT_RUNTIME_ERROR_PATTERNS = [
   /runner.*(?:shutdown|cancel)/i,
 ];
 
+const UNRESOLVED_MEDIA_FAILURE_CLASSES = new Set([
+  'playback_video_format_unverified',
+  'playback_audio_tracks_unverified',
+  'playback_audio_languages_unverified',
+  'playback_subtitle_tracks_unverified',
+  'playback_subtitle_languages_unverified',
+]);
+
+function normalizedLanguages(value) {
+  const values = Array.isArray(value) ? value : String(value || '').split(/[|,\s]+/);
+  return [...new Set(values.map((entry) => String(entry || '').trim().toLowerCase()).filter(Boolean))].sort();
+}
+
+function mediaTopologyFailureClass(row = {}) {
+  const expectedAudioCount = Number(row.transportAudioTrackCount ?? row.expectedAudioTrackCount ?? -1);
+  const observedAudioCount = Number(row.audioTrackCount ?? row.audio_track_count ?? -1);
+  if (Number.isFinite(expectedAudioCount) && expectedAudioCount > 0) {
+    if (!(Number.isFinite(observedAudioCount) && observedAudioCount >= expectedAudioCount)) {
+      return 'playback_audio_tracks_unverified';
+    }
+    const expectedLanguages = normalizedLanguages(row.transportAudioTrackLanguages ?? row.expectedAudioTrackLanguages);
+    if (expectedLanguages.length) {
+      const observedLanguages = new Set(normalizedLanguages(row.audioTrackLanguages ?? row.audio_track_languages));
+      if (expectedLanguages.some((language) => !observedLanguages.has(language))) {
+        return 'playback_audio_languages_unverified';
+      }
+    }
+  }
+
+  const expectedSubtitleCount = Number(row.transportSubtitleTrackCount ?? row.expectedSubtitleTrackCount ?? -1);
+  const observedSubtitleCount = Number(row.subtitleTrackCount ?? row.subtitle_track_count ?? -1);
+  if (Number.isFinite(expectedSubtitleCount) && expectedSubtitleCount > 0) {
+    if (!(Number.isFinite(observedSubtitleCount) && observedSubtitleCount >= expectedSubtitleCount)) {
+      return 'playback_subtitle_tracks_unverified';
+    }
+    const expectedLanguages = normalizedLanguages(row.transportSubtitleTrackLanguages ?? row.expectedSubtitleTrackLanguages);
+    if (expectedLanguages.length) {
+      const observedLanguages = new Set(normalizedLanguages(row.subtitleTrackLanguages ?? row.subtitle_track_languages));
+      if (expectedLanguages.some((language) => !observedLanguages.has(language))) {
+        return 'playback_subtitle_languages_unverified';
+      }
+    }
+  }
+  return '';
+}
+
 function readerFailureClass(row = {}) {
   const state = String(row.state || '').toLowerCase();
   const stage = String(row.failureStage || row.failure_stage || '').toLowerCase();
@@ -63,6 +109,8 @@ function readerFailureClass(row = {}) {
         return 'playback_video_format_unverified';
       }
     }
+    const topologyFailure = mediaTopologyFailureClass(row);
+    if (topologyFailure) return topologyFailure;
     if (stage && stage !== 'none' && stage !== 'unknown') return 'playback_unknown';
     return 'healthy';
   }
@@ -73,7 +121,7 @@ function readerFailureClass(row = {}) {
 function readerFailureDomain(row = {}) {
   const cls = readerFailureClass(row);
   if (cls === 'healthy') return 'healthy';
-  if (cls === 'playback_video_format_unverified') return 'unresolved_media';
+  if (UNRESOLVED_MEDIA_FAILURE_CLASSES.has(cls)) return 'unresolved_media';
 
   if (CLIENT_RUNTIME_FAILURE_CLASSES.has(cls)) return 'client_runtime';
   const details = [
@@ -109,6 +157,8 @@ function isReaderFailure(row = {}) {
 module.exports = {
   READER_FAILURE_CLASSES,
   CLIENT_RUNTIME_FAILURE_CLASSES,
+  UNRESOLVED_MEDIA_FAILURE_CLASSES,
+  mediaTopologyFailureClass,
   readerFailureClass,
   readerFailureDomain,
   providerMutationEligible,
