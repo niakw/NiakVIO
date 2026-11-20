@@ -12,6 +12,8 @@ on:
       - 'scripts/fill_brain_learning_guidance_gaps.py'
       - 'scripts/run_brain_learning_queue.py'
       - 'tests/brain_learning_source_contract_queue_deferral_test.py'
+      - 'scripts/build_brain_architecture_proposal.py'
+      - 'tests/brain_architecture_source_contract_blueprint_test.py'
       - 'tests/brain_learning_source_contract_frontier_test.py'
       - 'scripts/compile_brain_accepted_program_v3.py'
       - 'scripts/brain_positive_program_memory.py'
@@ -63,6 +65,7 @@ jobs:
         run: |
           python tests/brain_learning_source_contract_frontier_test.py
           python tests/brain_learning_source_contract_queue_deferral_test.py
+          python tests/brain_architecture_source_contract_blueprint_test.py
           python tests/brain_learning_guidance_gap_fill_test.py
           python tests/brain_learning_guidance_executor_advance_test.py
       - name: Differentiate old episode scripts and inline-token source without media or secrets

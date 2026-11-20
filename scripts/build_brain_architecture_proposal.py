@@ -444,6 +444,99 @@ def build_strategy_blueprints(
     return blueprints
 
 
+def source_contract_family_blueprint(
+    queue_state: dict[str, Any],
+    queue_summary: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Architectural handoff for a proved-infrastructure, NOT proved-playback gap.
+
+    A string from the model or a generic zero-stream symptom is insufficient:
+    only the independently source-pinned native-joined queue's typed evidence
+    may ask FORCE to synthesize a new, *Brain-owned* family executor.
+    """
+    if not isinstance(queue_state, dict) or not isinstance(queue_summary, dict):
+        return None
+    if (queue_state.get("sourceContractFamilyExecutableStatus") != "new_family_required"
+            or queue_state.get("sourceContractFamilyEvidenceAuthority")
+            != "native-parent-and-independent-source-exact-current-js-diagnostic-only"
+            or queue_summary.get("sourceContractFamilyExecutableStatus") != "new_family_required"):
+        return None
+    providers = queue_state.get("sourceContractFamilyDeferredProviders")
+    summary = queue_summary.get("sourceContractFamilyDeferredProviders")
+    if (not isinstance(providers, list) or not isinstance(summary, list)
+            or not 1 <= len(providers) <= 24
+            or type(queue_state.get("sourceContractFamilyDeferredProviderCount")) is not int
+            or queue_state["sourceContractFamilyDeferredProviderCount"] != len(providers)
+            or type(queue_summary.get("sourceContractFamilyDeferredProviderCount")) is not int
+            or queue_summary["sourceContractFamilyDeferredProviderCount"] != len(summary)):
+        return None
+    normalized = [
+        str(x or "").strip().casefold().replace("_", "-")
+        for x in providers
+    ]
+    if (len(set(normalized)) != len(normalized)
+            or any(not re.fullmatch(r"[a-z0-9][a-z0-9-]{1,79}", p)
+                   for p in normalized)
+            or sorted(normalized) != sorted(str(x or "").strip().casefold().replace("_","-")
+                                            for x in summary)):
+        return None
+    if not set(normalized).issubset({
+        str(p or "").strip().casefold().replace("_", "-")
+        for p in queue_state.get("deferredRepairProviders") or []
+    }):
+        return None
+    return {
+        "strategyId": "catalogue_inline_token_episode_source_family_v1",
+        "groupId": "native-attested-independent-source-contract",
+        "failureFamily": "catalogue_inline_episode_source",
+        "targetLayer": "brain",
+        "gapKind": "missing_source_contract_family_executable",
+        "requiresNewExecutableRepairProfile": True,
+        "forcePromotionEligible": True,  # Only an allowlisted Brain-layer candidate
+        "providers": sorted(normalized),
+        "providerCount": len(normalized),
+        "causalTrigger": (
+            "Official Android TV observed an episode JavaScript resource missing "
+            "or replaced by HTML and zero extracted streams; independent runner "
+            "observed inline epsN arrays, opaque lien identifiers and epsJeton "
+            "on a separate catalogue path. No domain, episode, media or client "
+            "playback identity has been verified."
+        ),
+        "method": (
+            "Create a generic Brain-owned inline catalogue family executor and "
+            "its regression tests; discover the catalogue slug and season/voice "
+            "from real current source, parse epsN episode index and opaque token "
+            "without ever evaluating upstream scripts, resolve an allowlisted "
+            "same-origin token API only in an isolated client test, and pass "
+            "the result to existing trusted terminal-media validation. Never "
+            "hard-code an Anime-Sama URL, slug, token or bypass legacy playback "
+            "gates. Preserve other provider families, audio and subtitles."
+        ),
+        "requiredEvidence": [
+            "exact current JS bytes plus native TV run/fixture/source SHA",
+            "independent read-only source shape and selected episode index",
+            "current source-owned token resolver response and output contract",
+            "negative memory for exhausted script/route/adaptive profiles",
+        ],
+        "acceptanceProof": [
+            "Brain-generated bounded family code and unit test compile",
+            "candidate mutation actually generated, applied and rematerialized",
+            "source-pinned episode season, title, voice and player differ correctly",
+            "official NuvioTV decoded correct video and audio with terminal segments",
+            "representative compatible sibling and native client non-regression",
+        ],
+        "negativeMemorySignature": "source-family:catalogue-inline-token-v1",
+        "reentryPolicy": (
+            "Brain family synthesis -> isolated compile -> exact current-byte "
+            "rematerialize -> official NuvioTV episode/media/audio -> sibling "
+            "non-regression -> Core eligibility; no direct publication"
+        ),
+        "productionWritesAllowed": False,
+        "providerPublicationAuthority": False,
+        "requiresHumanMerge": True,
+    }
+
+
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--learning-state", type=Path, required=True)
@@ -671,6 +764,30 @@ def main() -> int:
         deferred_set,
         failed_profiles_by_provider,
     )
+    source_blueprint = source_contract_family_blueprint(queue_state, queue_summary)
+    if source_blueprint is not None:
+        # Put the causally specific family before the generic exhaustion
+        # blueprints so FORCE does not select another route-traversal variant.
+        strategy_blueprints.insert(0, source_blueprint)
+        add(
+            "source_contract_family_executor_missing",
+            "Native-parent-attested inline episode source cannot be repaired by the existing script/route profiles.",
+            [
+                "scripts/brain_layers/*",
+                "scripts/brain_repair_runtime.py",
+                "scripts/run_brain_learning_queue.py",
+                "tests/brain_*",
+            ],
+            "Generate a Brain-owned reusable catalogue-inline-token source family, not a provider-specific patch. Build typed evidence -> source parsing -> bounded token resolution -> terminal media validation; require compilation, exact rematerialized bytes, official NuvioTV correct episode/audio and sibling non-regression. No mutation authority from independent CI.",
+            priority="critical",
+            evidence={
+                "providers": source_blueprint["providers"],
+                "sourceContractWitnessAuthority": "independent-runner-joined-to-official-tv-diagnostic-only",
+                "sourceContractVerifiedOnOfficialTv": False,
+                "mediaPlaybackVerified": False,
+                "blueprint": source_blueprint,
+            },
+        )
     if deferred_repair_providers:
         cohort_rows = [
             row for row in entries
