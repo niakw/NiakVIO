@@ -230,3 +230,53 @@ print(
     f"episodic_blocs_s00_safe={len(checked_episodic_legos)} "
     "source_v20_media_url_consistency_only; no live terminal playback inferred"
 )
+
+# Execute the actual declared Anime-Sama Lego request normalizer, not just
+# static regex checks. The provider-specific wrapper is NiakVIO-owned and
+# requests are synthetic (no network or player bypass).
+anime_lego_spec = importlib.util.spec_from_file_location(
+    "anime_sama_runtime_v1",
+    ROOT / "scripts/provider_patches/anime_sama_runtime_v1.py",
+)
+assert anime_lego_spec and anime_lego_spec.loader
+anime_lego = importlib.util.module_from_spec(anime_lego_spec)
+anime_lego_spec.loader.exec_module(anime_lego)
+anime_js = anime_lego.WRAPPER.replace(
+    "CONFIG_PLACEHOLDER",
+    json.dumps({
+        "base": "https://anime-sama.to",
+        "fallbackBases": [],
+        "languages": ["vf"],
+        "targetStreams": 3,
+    }),
+)
+runtime_export = 'try{if(g)g.__niakvioProviderRuntimeResolverV1={provider:"anime-sama",resolve:resolve}}catch(_e){}'
+assert anime_js.count(runtime_export) == 1
+anime_js = anime_js.replace(
+    runtime_export,
+    'try{if(g)g.__niakvioAnimeSamaRequestContractV1=request}catch(_e){}' + runtime_export,
+)
+anime_js += r"""
+const request = globalThis.__niakvioAnimeSamaRequestContractV1;
+if (typeof request !== "function") throw new Error("Anime-Sama request ABI not exported in fixture");
+const object = request([{tmdbId:"46296", mediaType:"anime", season:0, episode:1}]);
+const positional = request(["46296", "anime", 0, 1]);
+const stringZero = request([{tmdbId:"46296", mediaType:"tv", season:"0", episode:"1"}]);
+const missing = request([{tmdbId:"46296", mediaType:"anime", episode:1}]);
+const wrong = request([{tmdbId:"46296", mediaType:"tv", season:-1, episode:0}]);
+const fraction = request([{tmdbId:"46296", mediaType:"tv", season:0.5, episode:1}]);
+if (!(object.season===0 && object.episode===1 && object.transport==="tv"
+      && positional.season===0 && positional.episode===1
+      && stringZero.season===0 && stringZero.episode===1
+      && missing.season===1 && wrong.season===1 && wrong.episode===1
+      && fraction.season===1)) {
+  throw new Error("Anime-Sama Lego S00/unknown/invalid season identity regression");
+}
+console.log("ANIME_SAMA_S00_RUNTIME_ABI_OK");
+"""
+anime_check = subprocess.run(
+    ["node", "-e", anime_js], cwd=ROOT, text=True,
+    capture_output=True, check=True, timeout=30,
+)
+assert "ANIME_SAMA_S00_RUNTIME_ABI_OK" in anime_check.stdout
+print("Anime-Sama owned Lego preserves explicit season zero in real Node runtime")
