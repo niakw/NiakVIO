@@ -48,6 +48,93 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          # Dispatch a persisted but unexecuted V31 exactly once per source SHA.
+          # Only the SHA-pinned Brain/previous native V30 negative can select it.
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            v31_ledger="$(mktemp)"
+            v31_pin="$(mktemp)"
+            v31_choice="$(mktemp)"
+            gh api "repos/$GITHUB_REPOSITORY/contents/automation/brain-native-candidate-experiments.json" \
+              --jq '.content' | base64 --decode > "$v31_ledger"
+            gh api "repos/$GITHUB_REPOSITORY/contents/automation/brain-pinned-source.json" \
+              --jq '.content' | base64 --decode > "$v31_pin"
+            python3 - "$v31_ledger" "$v31_pin" "$v31_choice" <<'PY'
+          import json,re,sys
+          from pathlib import Path
+          ledger=json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+          pin=json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+          if (ledger.get("authority")!="candidate-only"
+              or ledger.get("publicationAuthority") is not False
+              or ledger.get("providerMutationAuthority") is not False
+              or pin.get("role")!="validated-external-brain-gitlink"
+              or pin.get("brainCiConclusion")!="success"
+              or pin.get("brainSecurityConclusion")!="success"):
+              raise SystemExit("V31 source/Brain authority mismatch")
+          matches=[]
+          for parent in ledger.get("rows") or []:
+              if not isinstance(parent,dict): continue
+              children=parent.get("candidateFollowUpExperiments") or []
+              v30=[c for c in children if isinstance(c,dict) and c.get("experimentType")=="native-hls-master-receipt-v30"]
+              for child in children:
+                  if (not isinstance(child,dict)
+                      or child.get("experimentType")!="native-hls-master-receipt-dedupe-v31"
+                      or child.get("candidateAttempts")
+                      or child.get("brainSha")!=pin.get("sha")
+                      or child.get("candidateOnly") is not True
+                      or child.get("generatedByBrain") is not True
+                      or child.get("modelExecuted") is not False
+                      or child.get("providerArtifactSha256")!=parent.get("providerArtifactSha256")
+                      or child.get("providerId")!=parent.get("providerId")
+                      or any(child.get(k) is not False for k in (
+                          "proofAuthority","publicationAuthority",
+                          "nativePlaybackAuthority","providerMutationAuthority"
+                      ))):
+                      continue
+                  if not any(
+                      c.get("experimentFingerprint")==child.get("parentExperimentFingerprint")
+                      and any(isinstance(a,dict)
+                          and a.get("candidateExperimentType")=="native-hls-master-receipt-v30"
+                          and a.get("candidateVerdict")=="candidate_zero_stream"
+                          and a.get("candidateExecutionObserved") is True
+                          and a.get("candidateRestoredObserved") is True
+                          and a.get("validatedRepair") is False
+                          and str(a.get("candidateRunId"))==str(child.get("priorCandidateRunId"))
+                          and a.get("candidateSourceSha")==child.get("priorCandidateSourceSha")
+                          and a.get("candidateJsSha256")==child.get("priorCandidateJsSha256")
+                          for a in c.get("candidateAttempts") or [])
+                      for c in v30):
+                      continue
+                  provider=str(child.get("providerId") or "")
+                  fixture=str(child.get("fixture") or "")
+                  if (re.fullmatch(r"[a-z][a-z0-9-]{1,79}",provider)
+                      and re.fullmatch(r"[a-z0-9][a-z0-9-]{0,95}",fixture)
+                      and re.fullmatch(r"[a-f0-9]{64}",str(child.get("experimentFingerprint") or ""))):
+                      matches.append((provider,fixture))
+          if len(matches)==1:
+              Path(sys.argv[3]).write_text(" ".join(matches[0])+"\n",encoding="utf-8")
+          elif len(matches)>1:
+              raise SystemExit("ambiguous unexecuted V31 source; no dispatch")
+          PY
+            if [ -s "$v31_choice" ]; then
+              read -r v31_provider v31_fixture < "$v31_choice"
+              candidate_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')"
+              [[ "$candidate_sha" =~ ^[0-9a-f]{40}$ ]]
+              existing="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/native-corpus-device-targeted.yml/runs?per_page=70" \
+                --jq '[.workflow_runs[] | select(.head_sha == "'"$candidate_sha"'" and .event == "workflow_dispatch")] | length')"
+              if [ "$existing" = "0" ]; then
+                gh workflow run native-corpus-device-targeted.yml --repo "$GITHUB_REPOSITORY" --ref main \
+                  -f device=tv -f target_providers="$v31_provider" \
+                  -f target_fixture="$v31_fixture" -f residential_exit=false \
+                  -f candidate_rematerialize=true \
+                  -f candidate_required_marker=NIAKVIO_PROVIDER_NATIVE_HLS_RECEIPT_DEDUPE_V31 \
+                  -f source_sha="$candidate_sha"
+                echo "FIELD_BRAIN_V31_DISPATCH status=dispatched_persisted provider=$v31_provider sha=$candidate_sha publication=false"
+                exit 0
+              fi
+              echo "FIELD_BRAIN_V31_DISPATCH status=already_dispatched_this_sha source=$candidate_sha"
+              exit 0
+            fi
+          fi
           seen="$(mktemp)"
           runs="$(mktemp)"
           gh api "repos/$GITHUB_REPOSITORY/contents/automation/brain-native-candidate-experiments.json" \
