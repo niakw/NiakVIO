@@ -104,10 +104,47 @@ def persist_verdict(
     ):
         raise ValueError("candidate experiment ledger authority mismatch")
     rows = [row for row in (ledger.get("rows") or []) if isinstance(row, dict)]
-    matches = [row for row in rows if str(row.get("experimentFingerprint") or "").lower() == fingerprint]
-    if len(matches) != 1:
-        raise ValueError("candidate experiment fingerprint not uniquely persisted")
-    row = matches[0]
+    experiment_type = str(proof.get("brainExperimentType") or "native-blocking-player-origin-priority")
+    if experiment_type == "native-hls-master-receipt-v30":
+        matches = [
+            (parent, followup)
+            for parent in rows
+            for followup in (parent.get("candidateFollowUpExperiments") or [])
+            if isinstance(followup, dict)
+            and followup.get("experimentType") == experiment_type
+            and str(followup.get("experimentFingerprint") or "").lower() == fingerprint
+            and str(followup.get("providerArtifactSha256") or "").lower() == baseline_sha
+            and parent.get("providerId") == provider
+            and parent.get("providerArtifactSha256") == baseline_sha
+            and followup.get("candidateOnly") is True
+            and followup.get("generatedByBrain") is True
+            and all(followup.get(k) is False for k in (
+                "proofAuthority", "publicationAuthority",
+                "nativePlaybackAuthority", "providerMutationAuthority",
+            ))
+        ]
+        if len(matches) != 1:
+            raise ValueError("V30 candidate proof has no uniquely persisted Brain follow-up")
+        parent, row = matches[0]
+        prior = [
+            attempt for attempt in (parent.get("candidateAttempts") or [])
+            if isinstance(attempt, dict)
+            and str(attempt.get("candidateRunId") or "") == str(row.get("priorCandidateRunId") or "")
+            and attempt.get("candidateSourceSha") == row.get("priorCandidateSourceSha")
+            and attempt.get("candidateJsSha256") == row.get("priorCandidateJsSha256")
+            and attempt.get("candidateVerdict") == "candidate_zero_stream"
+            and attempt.get("candidateExecutionObserved") is True
+            and attempt.get("candidateRestoredObserved") is True
+        ]
+        if len(prior) != 1:
+            raise ValueError("V30 candidate lost exact V29 negative witness")
+    elif experiment_type == "native-blocking-player-origin-priority":
+        matches = [row for row in rows if str(row.get("experimentFingerprint") or "").lower() == fingerprint]
+        if len(matches) != 1:
+            raise ValueError("V29 candidate experiment fingerprint not uniquely persisted")
+        row = matches[0]
+    else:
+        raise ValueError("unknown Brain native candidate experiment type")
     fixture = str(row.get("fixture") or "").strip().lower()
     request_type = str(row.get("requestType") or "").strip().lower()
     if (
@@ -217,6 +254,7 @@ def persist_verdict(
 
     attempt = {
         "candidateRunId": candidate_run_id,
+        "candidateExperimentType": experiment_type,
         "candidateSourceSha": candidate_source_sha,
         "candidateJsSha256": candidate_sha,
         "candidateExecutionObserved": execution_observed,
