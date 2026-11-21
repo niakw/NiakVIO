@@ -1,3 +1,7 @@
+## 2026-11-21 — Contrat source `epsN` : chaque tableau est UN épisode, chaque entrée est UN lecteur
+
+L'audit du test indépendant après FORCE `44833212893` a découvert une erreur sémantique dans l'ancien oracle : il sélectionnait la `episode - 1`-ième entrée de **chaque** tableau `eps1`, `eps2`. Cela mélangeait des lecteurs de différents épisodes. L'invariant requis est : sélectionner **un seul** tableau `epsN` correspondant à l'épisode demandé, puis conserver **tous** ses lecteurs indépendants sans les assimiler à des épisodes. Le test Brain-owned, l'oracle indépendant et le prompt Qwen ont été réalignés et un ancien parseur column-first doit désormais échouer. Les contrôles demeurent synthétiques et diagnostic-only : le chemin catalogue/saison/langue réel et le média terminal Android TV nécessitent toujours une preuve séparée.
+
 ## 2026-11-21 — FORCE source-family : algorithme modèle, test généré par le Brain
 
 Le dernier FORCE Qwen 7B `44833212893` a franchi le blocage de raccordement Python, mais échoué à la compilation du **test fourni par le modèle** : des guillemets HTML internes non échappés rendaient le `testCode` invalide, malgré trois réessais. C'était un défaut de contrat de génération, pas un échec prouvé du contrat source du provider.
