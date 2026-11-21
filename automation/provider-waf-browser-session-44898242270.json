@@ -1,0 +1,926 @@
+{
+  "schemaVersion": 1,
+  "mode": "ordinary-headless-browser-session-no-challenge-solver",
+  "browserAvailable": true,
+  "browserExecutable": "google-chrome",
+  "targetCount": 16,
+  "providerFilter": [],
+  "attemptsPerTarget": 2,
+  "clientProfileMatrixEnabled": false,
+  "clientProfiles": [
+    {
+      "id": "github-default-browser",
+      "transportApproximation": "GitHub-hosted Chromium",
+      "userAgent": "browser-default"
+    }
+  ],
+  "limitations": [
+    "GitHub JVM OkHttp reproduces NuvioTV HTTP policy but not Android device TLS/IP reputation",
+    "GitHub Chromium/libcurl remain secondary harness comparisons",
+    "GitHub runner IP reputation differs from a real TV/mobile client",
+    "browser challenge persistence is harness/environment evidence, not provider-code failure",
+    "exact failed provider GET replay is transport differential evidence only; it cannot grant playback proof"
+  ],
+  "counts": {
+    "browser_challenge_persisted": 15,
+    "browser_inconclusive": 1
+  },
+  "rows": [
+    {
+      "provider": "1jour1film0626",
+      "lane": "anime",
+      "publicUrl": "https://1jour1film1126.shop/index.php",
+      "host": "1jour1film1126.shop",
+      "path": "/index.php",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "browserAttemptTimeoutSeconds": 12,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "desktopOkHttpJvmProfile": null,
+      "contentProfiles": [],
+      "transportDiagnosis": "browser_waf_persisted",
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 6546
+    },
+    {
+      "provider": "1jour1film0626",
+      "lane": "movie",
+      "publicUrl": "https://1jour1film1126.shop/index.php",
+      "host": "1jour1film1126.shop",
+      "path": "/index.php",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "browserAttemptTimeoutSeconds": 12,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "desktopOkHttpJvmProfile": null,
+      "contentProfiles": [],
+      "transportDiagnosis": "browser_waf_persisted",
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 6549
+    },
+    {
+      "provider": "1jour1film0626",
+      "lane": "tv",
+      "publicUrl": "https://1jour1film1126.shop/index.php",
+      "host": "1jour1film1126.shop",
+      "path": "/index.php",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "browserAttemptTimeoutSeconds": 12,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "desktopOkHttpJvmProfile": null,
+      "contentProfiles": [],
+      "transportDiagnosis": "browser_waf_persisted",
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 6545
+    },
+    {
+      "provider": "aniflix-uno",
+      "lane": "anime",
+      "publicUrl": "https://aniflix.uno/",
+      "host": "aniflix.uno",
+      "path": "/",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "browserAttemptTimeoutSeconds": 12,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "desktopOkHttpJvmProfile": null,
+      "contentProfiles": [],
+      "transportDiagnosis": "browser_waf_persisted",
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 4270
+    },
+    {
+      "provider": "animejlprovider",
+      "lane": "anime",
+      "publicUrl": "https://www.anime-jl.net/animes",
+      "host": "www.anime-jl.net",
+      "path": "/animes",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "browserAttemptTimeoutSeconds": 12,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "desktopOkHttpJvmProfile": null,
+      "contentProfiles": [],
+      "transportDiagnosis": "browser_waf_persisted",
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 4294
+    },
+    {
+      "provider": "animeonsen",
+      "lane": "anime",
+      "publicUrl": "https://www.animeonsen.xyz/",
+      "host": "www.animeonsen.xyz",
+      "path": "/",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "browserAttemptTimeoutSeconds": 12,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "desktopOkHttpJvmProfile": null,
+      "contentProfiles": [],
+      "transportDiagnosis": "browser_waf_persisted",
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 3578
+    },
+    {
+      "provider": "animesalt",
+      "lane": "anime",
+      "publicUrl": "https://animesalt.cx/",
+      "host": "animesalt.cx",
+      "path": "/",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "browserAttemptTimeoutSeconds": 12,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "desktopOkHttpJvmProfile": null,
+      "contentProfiles": [],
+      "transportDiagnosis": "browser_waf_persisted",
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 4030
+    },
+    {
+      "provider": "arrowtv",
+      "lane": "anime",
+      "publicUrl": "https://arrowtv.net/",
+      "host": "arrowtv.net",
+      "path": "/",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "browserAttemptTimeoutSeconds": 12,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "desktopOkHttpJvmProfile": null,
+      "contentProfiles": [],
+      "transportDiagnosis": "browser_waf_persisted",
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 3064
+    },
+    {
+      "provider": "arrowtv",
+      "lane": "movie",
+      "publicUrl": "https://arrowtv.net/",
+      "host": "arrowtv.net",
+      "path": "/",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "browserAttemptTimeoutSeconds": 12,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "desktopOkHttpJvmProfile": null,
+      "contentProfiles": [],
+      "transportDiagnosis": "browser_waf_persisted",
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 2707
+    },
+    {
+      "provider": "arrowtv",
+      "lane": "tv",
+      "publicUrl": "https://arrowtv.net/",
+      "host": "arrowtv.net",
+      "path": "/",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "browserAttemptTimeoutSeconds": 12,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "desktopOkHttpJvmProfile": null,
+      "contentProfiles": [],
+      "transportDiagnosis": "browser_waf_persisted",
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 3325
+    },
+    {
+      "provider": "chillflix",
+      "lane": "movie",
+      "publicUrl": "https://www.chillflix.lol/movie/810693",
+      "host": "www.chillflix.lol",
+      "path": "/movie/810693",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "browserAttemptTimeoutSeconds": 12,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "desktopOkHttpJvmProfile": null,
+      "contentProfiles": [],
+      "transportDiagnosis": "browser_waf_persisted",
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 2868
+    },
+    {
+      "provider": "chillflix",
+      "lane": "tv",
+      "publicUrl": "https://www.chillflix.lol/tv/44217",
+      "host": "www.chillflix.lol",
+      "path": "/tv/44217",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "browserAttemptTimeoutSeconds": 12,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "desktopOkHttpJvmProfile": null,
+      "contentProfiles": [],
+      "transportDiagnosis": "browser_waf_persisted",
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 2917
+    },
+    {
+      "provider": "cinegram",
+      "lane": "movie",
+      "publicUrl": "https://cinegram.tv/index.php",
+      "host": "cinegram.tv",
+      "path": "/index.php",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "browserAttemptTimeoutSeconds": 12,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "desktopOkHttpJvmProfile": null,
+      "contentProfiles": [],
+      "transportDiagnosis": "browser_waf_persisted",
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 3041
+    },
+    {
+      "provider": "cinetimes",
+      "lane": "movie",
+      "publicUrl": "https://cinetimes.org/",
+      "host": "cinetimes.org",
+      "path": "/",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "browserAttemptTimeoutSeconds": 12,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "desktopOkHttpJvmProfile": null,
+      "contentProfiles": [],
+      "transportDiagnosis": "browser_waf_persisted",
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 3525
+    },
+    {
+      "provider": "cinetimes",
+      "lane": "tv",
+      "publicUrl": "https://cinetimes.org/",
+      "host": "cinetimes.org",
+      "path": "/",
+      "method": "GET",
+      "fetchStatus": 403,
+      "challenge": "cloudflare",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_challenge_persisted",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_observed",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "browserAttemptTimeoutSeconds": 12,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_challenge_persisted",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_observed",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "desktopOkHttpJvmProfile": null,
+      "contentProfiles": [],
+      "transportDiagnosis": "browser_waf_persisted",
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 3382
+    },
+    {
+      "provider": "corsflix",
+      "lane": "anime",
+      "publicUrl": "https://corsflix.gd/search",
+      "host": "corsflix.gd",
+      "path": "/search",
+      "method": "GET",
+      "fetchStatus": 200,
+      "challenge": "generic",
+      "seedKind": null,
+      "seedRoute": null,
+      "outcome": "browser_inconclusive",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_inconclusive",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_inconclusive",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "browserAttemptTimeoutSeconds": 12,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_inconclusive",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_inconclusive",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_inconclusive",
+              "exitCode": 0
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": null,
+      "okHttpJvmProfile": null,
+      "desktopOkHttpJvmProfile": null,
+      "contentProfiles": [],
+      "transportDiagnosis": "transport_inconclusive",
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 2024
+    }
+  ]
+}
