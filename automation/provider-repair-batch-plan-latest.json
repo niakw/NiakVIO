@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "44898242270",
-  "sourceTriggerSha": "88fff30a07386f0d7d40f7e1c621821eaa02e18e",
-  "unresolvedProviderCount": 68,
+  "sourceRunId": "45000905045",
+  "sourceTriggerSha": "7deb0cb4cf0efb0c67d717c5f13be9cb6cb6eb92",
+  "unresolvedProviderCount": 67,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
     "hindmoviez",
@@ -120,7 +120,7 @@
     "zone-telechargement"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 9,
+  "groupCount": 11,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -155,7 +155,7 @@
         "residential-exit-browser-reachable"
       ],
       "transportSignature": "not-applicable",
-      "providerCount": 40,
+      "providerCount": 39,
       "providers": [
         "1jour1film0626",
         "anikototv",
@@ -165,7 +165,6 @@
         "boredflix",
         "cinegram",
         "cinemabz",
-        "cinematheque-de-bretagne",
         "cinetimes",
         "dulourd",
         "emnexmovies",
@@ -309,18 +308,14 @@
         "chain"
       ],
       "dominantIssues": [
-        "network_http_error",
-        "network_zero_result",
         "waf_challenge"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 4,
+      "providerCount": 2,
       "providers": [
-        "67movies",
         "corsflix",
-        "primewire",
-        "shuttletv"
+        "primewire"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
@@ -351,6 +346,66 @@
         "french-manga"
       ],
       "action": "replay/rematerialize retained candidate knowledge against current bytes before new mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:browser-profile-only",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "not-applicable",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "browser-profile-only"
+      ],
+      "transportSignature": "browser-profile-only",
+      "providerCount": 1,
+      "providers": [
+        "67movies"
+      ],
+      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:no-transport-evidence",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "not-applicable",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "no-transport-evidence"
+      ],
+      "transportSignature": "no-transport-evidence",
+      "providerCount": 1,
+      "providers": [
+        "shuttletv"
+      ],
+      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
