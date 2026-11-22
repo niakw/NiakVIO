@@ -264,9 +264,9 @@ La publication est atomique et fail-closed. Tout changement des bytes providers 
 
 <div align="center">
 
-![PROVIDERS ACTIFS](https://img.shields.io/badge/PROVIDERS_ACTIFS-76-16a34a?style=for-the-badge)
-![NATIFS VERIFIES](https://img.shields.io/badge/NATIFS_VERIFIES-8-2563eb?style=for-the-badge)
-![PREUVES LECTEUR](https://img.shields.io/badge/PREUVES_LECTEUR-17-7c3aed?style=for-the-badge)
+![PROVIDERS ACTIFS](https://img.shields.io/badge/PROVIDERS_ACTIFS-75-16a34a?style=for-the-badge)
+![NATIFS VERIFIES](https://img.shields.io/badge/NATIFS_VERIFIES-7-2563eb?style=for-the-badge)
+![PREUVES LECTEUR](https://img.shields.io/badge/PREUVES_LECTEUR-16-7c3aed?style=for-the-badge)
 ![DERNIERE PREUVE](https://img.shields.io/badge/DERNIERE_PREUVE-2026--08--23-334155?style=for-the-badge)
 
 </div>
@@ -275,7 +275,7 @@ La publication est atomique et fail-closed. Tout changement des bytes providers 
 
 > **Cadre des œuvres citées :** les titres/épisodes du tableau sont des **fixtures de test**, pas un catalogue ni une offre de contenu. Les résultats décrivent uniquement une observation technique sanitizée. Voir [`TESTING_NOTICE.md`](TESTING_NOTICE.md) et [`DISCLAIMER.md`](DISCLAIMER.md).
 
-**8 providers** disposent actuellement d'au moins une preuve lecteur native conservée, sur **4 cas de lecture distincts** et **1 plateforme native** déjà représentée. L'inventaire complet reste synchronisé automatiquement sur l'autorité Global + France.
+**7 providers** disposent actuellement d'au moins une preuve lecteur native conservée, sur **4 cas de lecture distincts** et **1 plateforme native** déjà représentée. L'inventaire complet reste synchronisé automatiquement sur l'autorité Global + France.
 
 ### 📡 Couverture des lecteurs officiels
 
@@ -283,7 +283,7 @@ Cette vue distingue **support du lecteur** et **preuve positive conservée** : l
 
 | Lecteur officiel | Preuves positives conservées | Providers avec preuve | Dernière preuve | État |
 |---|---:|---:|---:|---|
-| 📺 **TV** | **17** | **8** | `2026-08-23` | ✅ Couvert par une preuve native |
+| 📺 **TV** | **16** | **7** | `2026-08-23` | ✅ Couvert par une preuve native |
 | 🤖 **Mobile Android** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |
 | 🍎 **Mobile iOS** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |
 | 🖥️ **Desktop macOS** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |
@@ -300,10 +300,9 @@ Cette vue distingue **support du lecteur** et **preuve positive conservée** : l
 | <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/anikototv.webp" width="42" alt="">&nbsp; **AnikotoTV** | 🎌 Jujutsu Kaisen S01E01 · Anime | 📺 **TV** ✅ | **1** | `2026-08-22` |
 | <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/anime-sama.webp" width="42" alt="">&nbsp; **Anime-Sama** | 🎌 Jujutsu Kaisen S01E01 · Anime | 📺 **TV** ✅ | **1** | `2026-08-23` |
 | <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/hianime.webp" width="42" alt="">&nbsp; **HiAnime** | 🎌 Jujutsu Kaisen S01E01 · Anime | 📺 **TV** ✅ | **1** | `2026-08-22` |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/streamzo.webp" width="42" alt="">&nbsp; **StreamZo** | 🎬 Sinners 2025 · Film | 📺 **TV** ✅ | **1** | `2026-08-23` |
 
 <details>
-<summary><strong>🟢 Voir les 76 providers actifs</strong> — inventaire complet synchronisé au manifest</summary>
+<summary><strong>🟢 Voir les 75 providers actifs</strong> — inventaire complet synchronisé au manifest</summary>
 
 La liste ci-dessous décrit **l'état de publication**, pas une supposition sur la lecture. Les providers déjà prouvés natifs sont signalés ; les autres restent simplement actifs dans le manifest jusqu'à ce qu'une preuve positive soit conservée.
 
@@ -315,7 +314,6 @@ La liste ci-dessous décrit **l'état de publication**, pas une supposition sur 
 | <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/hianime.webp" width="42" alt="">&nbsp; **HiAnime** | 🎌 Anime · 📺 Série | ✅ **Preuve native conservée** · 1 validation lecteur |
 | <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/hindmoviez.webp" width="42" alt="">&nbsp; **HindMoviez** | 🎬 Film · 📺 Série | ✅ **Preuve native conservée** · 3 validations lecteur |
 | <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/purstream.webp" width="42" alt="">&nbsp; **Purstream** | 🎬 Film · 📺 Série | ✅ **Preuve native conservée** · 3 validations lecteur |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/streamzo.webp" width="42" alt="">&nbsp; **StreamZo** | 🎬 Film · 📺 Série · 🎌 Anime | ✅ **Preuve native conservée** · 1 validation lecteur |
 | <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/videasy.webp" width="42" alt="">&nbsp; **VidEasy** | 🎬 Film · 📺 Série | ✅ **Preuve native conservée** · 4 validations lecteur |
 | <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/1jour1film0626.webp" width="42" alt="">&nbsp; **1jour1film0626** | 🎬 Film · 📺 Série · 🎌 Anime | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
 | <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/67movies.webp" width="42" alt="">&nbsp; **67Movies** | 🎬 Film · 📺 Série · 🎌 Anime | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
