@@ -2,13 +2,15 @@
   "acceptanceBasis": "aggregate-operational-state-including-carried-evidence",
   "acceptanceReached": false,
   "acceptanceTarget": 84,
-  "acceptedPlayableProviderCount": 5,
+  "acceptedPlayableProviderCount": 7,
   "acceptedPlayableProviders": [
     "cinematheque-de-bretagne",
     "mugiwarastream",
     "papadustream",
     "purstream",
-    "streamzo"
+    "sadisflix",
+    "streamzo",
+    "zone-streaming"
   ],
   "brainQueue": [
     "1jour1film0626",
@@ -87,16 +89,16 @@
     "webflix"
   ],
   "debugStageCounts": {
-    "provider_network_exception": 9,
-    "provider_network_http_error": 36,
-    "provider_network_zero_result": 60,
-    "provider_returned_streams": 11,
-    "provider_returned_wrong_content": 2,
-    "provider_waf_challenge": 63,
-    "timeout": 19
+    "provider_network_exception": 11,
+    "provider_network_http_error": 28,
+    "provider_network_zero_result": 57,
+    "provider_returned_streams": 15,
+    "provider_waf_challenge": 66,
+    "timeout": 23
   },
   "debugStageProviders": {
     "provider_network_exception": [
+      "topcartoons",
       "videasy",
       "vidlove",
       "vidrock",
@@ -105,7 +107,6 @@
     ],
     "provider_network_http_error": [
       "anikototv",
-      "anime-sama",
       "anime-ultime",
       "animesama-co",
       "animesultra",
@@ -114,13 +115,11 @@
       "emnexmovies",
       "moiflix",
       "movieshunt",
+      "movish",
       "persianstremio",
       "playimdb",
-      "rivestream-app",
-      "rivestream-ru",
       "sekai",
       "showbox",
-      "skstream",
       "vidfast",
       "voiranime-rip",
       "watchott",
@@ -140,7 +139,6 @@
       "frenchstream",
       "fsharetv",
       "hexa",
-      "hianime",
       "kidraz",
       "latestmovies",
       "mallumv",
@@ -153,7 +151,6 @@
       "overlook",
       "playimdb",
       "pstream",
-      "streamzo",
       "uhdmovies",
       "vidlink",
       "watchott"
@@ -161,14 +158,14 @@
     "provider_returned_streams": [
       "cinematheque-de-bretagne",
       "french-manga",
+      "movix-fr",
       "mugiwarastream",
       "papadustream",
       "purstream",
+      "sadisflix",
       "streamzo",
-      "voiranime-homes"
-    ],
-    "provider_returned_wrong_content": [
-      "topcartoons"
+      "voiranime-homes",
+      "zone-streaming"
     ],
     "provider_waf_challenge": [
       "1jour1film0626",
@@ -186,6 +183,7 @@
       "fexini",
       "film-a-revoir",
       "flemmix",
+      "flixhq",
       "franime",
       "french-anime",
       "fullanime",
@@ -207,14 +205,17 @@
     ],
     "timeout": [
       "anidb",
+      "anime-sama",
       "animekai",
       "anisama",
       "boredflix",
-      "flixhq",
-      "movish",
-      "movix-fr",
+      "hianime",
+      "nakios",
       "reanime-to",
+      "rivestream-app",
+      "rivestream-ru",
       "sadisflix",
+      "showbox",
       "vuflix",
       "zone-streaming"
     ]
@@ -252,27 +253,26 @@
   "partialOkCount": 0,
   "partialOkProviders": [],
   "providerCount": 111,
-  "runId": 45014934314,
+  "runId": 45171933056,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 20,
+    "CHAIN REACHED": 19,
     "DISABLED": 36,
     "FULL OK": 7,
-    "HARNESS MISMATCH": 6,
-    "HARNESS/ENV BLOCKED": 15,
+    "HARNESS MISMATCH": 7,
+    "HARNESS/ENV BLOCKED": 14,
     "NO PROOF": 9,
     "PROOF REFRESH REQUIRED": 4,
+    "PROVIDER JS BROKEN": 1,
     "PROVIDER NETWORK BLOCKED": 8,
     "REGRESSION PROVIDER": 5
   },
   "testedProviderCount": 102,
-  "triggerSha": "c5ccd5ca7d7f982f4fa1c41365b3debb1bf86785",
+  "triggerSha": "60dcfc98517727ac92bb9c262efa1613f4cd0b9e",
   "verifiedProviderCount": 0,
   "verifiedProviders": [],
-  "wrongContentProviderCount": 1,
-  "wrongContentProviders": [
-    "topcartoons"
-  ]
+  "wrongContentProviderCount": 0,
+  "wrongContentProviders": []
 }
