@@ -12,6 +12,37 @@
   },
   "cases": [
     {
+      "id": "hist-2026-11-24-worker-stripped-managed-identity-provenance",
+      "firstObserved": "2026-11-24",
+      "providers": [
+        "global",
+        "mugiwarastream"
+      ],
+      "symptomFamilies": [
+        "playable_media_identity_unknown",
+        "insufficient_identity_metadata",
+        "provider_source_coordinate_lost"
+      ],
+      "failureClass": "harness_identity_transport_gap",
+      "solutionClass": "managed_identity_provenance_transport",
+      "transferableSignals": [
+        "provider terminal media is playable but content_identity_status remains unknown",
+        "provider runtime attaches exact source coordinates before returning the stream",
+        "provider_worker sanitizeStream rebuilds a fixed output object and drops unknown niakvioIdentity fields",
+        "preserve identity only for allowlisted managed STARTFIX plus NiakVIO marker and bounded scalar fields"
+      ],
+      "avoid": [
+        "weakening episodic identity to title or duration",
+        "copying arbitrary provider metadata through the worker",
+        "manual provider-by-provider validator exceptions",
+        "counting playable media with lost provenance as a repaired episode"
+      ],
+      "evidence": [
+        "repo-history"
+      ],
+      "lesson": "Mugiwara showed a reusable harness-level failure: exact provider-owned season/episode provenance reached the terminal stream before provider_worker, but sanitizeStream rebuilt the stream and removed all niakvioIdentity fields. Repair the common transport layer with managed-fix gating; do not weaken streamIdentity. Provider-specific source-coordinate generation still needs representative playback proof before sibling propagation."
+    },
+    {
       "id": "hist-2026-11-24-reader-slot-episode-axis-transposition",
       "firstObserved": "2026-11-24",
       "providers": [

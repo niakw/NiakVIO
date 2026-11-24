@@ -1,3 +1,11 @@
+## 2026-11-24 — V57 : provenance épisodique perdue dans provider_worker, correction commune
+
+- Le représentant Mugiwara `5.21.184` portait bien `provider-source-coordinate-v1` dans son Lego, mais le census précédent ne pouvait pas l'observer : `scripts/provider_worker.cjs::sanitizeStream` reconstruisait un objet avec une whitelist fixe et supprimait tous les champs `niakvioIdentity*`. C'est un défaut harness/transport commun, pas une raison d'assouplir l'identité des épisodes.
+- `5a630045` conserve désormais uniquement les autorités déclarées par des blocs gérés NiakVIO et ne copie que des scalaires bornés. `provider-source-coordinate-v1` exige le STARTFIX Mugiwara + marqueur ; `tmdb-direct-route-v1` exige le STARTFIX ticketed + marqueur. Un provider sans bloc géré perd ces champs ; saison/type/TMDB/titre source invalides sont rejetés.
+- `08883a94` exécute ce contrat dans Workflow Gate et Provider Non-Regression et fait de `provider_worker.cjs` un déclencheur du census current-byte. Provider Non-Regression a déjà réussi le test. Census current-byte `45322350133` lancé sur `08883a94`, verdict réseau encore ouvert au moment de cette note.
+- FORCE `45318172910` : Qwen réel a tourné, mais rapport exact `skipped=true / no-force-promotable-blueprint / editCount=0` parce que l'attestation Anime-Sama était périmée après rematérialisation. Cela reste **0 réparation Brain** et un fail-closed correct.
+- V44 Android TV Anime-Sama `45321345600` a franchi le faux positif checkout de V43 et est entré dans l'exécution réelle TV. Aucune conclusion provider avant son artefact final.
+
 ## 2026-11-24 — V55 : l'attestation source Anime-Sama est périmée après Core V21, refresh TV V43 requis
 
 - Bundle production `5.21.183` : Anime-Sama `providers/anime-sama--nuvio--478cbfbaa246a9ed.js`, SHA-256 exact `478cbfbaa246a9ede48db8daf5d876c8e1512c0501387d3b56b8b86321e5f0ef`, fixed-point validé. Les deux lignes de `automation/brain-catalogue-source-probe-history.json` et le parent officiel TV `44781039914` restent liés à l'ancien SHA-256 `9e917c77346af2a5c88826a5b9f476180a9868c88dde97a45a3a744941aa0c5b`.

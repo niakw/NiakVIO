@@ -1,3 +1,7 @@
+## 2026-11-24 — Transport de provenance d'identité dans le worker
+
+Une preuve provider peut être correcte avant le worker et devenir inconnue après sérialisation. Le worker est donc un maillon explicite de la chaîne d'identité. Il ne doit ni supprimer une provenance gérée, ni faire confiance à des champs arbitraires d'un provider. Les autorités `niakvioIdentity*` sont copiées seulement quand les bytes du provider contiennent le managed STARTFIX et le marqueur NiakVIO associés, puis après validation stricte des scalaires. Le validator final conserve l'autorité de contradiction et de match ; le worker ne transforme jamais une URL lisible en preuve.
+
 ## 2026-11-24 — Freshness obligatoire des parents source-family
 
 Une rematérialisation Core change les bytes provider et invalide les témoins source/natifs liés au SHA-256 précédent. Le frontier catalogue doit rester fail-closed tant que le parent Android TV officiel et le probe indépendant ne portent pas exactement le SHA-256 du bundle courant. Un trigger FORCE ne peut pas remplacer cette fraîcheur : il peut apprendre, mais il ne doit pas promouvoir un source-family Lego avec un digest historique.
