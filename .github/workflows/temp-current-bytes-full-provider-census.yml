@@ -19,6 +19,8 @@ on:
       - '.github/workflows/temp-current-bytes-full-provider-census.yml'
       - '.github/triggers/current-bytes-full-provider-census'
       - 'scripts/provider_patches/**'
+      - 'scripts/provider_worker.cjs'
+      - 'tests/provider_worker_managed_identity_provenance.test.cjs'
       - 'provider-overrides.json'
       - 'provider-hubs.json'
       - 'scripts/provider_base_store.py'
@@ -65,6 +67,8 @@ on:
     paths:
       - '.github/workflows/temp-current-bytes-full-provider-census.yml'
       - 'scripts/provider_patches/**'
+      - 'scripts/provider_worker.cjs'
+      - 'tests/provider_worker_managed_identity_provenance.test.cjs'
       - 'provider-overrides.json'
       - 'provider-hubs.json'
       - 'scripts/provider_base_store.py'
