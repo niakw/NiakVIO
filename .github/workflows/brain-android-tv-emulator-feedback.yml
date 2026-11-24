@@ -796,6 +796,43 @@ jobs:
           echo "NIAKVIO_BRAIN_CANDIDATE_SOURCE_SHA=$candidate_source_sha" >> "$GITHUB_ENV"
           echo "FIELD_BRAIN_ANDROID_TV_PERSIST status=committed mutation_authority=false candidate_source_sha=$candidate_source_sha"
 
+      - name: Dispatch exact-current catalogue source probe
+        if: ${{ steps.candidate.outputs.is_candidate != 'true' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          eligible="$(python3 - "$NATIVE_RUN_ID" <<'PY'
+          import json,sys
+          from pathlib import Path
+          run=sys.argv[1]
+          template=json.loads(Path(".github/triggers/brain-catalogue-source-probe.json").read_text(encoding="utf-8"))
+          ledger=json.loads(Path("automation/brain-android-tv-emulator-history.json").read_text(encoding="utf-8"))
+          provider,fixture=str(template.get("providerId") or ""),str(template.get("fixture") or "")
+          rows=[row for row in ledger.get("rows") or [] if (
+              isinstance(row,dict) and str(row.get("nativeRunId") or "")==run
+              and row.get("provider")==provider and row.get("fixture")==fixture
+              and row.get("appSelected") is True and row.get("readerEvidenceComplete") is True
+              and row.get("nativeExtractionZeroObserved") is True
+              and any(x in {"script_http_missing","script_html_2xx"}
+                      for x in row.get("nativeSourceScriptShapePatterns") or [])
+              and all(row.get(k) is False for k in (
+                  "proofAuthority","publicationAuthority","nativePlaybackAuthority","providerMutationAuthority"
+              ))
+          )]
+          if len(rows)==1: print("yes")
+          elif len(rows)>1: raise SystemExit("source probe native parent is not unique")
+          PY
+          )"
+          if [ "$eligible" != "yes" ]; then
+            echo "FIELD_BRAIN_SOURCE_PROBE_DISPATCH status=skipped_no_exact_parent run=$NATIVE_RUN_ID"
+            exit 0
+          fi
+          gh workflow run brain-catalogue-source-probe.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f native_run_id="$NATIVE_RUN_ID"
+          echo "FIELD_BRAIN_SOURCE_PROBE_DISPATCH status=dispatched run=$NATIVE_RUN_ID authority=false"
+
       - name: Dispatch once the distinct Brain V30 Core receipt candidate
         if: ${{ steps.candidate.outputs.is_candidate == 'true' && steps.verdict.outputs.candidate_type == 'native-blocking-player-origin-priority' }}
         shell: bash
