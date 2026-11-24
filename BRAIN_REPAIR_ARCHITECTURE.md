@@ -1,3 +1,9 @@
+## 2026-11-24 — Source-family : distinction slot lecteur / position épisode
+
+**Supersède l'hypothèse V49 du 21 novembre.** Le diff de référence indépendant `414c9bc8` établit pour cette implémentation que les tableaux numérotés représentent des lecteurs et que la position à l'intérieur de chaque tableau représente l'épisode. Il faut préserver les cellules vides (pas de décalage d'index) et vérifier la sémantique sur le site courant puis sur le client officiel. Les deux oracles Brain sont corrigés en conséquence ; la référence reste une hypothèse de protocole, non une preuve de lecture. Les précédents essais sous l'oracle transposé ne sont pas réutilisables comme preuves positives.
+
+Le contrôle Core des coordonnées contradictoires multiples est central et doit être rematérialisé dans tous les bundles actifs des quatre manifests. Deep ne s'arrête plus sur une qualité HD seule : identité positive et probe acceptable sont nécessaires.
+
 ## 2026-11-24 — Identité épisodique : contrat commun des validateurs
 
 La validation de TV/anime doit distinguer l'identité du programme de l'identité de l'épisode. Le titre ou la durée, même compatible, ne constituent pas seuls une preuve. La saison 0 est une valeur explicite et non un défaut. Toute contradiction de coordonnées explicitement observées dans un label, filename ou chemin/paramètres d'URL terminale est négative, même si le titre concorde. Les cinq chemins de validation partagent la règle episodicIdentityRequired ; le transport et la durée restent des observations distinctes. Les films conservent leur comportement antérieur. Les assertions synthétiques ne certifient pas les mappings provider ni la lecture officielle : les épisodes adjacents doivent être rejoués sur bytes générés, sans confusion de numérotation canonique/absolue.

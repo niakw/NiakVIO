@@ -14,6 +14,96 @@
   "historicalCases": [
     {
       "avoid": [
+        "Treating array name as episode index without evidence",
+        "Compacting empty cells before selecting episode",
+        "Training on superseded transposed fixtures",
+        "Copying upstream implementation or granting publication authority"
+      ],
+      "evidence": [
+        "repo-history"
+      ],
+      "failureClass": "episodic_mapping",
+      "firstObserved": "2026-11-24",
+      "id": "hist-2026-11-24-reader-slot-episode-axis-transposition",
+      "lesson": "The 13 November upstream reference 414c9bc8 selects an episode index within each reader slot. The prior 21 November episode-first oracle was wrong relative to that reference. Correct synthetic regression and require current-source/native episode evidence before accepting this family. A reference is not playback proof.",
+      "providers": [
+        "anime-sama"
+      ],
+      "solutionClass": "verify_reader_slot_episode_axis_against_independent_reference",
+      "symptomFamilies": [
+        "wrong_episode",
+        "source_family_oracle_mismatch",
+        "missing_source_contract_family_executable"
+      ],
+      "transferableSignals": [
+        "Reference implementation 414c9bc8 uses reader slots and selects the requested episode index within each slot",
+        "Earlier synthetic oracle assumed the inverse and was not live-source evidence",
+        "Source-shape attestation is diagnostic only; episode axis needs independent current-source and official-client evidence"
+      ]
+    },
+    {
+      "avoid": [
+        "duration-only episodic promotion",
+        "trusting the first S/E marker",
+        "accepting a provider-generated display label as terminal identity",
+        "stopping Deep on unknown identity"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "failureClass": "content_identity_gap",
+      "firstObserved": "2026-11-24",
+      "id": "hist-2026-11-24-episodic-false-positive-duration-and-first-coordinate",
+      "lesson": "Reproduced synthetic false positives in shared validation. Changes 8e8895c9, 1ef381ee, 87e9194e and 99e642c9 strengthen current source/terminal identity and Deep sampling. Reapply Core on every active published projection; separately prove exact episode playback. Do not convert these tests into accepted repairs.",
+      "providers": [
+        "global"
+      ],
+      "solutionClass": "all_source_coordinates_and_positive_episode_identity_before_credit",
+      "symptomFamilies": [
+        "wrong_episode",
+        "identity_unverified",
+        "conflicting_episode_coordinates",
+        "premature_deep_sampling"
+      ],
+      "transferableSignals": [
+        "S00 must be compared as an explicit season",
+        "A title or matching duration cannot prove a requested TV/anime episode",
+        "One correct coordinate cannot cancel contradictory filename/path/query/source coordinates",
+        "HD playback without identity must not end Deep sampling"
+      ]
+    },
+    {
+      "avoid": [
+        "Repeatedly asking model to generate unrestricted module boilerplate",
+        "Relaxing purity checks",
+        "Promoting source shape as a repaired provider",
+        "Repeating a superseded episode oracle"
+      ],
+      "evidence": [
+        "repo-history"
+      ],
+      "failureClass": "architecture_generation_contract_gap",
+      "firstObserved": "2026-11-21",
+      "id": "hist-2026-11-21-source-family-force-unsafe-module-generation",
+      "lesson": "FORCE logs show no accepted repair. Prefer a narrow typed program with Brain-owned scaffolding, exact API and independent reference-aligned regression. The live model must choose a valid program; never fabricate a successful generation or publish based on a synthetic test.",
+      "providers": [
+        "anime-sama"
+      ],
+      "solutionClass": "bounded_brain_owned_compiler_and_independent_oracle",
+      "symptomFamilies": [
+        "source_family_generation_failure",
+        "unsafe_dynamic_code",
+        "missing_parser_api"
+      ],
+      "transferableSignals": [
+        "Run 44840862980 completed failure at materialized validation",
+        "Repeated forbidden dynamic execution/file-I-O; final module missing parse_episode_source",
+        "Prior run 44833212893 had Python syntax failure in generated test"
+      ]
+    },
+    {
+      "avoid": [
         "adding fake movie support",
         "provider-local workaround"
       ],
