@@ -1,6 +1,6 @@
 {
   "schema_version": 63,
-  "updated_at": "2026-11-24T02:59:35.947088+00:00",
+  "updated_at": "2026-11-24T15:03:42.363337+00:00",
   "providers": {
     "1jour1film0626": {
       "last_checked_at": "2026-11-16T15:15:55.700455+00:00",
@@ -1233,15 +1233,15 @@
     "dessinanime": {},
     "diostream": {},
     "documentary-area": {
-      "last_checked_at": "2026-11-24T02:59:35.947088+00:00",
-      "last_status": "blocked",
-      "last_score": 30,
+      "last_checked_at": "2026-11-24T15:03:42.363337+00:00",
+      "last_status": "no_streams",
+      "last_score": 100,
       "last_sha256": "e0d1a2cb7e7a451968b83b8184e51520c830ebcc4f50539356eab42feac1f381",
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
-      "consecutive_blocked": 1,
-      "consecutive_no_streams": 0,
+      "consecutive_blocked": 0,
+      "consecutive_no_streams": 1,
       "auto_disabled": false,
       "last_success_at": null,
       "hosts": [],
@@ -2268,26 +2268,28 @@
     },
     "ilmiv": {},
     "internet-archive": {
-      "last_checked_at": "2026-11-22T07:12:02.575328+00:00",
-      "last_status": "no_streams",
+      "last_checked_at": "2026-11-24T15:03:42.363337+00:00",
+      "last_status": "degraded",
       "last_score": 100,
-      "last_sha256": "3dd10f3a2580b250a5753cb36b9c97b1d3c2c4bb153cd4e5ba92a674399f2e7b",
+      "last_sha256": "f609a3b750ca16aa300f1b3e481699719c87fb9dad66ed9332d8742596fe323d",
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "consecutive_blocked": 0,
-      "consecutive_no_streams": 1,
+      "consecutive_no_streams": 0,
       "auto_disabled": false,
       "last_success_at": null,
       "hosts": [],
-      "response_categories": [],
+      "response_categories": [
+        "content_identity_mismatch"
+      ],
       "host_health": {
         "ia600600.us.archive.org": {
-          "last_checked_at": "2026-11-21T21:46:23.140544+00:00",
+          "last_checked_at": "2026-11-24T15:03:42.363337+00:00",
           "last_category": "content_identity_mismatch",
           "reachable": false,
           "http_status": 206,
-          "latency_ms": 480,
+          "latency_ms": 362,
           "kind": "mp4",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
@@ -2402,22 +2404,26 @@
       "host_health": {}
     },
     "meowtv": {
-      "last_checked_at": "2026-11-24T02:59:35.947088+00:00",
-      "last_status": "no_streams",
+      "last_checked_at": "2026-11-24T15:03:42.363337+00:00",
+      "last_status": "healthy",
       "last_score": 100,
       "last_sha256": "4eb483a0c37c68aaa96c19a0d03561fda5cf5f9b889409d74f53e22fa6df792f",
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
+      "consecutive_successes": 1,
       "consecutive_blocked": 0,
-      "consecutive_no_streams": 1,
+      "consecutive_no_streams": 0,
       "auto_disabled": false,
-      "last_success_at": "2026-11-20T07:35:02.323164+00:00",
-      "hosts": [],
-      "response_categories": [],
+      "last_success_at": "2026-11-24T15:03:42.363337+00:00",
+      "hosts": [
+        "cdn.ngcloud.app"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "cdn2.slowcloud.live": {
-          "last_checked_at": "2026-11-20T07:35:02.323164+00:00",
+          "last_checked_at": "2026-11-24T15:03:42.363337+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2428,14 +2434,25 @@
           "consecutive_blocked": 0
         },
         "cdn2.ngcloud.tech": {
-          "last_checked_at": "2026-11-20T07:35:02.323164+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 231,
+          "last_checked_at": "2026-11-24T15:03:42.363337+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 2,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "cdn.ngcloud.app": {
+          "last_checked_at": "2026-11-24T15:03:42.363337+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 418,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
       }
@@ -3699,23 +3716,19 @@
       "host_health": {}
     },
     "sadisflix": {
-      "last_checked_at": "2026-11-24T02:59:35.947088+00:00",
-      "last_status": "healthy",
+      "last_checked_at": "2026-11-24T15:03:42.363337+00:00",
+      "last_status": "no_streams",
       "last_score": 100,
       "last_sha256": "80121809ed3d3735919c6152c497e59bad9bf865342766c54a02a419464e36bd",
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 0,
       "consecutive_blocked": 0,
-      "consecutive_no_streams": 0,
+      "consecutive_no_streams": 1,
       "auto_disabled": false,
       "last_success_at": "2026-11-24T02:59:35.947088+00:00",
-      "hosts": [
-        "prx-1566-ant-r.vmpx.online"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "prx-1566-ant-r.vmpx.online": {
           "last_checked_at": "2026-11-24T02:59:35.947088+00:00",

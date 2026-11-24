@@ -1,17 +1,17 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-11-24T02:59:35.947088+00:00",
+  "generated_at": "2026-11-24T15:03:42.363337+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 75,
   "status_counts": {
     "healthy": 6,
     "reachable": 0,
-    "blocked": 17,
-    "degraded": 0,
-    "no_streams": 46,
+    "blocked": 16,
+    "degraded": 1,
+    "no_streams": 45,
     "provider_unreachable": 0,
     "runtime_error": 0,
-    "unavailable": 6,
+    "unavailable": 7,
     "excluded": 0
   },
   "policy": {
@@ -1314,7 +1314,7 @@
     },
     {
       "id": "documentary-area",
-      "status": "blocked",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1683,7 +1683,7 @@
     },
     {
       "id": "hindmoviez",
-      "status": "no_streams",
+      "status": "unavailable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2362,21 +2362,23 @@
     },
     {
       "id": "internet-archive",
-      "status": "no_streams",
+      "status": "degraded",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "hosts": [],
-      "response_categories": [],
+      "response_categories": [
+        "content_identity_mismatch"
+      ],
       "host_health": {
         "ia600600.us.archive.org": {
-          "last_checked_at": "2026-11-21T21:46:23.140544+00:00",
+          "last_checked_at": "2026-11-24T15:03:42.363337+00:00",
           "last_category": "content_identity_mismatch",
           "reachable": false,
           "http_status": 206,
-          "latency_ms": 480,
+          "latency_ms": 362,
           "kind": "mp4",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
@@ -2461,7 +2463,7 @@
     },
     {
       "id": "kurage",
-      "status": "no_streams",
+      "status": "unavailable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2513,17 +2515,21 @@
     },
     {
       "id": "meowtv",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "cdn.ngcloud.app"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "cdn2.slowcloud.live": {
-          "last_checked_at": "2026-11-20T07:35:02.323164+00:00",
+          "last_checked_at": "2026-11-24T15:03:42.363337+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2534,14 +2540,25 @@
           "consecutive_blocked": 0
         },
         "cdn2.ngcloud.tech": {
-          "last_checked_at": "2026-11-20T07:35:02.323164+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 231,
+          "last_checked_at": "2026-11-24T15:03:42.363337+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 2,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "cdn.ngcloud.app": {
+          "last_checked_at": "2026-11-24T15:03:42.363337+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 418,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
       },
@@ -3803,18 +3820,14 @@
     },
     {
       "id": "sadisflix",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
-      "hosts": [
-        "prx-1566-ant-r.vmpx.online"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "prx-1566-ant-r.vmpx.online": {
           "last_checked_at": "2026-11-24T02:59:35.947088+00:00",
@@ -5062,7 +5075,7 @@
     },
     {
       "id": "youtitou",
-      "status": "unavailable",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
