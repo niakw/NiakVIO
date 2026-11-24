@@ -3195,6 +3195,7 @@ def main() -> int:
             patterns,
         )
     changed = apply_edits(edits, blueprint=blueprint) if a.apply else [str(x.get("path") or "") for x in edits]
+    changed = list(dict.fromkeys(changed))
     report = {
         "schemaVersion": 1,
         "strategyId": blueprint.get("strategyId"),

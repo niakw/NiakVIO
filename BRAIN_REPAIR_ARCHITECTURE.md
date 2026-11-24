@@ -1,3 +1,7 @@
+## 2026-11-24 — FORCE : intégrité de la transaction de promotion
+
+Le rapport doit porter les SHA256 des bytes effectivement appliqués et le provider ciblé. Export Git depuis les chemins exacts du rapport, y compris les créations via intent-to-add ; les headers du patch doivent être identiques au set annoncé. Le garde après git apply revalide les trois chemins déterministes du compilateur et les empreintes, puis exécute le vrai classificateur et l'oracle indépendant. Ne pas confondre cette promotion architecturale read-only avec une mutation de provider.
+
 ## 2026-11-24 — Source-family : distinction slot lecteur / position épisode
 
 **Supersède l'hypothèse V49 du 21 novembre.** Le diff de référence indépendant `414c9bc8` établit pour cette implémentation que les tableaux numérotés représentent des lecteurs et que la position à l'intérieur de chaque tableau représente l'épisode. Il faut préserver les cellules vides (pas de décalage d'index) et vérifier la sémantique sur le site courant puis sur le client officiel. Les deux oracles Brain sont corrigés en conséquence ; la référence reste une hypothèse de protocole, non une preuve de lecture. Les précédents essais sous l'oracle transposé ne sont pas réutilisables comme preuves positives.

@@ -20,6 +20,7 @@ from brain_architecture_force_materializer import (
     validate_changed_syntax,
     allowed_patterns,
     path_allowed,
+    _source_family_artifact_paths,
 )
 from build_brain_architecture_proposal import fully_installed_repair_profiles
 
@@ -37,12 +38,15 @@ def verify(proposal: dict, report: dict, *, root: Path = ROOT) -> str:
     if blueprint.get("requiresNewSourceFamilyLego") is True:
         if report.get("applied") is not True:
             raise ValueError("source-family FORCE not applied")
+        expected = _source_family_artifact_paths({"blueprint": blueprint})
+        if len(changed) != 3 or set(changed) != {expected["modulePath"], expected["runtimePath"], expected["testPath"]}:
+            raise ValueError("source-family FORCE applied path set differs from compiler")
         digests = report.get("materializedSha256")
         if not isinstance(digests, dict) or set(digests) != set(changed):
             raise ValueError("source-family FORCE missing exact materialized byte digests")
         for path in changed:
-            target = root / path
-            if not target.is_file() or hashlib.sha256(target.read_bytes()).hexdigest() != digests[path]:
+            target = (root / path).resolve()
+            if not target.is_relative_to(root.resolve()) or not target.is_file() or hashlib.sha256(target.read_bytes()).hexdigest() != digests[path]:
                 raise ValueError("source-family FORCE applied byte mismatch: " + path)
         validate_changed_syntax(changed, root=root)
         validate_source_family_implementation(changed, blueprint, root=root)
