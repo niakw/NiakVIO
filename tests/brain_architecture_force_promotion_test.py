@@ -178,10 +178,9 @@ assert 'forcePreferredRequested' in BRAIN_RUNTIME and 'forcePreferredSelected' i
 
 # The workflow must package the actual generated runtime executor: a
 # registry/planner-only patch is dead code and cannot be promoted.
-force_diff = LEARN.split("git diff --binary --", 1)[1].split(
-    "> brain-learning-output/brain-architecture-force.patch", 1,
-)[0]
-assert "scripts/adaptive_runtime/runtime_repair.py" in force_diff
+assert "--export-patch brain-learning-output/brain-architecture-force.patch" in LEARN
+assert "scripts/brain_oracles/catalogue_inline_episode_source.py" in generated
+assert "scripts/brain_oracles/catalogue_inline_episode_source.py" in SELF["structuralProposalSurfaces"]
 assert "tests/brain_llm_advisor_execution_test.py" in LEARN, (
     "FORCE replay must exercise planner exhaustion after a new strategy is installed"
 )
@@ -189,7 +188,7 @@ assert LEARN.count("python tests/brain_llm_advisor_execution_test.py") >= 5, (
     "materialization, promotion and stale-rebase must run dynamic strategy convergence"
 )
 
-assert LEARN.count("python scripts/brain_force_applied_profile_guard.py --proposal") == 3
+assert LEARN.count("python scripts/brain_force_applied_profile_guard.py --proposal") == 4
 assert "scripts/adaptive_runtime/runtime_repair.py" in SELF["forceArchitecture"]["generatedEditAllowlist"]
 
 # Validate the guard on a structurally installed v3 and on real omission

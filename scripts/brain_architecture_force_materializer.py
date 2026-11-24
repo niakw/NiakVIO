@@ -3202,6 +3202,11 @@ def main() -> int:
         "changedFiles": changed,
         "editCount": len(edits),
         "applied": bool(a.apply),
+        "targetProvider": a.target_provider.strip().casefold(),
+        "materializedSha256": {
+            path: hashlib.sha256((ROOT / path).read_bytes()).hexdigest()
+            for path in changed
+        } if a.apply else {},
         "providerPublicationAuthority": False,
         "productionProviderWritesAllowed": False,
         "requiresTargetedTests": True,

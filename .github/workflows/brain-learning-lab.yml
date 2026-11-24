@@ -1266,7 +1266,7 @@ jobs:
           python tests/brain_architecture_force_materializer_test.py
           python tests/brain_self_architecture_test.py
           python tests/brain_llm_advisor_execution_test.py
-          git diff --binary --             .github/workflows/brain-learning-lab.yml             .github/workflows/provider-recognition-repair-v6.yml             engine_v2/config/brain-policy.json             engine_v2/scripts/learning-lab.mjs             engine_v2/scripts/plan-repairs.mjs             engine_v2/src/repair-brain.mjs             scripts/brain_meta_learning.py             scripts/brain_architecture_force_materializer.py             scripts/brain_repair_runtime.py             scripts/adaptive_runtime/runtime_repair.py             scripts/run_brain_learning_sandbox.py             scripts/deep_repair_loop.py             scripts/run_adaptive_quick_repair.py             scripts/nuvio_client_lab.cjs             scripts/generate_diagnostics.py             scripts/resolve_provider_hubs.py             scripts/resolve_provider_hub_search_fallback.py             'scripts/brain_layers/*'             'tests/brain_*'             > brain-learning-output/brain-architecture-force.patch
+          python scripts/brain_force_applied_profile_guard.py --proposal brain-learning-output/brain-architecture-proposal.json --report brain-learning-output/brain-architecture-force-report.json --export-patch brain-learning-output/brain-architecture-force.patch
           test -s brain-learning-output/brain-architecture-force.patch || {
             echo "Architecture FORCE produced no executable allowlisted diff" >&2
             exit 1
@@ -1850,7 +1850,12 @@ jobs:
             git add engine_v2/config/brain-policy.json
           fi
           if [ "${{ steps.materialize-architecture.outputs.force_promotable }}" = "true" ]; then
-            git add scripts/brain_layers tests engine_v2/scripts engine_v2/config .github/workflows 2>/dev/null || true
+            python - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          report = json.loads(Path("brain-learning-output/brain-architecture-force-report.json").read_text())
+          subprocess.run(["git", "add", "--", *report["changedFiles"]], check=True)
+          PY
           fi
           git diff --cached --name-only > "$RUNNER_TEMP/brain-architecture-changed-paths.txt"
           python - "$RUNNER_TEMP/brain-architecture-changed-paths.txt" engine_v2/config/brain-self-evolution.json "${{ steps.materialize-architecture.outputs.force_promotable }}" <<'PY'
