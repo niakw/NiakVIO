@@ -3,7 +3,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { streamIdentity } = require('./nuvio_client_lab.cjs');
+const { streamIdentity, episodicIdentityRequired } = require('./nuvio_client_lab.cjs');
 const { isReaderFailure, readerFailureClass } = require('./native_player_diagnostics.cjs');
 const { assessNativeEvidence } = require('./native_evidence_completeness.cjs');
 
@@ -165,7 +165,7 @@ function analyzeMediaTypeCapabilities(fixtureSlug, inputLogPaths) {
     const ratio = expectedDurationSeconds && duration ? duration / expectedDurationSeconds : null;
     if (ratio != null && (ratio < minimumDurationRatio || ratio > maximumDurationRatio)) {
       identity = { status: 'contradiction', reason: 'fixture_duration_mismatch' };
-    } else if (identity.status === 'unknown' && ratio != null) {
+    } else if (identity.status === 'unknown' && ratio != null && !episodicIdentityRequired(fixture)) {
       identity = { status: 'match', reason: 'fixture_duration_match' };
     }
     return { ...identity, durationRatio: ratio };

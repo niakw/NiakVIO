@@ -19,7 +19,7 @@ const require = createRequire(import.meta.url);
 const { inferSupportedTypes, isAnimeFocusedCatalogue, roundRobin } = require('./provider_semantics.cjs');
 const { shouldRetryNoRequest } = require('./availability_fallback_policy.cjs');
 const { guardedFetch } = require('./network_guard.cjs');
-const { streamIdentity } = require('./nuvio_client_lab.cjs');
+const { streamIdentity, episodicIdentityRequired } = require('./nuvio_client_lab.cjs');
 const { safeMediaFacts } = require('./media_observation.cjs');
 const { safeHttpFacts } = require('./http_response_observation.cjs');
 const { safeReaderProbe } = require('./reader_user_agent_probe.cjs');
@@ -911,7 +911,7 @@ async function probeStream(stream, mode, fixture = null) {
       }
     }
 
-    if (contentIdentity.status === 'unknown' && durationIdentityRatio != null && !durationIdentityMismatch) {
+    if (contentIdentity.status === 'unknown' && durationIdentityRatio != null && !durationIdentityMismatch && !episodicIdentityRequired(fixture)) {
       contentIdentity = { status: 'match', reason: 'fixture_duration_match' };
     }
     if (contentIdentity.status === 'contradiction') {

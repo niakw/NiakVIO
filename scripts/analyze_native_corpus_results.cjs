@@ -3,7 +3,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { streamIdentity } = require('./nuvio_client_lab.cjs');
+const { streamIdentity, episodicIdentityRequired } = require('./nuvio_client_lab.cjs');
 const { releaseIdentityGuard } = require('./native_fixture_identity_guard.cjs');
 const { readerFailureClass, readerSignature, isReaderFailure } = require('./native_player_diagnostics.cjs');
 
@@ -186,7 +186,7 @@ for (const row of rows) {
   const durationRatio = expectedDurationSeconds && measuredDuration ? measuredDuration / expectedDurationSeconds : null;
   if (durationRatio != null && (durationRatio < minimumDurationRatio || durationRatio > maximumDurationRatio)) {
     identity = { status: 'contradiction', reason: 'fixture_duration_mismatch' };
-  } else if (identity.status === 'unknown' && durationRatio != null && !releaseGuard?.preventDurationPromotion) {
+  } else if (identity.status === 'unknown' && durationRatio != null && !releaseGuard?.preventDurationPromotion && !episodicIdentityRequired(fixture)) {
     identity = { status: 'match', reason: 'fixture_duration_match' };
   }
   const record = {

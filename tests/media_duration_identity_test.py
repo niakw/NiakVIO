@@ -146,13 +146,23 @@ try:
             'url': base + '/good.m3u8',
             'title': 'Purstream 1080p Dual Audio - Inconnue',
         })
-        assert duration_proc.returncode == 0, (duration_only, duration_proc.stderr)
-        assert duration_only['content_verified_count'] == 1, duration_only
+        assert duration_proc.returncode != 0, (duration_only, duration_proc.stderr)
+        assert duration_only['content_verified_count'] == 0, duration_only
+        assert duration_only['identity_unverified_count'] == 1, duration_only
         assert isinstance(duration_only.get('streams'), list) and duration_only['streams'], duration_only
         assert isinstance(duration_only['streams'][0], dict), duration_only
         assert isinstance(duration_only['streams'][0].get('identity'), dict), duration_only
         assert duration_only['streams'][0]['identity'].get('reason') is not None, duration_only
-        assert duration_only['streams'][0]['identity']['reason'] == 'fixture_duration_match', duration_only
+        assert duration_only['streams'][0]['identity']['status'] == 'unknown', duration_only
+        assert duration_only['streams'][0]['duration_identity']['reason'] == 'fixture_duration_match', duration_only
+
+        adjacent_proc, adjacent = run_provider('same_duration_wrong_episode', {
+            'url': base + '/good.m3u8',
+            'title': 'Breaking Bad S01E02',
+        })
+        assert adjacent_proc.returncode != 0, adjacent
+        assert adjacent['content_verified_count'] == 0, adjacent
+        assert adjacent['identity_contradiction_count'] == 1, adjacent
 
 
         mp4_bad_proc, mp4_bad = run_provider('wrong_mp4_duration', {

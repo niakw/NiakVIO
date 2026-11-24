@@ -193,12 +193,20 @@ function humanMediaFilename(rawUrl) {
   }
 }
 
+function episodicIdentityRequired(fixture) {
+  return ['tv', 'series', 'anime', 'show'].includes(String(fixture?.mediaType || fixture?.type || '').toLowerCase())
+    && Number(fixture?.episode) > 0;
+}
+
 function streamIdentity(stream, fixture) {
   const aliases = [fixture?.title, fixture?.label, ...(Array.isArray(fixture?.aliases) ? fixture.aliases : [])].filter(Boolean);
   const forbiddenAliases = (Array.isArray(fixture?.forbiddenAliases) ? fixture.forbiddenAliases : []).map(normalizeIdentity).filter(Boolean);
   const expected = aliases.map(normalizeIdentity).filter(Boolean);
-  const mediaType = String(fixture?.mediaType || fixture?.type || 'movie').toLowerCase();
+  const rawMediaType = String(fixture?.mediaType || fixture?.type || 'movie').toLowerCase();
+  const mediaType = ['series', 'show'].includes(rawMediaType) ? 'tv' : rawMediaType;
+  const hasWantedSeason = fixture?.season != null && String(fixture.season).trim() !== '' && Number.isInteger(Number(fixture.season));
   const wantedSeason = Number(fixture?.season || 0);
+  const needsEpisode = episodicIdentityRequired(fixture);
   const wantedEpisode = Number(fixture?.episode || 0);
   const wantedYear = Number(fixture?.year || 0);
   const canonicalMediaType = (value) => {
@@ -215,7 +223,7 @@ function streamIdentity(stream, fixture) {
     && !!fixtureTmdbId
     && routeIdentityTmdbId === fixtureTmdbId
     && routeIdentityMediaType === canonicalMediaType(mediaType)
-    && (!wantedSeason || routeIdentitySeason === wantedSeason)
+    && (!needsEpisode || !hasWantedSeason || (stream?.niakvioIdentitySeason != null && String(stream.niakvioIdentitySeason).trim() !== '' && routeIdentitySeason === wantedSeason))
     && (!wantedEpisode || routeIdentityEpisode === wantedEpisode);
   const presentationOnlySource = routeIdentityAuthority && stream?.niakvioPresentationOnly === true;
 
@@ -309,13 +317,50 @@ function streamIdentity(stream, fixture) {
     return { status: 'contradiction', reason: 'media_filename_title_mismatch' };
   }
 
+  // Every explicit source coordinate must agree, including terminal filenames.
+  // A matching display label cannot rescue a contradictory source coordinate.
+  if (needsEpisode) {
+    const labels = [primaryTitle, sourceDescription, filename, mediaFilename];
+    let terminalUrl;
+    try {
+      terminalUrl = new URL(String(stream?.url || ''));
+      labels.push(decodeURIComponent(terminalUrl.pathname));
+    } catch {}
+    for (const label of labels) {
+      const patterns = [
+        /(?:^|\D)s(?:eason|aison)?\s*0*(\d{1,3})\s*[-_. /]*e(?:p(?:isode)?)?\s*0*(\d{1,4})(?=\D|$)/gi,
+        /(?:season|saison)\s*0*(\d{1,3})[^\d]{0,12}(?:episode|ep)\s*0*(\d{1,4})(?=\D|$)/gi,
+        /(?:^|\D)0*(\d{1,3})\s*x\s*0*(\d{1,4})(?=\D|$)/gi,
+      ];
+      for (const pattern of patterns) {
+        for (const match of String(label || '').matchAll(pattern)) {
+          if ((hasWantedSeason && Number(match[1]) !== wantedSeason) || Number(match[2]) !== wantedEpisode) {
+            return { status: 'contradiction', reason: 'wrong_season_episode' };
+          }
+        }
+      }
+    }
+    if (terminalUrl) {
+      for (const [keys, wanted, required] of [
+        [['season', 'season_number'], wantedSeason, hasWantedSeason],
+        [['episode', 'episode_number'], wantedEpisode, true],
+      ]) {
+        if (!required) continue;
+        for (const key of keys) {
+          if (terminalUrl.searchParams.getAll(key).some(v => /^\d{1,4}$/.test(v) && Number(v) !== wanted)) {
+            return { status: 'contradiction', reason: 'wrong_season_episode' };
+          }
+        }
+      }
+    }
+  }
   if (mediaType === 'movie' && seasonEpisode) {
     return { status: 'contradiction', reason: 'movie_row_is_episode' };
   }
   if (seasonEpisode && (mediaType === 'tv' || mediaType === 'anime')) {
     const season = Number(seasonEpisode[1] || 0);
     const episode = Number(seasonEpisode[2] || 0);
-    if ((wantedSeason && season && season !== wantedSeason) || (wantedEpisode && episode && episode !== wantedEpisode)) {
+    if ((hasWantedSeason && season !== wantedSeason) || (wantedEpisode && episode !== wantedEpisode)) {
       return { status: 'contradiction', reason: 'wrong_season_episode' };
     }
     if (titleEvidence(evidenceLabel)) return { status: 'match', reason: 'season_episode_match' };
@@ -326,7 +371,7 @@ function streamIdentity(stream, fixture) {
     if (wantedEpisode && episode && episode !== wantedEpisode) {
       return { status: 'contradiction', reason: 'wrong_episode' };
     }
-    if (wantedEpisode && episode === wantedEpisode && titleEvidence(evidenceLabel)) {
+    if (wantedEpisode && episode === wantedEpisode && !hasWantedSeason && titleEvidence(evidenceLabel)) {
       return { status: 'match', reason: 'episode_match' };
     }
     return { status: 'unknown', reason: 'insufficient_identity_metadata' };
@@ -343,7 +388,8 @@ function streamIdentity(stream, fixture) {
       if (!years.length) return { status: 'unknown', reason: 'insufficient_identity_metadata' };
       if (!years.includes(wantedYear)) return { status: 'contradiction', reason: 'strong_title_mismatch' };
     }
-    return { status: 'match', reason: 'expected_title_alias' };
+    if (!needsEpisode) return { status: 'match', reason: 'expected_title_alias' };
+    // A series title identifies the show, never a particular episode.
   }
 
   if (routeIdentityExact) {
@@ -533,7 +579,7 @@ async function probeStreams(root, streams, fixture, config) {
     /* NIAKVIO_HLS_DURATION_COMPLETENESS_V1 */
     const durationMismatch = durationComplete && durationRatio != null && (durationRatio < minimumDurationRatio || durationRatio > maximumDurationRatio);
     if (durationMismatch) identity = { status: 'contradiction', reason: 'fixture_duration_mismatch' };
-    else if (identity.status === 'unknown' && durationComplete && durationRatio != null) identity = { status: 'match', reason: 'fixture_duration_match' };
+    else if (identity.status === 'unknown' && durationComplete && durationRatio != null && !episodicIdentityRequired(fixture)) identity = { status: 'match', reason: 'fixture_duration_match' };
     const transportPlayable = Boolean(probe?.playable);
     results.push({
       ...summarizeStream(stream, index),
@@ -885,6 +931,7 @@ module.exports = {
   sanitizeText,
   streamFingerprint,
   streamIdentity,
+  episodicIdentityRequired,
   summarizePolicy,
   summarizeStream,
   tailText,

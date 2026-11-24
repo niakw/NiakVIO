@@ -3,7 +3,7 @@
 
 const path = require('node:path');
 const { webcrypto } = require('node:crypto');
-const { streamIdentity } = require('./nuvio_client_lab.cjs');
+const { streamIdentity, episodicIdentityRequired } = require('./nuvio_client_lab.cjs');
 
 const ASSET_EXT = /\.(?:woff2?|ttf|otf|eot|css|js|mjs|map|png|jpe?g|gif|svg|ico|webmanifest|json|xml|vtt|srt)(?:[?#]|$)/i;
 const REJECT_HOSTS = /(?:^|\.)(?:twitter\.com|x\.com|twimg\.com|google\.com|googleusercontent\.com|gitlab\.com|github\.com|facebook\.com|instagram\.com)$/i;
@@ -453,7 +453,7 @@ async function main() {
     let identity = metadataIdentity;
     if (metadataIdentity.status !== 'contradiction' && durationIdentity.status === 'contradiction') {
       identity = durationIdentity;
-    } else if (metadataIdentity.status === 'unknown' && durationIdentity.status === 'match') {
+    } else if (metadataIdentity.status === 'unknown' && durationIdentity.status === 'match' && !episodicIdentityRequired(fixture)) {
       identity = durationIdentity;
     }
     return { row, media: mediaResult, identity, metadata_identity: metadataIdentity, duration_identity: durationIdentity };

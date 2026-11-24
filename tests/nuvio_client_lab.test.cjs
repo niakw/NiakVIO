@@ -200,6 +200,18 @@ assert.deepEqual(streamIdentity({ title: 'S1E1 - Ryomen Sukuna', name: 'ToFlix' 
 assert.deepEqual(streamIdentity({ title: 'Saison 1 - Vidmoly', name: 'Mugiwara (VOSTFR)' }, { title: 'Mushoku Tensei', mediaType: 'tv', season: 1, episode: 1 }), { status: 'unknown', reason: 'insufficient_identity_metadata' });
 assert.deepEqual(streamIdentity({ title: 'Enola Holmes 2 - 1080p' }, { title: 'Mon ninja et moi 3', forbiddenAliases: ['Enola Holmes 2'], mediaType: 'movie' }), { status: 'contradiction', reason: 'forbidden_title_alias' });
 
+// Adjacent episodes commonly have identical duration; S00 is a real season.
+const adjacentFixture = {title: 'Example Show', mediaType: 'tv', season: 1, episode: 1};
+assert.equal(streamIdentity({title: 'Example Show S03E01'}, {...adjacentFixture, season: 0}).status, 'contradiction');
+assert.equal(streamIdentity({title: 'Example Show S01E01', filename: 'Example Show S01E02.mp4'}, adjacentFixture).status, 'contradiction');
+assert.equal(streamIdentity({title: 'Example Show S01E01', url: 'https://media.example/S01E02/master.m3u8'}, adjacentFixture).status, 'contradiction');
+assert.equal(streamIdentity({title: 'Example Show S01E01', url: 'https://media.example/opaque?season=1&episode=2'}, adjacentFixture).status, 'contradiction');
+assert.equal(streamIdentity({title: 'Example Show'}, adjacentFixture).status, 'unknown');
+assert.equal(streamIdentity({title: 'Example Show Ep 1'}, adjacentFixture).status, 'unknown');
+assert.equal(streamIdentity({title: 'Example Show S00E01'}, {...adjacentFixture, season: 0}).status, 'match');
+assert.equal(streamIdentity({title: 'Example Show S01E01'}, adjacentFixture).status, 'match');
+assert.equal(streamIdentity({niakvioIdentityAuthority: 'tmdb-direct-route-v1', niakvioIdentityTmdbId: '123', niakvioIdentityMediaType: 'tv', niakvioIdentitySeason: 3, niakvioIdentityEpisode: 1}, {...adjacentFixture, tmdbId: '123', season: 0}).status, 'contradiction');
+
 // Core presentation is not identity authority. Provider-owned source* facts and
 // terminal filenames must win over request-derived UI labels/descriptions.
 assert.deepEqual(
