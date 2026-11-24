@@ -19,51 +19,57 @@ source = SOURCE.read_text(encoding="utf-8")
 match = re.search(r'"implementationRevision":\s*"([^"]+)"', source)
 assert match, "Core identity implementation revision missing"
 revision = match.group(1)
-assert revision == "cross-client-player-page-identity-v20-url-path-consistency", revision
+assert revision == "cross-client-player-page-identity-v20-url-path-consistency-v21-all-coordinates", revision
 assert "function exactSpecialEpisodeEvidence(row,q)" in source
 assert "function keepEpisodeBoundSubtitles(row,q,m)" in source
 assert "function subtitleContradictsEpisode(sub,q,m)" in source
 assert "function mediaUrlEpisodeContradicts(row,q)" in source
 assert "if(!exactSpecialEpisodeEvidence(row,q))return true" in source
 
-manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-rows = manifest.get("scrapers")
-assert isinstance(rows, list) and rows, "release manifest has no providers"
+manifests = (ROOT / "manifest.json", ROOT / "vf/manifest.json",
+             ROOT / "no-anime/manifest.json", ROOT / "vf-no-anime/manifest.json")
 missing = []
 seen = set()
 active_count = 0
 disabled_count = 0
-for entry in rows:
-    assert isinstance(entry, dict), "invalid published provider row"
-    provider_id = str(entry.get("id") or "")
-    filename = str(entry.get("filename") or "")
-    relative = Path(filename)
-    enabled = entry.get("enabled") is not False
-    expected_folder = "providers/" if enabled else "provider-disabled/"
-    assert (filename.startswith(expected_folder) and not relative.is_absolute()
-            and ".." not in relative.parts and len(relative.parts) == 2), (
-        provider_id, filename, enabled
-    )
-    assert filename not in seen, ("duplicate visible provider artifact", filename)
-    seen.add(filename)
-    path = ROOT / relative
-    assert path.is_file(), ("visible provider artifact missing", filename)
-    if not enabled:
-        # Retired-but-retained bytes must exist, but they are not executable
-        # publication. A CodeQL/Core revision on current active bundles cannot
-        # require rematerializing intentionally disabled historical artifacts.
-        disabled_count += 1
-        continue
-    active_count += 1
-    text = path.read_text(encoding="utf-8")
-    if (revision not in text
-            or "function exactSpecialEpisodeEvidence(row,q)" not in text
-            or "function keepEpisodeBoundSubtitles(row,q,m)" not in text
-            or "function subtitleContradictsEpisode(sub,q,m)" not in text
-            or "function mediaUrlEpisodeContradicts(row,q)" not in text
-            or text.count("STARTFIX:CORE.STREAM_IDENTITY.V1") != 1
-            or text.count("CLOSEFIX:CORE.STREAM_IDENTITY.V1") != 1):
-        missing.append(provider_id or filename)
+for manifest_path in manifests:
+    rows = json.loads(manifest_path.read_text(encoding="utf-8")).get("scrapers")
+    assert isinstance(rows, list) and rows, (manifest_path, "no providers")
+    manifest_seen = set()
+    for entry in rows:
+        assert isinstance(entry, dict), "invalid published provider row"
+        provider_id = str(entry.get("id") or "")
+        filename = str(entry.get("filename") or "")
+        relative = Path(filename)
+        enabled = entry.get("enabled") is not False
+        expected_folder = "providers/" if enabled else "provider-disabled/"
+        path = (manifest_path.parent / relative).resolve()
+        expected_parent = (ROOT / expected_folder).resolve()
+        assert not relative.is_absolute() and path.parent == expected_parent, (
+            manifest_path.name, provider_id, filename, enabled
+        )
+        assert path not in manifest_seen, ("duplicate visible provider artifact", filename)
+        manifest_seen.add(path)
+        assert path.is_file(), ("visible provider artifact missing", filename)
+        key = (path, enabled)
+        if key in seen:
+            continue
+        seen.add(key)
+        if not enabled:
+            disabled_count += 1
+            continue
+        active_count += 1
+        text = path.read_text(encoding="utf-8")
+        if (revision not in text
+                or "function exactSpecialEpisodeEvidence(row,q)" not in text
+                or "function keepEpisodeBoundSubtitles(row,q,m)" not in text
+                or "function subtitleContradictsEpisode(sub,q,m)" not in text
+                or "function mediaUrlEpisodeContradicts(row,q)" not in text
+                or "function episodeCoordinateContradicts(v,q)" not in text
+                or "function explicitQueryEpisodeContradicts(params,q)" not in text
+                or text.count("STARTFIX:CORE.STREAM_IDENTITY.V1") != 1
+                or text.count("CLOSEFIX:CORE.STREAM_IDENTITY.V1") != 1):
+            missing.append((str(manifest_path.relative_to(ROOT)), provider_id or filename))
 
 assert not missing, (
     f"stale S00 identity Core on {len(missing)}/{active_count} active providers: "

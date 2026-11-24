@@ -102,4 +102,21 @@ for right in (
 ):
     assert len(execute(right, hotd_request)) == 1, right
 
+
+# Multiple explicit coordinates cannot be hidden behind a matching first marker.
+for wrong in (
+    {"title": "House of the Dragon S03E01 S03E02", "url": "https://media.example/opaque.m3u8"},
+    {"title": "House of the Dragon S03E01", "url": "https://media.example/S03E01/S03E02/master.m3u8"},
+    {"title": "House of the Dragon S03E01", "url": "https://media.example/opaque.m3u8?season=3&episode=1&episode=2"},
+    {"title": "House of the Dragon S03E01", "season": 3, "seasonNumber": 2, "episode": 1, "url": "https://media.example/opaque.m3u8"},
+    {"title": "House of the Dragon S03E01", "sourceTitle": "House of the Dragon S03E02", "url": "https://media.example/opaque.m3u8"},
+):
+    assert execute(wrong, hotd_request) == [], wrong
+
+for right in (
+    {"title": "House of the Dragon S03E01 720x480", "url": "https://media.example/opaque.m3u8"},
+    {"title": "House of the Dragon S03E01", "url": "https://media.example/S03E01/S03E01/master.m3u8"},
+):
+    assert len(execute(right, hotd_request)) == 1, right
+
 print("episodic identity runtime tests passed: provider=kehflix year=ignored S/E=authoritative movie_year=authoritative")
