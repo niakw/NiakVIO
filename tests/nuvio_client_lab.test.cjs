@@ -214,6 +214,34 @@ assert.equal(streamIdentity({title: 'Example Show S01E01 720x480'}, adjacentFixt
 assert.equal(streamIdentity({title: 'Example Show S01E01', filename: 'Example Show 1x02.mp4'}, adjacentFixture).status, 'contradiction');
 assert.equal(streamIdentity({niakvioIdentityAuthority: 'tmdb-direct-route-v1', niakvioIdentityTmdbId: '123', niakvioIdentityMediaType: 'tv', niakvioIdentitySeason: 3, niakvioIdentityEpisode: 1}, {...adjacentFixture, tmdbId: '123', season: 0}).status, 'contradiction');
 
+const sourceCoordinate = {
+  provider: 'mugiwarastream',
+  title: 'Mugiwara',
+  url: 'https://cdn.example/opaque/master.m3u8',
+  niakvioIdentityAuthority: 'provider-source-coordinate-v1',
+  niakvioIdentitySourceTitle: 'Jujutsu Kaisen',
+  niakvioIdentityMediaType: 'anime',
+  niakvioIdentitySeason: 1,
+  niakvioIdentityEpisode: 1,
+  niakvioPresentationOnly: true,
+};
+const sourceCoordinateFixture = {title: 'Jujutsu Kaisen', mediaType: 'anime', season: 1, episode: 1};
+assert.deepEqual(streamIdentity(sourceCoordinate, sourceCoordinateFixture), {status: 'match', reason: 'provider_source_coordinate'});
+assert.equal(streamIdentity({...sourceCoordinate, niakvioIdentityEpisode: 2}, sourceCoordinateFixture).reason, 'provider_source_coordinate_mismatch');
+assert.equal(streamIdentity({...sourceCoordinate, niakvioIdentitySeason: 2}, sourceCoordinateFixture).reason, 'provider_source_coordinate_mismatch');
+assert.equal(streamIdentity({...sourceCoordinate, niakvioIdentityMediaType: 'tv'}, sourceCoordinateFixture).reason, 'provider_source_coordinate_mismatch');
+assert.equal(streamIdentity({...sourceCoordinate, niakvioIdentitySourceTitle: 'Chainsaw Man'}, sourceCoordinateFixture).reason, 'provider_source_title_mismatch');
+assert.equal(streamIdentity({...sourceCoordinate, niakvioIdentitySourceTitle: ''}, sourceCoordinateFixture).reason, 'provider_source_identity_incomplete');
+assert.equal(streamIdentity({...sourceCoordinate, url: 'https://cdn.example/S01E02/master.m3u8'}, sourceCoordinateFixture).reason, 'wrong_season_episode');
+assert.deepEqual(
+  streamIdentity({...sourceCoordinate, niakvioIdentitySeason: 0}, {...sourceCoordinateFixture, season: 0}),
+  {status: 'match', reason: 'provider_source_coordinate'},
+);
+assert.equal(
+  streamIdentity({...sourceCoordinate, niakvioIdentitySourceTitle: 'Jujutsu Kaisen 2'}, sourceCoordinateFixture).reason,
+  'provider_source_title_mismatch',
+);
+
 // Core presentation is not identity authority. Provider-owned source* facts and
 // terminal filenames must win over request-derived UI labels/descriptions.
 assert.deepEqual(

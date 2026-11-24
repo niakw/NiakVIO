@@ -213,19 +213,25 @@ function streamIdentity(stream, fixture) {
     const raw = String(value || '').trim().toLowerCase();
     return raw === 'series' ? 'tv' : raw;
   };
-  const routeIdentityAuthority = String(stream?.niakvioIdentityAuthority || '') === 'tmdb-direct-route-v1';
+  const identityAuthority = String(stream?.niakvioIdentityAuthority || '').trim();
+  const routeIdentityAuthority = identityAuthority === 'tmdb-direct-route-v1';
+  const sourceCoordinateAuthority = identityAuthority === 'provider-source-coordinate-v1';
   const routeIdentityMediaType = canonicalMediaType(stream?.niakvioIdentityMediaType);
   const routeIdentityTmdbId = String(stream?.niakvioIdentityTmdbId || '').replace(/^tmdb:/i, '');
   const fixtureTmdbId = String(fixture?.tmdbId || fixture?.tmdb_id || '').replace(/^tmdb:/i, '');
   const routeIdentitySeason = Number(stream?.niakvioIdentitySeason || 0);
   const routeIdentityEpisode = Number(stream?.niakvioIdentityEpisode || 0);
+  const identitySeasonPresent = stream?.niakvioIdentitySeason != null && String(stream.niakvioIdentitySeason).trim() !== '';
+  const identityEpisodePresent = stream?.niakvioIdentityEpisode != null && String(stream.niakvioIdentityEpisode).trim() !== '';
+  const sourceIdentityTitle = String(stream?.niakvioIdentitySourceTitle || '').trim();
   const routeIdentityExact = routeIdentityAuthority
     && !!fixtureTmdbId
     && routeIdentityTmdbId === fixtureTmdbId
     && routeIdentityMediaType === canonicalMediaType(mediaType)
     && (!needsEpisode || !hasWantedSeason || (stream?.niakvioIdentitySeason != null && String(stream.niakvioIdentitySeason).trim() !== '' && routeIdentitySeason === wantedSeason))
     && (!wantedEpisode || routeIdentityEpisode === wantedEpisode);
-  const presentationOnlySource = routeIdentityAuthority && stream?.niakvioPresentationOnly === true;
+  const presentationOnlySource = (routeIdentityAuthority || sourceCoordinateAuthority)
+    && stream?.niakvioPresentationOnly === true;
 
   // CORE.STREAM_FACTS preserves provider-owned values under source* before
   // presentation rewrites title/name/description from the TMDB request. Identity
@@ -279,6 +285,20 @@ function streamIdentity(stream, fixture) {
     });
   }
 
+  // A provider-source coordinate is independent only when the provider's own
+  // catalogue title is retained and the exact source matrix coordinates are
+  // carried to the terminal stream. Request/UI labels are deliberately ignored.
+  const sourceIdentityNormalized = normalizeIdentity(sourceIdentityTitle);
+  const sourceIdentityTitleExact = !!sourceIdentityNormalized && expected.includes(sourceIdentityNormalized);
+  const sourceCoordinateExact = sourceCoordinateAuthority
+    && needsEpisode
+    && routeIdentityMediaType === canonicalMediaType(mediaType)
+    && sourceIdentityTitleExact
+    && identitySeasonPresent
+    && (!hasWantedSeason || routeIdentitySeason === wantedSeason)
+    && identityEpisodePresent
+    && routeIdentityEpisode === wantedEpisode;
+
   function explicitYears(value) {
     const years = [];
     for (const match of String(value || '').matchAll(/(?:^|\D)((?:19|20)\d{2})(?=\D|$)/g)) {
@@ -307,6 +327,17 @@ function streamIdentity(stream, fixture) {
 
   if (routeIdentityAuthority && !routeIdentityExact) {
     return { status: 'contradiction', reason: 'provider_tmdb_route_mismatch' };
+  }
+  if (sourceCoordinateAuthority) {
+    if (!sourceIdentityTitle) {
+      return { status: 'contradiction', reason: 'provider_source_identity_incomplete' };
+    }
+    if (!sourceIdentityTitleExact) {
+      return { status: 'contradiction', reason: 'provider_source_title_mismatch' };
+    }
+    if (!sourceCoordinateExact) {
+      return { status: 'contradiction', reason: 'provider_source_coordinate_mismatch' };
+    }
   }
 
   // A human-readable media filename is source evidence, unlike the UI label.
@@ -392,6 +423,9 @@ function streamIdentity(stream, fixture) {
     // A series title identifies the show, never a particular episode.
   }
 
+  if (sourceCoordinateExact) {
+    return { status: 'match', reason: 'provider_source_coordinate' };
+  }
   if (routeIdentityExact) {
     return { status: 'match', reason: 'provider_tmdb_direct_route' };
   }
