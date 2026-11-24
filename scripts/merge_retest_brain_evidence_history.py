@@ -14,6 +14,8 @@ REASONS = {
     "forbidden_title_alias", "media_filename_title_mismatch",
     "strong_title_mismatch", "expected_title_alias", "season_episode_match",
     "episode_match", "provider_tmdb_direct_route",
+    "provider_source_coordinate", "provider_source_coordinate_mismatch",
+    "provider_source_title_mismatch", "provider_source_identity_incomplete",
 }
 ID = re.compile(r"[a-z0-9][a-z0-9-]{0,90}")
 SHA = re.compile(r"[0-9a-f]{64}")

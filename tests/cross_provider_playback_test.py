@@ -52,6 +52,26 @@ class CrossProviderTests(unittest.TestCase):
         self.assertTrue(duration_only['passedMediaControl'])
         self.assertEqual(duration_only['identityBasis'], 'duration_only')
 
+        source_coordinate = mod.public_probe({
+            **good(),
+            'content_identity_reason': 'provider_source_coordinate',
+        })
+        self.assertTrue(source_coordinate['passedMediaControl'])
+        self.assertEqual(source_coordinate['content_identity_reason'], 'provider_source_coordinate')
+        self.assertEqual(source_coordinate['identityBasis'], 'metadata')
+        for mismatch in (
+            'provider_source_coordinate_mismatch',
+            'provider_source_title_mismatch',
+            'provider_source_identity_incomplete',
+        ):
+            projected = mod.public_probe({
+                **good(),
+                'content_identity_status': 'contradiction',
+                'content_identity_reason': mismatch,
+            })
+            self.assertEqual(projected['content_identity_reason'], mismatch)
+            self.assertFalse(projected['passedMediaControl'])
+
     def test_hls_requires_variant_and_segment_and_no_failed_audio(self):
         for field in ('variant_reachable', 'segment_reachable'):
             for value in (False, None, 1):

@@ -24,7 +24,8 @@ BOOL_FIELDS = ('playback_verified', 'payload_verified', 'direct_signature_verifi
                'audio_segment_reachable', 'duration_identity_authoritative',
                'duration_identity_mismatch', 'short_vod_preview')
 IDENTITY_REASONS = {'forbidden_title_alias', 'media_filename_title_mismatch', 'strong_title_mismatch', 'provider_tmdb_direct_route', 'provider_tmdb_route_mismatch',
-                    'movie_row_is_episode', 'wrong_season_episode', 'season_episode_match',
+'provider_source_coordinate', 'provider_source_coordinate_mismatch', 'provider_source_title_mismatch', 'provider_source_identity_incomplete',
+                                        'movie_row_is_episode', 'wrong_season_episode', 'season_episode_match',
                     'wrong_episode', 'episode_match', 'expected_title_alias',
                     'insufficient_identity_metadata', 'fixture_duration_match',
                     'fixture_duration_mismatch'}

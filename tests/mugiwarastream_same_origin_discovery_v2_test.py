@@ -19,7 +19,10 @@ assert "eval(" not in block
 lookup = text.index("var currentPage=await discoverPage(q)")
 native = text.index("ctx.native.apply(ctx.receiver,a)")
 assert lookup < native, "current Mugiwara lookup must run before stale native discovery"
-assert "if(currentPage){var currentRows=await fallback(currentPage,q)" in text
+assert "if(currentPage&&currentPage.url){var currentRows=await fallback(currentPage.url,q,currentPage.sourceTitle)" in text
+assert 'niakvioIdentityAuthority="provider-source-coordinate-v1"' in text
+assert "sourceSeason:null,sourceEpisode:null" in text
+assert 'fallback(pageUrl,q,"")' in text
 assert "if(!pageUrl)pageUrl=await discoverPage(q)" not in text
 assert "/api/search?q=" not in text
 print("Mugiwara same-origin discovery-first + episodes-script V2 contract passed")
