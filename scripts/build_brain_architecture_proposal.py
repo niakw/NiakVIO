@@ -506,7 +506,9 @@ def source_contract_family_blueprint(
         "method": (
             "Create a generic Brain-owned inline catalogue family executor and "
             "its regression tests; discover the catalogue slug and season/voice "
-            "from real current source, parse epsN episode index and opaque token "
+            "from real current source; reference hypothesis: epsN is a reader "
+            "slot and the array index selects the episode, not the inverse. "
+            "Verify this hypothesis on the exact current source; parse opaque identifiers "
             "without ever evaluating upstream scripts, resolve an allowlisted "
             "same-origin token API only in an isolated client test, and pass "
             "the result to existing trusted terminal-media validation. Never "
@@ -526,7 +528,10 @@ def source_contract_family_blueprint(
             "official NuvioTV decoded correct video and audio with terminal segments",
             "representative compatible sibling and native client non-regression",
         ],
-        "negativeMemorySignature": "source-family:catalogue-inline-token-v1",
+        "negativeMemorySignature": "source-family:catalogue-inline-token-v2-reader-axis",
+        "sourceContractReference": "independent-implementation-414c9bc8c8c2b904232264f279d9b4e814c4bde9",
+        "episodeAxisHypothesis": "reader-slot-arrays-episode-index-within-slot",
+        "episodeAxisVerifiedOnOfficialClient": False,
         "reentryPolicy": (
             "Brain family synthesis -> isolated compile -> exact current-byte "
             "rematerialize -> official NuvioTV episode/media/audio -> sibling "

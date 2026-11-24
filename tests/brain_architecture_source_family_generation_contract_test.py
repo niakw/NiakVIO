@@ -120,8 +120,12 @@ with tempfile.TemporaryDirectory() as td:
     layer.write_text(
         "import json\nimport re\n"
         "def parse_episode_source(html, episode):\n"
-        "    match = re.search(r'var eps' + str(int(episode)) + r'\\s*=\\s*(\\[[^]]+\\])', html)\n"
-        "    return json.loads(match.group(1)) if match else []\n",
+        "    if type(episode) is not int or episode < 1: return []\n"
+        "    out = []\n"
+        "    for raw in re.findall(r'var eps[0-9]+\\s*=\\s*(\\[[^]]*\\])', html):\n"
+        "        values = json.loads(raw)\n"
+        "        if episode <= len(values) and values[episode-1]: out.append(values[episode-1])\n"
+        "    return out\n",
         encoding="utf-8",
     )
     runtime.write_text(
@@ -134,8 +138,8 @@ with tempfile.TemporaryDirectory() as td:
         "from brain_layers.source_family_sample import parse_episode_source\n"
         "html = '<script>var eps1 = [\"lien:a1\",\"lien:a2\"];"
         "var eps2 = [\"lien:b1\",\"lien:b2\"];</script>'\n"
-        "assert parse_episode_source(html, 1) == ['lien:a1','lien:a2']\n"
-        "assert parse_episode_source(html, 2) == ['lien:b1','lien:b2']\n",
+        "assert parse_episode_source(html, 1) == ['lien:a1','lien:b1']\n"
+        "assert parse_episode_source(html, 2) == ['lien:a2','lien:b2']\n",
         encoding="utf-8",
     )
     paths = [
@@ -144,15 +148,16 @@ with tempfile.TemporaryDirectory() as td:
         "tests/brain_source_family_sample_test.py",
     ]
     mod.validate_source_family_implementation(paths, blueprint, root=root)
-    # A parser that mixes eps1/eps2 array columns is not a valid episode
-    # extractor: the trusted independent oracle must reject it.
+    # A parser that mistakes reader rows for episodes mixes adjacent
+    # episodes. The independent oracle must reject this old assumption.
     valid_layer = layer.read_text(encoding="utf-8")
     valid_test = test_file.read_text(encoding="utf-8")
     test_file.write_text("assert True\n", encoding="utf-8")
     layer.write_text(
+        "import json\nimport re\n"
         "def parse_episode_source(html, episode):\n"
-        "    return {'eps1': 'lien:LEGOTEST_ALPHA_1', "
-        "'eps2': 'lien:LEGOTEST_BETA_1'}\n",
+        "    match = re.search(r'var eps' + str(int(episode)) + r'\\s*=\\s*(\\[[^]]+\\])', html)\n"
+        "    return json.loads(match.group(1)) if match else []\n",
         encoding="utf-8",
     )
     try:
@@ -160,7 +165,7 @@ with tempfile.TemporaryDirectory() as td:
     except ValueError as exc:
         assert "source-family independent episode oracle failed" in str(exc)
     else:
-        raise AssertionError("vacuous Qwen test let a one-episode parser pass")
+        raise AssertionError("vacuous test let a transposed reader-slot parser pass")
     layer.write_text(valid_layer, encoding="utf-8")
     test_file.write_text(valid_test, encoding="utf-8")
     mod.validate_source_family_implementation(paths, blueprint, root=root)

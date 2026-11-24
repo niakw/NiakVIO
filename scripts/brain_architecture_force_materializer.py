@@ -1259,8 +1259,8 @@ module = importlib.import_module("brain_layers." + sys.argv[1])
 parser = module.parse_episode_source
 fixture = (
     '<!doctype html><html><script>'
-    'var eps1 = ["lien:LEGOTEST_ALPHA_1","lien:LEGOTEST_ALPHA_2"];'
-    'var eps2 = ["lien:LEGOTEST_BETA_1","lien:LEGOTEST_BETA_2"];'
+    'var eps1 = ["lien:LEGOTEST_ALPHA_1","lien:LEGOTEST_BETA_1"];'
+    'var eps2 = ["lien:LEGOTEST_ALPHA_2","lien:LEGOTEST_BETA_2"];'
     'var epsJeton = "PRIVATE_TEST_JETON";'
     '</script></html>'
 )
@@ -1628,8 +1628,8 @@ def _source_family_contract_test(module_name: str) -> str:
         raise ValueError("source-family generated test module identifier invalid")
     fixture = (
         '<html><script>'
-        'var eps1 = ["lien:LEGOTEST_ALPHA_1","lien:LEGOTEST_ALPHA_2"];'
-        'var eps2 = ["lien:LEGOTEST_BETA_1","lien:LEGOTEST_BETA_2"];'
+        'var eps1 = ["lien:LEGOTEST_ALPHA_1","lien:LEGOTEST_BETA_1"];'
+        'var eps2 = ["lien:LEGOTEST_ALPHA_2","lien:LEGOTEST_BETA_2"];'
         'var epsJeton = "PRIVATE_TEST_JETON";'
         '</script></html>'
     )
@@ -1803,18 +1803,23 @@ def _model_request(
             "or epsJeton; it is INVALID for this task. Make a reusable "
             "network-free Brain layer under scripts/brain_layers/ with a "
             "parse_episode_source(html,episode) function, handling multiple "
-            "episodes without eval or executing upstream JavaScript. "
+            "episodes. Use only pure re and json parsing; do not use eval, "
+            "exec, compile, open, globals, locals, __import__, filesystem, "
+            "network or upstream JavaScript execution. Define exactly "
+            "def parse_episode_source(html, episode): as a top-level function. "
             "Add a real import/use by the existing Brain repair runtime "
             "in scripts/brain_repair_runtime.py. Brain generates the separate "
             "tests/brain_..._test.py and validates all three edits. "
             "In addition, Brain independently executes a trusted two-episode "
-            "fixture: eps1 has lien:LEGOTEST_ALPHA_1 and _2, eps2 has "
-            "lien:LEGOTEST_BETA_1 and _2. Parsing episode=1 must return both "
+            "fixture: eps1 contains ALPHA_1 and BETA_1, eps2 contains "
+            "ALPHA_2 and BETA_2. Parsing episode=1 must return both "
             "ALPHA opaque reader identifiers but no BETA identifiers; "
             "episode=2 must return both BETA identifiers but no ALPHA. "
-            "The number in epsN is the EPISODE index; array items are "
-            "independent reader sources for that episode, NOT episodes. "
-            "Do not select array[episode-1] from every epsN. Avoid returning "
+            "Reference contract: epsN identifies a READER SLOT, not an "
+            "episode. The requested episode selects an item in each reader "
+            "array. Preserve empty cells and do not shift episode indexes. "
+            "A missing cell must not cause a fallback to a different episode. "
+            "This reference is a hypothesis until current source/client replay. Avoid returning "
             "epsJeton or fabricating URLs. "
             "Code must preserve season, episode index and language, return "
             "opaque tokens only, never invent player URLs, media proof, "

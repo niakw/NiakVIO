@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,4 +34,25 @@ rank_index = source.index('right.claimedHeight - left.claimedHeight')
 verify_index = source.index('probe.playback_verified === true')
 assert rank_index < verify_index
 
+# Execute the actual early-exit condition against identity and quality cases.
+anchor = "modeConfig.probe_all_selected_quality_variants !== true"
+start = source.index(anchor)
+end = source.index(") break;", start)
+condition = source[start:end]
+script = """
+const assert = require('node:assert/strict');
+const minimumHeight = 720;
+let modeConfig = {};
+const acceptedPlayableProbe = (p) => p.accepted !== false;
+const stop = (probe) => (""" + condition + """);
+const good = {playback_verified:true, content_identity_status:'match', effective_height:1080};
+assert.equal(stop(good), true);
+assert.equal(stop({...good, content_identity_status:'unknown'}), false);
+assert.equal(stop({...good, content_identity_status:'contradiction'}), false);
+assert.equal(stop({...good, effective_height:480}), false);
+assert.equal(stop({...good, accepted:false}), false);
+modeConfig = {probe_all_selected_quality_variants:true};
+assert.equal(stop(good), false);
+"""
+subprocess.run(["node", "-e", script], check=True)
 print('deep quality-ranked adaptive stream sampling tests passed')
