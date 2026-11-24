@@ -882,7 +882,59 @@ function isNonMediaAssetHost(host) {
     || (value.endsWith('.googleusercontent.com') && /^(play-games|play-lh)\./.test(value));
 }
 
-function sanitizeStream(stream) {
+const MANAGED_IDENTITY_AUTHORITIES = Object.freeze({
+  'tmdb-direct-route-v1': Object.freeze({
+    fix: 'STARTFIX:PROVIDER.GENERIC.TICKETED_ENCRYPTED.API.V1',
+    marker: 'NIAKVIO_TICKETED_ENCRYPTED_API_RUNTIME_V1',
+  }),
+  'provider-source-coordinate-v1': Object.freeze({
+    fix: 'STARTFIX:PROVIDER.MUGIWARASTREAM.PACKED.RUNTIME.V1',
+    marker: 'NIAKVIO_MUGIWARASTREAM_PACKED_RUNTIME_V1',
+  }),
+});
+
+function managedIdentityAuthorities(sourceText) {
+  const text = String(sourceText || '');
+  const out = new Set();
+  for (const [authority, proof] of Object.entries(MANAGED_IDENTITY_AUTHORITIES)) {
+    if (text.includes(proof.fix) && text.includes(proof.marker)) out.add(authority);
+  }
+  return out;
+}
+
+function sanitizeIdentityProvenance(stream, allowedAuthorities) {
+  const authority = typeof stream?.niakvioIdentityAuthority === 'string'
+    ? stream.niakvioIdentityAuthority.trim()
+    : '';
+  if (!authority || !(allowedAuthorities instanceof Set) || !allowedAuthorities.has(authority)) return {};
+  const mediaTypeRaw = String(stream?.niakvioIdentityMediaType || '').trim().toLowerCase();
+  const mediaType = mediaTypeRaw === 'series' ? 'tv' : mediaTypeRaw;
+  if (!['movie','tv','anime'].includes(mediaType)) return {};
+  const season = Number(stream?.niakvioIdentitySeason);
+  const episode = Number(stream?.niakvioIdentityEpisode);
+  if (!Number.isInteger(season) || season < 0 || season > 10000
+      || !Number.isInteger(episode) || episode < 0 || episode > 100000) return {};
+  const common = {
+    niakvioIdentityAuthority: authority,
+    niakvioIdentityMediaType: mediaType,
+    niakvioIdentitySeason: season,
+    niakvioIdentityEpisode: episode,
+    niakvioPresentationOnly: stream?.niakvioPresentationOnly === true,
+  };
+  if (authority === 'tmdb-direct-route-v1') {
+    const tmdbId = String(stream?.niakvioIdentityTmdbId || '').trim();
+    if (!/^\d{1,16}$/.test(tmdbId)) return {};
+    return { ...common, niakvioIdentityTmdbId: tmdbId };
+  }
+  if (authority === 'provider-source-coordinate-v1') {
+    const sourceTitle = String(stream?.niakvioIdentitySourceTitle || '').trim();
+    if (!sourceTitle || sourceTitle.length > 500 || episode < 1) return {};
+    return { ...common, niakvioIdentitySourceTitle: sourceTitle };
+  }
+  return {};
+}
+
+function sanitizeStream(stream, allowedIdentityAuthorities = new Set()) {
   if (!stream || typeof stream !== 'object') return { stream: null, disallowed: null };
   const disallowed = p2pReason(stream);
   if (disallowed) return { stream: null, disallowed };
@@ -914,6 +966,7 @@ function sanitizeStream(stream) {
             language: track && (track.language || track.lang || track.label || track.name),
           }))
         : [],
+      ...sanitizeIdentityProvenance(stream, allowedIdentityAuthorities),
     },
   };
 }
@@ -1192,6 +1245,7 @@ async function main() {
   if (!getStreams) throw new Error('module does not export getStreams');
 
   const sourceText = fs.readFileSync(providerPath, 'utf8');
+  const allowedIdentityAuthorities = managedIdentityAuthorities(sourceText);
   const profileLimit = Math.max(1, Math.min(12, Number(context.maxSettingsProfiles || 6)));
   const profiles = settingsProfiles(loaded, sourceText, context).slice(0, profileLimit);
   let value = [];
@@ -1235,7 +1289,7 @@ async function main() {
   const disallowedReasons = [];
   if (Array.isArray(value)) {
     for (const item of value.slice(0, 120)) {
-      const sanitized = sanitizeStream(item);
+      const sanitized = sanitizeStream(item, allowedIdentityAuthorities);
       if (sanitized.disallowed) disallowedReasons.push(sanitized.disallowed);
       if (sanitized.stream) streams.push(sanitized.stream);
       if (streams.length >= 100) break;
