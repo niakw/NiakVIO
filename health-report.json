@@ -1,16 +1,16 @@
 {
   "schema_version": 68,
-  "generated_at": "2026-11-20T13:55:55.392753+00:00",
+  "generated_at": "2026-11-24T15:41:13.546476+00:00",
   "test_environment": "github-actions-node",
   "test_mode": "deep",
-  "published_providers": 76,
-  "candidate_variants_checked": 76,
+  "published_providers": 75,
+  "candidate_variants_checked": 75,
   "status_counts": {
-    "healthy": 11,
+    "healthy": 10,
     "reachable": 0,
-    "blocked": 21,
+    "blocked": 17,
     "degraded": 2,
-    "no_streams": 37,
+    "no_streams": 41,
     "provider_unreachable": 0,
     "runtime_error": 0,
     "unavailable": 5,
@@ -239,10 +239,10 @@
       "id": "67movies",
       "enabled": true,
       "action": "observed-published-v3-no-mutation",
-      "status": "blocked",
+      "status": "no_streams",
       "score": 100,
       "health": {
-        "status": "blocked",
+        "status": "no_streams",
         "score": 100,
         "evidence": {
           "primary_fixtures_tested": 3,
@@ -255,17 +255,16 @@
           "fixture_status_counts": {
             "healthy": 0,
             "reachable": 0,
-            "blocked": 3,
+            "blocked": 0,
             "degraded": 0,
-            "no_streams": 9,
+            "no_streams": 12,
             "provider_unreachable": 0,
             "runtime_error": 0,
             "unavailable": 0,
             "excluded": 0
           },
           "failure_classes": [
-            "content_lookup_completed_no_streams",
-            "provider_http_blocked"
+            "content_lookup_completed_no_streams"
           ],
           "runtime_error_fixtures": [],
           "malformed_request_count": 0,
@@ -281,7 +280,7 @@
           "healthy_fixture_categories": [],
           "provider_status": "reachable",
           "provider_score": 100,
-          "stream_status": "blocked",
+          "stream_status": "no_streams",
           "stream_quality_score": 0,
           "streams_playable": 0,
           "payload_verified_streams": 0,
@@ -317,8 +316,7 @@
             "67movies.gd"
           ],
           "provider_server_http_statuses": [
-            200,
-            429
+            200
           ],
           "manifest_description_present": true,
           "manifest_supported_types": [
@@ -807,7 +805,7 @@
           "provider_server_accessible": true,
           "provider_server_successful_response": false,
           "provider_server_hosts": [
-            "anikototv.to"
+            "anikototv.bz"
           ],
           "provider_server_http_statuses": [
             404
@@ -1387,15 +1385,16 @@
             "ansembed.net",
             "callistanise.com",
             "cdn.vidmoly.me",
+            "gate-2-an-p.vmnow.online",
             "jeremyparticipantanything.com",
             "mc.yandex.ru",
             "minochinos.com",
-            "prx-1356-ant-w.vmpx.online",
-            "prx-1476-ant.vmpx.online",
+            "prx-1328-ant.vmpx.online",
             "prx-am-s-1.vmpx.online",
             "sendvid.com",
             "smoothpre.com",
             "sw.vidmoly.me",
+            "teresapoliticallearn.com",
             "uqload.vc",
             "videos4.sendvid.com",
             "vidmoly.biz",
@@ -1944,8 +1943,8 @@
           "stream_quality_score": 80,
           "streams_playable": 2,
           "payload_verified_streams": 2,
-          "identity_verified_streams": 2,
-          "identity_unverified_streams": 0,
+          "identity_verified_streams": 1,
+          "identity_unverified_streams": 1,
           "identity_contradiction_count": 0,
           "duration_identity_mismatch_count": 0,
           "playable_identity_contradiction_count": 0,
@@ -1977,8 +1976,8 @@
           ],
           "accepted_subtitles_advertised": 2,
           "accepted_subtitles_reachable": 0,
-          "provider_median_latency_ms": 1698,
-          "stream_median_latency_ms": 72,
+          "provider_median_latency_ms": 2456,
+          "stream_median_latency_ms": 132,
           "disallowed_streams": 0,
           "provider_server_accessible": true,
           "provider_server_successful_response": true,
@@ -2017,7 +2016,7 @@
               "fixture_phase": "primary",
               "profile": "empty",
               "setting_keys": [],
-              "stream_count": 1,
+              "stream_count": 2,
               "error": null
             },
             {
@@ -2721,11 +2720,11 @@
       "id": "corsflix",
       "enabled": true,
       "action": "observed-published-v3-no-mutation",
-      "status": "blocked",
-      "score": 30,
+      "status": "no_streams",
+      "score": 100,
       "health": {
-        "status": "blocked",
-        "score": 30,
+        "status": "no_streams",
+        "score": 100,
         "evidence": {
           "primary_fixtures_tested": 3,
           "fallback_fixtures_tested": 9,
@@ -2737,16 +2736,16 @@
           "fixture_status_counts": {
             "healthy": 0,
             "reachable": 0,
-            "blocked": 12,
+            "blocked": 0,
             "degraded": 0,
-            "no_streams": 0,
+            "no_streams": 12,
             "provider_unreachable": 0,
             "runtime_error": 0,
             "unavailable": 0,
             "excluded": 0
           },
           "failure_classes": [
-            "provider_http_blocked"
+            "content_lookup_completed_no_streams"
           ],
           "runtime_error_fixtures": [],
           "malformed_request_count": 0,
@@ -2760,9 +2759,9 @@
             "anime"
           ],
           "healthy_fixture_categories": [],
-          "provider_status": "blocked",
-          "provider_score": 30,
-          "stream_status": "blocked",
+          "provider_status": "reachable",
+          "provider_score": 100,
+          "stream_status": "no_streams",
           "stream_quality_score": 0,
           "streams_playable": 0,
           "payload_verified_streams": 0,
@@ -2793,12 +2792,12 @@
           "stream_median_latency_ms": null,
           "disallowed_streams": 0,
           "provider_server_accessible": true,
-          "provider_server_successful_response": false,
+          "provider_server_successful_response": true,
           "provider_server_hosts": [
             "corsflix.gd"
           ],
           "provider_server_http_statuses": [
-            429
+            200
           ],
           "manifest_description_present": true,
           "manifest_supported_types": [
@@ -3925,10 +3924,13 @@
           "provider_server_accessible": true,
           "provider_server_successful_response": true,
           "provider_server_hosts": [
+            "blogger.googleusercontent.com",
             "filmarevoirnad.blogspot.com"
           ],
           "provider_server_http_statuses": [
             200,
+            400,
+            404,
             429
           ],
           "manifest_description_present": true,
@@ -4928,8 +4930,8 @@
           "stream_quality_score": 74,
           "streams_playable": 1,
           "payload_verified_streams": 1,
-          "identity_verified_streams": 1,
-          "identity_unverified_streams": 0,
+          "identity_verified_streams": 0,
+          "identity_unverified_streams": 1,
           "identity_contradiction_count": 0,
           "duration_identity_mismatch_count": 0,
           "playable_identity_contradiction_count": 0,
@@ -4958,8 +4960,8 @@
           "accepted_subtitle_languages": [],
           "accepted_subtitles_advertised": 0,
           "accepted_subtitles_reachable": 0,
-          "provider_median_latency_ms": 2778,
-          "stream_median_latency_ms": 1446,
+          "provider_median_latency_ms": 4184,
+          "stream_median_latency_ms": 623,
           "disallowed_streams": 0,
           "provider_server_accessible": true,
           "provider_server_successful_response": true,
@@ -5914,8 +5916,8 @@
           "stream_quality_score": 72,
           "streams_playable": 6,
           "payload_verified_streams": 6,
-          "identity_verified_streams": 6,
-          "identity_unverified_streams": 0,
+          "identity_verified_streams": 3,
+          "identity_unverified_streams": 3,
           "identity_contradiction_count": 0,
           "duration_identity_mismatch_count": 0,
           "playable_identity_contradiction_count": 0,
@@ -5927,12 +5929,12 @@
           "streams_rejected_slow": 0,
           "distinct_reachable_hosts": 6,
           "reachable_hosts": [
-            "abc.croiceloikace-6966.workers.dev",
-            "abc.mutuyuffouhe-4918.workers.dev",
-            "abc.preuvouratillau-2824.workers.dev",
-            "abc.yannoreyeicri-9674.workers.dev",
-            "share.quexipittoune-4659.workers.dev",
-            "vbgh.tilloinnouffaudeu-1055.workers.dev"
+            "abb.queilluxeferi-4297.workers.dev",
+            "abc.beyoippattotra-2024.workers.dev",
+            "abc.favegraddeufru-1750.workers.dev",
+            "abc.fuyouxassogru-4365.workers.dev",
+            "cvb.cemmaujeyicre-9140.workers.dev",
+            "ger.brorocouquomma-9713.workers.dev"
           ],
           "verified_max_height": 406,
           "reported_max_height": 480,
@@ -5944,26 +5946,28 @@
           "accepted_subtitle_languages": [],
           "accepted_subtitles_advertised": 0,
           "accepted_subtitles_reachable": 0,
-          "provider_median_latency_ms": 8346,
-          "stream_median_latency_ms": 1378,
+          "provider_median_latency_ms": 8521,
+          "stream_median_latency_ms": 580,
           "disallowed_streams": 0,
           "provider_server_accessible": true,
           "provider_server_successful_response": true,
           "provider_server_hosts": [
+            "abb.queilluxeferi-4297.workers.dev",
+            "abc.beyoippattotra-2024.workers.dev",
             "abc.croiceloikace-6966.workers.dev",
             "abc.favegraddeufru-1750.workers.dev",
-            "abc.mutuyuffouhe-4918.workers.dev",
+            "abc.fuyouxassogru-4365.workers.dev",
             "abc.preuvouratillau-2824.workers.dev",
-            "abc.teicrequaupara-2874.workers.dev",
             "abc.teissacraxeiquo-2004.workers.dev",
-            "abc.yannoreyeicri-9674.workers.dev",
+            "cvb.cemmaujeyicre-9140.workers.dev",
+            "ger.brorocouquomma-9713.workers.dev",
             "hcloud.ink",
             "hindmovie.icu",
             "hshare.lol",
-            "me.vetoilloinipau-9446.workers.dev",
+            "india.moiquouffiwava-8847.workers.dev",
+            "india.zaquannobowe-2124.workers.dev",
             "mvlink.blog",
-            "share.quexipittoune-4659.workers.dev",
-            "vbgh.tilloinnouffaudeu-1055.workers.dev"
+            "share.petroicemeili-6716.workers.dev"
           ],
           "provider_server_http_statuses": [
             200,
@@ -6280,7 +6284,7 @@
           "provider_server_successful_response": true,
           "provider_server_hosts": [
             "archive.org",
-            "ia600600.us.archive.org"
+            "ia800600.us.archive.org"
           ],
           "provider_server_http_statuses": [
             200,
@@ -6607,8 +6611,8 @@
           "stream_quality_score": 69,
           "streams_playable": 2,
           "payload_verified_streams": 2,
-          "identity_verified_streams": 2,
-          "identity_unverified_streams": 0,
+          "identity_verified_streams": 0,
+          "identity_unverified_streams": 2,
           "identity_contradiction_count": 0,
           "duration_identity_mismatch_count": 0,
           "playable_identity_contradiction_count": 0,
@@ -6632,8 +6636,8 @@
           "accepted_subtitle_languages": [],
           "accepted_subtitles_advertised": 0,
           "accepted_subtitles_reachable": 0,
-          "provider_median_latency_ms": 12326,
-          "stream_median_latency_ms": 773,
+          "provider_median_latency_ms": 3862,
+          "stream_median_latency_ms": 725,
           "disallowed_streams": 0,
           "provider_server_accessible": true,
           "provider_server_successful_response": true,
@@ -6909,27 +6913,29 @@
         "score": 100,
         "evidence": {
           "primary_fixtures_tested": 3,
-          "fallback_fixtures_tested": 0,
-          "fallback_triggered": false,
+          "fallback_fixtures_tested": 1,
+          "fallback_triggered": true,
           "zero_stream_preflight_enabled": false,
           "zero_stream_terminal_types": [],
           "fixtures_tested": 3,
-          "total_fixtures_executed": 3,
+          "total_fixtures_executed": 4,
           "fixture_status_counts": {
             "healthy": 3,
             "reachable": 0,
             "blocked": 0,
             "degraded": 0,
-            "no_streams": 0,
+            "no_streams": 1,
             "provider_unreachable": 0,
             "runtime_error": 0,
             "unavailable": 0,
             "excluded": 0
           },
-          "failure_classes": [],
+          "failure_classes": [
+            "content_lookup_completed_no_streams"
+          ],
           "runtime_error_fixtures": [],
           "malformed_request_count": 0,
-          "activation_fixture_phase": "primary",
+          "activation_fixture_phase": "fallback",
           "healthy_fixtures": 3,
           "healthy_fixture_ratio": 1,
           "playable_fixtures": 3,
@@ -6946,10 +6952,10 @@
           "provider_status": "reachable",
           "provider_score": 100,
           "stream_status": "healthy",
-          "stream_quality_score": 73,
-          "streams_playable": 5,
-          "payload_verified_streams": 5,
-          "identity_verified_streams": 5,
+          "stream_quality_score": 65,
+          "streams_playable": 3,
+          "payload_verified_streams": 3,
+          "identity_verified_streams": 3,
           "identity_unverified_streams": 0,
           "identity_contradiction_count": 0,
           "duration_identity_mismatch_count": 0,
@@ -6960,10 +6966,9 @@
           "streams_rejected_duration": 0,
           "streams_rejected_unreachable": 0,
           "streams_rejected_slow": 0,
-          "distinct_reachable_hosts": 2,
+          "distinct_reachable_hosts": 1,
           "reachable_hosts": [
-            "cdn.ngcloud.tech",
-            "cdn2.ngcloud.tech"
+            "cdn.ngcloud.app"
           ],
           "verified_max_height": null,
           "reported_max_height": null,
@@ -6973,8 +6978,8 @@
           "subtitle_languages": [
             "ar",
             "bengali",
-            "bosnian",
             "bulgarian",
+            "chinese-bilingual",
             "chinese-trad",
             "croatian",
             "czech",
@@ -6991,17 +6996,17 @@
             "en",
             "fr"
           ],
-          "accepted_subtitles_advertised": 22,
+          "accepted_subtitles_advertised": 11,
           "accepted_subtitles_reachable": 0,
-          "provider_median_latency_ms": 4682,
-          "stream_median_latency_ms": 351,
+          "provider_median_latency_ms": 6270,
+          "stream_median_latency_ms": 532,
           "disallowed_streams": 0,
           "provider_server_accessible": true,
           "provider_server_successful_response": true,
           "provider_server_hosts": [
             "api.meowtv.ru",
-            "cdn.ngcloud.tech",
-            "cdn2.ngcloud.tech",
+            "cdn.ngcloud.app",
+            "cdn2.ngcloud.app",
             "enc-dec.app",
             "i-arch-400.asrmo449ddj.com"
           ],
@@ -7009,7 +7014,8 @@
             200,
             206,
             400,
-            404
+            404,
+            502
           ],
           "manifest_description_present": true,
           "manifest_supported_types": [
@@ -7027,7 +7033,7 @@
           ],
           "manifest_curation_score": 4,
           "manifest_quality_signals": [],
-          "settings_profiles_tested": 3,
+          "settings_profiles_tested": 4,
           "settings_profiles_producing_streams": 3,
           "selected_settings_profiles": [
             "empty"
@@ -7039,7 +7045,7 @@
               "fixture_phase": "primary",
               "profile": "empty",
               "setting_keys": [],
-              "stream_count": 1,
+              "stream_count": 0,
               "error": null
             },
             {
@@ -7047,7 +7053,7 @@
               "fixture_phase": "primary",
               "profile": "empty",
               "setting_keys": [],
-              "stream_count": 2,
+              "stream_count": 1,
               "error": null
             },
             {
@@ -7055,7 +7061,15 @@
               "fixture_phase": "primary",
               "profile": "empty",
               "setting_keys": [],
-              "stream_count": 2,
+              "stream_count": 1,
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "fixture_phase": "fallback",
+              "profile": "empty",
+              "setting_keys": [],
+              "stream_count": 1,
               "error": null
             }
           ]
@@ -7088,9 +7102,9 @@
           "fixture_status_counts": {
             "healthy": 0,
             "reachable": 0,
-            "blocked": 6,
+            "blocked": 5,
             "degraded": 0,
-            "no_streams": 2,
+            "no_streams": 3,
             "provider_unreachable": 0,
             "runtime_error": 0,
             "unavailable": 0,
@@ -7968,8 +7982,8 @@
           "accepted_subtitle_languages": [],
           "accepted_subtitles_advertised": 0,
           "accepted_subtitles_reachable": 0,
-          "provider_median_latency_ms": 3224,
-          "stream_median_latency_ms": 356,
+          "provider_median_latency_ms": 4450,
+          "stream_median_latency_ms": 543,
           "disallowed_streams": 0,
           "provider_server_accessible": true,
           "provider_server_successful_response": true,
@@ -8260,8 +8274,8 @@
           "stream_quality_score": 72,
           "streams_playable": 1,
           "payload_verified_streams": 1,
-          "identity_verified_streams": 1,
-          "identity_unverified_streams": 0,
+          "identity_verified_streams": 0,
+          "identity_unverified_streams": 1,
           "identity_contradiction_count": 0,
           "duration_identity_mismatch_count": 0,
           "playable_identity_contradiction_count": 0,
@@ -8273,12 +8287,12 @@
           "streams_rejected_slow": 0,
           "distinct_reachable_hosts": 1,
           "reachable_hosts": [
-            "prx-1353-ant-23.vmpx.online"
+            "prx-1560-ant-t.vmpx.online"
           ],
           "verified_max_height": 720,
           "reported_max_height": 720,
           "effective_max_height": 720,
-          "max_bandwidth": 1760980,
+          "max_bandwidth": 1052407,
           "audio_languages": [
             "ja"
           ],
@@ -8287,15 +8301,15 @@
           "accepted_subtitle_languages": [],
           "accepted_subtitles_advertised": 0,
           "accepted_subtitles_reachable": 0,
-          "provider_median_latency_ms": 3900,
-          "stream_median_latency_ms": 353,
+          "provider_median_latency_ms": 5869,
+          "stream_median_latency_ms": 525,
           "disallowed_streams": 0,
           "provider_server_accessible": true,
           "provider_server_successful_response": true,
           "provider_server_hosts": [
             "animes-sama.su",
             "cdn.vidmoly.me",
-            "prx-1353-ant-23.vmpx.online",
+            "prx-1560-ant-t.vmpx.online",
             "sw.vidmoly.me",
             "vidmoly.biz",
             "vidmoly.me"
@@ -9215,10 +9229,10 @@
       "id": "primewire",
       "enabled": true,
       "action": "observed-published-v3-no-mutation",
-      "status": "blocked",
+      "status": "no_streams",
       "score": 100,
       "health": {
-        "status": "blocked",
+        "status": "no_streams",
         "score": 100,
         "evidence": {
           "primary_fixtures_tested": 2,
@@ -9231,16 +9245,16 @@
           "fixture_status_counts": {
             "healthy": 0,
             "reachable": 0,
-            "blocked": 8,
+            "blocked": 0,
             "degraded": 0,
-            "no_streams": 0,
+            "no_streams": 8,
             "provider_unreachable": 0,
             "runtime_error": 0,
             "unavailable": 0,
             "excluded": 0
           },
           "failure_classes": [
-            "provider_http_blocked"
+            "content_lookup_completed_no_streams"
           ],
           "runtime_error_fixtures": [],
           "malformed_request_count": 0,
@@ -9255,7 +9269,7 @@
           "healthy_fixture_categories": [],
           "provider_status": "reachable",
           "provider_score": 100,
-          "stream_status": "blocked",
+          "stream_status": "no_streams",
           "stream_quality_score": 0,
           "streams_playable": 0,
           "payload_verified_streams": 0,
@@ -9291,8 +9305,7 @@
             "primewire.gd"
           ],
           "provider_server_http_statuses": [
-            200,
-            429
+            200
           ],
           "manifest_description_present": true,
           "manifest_supported_types": [
@@ -9651,8 +9664,8 @@
           "stream_quality_score": 78,
           "streams_playable": 2,
           "payload_verified_streams": 2,
-          "identity_verified_streams": 2,
-          "identity_unverified_streams": 0,
+          "identity_verified_streams": 1,
+          "identity_unverified_streams": 1,
           "identity_contradiction_count": 0,
           "duration_identity_mismatch_count": 0,
           "playable_identity_contradiction_count": 0,
@@ -9688,8 +9701,8 @@
           ],
           "accepted_subtitles_advertised": 5,
           "accepted_subtitles_reachable": 0,
-          "provider_median_latency_ms": 1585,
-          "stream_median_latency_ms": 36,
+          "provider_median_latency_ms": 1427,
+          "stream_median_latency_ms": 73,
           "disallowed_streams": 0,
           "provider_server_accessible": true,
           "provider_server_successful_response": true,
@@ -9832,8 +9845,7 @@
           ],
           "provider_server_http_statuses": [
             200,
-            404,
-            429
+            404
           ],
           "manifest_description_present": true,
           "manifest_supported_types": [
@@ -10064,6 +10076,7 @@
             "excluded": 0
           },
           "failure_classes": [
+            "provider_http_error",
             "provider_http_unavailable"
           ],
           "runtime_error_fixtures": [],
@@ -10271,6 +10284,7 @@
             "excluded": 0
           },
           "failure_classes": [
+            "provider_http_error",
             "provider_http_unavailable"
           ],
           "runtime_error_fixtures": [],
@@ -10512,7 +10526,7 @@
           "streams_rejected_slow": 0,
           "distinct_reachable_hosts": 1,
           "reachable_hosts": [
-            "prx-1331-ant-q.vmpx.online"
+            "prx-1350-ant-d.vmpx.online"
           ],
           "verified_max_height": 720,
           "reported_max_height": 720,
@@ -10524,8 +10538,8 @@
           "accepted_subtitle_languages": [],
           "accepted_subtitles_advertised": 0,
           "accepted_subtitles_reachable": 0,
-          "provider_median_latency_ms": 10496,
-          "stream_median_latency_ms": 363,
+          "provider_median_latency_ms": 12289,
+          "stream_median_latency_ms": 526,
           "disallowed_streams": 0,
           "provider_server_accessible": true,
           "provider_server_successful_response": true,
@@ -10533,11 +10547,10 @@
             "4fw4gd.cfglobalcdn.com",
             "cdn.vidmoly.me",
             "playmogo.com",
-            "prx-1331-ant-q.vmpx.online",
+            "prx-1350-ant-d.vmpx.online",
             "sadisflix-officiel.cfd",
             "strm2.uqload.vc",
             "sw.vidmoly.me",
-            "up4fun.top",
             "uqload.vc",
             "v6.vidzy.org",
             "vidmoly.me",
@@ -10549,8 +10562,7 @@
           "provider_server_http_statuses": [
             200,
             403,
-            404,
-            502
+            404
           ],
           "manifest_description_present": true,
           "manifest_supported_types": [
@@ -10832,11 +10844,11 @@
       "id": "shuttletv",
       "enabled": true,
       "action": "observed-published-v3-no-mutation",
-      "status": "blocked",
-      "score": 30,
+      "status": "no_streams",
+      "score": 100,
       "health": {
-        "status": "blocked",
-        "score": 30,
+        "status": "no_streams",
+        "score": 100,
         "evidence": {
           "primary_fixtures_tested": 3,
           "fallback_fixtures_tested": 9,
@@ -10848,16 +10860,16 @@
           "fixture_status_counts": {
             "healthy": 0,
             "reachable": 0,
-            "blocked": 12,
+            "blocked": 0,
             "degraded": 0,
-            "no_streams": 0,
+            "no_streams": 12,
             "provider_unreachable": 0,
             "runtime_error": 0,
             "unavailable": 0,
             "excluded": 0
           },
           "failure_classes": [
-            "provider_http_blocked"
+            "content_lookup_completed_no_streams"
           ],
           "runtime_error_fixtures": [],
           "malformed_request_count": 0,
@@ -10871,9 +10883,9 @@
             "anime"
           ],
           "healthy_fixture_categories": [],
-          "provider_status": "blocked",
-          "provider_score": 30,
-          "stream_status": "blocked",
+          "provider_status": "reachable",
+          "provider_score": 100,
+          "stream_status": "no_streams",
           "stream_quality_score": 0,
           "streams_playable": 0,
           "payload_verified_streams": 0,
@@ -10904,12 +10916,12 @@
           "stream_median_latency_ms": null,
           "disallowed_streams": 0,
           "provider_server_accessible": true,
-          "provider_server_successful_response": false,
+          "provider_server_successful_response": true,
           "provider_server_hosts": [
             "shuttletv.gd"
           ],
           "provider_server_http_statuses": [
-            429
+            200
           ],
           "manifest_description_present": true,
           "manifest_supported_types": [
@@ -11428,223 +11440,6 @@
       "manifest_ordering": {
         "language_group": "fr_unspecified",
         "quality_height": null
-      },
-      "repair_attempted": false,
-      "provider_mutation_allowed": false
-    },
-    {
-      "id": "streamzo",
-      "enabled": true,
-      "action": "observed-published-v3-no-mutation",
-      "status": "healthy",
-      "score": 100,
-      "health": {
-        "status": "healthy",
-        "score": 100,
-        "evidence": {
-          "primary_fixtures_tested": 3,
-          "fallback_fixtures_tested": 7,
-          "fallback_triggered": true,
-          "zero_stream_preflight_enabled": false,
-          "zero_stream_terminal_types": [],
-          "fixtures_tested": 5,
-          "total_fixtures_executed": 10,
-          "fixture_status_counts": {
-            "healthy": 2,
-            "reachable": 0,
-            "blocked": 0,
-            "degraded": 0,
-            "no_streams": 8,
-            "provider_unreachable": 0,
-            "runtime_error": 0,
-            "unavailable": 0,
-            "excluded": 0
-          },
-          "failure_classes": [
-            "content_lookup_completed_no_streams"
-          ],
-          "runtime_error_fixtures": [],
-          "malformed_request_count": 0,
-          "activation_fixture_phase": "fallback",
-          "healthy_fixtures": 2,
-          "healthy_fixture_ratio": 0.4,
-          "playable_fixtures": 2,
-          "required_fixture_categories": [
-            "movie",
-            "tv",
-            "anime"
-          ],
-          "healthy_fixture_categories": [
-            "anime",
-            "tv"
-          ],
-          "provider_status": "reachable",
-          "provider_score": 100,
-          "stream_status": "healthy",
-          "stream_quality_score": 84,
-          "streams_playable": 2,
-          "payload_verified_streams": 2,
-          "identity_verified_streams": 2,
-          "identity_unverified_streams": 0,
-          "identity_contradiction_count": 0,
-          "duration_identity_mismatch_count": 0,
-          "playable_identity_contradiction_count": 0,
-          "playable_duration_identity_mismatch_count": 0,
-          "streams_rejected_policy": 0,
-          "streams_rejected_identity": 0,
-          "streams_rejected_duration": 0,
-          "streams_rejected_unreachable": 0,
-          "streams_rejected_slow": 0,
-          "distinct_reachable_hosts": 2,
-          "reachable_hosts": [
-            "prx-1356-ant-w.vmpx.online",
-            "prx-1590-for.vmnow.online"
-          ],
-          "verified_max_height": 1080,
-          "reported_max_height": 1080,
-          "effective_max_height": 1080,
-          "max_bandwidth": 3839139,
-          "audio_languages": [
-            "en",
-            "fr"
-          ],
-          "subtitle_languages": [],
-          "accepted_audio_languages": [
-            "en",
-            "fr"
-          ],
-          "accepted_subtitle_languages": [],
-          "accepted_subtitles_advertised": 0,
-          "accepted_subtitles_reachable": 0,
-          "provider_median_latency_ms": 2982,
-          "stream_median_latency_ms": 373,
-          "disallowed_streams": 0,
-          "provider_server_accessible": true,
-          "provider_server_successful_response": true,
-          "provider_server_hosts": [
-            "ansembed.net",
-            "fsvid.lol",
-            "prx-1356-ant-w.vmpx.online",
-            "prx-1590-for.vmnow.online",
-            "streamzo.fr",
-            "strm5.uqload.vc",
-            "vidfast.pro",
-            "vidmoly.org"
-          ],
-          "provider_server_http_statuses": [
-            200,
-            206,
-            403,
-            404
-          ],
-          "manifest_description_present": true,
-          "manifest_supported_types": [
-            "anime",
-            "movie",
-            "tv"
-          ],
-          "manifest_effective_height": null,
-          "manifest_accepted_languages": [
-            "fr"
-          ],
-          "manifest_formats": [
-            "m3u8"
-          ],
-          "manifest_curation_score": 5,
-          "manifest_quality_signals": [],
-          "settings_profiles_tested": 10,
-          "settings_profiles_producing_streams": 2,
-          "selected_settings_profiles": [
-            "empty"
-          ],
-          "selected_setting_keys": [],
-          "settings_diagnostics": [
-            {
-              "fixture": "Interstellar",
-              "fixture_phase": "primary",
-              "profile": "empty",
-              "setting_keys": [],
-              "stream_count": 0,
-              "error": null
-            },
-            {
-              "fixture": "Breaking Bad S01E01",
-              "fixture_phase": "primary",
-              "profile": "empty",
-              "setting_keys": [],
-              "stream_count": 0,
-              "error": null
-            },
-            {
-              "fixture": "Hell Mode S01E01",
-              "fixture_phase": "primary",
-              "profile": "empty",
-              "setting_keys": [],
-              "stream_count": 0,
-              "error": null
-            },
-            {
-              "fixture": "Tenet",
-              "fixture_phase": "fallback",
-              "profile": "empty",
-              "setting_keys": [],
-              "stream_count": 0,
-              "error": null
-            },
-            {
-              "fixture": "Oppenheimer",
-              "fixture_phase": "fallback",
-              "profile": "empty",
-              "setting_keys": [],
-              "stream_count": 0,
-              "error": null
-            },
-            {
-              "fixture": "Inception",
-              "fixture_phase": "fallback",
-              "profile": "empty",
-              "setting_keys": [],
-              "stream_count": 0,
-              "error": null
-            },
-            {
-              "fixture": "Game of Thrones S01E01",
-              "fixture_phase": "fallback",
-              "profile": "empty",
-              "setting_keys": [],
-              "stream_count": 0,
-              "error": null
-            },
-            {
-              "fixture": "The Last of Us S01E01",
-              "fixture_phase": "fallback",
-              "profile": "empty",
-              "setting_keys": [],
-              "stream_count": 0,
-              "error": null
-            },
-            {
-              "fixture": "Stranger Things S01E01",
-              "fixture_phase": "fallback",
-              "profile": "empty",
-              "setting_keys": [],
-              "stream_count": 1,
-              "error": null
-            },
-            {
-              "fixture": "Jujutsu Kaisen S01E01",
-              "fixture_phase": "fallback",
-              "profile": "empty",
-              "setting_keys": [],
-              "stream_count": 1,
-              "error": null
-            }
-          ]
-        }
-      },
-      "manifest_ordering": {
-        "language_group": "vf",
-        "quality_height": 1080
       },
       "repair_attempted": false,
       "provider_mutation_allowed": false
@@ -13045,8 +12840,8 @@
           "accepted_subtitle_languages": [],
           "accepted_subtitles_advertised": 0,
           "accepted_subtitles_reachable": 0,
-          "provider_median_latency_ms": 996,
-          "stream_median_latency_ms": 135,
+          "provider_median_latency_ms": 1732,
+          "stream_median_latency_ms": 119,
           "disallowed_streams": 0,
           "provider_server_accessible": true,
           "provider_server_successful_response": true,
@@ -13557,6 +13352,7 @@
           "provider_server_accessible": true,
           "provider_server_successful_response": true,
           "provider_server_hosts": [
+            "www.zone-telechargement.latino",
             "www.zone-telechargement.rentals"
           ],
           "provider_server_http_statuses": [
