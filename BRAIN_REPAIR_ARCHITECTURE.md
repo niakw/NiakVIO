@@ -1,3 +1,9 @@
+## 2026-11-24 — Publication Core V21 et préflight FORCE
+
+Le Core identité publié est désormais recoupé contre les quatre manifests : 75 bundles actifs uniques = 75 entrées du rapport de matérialisation, tous avec CORE.STREAM_IDENTITY.V1, le script global d'identité et un fixed point SHA256. Le census suivant reste 0/102 fresh : la preuve statique de propagation est distincte de la preuve fonctionnelle.
+
+Le FORCE 45312901394 n'a pas exécuté le modèle : un test de workflow obsolète rejetait le nouveau staging exact. Le test est corrigé pour contrôler le staging des changedFiles du rapport et l'export vérifié, au lieu d'exiger le staging de répertoires entiers.
+
 ## 2026-11-24 — FORCE : intégrité de la transaction de promotion
 
 Le rapport doit porter les SHA256 des bytes effectivement appliqués et le provider ciblé. Export Git depuis les chemins exacts du rapport, y compris les créations via intent-to-add ; les headers du patch doivent être identiques au set annoncé. Le garde après git apply revalide les trois chemins déterministes du compilateur et les empreintes, puis exécute le vrai classificateur et l'oracle indépendant. Ne pas confondre cette promotion architecturale read-only avec une mutation de provider.
