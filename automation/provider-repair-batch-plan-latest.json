@@ -1,15 +1,16 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "45320262635",
-  "sourceTriggerSha": "69dd90b98fce70930e7d2e778c441bec78742523",
+  "sourceRunId": "45407652932",
+  "sourceTriggerSha": "a51a0f3fd501e42704b6533b8ad9cfbfe59d3c19",
   "unresolvedProviderCount": 67,
-  "dynamicVariantProviderCount": 6,
+  "dynamicVariantProviderCount": 7,
   "dynamicVariantProviders": [
     "hindmoviez",
     "meowtv",
     "movix-fr",
     "nakios",
     "papadustream",
+    "sadisflix",
     "stigstream"
   ],
   "lifecycleSuppressedDynamicProviders": [
@@ -37,7 +38,6 @@
     "anisama",
     "arrowtv",
     "boredflix",
-    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -63,15 +63,11 @@
     "fullanime",
     "hexa",
     "hianime",
-    "hindmoviez",
     "ihavenotv",
-    "internet-archive",
     "kehflix",
     "kidraz",
-    "kurage",
     "latestmovies",
     "mallumv",
-    "meowtv",
     "moiflix",
     "moviebite",
     "moviebox",
@@ -82,7 +78,6 @@
     "movy",
     "mugiwarastream",
     "nakios",
-    "neko-sama",
     "neobam",
     "neonflix",
     "overlook",
@@ -119,14 +114,13 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
-    "webflix",
     "wookafr",
     "yflix",
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": false,
+  "dynamicVariantFallbackUsed": true,
   "groupCount": 10,
   "executionModel": {
     "default": "family/signature batch",
@@ -287,11 +281,10 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 4,
+      "providerCount": 3,
       "providers": [
         "anime-sama",
         "frenchstream",
-        "nakios",
         "sadisflix"
       ],
       "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
@@ -299,39 +292,8 @@
         "provider-census-status.json:brainCheckRequired"
       ],
       "dynamicVariantProviders": [
-        "nakios"
+        "sadisflix"
       ],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:native-policy-reachable",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "not-applicable",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "native-policy-reachable"
-      ],
-      "transportSignature": "native-policy-reachable",
-      "providerCount": 2,
-      "providers": [
-        "67movies",
-        "shuttletv"
-      ],
-      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -347,16 +309,52 @@
         "chain"
       ],
       "dominantIssues": [
+        "network_zero_result",
         "waf_challenge"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 2,
+      "providerCount": 3,
       "providers": [
         "corsflix",
+        "nakios",
         "primewire"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [
+        "nakios"
+      ],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "not-applicable",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup",
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-native-reachable"
+      ],
+      "transportSignature": "residential-exit-native-reachable",
+      "providerCount": 2,
+      "providers": [
+        "67movies",
+        "french-anime"
+      ],
+      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -393,7 +391,7 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable",
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:native-policy-reachable",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver"
@@ -401,18 +399,18 @@
       "runtimeFamilySignature": "not-applicable",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "none"
+        "lookup"
       ],
       "dominantIssues": [
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "residential-exit-native-reachable"
+        "native-policy-reachable"
       ],
-      "transportSignature": "residential-exit-native-reachable",
+      "transportSignature": "native-policy-reachable",
       "providerCount": 1,
       "providers": [
-        "french-anime"
+        "shuttletv"
       ],
       "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
