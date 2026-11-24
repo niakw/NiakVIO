@@ -210,6 +210,8 @@ assert.equal(streamIdentity({title: 'Example Show'}, adjacentFixture).status, 'u
 assert.equal(streamIdentity({title: 'Example Show Ep 1'}, adjacentFixture).status, 'unknown');
 assert.equal(streamIdentity({title: 'Example Show S00E01'}, {...adjacentFixture, season: 0}).status, 'match');
 assert.equal(streamIdentity({title: 'Example Show S01E01'}, adjacentFixture).status, 'match');
+assert.equal(streamIdentity({title: 'Example Show S01E01 720x480'}, adjacentFixture).status, 'match');
+assert.equal(streamIdentity({title: 'Example Show S01E01', filename: 'Example Show 1x02.mp4'}, adjacentFixture).status, 'contradiction');
 assert.equal(streamIdentity({niakvioIdentityAuthority: 'tmdb-direct-route-v1', niakvioIdentityTmdbId: '123', niakvioIdentityMediaType: 'tv', niakvioIdentitySeason: 3, niakvioIdentityEpisode: 1}, {...adjacentFixture, tmdbId: '123', season: 0}).status, 'contradiction');
 
 // Core presentation is not identity authority. Provider-owned source* facts and

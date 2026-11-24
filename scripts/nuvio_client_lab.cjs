@@ -330,7 +330,7 @@ function streamIdentity(stream, fixture) {
       const patterns = [
         /(?:^|\D)s(?:eason|aison)?\s*0*(\d{1,3})\s*[-_. /]*e(?:p(?:isode)?)?\s*0*(\d{1,4})(?=\D|$)/gi,
         /(?:season|saison)\s*0*(\d{1,3})[^\d]{0,12}(?:episode|ep)\s*0*(\d{1,4})(?=\D|$)/gi,
-        /(?:^|\D)0*(\d{1,3})\s*x\s*0*(\d{1,4})(?=\D|$)/gi,
+        /(?:^|\D)0*(\d{1,2})\s*x\s*0*(\d{1,4})(?=\D|$)/gi,
       ];
       for (const pattern of patterns) {
         for (const match of String(label || '').matchAll(pattern)) {
