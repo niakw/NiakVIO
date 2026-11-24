@@ -1,14 +1,14 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-11-23T15:05:01.043957+00:00",
+  "generated_at": "2026-11-24T02:59:35.947088+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 75,
   "status_counts": {
-    "healthy": 8,
+    "healthy": 6,
     "reachable": 0,
-    "blocked": 16,
-    "degraded": 1,
-    "no_streams": 44,
+    "blocked": 17,
+    "degraded": 0,
+    "no_streams": 46,
     "provider_unreachable": 0,
     "runtime_error": 0,
     "unavailable": 6,
@@ -1314,7 +1314,7 @@
     },
     {
       "id": "documentary-area",
-      "status": "no_streams",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1683,18 +1683,14 @@
     },
     {
       "id": "hindmoviez",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
-      "hosts": [
-        "vbgh.tilloinnouffaudeu-1055.workers.dev"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "share.kujeucoixeti-6043.workers.dev": {
           "last_checked_at": "2026-11-23T15:05:01.043957+00:00",
@@ -2465,7 +2461,7 @@
     },
     {
       "id": "kurage",
-      "status": "unavailable",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2517,18 +2513,14 @@
     },
     {
       "id": "meowtv",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "cdn2.ngcloud.tech"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "cdn2.slowcloud.live": {
           "last_checked_at": "2026-11-20T07:35:02.323164+00:00",
@@ -3380,16 +3372,14 @@
     },
     {
       "id": "papadustream",
-      "status": "degraded",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "hosts": [],
-      "response_categories": [
-        "content_identity_mismatch"
-      ],
+      "response_categories": [],
       "host_health": {
         "papadustream.club": {
           "last_checked_at": "2026-11-16T18:44:43.276183+00:00",
@@ -3813,17 +3803,32 @@
     },
     {
       "id": "sadisflix",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "prx-1566-ant-r.vmpx.online"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "prx-1566-ant-r.vmpx.online": {
-          "last_checked_at": "2026-11-21T12:52:54.820722+00:00",
+          "last_checked_at": "2026-11-24T02:59:35.947088+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 200,
+          "latency_ms": 588,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
+          "consecutive_blocked": 0
+        },
+        "prx-1560-ant-t.vmpx.online": {
+          "last_checked_at": "2026-11-24T02:59:35.947088+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3831,17 +3836,6 @@
           "kind": "hls",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
-          "consecutive_blocked": 0
-        },
-        "prx-1560-ant-t.vmpx.online": {
-          "last_checked_at": "2026-11-21T12:52:54.820722+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 449,
-          "kind": "hls",
-          "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
       },
@@ -4878,18 +4872,14 @@
     },
     {
       "id": "webflix",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "cdn81.zen-cdn.store"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "cdn80.zen-blk.store": {
           "last_checked_at": "2026-11-23T15:05:01.043957+00:00",
@@ -5072,7 +5062,7 @@
     },
     {
       "id": "youtitou",
-      "status": "no_streams",
+      "status": "unavailable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
