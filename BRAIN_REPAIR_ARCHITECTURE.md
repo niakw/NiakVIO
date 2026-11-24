@@ -1,3 +1,7 @@
+## 2026-11-24 — Freshness obligatoire des parents source-family
+
+Une rematérialisation Core change les bytes provider et invalide les témoins source/natifs liés au SHA-256 précédent. Le frontier catalogue doit rester fail-closed tant que le parent Android TV officiel et le probe indépendant ne portent pas exactement le SHA-256 du bundle courant. Un trigger FORCE ne peut pas remplacer cette fraîcheur : il peut apprendre, mais il ne doit pas promouvoir un source-family Lego avec un digest historique.
+
 ## 2026-11-24 — Publication Core V21 et préflight FORCE
 
 Le Core identité publié est désormais recoupé contre les quatre manifests : 75 bundles actifs uniques = 75 entrées du rapport de matérialisation, tous avec CORE.STREAM_IDENTITY.V1, le script global d'identité et un fixed point SHA256. Le census suivant reste 0/102 fresh : la preuve statique de propagation est distincte de la preuve fonctionnelle.

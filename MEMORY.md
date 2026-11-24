@@ -1,3 +1,9 @@
+## 2026-11-24 — V55 : l'attestation source Anime-Sama est périmée après Core V21, refresh TV V43 requis
+
+- Bundle production `5.21.183` : Anime-Sama `providers/anime-sama--nuvio--478cbfbaa246a9ed.js`, SHA-256 exact `478cbfbaa246a9ede48db8daf5d876c8e1512c0501387d3b56b8b86321e5f0ef`, fixed-point validé. Les deux lignes de `automation/brain-catalogue-source-probe-history.json` et le parent officiel TV `44781039914` restent liés à l'ancien SHA-256 `9e917c77346af2a5c88826a5b9f476180a9868c88dde97a45a3a744941aa0c5b`.
+- Conséquence : `attested_source_contract_frontier` doit retourner vide pour le bundle actuel ; l'ancien témoin inline ne doit pas autoriser le blueprint reader-matrix-v2 sur les bytes courants. Le FORCE `45318172910` peut encore produire des apprentissages génériques, mais toute preuve source-family positive issue de l'ancien digest est supersédée.
+- Trigger Android TV officiel V43 : Anime-Sama uniquement, fixture `mushoku-tensei-s01e01`, TV, pas de residential exit, pas de candidate rematerialization. Objectif : reconstruire le parent natif exact-byte actuel ; ensuite seulement relancer le probe source indépendant et le FORCE source-family. Aucun provider modifié. **0 réparation supplémentaire certifiée**.
+
 ## 2026-11-24 — V54 : Core V21 publié 75/75 et FORCE 45312901394 bloqué avant Qwen par un test obsolète
 
 - Publication production vérifiée sur `c3977d0d322317465aac10aa96dbc6c0f9405976`, manifests `5.21.183`. `provider-v3-materialization.json` contient exactement 75 providers, identiques aux 75 fichiers actifs uniques des quatre manifests. **75/75** déclarent `CORE.STREAM_IDENTITY.V1`, **75/75** exécutent `scripts/provider_patches/global_stream_identity_v1.py`, **75/75** ont `byteValidation.fixedPointVerified=true` avec `sourceSha256 == sha256`; 0 bundle actif absent, 0 extra matérialisé. La propagation statique du Core identité est donc démontrée sur les bytes publiés. Cela ne prouve pas encore le bon épisode en lecture native.
