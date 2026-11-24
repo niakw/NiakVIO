@@ -1,15 +1,16 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "45314197182",
-  "sourceTriggerSha": "c3977d0d322317465aac10aa96dbc6c0f9405976",
+  "sourceRunId": "45320251886",
+  "sourceTriggerSha": "69dd90b98fce70930e7d2e778c441bec78742523",
   "unresolvedProviderCount": 67,
-  "dynamicVariantProviderCount": 6,
+  "dynamicVariantProviderCount": 7,
   "dynamicVariantProviders": [
     "hindmoviez",
     "meowtv",
     "movix-fr",
     "nakios",
     "papadustream",
+    "sadisflix",
     "stigstream"
   ],
   "lifecycleSuppressedDynamicProviders": [
@@ -37,7 +38,6 @@
     "anisama",
     "arrowtv",
     "boredflix",
-    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -63,15 +63,11 @@
     "fullanime",
     "hexa",
     "hianime",
-    "hindmoviez",
     "ihavenotv",
-    "internet-archive",
     "kehflix",
     "kidraz",
-    "kurage",
     "latestmovies",
     "mallumv",
-    "meowtv",
     "moiflix",
     "moviebite",
     "moviebox",
@@ -82,7 +78,6 @@
     "movy",
     "mugiwarastream",
     "nakios",
-    "neko-sama",
     "neobam",
     "neonflix",
     "overlook",
@@ -119,14 +114,13 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
-    "webflix",
     "wookafr",
     "yflix",
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": false,
+  "dynamicVariantFallbackUsed": true,
   "groupCount": 10,
   "executionModel": {
     "default": "family/signature batch",
@@ -282,7 +276,7 @@
       ],
       "dominantIssues": [
         "network_zero_result",
-        "provider_returned_streams, timeout",
+        "provider_returned_streams, provider_returned_wrong_content",
         "timeout"
       ],
       "harnessTransportClasses": [],
@@ -297,7 +291,9 @@
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [],
+      "dynamicVariantProviders": [
+        "sadisflix"
+      ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
