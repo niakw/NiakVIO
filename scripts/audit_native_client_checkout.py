@@ -24,6 +24,7 @@ REQUIRED_BLOCKER_IDS = {
     "repository-http-evidence-gap-after-instrumentation-disable",
     "actions-log-blob-not-ready",
     "tv-uiautomator-audit-whitelist-drift",
+    "tracked-official-runtime-token-false-positive",
     "residential-macos-magicdns-bootstrap-order",
 }
 
@@ -165,6 +166,11 @@ def _read_changed_file(repo: Path, relative: str) -> str:
         return ""
 
 
+def _added_diff_text(diff: str) -> str:
+    return "\n".join(line[1:] for line in diff.splitlines()
+                      if line.startswith("+") and not line.startswith("+++"))
+
+
 def audit_checkout(repo: Path, client: str) -> None:
     repo = Path(repo).resolve()
     client = str(client).strip().lower()
@@ -181,7 +187,10 @@ def audit_checkout(repo: Path, client: str) -> None:
         )
 
     tracked_diff = _run(repo, "diff", "--no-ext-diff", "--unified=0", "--")
-    changed_text = tracked_diff + "\n" + "\n".join(_read_changed_file(repo, path) for path in paths)
+    untracked = {x.strip() for x in _run(repo, "ls-files", "--others", "--exclude-standard").splitlines() if x.strip()}
+    changed_text = _added_diff_text(tracked_diff) + "\n" + "\n".join(
+        _read_changed_file(repo, path) for path in paths if path in untracked
+    )
     for token in FORBIDDEN_DIFF_TOKENS:
         if token in changed_text:
             raise SystemExit(f"native human-UX lab introduced forbidden runtime mutation: {token}")

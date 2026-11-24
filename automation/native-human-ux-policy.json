@@ -1,5 +1,5 @@
 {
-  "version": 10,
+  "version": 11,
   "mode": "human-ux-observation-only",
   "purpose": "Native labs reproduce the real Nuvio user path and observe launch, stream selection, player opening and playback failures without repairing Nuvio, the OS or the lab environment to improve outcomes.",
   "immutable_principles": [
@@ -251,6 +251,14 @@
         "resolution": "Capture egress and DNS/search policy before tailnet; restore the exact pre-tailnet DNS policy after connection; verify resolver readiness; then select/attest the exit immediately before official Nuvio.",
         "evidence_run": "44450314927",
         "never_repeat": "Do not baseline after Tailscale connection and do not treat --accept-dns=false as proof that the action wrapper left macOS DNS unchanged."
+      },
+      {
+        "id": "tracked-official-runtime-token-false-positive",
+        "status": "resolved",
+        "signature": "native 45320345613 stopped before emulator: false ExoPlayer.Builder mutation",
+        "cause": "checkout audit scanned whole contents of modified tracked files, so unchanged official NuvioTV runtime bytes were attributed to NiakVIO",
+        "resolution": "scan only added tracked diff lines; scan new/untracked allowlisted test files in full",
+        "never_repeat": "never weaken forbidden runtime tokens; never classify unchanged upstream bytes as harness additions"
       }
     ]
   },
