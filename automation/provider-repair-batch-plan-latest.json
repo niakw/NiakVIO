@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "45171949441",
-  "sourceTriggerSha": "60dcfc98517727ac92bb9c262efa1613f4cd0b9e",
+  "sourceRunId": "45314197182",
+  "sourceTriggerSha": "c3977d0d322317465aac10aa96dbc6c0f9405976",
   "unresolvedProviderCount": 67,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -335,7 +335,7 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:native-policy-reachable",
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver"
@@ -343,19 +343,20 @@
       "runtimeFamilySignature": "not-applicable",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "lookup"
+        "lookup",
+        "none"
       ],
       "dominantIssues": [
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "native-policy-reachable"
+        "residential-exit-native-reachable"
       ],
-      "transportSignature": "native-policy-reachable",
+      "transportSignature": "residential-exit-native-reachable",
       "providerCount": 2,
       "providers": [
         "67movies",
-        "shuttletv"
+        "french-anime"
       ],
       "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
@@ -394,7 +395,7 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable",
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:native-policy-reachable",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver"
@@ -402,18 +403,18 @@
       "runtimeFamilySignature": "not-applicable",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "none"
+        "lookup"
       ],
       "dominantIssues": [
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "residential-exit-native-reachable"
+        "native-policy-reachable"
       ],
-      "transportSignature": "residential-exit-native-reachable",
+      "transportSignature": "native-policy-reachable",
       "providerCount": 1,
       "providers": [
-        "french-anime"
+        "shuttletv"
       ],
       "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
