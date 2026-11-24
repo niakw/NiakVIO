@@ -69,6 +69,22 @@ MATERIALIZED_CORRECTION_ROUNDS = 3
 MAX_MATERIALIZED_FAILURE_CONTEXT = 3200
 # The model may extend the Brain diagnostic body, never rewrite its signature.
 SOURCE_FAMILY_RUNTIME_ANCHOR = '        source_text = source_bytes.decode("utf-8")'
+SOURCE_MATRIX_CONTRACT = "reader-matrix-v2"
+SOURCE_MATRIX_RUNTIME_PATH = "scripts/brain_oracles/catalogue_inline_episode_source.py"
+SOURCE_MATRIX_RUNTIME_ANCHOR = (
+    '    return {\n'
+    '        "schemaVersion": 1,\n'
+    '        "source": "read-only-catalogue-episode-shape-oracle",'
+)
+
+
+def _uses_source_matrix_compiler(value: dict[str, Any]) -> bool:
+    blueprint = value.get("blueprint", value) if isinstance(value, dict) else {}
+    return isinstance(blueprint, dict) and blueprint.get("sourceCompilerContract") == SOURCE_MATRIX_CONTRACT
+
+
+def _source_family_anchor(payload: dict[str, Any]) -> str:
+    return SOURCE_MATRIX_RUNTIME_ANCHOR if _uses_source_matrix_compiler(payload) else SOURCE_FAMILY_RUNTIME_ANCHOR
 
 
 class MaterializedValidationError(ValueError):
@@ -1138,9 +1154,11 @@ def validate_source_family_implementation(
         p for p in changed
         if re.fullmatch(r"tests/brain_[a-z][a-z0-9_]{1,70}_test\.py", p)
     ]
+    matrix_contract = _uses_source_matrix_compiler(blueprint or {})
+    runtime_path = SOURCE_MATRIX_RUNTIME_PATH if matrix_contract else "scripts/brain_repair_runtime.py"
     if (
         len(modules) != 1 or len(tests) != 1
-        or "scripts/brain_repair_runtime.py" not in changed
+        or runtime_path not in changed
         or len(changed) != 3
     ):
         raise ValueError(
@@ -1176,14 +1194,15 @@ def validate_source_family_implementation(
             }:
                 raise ValueError("source-family Lego may not execute dynamic code or file I/O")
     runtime = ast.parse(
-        (root / "scripts/brain_repair_runtime.py").read_text(encoding="utf-8"),
-        filename="scripts/brain_repair_runtime.py",
+        (root / runtime_path).read_text(encoding="utf-8"),
+        filename=runtime_path,
     )
     wired = False
     for node in ast.walk(runtime):
         if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             continue
-        if node.name not in {"_current_source_structural_repair_evidence", "update_plans"}:
+        allowed_hook = {"classify"} if matrix_contract else {"_current_source_structural_repair_evidence", "update_plans"}
+        if node.name not in allowed_hook:
             continue
         imports = [
             alias.asname or alias.name
@@ -1240,6 +1259,32 @@ def validate_source_family_implementation(
             + (result.stderr or result.stdout or "nonzero exit")[-350:]
         )
     _validate_independent_source_family_episodes(root, module_name)
+    if matrix_contract:
+        # Execute the real read-only classifier, not only the new module.
+        oracle = r'''
+import json
+from catalogue_inline_episode_source import classify
+html = ('<!doctype html><html><script>'
+        'var eps2 = ["lien:OPAQUE_B1", "lien:OPAQUE_B2"];'
+        'var eps1 = ["", "lien:OPAQUE_A2"];'
+        'var epsJeton = "PRIVATE_TEST_JETON";'
+        '</script></html>')
+row = classify(200, html)
+assert row["episodeMatrixSampleCounts"] == [1, 2], row
+assert "OPAQUE" not in json.dumps(row) and "PRIVATE" not in json.dumps(row)
+assert all(row[k] is False for k in ("proofAuthority", "publicationAuthority",
+                                     "nativePlaybackAuthority", "providerMutationAuthority"))
+'''
+        result = subprocess.run(
+            [sys.executable, "-c", oracle], cwd=root, capture_output=True, text=True,
+            timeout=35, env={
+                "PATH": str(__import__("os").environ.get("PATH") or "/usr/bin"),
+                "PYTHONPATH": str(root / "scripts") + __import__("os").pathsep + str(root / "scripts/brain_oracles"),
+                "PYTHONDONTWRITEBYTECODE": "1",
+            },
+        )
+        if result.returncode != 0:
+            raise ValueError("source-family real classifier replay failed: " + (result.stderr or result.stdout)[-350:])
 
 
 def _validate_independent_source_family_episodes(root: Path, module_name: str) -> None:
@@ -1450,7 +1495,7 @@ def source_context(blueprint: dict[str, Any], patterns: list[str]) -> dict[str, 
     requires_new_profile = blueprint.get("requiresNewExecutableRepairProfile") is True
     if _requires_new_source_family_lego(blueprint):
         candidates = [
-            "scripts/brain_repair_runtime.py",
+            SOURCE_MATRIX_RUNTIME_PATH if _uses_source_matrix_compiler(blueprint) else "scripts/brain_repair_runtime.py",
             "scripts/brain_layers/declarative_gap_strategy.py",
         ]
     elif requires_new_profile:
@@ -1530,8 +1575,23 @@ def _response_format(exact_paths: list[str] | None = None) -> dict[str, Any]:
 
 
 
-def _source_family_response_format() -> dict[str, Any]:
-    """Qwen generates algorithms; Brain deterministically owns create/replace."""
+def _source_family_response_format(payload: dict[str, Any] | None = None) -> dict[str, Any]:
+    """The current family uses a bounded data grammar; legacy offline fixtures remain readable."""
+    if _uses_source_matrix_compiler(payload or {}):
+        fields = {
+            "slotPrefix": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,15}$"},
+            "declarations": {"type": "array", "minItems": 1, "maxItems": 3,
+                             "items": {"type": "string", "enum": ["var", "let", "const"]}},
+            "matrixAxis": {"type": "string", "enum": ["reader-slots", "episode-slots"]},
+            "slotOrder": {"type": "string", "enum": ["numeric", "source"]},
+            "valuePrefix": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,15}:$"},
+        }
+        return {"type": "json_object", "schema": {
+            "type": "object", "properties": {"sourceFamilyProgram": {
+                "type": "object", "properties": fields, "required": list(fields),
+                "additionalProperties": False,
+            }}, "required": ["sourceFamilyProgram"], "additionalProperties": False,
+        }}
     return {"type": "json_object", "schema": {
         "type": "object",
         "properties": {
@@ -1613,7 +1673,7 @@ def _source_family_artifact_paths(payload: dict[str, Any]) -> dict[str, str]:
         "modulePath": f"scripts/brain_layers/{name}.py",
         "moduleImport": f"brain_layers.{name}",
         "moduleName": name,
-        "runtimePath": "scripts/brain_repair_runtime.py",
+        "runtimePath": SOURCE_MATRIX_RUNTIME_PATH if _uses_source_matrix_compiler(payload) else "scripts/brain_repair_runtime.py",
         "testPath": f"tests/brain_{name}_test.py",
     }
 
@@ -1650,10 +1710,91 @@ def _source_family_contract_test(module_name: str) -> str:
     return source
 
 
+def _compile_source_matrix_program(program: Any, payload: dict[str, Any]) -> list[dict[str, Any]]:
+    """Compile model-selected matrix grammar into pure parser and real source-observation hook."""
+    required = {"slotPrefix", "declarations", "matrixAxis", "slotOrder", "valuePrefix"}
+    if not isinstance(program, dict) or set(program) != required:
+        raise ValueError("source-family matrix program requires exactly five typed grammar fields")
+    prefix, tag = program["slotPrefix"], program["valuePrefix"]
+    declarations = program["declarations"]
+    axis, order = program["matrixAxis"], program["slotOrder"]
+    if (not isinstance(prefix, str) or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]{0,15}", prefix)
+            or not isinstance(tag, str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,15}:", tag)
+            or tag.casefold() in {"http:", "https:", "file:", "data:", "javascript:", "ftp:"}
+            or not isinstance(declarations, list) or not 1 <= len(declarations) <= 3
+            or any(not isinstance(x, str) or x not in {"var", "let", "const"} for x in declarations)
+            or len(set(declarations)) != len(declarations)
+            or axis not in ("reader-slots", "episode-slots") or order not in ("numeric", "source")):
+        raise ValueError("source-family matrix grammar outside bounded compiler contract")
+    # The model controls only grammar data, never Python code, paths, imports or tests.
+    header = (
+        "import json\nimport re\n"
+        f"SLOT_PREFIX = {prefix!r}\nVALUE_PREFIX = {tag!r}\n"
+        f"DECLARATIONS = {tuple(declarations)!r}\nAXIS = {axis!r}\nORDER = {order!r}\n"
+    )
+    module = header + r'''
+def parse_episode_source(html, episode):
+    if type(episode) is not int or not 1 <= episode <= 4096:
+        return []
+    if not isinstance(html, str) or len(html) > 1048576:
+        return []
+    chunks = re.findall(r"<script\b[^>]*>([\s\S]*?)</script\s*>", html, re.I)
+    pattern = re.compile(r"\b(?:" + "|".join(DECLARATIONS) + r")\s+" +
+                         re.escape(SLOT_PREFIX) + r"([1-9][0-9]{0,3})\s*=\s*")
+    rows = {}
+    decoder = json.JSONDecoder()
+    for chunk in chunks:
+        for match in pattern.finditer(chunk):
+            slot = int(match.group(1))
+            if slot in rows or len(rows) >= 128:
+                return []
+            try:
+                values, _ = decoder.raw_decode(chunk[match.end():])
+            except ValueError:
+                return []
+            if not isinstance(values, list) or len(values) > 4096:
+                return []
+            if any(x is not None and not isinstance(x, str) for x in values):
+                return []
+            rows[slot] = values
+    keys = sorted(rows) if ORDER == "numeric" else list(rows)
+    if AXIS == "reader-slots":
+        selected = [rows[k][episode - 1] for k in keys if episode <= len(rows[k])]
+    else:
+        selected = rows.get(episode, [])
+    # Preserve matrix position before filtering blanks, never shift episode indices.
+    out = []
+    for value in selected:
+        if (isinstance(value, str) and value.startswith(VALUE_PREFIX)
+                and re.fullmatch(r"[A-Za-z0-9_.:-]{1,200}", value[len(VALUE_PREFIX):])
+                and value not in out):
+            out.append(value)
+    return out
+'''
+    ast.parse(module)
+    paths = _source_family_artifact_paths(payload)
+    anchor = SOURCE_MATRIX_RUNTIME_ANCHOR
+    hook = (
+        "    matrix_counts = []\n"
+        '    if shape == "catalogue_inline_token_episode":\n'
+        f"        from {paths['moduleImport']} import parse_episode_source\n"
+        "        matrix_counts = [len(parse_episode_source(body, pos)) for pos in (1, 2)]\n"
+        + anchor + '\n        "episodeMatrixSampleCounts": matrix_counts,'
+    )
+    return [
+        {"operation": "create", "path": paths["modulePath"], "content": module},
+        {"operation": "replace", "path": paths["runtimePath"], "find": anchor, "replace": hook},
+        {"operation": "create", "path": paths["testPath"],
+         "content": _source_family_contract_test(paths["moduleName"])},
+    ]
+
+
 def _compile_source_family_program(
     program: Any, payload: dict[str, Any],
 ) -> list[dict[str, Any]]:
-    """Compile model-owned parser/hook plus trusted Brain regression into 3 edits."""
+    """Compile the current typed grammar, or read historical raw-code fixtures."""
+    if _uses_source_matrix_compiler(payload):
+        return _compile_source_matrix_program(program, payload)
     if not isinstance(program, dict):
         raise ValueError("source-family model must emit sourceFamilyProgram object")
     required = ("moduleCode", "runtimeFind", "runtimeReplace")
@@ -1790,6 +1931,19 @@ def _model_request(
             system += " Keep the JSON short and schema-exact."
         if payload.get("correctionReason"):
             system += " Correct the strategy according to validationError. No code."
+    elif source_family and _uses_source_matrix_compiler(payload):
+        system = (
+            "You are NiakVIO Brain's NEW SOURCE FAMILY grammar designer. "
+            "Return sourceFamilyProgram with exactly slotPrefix, declarations, matrixAxis, "
+            "slotOrder, valuePrefix. Use only the observed declaration/prefix grammar. "
+            "The independent reference describes reader slots, each array position is "
+            "one requested episode (one-based). Preserve missing cells before selecting. "
+            "The Brain owns all executable parser code, source-observation hook and tests. "
+            "Never emit code, URLs, tokens, file paths or test assertions. "
+            "This generates only a bounded pure parser and diagnostic counts, never playback proof."
+        )
+        if payload.get("validationError"):
+            system += " Correct the grammar using the validation error; do not repeat a rejected axis."
     elif source_family:
         system = (
             "You are NiakVIO Brain's NEW SOURCE FAMILY Lego generator, NOT a "
@@ -1855,7 +2009,7 @@ def _model_request(
         "max_tokens": max_tokens,
         "response_format": (
             _branch_body_response_format() if requires_new_profile
-            else _source_family_response_format() if source_family
+            else _source_family_response_format(payload) if source_family
             else _response_format(exact_paths)
         ),
         "messages": [
@@ -2166,7 +2320,7 @@ def _compact_payload(payload: dict[str, Any]) -> dict[str, Any]:
     compact["sources"] = sources
     if _requires_new_source_family_lego(payload):
         compact["sourceFamilyArtifactPaths"] = _source_family_artifact_paths(payload)
-        compact["sourceFamilyRuntimeAnchor"] = SOURCE_FAMILY_RUNTIME_ANCHOR
+        compact["sourceFamilyRuntimeAnchor"] = _source_family_anchor(payload)
     keep = {
         "capability_gap_detector",
         "meta_learning_gap_synthesis",
@@ -2199,7 +2353,7 @@ def _minimal_payload(payload: dict[str, Any]) -> dict[str, Any]:
     minimal["sources"] = sources
     if _requires_new_source_family_lego(payload):
         minimal["sourceFamilyArtifactPaths"] = _source_family_artifact_paths(payload)
-        minimal["sourceFamilyRuntimeAnchor"] = SOURCE_FAMILY_RUNTIME_ANCHOR
+        minimal["sourceFamilyRuntimeAnchor"] = _source_family_anchor(payload)
     return minimal
 
 
@@ -2638,7 +2792,7 @@ def _validated_generated_edits(
                 correction["correctionReason"] = "source-family-typed-contract"
                 correction["validationError"] = str(error)[:400]
                 correction["correctionContract"] = {
-                    "keepExactRuntimeDecodeAnchor": SOURCE_FAMILY_RUNTIME_ANCHOR,
+                    "keepExactRuntimeDecodeAnchor": _source_family_anchor(payload),
                     "neverReplaceFunctionHeader": True,
                     "mustProducePureParserAndExecutableHook": True,
                     "mustReturnSourceFamilyProgram": True,

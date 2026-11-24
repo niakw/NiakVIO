@@ -218,4 +218,55 @@ assert len(desc["programFingerprint"]) == 64
 assert all("contentSha256" in entry and len(entry["contentSha256"]) == 64
            for entry in desc["editDescriptors"])
 assert "parse_episode_source(html" not in json.dumps(desc)
+# Current live contract: the model emits only bounded grammar data, not Python.
+matrix_blueprint = {**blueprint, "sourceCompilerContract": "reader-matrix-v2"}
+matrix_payload = {**payload, "blueprint": matrix_blueprint}
+grammar = {
+    "slotPrefix": "eps", "declarations": ["var", "let", "const"],
+    "matrixAxis": "reader-slots", "slotOrder": "numeric", "valuePrefix": "lien:",
+}
+schema = mod._source_family_response_format(matrix_payload)["schema"]["properties"]["sourceFamilyProgram"]
+assert set(schema["required"]) == set(grammar)
+assert "moduleCode" not in schema["properties"] and "runtimeReplace" not in schema["properties"]
+for invalid in ({**grammar, "moduleCode": "eval('1')"},
+                {**grammar, "slotPrefix": "x;open()"},
+                {**grammar, "valuePrefix": "https:"},
+                {**grammar, "declarations": ["import"]}):
+    try:
+        mod._model_edits({"sourceFamilyProgram": invalid}, matrix_payload)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("unsafe matrix grammar accepted")
+
+with tempfile.TemporaryDirectory() as td:
+    root = Path(td)
+    real = root / mod.SOURCE_MATRIX_RUNTIME_PATH
+    real.parent.mkdir(parents=True)
+    real.write_text((ROOT / mod.SOURCE_MATRIX_RUNTIME_PATH).read_text(encoding="utf-8"), encoding="utf-8")
+    edits = mod._model_edits({"sourceFamilyProgram": grammar}, matrix_payload)
+    assert [x["operation"] for x in edits] == ["create", "replace", "create"]
+    assert edits[1]["path"] == mod.SOURCE_MATRIX_RUNTIME_PATH
+    assert "parse_episode_source(body, pos)" in edits[1]["replace"]
+    mod.validate_edits(edits, [mod.SOURCE_MATRIX_RUNTIME_PATH], root=root)
+    for e in edits:
+        path = root / e["path"]
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if e["operation"] == "create":
+            path.write_text(e["content"], encoding="utf-8")
+        else:
+            source = path.read_text(encoding="utf-8")
+            assert source.count(e["find"]) == 1
+            path.write_text(source.replace(e["find"], e["replace"], 1), encoding="utf-8")
+    mod.validate_source_family_implementation([e["path"] for e in edits], matrix_blueprint, root=root)
+    # A grammar that transposes reader slots must not pass the independent oracle.
+    wrong = mod._model_edits({"sourceFamilyProgram": {**grammar, "matrixAxis": "episode-slots"}}, matrix_payload)
+    (root / edits[0]["path"]).write_text(wrong[0]["content"], encoding="utf-8")
+    try:
+        mod.validate_source_family_implementation([e["path"] for e in edits], matrix_blueprint, root=root)
+    except ValueError as exc:
+        assert "source-family synthetic parser replay failed" in str(exc)
+    else:
+        raise AssertionError("transposed matrix grammar was accepted")
+
 print("Source-family Brain FORCE mode: typed program compiled into 3 deterministic edits, actual wired parser test and hostile negatives passed")

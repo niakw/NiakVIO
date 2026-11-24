@@ -5,7 +5,13 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from pathlib import Path
+
+# Installed Brain parser modules are imported only by a compiler-owned hook.
+SCRIPTS_ROOT = str(Path(__file__).resolve().parents[1])
+if SCRIPTS_ROOT not in sys.path:
+    sys.path.insert(0, SCRIPTS_ROOT)
 
 MAX_BODY_CHARS = 1_048_576
 SCRIPTS = re.compile(r"<script\b[^>]*>([\s\S]*?)</script\s*>", re.I)

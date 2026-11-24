@@ -532,6 +532,7 @@ def source_contract_family_blueprint(
         "sourceContractReference": "independent-implementation-414c9bc8c8c2b904232264f279d9b4e814c4bde9",
         "episodeAxisHypothesis": "reader-slot-arrays-episode-index-within-slot",
         "episodeAxisVerifiedOnOfficialClient": False,
+        "sourceCompilerContract": "reader-matrix-v2",
         "reentryPolicy": (
             "Brain family synthesis -> isolated compile -> exact current-byte "
             "rematerialize -> official NuvioTV episode/media/audio -> sibling "
