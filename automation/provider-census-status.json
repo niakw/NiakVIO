@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "45616048683",
-  "triggerSha": "2d082b31b45fb7dfa96d864339935cb806ab101f",
+  "runId": "45616739937",
+  "triggerSha": "f97f4c5d24adfa6c6ba9e34c5b8c89d687e03c55",
   "providers": [
     {
       "provider": "1jour1film0626",
@@ -35,9 +35,9 @@
       ],
       "harnessTransportClass": "github-all-transports-challenged",
       "harnessTransportEvidence": [
-        "anime: browser=browser_challenge_observed, tv-browser=unknown, okhttp=unknown, desktop-okhttp=unknown, direct=unknown",
-        "movie: browser=browser_challenge_observed, tv-browser=unknown, okhttp=unknown, desktop-okhttp=unknown, direct=unknown",
-        "tv: browser=browser_challenge_observed, tv-browser=unknown, okhttp=unknown, desktop-okhttp=unknown, direct=unknown"
+        "anime: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, desktop-okhttp=unknown, direct=unknown",
+        "movie: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, desktop-okhttp=unknown, direct=unknown",
+        "tv: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, desktop-okhttp=unknown, direct=unknown"
       ],
       "authorityRepairEligible": false,
       "authorityAction": "REDISCOVER_SEARCH",
@@ -105,9 +105,9 @@
     },
     {
       "provider": "67movies",
-      "status": "ROUTE PROVEN",
+      "status": "HARNESS MISMATCH",
       "underlyingStatus": "",
-      "color": "🟪",
+      "color": "🟧",
       "declaredLanes": [
         "anime",
         "movie",
@@ -151,21 +151,11 @@
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
-      "action": "replay qualified route fixtures and finish terminal extraction/validation",
+      "action": "GitHub-hosted IP/environment differential confirmed by private residential exit; keep provider JS unchanged and reproduce with native transport/playback before any code blame",
       "brainCheckRequired": true,
-      "statusRepairEligible": true,
-      "repairEligible": true,
-      "testedThisRun": true,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
-        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
-        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
-      "transportRepairEligible": true,
-      "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayReclassified": true
+      "statusRepairEligible": false,
+      "repairEligible": false,
+      "testedThisRun": false
     },
     {
       "provider": "allanime",
@@ -406,7 +396,7 @@
       ],
       "dominantIssue": "timeout",
       "searchProgress": [
-        "anime: 4 works tested / 1 retained misses"
+        "anime: 5 works tested / 2 retained misses"
       ],
       "evidenceDepth": [
         "anime=lookup_only"
@@ -837,7 +827,7 @@
       ],
       "dominantIssue": "timeout",
       "searchProgress": [
-        "anime: 3 works tested / 0 retained misses"
+        "anime: 2 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=chain_reached"
@@ -935,11 +925,11 @@
       "latestLaneVerdicts": [
         "anime=timeout",
         "movie=no_streams/provider_network_zero_result",
-        "tv=no_streams/provider_network_zero_result"
+        "tv=timeout"
       ],
-      "dominantIssue": "provider_network_zero_result×2, timeout",
+      "dominantIssue": "timeout×2, provider_network_zero_result",
       "searchProgress": [
-        "anime: 8 works tested / 8 retained misses / 8 retained chain hits",
+        "anime: 7 works tested / 8 retained misses / 8 retained chain hits",
         "movie: 8 works tested / 0 retained misses / 8 retained chain hits",
         "tv: 6 works tested / 10 retained misses / 6 retained chain hits"
       ],
@@ -1113,9 +1103,9 @@
     },
     {
       "provider": "cinematheque-de-bretagne",
-      "status": "PROOF REFRESH REQUIRED",
+      "status": "CHAIN REACHED",
       "underlyingStatus": "",
-      "color": "🔹",
+      "color": "🟣",
       "declaredLanes": [
         "movie"
       ],
@@ -1124,11 +1114,11 @@
       "candidateProof": [],
       "routeProof": [],
       "latestLaneVerdicts": [
-        "movie=playable_unverified/provider_returned_streams"
+        "movie=timeout"
       ],
-      "dominantIssue": "provider_returned_streams",
+      "dominantIssue": "timeout",
       "searchProgress": [
-        "movie: 2 works tested / 28 retained misses / 2 retained chain hits"
+        "movie: 8 works tested / 32 retained misses / 2 retained chain hits"
       ],
       "evidenceDepth": [
         "movie=chain_reached"
@@ -1144,13 +1134,13 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROOF REFRESH REQUIRED"
+        "current_status:CHAIN REACHED"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
       "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
+      "brainCheckRequired": true,
+      "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true
     },
@@ -1326,7 +1316,7 @@
       ],
       "dominantIssue": "provider_network_http_error",
       "searchProgress": [
-        "movie: 8 works tested / 18 retained misses"
+        "movie: 8 works tested / 19 retained misses"
       ],
       "evidenceDepth": [
         "movie=lookup_only"
@@ -1573,7 +1563,7 @@
         "movie: 8 works tested / 3 retained misses"
       ],
       "evidenceDepth": [
-        "movie=lookup_only"
+        "movie=none"
       ],
       "harnessTransportClass": "residential-exit-native-reachable",
       "harnessTransportEvidence": [
@@ -1713,8 +1703,8 @@
       ],
       "dominantIssue": "timeout×2",
       "searchProgress": [
-        "movie: 5 works tested / 0 retained misses",
-        "tv: 6 works tested / 0 retained misses"
+        "movie: 6 works tested / 0 retained misses",
+        "tv: 5 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "movie=lookup_only",
@@ -1839,9 +1829,9 @@
     },
     {
       "provider": "french-anime",
-      "status": "NO PROOF",
+      "status": "HARNESS MISMATCH",
       "underlyingStatus": "",
-      "color": "🔵",
+      "color": "🟧",
       "declaredLanes": [
         "anime"
       ],
@@ -1875,19 +1865,11 @@
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
-      "action": "continue corpus proof search; BRAIN checks",
+      "action": "GitHub-hosted IP/environment differential confirmed by private residential exit; keep provider JS unchanged and reproduce with native transport/playback before any code blame",
       "brainCheckRequired": true,
-      "statusRepairEligible": true,
-      "repairEligible": true,
-      "testedThisRun": true,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
-      "transportRepairEligible": true,
-      "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayReclassified": true
+      "statusRepairEligible": false,
+      "repairEligible": false,
+      "testedThisRun": false
     },
     {
       "provider": "french-manga",
@@ -2144,7 +2126,7 @@
       ],
       "dominantIssue": "timeout",
       "searchProgress": [
-        "anime: 2 works tested / 0 retained misses / 3 retained chain hits"
+        "anime: 3 works tested / 0 retained misses / 3 retained chain hits"
       ],
       "evidenceDepth": [
         "anime=chain_reached"
@@ -2437,7 +2419,7 @@
       ],
       "evidenceDepth": [
         "movie=lookup_only",
-        "tv=none"
+        "tv=lookup_only"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -2670,9 +2652,9 @@
       ],
       "dominantIssue": "timeout×3",
       "searchProgress": [
-        "anime: 4 works tested / 25 retained misses",
-        "movie: 3 works tested / 16 retained misses",
-        "tv: 4 works tested / 12 retained misses / 6 retained chain hits"
+        "anime: 5 works tested / 25 retained misses",
+        "movie: 4 works tested / 16 retained misses",
+        "tv: 5 works tested / 12 retained misses / 6 retained chain hits"
       ],
       "evidenceDepth": [
         "anime=chain_reached",
@@ -2702,9 +2684,9 @@
     },
     {
       "provider": "movix-fr",
-      "status": "CHAIN REACHED",
+      "status": "PROVIDER JS BROKEN",
       "underlyingStatus": "",
-      "color": "🟣",
+      "color": "🟠",
       "declaredLanes": [
         "anime",
         "movie",
@@ -2716,13 +2698,13 @@
       "routeProof": [],
       "latestLaneVerdicts": [
         "anime=no_streams/provider_network_zero_result",
-        "movie=timeout",
+        "movie=returned_unplayable/provider_returned_streams",
         "tv=no_streams/provider_network_zero_result"
       ],
-      "dominantIssue": "provider_network_zero_result×2, timeout",
+      "dominantIssue": "provider_network_zero_result×2, provider_returned_streams",
       "searchProgress": [
         "anime: 8 works tested / 12 retained misses / 7 retained chain hits",
-        "movie: 3 works tested / 0 retained misses / 3 retained chain hits",
+        "movie: 2 works tested / 0 retained misses / 3 retained chain hits",
         "tv: 8 works tested / 21 retained misses / 5 retained chain hits"
       ],
       "evidenceDepth": [
@@ -2741,7 +2723,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:CHAIN REACHED"
+        "current_status:PROVIDER JS BROKEN"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -2804,9 +2786,9 @@
     },
     {
       "provider": "nakios",
-      "status": "PROVIDER JS BROKEN",
+      "status": "CHAIN REACHED",
       "underlyingStatus": "",
-      "color": "🟠",
+      "color": "🟣",
       "declaredLanes": [
         "movie",
         "tv"
@@ -2816,12 +2798,12 @@
       "candidateProof": [],
       "routeProof": [],
       "latestLaneVerdicts": [
-        "movie=returned_unplayable/provider_returned_streams",
+        "movie=timeout",
         "tv=no_streams/provider_network_zero_result"
       ],
-      "dominantIssue": "provider_returned_streams, provider_network_zero_result",
+      "dominantIssue": "timeout, provider_network_zero_result",
       "searchProgress": [
-        "movie: 2 works tested / 0 retained misses / 3 retained chain hits",
+        "movie: 3 works tested / 0 retained misses / 3 retained chain hits",
         "tv: 8 works tested / 15 retained misses / 6 retained chain hits"
       ],
       "evidenceDepth": [
@@ -2838,11 +2820,11 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER JS BROKEN"
+        "current_status:CHAIN REACHED"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
-      "action": "repair + retest; BRAIN checks",
+      "action": "finish terminal extractor/validation; do not promote before verified media",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
@@ -3315,9 +3297,9 @@
       "candidateProof": [],
       "routeProof": [],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_waf_challenge"
+        "movie=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "provider_waf_challenge",
+      "dominantIssue": "provider_network_http_error",
       "searchProgress": [
         "movie: 8 works tested / 0 retained misses"
       ],
@@ -3358,9 +3340,9 @@
       "candidateProof": [],
       "routeProof": [],
       "latestLaneVerdicts": [
-        "anime=timeout"
+        "anime=no_streams/provider_waf_challenge"
       ],
-      "dominantIssue": "timeout",
+      "dominantIssue": "provider_waf_challenge",
       "searchProgress": [
         "anime: 8 works tested / 0 retained misses"
       ],
@@ -3506,12 +3488,12 @@
       "candidateProof": [],
       "routeProof": [],
       "latestLaneVerdicts": [
-        "movie=timeout",
+        "movie=playable_unverified/provider_returned_streams",
         "tv=timeout"
       ],
-      "dominantIssue": "timeout×2",
+      "dominantIssue": "provider_returned_streams, timeout",
       "searchProgress": [
-        "movie: 5 works tested / 0 retained misses / 2 retained chain hits",
+        "movie: 1 works tested / 0 retained misses / 1 retained chain hit",
         "tv: 3 works tested / 0 retained misses / 2 retained chain hits"
       ],
       "evidenceDepth": [
@@ -3555,11 +3537,11 @@
         "1 live routes / anime"
       ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_http_error"
+        "anime=wrong_content/provider_returned_wrong_content"
       ],
-      "dominantIssue": "provider_network_http_error",
+      "dominantIssue": "provider_returned_wrong_content",
       "searchProgress": [
-        "anime: 8 works tested / 11 retained misses"
+        "anime: 6 works tested / 11 retained misses"
       ],
       "evidenceDepth": [
         "anime=lookup_only"
@@ -3630,9 +3612,9 @@
     },
     {
       "provider": "shuttletv",
-      "status": "ROUTE PROVEN",
+      "status": "HARNESS MISMATCH",
       "underlyingStatus": "",
-      "color": "🟪",
+      "color": "🟧",
       "declaredLanes": [
         "anime",
         "movie",
@@ -3676,21 +3658,11 @@
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
-      "action": "replay qualified route fixtures and finish terminal extraction/validation",
+      "action": "replay provider-owned route with NuvioTV-like/native transport; do not mutate provider JS unless route/playback still fails causally",
       "brainCheckRequired": true,
-      "statusRepairEligible": true,
-      "repairEligible": true,
-      "testedThisRun": true,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
-        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
-        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
-      "transportRepairEligible": true,
-      "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayReclassified": true
+      "statusRepairEligible": false,
+      "repairEligible": false,
+      "testedThisRun": false
     },
     {
       "provider": "skstream",
@@ -3711,7 +3683,7 @@
       ],
       "dominantIssue": "provider_waf_challenge×2",
       "searchProgress": [
-        "movie: 8 works tested / 27 retained misses",
+        "movie: 8 works tested / 28 retained misses",
         "tv: 8 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
@@ -4277,7 +4249,7 @@
       ],
       "dominantIssue": "provider_network_http_error",
       "searchProgress": [
-        "anime: 8 works tested / 30 retained misses"
+        "anime: 8 works tested / 31 retained misses"
       ],
       "evidenceDepth": [
         "anime=lookup_only"
@@ -4411,9 +4383,9 @@
       ],
       "dominantIssue": "timeout×3",
       "searchProgress": [
-        "anime: 6 works tested / 0 retained misses",
-        "movie: 2 works tested / 0 retained misses",
-        "tv: 6 works tested / 0 retained misses"
+        "anime: 4 works tested / 0 retained misses",
+        "movie: 4 works tested / 0 retained misses",
+        "tv: 4 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=chain_reached",
@@ -4751,7 +4723,7 @@
       ],
       "dominantIssue": "timeout×2, provider_returned_streams",
       "searchProgress": [
-        "anime: 8 works tested / 0 retained misses / 7 retained chain hits",
+        "anime: 6 works tested / 0 retained misses / 7 retained chain hits",
         "movie: 6 works tested / 8 retained misses / 4 retained chain hits",
         "tv: 1 works tested / 0 retained misses / 4 retained chain hits"
       ],
@@ -5324,17 +5296,16 @@
   ],
   "counts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 20,
+    "CHAIN REACHED": 21,
     "DISABLED": 36,
     "FULL OK": 8,
-    "HARNESS MISMATCH": 4,
+    "HARNESS MISMATCH": 7,
     "HARNESS/ENV BLOCKED": 14,
-    "NO PROOF": 10,
-    "PROOF REFRESH REQUIRED": 3,
+    "NO PROOF": 9,
+    "PROOF REFRESH REQUIRED": 2,
     "PROVIDER JS BROKEN": 1,
     "PROVIDER NETWORK BLOCKED": 7,
-    "REGRESSION PROVIDER": 5,
-    "ROUTE PROVEN": 2
+    "REGRESSION PROVIDER": 5
   },
   "symptomaticProviders": [
     "1jour1film0626",
@@ -5350,6 +5321,7 @@
     "boredflix",
     "cinegram",
     "cinemabz",
+    "cinematheque-de-bretagne",
     "cinetimes",
     "corsflix",
     "documentary-area",
@@ -5416,6 +5388,7 @@
     "boredflix",
     "cinegram",
     "cinemabz",
+    "cinematheque-de-bretagne",
     "cinetimes",
     "corsflix",
     "documentary-area",
@@ -5469,18 +5442,15 @@
     "zone-telechargement"
   ],
   "repairQueue": [
-    "67movies",
     "anikototv",
     "anime-sama",
     "corsflix",
-    "french-anime",
     "french-manga",
     "frenchstream",
     "moiflix",
     "nakios",
     "primewire",
-    "sadisflix",
-    "shuttletv"
+    "sadisflix"
   ],
   "authorityBlockedQueue": [
     "1jour1film0626",
@@ -5504,6 +5474,7 @@
     "chillflix",
     "cinegram",
     "cinemabz",
+    "cinematheque-de-bretagne",
     "cinetimes",
     "coflix",
     "documentary-area",
@@ -5617,6 +5588,7 @@
     "boredflix",
     "cinegram",
     "cinemabz",
+    "cinematheque-de-bretagne",
     "cinetimes",
     "documentary-area",
     "dulourd",
@@ -5660,10 +5632,22 @@
     "zone-streaming",
     "zone-telechargement"
   ],
-  "environmentQueue": [],
-  "harnessMismatchQueue": [],
+  "environmentQueue": [
+    "67movies",
+    "french-anime",
+    "shuttletv"
+  ],
+  "harnessMismatchQueue": [
+    "67movies",
+    "french-anime",
+    "shuttletv"
+  ],
   "environmentBlockedQueue": [],
-  "harnessQueue": [],
+  "harnessQueue": [
+    "67movies",
+    "french-anime",
+    "shuttletv"
+  ],
   "lastRepairAttempt": {
     "runId": "45320238622",
     "sourceCensusRunId": "",
@@ -5683,7 +5667,7 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "45616860488-waf-transport",
+  "harnessEvidenceRunId": "45616739937-sharded-waf",
   "harnessEvidenceSha": "f97f4c5d24adfa6c6ba9e34c5b8c89d687e03c55",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
@@ -5708,16 +5692,8 @@
   ],
   "networkDifferentialUpdatedProviders": [],
   "residentialProviderReplayPromotedProviders": [],
-  "residentialProviderReplayReclassifiedProviders": [
-    "67movies",
-    "french-anime",
-    "shuttletv"
-  ],
-  "residentialProviderReplayRepairableProviders": [
-    "67movies",
-    "french-anime",
-    "shuttletv"
-  ],
+  "residentialProviderReplayReclassifiedProviders": [],
+  "residentialProviderReplayRepairableProviders": [],
   "residentialExitNodeEvidence": {
     "enabled": true,
     "available": true,
@@ -5893,9 +5869,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "f97f4c5d24adfa6c6ba9e34c5b8c89d687e03c55",
+          "sourceNiakvioSha": "169db60e2f20a5e1e770b3aeafe2d0ccadae7875",
           "providerBundleSha256": "f3e78ead7922f1e21a2f97a5b457098c282bb6c7e2c9cdece5f0825e6f8c9817",
-          "runId": "45616860488",
+          "runId": "45408549293",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -5922,9 +5898,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "f97f4c5d24adfa6c6ba9e34c5b8c89d687e03c55",
+          "sourceNiakvioSha": "169db60e2f20a5e1e770b3aeafe2d0ccadae7875",
           "providerBundleSha256": "f3e78ead7922f1e21a2f97a5b457098c282bb6c7e2c9cdece5f0825e6f8c9817",
-          "runId": "45616860488",
+          "runId": "45408549293",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -5951,9 +5927,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "f97f4c5d24adfa6c6ba9e34c5b8c89d687e03c55",
+          "sourceNiakvioSha": "169db60e2f20a5e1e770b3aeafe2d0ccadae7875",
           "providerBundleSha256": "f3e78ead7922f1e21a2f97a5b457098c282bb6c7e2c9cdece5f0825e6f8c9817",
-          "runId": "45616860488",
+          "runId": "45408549293",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -6921,9 +6897,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "f97f4c5d24adfa6c6ba9e34c5b8c89d687e03c55",
+          "sourceNiakvioSha": "169db60e2f20a5e1e770b3aeafe2d0ccadae7875",
           "providerBundleSha256": "7dbdeb16e2cdb8f46e0e351849e3e731ec08c3dc84c3026a0e7e3de771034a89",
-          "runId": "45616860488",
+          "runId": "45408549293",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7498,9 +7474,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "f97f4c5d24adfa6c6ba9e34c5b8c89d687e03c55",
+          "sourceNiakvioSha": "169db60e2f20a5e1e770b3aeafe2d0ccadae7875",
           "providerBundleSha256": "689bc4f0aa921695be52d872ae1426fdd02287d9942672e9d5a6b925cbabb610",
-          "runId": "45616860488",
+          "runId": "45408549293",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7527,9 +7503,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "f97f4c5d24adfa6c6ba9e34c5b8c89d687e03c55",
+          "sourceNiakvioSha": "169db60e2f20a5e1e770b3aeafe2d0ccadae7875",
           "providerBundleSha256": "689bc4f0aa921695be52d872ae1426fdd02287d9942672e9d5a6b925cbabb610",
-          "runId": "45616860488",
+          "runId": "45408549293",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7556,9 +7532,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "f97f4c5d24adfa6c6ba9e34c5b8c89d687e03c55",
+          "sourceNiakvioSha": "169db60e2f20a5e1e770b3aeafe2d0ccadae7875",
           "providerBundleSha256": "689bc4f0aa921695be52d872ae1426fdd02287d9942672e9d5a6b925cbabb610",
-          "runId": "45616860488",
+          "runId": "45408549293",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7858,28 +7834,25 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": true,
-      "providerCount": 3,
+      "available": false,
+      "providerCount": 0,
       "refreshedProviders": [
+        "1jour1film0626",
         "67movies",
-        "french-anime",
-        "shuttletv"
+        "aniflix-uno",
+        "animejlprovider",
+        "animeonsen",
+        "animesalt",
+        "arrowtv",
+        "chillflix",
+        "cinegram"
       ],
-      "replayedProviders": [
-        "67movies",
-        "french-anime",
-        "shuttletv"
-      ],
+      "replayedProviders": [],
       "rawProviders": [],
       "playableProviders": [],
       "verifiedProviders": [],
-      "byteMatchedProviders": [
-        "67movies",
-        "french-anime",
-        "shuttletv"
-      ],
-      "sourceNiakvioSha": "f97f4c5d24adfa6c6ba9e34c5b8c89d687e03c55",
-      "runId": "45616860488",
+      "sourceNiakvioSha": "",
+      "runId": "",
       "proofAuthority": false,
       "publicationAuthority": false
     },

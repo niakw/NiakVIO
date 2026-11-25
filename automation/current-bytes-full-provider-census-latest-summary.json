@@ -4,10 +4,10 @@
   "acceptanceTarget": 84,
   "acceptedPlayableProviderCount": 6,
   "acceptedPlayableProviders": [
-    "cinematheque-de-bretagne",
     "moviebox",
     "papadustream",
     "purstream",
+    "sadisflix",
     "streamzo",
     "zone-streaming"
   ],
@@ -25,6 +25,7 @@
     "boredflix",
     "cinegram",
     "cinemabz",
+    "cinematheque-de-bretagne",
     "cinetimes",
     "corsflix",
     "documentary-area",
@@ -91,8 +92,9 @@
   "debugStageCounts": {
     "provider_network_exception": 11,
     "provider_network_http_error": 32,
-    "provider_network_zero_result": 59,
+    "provider_network_zero_result": 58,
     "provider_returned_streams": 15,
+    "provider_returned_wrong_content": 1,
     "provider_waf_challenge": 62,
     "timeout": 20
   },
@@ -115,9 +117,9 @@
       "moiflix",
       "movieshunt",
       "persianstremio",
+      "rarefilmm",
       "rivestream-app",
       "rivestream-ru",
-      "sekai",
       "showbox",
       "vidfast",
       "voiranime-rip",
@@ -156,15 +158,18 @@
       "watchott"
     ],
     "provider_returned_streams": [
-      "cinematheque-de-bretagne",
       "french-manga",
       "moviebox",
-      "nakios",
+      "movix-fr",
       "papadustream",
       "purstream",
+      "sadisflix",
       "streamzo",
       "voiranime-homes",
       "zone-streaming"
+    ],
+    "provider_returned_wrong_content": [
+      "sekai"
     ],
     "provider_waf_challenge": [
       "1jour1film0626",
@@ -190,7 +195,7 @@
       "moviesmod",
       "movy",
       "primewire",
-      "rarefilmm",
+      "reanime-to",
       "shuttletv",
       "skstream",
       "stigstream",
@@ -206,11 +211,11 @@
       "animekai",
       "anisama",
       "boredflix",
+      "cinematheque-de-bretagne",
       "flixhq",
       "hianime",
       "movish",
-      "movix-fr",
-      "reanime-to",
+      "nakios",
       "sadisflix",
       "vuflix",
       "zone-streaming"
@@ -252,28 +257,30 @@
   "partialOkCount": 0,
   "partialOkProviders": [],
   "providerCount": 111,
-  "runId": 45616048683,
+  "runId": 45616739937,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 20,
+    "CHAIN REACHED": 21,
     "DISABLED": 36,
     "FULL OK": 8,
     "HARNESS MISMATCH": 7,
     "HARNESS/ENV BLOCKED": 14,
     "NO PROOF": 9,
-    "PROOF REFRESH REQUIRED": 3,
+    "PROOF REFRESH REQUIRED": 2,
     "PROVIDER JS BROKEN": 1,
     "PROVIDER NETWORK BLOCKED": 7,
     "REGRESSION PROVIDER": 5
   },
   "testedProviderCount": 101,
-  "triggerSha": "2d082b31b45fb7dfa96d864339935cb806ab101f",
+  "triggerSha": "f97f4c5d24adfa6c6ba9e34c5b8c89d687e03c55",
   "verifiedProviderCount": 1,
   "verifiedProviders": [
     "moviebox"
   ],
-  "wrongContentProviderCount": 0,
-  "wrongContentProviders": []
+  "wrongContentProviderCount": 1,
+  "wrongContentProviders": [
+    "sekai"
+  ]
 }
