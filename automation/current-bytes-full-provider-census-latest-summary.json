@@ -2,13 +2,12 @@
   "acceptanceBasis": "aggregate-operational-state-including-carried-evidence",
   "acceptanceReached": false,
   "acceptanceTarget": 84,
-  "acceptedPlayableProviderCount": 7,
+  "acceptedPlayableProviderCount": 6,
   "acceptedPlayableProviders": [
     "cinematheque-de-bretagne",
-    "mugiwarastream",
+    "moviebox",
     "papadustream",
     "purstream",
-    "sadisflix",
     "streamzo",
     "zone-streaming"
   ],
@@ -78,23 +77,24 @@
     "zone-streaming",
     "zone-telechargement"
   ],
-  "carriedOperationalProviderCount": 7,
+  "carriedOperationalProviderCount": 8,
   "carriedOperationalProviders": [
     "castle",
     "hindmoviez",
     "internet-archive",
     "kurage",
     "meowtv",
+    "mugiwarastream",
     "neko-sama",
     "webflix"
   ],
   "debugStageCounts": {
     "provider_network_exception": 11,
-    "provider_network_http_error": 30,
-    "provider_network_zero_result": 60,
-    "provider_returned_streams": 14,
-    "provider_waf_challenge": 66,
-    "timeout": 19
+    "provider_network_http_error": 32,
+    "provider_network_zero_result": 59,
+    "provider_returned_streams": 15,
+    "provider_waf_challenge": 62,
+    "timeout": 20
   },
   "debugStageProviders": {
     "provider_network_exception": [
@@ -108,6 +108,7 @@
     "provider_network_http_error": [
       "anikototv",
       "anime-ultime",
+      "animesultra",
       "coflix",
       "documentary-area",
       "emnexmovies",
@@ -131,6 +132,7 @@
       "animesama-co",
       "animevost-fr",
       "animevostfr",
+      "boredflix",
       "cinemabz",
       "fawesome",
       "flixer",
@@ -142,7 +144,6 @@
       "latestmovies",
       "mallumv",
       "moviebite",
-      "moviebox",
       "movix-fr",
       "nakios",
       "neobam",
@@ -152,16 +153,15 @@
       "pstream",
       "uhdmovies",
       "vidlink",
-      "watchott",
-      "zone-streaming"
+      "watchott"
     ],
     "provider_returned_streams": [
       "cinematheque-de-bretagne",
       "french-manga",
-      "mugiwarastream",
+      "moviebox",
+      "nakios",
       "papadustream",
       "purstream",
-      "sadisflix",
       "streamzo",
       "voiranime-homes",
       "zone-streaming"
@@ -182,14 +182,12 @@
       "fexini",
       "film-a-revoir",
       "flemmix",
-      "flixhq",
       "franime",
       "french-anime",
       "fullanime",
       "ihavenotv",
       "kehflix",
       "moviesmod",
-      "movish",
       "movy",
       "primewire",
       "rarefilmm",
@@ -206,16 +204,14 @@
       "anidb",
       "anime-sama",
       "animekai",
-      "animesultra",
       "anisama",
       "boredflix",
       "flixhq",
       "hianime",
+      "movish",
       "movix-fr",
-      "nakios",
       "reanime-to",
       "sadisflix",
-      "showbox",
       "vuflix",
       "zone-streaming"
     ]
@@ -242,39 +238,41 @@
     "neko-sama",
     "webflix"
   ],
-  "operationalWithoutCurrentVerifiedCount": 7,
+  "operationalWithoutCurrentVerifiedCount": 8,
   "operationalWithoutCurrentVerifiedProviders": [
     "castle",
     "hindmoviez",
     "internet-archive",
     "kurage",
     "meowtv",
+    "mugiwarastream",
     "neko-sama",
     "webflix"
   ],
   "partialOkCount": 0,
   "partialOkProviders": [],
   "providerCount": 111,
-  "runId": 45407677866,
+  "runId": 45616048683,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 22,
+    "CHAIN REACHED": 20,
     "DISABLED": 36,
     "FULL OK": 8,
-    "HARNESS MISMATCH": 6,
+    "HARNESS MISMATCH": 7,
     "HARNESS/ENV BLOCKED": 14,
     "NO PROOF": 9,
     "PROOF REFRESH REQUIRED": 3,
+    "PROVIDER JS BROKEN": 1,
     "PROVIDER NETWORK BLOCKED": 7,
     "REGRESSION PROVIDER": 5
   },
-  "testedProviderCount": 102,
-  "triggerSha": "a51a0f3fd501e42704b6533b8ad9cfbfe59d3c19",
+  "testedProviderCount": 101,
+  "triggerSha": "2d082b31b45fb7dfa96d864339935cb806ab101f",
   "verifiedProviderCount": 1,
   "verifiedProviders": [
-    "mugiwarastream"
+    "moviebox"
   ],
   "wrongContentProviderCount": 0,
   "wrongContentProviders": []
