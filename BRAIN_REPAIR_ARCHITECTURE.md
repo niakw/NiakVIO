@@ -1,3 +1,7 @@
+## 2026-11-26 — Gate de phase : ciblé ≠ automatique global
+
+Les flags `automatic_brain_repair/learning` contrôlent l'automatisation flotte entière. Une campagne causal-owner explicitement bornée doit utiliser des flags ciblés distincts, et n'est exécutable que si `checkpoint_required_before_brain=false`. Le plan causal conserve l'autorité de cohorte ; ces flags ne créent ni mutation ni publication authority.
+
 ## 2026-11-26 — Propriété causale avant scope Learning
 
 La repairQueue est une file de symptômes, pas une autorité d'exécution. Le scheduler doit compiler le batch plan et le census exacts via le routeur commun, retenir uniquement les rows BRAIN_LEARNING dispatchables, puis ajouter uniquement les handoffs explicites owner=LEARN encore courants. Les mémoires négatives choisissent la stratégie mais ne changent pas le propriétaire causal. Un mismatch run/SHA du batch plan fail closed.

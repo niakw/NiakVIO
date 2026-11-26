@@ -64,6 +64,8 @@ assert phase.get("phase") in {"brain_repair_pilot", "brain_group_repair"}, phase
 if phase.get("phase") == "brain_group_repair":
     assert phase.get("automatic_brain_repair") is False, phase
     assert phase.get("automatic_brain_learning") is False, phase
+    assert phase.get("targeted_brain_repair") is True, phase
+    assert phase.get("targeted_brain_learning") is True, phase
 assert phase.get("automatic_brain_repair") is False, phase
 assert phase.get("automatic_brain_learning") is False, phase
 assert phase.get("checkpoint_required_before_brain") is False, phase
@@ -73,6 +75,13 @@ assert 'FAST=""' in autopilot
 assert 'LEARNING=""' in autopilot
 assert 'automatic_brain_repair' in autopilot
 assert 'automatic_brain_learning' in autopilot
+assert 'targeted_brain_repair' in autopilot
+assert 'targeted_brain_learning' in autopilot
+assert 'checkpoint_required_before_brain' in autopilot
+assert 'targeted_repair_allowed=true' in autopilot
+assert 'targeted_learning_allowed=true' in autopilot
+assert 'fast_repair=targeted-allowed' in autopilot
+assert 'brain_learning=targeted-allowed' in autopilot
 phase_block = autopilot[autopilot.index("phase_file=automation/execution-phase.json"):autopilot.index('git fetch --quiet origin main', autopilot.index("phase_file=automation/execution-phase.json"))]
 assert "python -c" in phase_block
 assert "python - <<'PY'" not in phase_block

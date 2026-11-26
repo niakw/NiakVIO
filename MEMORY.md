@@ -1,3 +1,9 @@
+## 2026-11-26 — V61 : Autopilot distingué entre ciblé autorisé et fleet-wide automatique
+
+- `automation/execution-phase.json` était contradictoire : phase `brain_group_repair`, `checkpoint_required_before_brain=false` et raison « Multi-provider Fast Repair is authorized now », mais `automatic_brain_repair=false` / `automatic_brain_learning=false`. Le workflow Autopilot interprétait ces deux flags fleet-wide comme un veto absolu et vidait `FAST` et `LEARNING`. Run `45816944411` l'a montré avec `fast_repair=blocked checkpoint_required=true` et `brain_learning=blocked checkpoint_required=true`, alors que le fichier porte false.
+- V61 conserve les deux flags automatiques à false, ajoute `targeted_brain_repair=true` et `targeted_brain_learning=true`, et exige aussi `checkpoint_required_before_brain=false`. Ainsi seules les cohortes déjà bornées par le causal execution plan peuvent être dispatchées ; aucun fleet-wide Repair/Learning n'est ouvert.
+- La publication reste inchangée : Fast Repair ne publie que candidat validé et Learning ne publie pas de provider. Ce correctif déverrouille l'orchestration, pas la preuve produit. **0 réparation supplémentaire certifiée**.
+
 ## 2026-11-26 — V60 : préflight scheduler — assertion V58 obsolète supprimée
 
 - Workflow Gate `45907777191` et Learning V58 `45907777182` ont échoué au même test après avoir validé les autres contrats jusqu'à `brain_learning_causal_wave_merge_test.py` : l'assertion recherchait encore la variable supprimée `requested_set = set(explicit_cohort)`. Le code V58 n'utilise plus cette variable parce que `repair_learning_scope` possède désormais l'autorité d'eligibility.

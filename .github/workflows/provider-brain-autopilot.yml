@@ -150,15 +150,26 @@ jobs:
           phase_file=automation/execution-phase.json
           brain_auto="$(python -c 'import json; d=json.load(open("automation/execution-phase.json", encoding="utf-8")); print("true" if d.get("automatic_brain_repair") is True else "false")')"
           learning_auto="$(python -c 'import json; d=json.load(open("automation/execution-phase.json", encoding="utf-8")); print("true" if d.get("automatic_brain_learning") is True else "false")')"
+          targeted_repair="$(python -c 'import json; d=json.load(open("automation/execution-phase.json", encoding="utf-8")); print("true" if d.get("targeted_brain_repair") is True else "false")')"
+          targeted_learning="$(python -c 'import json; d=json.load(open("automation/execution-phase.json", encoding="utf-8")); print("true" if d.get("targeted_brain_learning") is True else "false")')"
+          checkpoint_required="$(python -c 'import json; d=json.load(open("automation/execution-phase.json", encoding="utf-8")); print("true" if d.get("checkpoint_required_before_brain") is True else "false")')"
           phase_name="$(python -c 'import json; d=json.load(open("automation/execution-phase.json", encoding="utf-8")); print(str(d.get("phase") or "unknown"))')"
-          if [ "$brain_auto" != "true" ]; then
+          targeted_repair_allowed=false
+          targeted_learning_allowed=false
+          if [ "$checkpoint_required" != "true" ] && [ "$targeted_repair" = "true" ]; then targeted_repair_allowed=true; fi
+          if [ "$checkpoint_required" != "true" ] && [ "$targeted_learning" = "true" ]; then targeted_learning_allowed=true; fi
+          if [ "$brain_auto" != "true" ] && [ "$targeted_repair_allowed" != "true" ]; then
             FAST=""
             FORCE_MODE=false
-            echo "FIELD_PROVIDER_AUTOPILOT_PHASE_GATE phase=$phase_name fast_repair=blocked checkpoint_required=true"
+            echo "FIELD_PROVIDER_AUTOPILOT_PHASE_GATE phase=$phase_name fast_repair=blocked checkpoint_required=$checkpoint_required targeted=false"
+          elif [ -n "$FAST" ]; then
+            echo "FIELD_PROVIDER_AUTOPILOT_PHASE_GATE phase=$phase_name fast_repair=targeted-allowed checkpoint_required=$checkpoint_required"
           fi
-          if [ "$learning_auto" != "true" ]; then
+          if [ "$learning_auto" != "true" ] && [ "$targeted_learning_allowed" != "true" ]; then
             LEARNING=""
-            echo "FIELD_PROVIDER_AUTOPILOT_PHASE_GATE phase=$phase_name brain_learning=blocked checkpoint_required=true"
+            echo "FIELD_PROVIDER_AUTOPILOT_PHASE_GATE phase=$phase_name brain_learning=blocked checkpoint_required=$checkpoint_required targeted=false"
+          elif [ -n "$LEARNING" ]; then
+            echo "FIELD_PROVIDER_AUTOPILOT_PHASE_GATE phase=$phase_name brain_learning=targeted-allowed checkpoint_required=$checkpoint_required"
           fi
 
           git fetch --quiet origin main
