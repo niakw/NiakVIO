@@ -142,6 +142,23 @@ stale_owned, stale_authority = mod.brain_owned_current_repair_providers(
 assert stale_owned == [], stale_owned
 assert stale_authority == "provider-execution-plan-stale-fail-closed"
 
+fresh_rows, stale_rows = mod.current_handoff_rows(
+    {
+        "fresh-one": {
+            "owner": "LEARN", "status": "pending",
+            "sourceCensusRunId": "current-run", "sourceCensusSha": "a" * 40,
+        },
+        "old-one": {
+            "owner": "LEARN", "status": "pending",
+            "sourceCensusRunId": "old-run", "sourceCensusSha": "b" * 40,
+        },
+        "legacy-one": {"owner": "LEARN", "status": "pending"},
+    },
+    {"runId": "current-run", "triggerSha": "a" * 40},
+)
+assert set(fresh_rows) == {"fresh-one"}, fresh_rows
+assert stale_rows == ["legacy-one", "old-one"], stale_rows
+
 scope_info = {
     "wookafr": {"status": "no_streams"},
     "transport-brain": {"status": "no_streams"},
@@ -219,6 +236,9 @@ assert "build_provider_execution_plan(" in source
 assert "repair_learning_scope(" in source
 assert "brainOwnedCurrentRepairProviders" in source
 assert "brainOwnedCurrentRepairAuthority" in source
+assert "current_handoff_rows(" in source
+assert "staleRepairHandoffProviders" in source
+assert "exact-current-census-run-and-sha" in source
 assert "repairLearningScopeProviders" in source
 assert "repairLearningDeferredPortfolioProviders" in source
 assert "provider-repair-learn-handoff-v1.json" in source

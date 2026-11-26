@@ -44,6 +44,8 @@ with tempfile.TemporaryDirectory() as td:
 
 
 fast_summary = {
+    "sourceCensusRunId": "run-current",
+    "sourceCensusSha": "a" * 40,
     "selectedProviders": ["EXHAUSTED", "remaining-one", "fixed-now"],
     "validatedProviders": ["fixed-now"],
     "brainDeferredLearningProviders": ["EXHAUSTED"],
@@ -73,6 +75,8 @@ assert "fixed-now" not in fast["providers"], fast
 assert fast["providers"]["exhausted"]["sourceLane"] == "FAST_REPAIR"
 
 remat_summary = {
+    "sourceCensusRunId": "run-current",
+    "sourceCensusSha": "a" * 40,
     "selectedProviders": ["FRENCH_MANGA", "strict-now", "no-candidate-proof"],
     "statusesAfterRemat": {
         "french-manga": "CANDIDATE OK",
@@ -113,6 +117,8 @@ assert "strict-now" not in remat["providers"], remat
 assert remat["providers"]["french-manga"]["reason"] == "remat-candidate-unverified", remat
 assert remat["providers"]["french-manga"]["sourceLane"] == "REMAT_TEST", remat
 assert remat["providers"]["french-manga"]["publicationAllowed"] is False
+assert remat["providers"]["french-manga"]["sourceCensusRunId"] == "run-current"
+assert remat["providers"]["french-manga"]["sourceCensusSha"] == "a" * 40
 assert remat["providers"]["no-candidate-proof"]["reason"] == "keep-owner", remat
 serialized_remat = json.dumps(remat).casefold()
 for forbidden in ("http://", "https://", "authorization", "cookie", "requestbody",

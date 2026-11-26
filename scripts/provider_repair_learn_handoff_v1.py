@@ -179,6 +179,8 @@ def merge_summary(
             "mediaTypes": provider_lost_lanes,
             "sourceLane": source_lane,
             "lastRepairRunId": str(run_id or prior.get("lastRepairRunId") or "")[:32],
+            "sourceCensusRunId": str(summary.get("sourceCensusRunId") or "")[:32],
+            "sourceCensusSha": str(summary.get("sourceCensusSha") or "").strip().casefold()[:40],
             "lastRepairAttemptsPerTask": attempts,
             "repairObservations": observations,
             "publicationAllowed": False,

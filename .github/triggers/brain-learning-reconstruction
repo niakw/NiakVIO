@@ -1,17 +1,13 @@
-Brain Repair Learning — causal-owner scoped current repair families V59.
-source_niakvio_main_pretrigger_sha: 6e856d3238bdd6c4f6217da9e79f4b0aa3713ced
+Brain Repair Learning — exact current causal Brain ownership + fresh handoff V64.
+source_niakvio_main_pretrigger_sha: 10a12684d77b757f1331e4edcd180e5604108fe8
 source_brain_main_sha: 72e8823e8a3d300eb81817c733c71391191a1f09
 requested_at: 2026-11-26
 budget_minutes: 90
-execution_mode: targeted-current-brain-owner-plus-learn-handoff
+execution_mode: current-census-brain-owner-plus-fresh-handoff
 target_provider:
-target_providers: anikototv,anime-sama,corsflix,french-anime,frenchstream,moiflix,nakios,primewire,sadisflix,shuttletv
+target_providers: anikototv,anime-sama,french-anime,french-manga,frenchstream,moiflix,nakios,sadisflix
 architecture_force: false
-publication_policy: Brain/Learning only until canonical Repair produces compiled, applied, rematerialized and replay-validated bytes. No family sibling inherits success.
-required_evidence: census-45816222030;batch-plan-45816222030;learning-45804985425;brain-72e8823e;scheduler-owner-v59
-causal_change: V58 bounded the portfolio backlog but still treated the whole repairQueue as Learning-owned. V59 derives current BRAIN_LEARNING ownership from the exact batch/census causal execution plan and unions only explicit current LEARN handoffs. 67movies remains Fast Repair; french-manga remains Remat.
-proof_goal: Complete representative attempts only for current Brain-owned/handoff repair families, persist generated strategy/negative evidence, then return mutations to canonical Repair. Count only actual validated provider repairs.
-
-preflight_fix_v60: Supersedes V59 run started on bbcbf345b236 because the workflow contract still asserted the removed requested_set local. New contract checks exact explicit cohort plus causal Brain ownership/handoff scope.
-
-preflight_fix_v62: Supersedes V60; causal-wave test no longer asserts multiline source formatting. Explicit cohort behavior remains covered by functional scope tests.
+publication_policy: Brain/Learning only until canonical Repair produces compiled, applied, rematerialized and replay-validated bytes. No sibling inherits success.
+required_evidence: census-45816222030;batch-plan-45816222030;remat-45908491517;brain-72e8823e;handoff-freshness-v64
+causal_change: Historical LEARN handoffs without exact current census run+SHA no longer override the causal owner. Current Brain owners are anikototv, anime-sama, french-anime, frenchstream, moiflix, nakios, sadisflix; French Manga is added by fresh Remat handoff. 67movies/corsflix/primewire/shuttletv remain Fast Repair-owned.
+proof_goal: Execute only current Brain-owned/fresh-handoff families, persist new strategies or negative evidence, then return candidates to canonical Repair. Count only validated repairs.

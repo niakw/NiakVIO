@@ -234,6 +234,7 @@ def main() -> int:
     payload = {
         "schemaVersion": 2,
         "sourceCensusRunId": status_before.get("runId"),
+        "sourceCensusSha": status_before.get("triggerSha"),
         "repairRunId": str(os.environ.get("GITHUB_RUN_ID") or "local"),
         "architectureForce": args.architecture_force,
         "forceCompletenessProviders": sorted(set(targets) & completeness),

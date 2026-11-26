@@ -1,3 +1,10 @@
+## 2026-11-26 — V64 : handoff LEARN lié au census exact, vieux propriétaires invalidés
+
+- Le registre contenait encore des handoffs actifs très anciens : corsflix/shuttletv `44161788709`, primewire `44630700000`, anime-sama `44787772881`. Leur simple `owner=LEARN,status=pending` pouvait préempter le plan causal courant.
+- V64 ajoute `sourceCensusRunId + sourceCensusSha` aux nouveaux handoffs Fast/Remat/Repair parallèle. Le scheduler n'accorde l'autorité qu'aux lignes dont les deux valeurs correspondent exactement au census courant ; les lignes legacy restent comme prior historique et sont exposées dans `staleRepairHandoffProviders`.
+- French Manga est lié au census `45816222030 / e16d6041fc25...` via Remat 45908491517. Le nouveau Learning cible 8 providers : 7 propriétaires BRAIN_LEARNING du repairQueue + French Manga par handoff frais. `67movies,corsflix,primewire,shuttletv` restent Fast Repair-owned.
+- V62 est supersédé pour le scope car son explicit cohort contenait encore trois Fast owners via dette historique. **0 réparation ajoutée par ce changement d'orchestration**.
+
 ## 2026-11-26 — V63 : Remat non vérifié → handoff Learning persistant
 
 - Remat French Manga [45908491517](https://github.com/niakw/NiakVIO/actions/runs/45908491517), source `51929b7f` : rematérialisation `sha256=0a4aae25338f1bc6`, bytes changés, puis retest exact **raw=1 / playable=0 / accepted=0 / verified=0 / wrong_content=0**. Statut `CANDIDATE OK`, `historical_programs_replayed=0`, `strict_verified=0`. Le report demandait déjà `locate_exact_candidate_program_or_reconstruct_via_Brain`, mais ce verdict restait seulement dans l'artefact Remat.

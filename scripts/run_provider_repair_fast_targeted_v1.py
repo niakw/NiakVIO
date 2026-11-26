@@ -31,6 +31,7 @@ TARGET_REPORT = ROOT / "automation" / "provider-repair-fast-targeted.json"
 MERGED_REPORT = ROOT / "automation" / "provider-repair-fast-merged.json"
 YIELD_REPORT = ROOT / "automation" / "provider-repair-fast-yield.json"
 SUMMARY = ROOT / "automation" / "provider-repair-fast-summary.json"
+CENSUS = ROOT / "automation" / "provider-census-status.json"
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -148,8 +149,11 @@ def write_summary(
     global_guard: bool,
     global_guard_deferred: bool = False,
 ) -> None:
+    census = load(CENSUS) if CENSUS.is_file() else {}
     summary = {
         "schemaVersion": 3,
+        "sourceCensusRunId": census.get("runId"),
+        "sourceCensusSha": census.get("triggerSha"),
         "publicationAllowed": False,
         "fullPortfolioGateRequired": True,
         "catalogueProviderCount": len(visible_provider_ids()),

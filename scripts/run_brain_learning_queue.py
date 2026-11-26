@@ -773,6 +773,31 @@ def exhausted_repair_providers(memory: dict[str, Any], policy: dict[str, Any]) -
     })
 
 
+def current_handoff_rows(
+    handoff_rows: dict[str, Any],
+    census: dict[str, Any],
+) -> tuple[dict[str, Any], list[str]]:
+    """Only exact current-census LEARN handoffs may override causal ownership."""
+    current_run = str(census.get("runId") or "").strip()
+    current_sha = str(census.get("triggerSha") or "").strip().casefold()
+    current: dict[str, Any] = {}
+    stale: list[str] = []
+    for raw_provider, row in handoff_rows.items():
+        provider_id = norm(raw_provider)
+        if (not provider_id or not isinstance(row, dict)
+                or str(row.get("owner") or "") != "LEARN"
+                or str(row.get("status") or "") != "pending"):
+            continue
+        row_run = str(row.get("sourceCensusRunId") or "").strip()
+        row_sha = str(row.get("sourceCensusSha") or "").strip().casefold()
+        if (current_run and re.fullmatch(r"[0-9a-f]{40}", current_sha)
+                and row_run == current_run and row_sha == current_sha):
+            current[provider_id] = row
+        else:
+            stale.append(provider_id)
+    return current, sorted(set(stale))
+
+
 def exhausted_handoff_repair_providers(
     handoff_rows: dict[str, Any],
     current_repair: set[str],
@@ -1564,26 +1589,27 @@ def main() -> int:
     )
     handoff_state = load_json(ROOT / "automation" / "provider-repair-learn-handoff-v1.json", {})
     handoff_rows = handoff_state.get("providers") if isinstance(handoff_state.get("providers"), dict) else {}
+    current_handoff, stale_handoff = current_handoff_rows(handoff_rows, census_authority)
     current_repair_set = set(census_repair)
     handoff_exhausted = exhausted_handoff_repair_providers(
-        handoff_rows,
+        current_handoff,
         current_repair_set,
         info_by_id,
         staged_candidates,
     )
     # Negative experiment memory can be sparse or absent on the publication
-    # branch. Fast Repair's explicit exhausted-strategy handoff is therefore an
-    # independent architecture-debt authority, not merely a scheduling hint.
+    # branch. Only an exact-current-census explicit handoff may override the
+    # causal execution owner; legacy rows remain historical prior only.
     repair_deferred = unique([*repair_deferred, *handoff_exhausted])
     handoff_priority = [
         provider_id
-        for provider_id in unique(list(handoff_rows.keys()))
+        for provider_id in unique(list(current_handoff.keys()))
         if provider_id in current_repair_set
         and provider_id in info_by_id
         and provider_id in staged_candidates
-        and isinstance(handoff_rows.get(provider_id), dict)
-        and str(handoff_rows[provider_id].get("owner") or "") == "LEARN"
-        and str(handoff_rows[provider_id].get("status") or "") == "pending"
+        and isinstance(current_handoff.get(provider_id), dict)
+        and str(current_handoff[provider_id].get("owner") or "") == "LEARN"
+        and str(current_handoff[provider_id].get("status") or "") == "pending"
     ]
     # Current census evidence outranks historical experiment debt. A provider
     # that recovered to FULL/PARTIAL must not be reopened solely because an old
@@ -1673,6 +1699,9 @@ def main() -> int:
     queue["repairLearningDeferredPortfolioProviderCount"] = len(portfolio_deferred)
     queue["fastRepairHandoffProviders"] = handoff_priority
     queue["fastRepairHandoffProviderCount"] = len(handoff_priority)
+    queue["staleRepairHandoffProviders"] = stale_handoff
+    queue["staleRepairHandoffProviderCount"] = len(stale_handoff)
+    queue["repairHandoffFreshnessAuthority"] = "exact-current-census-run-and-sha"
     queue["fastRepairHandoffAuthority"] = "provider-repair-learn-handoff-v1.json"
     queue["fastRepairExhaustedHandoffProviders"] = handoff_exhausted
     queue["fastRepairExhaustedHandoffProviderCount"] = len(handoff_exhausted)

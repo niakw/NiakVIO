@@ -163,6 +163,7 @@ def main() -> int:
         "schemaVersion": 1,
         "scope": args.scope,
         "sourceCensusRunId": status.get("runId"),
+        "sourceCensusSha": status.get("triggerSha"),
         "selectedProviders": selected,
         "providerCount": len(selected),
         "changedByteProviders": changed,

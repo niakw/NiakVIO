@@ -1,3 +1,7 @@
+## 2026-11-26 — Fraîcheur d'autorité des handoffs Repair/Remat
+
+Un handoff LEARN est une autorité d'orchestration uniquement s'il porte le `sourceCensusRunId` et le `sourceCensusSha` exacts du census courant. Les lignes anciennes restent utiles comme expérience négative/historique, mais ne préemptent pas le propriétaire causal actuel. Fast Repair, Remat et Repair parallèle écrivent tous cette provenance.
+
 ## 2026-11-26 — Fermeture de boucle Remat → Learning
 
 REMAT_TEST reste un diagnostic read-only. Quand ses bytes reconstruits diffèrent mais que le current-byte retest reste non playable/non verified et que le report demande explicitement de retrouver/reconstruire le programme candidat, le verdict devient un handoff LEARN sanitizé. Le workflow de persistance, séparé du Remat, est seul autorisé à écrire ce registre. Un Remat strictement vérifié retire la dette. Sans action causale explicite, le propriétaire n'est pas changé.
