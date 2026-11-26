@@ -1,3 +1,8 @@
+## 2026-11-26 — V62 : préflight — suppression d'une assertion de format non comportementale
+
+- Learning V60 `45908175116` a encore échoué avant Qwen, à `brain_learning_causal_wave_merge_test.py:91`. Le test cherchait la chaîne monoligne `explicit_cohort if explicit_cohort` alors que l'expression est volontairement multiligne. Les tests fonctionnels V59 vérifient déjà le résultat exact des cohorts explicites et du causal owner.
+- V62 retire ce couplage au format source et conserve les contrats fonctionnels. Aucun changement runtime provider/Brain dans cette correction. Nouveau run ciblé demandé. **0 réparation certifiée**.
+
 ## 2026-11-26 — V61 : Autopilot distingué entre ciblé autorisé et fleet-wide automatique
 
 - `automation/execution-phase.json` était contradictoire : phase `brain_group_repair`, `checkpoint_required_before_brain=false` et raison « Multi-provider Fast Repair is authorized now », mais `automatic_brain_repair=false` / `automatic_brain_learning=false`. Le workflow Autopilot interprétait ces deux flags fleet-wide comme un veto absolu et vidait `FAST` et `LEARNING`. Run `45816944411` l'a montré avec `fast_repair=blocked checkpoint_required=true` et `brain_learning=blocked checkpoint_required=true`, alors que le fichier porte false.

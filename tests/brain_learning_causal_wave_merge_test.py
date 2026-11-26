@@ -88,9 +88,10 @@ assert "scoped_order, batch_plan, info_by_id" in source
 assert "causal_family_frontier(order, batch_plan, by_id)" not in source
 assert 'queue["repairLearningDeferredPortfolioProviders"] = portfolio_deferred' in source
 assert 'p.add_argument("--provider-filter", default=""' in source
-assert 'explicit_cohort if explicit_cohort' in source
-assert 'brain_owned_repair' in source
-assert 'handoff_priority' in source
+assert "brain_owned_current_repair_providers(" in source
+assert "repair_learning_scope(" in source
+# Exact explicit-cohort behavior is exercised functionally in
+# brain_learning_deferred_repair_priority_test.py; do not pin formatting here.
 assert 'queue["explicitLearningCohort"] = explicit_cohort' in source
 
 # One family oracle is chosen from the strongest current observation, not
