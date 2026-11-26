@@ -1,3 +1,8 @@
+## 2026-11-26 — V60 : préflight scheduler — assertion V58 obsolète supprimée
+
+- Workflow Gate `45907777191` et Learning V58 `45907777182` ont échoué au même test après avoir validé les autres contrats jusqu'à `brain_learning_causal_wave_merge_test.py` : l'assertion recherchait encore la variable supprimée `requested_set = set(explicit_cohort)`. Le code V58 n'utilise plus cette variable parce que `repair_learning_scope` possède désormais l'autorité d'eligibility.
+- V60 remplace ce test par le contrat actuel : explicit cohort exact + `brain_owned_repair` + `handoff_priority`. Aucun assouplissement de preuve, aucun provider modifié. Le trigger V59 est relancé sur ce préflight corrigé. **0 réparation certifiée**.
+
 ## 2026-11-26 — V59 : Repair queue ≠ Brain queue, propriété causale appliquée avant Learning
 
 - Le batch plan courant `45816222030 / e16d6041fc25` découpe les 12 providers Repair : `learning` = anime-sama, french-anime, frenchstream, nakios, sadisflix ; `transport` = anikototv, moiflix ; `route-to-terminal` = 67movies, shuttletv ; `terminal-extraction` = corsflix, primewire ; `candidate-replay` = french-manga. Les rows transport anikototv/moiflix portent déjà `KEEP_ROUTE_AUTHORITY`, donc le routeur courant les attribue à BRAIN_LEARNING plutôt qu'à Domain Refresh.
