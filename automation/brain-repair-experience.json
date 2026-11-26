@@ -6,32 +6,16 @@
       "castle",
       "hindmoviez",
       "internet-archive",
+      "kurage",
       "meowtv",
+      "mugiwarastream",
+      "neko-sama",
       "webflix"
     ],
     "version": 1
   },
   "historicalCases": [
     {
-      "id": "hist-2026-11-24-worker-stripped-managed-identity-provenance",
-      "firstObserved": "2026-11-24",
-      "providers": [
-        "global",
-        "mugiwarastream"
-      ],
-      "symptomFamilies": [
-        "playable_media_identity_unknown",
-        "insufficient_identity_metadata",
-        "provider_source_coordinate_lost"
-      ],
-      "failureClass": "harness_identity_transport_gap",
-      "solutionClass": "managed_identity_provenance_transport",
-      "transferableSignals": [
-        "provider terminal media is playable but content_identity_status remains unknown",
-        "provider runtime attaches exact source coordinates before returning the stream",
-        "provider_worker sanitizeStream rebuilds a fixed output object and drops unknown niakvioIdentity fields",
-        "preserve identity only for allowlisted managed STARTFIX plus NiakVIO marker and bounded scalar fields"
-      ],
       "avoid": [
         "weakening episodic identity to title or duration",
         "copying arbitrary provider metadata through the worker",
@@ -41,7 +25,26 @@
       "evidence": [
         "repo-history"
       ],
-      "lesson": "Mugiwara showed a reusable harness-level failure: exact provider-owned season/episode provenance reached the terminal stream before provider_worker, but sanitizeStream rebuilt the stream and removed all niakvioIdentity fields. Repair the common transport layer with managed-fix gating; do not weaken streamIdentity. Provider-specific source-coordinate generation still needs representative playback proof before sibling propagation."
+      "failureClass": "harness_identity_transport_gap",
+      "firstObserved": "2026-11-24",
+      "id": "hist-2026-11-24-worker-stripped-managed-identity-provenance",
+      "lesson": "Mugiwara showed a reusable harness-level failure: exact provider-owned season/episode provenance reached the terminal stream before provider_worker, but sanitizeStream rebuilt the stream and removed all niakvioIdentity fields. Repair the common transport layer with managed-fix gating; do not weaken streamIdentity. Provider-specific source-coordinate generation still needs representative playback proof before sibling propagation.",
+      "providers": [
+        "global",
+        "mugiwarastream"
+      ],
+      "solutionClass": "managed_identity_provenance_transport",
+      "symptomFamilies": [
+        "playable_media_identity_unknown",
+        "insufficient_identity_metadata",
+        "provider_source_coordinate_lost"
+      ],
+      "transferableSignals": [
+        "provider terminal media is playable but content_identity_status remains unknown",
+        "provider runtime attaches exact source coordinates before returning the stream",
+        "provider_worker sanitizeStream rebuilds a fixed output object and drops unknown niakvioIdentity fields",
+        "preserve identity only for allowlisted managed STARTFIX plus NiakVIO marker and bounded scalar fields"
+      ]
     },
     {
       "avoid": [
@@ -1071,7 +1074,7 @@
       ]
     }
   ],
-  "operationalProviderCount": 5,
+  "operationalProviderCount": 8,
   "providerCount": 142,
   "providers": {
     "1jour1film0626": {
@@ -1155,8 +1158,8 @@
       "domainMemory": true,
       "evidenceDepth": [
         "anime=lookup_only",
-        "movie=chain_reached",
-        "tv=chain_reached"
+        "movie=lookup_only",
+        "tv=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -1183,7 +1186,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "HARNESS MISMATCH",
       "strategy": "mixed_embed_resolver"
     },
     "7movies": {
@@ -1448,7 +1451,7 @@
       "mediaTypes": [
         "anime"
       ],
-      "officialHost": "anikototv.to",
+      "officialHost": "anikototv.bz",
       "operational": false,
       "peerRequestRecipes": [],
       "peerRouteTemplates": [
@@ -2679,7 +2682,7 @@
     "animevostfr": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -2946,7 +2949,7 @@
     "anisama": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=none"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -2973,7 +2976,7 @@
         "/?s={query}",
         "/recherche?q={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "PROVIDER NETWORK BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "arrowtv": {
@@ -4497,7 +4500,7 @@
     "film-a-revoir": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=chain_reached"
+        "movie=none"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -4522,7 +4525,7 @@
       "routeTemplates": [
         "/search?q={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "HARNESS MISMATCH",
       "strategy": "mixed_embed_resolver"
     },
     "flemmix": {
@@ -4878,7 +4881,7 @@
         "/?s={query}",
         "/?q={query}"
       ],
-      "status": "NO PROOF",
+      "status": "HARNESS MISMATCH",
       "strategy": "mixed_embed_resolver"
     },
     "french-manga": {
@@ -5569,7 +5572,7 @@
     "hianime": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=none"
+        "anime=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -5596,7 +5599,7 @@
         "/?s={query}",
         "/search?q={query}"
       ],
-      "status": "PROVIDER NETWORK BLOCKED",
+      "status": "CHAIN REACHED",
       "strategy": "mixed_embed_resolver"
     },
     "hindmoviez": {
@@ -5609,7 +5612,7 @@
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
       "mediaTypes": [],
-      "officialHost": "v5.hindmovie.im",
+      "officialHost": "hindmovie.vin",
       "operational": true,
       "peerRequestRecipes": [
         {
@@ -6422,7 +6425,7 @@
         "anime"
       ],
       "officialHost": "kurage.live",
-      "operational": false,
+      "operational": true,
       "peerRequestRecipes": [],
       "peerRouteTemplates": [
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
@@ -6447,7 +6450,7 @@
         "/api/v2",
         "/api/trpc/catalog.anilistInfo,episodes.source,episodes.source?batch=1&input="
       ],
-      "status": "PROOF REFRESH REQUIRED",
+      "status": "FULL OK",
       "strategy": "html_scraper"
     },
     "latestmovies": {
@@ -6690,8 +6693,8 @@
     "moviebox": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=lookup_only",
-        "tv=lookup_only"
+        "movie=chain_reached",
+        "tv=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -7019,7 +7022,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "PROVIDER JS BROKEN",
       "strategy": "mixed_embed_resolver"
     },
     "movy": {
@@ -7075,7 +7078,7 @@
         "anime"
       ],
       "officialHost": "mugiwara-no-streaming.com",
-      "operational": false,
+      "operational": true,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -7835,7 +7838,7 @@
         "/api/search?q=Ulduzlararas%C4%B1",
         "/catalogue/{id}/episodes/saison1"
       ],
-      "status": "PROOF REFRESH REQUIRED",
+      "status": "FULL OK",
       "strategy": "mixed_embed_resolver"
     },
     "myfluneo": {
@@ -8037,7 +8040,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "PROVIDER JS BROKEN",
+      "status": "CHAIN REACHED",
       "strategy": "mixed_embed_resolver"
     },
     "neko-sama": {
@@ -8052,7 +8055,7 @@
         "anime"
       ],
       "officialHost": "animes-sama.su",
-      "operational": false,
+      "operational": true,
       "peerRequestRecipes": [],
       "peerRouteTemplates": [
         "/anime/{slug}-saison-{season}/",
@@ -8104,7 +8107,7 @@
         "/anime/{slug}-saison-1/",
         "/?s={query}"
       ],
-      "status": "PROOF REFRESH REQUIRED",
+      "status": "FULL OK",
       "strategy": "mixed_embed_resolver"
     },
     "neobam": {
@@ -9391,8 +9394,8 @@
       "domainMemory": true,
       "evidenceDepth": [
         "anime=lookup_only",
-        "movie=chain_reached",
-        "tv=chain_reached"
+        "movie=lookup_only",
+        "tv=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -9421,7 +9424,7 @@
         "/recherche?q={query}",
         "/recherche?query={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "HARNESS MISMATCH",
       "strategy": "mixed_embed_resolver"
     },
     "skstream": {
@@ -9500,7 +9503,7 @@
       "evidenceDepth": [
         "anime=lookup_only",
         "movie=chain_reached",
-        "tv=chain_reached"
+        "tv=lookup_only"
       ],
       "hasApiRecipe": true,
       "hasProviderValuePlan": false,
@@ -9806,7 +9809,7 @@
         "/embed/",
         "/embed"
       ],
-      "status": "PROOF REFRESH REQUIRED",
+      "status": "DISABLED",
       "strategy": "mixed_embed_resolver"
     },
     "svstream": {
@@ -9843,8 +9846,8 @@
     "topcartoons": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=none",
-        "tv=none"
+        "movie=lookup_only",
+        "tv=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -10327,8 +10330,8 @@
     "vidrock": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=none",
-        "tv=none"
+        "movie=chain_reached",
+        "tv=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -10936,9 +10939,9 @@
     "vuflix": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=none",
+        "anime=chain_reached",
         "movie=chain_reached",
-        "tv=none"
+        "tv=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -11977,8 +11980,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "44786398747",
-  "sourceSha": "a44d650e47454828cb01aeebde2fca639dbfef5d",
+  "sourceRunId": "45910350390",
+  "sourceSha": "67aeb7d13779db11252d1cce9c2742646cb64fc6",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -12002,12 +12005,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "search",
           "supportRatio": 0.3333
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "other",
           "supportRatio": 0.3333
         }
       ]
@@ -12023,12 +12026,68 @@
         {
           "providerSupport": 1,
           "role": "search",
-          "supportRatio": 1
+          "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "detail",
-          "supportRatio": 1
+          "supportRatio": 1.0
+        }
+      ]
+    },
+    "html_scraper": {
+      "commonRequestRecipes": [],
+      "commonRouteTemplates": [],
+      "greenProviderCount": 1,
+      "greenProviders": [
+        "kurage"
+      ],
+      "routeFamilies": [
+        {
+          "providerSupport": 1,
+          "role": "episode",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "other",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "api",
+          "supportRatio": 1.0
+        }
+      ]
+    },
+    "mixed_embed_resolver": {
+      "commonRequestRecipes": [],
+      "commonRouteTemplates": [],
+      "greenProviderCount": 2,
+      "greenProviders": [
+        "mugiwarastream",
+        "neko-sama"
+      ],
+      "routeFamilies": [
+        {
+          "providerSupport": 2,
+          "role": "episode",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 2,
+          "role": "search",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 2,
+          "role": "detail",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "player",
+          "supportRatio": 0.5
         }
       ]
     },
@@ -12042,13 +12101,13 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "other",
-          "supportRatio": 1
+          "role": "source",
+          "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "source",
-          "supportRatio": 1
+          "role": "other",
+          "supportRatio": 1.0
         }
       ]
     }
