@@ -1,3 +1,7 @@
+## 2026-11-26 — Scheduler family-first : scope Repair avant frontier
+
+Le frontier causal ne doit jamais être calculé sur le portfolio complet simplement parce qu'un Fast-Handoff existe. La frontière d'exécution d'une phase Repair/Learning est l'explicit cohort ou, à défaut, la dette `census repair + exhausted handoff` actuelle. Le backlog de reconstruction et les provider-local hors Repair restent observables et différés. Les siblings d'une même famille restent différés jusqu'à mémoire commune puis replay indépendant. Le parallélisme n'est activable qu'avec stages/workers isolés et fusion déterministe des expériences.
+
 ## 2026-11-24 — Transport de provenance d'identité dans le worker
 
 Une preuve provider peut être correcte avant le worker et devenir inconnue après sérialisation. Le worker est donc un maillon explicite de la chaîne d'identité. Il ne doit ni supprimer une provenance gérée, ni faire confiance à des champs arbitraires d'un provider. Les autorités `niakvioIdentity*` sont copiées seulement quand les bytes du provider contiennent le managed STARTFIX et le marqueur NiakVIO associés, puis après validation stricte des scalaires. Le validator final conserve l'autorité de contradiction et de match ; le worker ne transforme jamais une URL lisible en preuve.

@@ -109,6 +109,48 @@ ordered = mod.authoritative_learning_order(
 )
 assert ordered == ["other", "wookafr", "1shows", "animepahe"], ordered
 
+scope = mod.repair_learning_scope(
+    ["other", "wookafr", "1shows", "animepahe"],
+    [],
+    ["other"],
+    ["other"],
+    ["wookafr", "other"],
+    {
+        "1shows": {"status": "provider_unreachable"},
+        "animepahe": {"status": "provider_unreachable"},
+        "wookafr": {"status": "no_streams"},
+        "other": {"status": "runtime_error"},
+    },
+    {
+        "1shows": {"canonical_id": "1shows"},
+        "animepahe": {"canonical_id": "animepahe"},
+        "wookafr": {"canonical_id": "wookafr"},
+        "other": {"canonical_id": "other"},
+    },
+)
+assert scope == ["other", "wookafr"], scope
+
+explicit_scope = mod.repair_learning_scope(
+    ["other", "wookafr", "1shows", "animepahe"],
+    ["animepahe", "wookafr"],
+    ["other"],
+    ["other"],
+    ["wookafr", "other"],
+    {
+        "1shows": {"status": "provider_unreachable"},
+        "animepahe": {"status": "provider_unreachable"},
+        "wookafr": {"status": "no_streams"},
+        "other": {"status": "runtime_error"},
+    },
+    {
+        "1shows": {"canonical_id": "1shows"},
+        "animepahe": {"canonical_id": "animepahe"},
+        "wookafr": {"canonical_id": "wookafr"},
+        "other": {"canonical_id": "other"},
+    },
+)
+assert explicit_scope == ["wookafr", "animepahe"], explicit_scope
+
 
 handoff_rows = {
     "exhausted-a": {
@@ -154,6 +196,9 @@ source = (ROOT / "scripts" / "run_brain_learning_queue.py").read_text(encoding="
 assert "authoritative_learning_order(" in source
 assert "current census is the first Learning authority" in source
 assert "fastRepairHandoffProviders" in source
+assert "repair_learning_scope(" in source
+assert "repairLearningScopeProviders" in source
+assert "repairLearningDeferredPortfolioProviders" in source
 assert "provider-repair-learn-handoff-v1.json" in source
 assert "fastRepairExhaustedHandoffProviders" in source
 assert "deferredRepairAuthorities" in source

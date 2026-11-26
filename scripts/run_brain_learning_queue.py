@@ -863,6 +863,38 @@ def authoritative_learning_order(
     ])
 
 
+def repair_learning_scope(
+    order: list[str],
+    explicit_cohort: list[str],
+    handoff_priority: list[str],
+    repair_deferred: list[str],
+    census_repair: list[str],
+    info_by_id: dict[str, dict[str, Any]],
+    staged_candidates: dict[str, dict[str, Any]],
+) -> list[str]:
+    """Bound family-first Learning to current repair debt, never the portfolio backlog.
+
+    A Fast-Handoff flag is an execution scope, not permission to turn every
+    provider-local backlog row into a family oracle. Explicit cohorts remain
+    exact; otherwise the current census repair queue plus durable exhausted
+    handoff debt is the only fair-share scope for this phase.
+    """
+    requested = unique(
+        explicit_cohort
+        if explicit_cohort
+        else [*handoff_priority, *repair_deferred, *census_repair]
+    )
+    eligible = [
+        provider_id for provider_id in requested
+        if provider_id in info_by_id and provider_id in staged_candidates
+    ]
+    allowed = set(eligible)
+    return unique([
+        *[provider_id for provider_id in order if provider_id in allowed],
+        *[provider_id for provider_id in eligible if provider_id not in order],
+    ])
+
+
 def candidate_map(registry: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return {
         norm(row.get("canonical_id") or row.get("upstream_id")): row
@@ -1561,37 +1593,48 @@ def main() -> int:
 
     batch_plan = load_json(ROOT / "automation" / "provider-repair-batch-plan-latest.json", {})
     causal_group_order: list[str] = []
-    if handoff_priority and not args.provider:
-        order, causal_group_order = causal_batch_round_robin(order, batch_plan)
-    if explicit_cohort:
-        requested_set = set(explicit_cohort)
-        # The caller owns the exact targeted cohort. Never silently add the
-        # whole census, nor drop requested siblings just because a causal
-        # family representative was already chosen.
-        order = unique([
-            *[provider_id for provider_id in order if provider_id in requested_set],
-            *explicit_cohort,
-        ])
+    learning_scope = repair_learning_scope(
+        order,
+        explicit_cohort,
+        handoff_priority,
+        repair_deferred,
+        census_repair,
+        info_by_id,
+        staged_candidates,
+    )
 
-    # Fast-Handoff Learning learns one representative per causal family, then
-    # returns new strategy memory to canonical Repair. Siblings are deliberately
-    # deferred to Repair/next Learning phase instead of replaying the same
-    # expensive sandbox path serially in one slot.
-    fair_handoff = bool(handoff_priority or explicit_cohort) and not bool(args.provider)
-    full_handoff_order = list(order)
+    # Current Repair debt is the bounded execution scope. The broad catalogue
+    # remains observable Learning backlog, but it cannot dilute a repair phase
+    # into one provider-local family per catalogue entry.
+    fair_handoff = bool(learning_scope) and not bool(args.provider)
+    portfolio_deferred = [
+        provider_id for provider_id in order if provider_id not in set(learning_scope)
+    ] if fair_handoff else []
+    full_handoff_order = list(learning_scope)
     family_frontier: list[str] = []
     family_deferred: list[str] = []
     if fair_handoff:
-        family_frontier, family_deferred = causal_family_frontier(order, batch_plan, info_by_id)
-        # The caller's explicit cohort is an eligibility boundary, not an
-        # instruction to replay every sibling serially. Execute one oracle per
-        # causal family first; preserve all siblings as pending so canonical
-        # Repair can reuse the learned family strategy and still validate each
-        # provider independently before publication.
+        scoped_order, causal_group_order = causal_batch_round_robin(
+            full_handoff_order, batch_plan
+        )
+        family_frontier, family_deferred = causal_family_frontier(
+            scoped_order, batch_plan, info_by_id
+        )
+        # Execute one independently chosen oracle per current repair family.
+        # Siblings remain pending for canonical Repair/next Learning and the
+        # portfolio backlog is untouched by this repair-focused phase.
         order = family_frontier
 
     queue["explicitLearningCohort"] = explicit_cohort
     queue["explicitLearningCohortCount"] = len(explicit_cohort)
+    queue["repairLearningScopeProviders"] = learning_scope
+    queue["repairLearningScopeProviderCount"] = len(learning_scope)
+    queue["repairLearningScopePolicy"] = (
+        "explicit-cohort-current-debt-only"
+        if explicit_cohort else "current-census-repair-and-exhausted-handoff-only"
+    )
+    queue["repairLearningDeferredPortfolioProviders"] = portfolio_deferred
+    queue["repairLearningDeferredPortfolioProviderCount"] = len(portfolio_deferred)
     queue["fastRepairHandoffProviders"] = handoff_priority
     queue["fastRepairHandoffProviderCount"] = len(handoff_priority)
     queue["fastRepairHandoffAuthority"] = "provider-repair-learn-handoff-v1.json"
@@ -1600,8 +1643,8 @@ def main() -> int:
     queue["fastRepairHandoffCausalBatchOrder"] = causal_group_order
     queue["fastRepairHandoffCausalBatchCount"] = len(causal_group_order)
     queue["fastRepairHandoffOrderingPolicy"] = "causal-batch-round-robin"
-    # Keep the complete family wave map for observability even though this phase
-    # executes only the first representative frontier.
+    # Keep the current-repair family wave map for observability even though
+    # this phase executes only the first representative frontier.
     causal_waves = causal_family_waves(full_handoff_order, batch_plan, max_parallel=4) if fair_handoff else []
     queue["fastRepairHandoffCausalWaves"] = causal_waves
     queue["fastRepairHandoffCausalWaveCount"] = len(causal_waves)

@@ -70,18 +70,20 @@ for needle in (
 # Regression for Repair->Learning Fast-Handoff initialization. The real handoff
 # previously crashed before provider 1 because causal_waves read fair_handoff
 # before the local had been assigned. Keep the runtime dependency order locked.
-fair_assignment = source.index("fair_handoff = bool(handoff_priority or explicit_cohort) and not bool(args.provider)")
-frontier_assignment = source.index("family_frontier, family_deferred = causal_family_frontier(order, batch_plan, info_by_id)")
+scope_assignment = source.index("learning_scope = repair_learning_scope(")
+fair_assignment = source.index("fair_handoff = bool(learning_scope) and not bool(args.provider)")
+frontier_assignment = source.index("family_frontier, family_deferred = causal_family_frontier(")
 wave_assignment = source.index("causal_waves = causal_family_waves(full_handoff_order, batch_plan, max_parallel=4) if fair_handoff else []")
-assert fair_assignment < frontier_assignment < wave_assignment, (fair_assignment, frontier_assignment, wave_assignment)
+assert scope_assignment < fair_assignment < frontier_assignment < wave_assignment, (scope_assignment, fair_assignment, frontier_assignment, wave_assignment)
 assert "fastRepairHandoffDeferredFamilySiblings" in source
-assert "if explicit_cohort:" in source
-assert "fair_handoff = bool(handoff_priority or explicit_cohort) and not bool(args.provider)" in source
+assert "repair_learning_scope(" in source
+assert "fair_handoff = bool(learning_scope) and not bool(args.provider)" in source
 assert "bool(handoff_priority) and not bool(args.provider)" not in source
 assert "order = family_frontier" in source
 assert "family_deferred = []" not in source
-assert "family_frontier, family_deferred = causal_family_frontier(order, batch_plan, info_by_id)" in source
+assert "scoped_order, batch_plan, info_by_id" in source
 assert "causal_family_frontier(order, batch_plan, by_id)" not in source
+assert 'queue["repairLearningDeferredPortfolioProviders"] = portfolio_deferred' in source
 assert 'p.add_argument("--provider-filter", default=""' in source
 assert 'requested_set = set(explicit_cohort)' in source
 assert 'queue["explicitLearningCohort"] = explicit_cohort' in source
