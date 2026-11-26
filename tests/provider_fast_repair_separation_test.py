@@ -135,6 +135,9 @@ assert "FIELD_PROVIDER_FAST_REPAIR_EARLY_REQUEUE" in early
 assert "FIELD_PROVIDER_FAST_REPAIR_EARLY_CANCEL" in early
 assert 'gh workflow run provider-fast-repair.yml' in early
 assert 'gh run cancel "$GITHUB_RUN_ID"' in early
+assert 'prior_fast_run_id="${DISPATCH_PRIOR_FAST_RUN_ID:-}"' in early
+assert 'args+=(-f prior_fast_run_id="$prior_fast_run_id")' in early
+assert 'DISPATCH_PRIOR_FAST_RUN_ID: ${{ inputs.prior_fast_run_id || \'\' }}' in workflow
 assert 'git diff --quiet "$GITHUB_SHA" "$remote_main"' in early
 assert ".github/workflows/provider-fast-repair.yml" in early
 assert workflow.index("Requeue stale executable source before expensive Repair") < workflow.index("Install locked Node tooling")

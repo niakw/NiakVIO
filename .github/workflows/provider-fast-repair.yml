@@ -86,6 +86,7 @@ jobs:
           DISPATCH_MAX_ROUNDS: ${{ inputs.max_rounds_per_batch || '3' }}
           DISPATCH_PUBLISH: ${{ inputs.publish_validated || 'true' }}
           DISPATCH_FORCE: ${{ inputs.architecture_force || 'false' }}
+          DISPATCH_PRIOR_FAST_RUN_ID: ${{ inputs.prior_fast_run_id || '' }}
         run: bash scripts/early_fast_repair_preflight.sh
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
         with:

@@ -1,3 +1,7 @@
+## 2026-11-26 — Requeue Fast Repair : continuité de mémoire négative
+
+Toute requeue Fast après détection de SHA obsolète doit préserver le `prior_fast_run_id` reçu. Cette valeur n'accorde aucune mutation : le run suivant n'importe que la mémoire négative après validation same-repo/same-workflow, ancestry et absence de drift des bytes/runtime autorisés. Un requeue préflight ne doit jamais casser cette chaîne.
+
 ## 2026-11-26 — Fraîcheur d'autorité des handoffs Repair/Remat
 
 Un handoff LEARN est une autorité d'orchestration uniquement s'il porte le `sourceCensusRunId` et le `sourceCensusSha` exacts du census courant. Les lignes anciennes restent utiles comme expérience négative/historique, mais ne préemptent pas le propriétaire causal actuel. Fast Repair, Remat et Repair parallèle écrivent tous cette provenance.

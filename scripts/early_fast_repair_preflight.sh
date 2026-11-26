@@ -46,6 +46,7 @@ budget="${DISPATCH_BUDGET:-1200}"
 rounds="${DISPATCH_MAX_ROUNDS:-3}"
 publish="${DISPATCH_PUBLISH:-true}"
 force="${DISPATCH_FORCE:-false}"
+prior_fast_run_id="${DISPATCH_PRIOR_FAST_RUN_ID:-}"
 source_kind="dispatch-inputs"
 
 source_trigger_blob="$(git rev-parse "$GITHUB_SHA:.github/triggers/provider-fast-repair.json" 2>/dev/null || true)"
@@ -59,6 +60,7 @@ if [ -n "$remote_trigger_blob" ] && { [ "$GITHUB_EVENT_NAME" = "push" ] || [ "$r
   publish="$(jq -r 'if .publishValidated == false then "false" else "true" end' "$trigger")"
   target_providers="$(jq -r '[.targetProviders[]? | tostring | ascii_downcase | gsub("_"; "-")] | join(",")' "$trigger")"
   force="$(jq -r 'if .architectureForce == true then "true" else "false" end' "$trigger")"
+  prior_fast_run_id="$(jq -r '(.priorFastRunId // "") | tostring' "$trigger")"
   target_provider=""
   source_kind="remote-main-trigger"
 fi
@@ -70,13 +72,16 @@ args=(gh workflow run provider-fast-repair.yml
   -f max_rounds_per_batch="$rounds"
   -f publish_validated="$publish"
   -f architecture_force="$force")
+if [[ "$prior_fast_run_id" =~ ^[0-9]{6,20}$ ]]; then
+  args+=(-f prior_fast_run_id="$prior_fast_run_id")
+fi
 if [ -n "$target_providers" ]; then
   args+=(-f target_providers="$target_providers")
 elif [ -n "$target_provider" ]; then
   args+=(-f target_provider="$target_provider")
 fi
 "${args[@]}"
-echo "FIELD_PROVIDER_FAST_REPAIR_EARLY_REQUEUE source=$GITHUB_SHA remote=$remote_main config=$source_kind providers=${target_providers:-${target_provider:-none}} waves=$waves budget=$budget rounds=$rounds"
+echo "FIELD_PROVIDER_FAST_REPAIR_EARLY_REQUEUE source=$GITHUB_SHA remote=$remote_main config=$source_kind providers=${target_providers:-${target_provider:-none}} waves=$waves budget=$budget rounds=$rounds prior_fast_run_id=${prior_fast_run_id:-none}"
 
 # Requeue first, then self-cancel. This run has obsolete executable semantics.
 if gh run cancel "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY"; then

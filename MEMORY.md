@@ -1,3 +1,10 @@
+## 2026-11-26 — V65 : continuité des négatifs Fast Repair à travers les requeues préflight
+
+- Fast Repair [45908626718](https://github.com/niakw/NiakVIO/actions/runs/45908626718) a exécuté 67movies + corsflix : 3 rounds, 0 stream, 0 playable, 0 identity, **0 accepted**, avec progrès exploratoire seulement au premier profil. Il a handoffé ces deux providers puis s'est requeue car son SHA `5e54cf85` était devenu stale.
+- Le requeue de fin passait correctement `prior_fast_run_id=45908626718` à 45909249640. Mais 45909249640 a rencontré à son tour un HEAD plus récent pendant le **préflight** ; `early_fast_repair_preflight.sh` a redéclenché 45909334540 sans retransmettre le prior. Le négatif utile pouvait donc disparaître et les mêmes profils être rejoués.
+- V65 transmet désormais `DISPATCH_PRIOR_FAST_RUN_ID` au préflight, le reprend aussi depuis un trigger JSON optionnel, et ajoute `-f prior_fast_run_id` à toute requeue préflight valide. Aucun byte provider n'est importé : le mécanisme existant garde ses contrôles même workflow/main/ancestor + stabilité des bytes/runtime avant fusion de mémoire négative.
+- Le run Fast déjà actif sur V64 pourra encore avoir rejoué le cas faute de ce correctif dans son checkout ; comme V65 fait avancer main, son requeue final transmettra son propre run comme prior au prochain HEAD. **0 réparation certifiée dans le run 45908626718**.
+
 ## 2026-11-26 — V64 : handoff LEARN lié au census exact, vieux propriétaires invalidés
 
 - Le registre contenait encore des handoffs actifs très anciens : corsflix/shuttletv `44161788709`, primewire `44630700000`, anime-sama `44787772881`. Leur simple `owner=LEARN,status=pending` pouvait préempter le plan causal courant.
