@@ -1,13 +1,13 @@
-Brain Repair Learning — current census repair-family scope after scheduler V58.
-source_niakvio_main_pretrigger_sha: 14e2476470dac533c1b841f464ee822d0dc53829
+Brain Repair Learning — causal-owner scoped current repair families V59.
+source_niakvio_main_pretrigger_sha: 1a3546e155634fd0c0b73ae7ed0bc5c7bbdd2654
 source_brain_main_sha: 72e8823e8a3d300eb81817c733c71391191a1f09
 requested_at: 2026-11-26
 budget_minutes: 90
-execution_mode: targeted-current-repair-family-frontier
+execution_mode: targeted-current-brain-owner-plus-learn-handoff
 target_provider:
-target_providers: 67movies,anikototv,anime-sama,corsflix,french-anime,french-manga,frenchstream,moiflix,nakios,primewire,sadisflix,shuttletv
+target_providers: anikototv,anime-sama,corsflix,french-anime,frenchstream,moiflix,nakios,primewire,sadisflix,shuttletv
 architecture_force: false
 publication_policy: Brain/Learning only until canonical Repair produces compiled, applied, rematerialized and replay-validated bytes. No family sibling inherits success.
-required_evidence: census-45816222030;learning-45804985425;brain-72e8823e;scheduler-scope-v58
-causal_change: Previous family frontier ran over the portfolio backlog (132 families, 190 pending) instead of current repair debt, yielding 45-second slices and only 2 processed providers. Scope the frontier to the 12 current Repair providers before family selection; keep portfolio backlog deferred.
-proof_goal: Complete representative attempts per current repair family, persist generated strategy/negative evidence, return to canonical Repair; count only actual validated provider repairs.
+required_evidence: census-45816222030;batch-plan-45816222030;learning-45804985425;brain-72e8823e;scheduler-owner-v59
+causal_change: V58 bounded the portfolio backlog but still treated the whole repairQueue as Learning-owned. V59 derives current BRAIN_LEARNING ownership from the exact batch/census causal execution plan and unions only explicit current LEARN handoffs. 67movies remains Fast Repair; french-manga remains Remat.
+proof_goal: Complete representative attempts only for current Brain-owned/handoff repair families, persist generated strategy/negative evidence, then return mutations to canonical Repair. Count only actual validated provider repairs.

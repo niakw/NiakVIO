@@ -24,6 +24,7 @@ if str(SCRIPTS) not in sys.path:
 from brain_negative_memory_retention import select_bounded_negative_memory
 from repair_promotion_state import durable_accepted_event, provisional_accepted_event
 from fill_brain_learning_guidance_gaps import attested_source_contract_frontier
+from build_provider_execution_plan import build as build_provider_execution_plan
 
 class BudgetExhausted(RuntimeError):
     """The bounded Learning work window ended; persist state and resume later."""
@@ -863,26 +864,56 @@ def authoritative_learning_order(
     ])
 
 
+def brain_owned_current_repair_providers(
+    batch_plan: dict[str, Any],
+    census: dict[str, Any],
+) -> tuple[list[str], str]:
+    """Resolve current Brain ownership from the exact causal execution plan.
+
+    The repairQueue is a symptom queue, not an execution owner list. Learning
+    only owns rows routed to BRAIN_LEARNING by the current batch/census pair.
+    Stale causal provenance fails closed to zero automatic ownership.
+    """
+    plan = build_provider_execution_plan(batch_plan, census)
+    if plan.get("sourceCensusConsistent") is not True:
+        return [], "provider-execution-plan-stale-fail-closed"
+    current_repair = {
+        norm(value) for value in census.get("repairQueue") or [] if norm(value)
+    }
+    owned: list[str] = []
+    for row in plan.get("executions") or []:
+        if not isinstance(row, dict):
+            continue
+        if str(row.get("lane") or "") != "BRAIN_LEARNING":
+            continue
+        if row.get("dispatchAllowed") is not True:
+            continue
+        for value in row.get("providers") or []:
+            provider_id = norm(value)
+            if provider_id in current_repair and provider_id not in owned:
+                owned.append(provider_id)
+    return owned, "current-census-causal-execution-plan"
+
+
 def repair_learning_scope(
     order: list[str],
     explicit_cohort: list[str],
     handoff_priority: list[str],
-    repair_deferred: list[str],
-    census_repair: list[str],
+    brain_owned_repair: list[str],
     info_by_id: dict[str, dict[str, Any]],
     staged_candidates: dict[str, dict[str, Any]],
 ) -> list[str]:
-    """Bound family-first Learning to current repair debt, never the portfolio backlog.
+    """Bound family-first Learning to providers currently owned by Brain.
 
-    A Fast-Handoff flag is an execution scope, not permission to turn every
-    provider-local backlog row into a family oracle. Explicit cohorts remain
-    exact; otherwise the current census repair queue plus durable exhausted
-    handoff debt is the only fair-share scope for this phase.
+    Explicit cohorts remain exact. Otherwise current causal Brain ownership is
+    combined only with an explicit current Fast-Repair -> LEARN handoff. Durable
+    negative memory may change strategy ordering but cannot steal ownership
+    from REMAT/FAST/CORE_CLIENT lanes.
     """
     requested = unique(
         explicit_cohort
         if explicit_cohort
-        else [*handoff_priority, *repair_deferred, *census_repair]
+        else [*handoff_priority, *brain_owned_repair]
     )
     eligible = [
         provider_id for provider_id in requested
@@ -1592,13 +1623,15 @@ def main() -> int:
         )
 
     batch_plan = load_json(ROOT / "automation" / "provider-repair-batch-plan-latest.json", {})
+    brain_owned_repair, brain_owner_authority = brain_owned_current_repair_providers(
+        batch_plan, census_authority
+    )
     causal_group_order: list[str] = []
     learning_scope = repair_learning_scope(
         order,
         explicit_cohort,
         handoff_priority,
-        repair_deferred,
-        census_repair,
+        brain_owned_repair,
         info_by_id,
         staged_candidates,
     )
@@ -1627,11 +1660,14 @@ def main() -> int:
 
     queue["explicitLearningCohort"] = explicit_cohort
     queue["explicitLearningCohortCount"] = len(explicit_cohort)
+    queue["brainOwnedCurrentRepairProviders"] = brain_owned_repair
+    queue["brainOwnedCurrentRepairProviderCount"] = len(brain_owned_repair)
+    queue["brainOwnedCurrentRepairAuthority"] = brain_owner_authority
     queue["repairLearningScopeProviders"] = learning_scope
     queue["repairLearningScopeProviderCount"] = len(learning_scope)
     queue["repairLearningScopePolicy"] = (
         "explicit-cohort-current-debt-only"
-        if explicit_cohort else "current-census-repair-and-exhausted-handoff-only"
+        if explicit_cohort else "current-causal-brain-owner-plus-explicit-learn-handoff"
     )
     queue["repairLearningDeferredPortfolioProviders"] = portfolio_deferred
     queue["repairLearningDeferredPortfolioProviderCount"] = len(portfolio_deferred)

@@ -1,3 +1,7 @@
+## 2026-11-26 — Propriété causale avant scope Learning
+
+La repairQueue est une file de symptômes, pas une autorité d'exécution. Le scheduler doit compiler le batch plan et le census exacts via le routeur commun, retenir uniquement les rows BRAIN_LEARNING dispatchables, puis ajouter uniquement les handoffs explicites owner=LEARN encore courants. Les mémoires négatives choisissent la stratégie mais ne changent pas le propriétaire causal. Un mismatch run/SHA du batch plan fail closed.
+
 ## 2026-11-26 — Scheduler family-first : scope Repair avant frontier
 
 Le frontier causal ne doit jamais être calculé sur le portfolio complet simplement parce qu'un Fast-Handoff existe. La frontière d'exécution d'une phase Repair/Learning est l'explicit cohort ou, à défaut, la dette `census repair + exhausted handoff` actuelle. Le backlog de reconstruction et les provider-local hors Repair restent observables et différés. Les siblings d'une même famille restent différés jusqu'à mémoire commune puis replay indépendant. Le parallélisme n'est activable qu'avec stages/workers isolés et fusion déterministe des expériences.

@@ -11,10 +11,12 @@ main = next(x for x in tree.body if isinstance(x, ast.FunctionDef) and x.name ==
 snippet = ast.get_source_segment(source, main)
 assert snippet is not None
 assert 'p.add_argument("--provider-filter", default=""' in snippet
+assert "brain_owned_repair, brain_owner_authority = brain_owned_current_repair_providers(" in snippet
 assert "learning_scope = repair_learning_scope(" in snippet
 assert "family_deferred = []" not in snippet
 assert "order = family_frontier" in snippet
 assert "fair_handoff = bool(learning_scope) and not bool(args.provider)" in snippet
+assert 'queue["brainOwnedCurrentRepairProviders"] = brain_owned_repair' in snippet
 assert 'queue["repairLearningScopeProviders"] = learning_scope' in snippet
 assert 'queue["repairLearningDeferredPortfolioProviders"] = portfolio_deferred' in snippet
 assert '"explicit-cohort-one-representative-per-causal-family-siblings-pending"' in snippet

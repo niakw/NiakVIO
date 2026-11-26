@@ -109,47 +109,65 @@ ordered = mod.authoritative_learning_order(
 )
 assert ordered == ["other", "wookafr", "1shows", "animepahe"], ordered
 
-scope = mod.repair_learning_scope(
-    ["other", "wookafr", "1shows", "animepahe"],
-    [],
-    ["other"],
-    ["other"],
-    ["wookafr", "other"],
-    {
-        "1shows": {"status": "provider_unreachable"},
-        "animepahe": {"status": "provider_unreachable"},
-        "wookafr": {"status": "no_streams"},
-        "other": {"status": "runtime_error"},
-    },
-    {
-        "1shows": {"canonical_id": "1shows"},
-        "animepahe": {"canonical_id": "animepahe"},
-        "wookafr": {"canonical_id": "wookafr"},
-        "other": {"canonical_id": "other"},
-    },
+owner_batch = {
+    "sourceRunId": "run-1",
+    "sourceTriggerSha": "a" * 40,
+    "groups": [
+        {"groupId": "learning|x", "repairScope": "learning", "providers": ["wookafr"]},
+        {"groupId": "transport|x", "repairScope": "transport", "providers": ["transport-brain"]},
+        {"groupId": "route|x", "repairScope": "route-to-terminal", "providers": ["fast-owner"]},
+        {"groupId": "candidate|x", "repairScope": "candidate-replay", "providers": ["remat-owner"]},
+    ],
+}
+owner_census = {
+    "runId": "run-1",
+    "triggerSha": "a" * 40,
+    "repairQueue": ["wookafr", "transport-brain", "fast-owner", "remat-owner"],
+    "providers": [
+        {"provider": "wookafr", "authorityAction": "KEEP_ROUTE_AUTHORITY"},
+        {"provider": "transport-brain", "authorityAction": "KEEP_ROUTE_AUTHORITY"},
+        {"provider": "fast-owner", "authorityAction": "KEEP_ROUTE_AUTHORITY"},
+        {"provider": "remat-owner", "authorityAction": "KEEP_DIRECT"},
+    ],
+}
+brain_owned, owner_authority = mod.brain_owned_current_repair_providers(
+    owner_batch, owner_census
 )
-assert scope == ["other", "wookafr"], scope
+assert brain_owned == ["wookafr", "transport-brain"], brain_owned
+assert owner_authority == "current-census-causal-execution-plan"
+
+stale_owned, stale_authority = mod.brain_owned_current_repair_providers(
+    {**owner_batch, "sourceTriggerSha": "b" * 40}, owner_census
+)
+assert stale_owned == [], stale_owned
+assert stale_authority == "provider-execution-plan-stale-fail-closed"
+
+scope_info = {
+    "wookafr": {"status": "no_streams"},
+    "transport-brain": {"status": "no_streams"},
+    "fast-owner": {"status": "no_streams"},
+    "remat-owner": {"status": "no_streams"},
+}
+scope_stage = {key: {"canonical_id": key} for key in scope_info}
+scope = mod.repair_learning_scope(
+    ["fast-owner", "wookafr", "transport-brain", "remat-owner"],
+    [],
+    ["fast-owner"],
+    brain_owned,
+    scope_info,
+    scope_stage,
+)
+assert scope == ["fast-owner", "wookafr", "transport-brain"], scope
 
 explicit_scope = mod.repair_learning_scope(
-    ["other", "wookafr", "1shows", "animepahe"],
-    ["animepahe", "wookafr"],
-    ["other"],
-    ["other"],
-    ["wookafr", "other"],
-    {
-        "1shows": {"status": "provider_unreachable"},
-        "animepahe": {"status": "provider_unreachable"},
-        "wookafr": {"status": "no_streams"},
-        "other": {"status": "runtime_error"},
-    },
-    {
-        "1shows": {"canonical_id": "1shows"},
-        "animepahe": {"canonical_id": "animepahe"},
-        "wookafr": {"canonical_id": "wookafr"},
-        "other": {"canonical_id": "other"},
-    },
+    ["fast-owner", "wookafr", "transport-brain", "remat-owner"],
+    ["remat-owner", "wookafr"],
+    ["fast-owner"],
+    brain_owned,
+    scope_info,
+    scope_stage,
 )
-assert explicit_scope == ["wookafr", "animepahe"], explicit_scope
+assert explicit_scope == ["wookafr", "remat-owner"], explicit_scope
 
 
 handoff_rows = {
@@ -196,7 +214,11 @@ source = (ROOT / "scripts" / "run_brain_learning_queue.py").read_text(encoding="
 assert "authoritative_learning_order(" in source
 assert "current census is the first Learning authority" in source
 assert "fastRepairHandoffProviders" in source
+assert "brain_owned_current_repair_providers(" in source
+assert "build_provider_execution_plan(" in source
 assert "repair_learning_scope(" in source
+assert "brainOwnedCurrentRepairProviders" in source
+assert "brainOwnedCurrentRepairAuthority" in source
 assert "repairLearningScopeProviders" in source
 assert "repairLearningDeferredPortfolioProviders" in source
 assert "provider-repair-learn-handoff-v1.json" in source
