@@ -91,15 +91,18 @@
     "webflix"
   ],
   "debugStageCounts": {
-    "provider_network_exception": 5,
-    "provider_network_http_error": 31,
-    "provider_network_zero_result": 64,
-    "provider_returned_streams": 16,
-    "provider_waf_challenge": 65,
-    "timeout": 18
+    "provider_network_exception": 8,
+    "provider_network_http_error": 32,
+    "provider_network_zero_result": 61,
+    "provider_returned_streams": 17,
+    "provider_returned_wrong_content": 1,
+    "provider_waf_challenge": 63,
+    "timeout": 17
   },
   "debugStageProviders": {
     "provider_network_exception": [
+      "animekai",
+      "videasy",
       "vidlove",
       "voiranime",
       "yflix"
@@ -113,6 +116,7 @@
       "emnexmovies",
       "moiflix",
       "movieshunt",
+      "movish",
       "persianstremio",
       "rivestream-app",
       "rivestream-ru",
@@ -131,7 +135,6 @@
       "animesama-co",
       "animevost-fr",
       "animevostfr",
-      "boredflix",
       "cinemabz",
       "fawesome",
       "flixer",
@@ -143,7 +146,7 @@
       "latestmovies",
       "mallumv",
       "moviebite",
-      "moviebox",
+      "movish",
       "movix-fr",
       "nakios",
       "neobam",
@@ -161,6 +164,7 @@
       "cinematheque-de-bretagne",
       "french-manga",
       "moviebox",
+      "movix-fr",
       "papadustream",
       "purstream",
       "sadisflix",
@@ -168,6 +172,9 @@
       "topcartoons",
       "voiranime-homes",
       "zone-streaming"
+    ],
+    "provider_returned_wrong_content": [
+      "topcartoons"
     ],
     "provider_waf_challenge": [
       "1jour1film0626",
@@ -207,18 +214,16 @@
     "timeout": [
       "anidb",
       "anime-sama",
-      "animekai",
       "anisama",
       "boredflix",
       "flixhq",
       "hianime",
-      "movix-fr",
       "nakios",
       "reanime-to",
       "sadisflix",
       "showbox",
-      "videasy",
-      "vuflix"
+      "vuflix",
+      "zone-streaming"
     ]
   },
   "fullOkCount": 8,
@@ -257,21 +262,21 @@
   "partialOkCount": 0,
   "partialOkProviders": [],
   "providerCount": 111,
-  "runId": 45910362021,
+  "runId": 45910350390,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 21,
+    "CHAIN REACHED": 19,
     "DISABLED": 36,
     "FULL OK": 8,
     "HARNESS MISMATCH": 7,
     "HARNESS/ENV BLOCKED": 14,
     "NO PROOF": 9,
     "PROOF REFRESH REQUIRED": 3,
-    "PROVIDER NETWORK BLOCKED": 7,
-    "REGRESSION PROVIDER": 4,
-    "REGRESSION PROVIDER JS": 1
+    "PROVIDER JS BROKEN": 1,
+    "PROVIDER NETWORK BLOCKED": 8,
+    "REGRESSION PROVIDER": 5
   },
   "testedProviderCount": 101,
   "triggerSha": "67aeb7d13779db11252d1cce9c2742646cb64fc6",
@@ -279,6 +284,8 @@
   "verifiedProviders": [
     "moviebox"
   ],
-  "wrongContentProviderCount": 0,
-  "wrongContentProviders": []
+  "wrongContentProviderCount": 1,
+  "wrongContentProviders": [
+    "topcartoons"
+  ]
 }
