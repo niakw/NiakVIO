@@ -2,7 +2,7 @@
   "acceptanceBasis": "aggregate-operational-state-including-carried-evidence",
   "acceptanceReached": false,
   "acceptanceTarget": 84,
-  "acceptedPlayableProviderCount": 8,
+  "acceptedPlayableProviderCount": 7,
   "acceptedPlayableProviders": [
     "cinematheque-de-bretagne",
     "moviebox",
@@ -10,8 +10,7 @@
     "purstream",
     "sadisflix",
     "streamzo",
-    "topcartoons",
-    "zone-streaming"
+    "topcartoons"
   ],
   "brainQueue": [
     "1jour1film0626",
@@ -91,15 +90,17 @@
     "webflix"
   ],
   "debugStageCounts": {
-    "provider_network_exception": 7,
-    "provider_network_http_error": 29,
-    "provider_network_zero_result": 65,
-    "provider_returned_streams": 18,
-    "provider_waf_challenge": 64,
-    "timeout": 16
+    "provider_network_exception": 8,
+    "provider_network_http_error": 31,
+    "provider_network_zero_result": 60,
+    "provider_returned_streams": 16,
+    "provider_returned_wrong_content": 1,
+    "provider_waf_challenge": 65,
+    "timeout": 18
   },
   "debugStageProviders": {
     "provider_network_exception": [
+      "animekai",
       "videasy",
       "vidlove",
       "voiranime",
@@ -117,11 +118,12 @@
       "persianstremio",
       "rivestream-app",
       "rivestream-ru",
+      "sekai",
       "showbox",
       "vidfast",
+      "voiranime-rip",
       "watchott",
-      "wookafr",
-      "youtitou"
+      "wookafr"
     ],
     "provider_network_zero_result": [
       "4khdhub",
@@ -130,7 +132,6 @@
       "animesama-co",
       "animevost-fr",
       "animevostfr",
-      "boredflix",
       "cinemabz",
       "fawesome",
       "flixer",
@@ -150,26 +151,26 @@
       "overlook",
       "playimdb",
       "pstream",
-      "sekai",
+      "skstream",
       "uhdmovies",
       "vidlink",
       "vidrock",
-      "voiranime-rip",
-      "watchott",
-      "zone-streaming"
+      "watchott"
     ],
     "provider_returned_streams": [
       "cinematheque-de-bretagne",
       "french-manga",
       "moviebox",
-      "nakios",
+      "movix-fr",
       "papadustream",
       "purstream",
       "sadisflix",
       "streamzo",
       "topcartoons",
-      "voiranime-homes",
-      "zone-streaming"
+      "voiranime-homes"
+    ],
+    "provider_returned_wrong_content": [
+      "topcartoons"
     ],
     "provider_waf_challenge": [
       "1jour1film0626",
@@ -197,6 +198,7 @@
       "movy",
       "primewire",
       "rarefilmm",
+      "reanime-to",
       "shuttletv",
       "skstream",
       "stigstream",
@@ -204,21 +206,21 @@
       "vostfree",
       "watch-cartoon-online",
       "waveanime",
+      "youtitou",
       "zone-telechargement"
     ],
     "timeout": [
       "anidb",
       "anime-sama",
-      "animekai",
       "anisama",
       "boredflix",
       "flixhq",
+      "hexa",
       "hianime",
-      "movix-fr",
-      "reanime-to",
+      "nakios",
       "sadisflix",
-      "showbox",
-      "vuflix"
+      "vuflix",
+      "zone-streaming"
     ]
   },
   "fullOkCount": 8,
@@ -257,29 +259,30 @@
   "partialOkCount": 0,
   "partialOkProviders": [],
   "providerCount": 111,
-  "runId": 45816222030,
+  "runId": 45909262681,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 20,
+    "CHAIN REACHED": 19,
     "DISABLED": 36,
     "FULL OK": 8,
     "HARNESS MISMATCH": 7,
-    "HARNESS/ENV BLOCKED": 14,
-    "NO PROOF": 9,
+    "HARNESS/ENV BLOCKED": 15,
+    "NO PROOF": 8,
     "PROOF REFRESH REQUIRED": 3,
     "PROVIDER JS BROKEN": 1,
-    "PROVIDER NETWORK BLOCKED": 7,
-    "REGRESSION PROVIDER": 4,
-    "REGRESSION PROVIDER JS": 1
+    "PROVIDER NETWORK BLOCKED": 8,
+    "REGRESSION PROVIDER": 5
   },
   "testedProviderCount": 101,
-  "triggerSha": "e16d6041fc25a35eee25c1d44ed919b8aea79282",
+  "triggerSha": "9760adb025e11940e461f906bd14a01c38a2ee92",
   "verifiedProviderCount": 1,
   "verifiedProviders": [
     "moviebox"
   ],
-  "wrongContentProviderCount": 0,
-  "wrongContentProviders": []
+  "wrongContentProviderCount": 1,
+  "wrongContentProviders": [
+    "topcartoons"
+  ]
 }
