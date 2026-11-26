@@ -4,6 +4,7 @@ on:
   workflow_run:
     workflows:
       - "Provider Repair Parallel Batch Proof"
+      - "PROVIDERS - Remat Test"
     types:
       - completed
 
@@ -29,7 +30,9 @@ jobs:
       - name: Download completed repair proof artifacts
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
-          pattern: provider-repair-*-${{ github.event.workflow_run.id }}
+          # One completed source run is selected by run-id, so the broad
+          # provider-* name cannot mix evidence from another workflow run.
+          pattern: provider-*-${{ github.event.workflow_run.id }}
           path: repair-proof-artifacts
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ github.token }}
@@ -39,9 +42,12 @@ jobs:
         run: |
           set -euo pipefail
           shopt -s nullglob globstar
-          reports=(repair-proof-artifacts/**/automation/provider-repair-fast-summary.json)
+          reports=(
+            repair-proof-artifacts/**/automation/provider-repair-fast-summary.json
+            repair-proof-artifacts/**/automation/provider-remat-test-latest.json
+          )
           if [ ${#reports[@]} -eq 0 ]; then
-            echo "FIELD_PROVIDER_REPAIR_LEARN_HANDOFF skipped=1 reason=no-summary"
+            echo "FIELD_PROVIDER_REPAIR_LEARN_HANDOFF skipped=1 reason=no-repair-or-remat-summary"
             exit 0
           fi
           args=()

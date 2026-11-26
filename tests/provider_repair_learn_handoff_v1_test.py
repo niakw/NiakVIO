@@ -70,5 +70,58 @@ assert frontier["providers"]["exhausted"]["reason"]=="brain-strategy-exhausted",
 assert fast["providers"]["exhausted"]["reason"] == "brain-strategy-exhausted", fast
 assert fast["providers"]["remaining-one"]["reason"] == "brain-unresolved", fast
 assert "fixed-now" not in fast["providers"], fast
+assert fast["providers"]["exhausted"]["sourceLane"] == "FAST_REPAIR"
 
-print("provider repair -> LEARN lane-aware handoff tests passed")
+remat_summary = {
+    "selectedProviders": ["FRENCH_MANGA", "strict-now", "no-candidate-proof"],
+    "statusesAfterRemat": {
+        "french-manga": "CANDIDATE OK",
+        "strict-now": "FULL OK",
+        "no-candidate-proof": "CANDIDATE OK",
+    },
+    "candidateReplayProvenance": {
+        "french-manga": {
+            "currentDataRematerialized": True,
+            "historicalBrainProgramReplayed": False,
+            "currentStrictRetestVerified": False,
+            "nextRequiredAction": "locate_exact_candidate_program_or_reconstruct_via_Brain",
+        },
+        "strict-now": {
+            "currentDataRematerialized": True,
+            "historicalBrainProgramReplayed": True,
+            "currentStrictRetestVerified": True,
+            "nextRequiredAction": "",
+        },
+        "no-candidate-proof": {
+            "currentDataRematerialized": True,
+            "historicalBrainProgramReplayed": False,
+            "currentStrictRetestVerified": False,
+            "nextRequiredAction": "stay_in_remat",
+        },
+    },
+    "publicationAllowed": False,
+}
+remat_base = {
+    "schemaVersion": 1,
+    "providers": {
+        "strict-now": {"owner": "LEARN", "status": "pending", "reason": "old"},
+        "no-candidate-proof": {"owner": "LEARN", "status": "pending", "reason": "keep-owner"},
+    },
+}
+remat = module.merge_summary(remat_base, remat_summary, run_id="45908491517")
+assert "strict-now" not in remat["providers"], remat
+assert remat["providers"]["french-manga"]["reason"] == "remat-candidate-unverified", remat
+assert remat["providers"]["french-manga"]["sourceLane"] == "REMAT_TEST", remat
+assert remat["providers"]["french-manga"]["publicationAllowed"] is False
+assert remat["providers"]["no-candidate-proof"]["reason"] == "keep-owner", remat
+serialized_remat = json.dumps(remat).casefold()
+for forbidden in ("http://", "https://", "authorization", "cookie", "requestbody",
+                  "historicalcandidateproof", "executableprogramprovenance"):
+    assert forbidden not in serialized_remat, forbidden
+
+workflow = (ROOT / ".github/workflows/provider-repair-learn-handoff.yml").read_text(encoding="utf-8")
+assert '"PROVIDERS - Remat Test"' in workflow
+assert "provider-remat-test-latest.json" in workflow
+assert "pattern: provider-*-" in workflow and "github.event.workflow_run.id" in workflow
+
+print("provider repair/remat -> LEARN lane-aware handoff tests passed")

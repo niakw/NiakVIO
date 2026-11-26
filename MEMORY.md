@@ -1,3 +1,10 @@
+## 2026-11-26 — V63 : Remat non vérifié → handoff Learning persistant
+
+- Remat French Manga [45908491517](https://github.com/niakw/NiakVIO/actions/runs/45908491517), source `51929b7f` : rematérialisation `sha256=0a4aae25338f1bc6`, bytes changés, puis retest exact **raw=1 / playable=0 / accepted=0 / verified=0 / wrong_content=0**. Statut `CANDIDATE OK`, `historical_programs_replayed=0`, `strict_verified=0`. Le report demandait déjà `locate_exact_candidate_program_or_reconstruct_via_Brain`, mais ce verdict restait seulement dans l'artefact Remat.
+- V63 étend le registre sanitizé `provider-repair-learn-handoff-v1.json` aux reports Remat. Un candidat avec `currentStrictRetestVerified=false` et l'action Brain explicite devient `owner=LEARN,status=pending,reason=remat-candidate-unverified,sourceLane=REMAT_TEST`. Un Remat strictement vérifié efface la dette ; un report sans action Brain explicite ne change pas de propriétaire.
+- Le workflow dédié de handoff écoute désormais aussi `PROVIDERS - Remat Test`, télécharge uniquement les artefacts du run source et commit seulement le registre sanitizé. Le Remat lui-même reste `contents: read` et ne publie toujours aucun provider.
+- La ligne French Manga du run 45908491517 est persistée immédiatement dans le registre courant. Au prochain scheduler, elle peut être prise par Learning malgré son ancien scope `candidate-replay`, sans répéter Remat à l'infini. **Toujours 0 réparation certifiée pour French Manga**.
+
 ## 2026-11-26 — V62 : préflight — suppression d'une assertion de format non comportementale
 
 - Learning V60 `45908175116` a encore échoué avant Qwen, à `brain_learning_causal_wave_merge_test.py:91`. Le test cherchait la chaîne monoligne `explicit_cohort if explicit_cohort` alors que l'expression est volontairement multiligne. Les tests fonctionnels V59 vérifient déjà le résultat exact des cohorts explicites et du causal owner.

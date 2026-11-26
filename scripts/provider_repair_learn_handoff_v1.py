@@ -64,31 +64,56 @@ def merge_summary(
         for key, value in providers.items()
         if safe_provider(key) and isinstance(value, dict)
     }
-    fast_summary = isinstance(summary.get("selectedProviders"), list)
+    selected_summary = isinstance(summary.get("selectedProviders"), list)
+    remat_summary = (
+        selected_summary
+        and isinstance(summary.get("candidateReplayProvenance"), dict)
+        and isinstance(summary.get("statusesAfterRemat"), dict)
+    )
+    fast_summary = selected_summary and not remat_summary
     targeted = [
         provider
         for provider in (
             safe_provider(x)
             for x in (
                 summary.get("selectedProviders")
-                if fast_summary
+                if selected_summary
                 else summary.get("targetedProviders")
             ) or []
         )
         if provider
     ]
-    verified = {
-        provider
-        for provider in (
-            safe_provider(x)
-            for x in (
-                summary.get("validatedProviders")
-                if fast_summary
-                else summary.get("verifiedProviders")
-            ) or []
-        )
-        if provider
-    }
+    if remat_summary:
+        provenance = summary.get("candidateReplayProvenance") or {}
+        verified = {
+            provider
+            for provider in targeted
+            if isinstance(provenance.get(provider), dict)
+            and provenance[provider].get("currentStrictRetestVerified") is True
+        }
+        remat_learn = {
+            provider
+            for provider in targeted
+            if isinstance(provenance.get(provider), dict)
+            and provenance[provider].get("currentStrictRetestVerified") is False
+            and str(provenance[provider].get("nextRequiredAction") or "")
+            == "locate_exact_candidate_program_or_reconstruct_via_Brain"
+        }
+    else:
+        provenance = {}
+        remat_learn = set()
+        verified = {
+            provider
+            for provider in (
+                safe_provider(x)
+                for x in (
+                    summary.get("validatedProviders")
+                    if fast_summary
+                    else summary.get("verifiedProviders")
+                ) or []
+            )
+            if provider
+        }
     deferred = {
         provider
         for provider in (safe_provider(x) for x in summary.get("brainDeferredLearningProviders") or [])
@@ -118,6 +143,11 @@ def merge_summary(
     for provider in targeted:
         if fast_summary and learn_owned and provider not in learn_owned:
             continue
+        if remat_summary and provider not in verified and provider not in remat_learn:
+            # Remat is diagnostic-only. Without an explicit causal handoff in
+            # candidate provenance, preserve the existing owner rather than
+            # inventing Learning authority.
+            continue
         provider_lost_lanes = lost.get(provider, [])
         # Provider-level verification is intentionally weaker than lane-level
         # preservation. If movie is verified but TV lost an upstream-positive
@@ -129,17 +159,25 @@ def merge_summary(
         observations = max(0, min(int(prior.get("repairObservations") or 0) + 1, 9999))
         if provider_lost_lanes:
             reason = "lost-upstream-positive"
+        elif remat_summary and provider in remat_learn:
+            reason = "remat-candidate-unverified"
         elif provider in deferred:
             reason = "brain-strategy-exhausted"
         elif provider in remaining:
             reason = "brain-unresolved"
         else:
             reason = "target-not-verified"
+        source_lane = (
+            "REMAT_TEST" if remat_summary
+            else "FAST_REPAIR" if fast_summary
+            else "TARGETED_REPAIR"
+        )
         providers[provider] = {
             "owner": "LEARN",
             "status": "pending",
             "reason": reason,
             "mediaTypes": provider_lost_lanes,
+            "sourceLane": source_lane,
             "lastRepairRunId": str(run_id or prior.get("lastRepairRunId") or "")[:32],
             "lastRepairAttemptsPerTask": attempts,
             "repairObservations": observations,
@@ -148,7 +186,7 @@ def merge_summary(
 
     return {
         "schemaVersion": 1,
-        "policy": "Residual targeted repair failures and exhausted Fast Brain strategies are LEARN-owned; automatic repair must not repeat exhausted experiments until LEARN produces a materially new strategy or validated evidence.",
+        "policy": "Residual targeted repair failures, exhausted Fast Brain strategies, and Remat candidates whose exact executable program is absent are LEARN-owned; automatic repair/remat must not repeat exhausted evidence until LEARN produces a materially new strategy or validated evidence.",
         "providerCount": len(providers),
         "providers": dict(sorted(providers.items())),
         "publicationAllowed": False,

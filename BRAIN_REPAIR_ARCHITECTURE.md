@@ -1,3 +1,7 @@
+## 2026-11-26 — Fermeture de boucle Remat → Learning
+
+REMAT_TEST reste un diagnostic read-only. Quand ses bytes reconstruits diffèrent mais que le current-byte retest reste non playable/non verified et que le report demande explicitement de retrouver/reconstruire le programme candidat, le verdict devient un handoff LEARN sanitizé. Le workflow de persistance, séparé du Remat, est seul autorisé à écrire ce registre. Un Remat strictement vérifié retire la dette. Sans action causale explicite, le propriétaire n'est pas changé.
+
 ## 2026-11-26 — Gate de phase : ciblé ≠ automatique global
 
 Les flags `automatic_brain_repair/learning` contrôlent l'automatisation flotte entière. Une campagne causal-owner explicitement bornée doit utiliser des flags ciblés distincts, et n'est exécutable que si `checkpoint_required_before_brain=false`. Le plan causal conserve l'autorité de cohorte ; ces flags ne créent ni mutation ni publication authority.

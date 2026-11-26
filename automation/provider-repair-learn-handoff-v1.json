@@ -1,6 +1,6 @@
 {
-  "policy": "Residual targeted repair failures and exhausted Fast Brain strategies are LEARN-owned; automatic repair must not repeat exhausted experiments until LEARN produces a materially new strategy or validated evidence.",
-  "providerCount": 37,
+  "policy": "Residual targeted repair failures, exhausted Fast Brain strategies, and Remat candidates whose exact executable program is absent are LEARN-owned; automatic repair/remat must not repeat exhausted evidence until LEARN produces a materially new strategy or validated evidence.",
+  "providerCount": 38,
   "providers": {
     "4khdhub": {
       "lastRepairAttemptsPerTask": 0,
@@ -164,6 +164,17 @@
       "reason": "brain-strategy-exhausted",
       "repairObservations": 1399,
       "status": "pending"
+    },
+    "french-manga": {
+      "owner": "LEARN",
+      "status": "pending",
+      "reason": "remat-candidate-unverified",
+      "mediaTypes": [],
+      "sourceLane": "REMAT_TEST",
+      "lastRepairRunId": "45908491517",
+      "lastRepairAttemptsPerTask": 0,
+      "repairObservations": 1,
+      "publicationAllowed": false
     },
     "frenchstream": {
       "lastRepairAttemptsPerTask": 0,
