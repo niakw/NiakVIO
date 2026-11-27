@@ -89,6 +89,8 @@ const sandbox={
       return response(url,'application/vnd.apple.mpegurl','#EXTM3U\n#EXT-X-TARGETDURATION:6\n#EXTINF:6,\nseg.ts\n#EXT-X-ENDLIST\n');
     if(url.startsWith('https://evil.example/'))
       throw new Error('cross-origin bootstrap must not execute');
+    if(url==='https://player.example/login')
+      throw new Error('non-media same-origin bootstrap must not execute');
     throw new Error('unexpected '+method+' '+url);
   },
 };
@@ -128,6 +130,7 @@ assert bootstrap[0]["method"] == "POST", payload
 assert bootstrap[0]["body"] == '{"file":"abc123","episode":1}', payload
 assert bootstrap[0]["referer"] == "https://player.example/watch/fixture", payload
 assert not any(row["url"].startswith("https://evil.example/") for row in calls), payload
+assert not any(row["url"] == "https://player.example/login" for row in calls), payload
 
 print(
     "FIELD_BRAIN_SCRIPTED_REQUEST_CONTRACT "
