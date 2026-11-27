@@ -204,6 +204,15 @@ with tempfile.TemporaryDirectory() as td:
     assert probe.resolved_target_shape(
         200, "#EXTM3U\n#EXT-X-VERSION:3", False, "application/vnd.apple.mpegurl"
     )["resolvedTargetShape"] == "hls_manifest"
+    assert probe.resolved_target_shape(
+        200,
+        '<!doctype html><html><iframe src="/player"></iframe>' + ("x" * 70000),
+        True,
+        "text/html",
+    )["resolvedTargetShape"] == "html_player"
+    assert probe.resolved_target_shape(
+        200, "unclassified " + ("x" * 70000), True, "text/plain"
+    )["resolvedTargetShape"] == "oversized"
     for path in paths:
         if "/api/lien.php?" not in path:
             assert not any(p in path for p in ("PRIVATE", "secret", "player", "m3u8"))

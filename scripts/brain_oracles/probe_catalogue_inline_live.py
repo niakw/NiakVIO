@@ -320,7 +320,8 @@ def fetch_resolved_target(url: str, referer: str) -> tuple[int, str, bool, str, 
             content_type = str(response.headers.get("Content-Type", "") or "").split(";", 1)[0].strip().lower()[:80]
             raw = response.read(TARGET_MAX_BODY + 1)
             oversized = len(raw) > TARGET_MAX_BODY
-            return status, "" if oversized else raw.decode("utf-8", errors="replace"), oversized, "", content_type
+            prefix = raw[:TARGET_MAX_BODY].decode("utf-8", errors="replace")
+            return status, prefix, oversized, "", content_type
     except (TimeoutError, OSError, ValueError):
         return 0, "", False, "transport_error", ""
 
@@ -343,8 +344,6 @@ def resolved_target_shape(
         "application/octet-stream", "application/mp4", "video/mp2t",
     }:
         shape = "media_binary"
-    elif oversized:
-        shape = "oversized"
     elif stripped.startswith("#EXTM3U"):
         shape = "hls_manifest"
     elif "<mpd" in lowered[:4096]:
@@ -361,6 +360,8 @@ def resolved_target_shape(
         shape = "javascript"
     elif not stripped:
         shape = "empty"
+    elif oversized:
+        shape = "oversized"
     else:
         shape = "text"
     return {
