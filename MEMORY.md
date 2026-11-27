@@ -1,3 +1,9 @@
+## 2026-11-27 — V77.5 : gate non-régression débloqué sur normalisation des invalidations
+
+- Repair [45983905193](https://github.com/niakw/NiakVIO/actions/runs/45983905193), source `339cfff0`, franchit désormais le préflight V17 et exécute le Repair canonique jusqu'au bout. Verdict produit : `selected=0 candidates=0 validated=0 outcome=success`; donc **0 réparation**. Le run échoue ensuite uniquement au candidate gate.
+- Cause exacte du gate : `load_proof_invalidations()` normalise tous les `reasonCodes` avec `canon()`, qui transforme les underscores en tirets, puis comparait encore à la chaîne non normalisée `cross_fixture_identity_collision`. Le registre Allwish est valide et contient bien cette raison ; le validateur la transformait en `cross-fixture-identity-collision` avant de la déclarer absente.
+- Correctif générique : la raison obligatoire est elle-même passée par `canon()`. Le test de contrat exige la forme canonique chargée et ajoute un faux registre ayant autorité + deux preuves mais sans collision d'identité, qui doit toujours échouer. Aucun registre de preuve, provider, ProviderBase, manifest ou seuil de validation n'est assoupli.
+
 ## 2026-11-27 — V77.4 : Repair canonique débloqué au niveau import V17
 
 - Repair [45980456643](https://github.com/niakw/NiakVIO/actions/runs/45980456643), source `bdcd1ab21851`, s'arrête à l'étape « Prove one canonical Learn Force repair implementation » avant toute sélection provider. `upgrade_provider_runtime_reconstruction_v21_12.py` et le contrat pipeline passent ; l'échec exact est `provider_search_detail_bridge_v17_current_contract_test.py:12` → `ModuleNotFoundError: upgrade_provider_correlated_value_plan_v18`.

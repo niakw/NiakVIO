@@ -59,7 +59,8 @@ def load_proof_invalidations(path: Path = DEFAULT_INVALIDATIONS) -> dict[str, di
             raise ValueError(f"{pid}: active proof invalidation must name lanes")
         if not authority or not reasons or len(refs) < 2:
             raise ValueError(f"{pid}: proof invalidation requires contradiction authority, reasons, and >=2 evidence refs")
-        if invalidate_positive and "cross_fixture_identity_collision" not in reasons:
+        required_identity_reason = canon("cross_fixture_identity_collision")
+        if invalidate_positive and required_identity_reason not in reasons:
             raise ValueError(f"{pid}: provider-positive invalidation requires cross_fixture_identity_collision")
         row = dict(raw_row)
         row["invalidatedLanes"] = lanes

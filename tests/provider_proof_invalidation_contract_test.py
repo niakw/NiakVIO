@@ -27,7 +27,32 @@ def main() -> int:
     assert module.invalidated_lanes_for(rows, "ALLWISH") == {"movie", "tv"}
     assert row["invalidateProviderPositive"] is True
     assert row["contradictionAuthority"] == "cross-fixture-content-identity-contradiction"
+    assert "cross-fixture-identity-collision" in row["reasonCodes"]
     assert len(row["evidenceRefs"]) >= 2
+
+    missing_collision = {
+        "schemaVersion": 1,
+        "authority": "provider-proof-invalidation-v1",
+        "providers": {
+            "bad": {
+                "active": True,
+                "invalidatedLanes": ["movie"],
+                "invalidateProviderPositive": True,
+                "contradictionAuthority": "cross-fixture-content-identity-contradiction",
+                "reasonCodes": ["short_media_identity_failure"],
+                "evidenceRefs": ["evidence:a", "evidence:b"]
+            }
+        }
+    }
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "missing-collision.json"
+        path.write_text(json.dumps(missing_collision), encoding="utf-8")
+        try:
+            module.load_proof_invalidations(path)
+        except ValueError as exc:
+            assert "cross_fixture_identity_collision" in str(exc), exc
+        else:
+            raise AssertionError("provider-positive invalidation without identity collision must fail closed")
 
     malformed = {
         "schemaVersion": 1,
