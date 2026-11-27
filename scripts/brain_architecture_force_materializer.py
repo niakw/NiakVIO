@@ -992,6 +992,7 @@ MATERIALIZED_CONTRACT_TESTS = (
     "tests/brain_architecture_force_materializer_test.py",
     "tests/brain_self_architecture_test.py",
     "tests/brain_llm_advisor_execution_test.py",
+    "tests/brain_source_resolver_runtime_profile_test.py",
 )
 
 
