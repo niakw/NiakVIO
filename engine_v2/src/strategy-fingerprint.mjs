@@ -89,7 +89,7 @@ export function postExhaustionStrategyProfiles(source) {
 export function profileGeneratorFingerprintMaterial(source, profile) {
   const raw = String(source || "").replace(/\r\n/g, "\n");
   const wanted = String(profile || "").trim().toLowerCase();
-  if (wanted === "document_request_contract_mining_v2") return raw;
+  if (["document_request_contract_mining_v2", "provider_session_bootstrap_replay_v1"].includes(wanted)) return raw;
 
   let trimmed = raw.replace(
     /^\s*"scriptedRequestMining": bool\(cfg\.get\("scripted_request_mining", False\)\),\n/m,
