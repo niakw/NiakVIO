@@ -90,19 +90,18 @@
     "webflix"
   ],
   "debugStageCounts": {
-    "provider_network_exception": 11,
-    "provider_network_http_error": 26,
-    "provider_network_zero_result": 66,
-    "provider_returned_streams": 15,
+    "provider_network_exception": 8,
+    "provider_network_http_error": 28,
+    "provider_network_zero_result": 64,
+    "provider_returned_streams": 16,
     "provider_returned_wrong_content": 1,
-    "provider_waf_challenge": 65,
+    "provider_waf_challenge": 66,
+    "provider_zero_before_provider_network": 1,
     "timeout": 15
   },
   "debugStageProviders": {
     "provider_network_exception": [
-      "animekai",
       "rivestream-ru",
-      "videasy",
       "vidlove",
       "voiranime",
       "yflix"
@@ -112,9 +111,11 @@
       "anime-ultime",
       "animesultra",
       "coflix",
+      "documentary-area",
       "emnexmovies",
       "moiflix",
       "movieshunt",
+      "movish",
       "persianstremio",
       "rivestream-app",
       "showbox",
@@ -133,7 +134,6 @@
       "animevostfr",
       "boredflix",
       "cinemabz",
-      "documentary-area",
       "fawesome",
       "flixer",
       "frembed",
@@ -145,7 +145,6 @@
       "mallumv",
       "moviebite",
       "moviebox",
-      "movish",
       "movix-fr",
       "nakios",
       "neobam",
@@ -157,13 +156,13 @@
       "uhdmovies",
       "vidlink",
       "vidrock",
-      "watchott",
-      "zone-streaming"
+      "watchott"
     ],
     "provider_returned_streams": [
       "cinematheque-de-bretagne",
       "french-manga",
       "movix-fr",
+      "nakios",
       "papadustream",
       "purstream",
       "sadisflix",
@@ -211,17 +210,19 @@
       "waveanime",
       "zone-telechargement"
     ],
+    "provider_zero_before_provider_network": [
+      "vidrock"
+    ],
     "timeout": [
       "anidb",
       "anime-sama",
+      "animekai",
       "anisama",
-      "boredflix",
-      "flixhq",
       "hianime",
-      "nakios",
       "reanime-to",
       "sadisflix",
       "showbox",
+      "videasy",
       "vuflix",
       "zone-streaming"
     ]
@@ -262,7 +263,7 @@
   "partialOkCount": 0,
   "partialOkProviders": [],
   "providerCount": 111,
-  "runId": 45941207257,
+  "runId": 45942738857,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
@@ -272,14 +273,14 @@
     "FULL OK": 8,
     "HARNESS MISMATCH": 7,
     "HARNESS/ENV BLOCKED": 14,
-    "NO PROOF": 10,
+    "NO PROOF": 9,
     "PROOF REFRESH REQUIRED": 3,
-    "PROVIDER JS BROKEN": 1,
+    "PROVIDER JS BROKEN": 2,
     "PROVIDER NETWORK BLOCKED": 7,
     "REGRESSION PROVIDER": 5
   },
   "testedProviderCount": 101,
-  "triggerSha": "640d57bfe7931729d82f8bd1f3c21f4f6af124cf",
+  "triggerSha": "0edd344dee29483da6c38cfe43ccc882e361ea71",
   "verifiedProviderCount": 0,
   "verifiedProviders": [],
   "wrongContentProviderCount": 1,
