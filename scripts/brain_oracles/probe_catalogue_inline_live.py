@@ -497,6 +497,9 @@ def _request_bootstrap_structure(source: str, page_url: str) -> dict[str, int]:
     identifier = member = call_expression = other_dynamic = 0
     identifier_static = identifier_unresolved = 0
     identifier_missing_definition = identifier_dynamic_definition = 0
+    dynamic_def_call = dynamic_def_member = dynamic_def_template = 0
+    dynamic_def_conditional = dynamic_def_other = 0
+    missing_assignment = missing_function_parameter = missing_unbound = 0
     same_origin = cross_origin = 0
     base = urllib.parse.urlsplit(str(page_url or ""))
     base_origin = (
@@ -587,8 +590,62 @@ def _request_bootstrap_structure(source: str, page_url: str) -> dict[str, int]:
                     identifier_unresolved += 1
                     if value in declarations:
                         identifier_dynamic_definition += 1
+                        rhs = declarations[value].strip()
+                        if rhs.startswith("`"):
+                            dynamic_def_template += 1
+                        elif "?" in rhs and ":" in rhs:
+                            dynamic_def_conditional += 1
+                        elif re.match(
+                            r"(?:new\s+)?[A-Za-z_$][A-Za-z0-9_$]*(?:\s*\.\s*[A-Za-z_$][A-Za-z0-9_$]*)*\s*\(",
+                            rhs,
+                        ):
+                            dynamic_def_call += 1
+                        elif re.fullmatch(
+                            r"[A-Za-z_$][A-Za-z0-9_$]*(?:\s*\.\s*[A-Za-z_$][A-Za-z0-9_$]*)+",
+                            rhs,
+                        ):
+                            dynamic_def_member += 1
+                        else:
+                            dynamic_def_other += 1
                     else:
                         identifier_missing_definition += 1
+                        assignment = re.search(
+                            r"(?:^|[;{}])\s*" + re.escape(value)
+                            + r"\s*=\s*([^;\n]{1,1000})",
+                            text,
+                        )
+                        if assignment:
+                            missing_assignment += 1
+                        else:
+                            parameter_observed = False
+                            for fn_match in re.finditer(
+                                r"\bfunction(?:\s+[A-Za-z_$][A-Za-z0-9_$]*)?\s*\(([^)]{0,600})\)",
+                                text,
+                            ):
+                                params = [
+                                    part.strip().split("=", 1)[0].strip()
+                                    for part in fn_match.group(1).split(",")
+                                ]
+                                if value in params:
+                                    parameter_observed = True
+                                    break
+                            if not parameter_observed:
+                                for arrow_match in re.finditer(
+                                    r"(?:\(([^)]{0,600})\)|([A-Za-z_$][A-Za-z0-9_$]*))\s*=>",
+                                    text,
+                                ):
+                                    raw_params = arrow_match.group(1) or arrow_match.group(2) or ""
+                                    params = [
+                                        part.strip().split("=", 1)[0].strip()
+                                        for part in raw_params.split(",")
+                                    ]
+                                    if value in params:
+                                        parameter_observed = True
+                                        break
+                            if parameter_observed:
+                                missing_function_parameter += 1
+                            else:
+                                missing_unbound += 1
             elif re.fullmatch(
                 r"[A-Za-z_$][A-Za-z0-9_$]*(?:\s*\.\s*[A-Za-z_$][A-Za-z0-9_$]*)+",
                 value,
@@ -619,6 +676,14 @@ def _request_bootstrap_structure(source: str, page_url: str) -> dict[str, int]:
         "resolvedTargetRequestIdentifierUnresolvedCount": min(32, identifier_unresolved),
         "resolvedTargetRequestIdentifierMissingDefinitionCount": min(32, identifier_missing_definition),
         "resolvedTargetRequestIdentifierDynamicDefinitionCount": min(32, identifier_dynamic_definition),
+        "resolvedTargetRequestDynamicDefinitionCallCount": min(32, dynamic_def_call),
+        "resolvedTargetRequestDynamicDefinitionMemberCount": min(32, dynamic_def_member),
+        "resolvedTargetRequestDynamicDefinitionTemplateCount": min(32, dynamic_def_template),
+        "resolvedTargetRequestDynamicDefinitionConditionalCount": min(32, dynamic_def_conditional),
+        "resolvedTargetRequestDynamicDefinitionOtherCount": min(32, dynamic_def_other),
+        "resolvedTargetRequestMissingDefinitionAssignmentCount": min(32, missing_assignment),
+        "resolvedTargetRequestMissingDefinitionFunctionParameterCount": min(32, missing_function_parameter),
+        "resolvedTargetRequestMissingDefinitionUnboundCount": min(32, missing_unbound),
         "resolvedTargetRequestMemberUrlCount": min(32, member),
         "resolvedTargetRequestCallExpressionUrlCount": min(32, call_expression),
         "resolvedTargetRequestOtherDynamicUrlCount": min(32, other_dynamic),
