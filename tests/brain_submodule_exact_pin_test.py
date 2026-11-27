@@ -36,3 +36,35 @@ assert match.group(1) == sha, (
 gitmodules = (ROOT / ".gitmodules").read_text(encoding="utf-8")
 assert "https://github.com/niakw/NiakVIO-Brain-LLM.git" in gitmodules
 print(f"FIELD_BRAIN_SUBMODULE_EXACT_PIN verified=true source_sha={sha} repair_count=0")
+
+# Operational triggers may describe intent, but version provenance has one
+# authority only: the validated gitlink pin above. Historical SHAs in the
+# trigger become stale silently and must never return as a competing truth.
+trigger = (ROOT / ".github/triggers/brain-learning-reconstruction").read_text(
+    encoding="utf-8"
+)
+for forbidden in (
+    "source_brain_main_sha:",
+    "source_niakvio_main_pretrigger_sha:",
+):
+    assert forbidden not in trigger, (
+        f"operational Brain trigger reintroduced duplicated provenance: {forbidden}"
+    )
+assert "causal_frontier:" in trigger
+assert "architecture_force:" in trigger
+assert "target_provider:" in trigger
+
+# The active source->Brain integration gate must select the latest exact-parent
+# evidence by provenance. It must not freeze a historical probe count or run ID,
+# otherwise new valid observations are rejected while old evidence keeps winning.
+integration = (ROOT / "scripts/assert_brain_catalogue_integration.py").read_text(
+    encoding="utf-8"
+)
+assert "assert len(probes) ==" not in integration
+assert not re.search(r'probeRunId[^\n]{0,80}["\']?[0-9]{8,20}', integration), (
+    "active source-memory gate must not pin one historical probe run"
+)
+assert "exact_parent_match" in integration
+assert "current = max(matched, key=run_number)" in integration
+
+print("FIELD_BRAIN_SINGLE_AUTHORITY_CONTRACT verified=true")
