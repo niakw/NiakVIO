@@ -7,22 +7,21 @@
   "advisorHypothesisWaveBudget": 2,
   "batchSize": 48,
   "deferredLearningProviders": [
-    "papadustream"
+    "anikototv",
+    "anime-sama"
   ],
-  "effectiveWaves": 2,
-  "elapsedSeconds": 562.285,
+  "effectiveWaves": 6,
+  "elapsedSeconds": 296.013,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
-    "operationalProviderCount": 7,
+    "operationalProviderCount": 8,
     "providerCount": 142,
     "schemaVersion": 2,
-    "sourceRunId": "46003906207-pre-repair",
-    "sourceSha": "f320f8612e65445ac3b165d9f31bef2223f31ee6",
-    "strategyCount": 4
+    "sourceRunId": "46008634490-pre-repair",
+    "sourceSha": "2d1ea0526a9811849537a482eddcba0f0a951c8d",
+    "strategyCount": 5
   },
   "familyFrontierPendingProviders": [
-    "anikototv",
-    "anime-sama",
     "frenchstream",
     "nakios",
     "sadisflix"
@@ -39,37 +38,30 @@
   "healthConcurrency": 0,
   "healthConcurrencyMode": "auto-per-batch",
   "initialStatuses": {
-    "anikototv": "REGRESSION PROVIDER JS",
-    "anime-sama": "REGRESSION PROVIDER JS",
-    "french-manga": "CANDIDATE OK",
-    "frenchstream": "PROVIDER JS BROKEN",
-    "hindmoviez": "REGRESSION PROVIDER JS",
-    "moiflix": "PROVIDER JS BROKEN",
+    "anikototv": "REGRESSION PROVIDER",
+    "anime-sama": "REGRESSION PROVIDER",
+    "frenchstream": "NO PROOF",
     "nakios": "PROVIDER JS BROKEN",
-    "papadustream": "REGRESSION PROVIDER JS",
-    "primewire": "CHAIN REACHED",
     "sadisflix": "REGRESSION PROVIDER JS"
   },
   "labOnlyWithoutCompiledRepairProviders": [],
   "learningHandoffProviders": [
-    "papadustream"
+    "anikototv",
+    "anime-sama"
   ],
   "maxRoundsPerBatch": 1,
-  "maxWaves": 2,
-  "noProgressReason": "time_budget_exhausted_during_batch",
+  "maxWaves": 6,
+  "noProgressReason": "experiment_variants_exhausted",
   "positiveProgramRecovery": {
     "durableProviders": [],
     "durableRecordCount": 0,
     "recoveredRecordCount": 0,
-    "reportCount": 113
+    "reportCount": 114
   },
-  "processedProviderCount": 5,
+  "processedProviderCount": 2,
   "processedProviders": [
-    "french-manga",
-    "hindmoviez",
-    "moiflix",
-    "papadustream",
-    "primewire"
+    "anikototv",
+    "anime-sama"
   ],
   "providerSpecificRules": false,
   "rawLabAcceptedCount": 0,
@@ -77,16 +69,12 @@
   "remainingProviders": [
     "anikototv",
     "anime-sama",
-    "french-manga",
     "frenchstream",
-    "hindmoviez",
-    "moiflix",
     "nakios",
-    "primewire",
     "sadisflix"
   ],
   "requestedWaves": 1,
-  "resumeRecommended": true,
+  "resumeRecommended": false,
   "safety": {
     "acceptedMutationRequiresStrictImprovement": true,
     "crossWaveExplorationCarryoverRole": "same-run-sandbox-only-retested-no-publication-authority",
@@ -100,29 +88,22 @@
     "wafEnvironmentExcludedByDefault": true
   },
   "schemaVersion": 1,
-  "selectedProviderCount": 10,
+  "selectedProviderCount": 5,
   "selectedProviders": [
     "anikototv",
     "anime-sama",
-    "french-manga",
     "frenchstream",
-    "hindmoviez",
-    "moiflix",
     "nakios",
-    "papadustream",
-    "primewire",
     "sadisflix"
   ],
   "selectionSource": "automation/provider-census-status.json:repairQueue",
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "46003906207-pre-repair",
-  "timeBudgetExhausted": true,
+  "sourceCensusRunId": "46008634490-pre-repair",
+  "timeBudgetExhausted": false,
   "timeBudgetSeconds": 600,
   "unvisitedProviders": [
-    "anikototv",
-    "anime-sama",
     "frenchstream",
     "nakios",
     "sadisflix"
@@ -132,80 +113,41 @@
       "acceptedCount": 0,
       "acceptedProgramCompileFailures": {},
       "acceptedProgramCompiledProviders": [],
-      "advisorRotationPending": [
-        "moiflix",
-        "primewire"
-      ],
+      "advisorRotationPending": [],
       "batches": [
         {
           "accepted": [],
           "acceptedCount": 0,
-          "advisorRemainingFingerprintCounts": {
-            "moiflix": 3,
-            "primewire": 0
-          },
-          "advisorRotationPending": [
-            "moiflix",
-            "primewire"
-          ],
+          "advisorRemainingFingerprintCounts": {},
+          "advisorRotationPending": [],
           "batch": 1,
           "brain": {
             "attemptDiagnostics": [
               {
-                "parentSha256": "5d2a78610031697272e630a221bb0d5fdeabd76740bb6f626d441fc4fe5e3e8c",
+                "parentSha256": "3c1e89fa5cc0da4a8b903a7c73eb256ba4e821639e2920eff2f6474529e5e072",
                 "phase": "attempts",
-                "profile": "player_media_extractor_v1",
-                "provider": "hindmoviez",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "anikototv",
                 "reasonCode": "",
-                "repairSha256": "e3b69bf34dbf2e4ff7eb7e1c1d446835b3ace5943e57cd1cfebeff8bd01d168e",
+                "repairSha256": "d79de8842eda726161c070df7454e8bad4a7343daebb0083b56c499f41c7dcfa",
                 "round": 1,
                 "status": "generated"
               },
               {
-                "parentSha256": "fe3a4c845dca37dad14126bbbf6672e7dc15184e0bebe2d7c0d5df54e40e4ea2",
+                "parentSha256": "94175cdaa5d47f0c33c4b2d0ffc3737c8b22185f3f68f9ffe2cd2c26bf8f4b9d",
                 "phase": "attempts",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "moiflix",
+                "profile": "search_contract_inference_v1",
+                "provider": "anime-sama",
                 "reasonCode": "",
-                "repairSha256": "e5cce97dbfeab683094cd2771a909ec33d54e1d1dce0cb1b726e65a7e7b06063",
-                "round": 1,
-                "status": "generated"
-              },
-              {
-                "parentSha256": "fa3d09d89a4f1ec482e623c924b77fa771b2312413787f981438077e8dbadfe0",
-                "phase": "attempts",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "papadustream",
-                "reasonCode": "",
-                "repairSha256": "58ecac679d07b24cf950f8e443499783b53ed73587e4b7041dd6c71287eed458",
-                "round": 1,
-                "status": "generated"
-              },
-              {
-                "parentSha256": "7c73ccabfe24e2710fc2d30b79d6db2f82ca5fe619dabdda2f61a0d7df70b415",
-                "phase": "attempts",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "primewire",
-                "reasonCode": "",
-                "repairSha256": "0fe39df06f0b61eb5313ac2c26ffdf60b703c5c685b5a55d764867e95e4d8f4c",
+                "repairSha256": "7542b7c5bcb9a6ffe4689b091f5ed6881c69bb7b518840cc6c8ec8af7c50323e",
                 "round": 1,
                 "status": "generated"
               },
               {
                 "parentSha256": "",
                 "phase": "rejected",
-                "profile": "player_media_extractor_v1",
-                "provider": "hindmoviez",
-                "reasonCode": "introduced_runtime_error",
-                "repairSha256": "",
-                "round": 1,
-                "status": "no_streams"
-              },
-              {
-                "parentSha256": "",
-                "phase": "rejected",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "moiflix",
+                "profile": "search_contract_inference_v1",
+                "provider": "anime-sama",
                 "reasonCode": "required_category_playable_proof",
                 "repairSha256": "",
                 "round": 1,
@@ -213,169 +155,19 @@
               },
               {
                 "parentSha256": "",
-                "phase": "rejected",
+                "phase": "exploration_progress",
                 "profile": "adaptive_runtime_recovery",
-                "provider": "papadustream",
-                "reasonCode": "required_category_playable_proof",
-                "repairSha256": "",
+                "provider": "anikototv",
+                "reasonCode": "sandbox_diagnostic_progress",
+                "repairSha256": "d79de8842eda726161c070df7454e8bad4a7343daebb0083b56c499f41c7dcfa",
                 "round": 1,
-                "status": "degraded"
-              },
-              {
-                "parentSha256": "",
-                "phase": "rejected",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "primewire",
-                "reasonCode": "introduced_runtime_error",
-                "repairSha256": "",
-                "round": 1,
-                "status": "no_streams"
+                "status": ""
               }
             ],
             "harnessDifferentialProviders": [],
             "learnedEvents": 0,
             "plans": {
-              "published:french-manga": {
-                "action": "none",
-                "allowedProfiles": [],
-                "baseExperimentExhausted": false,
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 1,
-                "experimentVariant": 0,
-                "experimentVariantCount": 5,
-                "explorationChainEnabled": true,
-                "explorationModeEnabled": true,
-                "failureClass": "healthy",
-                "forcePreferredRequested": "",
-                "forcePreferredSelected": false,
-                "hypotheses": [],
-                "learningDisposition": "none",
-                "llmAdvisorApplied": false,
-                "llmAdvisorConfidence": 0,
-                "llmAdvisorExperiment": {},
-                "llmAdvisorExperimentFingerprint": "",
-                "llmAdvisorExplorationRescue": false,
-                "llmAdvisorFailureCompatibility": "",
-                "llmAdvisorGuidanceKind": "",
-                "llmAdvisorProfile": "",
-                "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "",
-                "llmAdvisorStrategy": "",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 0,
-                "positiveProgramFingerprint": "",
-                "postExhaustionCandidateProfiles": [],
-                "postExhaustionSourceFailureClass": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "french-manga",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "none",
-                "repairType": "none",
-                "signature": "e6fc71dc52a4131f6c31dfcc",
-                "strategyEscalated": false,
-                "targetCategories": []
-              },
-              "published:hindmoviez": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "player_media_extractor_v1"
-                ],
-                "baseExperimentExhausted": false,
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 1,
-                "experimentVariant": 0,
-                "experimentVariantCount": 5,
-                "explorationChainEnabled": true,
-                "explorationModeEnabled": true,
-                "failureClass": "variant_coverage_gap",
-                "forcePreferredRequested": "",
-                "forcePreferredSelected": false,
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "enumerate-announced-player-variants",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "remove-premature-variant-short-circuit",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "core_repair_only",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.99,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": false,
-                  "documentRequestMining": false,
-                  "maxDepth": 2,
-                  "maxEmbeds": 10,
-                  "maxPages": 10,
-                  "maxRecipePasses": 1,
-                  "recipePolicy": "current_only",
-                  "responseSalvage": false,
-                  "roleOrder": [
-                    "detail"
-                  ],
-                  "routePolicy": "owned_only",
-                  "sessionBootstrap": false,
-                  "terminalOnly": false
-                },
-                "llmAdvisorExperimentFingerprint": "ab0dd3196d49d604cc1998249339b9332b44afcab0236edd3e9e6816a6a4c110",
-                "llmAdvisorExplorationRescue": false,
-                "llmAdvisorFailureCompatibility": "exact",
-                "llmAdvisorGuidanceKind": "external-brain-llm",
-                "llmAdvisorProfile": "player_media_extractor_v1",
-                "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "variant_coverage_gap",
-                "llmAdvisorStrategy": "enumerate_stream_variants_before_global_cap",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 0,
-                "positiveProgramFingerprint": "",
-                "postExhaustionCandidateProfiles": [
-                  "player_protocol_family_replay_v1",
-                  "media_response_shape_inference_v1",
-                  "runtime_response_salvage_v1",
-                  "document_request_contract_mining_v1",
-                  "terminal_transition_graph_v1",
-                  "terminal_transition_graph_v2",
-                  "terminal_transition_graph_v3",
-                  "terminal_transition_graph_v4",
-                  "terminal_transition_graph_v5",
-                  "terminal_transition_graph_v6",
-                  "terminal_transition_graph_v7",
-                  "terminal_transition_graph_v8",
-                  "terminal_transition_graph_v9",
-                  "terminal_transition_graph_v10",
-                  "terminal_transition_graph_v11",
-                  "terminal_transition_graph_v12",
-                  "terminal_transition_graph_v13",
-                  "terminal_transition_graph_v14",
-                  "terminal_request_program_inference_v1"
-                ],
-                "postExhaustionSourceFailureClass": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "hindmoviez",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "variant_enumeration",
-                "signature": "a37d5273f9b4508f268e55cd",
-                "strategyEscalated": false,
-                "targetCategories": []
-              },
-              "published:moiflix": {
+              "published:anikototv": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
                   "adaptive_runtime_recovery"
@@ -384,7 +176,303 @@
                 "exitReason": null,
                 "experimentExhausted": false,
                 "experimentGeneration": 1,
-                "experimentVariant": 0,
+                "experimentVariant": 1,
+                "experimentVariantCount": 5,
+                "explorationChainEnabled": true,
+                "explorationModeEnabled": true,
+                "failureClass": "unknown_failure",
+                "forcePreferredRequested": "",
+                "forcePreferredSelected": false,
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "collect-missing-evidence",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "execute_meta_gap_synthesized_strategy",
+                "llmAdvisorApplied": true,
+                "llmAdvisorConfidence": 0.86,
+                "llmAdvisorExperiment": {
+                  "aliasSearch": true,
+                  "documentRequestMining": true,
+                  "maxDepth": 4,
+                  "maxEmbeds": 17,
+                  "maxPages": 20,
+                  "maxRecipePasses": 5,
+                  "recipePolicy": "current_plus_provider_peer",
+                  "responseSalvage": true,
+                  "roleOrder": [
+                    "detail",
+                    "search",
+                    "player",
+                    "source",
+                    "episode",
+                    "other",
+                    "api"
+                  ],
+                  "routePolicy": "owned_plus_peer_generic",
+                  "sessionBootstrap": true,
+                  "terminalOnly": false
+                },
+                "llmAdvisorExperimentFingerprint": "9a6e2e705c3e6e1a98be93349bd77e509e47152a33303a19bc1741ae192885df",
+                "llmAdvisorExplorationRescue": false,
+                "llmAdvisorFailureCompatibility": "exact-rebound",
+                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
+                "llmAdvisorProfile": "adaptive_runtime_recovery",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "unknown_failure",
+                "llmAdvisorStrategy": "meta_gap_provider_transport_composition",
+                "metaGapEscalated": true,
+                "negativeMemoryMatches": 1,
+                "positiveProgramFingerprint": "",
+                "postExhaustionCandidateProfiles": [],
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "anikototv",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "learning",
+                "repairType": "synthesized_strategy",
+                "signature": "5483782c3b851d5d525648d5",
+                "strategyEscalated": false,
+                "targetCategories": []
+              },
+              "published:anime-sama": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "search_contract_inference_v1"
+                ],
+                "baseExperimentExhausted": false,
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 1,
+                "experimentVariant": 3,
+                "experimentVariantCount": 5,
+                "explorationChainEnabled": true,
+                "explorationModeEnabled": true,
+                "failureClass": "unknown_failure",
+                "forcePreferredRequested": "",
+                "forcePreferredSelected": false,
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "collect-missing-evidence",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "execute_meta_gap_synthesized_strategy",
+                "llmAdvisorApplied": true,
+                "llmAdvisorConfidence": 0.86,
+                "llmAdvisorExperiment": {
+                  "aliasSearch": true,
+                  "documentRequestMining": true,
+                  "maxDepth": 5,
+                  "maxEmbeds": 24,
+                  "maxPages": 24,
+                  "maxRecipePasses": 5,
+                  "recipePolicy": "current_plus_provider_peer",
+                  "responseSalvage": true,
+                  "roleOrder": [
+                    "api",
+                    "search",
+                    "detail",
+                    "player",
+                    "source",
+                    "episode",
+                    "other"
+                  ],
+                  "routePolicy": "owned_plus_peer_generic",
+                  "sessionBootstrap": true,
+                  "terminalOnly": false
+                },
+                "llmAdvisorExperimentFingerprint": "4fef5f9349d489a3b42999223ee249f0f0e6dadfa9e9f08deb7c2ad787891cfd",
+                "llmAdvisorExplorationRescue": false,
+                "llmAdvisorFailureCompatibility": "exact",
+                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
+                "llmAdvisorProfile": "search_contract_inference_v1",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "unknown_failure",
+                "llmAdvisorStrategy": "meta-gap-search-contract-fallback",
+                "metaGapEscalated": true,
+                "negativeMemoryMatches": 3,
+                "positiveProgramFingerprint": "",
+                "postExhaustionCandidateProfiles": [],
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "anime-sama",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "learning",
+                "repairType": "synthesized_strategy",
+                "signature": "5483782c3b851d5d525648d5",
+                "strategyEscalated": false,
+                "targetCategories": []
+              }
+            },
+            "queuedForLearning": [
+              "anikototv",
+              "anime-sama"
+            ],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "mixed",
+          "causalProgressCount": 1,
+          "causalProgressObserved": true,
+          "crossWaveExplorationCarryoverApplied": [],
+          "crossWaveExplorationCarryoverCaptured": [
+            "anikototv"
+          ],
+          "deferredToLearning": [],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver",
+              "providers": [
+                "anikototv"
+              ],
+              "repairScope": "transport"
+            },
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+              "providers": [
+                "anime-sama"
+              ],
+              "repairScope": "learning"
+            }
+          ],
+          "fixedInLab": [],
+          "genericLearningHandoff": [],
+          "groupId": "packed",
+          "harnessDifferentialProviders": [],
+          "healthConcurrency": 2,
+          "providerCount": 2,
+          "providers": [
+            "anikototv",
+            "anime-sama"
+          ],
+          "repairScope": "mixed",
+          "unexecutableLlmHandoff": []
+        }
+      ],
+      "causalProgressCount": 1,
+      "causalProgressObserved": true,
+      "compileRejectedToLearning": [],
+      "deferredToLearning": [],
+      "deferredToLearningCount": 0,
+      "durableMaterializeTargets": [],
+      "experimentMemoryAdvanced": true,
+      "familyFrontierDeferredProviders": [
+        "frenchstream",
+        "nakios",
+        "sadisflix"
+      ],
+      "familyFrontierGroups": [
+        "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+        "transport|mixed_embed_resolver|runtime:mixed_embed_resolver"
+      ],
+      "familyFrontierSelectedProviders": [
+        "anime-sama",
+        "anikototv"
+      ],
+      "fixedInLab": [],
+      "fixedInLabCount": 0,
+      "inputProviderCount": 2,
+      "labOnlyWithoutCompiledRepair": [],
+      "pinnedAdvisorFamilyGroups": [],
+      "rawFixedInLab": [],
+      "rawLabAcceptedCount": 0,
+      "remainingProviderCount": 5,
+      "timeBudgetExhausted": false,
+      "trustedFamilyFanoutGroups": [],
+      "wave": 1
+    },
+    {
+      "acceptedCount": 0,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [],
+      "advisorRotationPending": [
+        "anikototv",
+        "anime-sama"
+      ],
+      "batches": [
+        {
+          "accepted": [],
+          "acceptedCount": 0,
+          "advisorRemainingFingerprintCounts": {
+            "anikototv": 3,
+            "anime-sama": 0
+          },
+          "advisorRotationPending": [
+            "anikototv",
+            "anime-sama"
+          ],
+          "batch": 1,
+          "brain": {
+            "attemptDiagnostics": [
+              {
+                "parentSha256": "d79de8842eda726161c070df7454e8bad4a7343daebb0083b56c499f41c7dcfa",
+                "phase": "attempts",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "anikototv",
+                "reasonCode": "",
+                "repairSha256": "8c0fa2fde3066e790434000d1b21e996e17296c19589c44ae6321141bcb8df99",
+                "round": 1,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "94175cdaa5d47f0c33c4b2d0ffc3737c8b22185f3f68f9ffe2cd2c26bf8f4b9d",
+                "phase": "attempts",
+                "profile": "search_contract_inference_v1",
+                "provider": "anime-sama",
+                "reasonCode": "",
+                "repairSha256": "76c241afd7170fc3048d0b8589c427133acd52e1fe3c722c5d5f309933c9252f",
+                "round": 1,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "anikototv",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 1,
+                "status": "unavailable"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "search_contract_inference_v1",
+                "provider": "anime-sama",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 1,
+                "status": "no_streams"
+              }
+            ],
+            "harnessDifferentialProviders": [],
+            "learnedEvents": 0,
+            "plans": {
+              "published:anikototv": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "adaptive_runtime_recovery"
+                ],
+                "baseExperimentExhausted": false,
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 1,
+                "experimentVariant": 2,
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
@@ -422,7 +510,7 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 0,
+                "negativeMemoryMatches": 2,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "transport_request_differential_v1",
@@ -453,16 +541,240 @@
                 "postExhaustionSourceFailureClass": "",
                 "postExhaustionStrategyMethod": "",
                 "postExhaustionStrategyProfile": "",
-                "providerId": "moiflix",
+                "providerId": "anikototv",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
                 "repairScope": "capability",
                 "repairType": "session_transport",
-                "signature": "9408dea970ee2148302affa4",
+                "signature": "ac5f8426938872bee42dae1d",
                 "strategyEscalated": false,
                 "targetCategories": []
               },
-              "published:papadustream": {
+              "published:anime-sama": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "search_contract_inference_v1"
+                ],
+                "baseExperimentExhausted": false,
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "explorationChainEnabled": true,
+                "explorationModeEnabled": true,
+                "failureClass": "unknown_failure",
+                "forcePreferredRequested": "",
+                "forcePreferredSelected": false,
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "collect-missing-evidence",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "execute_meta_gap_synthesized_strategy",
+                "llmAdvisorApplied": true,
+                "llmAdvisorConfidence": 0.86,
+                "llmAdvisorExperiment": {
+                  "aliasSearch": true,
+                  "documentRequestMining": true,
+                  "maxDepth": 5,
+                  "maxEmbeds": 25,
+                  "maxPages": 26,
+                  "maxRecipePasses": 5,
+                  "recipePolicy": "current_plus_provider_peer",
+                  "responseSalvage": true,
+                  "roleOrder": [
+                    "search",
+                    "detail",
+                    "player",
+                    "source",
+                    "episode",
+                    "other",
+                    "api"
+                  ],
+                  "routePolicy": "owned_plus_peer_generic",
+                  "sessionBootstrap": true,
+                  "terminalOnly": false
+                },
+                "llmAdvisorExperimentFingerprint": "f215508d02b1d38349a6716594a21b039bd633316ccdb693331c68842f90b504",
+                "llmAdvisorExplorationRescue": false,
+                "llmAdvisorFailureCompatibility": "exact",
+                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
+                "llmAdvisorProfile": "search_contract_inference_v1",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "unknown_failure",
+                "llmAdvisorStrategy": "meta-gap-search-contract-fallback",
+                "metaGapEscalated": true,
+                "negativeMemoryMatches": 4,
+                "positiveProgramFingerprint": "",
+                "postExhaustionCandidateProfiles": [],
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "anime-sama",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "learning",
+                "repairType": "synthesized_strategy",
+                "signature": "5483782c3b851d5d525648d5",
+                "strategyEscalated": false,
+                "targetCategories": []
+              }
+            },
+            "queuedForLearning": [
+              "anime-sama"
+            ],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "mixed",
+          "causalProgressCount": 0,
+          "causalProgressObserved": true,
+          "crossWaveExplorationCarryoverApplied": [
+            "anikototv"
+          ],
+          "crossWaveExplorationCarryoverCaptured": [
+            "anikototv"
+          ],
+          "deferredToLearning": [],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver",
+              "providers": [
+                "anikototv"
+              ],
+              "repairScope": "transport"
+            },
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+              "providers": [
+                "anime-sama"
+              ],
+              "repairScope": "learning"
+            }
+          ],
+          "fixedInLab": [],
+          "genericLearningHandoff": [
+            "anikototv"
+          ],
+          "groupId": "packed",
+          "harnessDifferentialProviders": [],
+          "healthConcurrency": 2,
+          "providerCount": 2,
+          "providers": [
+            "anikototv",
+            "anime-sama"
+          ],
+          "repairScope": "mixed",
+          "unexecutableLlmHandoff": []
+        }
+      ],
+      "causalProgressCount": 0,
+      "causalProgressObserved": true,
+      "compileRejectedToLearning": [],
+      "deferredToLearning": [],
+      "deferredToLearningCount": 0,
+      "durableMaterializeTargets": [],
+      "experimentMemoryAdvanced": true,
+      "familyFrontierDeferredProviders": [
+        "frenchstream",
+        "nakios",
+        "sadisflix"
+      ],
+      "familyFrontierGroups": [
+        "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+        "transport|mixed_embed_resolver|runtime:mixed_embed_resolver"
+      ],
+      "familyFrontierSelectedProviders": [
+        "anime-sama",
+        "anikototv"
+      ],
+      "fixedInLab": [],
+      "fixedInLabCount": 0,
+      "inputProviderCount": 2,
+      "labOnlyWithoutCompiledRepair": [],
+      "pinnedAdvisorFamilyGroups": [],
+      "rawFixedInLab": [],
+      "rawLabAcceptedCount": 0,
+      "remainingProviderCount": 5,
+      "timeBudgetExhausted": false,
+      "trustedFamilyFanoutGroups": [],
+      "wave": 2
+    },
+    {
+      "acceptedCount": 0,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [],
+      "advisorRotationPending": [
+        "anikototv",
+        "anime-sama"
+      ],
+      "batches": [
+        {
+          "accepted": [],
+          "acceptedCount": 0,
+          "advisorRemainingFingerprintCounts": {
+            "anikototv": 3,
+            "anime-sama": 0
+          },
+          "advisorRotationPending": [
+            "anikototv",
+            "anime-sama"
+          ],
+          "batch": 1,
+          "brain": {
+            "attemptDiagnostics": [
+              {
+                "parentSha256": "d79de8842eda726161c070df7454e8bad4a7343daebb0083b56c499f41c7dcfa",
+                "phase": "attempts",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "anikototv",
+                "reasonCode": "",
+                "repairSha256": "0c99d891774ab6413e493be086f7eec1bc1bd265ee17be5a86965757d6727f73",
+                "round": 1,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "94175cdaa5d47f0c33c4b2d0ffc3737c8b22185f3f68f9ffe2cd2c26bf8f4b9d",
+                "phase": "attempts",
+                "profile": "search_contract_inference_v1",
+                "provider": "anime-sama",
+                "reasonCode": "",
+                "repairSha256": "4f3c1b4c4461b2724a70529637a134a2da3822e3abef7087a1720829065eba4d",
+                "round": 1,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "anikototv",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 1,
+                "status": "unavailable"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "search_contract_inference_v1",
+                "provider": "anime-sama",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 1,
+                "status": "no_streams"
+              }
+            ],
+            "harnessDifferentialProviders": [],
+            "learnedEvents": 0,
+            "plans": {
+              "published:anikototv": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
                   "adaptive_runtime_recovery"
@@ -471,17 +783,17 @@
                 "exitReason": null,
                 "experimentExhausted": false,
                 "experimentGeneration": 1,
-                "experimentVariant": 0,
+                "experimentVariant": 3,
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
-                "failureClass": "playback_context_gap",
+                "failureClass": "transport_blocked",
                 "forcePreferredRequested": "",
                 "forcePreferredSelected": false,
                 "hypotheses": [
                   {
                     "confidence": 0,
-                    "id": "preserve-playback-context",
+                    "id": "bootstrap-session",
                     "learned": false,
                     "maturity": null,
                     "profile": null,
@@ -489,7 +801,7 @@
                   },
                   {
                     "confidence": 0,
-                    "id": "refresh-media-token",
+                    "id": "alternate-official-route",
                     "learned": false,
                     "maturity": null,
                     "profile": null,
@@ -509,45 +821,50 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 0,
+                "negativeMemoryMatches": 4,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
-                  "terminal_transition_graph_v1",
-                  "terminal_transition_graph_v2",
-                  "terminal_transition_graph_v3",
-                  "terminal_transition_graph_v4",
-                  "terminal_transition_graph_v5",
-                  "terminal_transition_graph_v6",
-                  "terminal_transition_graph_v7",
-                  "terminal_transition_graph_v8",
-                  "terminal_transition_graph_v9",
-                  "terminal_transition_graph_v10",
-                  "terminal_transition_graph_v11",
-                  "terminal_transition_graph_v12",
-                  "terminal_transition_graph_v13",
-                  "terminal_transition_graph_v14",
-                  "terminal_request_program_inference_v1",
+                  "transport_request_differential_v1",
+                  "provider_session_bootstrap_replay_v1",
                   "runtime_response_salvage_v1",
-                  "document_request_contract_mining_v1",
-                  "player_protocol_family_replay_v1",
-                  "media_response_shape_inference_v1"
+                  "transport_request_differential_v2",
+                  "route_transition_graph_v2",
+                  "route_transition_graph_v3",
+                  "route_transition_graph_v4",
+                  "route_transition_graph_v5",
+                  "route_transition_graph_v6",
+                  "route_transition_graph_v7",
+                  "route_transition_graph_v8",
+                  "route_transition_graph_v9",
+                  "route_transition_graph_v10",
+                  "route_transition_graph_v11",
+                  "route_transition_graph_v12",
+                  "route_transition_graph_v13",
+                  "route_transition_graph_v14",
+                  "route_transition_graph_v15",
+                  "route_transition_graph_v16",
+                  "route_transition_graph_v17",
+                  "route_transition_graph_v18",
+                  "route_transition_graph_v19",
+                  "route_transition_graph_v20",
+                  "route_transition_graph_v21"
                 ],
                 "postExhaustionSourceFailureClass": "",
                 "postExhaustionStrategyMethod": "",
                 "postExhaustionStrategyProfile": "",
-                "providerId": "papadustream",
+                "providerId": "anikototv",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
                 "repairScope": "capability",
-                "repairType": "playback_context",
-                "signature": "7c6658344f6188f0f77ece7f",
+                "repairType": "session_transport",
+                "signature": "ac5f8426938872bee42dae1d",
                 "strategyEscalated": false,
                 "targetCategories": []
               },
-              "published:primewire": {
+              "published:anime-sama": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "adaptive_runtime_recovery"
+                  "search_contract_inference_v1"
                 ],
                 "baseExperimentExhausted": true,
                 "exitReason": null,
@@ -557,13 +874,237 @@
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
-                "failureClass": "chain_terminal_gap",
+                "failureClass": "unknown_failure",
                 "forcePreferredRequested": "",
                 "forcePreferredSelected": false,
                 "hypotheses": [
                   {
                     "confidence": 0,
-                    "id": "finish-reached-terminal-chain",
+                    "id": "collect-missing-evidence",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "execute_meta_gap_synthesized_strategy",
+                "llmAdvisorApplied": true,
+                "llmAdvisorConfidence": 0.86,
+                "llmAdvisorExperiment": {
+                  "aliasSearch": true,
+                  "documentRequestMining": true,
+                  "maxDepth": 5,
+                  "maxEmbeds": 26,
+                  "maxPages": 28,
+                  "maxRecipePasses": 5,
+                  "recipePolicy": "current_only",
+                  "responseSalvage": true,
+                  "roleOrder": [
+                    "detail",
+                    "player",
+                    "source",
+                    "episode",
+                    "other",
+                    "api",
+                    "search"
+                  ],
+                  "routePolicy": "owned_only",
+                  "sessionBootstrap": true,
+                  "terminalOnly": false
+                },
+                "llmAdvisorExperimentFingerprint": "302f0c43f4208f899b5a3fe9c5d4ba8985656d5b8321c84a27a407329f722a9f",
+                "llmAdvisorExplorationRescue": false,
+                "llmAdvisorFailureCompatibility": "exact",
+                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
+                "llmAdvisorProfile": "search_contract_inference_v1",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "unknown_failure",
+                "llmAdvisorStrategy": "meta-gap-search-contract-fallback",
+                "metaGapEscalated": true,
+                "negativeMemoryMatches": 5,
+                "positiveProgramFingerprint": "",
+                "postExhaustionCandidateProfiles": [],
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "anime-sama",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "learning",
+                "repairType": "synthesized_strategy",
+                "signature": "5483782c3b851d5d525648d5",
+                "strategyEscalated": false,
+                "targetCategories": []
+              }
+            },
+            "queuedForLearning": [
+              "anime-sama"
+            ],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "mixed",
+          "causalProgressCount": 0,
+          "causalProgressObserved": true,
+          "crossWaveExplorationCarryoverApplied": [
+            "anikototv"
+          ],
+          "crossWaveExplorationCarryoverCaptured": [
+            "anikototv"
+          ],
+          "deferredToLearning": [],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver",
+              "providers": [
+                "anikototv"
+              ],
+              "repairScope": "transport"
+            },
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+              "providers": [
+                "anime-sama"
+              ],
+              "repairScope": "learning"
+            }
+          ],
+          "fixedInLab": [],
+          "genericLearningHandoff": [
+            "anikototv"
+          ],
+          "groupId": "packed",
+          "harnessDifferentialProviders": [],
+          "healthConcurrency": 2,
+          "providerCount": 2,
+          "providers": [
+            "anikototv",
+            "anime-sama"
+          ],
+          "repairScope": "mixed",
+          "unexecutableLlmHandoff": []
+        }
+      ],
+      "causalProgressCount": 0,
+      "causalProgressObserved": true,
+      "compileRejectedToLearning": [],
+      "deferredToLearning": [],
+      "deferredToLearningCount": 0,
+      "durableMaterializeTargets": [],
+      "experimentMemoryAdvanced": true,
+      "familyFrontierDeferredProviders": [
+        "frenchstream",
+        "nakios",
+        "sadisflix"
+      ],
+      "familyFrontierGroups": [],
+      "familyFrontierSelectedProviders": [
+        "anime-sama",
+        "anikototv"
+      ],
+      "fixedInLab": [],
+      "fixedInLabCount": 0,
+      "inputProviderCount": 2,
+      "labOnlyWithoutCompiledRepair": [],
+      "pinnedAdvisorFamilyGroups": [
+        "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+        "transport|mixed_embed_resolver|runtime:mixed_embed_resolver"
+      ],
+      "rawFixedInLab": [],
+      "rawLabAcceptedCount": 0,
+      "remainingProviderCount": 5,
+      "timeBudgetExhausted": false,
+      "trustedFamilyFanoutGroups": [],
+      "wave": 3
+    },
+    {
+      "acceptedCount": 0,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [],
+      "advisorRotationPending": [
+        "anikototv",
+        "anime-sama"
+      ],
+      "batches": [
+        {
+          "accepted": [],
+          "acceptedCount": 0,
+          "advisorRemainingFingerprintCounts": {
+            "anikototv": 3,
+            "anime-sama": 0
+          },
+          "advisorRotationPending": [
+            "anikototv",
+            "anime-sama"
+          ],
+          "batch": 1,
+          "brain": {
+            "attemptDiagnostics": [
+              {
+                "parentSha256": "d79de8842eda726161c070df7454e8bad4a7343daebb0083b56c499f41c7dcfa",
+                "phase": "attempts",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "anikototv",
+                "reasonCode": "",
+                "repairSha256": "2023d7113215ab76b130173296a6a3f41d0d773d56b66561a12c7aad5ec8d650",
+                "round": 1,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "94175cdaa5d47f0c33c4b2d0ffc3737c8b22185f3f68f9ffe2cd2c26bf8f4b9d",
+                "phase": "attempts",
+                "profile": "proven_route_terminal_traversal_v1",
+                "provider": "anime-sama",
+                "reasonCode": "",
+                "repairSha256": "ec4b815912e4ad1529a1db76274d4f0799b6728f10f51c657e81c98e836fd086",
+                "round": 1,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "anikototv",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 1,
+                "status": "unavailable"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "proven_route_terminal_traversal_v1",
+                "provider": "anime-sama",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 1,
+                "status": "no_streams"
+              }
+            ],
+            "harnessDifferentialProviders": [],
+            "learnedEvents": 0,
+            "plans": {
+              "published:anikototv": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "adaptive_runtime_recovery"
+                ],
+                "baseExperimentExhausted": false,
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "explorationChainEnabled": true,
+                "explorationModeEnabled": true,
+                "failureClass": "transport_blocked",
+                "forcePreferredRequested": "",
+                "forcePreferredSelected": false,
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "bootstrap-session",
                     "learned": false,
                     "maturity": null,
                     "profile": null,
@@ -571,7 +1112,318 @@
                   },
                   {
                     "confidence": 0,
-                    "id": "resolve-terminal-wrapper",
+                    "id": "alternate-official-route",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorExperiment": {},
+                "llmAdvisorExperimentFingerprint": "",
+                "llmAdvisorExplorationRescue": false,
+                "llmAdvisorFailureCompatibility": "",
+                "llmAdvisorGuidanceKind": "",
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "",
+                "llmAdvisorStrategy": "",
+                "metaGapEscalated": false,
+                "negativeMemoryMatches": 6,
+                "positiveProgramFingerprint": "",
+                "postExhaustionCandidateProfiles": [
+                  "transport_request_differential_v1",
+                  "provider_session_bootstrap_replay_v1",
+                  "runtime_response_salvage_v1",
+                  "transport_request_differential_v2",
+                  "route_transition_graph_v2",
+                  "route_transition_graph_v3",
+                  "route_transition_graph_v4",
+                  "route_transition_graph_v5",
+                  "route_transition_graph_v6",
+                  "route_transition_graph_v7",
+                  "route_transition_graph_v8",
+                  "route_transition_graph_v9",
+                  "route_transition_graph_v10",
+                  "route_transition_graph_v11",
+                  "route_transition_graph_v12",
+                  "route_transition_graph_v13",
+                  "route_transition_graph_v14",
+                  "route_transition_graph_v15",
+                  "route_transition_graph_v16",
+                  "route_transition_graph_v17",
+                  "route_transition_graph_v18",
+                  "route_transition_graph_v19",
+                  "route_transition_graph_v20",
+                  "route_transition_graph_v21"
+                ],
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "anikototv",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "capability",
+                "repairType": "session_transport",
+                "signature": "ac5f8426938872bee42dae1d",
+                "strategyEscalated": false,
+                "targetCategories": []
+              },
+              "published:anime-sama": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "proven_route_terminal_traversal_v1"
+                ],
+                "baseExperimentExhausted": true,
+                "exitReason": null,
+                "experimentExhausted": true,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "explorationChainEnabled": true,
+                "explorationModeEnabled": true,
+                "failureClass": "unknown_failure",
+                "forcePreferredRequested": "",
+                "forcePreferredSelected": false,
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "collect-missing-evidence",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "execute_meta_gap_synthesized_strategy",
+                "llmAdvisorApplied": true,
+                "llmAdvisorConfidence": 0.86,
+                "llmAdvisorExperiment": {
+                  "aliasSearch": true,
+                  "documentRequestMining": true,
+                  "maxDepth": 5,
+                  "maxEmbeds": 24,
+                  "maxPages": 24,
+                  "maxRecipePasses": 5,
+                  "recipePolicy": "current_plus_provider_peer",
+                  "responseSalvage": true,
+                  "roleOrder": [
+                    "api",
+                    "search",
+                    "detail",
+                    "player",
+                    "source",
+                    "episode",
+                    "other"
+                  ],
+                  "routePolicy": "owned_plus_peer_generic",
+                  "sessionBootstrap": true,
+                  "terminalOnly": false
+                },
+                "llmAdvisorExperimentFingerprint": "4fef5f9349d489a3b42999223ee249f0f0e6dadfa9e9f08deb7c2ad787891cfd",
+                "llmAdvisorExplorationRescue": false,
+                "llmAdvisorFailureCompatibility": "exact",
+                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
+                "llmAdvisorProfile": "proven_route_terminal_traversal_v1",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "unknown_failure",
+                "llmAdvisorStrategy": "meta-gap-route-terminal-fallback",
+                "metaGapEscalated": true,
+                "negativeMemoryMatches": 6,
+                "positiveProgramFingerprint": "",
+                "postExhaustionCandidateProfiles": [],
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "anime-sama",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "learning",
+                "repairType": "synthesized_strategy",
+                "signature": "5483782c3b851d5d525648d5",
+                "strategyEscalated": false,
+                "targetCategories": []
+              }
+            },
+            "queuedForLearning": [
+              "anime-sama"
+            ],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "mixed",
+          "causalProgressCount": 0,
+          "causalProgressObserved": true,
+          "crossWaveExplorationCarryoverApplied": [
+            "anikototv"
+          ],
+          "crossWaveExplorationCarryoverCaptured": [
+            "anikototv"
+          ],
+          "deferredToLearning": [],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver",
+              "providers": [
+                "anikototv"
+              ],
+              "repairScope": "transport"
+            },
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+              "providers": [
+                "anime-sama"
+              ],
+              "repairScope": "learning"
+            }
+          ],
+          "fixedInLab": [],
+          "genericLearningHandoff": [
+            "anikototv"
+          ],
+          "groupId": "packed",
+          "harnessDifferentialProviders": [],
+          "healthConcurrency": 2,
+          "providerCount": 2,
+          "providers": [
+            "anikototv",
+            "anime-sama"
+          ],
+          "repairScope": "mixed",
+          "unexecutableLlmHandoff": []
+        }
+      ],
+      "causalProgressCount": 0,
+      "causalProgressObserved": true,
+      "compileRejectedToLearning": [],
+      "deferredToLearning": [],
+      "deferredToLearningCount": 0,
+      "durableMaterializeTargets": [],
+      "experimentMemoryAdvanced": true,
+      "familyFrontierDeferredProviders": [
+        "frenchstream",
+        "nakios",
+        "sadisflix"
+      ],
+      "familyFrontierGroups": [],
+      "familyFrontierSelectedProviders": [
+        "anime-sama",
+        "anikototv"
+      ],
+      "fixedInLab": [],
+      "fixedInLabCount": 0,
+      "inputProviderCount": 2,
+      "labOnlyWithoutCompiledRepair": [],
+      "pinnedAdvisorFamilyGroups": [
+        "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+        "transport|mixed_embed_resolver|runtime:mixed_embed_resolver"
+      ],
+      "rawFixedInLab": [],
+      "rawLabAcceptedCount": 0,
+      "remainingProviderCount": 5,
+      "timeBudgetExhausted": false,
+      "trustedFamilyFanoutGroups": [],
+      "wave": 4
+    },
+    {
+      "acceptedCount": 0,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [],
+      "advisorRotationPending": [
+        "anikototv",
+        "anime-sama"
+      ],
+      "batches": [
+        {
+          "accepted": [],
+          "acceptedCount": 0,
+          "advisorRemainingFingerprintCounts": {
+            "anikototv": 2,
+            "anime-sama": 0
+          },
+          "advisorRotationPending": [
+            "anikototv",
+            "anime-sama"
+          ],
+          "batch": 1,
+          "brain": {
+            "attemptDiagnostics": [
+              {
+                "parentSha256": "d79de8842eda726161c070df7454e8bad4a7343daebb0083b56c499f41c7dcfa",
+                "phase": "attempts",
+                "profile": "provider_origin_failover_v1",
+                "provider": "anikototv",
+                "reasonCode": "",
+                "repairSha256": "945b2d4e65380f386173ecd67f6a5587104ce775bb27a92503bba7b99201d170",
+                "round": 1,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "94175cdaa5d47f0c33c4b2d0ffc3737c8b22185f3f68f9ffe2cd2c26bf8f4b9d",
+                "phase": "attempts",
+                "profile": "proven_route_terminal_traversal_v1",
+                "provider": "anime-sama",
+                "reasonCode": "",
+                "repairSha256": "2e8a9c2e0c167ee757e0bb7b18c533039aa373e403b2b055ab1f715158580b46",
+                "round": 1,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "provider_origin_failover_v1",
+                "provider": "anikototv",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 1,
+                "status": "blocked"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "proven_route_terminal_traversal_v1",
+                "provider": "anime-sama",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 1,
+                "status": "no_streams"
+              }
+            ],
+            "harnessDifferentialProviders": [],
+            "learnedEvents": 0,
+            "plans": {
+              "published:anikototv": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "provider_origin_failover_v1"
+                ],
+                "baseExperimentExhausted": true,
+                "exitReason": null,
+                "experimentExhausted": true,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "explorationChainEnabled": true,
+                "explorationModeEnabled": true,
+                "failureClass": "transport_blocked",
+                "forcePreferredRequested": "",
+                "forcePreferredSelected": false,
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "bootstrap-session",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "alternate-official-route",
                     "learned": false,
                     "maturity": null,
                     "profile": null,
@@ -584,140 +1436,193 @@
                 "llmAdvisorExperiment": {
                   "aliasSearch": false,
                   "documentRequestMining": true,
-                  "maxDepth": 6,
-                  "maxEmbeds": 34,
-                  "maxPages": 24,
-                  "maxRecipePasses": 6,
-                  "recipePolicy": "current_plus_provider_peer",
+                  "maxDepth": 4,
+                  "maxEmbeds": 16,
+                  "maxPages": 18,
+                  "maxRecipePasses": 5,
+                  "recipePolicy": "current_plus_provider",
                   "responseSalvage": true,
                   "roleOrder": [
-                    "player",
-                    "source",
                     "api",
-                    "episode",
                     "detail",
                     "search",
+                    "player",
+                    "source",
+                    "episode",
                     "other"
                   ],
                   "routePolicy": "owned_plus_peer",
                   "sessionBootstrap": true,
-                  "terminalOnly": true
+                  "terminalOnly": false
                 },
-                "llmAdvisorExperimentFingerprint": "25f846c418458326f6e1de1fa334149d8154b9b57e0ddac72f19b29511322618",
+                "llmAdvisorExperimentFingerprint": "c46c46391c806b6373c7805b4ed5af30711d99b85ef0d65784df64f2ae979a3f",
                 "llmAdvisorExplorationRescue": false,
-                "llmAdvisorFailureCompatibility": "exact",
+                "llmAdvisorFailureCompatibility": "exact-rebound",
                 "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "adaptive_runtime_recovery",
+                "llmAdvisorProfile": "provider_origin_failover_v1",
                 "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "chain_terminal_gap",
-                "llmAdvisorStrategy": "meta-gap-adaptive-runtime-fallback",
+                "llmAdvisorSourceFailureClass": "transport_blocked",
+                "llmAdvisorStrategy": "meta_gap_provider_transport_composition",
                 "metaGapEscalated": true,
-                "negativeMemoryMatches": 7,
+                "negativeMemoryMatches": 8,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
-                  "terminal_transition_graph_v1",
-                  "terminal_transition_graph_v2",
-                  "terminal_transition_graph_v3",
-                  "terminal_transition_graph_v4",
-                  "terminal_transition_graph_v5",
-                  "terminal_transition_graph_v6",
-                  "terminal_transition_graph_v7",
-                  "terminal_transition_graph_v8",
-                  "terminal_transition_graph_v9",
-                  "terminal_transition_graph_v10",
-                  "terminal_transition_graph_v11",
-                  "terminal_transition_graph_v12",
-                  "terminal_transition_graph_v13",
-                  "terminal_transition_graph_v14",
-                  "terminal_request_program_inference_v1",
+                  "transport_request_differential_v1",
+                  "provider_session_bootstrap_replay_v1",
                   "runtime_response_salvage_v1",
-                  "document_request_contract_mining_v1",
-                  "player_protocol_family_replay_v1",
-                  "media_response_shape_inference_v1"
+                  "transport_request_differential_v2",
+                  "route_transition_graph_v2",
+                  "route_transition_graph_v3",
+                  "route_transition_graph_v4",
+                  "route_transition_graph_v5",
+                  "route_transition_graph_v6",
+                  "route_transition_graph_v7",
+                  "route_transition_graph_v8",
+                  "route_transition_graph_v9",
+                  "route_transition_graph_v10",
+                  "route_transition_graph_v11",
+                  "route_transition_graph_v12",
+                  "route_transition_graph_v13",
+                  "route_transition_graph_v14",
+                  "route_transition_graph_v15",
+                  "route_transition_graph_v16",
+                  "route_transition_graph_v17",
+                  "route_transition_graph_v18",
+                  "route_transition_graph_v19",
+                  "route_transition_graph_v20",
+                  "route_transition_graph_v21"
                 ],
                 "postExhaustionSourceFailureClass": "",
                 "postExhaustionStrategyMethod": "",
                 "postExhaustionStrategyProfile": "",
-                "providerId": "primewire",
+                "providerId": "anikototv",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
                 "repairScope": "learning",
                 "repairType": "synthesized_strategy",
-                "signature": "4e8d92b8a8961450d87b63b2",
+                "signature": "ac5f8426938872bee42dae1d",
+                "strategyEscalated": false,
+                "targetCategories": []
+              },
+              "published:anime-sama": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "proven_route_terminal_traversal_v1"
+                ],
+                "baseExperimentExhausted": true,
+                "exitReason": null,
+                "experimentExhausted": true,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "explorationChainEnabled": true,
+                "explorationModeEnabled": true,
+                "failureClass": "unknown_failure",
+                "forcePreferredRequested": "",
+                "forcePreferredSelected": false,
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "collect-missing-evidence",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "execute_meta_gap_synthesized_strategy",
+                "llmAdvisorApplied": true,
+                "llmAdvisorConfidence": 0.86,
+                "llmAdvisorExperiment": {
+                  "aliasSearch": true,
+                  "documentRequestMining": true,
+                  "maxDepth": 5,
+                  "maxEmbeds": 25,
+                  "maxPages": 26,
+                  "maxRecipePasses": 5,
+                  "recipePolicy": "current_plus_provider_peer",
+                  "responseSalvage": true,
+                  "roleOrder": [
+                    "search",
+                    "detail",
+                    "player",
+                    "source",
+                    "episode",
+                    "other",
+                    "api"
+                  ],
+                  "routePolicy": "owned_plus_peer_generic",
+                  "sessionBootstrap": true,
+                  "terminalOnly": false
+                },
+                "llmAdvisorExperimentFingerprint": "f215508d02b1d38349a6716594a21b039bd633316ccdb693331c68842f90b504",
+                "llmAdvisorExplorationRescue": false,
+                "llmAdvisorFailureCompatibility": "exact",
+                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
+                "llmAdvisorProfile": "proven_route_terminal_traversal_v1",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "unknown_failure",
+                "llmAdvisorStrategy": "meta-gap-route-terminal-fallback",
+                "metaGapEscalated": true,
+                "negativeMemoryMatches": 7,
+                "positiveProgramFingerprint": "",
+                "postExhaustionCandidateProfiles": [],
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "anime-sama",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "learning",
+                "repairType": "synthesized_strategy",
+                "signature": "5483782c3b851d5d525648d5",
                 "strategyEscalated": false,
                 "targetCategories": []
               }
             },
             "queuedForLearning": [
-              "primewire"
+              "anikototv",
+              "anime-sama"
             ],
             "validatedRepairLearningExecuted": true
           },
           "capabilityStrategy": "mixed",
           "causalProgressCount": 0,
           "causalProgressObserved": true,
-          "crossWaveExplorationCarryoverApplied": [],
-          "crossWaveExplorationCarryoverCaptured": [],
-          "deferredToLearning": [
-            "papadustream"
+          "crossWaveExplorationCarryoverApplied": [
+            "anikototv"
           ],
+          "crossWaveExplorationCarryoverCaptured": [
+            "anikototv"
+          ],
+          "deferredToLearning": [],
           "familyGroups": [
             {
               "capabilityStrategy": "mixed_embed_resolver",
-              "groupId": "candidate-replay|mixed_embed_resolver|runtime:mixed_embed_resolver",
+              "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver",
               "providers": [
-                "french-manga"
+                "anikototv"
               ],
-              "repairScope": "candidate-replay"
-            },
-            {
-              "capabilityStrategy": "direct_media",
-              "groupId": "learning|direct_media|runtime:direct_media",
-              "providers": [
-                "hindmoviez"
-              ],
-              "repairScope": "learning"
-            },
-            {
-              "capabilityStrategy": "html_scraper",
-              "groupId": "learning|html_scraper|runtime:html_scraper",
-              "providers": [
-                "papadustream"
-              ],
-              "repairScope": "learning"
+              "repairScope": "transport"
             },
             {
               "capabilityStrategy": "mixed_embed_resolver",
               "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
               "providers": [
-                "moiflix"
+                "anime-sama"
               ],
               "repairScope": "learning"
-            },
-            {
-              "capabilityStrategy": "mixed_embed_resolver",
-              "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
-              "providers": [
-                "primewire"
-              ],
-              "repairScope": "terminal-extraction"
             }
           ],
           "fixedInLab": [],
-          "genericLearningHandoff": [
-            "moiflix",
-            "papadustream"
-          ],
+          "genericLearningHandoff": [],
           "groupId": "packed",
           "harnessDifferentialProviders": [],
-          "healthConcurrency": 5,
-          "providerCount": 5,
+          "healthConcurrency": 2,
+          "providerCount": 2,
           "providers": [
-            "french-manga",
-            "hindmoviez",
-            "papadustream",
-            "moiflix",
-            "primewire"
+            "anikototv",
+            "anime-sama"
           ],
           "repairScope": "mixed",
           "unexecutableLlmHandoff": []
@@ -726,89 +1631,365 @@
       "causalProgressCount": 0,
       "causalProgressObserved": true,
       "compileRejectedToLearning": [],
-      "deferredToLearning": [
-        "papadustream"
-      ],
-      "deferredToLearningCount": 1,
+      "deferredToLearning": [],
+      "deferredToLearningCount": 0,
       "durableMaterializeTargets": [],
       "experimentMemoryAdvanced": true,
       "familyFrontierDeferredProviders": [
-        "anikototv",
-        "anime-sama",
         "frenchstream",
         "nakios",
         "sadisflix"
       ],
-      "familyFrontierGroups": [
-        "candidate-replay|mixed_embed_resolver|runtime:mixed_embed_resolver",
-        "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
-        "learning|direct_media|runtime:direct_media",
-        "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
-        "learning|html_scraper|runtime:html_scraper"
-      ],
+      "familyFrontierGroups": [],
       "familyFrontierSelectedProviders": [
-        "french-manga",
-        "primewire",
-        "hindmoviez",
-        "moiflix",
-        "papadustream"
+        "anime-sama",
+        "anikototv"
       ],
       "fixedInLab": [],
       "fixedInLabCount": 0,
-      "inputProviderCount": 5,
+      "inputProviderCount": 2,
       "labOnlyWithoutCompiledRepair": [],
-      "pinnedAdvisorFamilyGroups": [],
+      "pinnedAdvisorFamilyGroups": [
+        "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+        "transport|mixed_embed_resolver|runtime:mixed_embed_resolver"
+      ],
       "rawFixedInLab": [],
       "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 9,
+      "remainingProviderCount": 5,
       "timeBudgetExhausted": false,
       "trustedFamilyFanoutGroups": [],
-      "wave": 1
+      "wave": 5
     },
     {
       "acceptedCount": 0,
       "acceptedProgramCompileFailures": {},
       "acceptedProgramCompiledProviders": [],
-      "advisorRotationPending": [],
-      "batches": [],
+      "advisorRotationPending": [
+        "anikototv",
+        "anime-sama"
+      ],
+      "batches": [
+        {
+          "accepted": [],
+          "acceptedCount": 0,
+          "advisorRemainingFingerprintCounts": {
+            "anikototv": 1,
+            "anime-sama": 0
+          },
+          "advisorRotationPending": [
+            "anikototv",
+            "anime-sama"
+          ],
+          "batch": 1,
+          "brain": {
+            "attemptDiagnostics": [
+              {
+                "parentSha256": "d79de8842eda726161c070df7454e8bad4a7343daebb0083b56c499f41c7dcfa",
+                "phase": "attempts",
+                "profile": "provider_origin_failover_v1",
+                "provider": "anikototv",
+                "reasonCode": "",
+                "repairSha256": "51b001c487ee1e12b711d924ab764a739ed55766bab79592704e6dc6fe712a07",
+                "round": 1,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "94175cdaa5d47f0c33c4b2d0ffc3737c8b22185f3f68f9ffe2cd2c26bf8f4b9d",
+                "phase": "attempts",
+                "profile": "proven_route_terminal_traversal_v1",
+                "provider": "anime-sama",
+                "reasonCode": "",
+                "repairSha256": "963c1eec95f8a1f8b2dad83a49bda37499d1c926952c669854ec7065bb4e040c",
+                "round": 1,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "provider_origin_failover_v1",
+                "provider": "anikototv",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 1,
+                "status": "blocked"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "proven_route_terminal_traversal_v1",
+                "provider": "anime-sama",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 1,
+                "status": "no_streams"
+              }
+            ],
+            "harnessDifferentialProviders": [],
+            "learnedEvents": 0,
+            "plans": {
+              "published:anikototv": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "provider_origin_failover_v1"
+                ],
+                "baseExperimentExhausted": true,
+                "exitReason": null,
+                "experimentExhausted": true,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "explorationChainEnabled": true,
+                "explorationModeEnabled": true,
+                "failureClass": "transport_blocked",
+                "forcePreferredRequested": "",
+                "forcePreferredSelected": false,
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "bootstrap-session",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "alternate-official-route",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "execute_meta_gap_synthesized_strategy",
+                "llmAdvisorApplied": true,
+                "llmAdvisorConfidence": 0.86,
+                "llmAdvisorExperiment": {
+                  "aliasSearch": false,
+                  "documentRequestMining": true,
+                  "maxDepth": 4,
+                  "maxEmbeds": 17,
+                  "maxPages": 20,
+                  "maxRecipePasses": 5,
+                  "recipePolicy": "current_only",
+                  "responseSalvage": true,
+                  "roleOrder": [
+                    "detail",
+                    "search",
+                    "player",
+                    "source",
+                    "episode",
+                    "other",
+                    "api"
+                  ],
+                  "routePolicy": "owned_only",
+                  "sessionBootstrap": true,
+                  "terminalOnly": false
+                },
+                "llmAdvisorExperimentFingerprint": "d6364e60614966b306af6cafb8136c0acc7f2b96f40189ed3ac1afe577b0fa37",
+                "llmAdvisorExplorationRescue": false,
+                "llmAdvisorFailureCompatibility": "exact-rebound",
+                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
+                "llmAdvisorProfile": "provider_origin_failover_v1",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "transport_blocked",
+                "llmAdvisorStrategy": "meta_gap_provider_transport_composition",
+                "metaGapEscalated": true,
+                "negativeMemoryMatches": 10,
+                "positiveProgramFingerprint": "",
+                "postExhaustionCandidateProfiles": [
+                  "transport_request_differential_v1",
+                  "provider_session_bootstrap_replay_v1",
+                  "runtime_response_salvage_v1",
+                  "transport_request_differential_v2",
+                  "route_transition_graph_v2",
+                  "route_transition_graph_v3",
+                  "route_transition_graph_v4",
+                  "route_transition_graph_v5",
+                  "route_transition_graph_v6",
+                  "route_transition_graph_v7",
+                  "route_transition_graph_v8",
+                  "route_transition_graph_v9",
+                  "route_transition_graph_v10",
+                  "route_transition_graph_v11",
+                  "route_transition_graph_v12",
+                  "route_transition_graph_v13",
+                  "route_transition_graph_v14",
+                  "route_transition_graph_v15",
+                  "route_transition_graph_v16",
+                  "route_transition_graph_v17",
+                  "route_transition_graph_v18",
+                  "route_transition_graph_v19",
+                  "route_transition_graph_v20",
+                  "route_transition_graph_v21"
+                ],
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "anikototv",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "learning",
+                "repairType": "synthesized_strategy",
+                "signature": "ac5f8426938872bee42dae1d",
+                "strategyEscalated": false,
+                "targetCategories": []
+              },
+              "published:anime-sama": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "proven_route_terminal_traversal_v1"
+                ],
+                "baseExperimentExhausted": true,
+                "exitReason": null,
+                "experimentExhausted": true,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "explorationChainEnabled": true,
+                "explorationModeEnabled": true,
+                "failureClass": "unknown_failure",
+                "forcePreferredRequested": "",
+                "forcePreferredSelected": false,
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "collect-missing-evidence",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "execute_meta_gap_synthesized_strategy",
+                "llmAdvisorApplied": true,
+                "llmAdvisorConfidence": 0.86,
+                "llmAdvisorExperiment": {
+                  "aliasSearch": true,
+                  "documentRequestMining": true,
+                  "maxDepth": 5,
+                  "maxEmbeds": 26,
+                  "maxPages": 28,
+                  "maxRecipePasses": 5,
+                  "recipePolicy": "current_only",
+                  "responseSalvage": true,
+                  "roleOrder": [
+                    "detail",
+                    "player",
+                    "source",
+                    "episode",
+                    "other",
+                    "api",
+                    "search"
+                  ],
+                  "routePolicy": "owned_only",
+                  "sessionBootstrap": true,
+                  "terminalOnly": false
+                },
+                "llmAdvisorExperimentFingerprint": "302f0c43f4208f899b5a3fe9c5d4ba8985656d5b8321c84a27a407329f722a9f",
+                "llmAdvisorExplorationRescue": false,
+                "llmAdvisorFailureCompatibility": "exact",
+                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
+                "llmAdvisorProfile": "proven_route_terminal_traversal_v1",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "unknown_failure",
+                "llmAdvisorStrategy": "meta-gap-route-terminal-fallback",
+                "metaGapEscalated": true,
+                "negativeMemoryMatches": 8,
+                "positiveProgramFingerprint": "",
+                "postExhaustionCandidateProfiles": [],
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "anime-sama",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "learning",
+                "repairType": "synthesized_strategy",
+                "signature": "5483782c3b851d5d525648d5",
+                "strategyEscalated": false,
+                "targetCategories": []
+              }
+            },
+            "queuedForLearning": [
+              "anikototv",
+              "anime-sama"
+            ],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "mixed",
+          "causalProgressCount": 0,
+          "causalProgressObserved": true,
+          "crossWaveExplorationCarryoverApplied": [
+            "anikototv"
+          ],
+          "crossWaveExplorationCarryoverCaptured": [
+            "anikototv"
+          ],
+          "deferredToLearning": [],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver",
+              "providers": [
+                "anikototv"
+              ],
+              "repairScope": "transport"
+            },
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+              "providers": [
+                "anime-sama"
+              ],
+              "repairScope": "learning"
+            }
+          ],
+          "fixedInLab": [],
+          "genericLearningHandoff": [],
+          "groupId": "packed",
+          "harnessDifferentialProviders": [],
+          "healthConcurrency": 2,
+          "providerCount": 2,
+          "providers": [
+            "anikototv",
+            "anime-sama"
+          ],
+          "repairScope": "mixed",
+          "unexecutableLlmHandoff": []
+        }
+      ],
       "causalProgressCount": 0,
-      "causalProgressObserved": false,
+      "causalProgressObserved": true,
       "compileRejectedToLearning": [],
       "deferredToLearning": [],
       "deferredToLearningCount": 0,
       "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": false,
+      "experimentMemoryAdvanced": true,
       "familyFrontierDeferredProviders": [
-        "anikototv",
-        "anime-sama",
         "frenchstream",
         "nakios",
         "sadisflix"
       ],
-      "familyFrontierGroups": [
-        "candidate-replay|mixed_embed_resolver|runtime:mixed_embed_resolver",
-        "learning|direct_media|runtime:direct_media"
-      ],
+      "familyFrontierGroups": [],
       "familyFrontierSelectedProviders": [
-        "french-manga",
-        "primewire",
-        "moiflix",
-        "hindmoviez"
+        "anime-sama",
+        "anikototv"
       ],
       "fixedInLab": [],
       "fixedInLabCount": 0,
-      "inputProviderCount": 0,
+      "inputProviderCount": 2,
       "labOnlyWithoutCompiledRepair": [],
       "pinnedAdvisorFamilyGroups": [
-        "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
-        "learning|mixed_embed_resolver|runtime:mixed_embed_resolver"
+        "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+        "transport|mixed_embed_resolver|runtime:mixed_embed_resolver"
       ],
       "rawFixedInLab": [],
       "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 9,
-      "timeBudgetExhausted": true,
+      "remainingProviderCount": 5,
+      "timeBudgetExhausted": false,
       "trustedFamilyFanoutGroups": [],
-      "wave": 2
+      "wave": 6
     }
   ]
 }
