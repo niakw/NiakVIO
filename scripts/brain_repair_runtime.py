@@ -1254,7 +1254,7 @@ def _execute_planner(
         )
     if payload["forcePreferredStrategy"]:
         print(
-            "FIELD_BRAIN_FORCE_PLANNER_INPUT requested=
+            "FIELD_BRAIN_FORCE_PLANNER_INPUT requested="
             + payload["forcePreferredStrategy"] + " exploration="
             + str(payload["explorationChain"]).lower()
             + " origin=" + ("explicit-deep-cli" if _EXPLICIT_DEEP_FORCE_PROFILE else "ambient"),
