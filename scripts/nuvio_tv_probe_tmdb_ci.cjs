@@ -10,6 +10,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const Module = require('node:module');
 const { extractResponseVariantHints } = require('./response_variant_hints.cjs');
+const { challengeKind } = require('./provider_response_challenge.cjs');
 
 const key = String(process.env.TMDB_API_KEY || '').trim();
 const token = String(process.env.TMDB_ACCESS_TOKEN || '').trim();
@@ -339,15 +340,13 @@ if (typeof originalFetch === 'function') {
             responseShape = { kind: 'json', top: 'unparsed' };
           }
         }
-        const bodyLower = body.toLowerCase();
-        // Explicit Turnstile wiring in a provider-loaded JS asset is strong
-        // evidence of the same interactive gate even when the HTML itself is 200
-        // and marker-free. Generic challenge prose remains HTML-only.
-        const turnstileMarker = /cf-turnstile-response|challenges\.cloudflare\.com\/turnstile|\bturnstile\b/.test(bodyLower);
-        const marker = turnstileMarker || (htmlBody && /just a moment|checking your browser|verify you are human|attention required|captcha|challenge-platform|cf-browser-verification|security check/.test(bodyLower));
-        if (cfMitigated === 'challenge' || marker) {
-          challenge = (turnstileMarker || cfRay || server.includes('cloudflare') || cfMitigated === 'challenge') ? 'cloudflare' : 'generic';
-        }
+        challenge = challengeKind({
+          body,
+          contentType,
+          server,
+          cfRay,
+          cfMitigated,
+        });
       }
       trace.push({
         url,

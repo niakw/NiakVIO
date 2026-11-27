@@ -1,3 +1,7 @@
+## 2026-11-27 — Classification challenge structurelle
+
+Le Brain ne doit pas sélectionner une stratégie transport/antibot à partir d'un mot présent dans une page HTML. Le probe provider distingue désormais la **preuve interactive** (header cf-mitigated, challenge-platform/cf-chl/challenge-form, Turnstile/captcha markup, titre de challenge) de la simple prose. Une page 200 ordinaire qui ne contient aucun flux reste négative et peut devenir un gap de route/search ; elle n'acquiert aucune preuve média ni autorité de publication. Ce contrat évite notamment de transformer un reach cross-transport en faux `transport_blocked`.
+
 ## 2026-11-27 — État installé des Lego source-family
 
 Une promotion Architecture FORCE n'est plus assimilée à une dette éternelle. Le runtime vérifie la capacité par son triplet déterministe module + hook classificateur + test et rejoue l'oracle de source-family. Une capacité valide passe de `new_family_required` à `parser_installed_replay_required` et retourne dans Learning. Une capacité absente ou ayant dérivé reste fail-closed et peut demander Architecture FORCE. Le V1 ne possède aucune autorité playback/provider : le resolver réseau et la mutation restent des étages distincts à démontrer.

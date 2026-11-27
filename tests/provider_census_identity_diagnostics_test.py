@@ -99,8 +99,9 @@ assert "const terminal = meaningful[meaningful.length - 1]" in probe_source
 assert "providerFetches.some((row) => Number(row.status) >= 400)" not in probe_source
 assert "providerFetches.some((row) => row.error)" not in probe_source
 assert "cf-mitigated" in probe_source
-assert "cf-turnstile-response" in probe_source
-assert "turnstileMarker" in probe_source
+assert "provider_response_challenge.cjs" in probe_source
+assert "challengeKind({" in probe_source
+assert "security check/.test(bodyLower)" not in probe_source
 assert "response_shape: responseShape" in probe_source
 assert "function jsonShape(value)" in probe_source
 assert "function textShape(contentType, body)" in probe_source

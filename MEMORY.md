@@ -1,3 +1,11 @@
+## 2026-11-27 — V82 : faux WAF 200 séparé d'une vraie barrière interactive
+
+- Repair [46021630823](https://github.com/niakw/NiakVIO/actions/runs/46021630823) a réellement enchaîné deux mutations par provider : CorsFlix `player_media_extractor_v1 → adaptive_runtime_recovery`, FrenchStream `adaptive_runtime_recovery → player_media_extractor_v1`. Les premières mutations ont produit seulement du progrès diagnostic sandbox ; les secondes sont restées à 0 stream et ont été rejetées par `required_category_playable_proof`. **0 réparation**.
+- CorsFlix ne présente pas un simple échec transport : le WAF ledger courant atteint `corsflix.gd` en HTTP 200 via navigateur, libcurl Nuvio-like, OkHttp TV-like et OkHttp desktop, mais le probe provider classait encore la réponse `challenge=generic`. Cause Brain/harness trouvée : `nuvio_tv_probe_tmdb_ci.cjs` marquait tout HTML 200 contenant des mots comme `security check` ou `captcha` comme challenge, même dans du contenu ordinaire.
+- Correctif Core/harness générique : `provider_response_challenge.cjs` exige désormais `cf-mitigated: challenge`, un titre de challenge borné, un markup challenge/captcha structurel, ou une intégration Turnstile explicite. Une simple mention de sécurité/CAPTCHA/Cloudflare ne suffit plus. Les vrais challenges restent WAF ; une landing HTML 200 sans flux reste un échec `network_zero_result/search_gap`, jamais un succès média.
+- Régression exécutable : prose bénigne + serveur Cloudflare = non-challenge ; title Security Check = generic ; challenge-form/cdn-cgi et Turnstile = Cloudflare ; g-recaptcha = generic ; cf-mitigated = Cloudflare ; JSON prose = non-challenge. Le test est raccordé aux gates provider non-regression et census.
+- FrenchStream reste une famille distincte : `provider_network_zero_result` / `lookup_only` avec de nombreux misses, donc recherche/contrat catalogue à traiter séparément. 
+
 ## 2026-11-27 — V81 : parser source-family promu, boucle de régénération supprimée
 
 - Architecture FORCE a effectivement promu `catalogue_inline_token_episode_source_family_v1` sur `0c4bae792080` : module parser, hook du classificateur et test multi-épisode sont présents sur main.
