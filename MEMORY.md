@@ -1,3 +1,9 @@
+## 2026-11-27 — V77.1 : second contrat historique aligné, sans assouplir les budgets
+
+- Learning [45978572983](https://github.com/niakw/NiakVIO/actions/runs/45978572983), source `5d194150`, s'arrête au préflight avant Qwen : `brain_llm_advisor_execution_test.py:863` exigeait encore que les stratégies post-exhaustion codées soient toutes exécutées avant le meta-gap advisor.
+- Ce test contredisait la nouvelle propriété causale. Il vérifie désormais : jusqu'à **3 fingerprints advisor distincts réellement exécutés/rejetés** pour un executor ; le quatrième plan refuse cet executor puis entre dans la rotation post-exhaustion codée ; les implémentations restent non rejouées à travers les labels de la même famille causale. Aucun budget n'est augmenté et aucune preuve média n'est affaiblie.
+- Le premier test advisor-first ajouté dans V77 avait déjà passé avant cette assertion tardive. **0 réparation provider** ; nouvelle exécution Corsflix demandée.
+
 ## 2026-11-27 — V77 : Qwen appelé mais son expérience n'était pas celle exécutée
 
 - Learning Corsflix [45946323839](https://github.com/niakw/NiakVIO/actions/runs/45946323839), Brain `d705de3d` : pré-route/planner `llm_repair`, Qwen réellement exécuté (`llm_calls=1`). Guidance principale : `chain_terminal_extractor_v1`, fingerprint `91892ede401af15446778155fc6846557876088459e7091e2f0b71dd899726f9`. Pourtant le runtime exécute `chain_terminal_extractor_v1_g4`, 0 stream/0 playable, et le ledger porte un fingerprint LLM vide.

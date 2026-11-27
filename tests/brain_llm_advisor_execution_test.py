@@ -792,32 +792,13 @@ transport_exhausted_memory=[
     for variant in range(5)
 ]
 transport_memory=list(transport_exhausted_memory)
-transport_plan=None
-saw_same_family_evolved_strategy=False
-# Exploration Chain deliberately tries each coded post-exhaustion strategy
-# before Learning meta-gap guidance. Exhaust those bounded implementations by
-# their exact implementation fingerprint; never let a meta-gap prior bypass
-# an untried deterministic strategy. The route-terminal causal family spans
-# transport/route/search labels, so bounded sibling strategies are valid after
-# the current label's local strategies are exhausted.
-# The exact installed inventory, not a hard-coded historical count, bounds
-# this synthetic exhaustion replay. Brain may add/remove whole strategy Lego
-# families while keeping every exact executed-negative rejection intact.
-transport_first_payload={
-    **transport_base_payload,
-    "llmGuidance":transport_guidance,
-    "negativeMemory":transport_memory,
-}
-transport_first_completed=subprocess.run(
-    ["node",str(PLANNER)],
-    cwd=ROOT,input=json.dumps(transport_first_payload),capture_output=True,text=True,check=True,timeout=20,
-)
-transport_first_plan=next(iter((json.loads(transport_first_completed.stdout).get("plans") or {}).values()))
-transport_inventory=transport_first_plan.get("postExhaustionCandidateProfiles") or []
-assert isinstance(transport_inventory,list) and 1<=len(transport_inventory)<=64,transport_inventory
-assert len(set(transport_inventory))==len(transport_inventory),transport_inventory
-transport_visited=set()
-for _attempt in range(len(transport_inventory)+1):
+
+# Fresh fingerprinted meta-gap/advisor experiments own the first bounded turns
+# after base exhaustion. The selector itself limits one executor family to
+# three genuinely executed fingerprints; only then may coded post-exhaustion
+# strategies consume the remaining causal-family budget.
+transport_advisor_fingerprints=set()
+for _advisor_attempt in range(3):
     transport_payload={
         **transport_base_payload,
         "llmGuidance":transport_guidance,
@@ -828,6 +809,56 @@ for _attempt in range(len(transport_inventory)+1):
         cwd=ROOT,input=json.dumps(transport_payload),capture_output=True,text=True,check=True,timeout=20,
     )
     transport_plan=next(iter((json.loads(transport_completed.stdout).get("plans") or {}).values()))
+    assert transport_plan["baseExperimentExhausted"] is True,transport_plan
+    assert transport_plan["strategyEscalated"] is False,transport_plan
+    assert transport_plan["metaGapEscalated"] is True,transport_plan
+    assert transport_plan["llmAdvisorApplied"] is True,transport_plan
+    assert transport_plan["llmAdvisorProfile"]=="search_contract_inference_v1",transport_plan
+    assert transport_plan["postExhaustionStrategyProfile"]=="",transport_plan
+    fingerprint=transport_plan["llmAdvisorExperimentFingerprint"]
+    assert len(fingerprint)==64 and fingerprint not in transport_advisor_fingerprints,transport_plan
+    transport_advisor_fingerprints.add(fingerprint)
+    transport_memory.append({
+        "providerId":"synthetic-transport-executor-choice",
+        "failureClass":"transport_blocked",
+        "signature":transport_signature,
+        "experimentVariant":4,
+        "experimentGeneration":2,
+        "profile":"search_contract_inference_v1",
+        "llmAdvisorExperimentFingerprint":fingerprint,
+        "failures":1,
+        "consecutiveFailures":1,
+        "successes":0,
+        "executionObserved":True,
+        "lastOutcome":"rejected",
+        "lastReason":"synthetic_advisor_experiment_failed",
+    })
+assert len(transport_advisor_fingerprints)==3,transport_advisor_fingerprints
+
+# The fourth plan can no longer reopen the exhausted advisor executor. It must
+# fall back to a coded post-exhaustion strategy and preserve exact
+# implementation-fingerprint rotation across same-family failure labels.
+transport_fallback_payload={
+    **transport_base_payload,
+    "llmGuidance":transport_guidance,
+    "negativeMemory":transport_memory,
+}
+transport_fallback_completed=subprocess.run(
+    ["node",str(PLANNER)],
+    cwd=ROOT,input=json.dumps(transport_fallback_payload),capture_output=True,text=True,check=True,timeout=20,
+)
+transport_first_fallback=next(iter((json.loads(transport_fallback_completed.stdout).get("plans") or {}).values()))
+assert transport_first_fallback["llmAdvisorApplied"] is False,transport_first_fallback
+assert transport_first_fallback["metaGapEscalated"] is False,transport_first_fallback
+assert transport_first_fallback["strategyEscalated"] is True,transport_first_fallback
+
+transport_inventory=transport_first_fallback.get("postExhaustionCandidateProfiles") or []
+assert isinstance(transport_inventory,list) and 1<=len(transport_inventory)<=64,transport_inventory
+assert len(set(transport_inventory))==len(transport_inventory),transport_inventory
+transport_visited=set()
+saw_same_family_evolved_strategy=False
+transport_plan=transport_first_fallback
+for _attempt in range(len(transport_inventory)+1):
     assert transport_plan["baseExperimentExhausted"] is True,transport_plan
     if not transport_plan.get("strategyEscalated"):
         break
@@ -856,17 +887,25 @@ for _attempt in range(len(transport_inventory)+1):
         "lastOutcome":"rejected",
         "lastReason":"synthetic_post_exhaustion_strategy_failed",
     })
+    transport_payload={
+        **transport_base_payload,
+        "llmGuidance":transport_guidance,
+        "negativeMemory":transport_memory,
+    }
+    transport_completed=subprocess.run(
+        ["node",str(PLANNER)],
+        cwd=ROOT,input=json.dumps(transport_payload),capture_output=True,text=True,check=True,timeout=20,
+    )
+    transport_plan=next(iter((json.loads(transport_completed.stdout).get("plans") or {}).values()))
 else:
     raise AssertionError(("transport post-exhaustion strategies did not converge",transport_plan))
 
 assert transport_plan is not None
 assert saw_same_family_evolved_strategy is True,transport_memory
 assert transport_plan["strategyEscalated"] is False,transport_plan
-assert transport_plan["metaGapEscalated"] is True,transport_plan
-assert transport_plan["llmAdvisorApplied"] is True,transport_plan
-assert transport_plan["llmAdvisorProfile"]=="search_contract_inference_v1",transport_plan
-assert transport_plan["llmAdvisorFailureCompatibility"]=="exact",transport_plan
-assert transport_plan["allowedProfiles"][0]=="search_contract_inference_v1",transport_plan
+assert transport_plan["metaGapEscalated"] is False,transport_plan
+assert transport_plan["llmAdvisorApplied"] is False,transport_plan
+assert transport_plan["experimentExhausted"] is True,transport_plan
 
 # An evolved strategy failed under route_proven_gap must stay failed after the
 # current observation drifts to transport_blocked. Strategy implementation
