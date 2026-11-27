@@ -799,7 +799,12 @@ function buildPlan(item) {
     && learningCausalFailureRefinable.has(derivedFailureClass)
   );
   if (learningCausalFailureApplied) {
+    // planRepair() deliberately re-runs classifyFailure(evidence). Its supported
+    // causal override channel is forcedFailureClass, so carry the exact-parent
+    // Learning refinement through that canonical boundary instead of only
+    // changing a presentation field that classifyFailure will ignore.
     evidence.failureClass = learningCausalFailureClass;
+    evidence.forcedFailureClass = learningCausalFailureClass;
   }
   const rawResultEvidence = asRecord(result.evidence);
   const requiredTargetCategories = [...new Set(
