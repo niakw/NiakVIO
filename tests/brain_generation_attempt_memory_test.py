@@ -204,7 +204,7 @@ stale_executed_rejection = {
 }
 refreshed = plan([*exhausted, stale_executed_rejection], source_evidence=source_signal)
 assert refreshed["postExhaustionStrategyProfile"] == "html_class_token_exact_v1", refreshed
-assert refreshed["sourceStructuralProfileFingerprint"] == fp, refreshed
+assert refreshed["strategyImplementationFingerprint"] == fp, refreshed
 
 # Legacy ingestion must normalize "not_generated" regardless of old flag.
 with tempfile.TemporaryDirectory(prefix="niakvio-brain-generation-") as folder:
