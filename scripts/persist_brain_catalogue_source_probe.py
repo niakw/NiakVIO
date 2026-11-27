@@ -33,6 +33,17 @@ PLAYER_STRUCTURE_COUNT_LIMITS={
     "resolvedTargetInlineScriptCount":16,
     "resolvedTargetFormCount":8,
     "resolvedTargetHiddenInputCount":32,
+    "resolvedTargetRequestCallCount":32,
+    "resolvedTargetFetchCallCount":32,
+    "resolvedTargetXhrCallCount":32,
+    "resolvedTargetAxiosCallCount":32,
+    "resolvedTargetAjaxCallCount":32,
+    "resolvedTargetRequestLiteralUrlCount":32,
+    "resolvedTargetRequestDynamicUrlCount":32,
+    "resolvedTargetRequestTemplateUrlCount":32,
+    "resolvedTargetRequestConcatUrlCount":32,
+    "resolvedTargetRequestSameOriginLiteralCount":32,
+    "resolvedTargetRequestCrossOriginLiteralCount":32,
 }
 PLAYER_STRUCTURE_FLAGS=(
     "resolvedTargetPostFormObserved",
