@@ -96,6 +96,39 @@ assert arch.source_contract_family_blueprint(
     queue, summary, installed_source_family=True
 ) is None
 
+mixed_family_queue={
+    **queue,
+    "sourceContractFamilyExecutableStatus":"mixed_source_contract_frontier",
+    "sourceContractProviderStates":{
+        "sample-anime":"new_family_required",
+        "another-sibling":"new_family_required",
+        "advanced-sibling":"player_target_observed",
+    },
+}
+mixed_family_summary={
+    **summary,
+    "sourceContractFamilyExecutableStatus":"mixed_source_contract_frontier",
+    "sourceContractProviderStates":{
+        "sample-anime":"new_family_required",
+        "another-sibling":"new_family_required",
+        "advanced-sibling":"player_target_observed",
+    },
+}
+mixed_family=arch.source_contract_family_blueprint(
+    mixed_family_queue,mixed_family_summary,installed_source_family=False
+)
+assert mixed_family is not None,mixed_family
+bad_mixed_family={
+    **mixed_family_queue,
+    "sourceContractProviderStates":{
+        **mixed_family_queue["sourceContractProviderStates"],
+        "another-sibling":"player_target_observed",
+    },
+}
+assert arch.source_contract_family_blueprint(
+    bad_mixed_family,mixed_family_summary,installed_source_family=False
+) is None
+
 resolver_queue={
     **queue,
     "sourceContractFamilyExecutableStatus":"resolver_family_required",
@@ -121,6 +154,41 @@ assert resolver_blueprint["requiresNewSourceFamilyLego"] is False
 assert resolver_blueprint["sourceCompilerContract"]=="opaque-token-resolver-v1"
 assert resolver_blueprint["resolverContract"]=="same-origin-api-lien-j-l-v1"
 assert resolver_blueprint["forcePromotionEligible"] is True
+mixed_resolver_queue={
+    **resolver_queue,
+    "sourceContractFamilyExecutableStatus":"mixed_source_contract_frontier",
+    "sourceContractProviderStates":{
+        "sample-anime":"resolver_family_required",
+        "another-sibling":"resolver_family_required",
+        "parser-only":"parser_installed_replay_required",
+    },
+}
+mixed_resolver_summary={
+    **resolver_summary,
+    "sourceContractFamilyExecutableStatus":"mixed_source_contract_frontier",
+    "sourceContractProviderStates":{
+        "sample-anime":"resolver_family_required",
+        "another-sibling":"resolver_family_required",
+        "parser-only":"parser_installed_replay_required",
+    },
+}
+mixed_resolver=arch.source_contract_resolver_blueprint(
+    mixed_resolver_queue,mixed_resolver_summary,
+    installed_parser=True,installed_resolver=False,
+)
+assert mixed_resolver is not None,mixed_resolver
+bad_mixed_resolver={
+    **mixed_resolver_queue,
+    "sourceContractProviderStates":{
+        **mixed_resolver_queue["sourceContractProviderStates"],
+        "sample-anime":"player_target_observed",
+    },
+}
+assert arch.source_contract_resolver_blueprint(
+    bad_mixed_resolver,mixed_resolver_summary,
+    installed_parser=True,installed_resolver=False,
+) is None
+
 assert arch.source_contract_resolver_blueprint(
     resolver_queue,resolver_summary,installed_parser=False,installed_resolver=False
 ) is None
