@@ -1493,11 +1493,23 @@ def repair_attempt(
     *,
     preferred_profile: str = "",
     preferred_failure_class: str = "",
+    causal_failure_class: str = "",
 ) -> dict[str, Any]:
     env = os.environ.copy()
     env["NUVIO_BRAIN_TARGET_PROVIDER"] = provider_id
     preferred = learning_preferred_env(preferred_profile, preferred_failure_class)
     env.update(preferred)
+    causal_failure_class = str(causal_failure_class or "").strip().casefold()
+    if causal_failure_class:
+        if not re.fullmatch(r"[a-z][a-z0-9_]{0,95}", causal_failure_class):
+            raise ValueError("invalid Learning causal failure class")
+        env["NUVIO_BRAIN_LEARNING_CAUSAL_FAILURE_CLASS"] = causal_failure_class
+        print(
+            "FIELD_BRAIN_LEARNING_CAUSAL_HANDOFF "
+            f"provider={provider_id} failure={causal_failure_class} "
+            "proof_authority=false mutation_authority=false",
+            flush=True,
+        )
     if preferred:
         print(
             "FIELD_BRAIN_LEARNING_PREFERRED_HANDOFF "
@@ -2069,6 +2081,11 @@ def main() -> int:
                         ),
                         preferred_failure_class=(
                             RESOLVER_FAILURE_CLASS if resolver_replay else ""
+                        ),
+                        causal_failure_class=(
+                            "media_extraction_gap"
+                            if provider_id in source_player_target_frontier
+                            else ""
                         ),
                     )
                 except BudgetExhausted as error:
