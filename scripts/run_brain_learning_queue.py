@@ -40,6 +40,7 @@ from brain_source_family_state import (
 
 PLAYER_REQUEST_CONTRACT_PROFILE = "document_request_contract_mining_v2"
 PLAYER_REQUEST_CONTRACT_FAILURE = "media_extraction_gap"
+SESSION_BOOTSTRAP_FOLLOWUP_PROFILE = "provider_session_bootstrap_replay_v1"
 
 class BudgetExhausted(RuntimeError):
     """The bounded Learning work window ended; persist state and resume later."""
@@ -534,6 +535,99 @@ def missing_network_diagnostic_negative(
         key=lambda row: str(row.get("lastSeenAt") or ""),
         reverse=True,
     )[0])
+
+
+def network_causal_followup(
+    state: dict[str, Any],
+    provider_id: str,
+    *,
+    source_profile: str = PLAYER_REQUEST_CONTRACT_PROFILE,
+    failure_class: str = PLAYER_REQUEST_CONTRACT_FAILURE,
+) -> dict[str, str] | None:
+    """Turn sanitized executed-negative network facts into one next causal Lego.
+
+    This is decision evidence only. It never grants proof, playback, mutation or
+    publication authority. The transition is intentionally narrow: the scripted
+    request miner must have emitted real provider requests, received some 2xx
+    responses, hit a 4xx-heavy surface, and observed HTML only without media.
+    That shape is compatible with missing provider session/bootstrap context,
+    not with a dead transport or a parser that emitted nothing.
+    """
+    memory = state.get("experimentMemory") if isinstance(state.get("experimentMemory"), dict) else {}
+    rows = [
+        row for row in memory.get("entries") or []
+        if isinstance(row, dict) and norm(row.get("providerId")) == norm(provider_id)
+    ]
+    wanted_failure = str(failure_class or "").strip().casefold()
+
+    # One-shot means one-shot across runs. Once this exact causal Lego has been
+    # executed for the provider/failure, its negative/positive verdict owns the
+    # next transition and it must not be presented as fresh again.
+    for row in rows:
+        if str(row.get("profile") or "").strip() != SESSION_BOOTSTRAP_FOLLOWUP_PROFILE:
+            continue
+        row_failure = str(row.get("failureClass") or "").strip().casefold()
+        if row_failure not in {"", wanted_failure}:
+            continue
+        if (
+            row.get("executionObserved") is True
+            and str(row.get("lastOutcome") or "") not in {"not_generated", "profile_unavailable"}
+        ):
+            return None
+
+    candidates: list[dict[str, Any]] = []
+    for row in rows:
+        if str(row.get("profile") or "").strip() != str(source_profile or "").strip():
+            continue
+        row_failure = str(row.get("failureClass") or "").strip().casefold()
+        if row_failure not in {"", wanted_failure}:
+            continue
+        if row.get("executionObserved") is not True:
+            continue
+        if str(row.get("lastOutcome") or "") not in {
+            "rejected", "exploration_progress_nonpublishable",
+        }:
+            continue
+        summary = sanitize_network_execution_summary(row.get("networkExecutionSummary"))
+        if "providerRequestCount" not in summary:
+            continue
+        requests = int(summary.get("providerRequestCount") or 0)
+        successful = int(summary.get("successfulProviderRequestCount") or 0)
+        network_failures = int(summary.get("networkFailureCount") or 0)
+        buckets = summary.get("statusBuckets") or {}
+        four_xx = int(buckets.get("4xx") or 0)
+        kinds = set(summary.get("responseKinds") or [])
+        deepest = str(summary.get("deepestStage") or "none")
+        if requests <= 0 or successful <= 0:
+            continue
+        if four_xx < max(2, successful):
+            continue
+        if network_failures >= requests:
+            continue
+        if kinds != {"html"}:
+            continue
+        if deepest not in {"content_lookup", "episode", "player"}:
+            continue
+        candidates.append(row)
+
+    if not candidates:
+        return None
+    source = sorted(
+        candidates,
+        key=lambda row: str(row.get("lastSeenAt") or ""),
+        reverse=True,
+    )[0]
+    summary = sanitize_network_execution_summary(source.get("networkExecutionSummary"))
+    return {
+        "profile": SESSION_BOOTSTRAP_FOLLOWUP_PROFILE,
+        "failureClass": PLAYER_REQUEST_CONTRACT_FAILURE,
+        "reason": "scripted_requests_reached_html_with_4xx_pressure_session_bootstrap_untried",
+        "sourceProfile": str(source_profile),
+        "providerRequestCount": str(int(summary.get("providerRequestCount") or 0)),
+        "successfulProviderRequestCount": str(int(summary.get("successfulProviderRequestCount") or 0)),
+        "fourXxCount": str(int((summary.get("statusBuckets") or {}).get("4xx") or 0)),
+        "deepestStage": str(summary.get("deepestStage") or "none"),
+    }
 
 
 def diagnostic_replay_memory(
@@ -2562,6 +2656,29 @@ def main() -> int:
                                     "publication=false",
                                     flush=True,
                                 )
+
+                    followup = network_causal_followup(
+                        phase_learning_state,
+                        provider_id,
+                    )
+                    if followup is not None:
+                        preferred_profile = followup["profile"]
+                        preferred_failure_class = followup["failureClass"]
+                        causal_failure_class = followup["failureClass"]
+                        print(
+                            "FIELD_BRAIN_NETWORK_CAUSAL_FOLLOWUP "
+                            f"provider={provider_id} "
+                            f"source_profile={followup['sourceProfile']} "
+                            f"profile={preferred_profile} "
+                            f"failure={preferred_failure_class} "
+                            f"requests={followup['providerRequestCount']} "
+                            f"successful={followup['successfulProviderRequestCount']} "
+                            f"four_xx={followup['fourXxCount']} "
+                            f"deepest={followup['deepestStage']} "
+                            f"reason={followup['reason']} "
+                            "proof_authority=false publication=false",
+                            flush=True,
+                        )
 
                     repair = repair_attempt(
                         provider_id,
