@@ -1,3 +1,7 @@
+## 2026-11-27 — Source-family V2 : resolver opaque comme preuve non autoritaire
+
+Après le parser reader-matrix V1, le pipeline peut observer un resolver same-origin de manière bornée. Un couple jeton/id extrait de la page source est éphémère ; seul le contrat `same-origin-api-lien-j-l-v1`, le statut HTTP et trois booléens de forme JSON sont persistables. Une URL `u` HTTPS observée sur runner indépendant reste **diagnostique uniquement** : elle ne prouve ni bon épisode, ni lecteur terminal, ni média, ni client officiel. L'exécuteur V2 doit rester un étage Architecture séparé et ne peut être généré/promu qu'après cette preuve exacte-current-byte.
+
 ## 2026-11-27 — Classification challenge structurelle
 
 Le Brain ne doit pas sélectionner une stratégie transport/antibot à partir d'un mot présent dans une page HTML. Le probe provider distingue désormais la **preuve interactive** (header cf-mitigated, challenge-platform/cf-chl/challenge-form, Turnstile/captcha markup, titre de challenge) de la simple prose. Une page 200 ordinaire qui ne contient aucun flux reste négative et peut devenir un gap de route/search ; elle n'acquiert aucune preuve média ni autorité de publication. Ce contrat évite notamment de transformer un reach cross-transport en faux `transport_blocked`.

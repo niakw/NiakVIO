@@ -22,7 +22,8 @@ RUN=re.compile(r"^[0-9]{8,20}$")
 HOST=re.compile(r"^(?=.{1,253}$)[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$")
 SHAPES={"catalogue_inline_token_episode","legacy_external_episode_javascript","script_html_2xx","script_http_missing","unknown_response_shape"}
 STATUS_CLASS={"2xx","3xx","4xx","5xx","other","transport"}
-ROUTES={"catalogue","season_page","legacy_script","catalogue_search"}
+ROUTES={"catalogue","season_page","legacy_script","catalogue_search","token_resolver"}
+RESOLVER_CONTRACT="same-origin-api-lien-j-l-v1"
 
 
 def load(path:Path)->dict[str,Any]:
@@ -81,7 +82,7 @@ def validate_parent(root:Path, result:dict[str,Any])->None:
 def sanitized_evidence(result:dict[str,Any])->list[dict[str,Any]]:
     observations=result.get("observations")
     count=result.get("probeRequestCount")
-    if not isinstance(observations,list) or type(count) is not int or count!=len(observations) or not 1<=count<=12:
+    if not isinstance(observations,list) or type(count) is not int or count!=len(observations) or not 1<=count<=15:
         raise ValueError("invalid source-probe observation count")
     by_host:dict[str,dict[str,Any]]={}
     for raw in observations:
@@ -103,6 +104,21 @@ def sanitized_evidence(result:dict[str,Any])->list[dict[str,Any]]:
                 if type(raw.get(key)) is not bool: raise ValueError("invalid source shape flag")
                 row[key]=raw[key]
         elif route=="legacy_script": row["legacyScriptStatus"]=status
+        elif route=="token_resolver":
+            contract=str(raw.get("resolverContract") or "")
+            json_obj=raw.get("resolverJsonObjectObserved")
+            url_field=raw.get("resolverUrlFieldObserved")
+            https_url=raw.get("resolverHttpsUrlObserved")
+            if (contract!=RESOLVER_CONTRACT or type(json_obj) is not bool
+                    or type(url_field) is not bool or type(https_url) is not bool):
+                raise ValueError("invalid token resolver evidence")
+            row.update({
+                "tokenResolverStatus":status,
+                "tokenResolverContract":contract,
+                "tokenResolverJsonObjectObserved":json_obj,
+                "tokenResolverUrlFieldObserved":url_field,
+                "tokenResolverHttpsUrlObserved":https_url,
+            })
         elif route=="catalogue_search":
             links=raw.get("catalogueSearchLinkCount")
             exact=raw.get("catalogueSearchExactSlugPresent")
@@ -140,8 +156,13 @@ def build_row(root:Path,result:dict[str,Any],probe_run:str,probe_sha:str)->dict[
     validate_parent(root,result)
     evidence=sanitized_evidence(result)
     inline=result.get("inlineTokenResponseCount")
+    resolver_probes=result.get("tokenResolverProbeCount")
+    resolver_urls=result.get("tokenResolverJsonUrlCount")
     if type(inline) is not int or not 0<=inline<=int(result["probeRequestCount"]):
         raise ValueError("invalid inline source count")
+    if (type(resolver_probes) is not int or type(resolver_urls) is not int
+            or not 0<=resolver_urls<=resolver_probes<=3):
+        raise ValueError("invalid token resolver counts")
     candidates=[
         (int(row.get("candidateTokenOverlapPercent") or 0),str(row.get("candidateSlugUnverified") or ""))
         for row in evidence if row.get("candidateSlugUnverified")
@@ -151,7 +172,8 @@ def build_row(root:Path,result:dict[str,Any],probe_run:str,probe_sha:str)->dict[
     input_slug=str(result.get("catalogueSlug") or "")
     if input_slug and not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,125}",input_slug):
         raise ValueError("invalid input catalogue slug")
-    lead=("catalogue_slug_and_episode_source_contract_drift_candidate_unverified"
+    lead=("catalogue_inline_token_resolver_observed_unverified"
+          if resolver_urls>0 else "catalogue_slug_and_episode_source_contract_drift_candidate_unverified"
           if inline>0 else "catalogue_search_slug_mismatch_unverified"
           if next_slug and next_slug!=input_slug else "catalogue_source_contract_unresolved")
     return {
@@ -165,6 +187,9 @@ def build_row(root:Path,result:dict[str,Any],probe_run:str,probe_sha:str)->dict[
         "independentNetworkNotOfficialClient":True,
         "probeRequestCount":int(result["probeRequestCount"]),
         "inlineTokenResponseCount":inline,
+        "tokenResolverProbeCount":resolver_probes,
+        "tokenResolverJsonUrlCount":resolver_urls,
+        "tokenResolverContract":RESOLVER_CONTRACT if resolver_probes else None,
         "sourceContractVerifiedOnOfficialTv":False,
         "catalogueIdentityVerified":False,"episodeIdentityVerified":False,
         "evidence":evidence,"leadHypothesis":lead,

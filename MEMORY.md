@@ -1,3 +1,12 @@
+## 2026-11-27 — V83 : preuve V2 du resolver opaque, sans persistance de jeton ni URL
+
+- Le replay Learning Anime-Sama [46027343215](https://github.com/niakw/NiakVIO/actions/runs/46027343215) a validé la nouvelle machine d'état : `parser_installed=true deferred=0 replay=1 status=parser_installed_replay_required`. Le provider a réellement été rejoué mais reste `no_streams` (3 fixtures, 0 stream), 0 candidat et **0 réparation**. Le prochain gap est donc après le parser V1.
+- Le Lego provider courant `anime_sama_runtime_v1.py` ne conserve dans ses tableaux que les valeurs HTTP(S); les identifiants opaques `lien:` sont ignorés. Le classifieur Brain considère déjà un resolver inline installé seulement si un Lego contient `epsJeton` + `/api/lien.php`.
+- La référence indépendante `yuzono/anime-extensions@414c9bc8` décrit le contrat de résolution : GET same-origin `/api/lien.php?j=<epsJeton>&l=<id>`, réponse JSON dont le champ `u` contient la cible. Cette référence seule n'autorise aucune mutation.
+- Le probe source indépendant est étendu de 12 à 15 requêtes maximum : lorsqu'une page saison inline est effectivement observée, il extrait **en mémoire seulement** un jeton + un id, effectue au plus un GET resolver par origine (3 max) et ne conserve que statut, contrat enum, JSON-object oui/non, champ `u` oui/non, HTTPS oui/non. Jeton, id, réponse JSON et URL résolue ne sont jamais persistés. Toutes les autorités preuve/playback/mutation/publication restent fausses.
+- Le workflow ne redemande plus un FORCE V1 lorsque le parser est déjà installé : il lance un Learning replay; la synthèse V2 restera conditionnée à la preuve resolver sanitized et à un compilateur V2 distinct.
+- Finalizer [46028892261](https://github.com/niakw/NiakVIO/actions/runs/46028892261) : rouge sur `contract_review_required` pour les upstreams Nuvio mobile/desktop/TV, pas sur le classificateur challenge. Le garde n'est pas contourné.
+
 ## 2026-11-27 — V82 : faux WAF 200 séparé d'une vraie barrière interactive
 
 - Repair [46021630823](https://github.com/niakw/NiakVIO/actions/runs/46021630823) a réellement enchaîné deux mutations par provider : CorsFlix `player_media_extractor_v1 → adaptive_runtime_recovery`, FrenchStream `adaptive_runtime_recovery → player_media_extractor_v1`. Les premières mutations ont produit seulement du progrès diagnostic sandbox ; les secondes sont restées à 0 stream et ont été rejetées par `required_category_playable_proof`. **0 réparation**.

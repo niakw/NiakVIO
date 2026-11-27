@@ -14,7 +14,9 @@ on:
       - '.github/triggers/brain-catalogue-source-probe.json'
       - 'scripts/brain_oracles/catalogue_inline_episode_source.py'
       - 'scripts/brain_oracles/probe_catalogue_inline_live.py'
+      - 'scripts/persist_brain_catalogue_source_probe.py'
       - 'tests/brain_oracles/catalogue_inline_live_test.py'
+      - 'tests/brain_catalogue_source_probe_persistence_test.py'
 
 permissions:
   contents: write
@@ -82,7 +84,8 @@ jobs:
           assert result["publicationAuthority"] is False
           assert result["providerMutationAuthority"] is False
           assert result["sourceContractVerifiedOnOfficialTv"] is False
-          assert result["probeRequestCount"] <= 12
+          assert result["probeRequestCount"] <= 15
+          assert 0 <= result["tokenResolverJsonUrlCount"] <= result["tokenResolverProbeCount"] <= 3
           assert len(result["observations"]) == result["probeRequestCount"]
           print("FIELD_BRAIN_SOURCE_CONTRACT_GATE independent_only=true playback=false publication=false")
           PY
@@ -119,10 +122,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          read -r provider inline <<< "$(python - "$RUNNER_TEMP/catalogue-source-shape.json" <<'PY'
+          read -r provider inline resolver <<< "$(python - "$RUNNER_TEMP/catalogue-source-shape.json" <<'PY'
           import json,sys
           row=json.load(open(sys.argv[1],encoding="utf-8"))
-          print(str(row.get("providerId") or ""), int(row.get("inlineTokenResponseCount") or 0))
+          print(
+              str(row.get("providerId") or ""),
+              int(row.get("inlineTokenResponseCount") or 0),
+              int(row.get("tokenResolverJsonUrlCount") or 0),
+          )
           PY
           )"
           if [ "$inline" -le 0 ]; then
@@ -130,8 +137,24 @@ jobs:
             exit 0
           fi
           [[ "$provider" =~ ^[a-z0-9][a-z0-9-]{0,95}$ ]]
-          gh workflow run brain-learning-lab.yml --repo "$GITHUB_REPOSITORY" --ref main \
-            -f publish_proposal=false -f architecture_force=true \
-            -f slot_remaining_minutes=360 -f slot_phase=1 \
-            -f target_provider="$provider"
-          echo "FIELD_BRAIN_SOURCE_FORCE_DISPATCH status=dispatched provider=$provider inline=$inline publication=false"
+          parser_installed="$(python - <<'PY'
+          from pathlib import Path
+          import sys
+          sys.path.insert(0,"scripts")
+          from brain_source_family_state import source_family_parser_installed
+          print("true" if source_family_parser_installed(Path(".")) else "false")
+          PY
+          )"
+          if [ "$parser_installed" = "true" ]; then
+            gh workflow run brain-learning-lab.yml --repo "$GITHUB_REPOSITORY" --ref main \
+              -f publish_proposal=false -f architecture_force=false \
+              -f slot_remaining_minutes=120 -f slot_phase=1 \
+              -f target_provider="$provider"
+            echo "FIELD_BRAIN_SOURCE_FORCE_DISPATCH status=parser_installed_learning_replay provider=$provider inline=$inline resolver=$resolver publication=false"
+          else
+            gh workflow run brain-learning-lab.yml --repo "$GITHUB_REPOSITORY" --ref main \
+              -f publish_proposal=false -f architecture_force=true \
+              -f slot_remaining_minutes=360 -f slot_phase=1 \
+              -f target_provider="$provider"
+            echo "FIELD_BRAIN_SOURCE_FORCE_DISPATCH status=dispatched_v1 provider=$provider inline=$inline resolver=$resolver publication=false"
+          fi

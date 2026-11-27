@@ -26,7 +26,8 @@ with tempfile.TemporaryDirectory() as td:
         "sourceNiakvioSha":"a"*40,"providerArtifactSha256":digest,"manifestScope":"manifest.json",
         "catalogueSlug":"mushoku-tensei","independentNetworkNotOfficialClient":True,
         "catalogueIdentityVerified":False,"episodeIdentityVerified":False,
-        "sourceContractVerifiedOnOfficialTv":False,"probeRequestCount":4,"inlineTokenResponseCount":1,
+        "sourceContractVerifiedOnOfficialTv":False,"probeRequestCount":5,"inlineTokenResponseCount":1,
+        "tokenResolverProbeCount":1,"tokenResolverJsonUrlCount":1,
         "observations":[
           {"originHost":"example.test","routeKind":"catalogue","httpStatus":200,"httpStatusClass":"2xx",
            "sourceShape":"script_html_2xx","redirectTargetHost":"","redirectTargetCurated":False},
@@ -36,6 +37,10 @@ with tempfile.TemporaryDirectory() as td:
            "redirectTargetHost":"","redirectTargetCurated":False},
           {"originHost":"example.test","routeKind":"legacy_script","httpStatus":404,"httpStatusClass":"4xx",
            "sourceShape":"script_http_missing","redirectTargetHost":"","redirectTargetCurated":False},
+          {"originHost":"example.test","routeKind":"token_resolver","httpStatus":200,"httpStatusClass":"2xx",
+           "sourceShape":"unknown_response_shape","resolverContract":"same-origin-api-lien-j-l-v1",
+           "resolverJsonObjectObserved":True,"resolverUrlFieldObserved":True,
+           "resolverHttpsUrlObserved":True,"redirectTargetHost":"","redirectTargetCurated":False},
           {"originHost":"example.test","routeKind":"catalogue_search","httpStatus":200,"httpStatusClass":"2xx",
            "sourceShape":"script_html_2xx","catalogueSearchLinkCount":1,
            "catalogueSearchExactSlugPresent":True,"catalogueCandidateSlugUnverified":"mushoku-tensei",
@@ -43,11 +48,17 @@ with tempfile.TemporaryDirectory() as td:
         ],**FLAGS}
     row=mod.build_row(root,result,"45323000000","b"*40)
     assert row["inlineTokenResponseCount"]==1
-    assert row["leadHypothesis"]=="catalogue_slug_and_episode_source_contract_drift_candidate_unverified"
+    assert row["leadHypothesis"]=="catalogue_inline_token_resolver_observed_unverified"
+    assert row["tokenResolverProbeCount"]==1 and row["tokenResolverJsonUrlCount"]==1
+    assert row["tokenResolverContract"]=="same-origin-api-lien-j-l-v1"
     assert row["evidence"]==[{"originHost":"example.test","catalogueStatus":200,
         "seasonPageStatus":200,"seasonSourceShape":"catalogue_inline_token_episode",
         "inlineSlotArrayObserved":True,"opaqueLinkTokenObserved":True,"jetonDeclarationObserved":True,
-        "legacyScriptStatus":404,"searchStatus":200,"searchLinkCount":1,
+        "legacyScriptStatus":404,"tokenResolverStatus":200,
+        "tokenResolverContract":"same-origin-api-lien-j-l-v1",
+        "tokenResolverJsonObjectObserved":True,"tokenResolverUrlFieldObserved":True,
+        "tokenResolverHttpsUrlObserved":True,
+        "searchStatus":200,"searchLinkCount":1,
         "searchExactSlugPresent":True,"candidateSlugUnverified":"mushoku-tensei",
         "candidateTokenOverlapPercent":100}]
     envelope={"schemaVersion":1,"authority":"independent-ci-source-shape-diagnostic-only",
@@ -55,7 +66,7 @@ with tempfile.TemporaryDirectory() as td:
     saved=mod.persist(envelope,row);saved2=mod.persist(saved,row)
     assert saved2["rows"]==[row]
     rendered=json.dumps(saved2)
-    for forbidden in ("<html","https://","lien:","epsJeton","PRIVATE_TOKEN"):
+    for forbidden in ("<html","https://","lien:","epsJeton","PRIVATE_TOKEN","PRIVATE_JETON","media.invalid"):
         assert forbidden not in rendered
 
     forged=json.loads(json.dumps(result));forged["publicationAuthority"]=True

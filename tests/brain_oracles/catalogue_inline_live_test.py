@@ -102,6 +102,8 @@ with tempfile.TemporaryDirectory() as td:
     paths = []
     def fake_fetch(url: str):
         paths.append(url)
+        if "/api/lien.php?" in url:
+            return 200, '{"u":"https://media.invalid/private?sig=SECRET"}', False, "", ""
         if url.endswith("/saison1/vostfr/"):
             return 200, INLINE, False, "", ""
         if url.endswith("/episodes.js"):
@@ -116,7 +118,7 @@ with tempfile.TemporaryDirectory() as td:
         return 200, LEGACY, False, "", ""
 
     report = probe.run(root, request, fetcher=fake_fetch)
-    assert report["probeRequestCount"] == 12
+    assert report["probeRequestCount"] == 15
     assert sum(x["catalogueSearchLinkCount"] == 1 for x in report["observations"]) == 3
     assert sum(x["catalogueSearchExactSlugPresent"] for x in report["observations"]) == 0
     assert sum(x["catalogueCandidateSlugUnverified"] == "mushoku-tensei-extra"
@@ -124,6 +126,15 @@ with tempfile.TemporaryDirectory() as td:
     assert sum(x["catalogueCandidateTokenOverlapPercent"] == 100
                for x in report["observations"]) == 3
     assert report["inlineTokenResponseCount"] == 3
+    assert report["tokenResolverProbeCount"] == 3
+    assert report["tokenResolverJsonUrlCount"] == 3
+    resolver_rows=[x for x in report["observations"] if x["routeKind"]=="token_resolver"]
+    assert len(resolver_rows)==3
+    assert all(x["resolverContract"]=="same-origin-api-lien-j-l-v1"
+               and x["resolverJsonObjectObserved"] is True
+               and x["resolverUrlFieldObserved"] is True
+               and x["resolverHttpsUrlObserved"] is True
+               for x in resolver_rows)
     assert probe.catalogue_search_matches(
         '<!doctype html><a href="/catalogue/mushoku-tensei/">exact</a>',
         "mushoku-tensei", "current.example"
@@ -142,7 +153,7 @@ with tempfile.TemporaryDirectory() as td:
                for x in report["observations"]) == 3
     for row_out in report["observations"]:
         assert row_out["routeKind"] in {
-            "catalogue", "season_page", "legacy_script", "catalogue_search"
+            "catalogue", "season_page", "legacy_script", "catalogue_search", "token_resolver"
         }
         assert row_out["originHost"] in hosts
         assert row_out["httpStatusClass"] in {"2xx", "4xx"}
@@ -154,17 +165,21 @@ with tempfile.TemporaryDirectory() as td:
     )
     assert redirects["probeRequestCount"] == 12
     assert redirects["inlineTokenResponseCount"] == 0
+    assert redirects["tokenResolverProbeCount"] == 0
+    assert redirects["tokenResolverJsonUrlCount"] == 0
     assert all(x["httpStatus"] == 302
                and x["httpStatusClass"] == "3xx"
                and x["redirectTargetHost"] == "fallback.example"
                and x["redirectTargetCurated"] is True
                for x in redirects["observations"])
+    resolver_paths=[path for path in paths if "/api/lien.php?" in path]
+    assert len(resolver_paths)==3
+    assert all("?j=PRIVATE_JETON&l=PRIVATE_ID" in path for path in resolver_paths)
     for path in paths:
-        assert "/api/lien.php" not in path
-        assert "token=" not in path
-        assert not any(p in path for p in ("PRIVATE", "secret", "player", "m3u8"))
+        if "/api/lien.php?" not in path:
+            assert not any(p in path for p in ("PRIVATE", "secret", "player", "m3u8"))
     rendered = json.dumps(report)
-    for secret in ("PRIVATE", "https://", "lien:", "epsJeton", "media.invalid"):
+    for secret in ("PRIVATE", "SECRET", "https://", "lien:", "epsJeton", "media.invalid", "api/lien.php"):
         assert secret not in rendered, secret
     for flag in (
         "proofAuthority", "publicationAuthority",

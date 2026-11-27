@@ -3,8 +3,10 @@
 
 Independent HTTP from a CI runner is NOT the official Android TV network.
 Only pre-allowlisted provider origins, fixed catalogue/episode paths and a
-sanitized source-shape summary are supported. No player, token, stream or
-authentication endpoint is requested.
+sanitized source-shape summary are supported. When an inline token contract is
+observed, at most one same-origin resolver request per origin may be performed.
+The opaque token, jeton, resolver response body and resolved URL are ephemeral
+and are never persisted or granted playback/mutation authority.
 """
 from __future__ import annotations
 
@@ -36,7 +38,10 @@ SHA64 = re.compile(r"[0-9a-f]{64}")
 HOST = re.compile(r"(?=.{1,253}$)[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?")
 MAX_BODY = 524288
 MAX_HOSTS = 3
-MAX_REQUESTS = 12
+MAX_REQUESTS = 15
+RESOLVER_CONTRACT = "same-origin-api-lien-j-l-v1"
+JETON_VALUE = re.compile(r"""\b(?:var|let|const)\s+epsJeton\s*=\s*["']([A-Za-z0-9_.:-]{1,256})["']""")
+LINK_VALUE = re.compile(r"""["']lien:([A-Za-z0-9_.:-]{1,200})["']""")
 TIMEOUT = 5
 
 
@@ -224,6 +229,47 @@ def fetch(url: str, *, approved_hosts: tuple[str, ...] = (),
         return 0, "", False, "transport_error", ""
 
 
+def resolver_material(body: str) -> tuple[str, str] | None:
+    """Extract one bounded opaque pair in memory; callers must never persist it."""
+    if not isinstance(body, str) or len(body) > MAX_BODY:
+        return None
+    jeton = JETON_VALUE.search(body)
+    link = LINK_VALUE.search(body)
+    if not jeton or not link:
+        return None
+    return jeton.group(1), link.group(1)
+
+
+def resolver_shape(status: int, body: str, oversized: bool) -> dict[str, Any]:
+    """Return only shape booleans; raw resolver data never leaves this function."""
+    obj = None
+    if not oversized and 200 <= status < 300 and isinstance(body, str) and len(body) <= MAX_BODY:
+        try:
+            value = json.loads(body)
+            obj = value if isinstance(value, dict) else None
+        except (json.JSONDecodeError, UnicodeError, TypeError):
+            obj = None
+    url_value = obj.get("u") if isinstance(obj, dict) else None
+    url_observed = isinstance(url_value, str) and bool(url_value.strip())
+    https_observed = False
+    if url_observed:
+        try:
+            parsed = urllib.parse.urlsplit(url_value.strip())
+            https_observed = (
+                parsed.scheme == "https"
+                and bool(parsed.hostname)
+                and not parsed.username and not parsed.password
+            )
+        except ValueError:
+            https_observed = False
+    return {
+        "resolverJsonObjectObserved": isinstance(obj, dict),
+        "resolverUrlFieldObserved": url_observed,
+        "resolverHttpsUrlObserved": https_observed,
+        "resolverContract": RESOLVER_CONTRACT,
+    }
+
+
 def catalogue_search_matches(body: str, expected: str, origin: str) -> tuple[int, bool, str, int]:
     """Only same-host catalogue slugs: source candidates are never identity proof."""
     if (not isinstance(body, str) or len(body) > MAX_BODY
@@ -309,6 +355,63 @@ def run(root: Path, request: dict, *, fetcher: Callable[[str], tuple[int, str, b
                 "oversizedResponse": oversized,
                 "transportError": error == "transport_error",
             })
+            # V2 diagnostic: resolve exactly one opaque id from an attested
+            # inline season page. The request is same-origin and ephemeral;
+            # only response shape booleans enter the report.
+            material = (
+                resolver_material(body)
+                if kind == "season_page"
+                and status == 200 and not oversized
+                and result["shape"] == "catalogue_inline_token_episode"
+                else None
+            )
+            if material is not None and len(observations) < MAX_REQUESTS:
+                jeton, link_id = material
+                resolver_url = (
+                    "https://" + host + "/api/lien.php?"
+                    + urllib.parse.urlencode({"j": jeton, "l": link_id})
+                )
+                if fetcher is fetch:
+                    r_status, r_body, r_oversized, r_error, r_redirect_host = fetch(
+                        resolver_url, approved_hosts=(host,), slug=slug
+                    )
+                else:
+                    r_status, r_body, r_oversized, r_error, r_redirect_host = fetcher(resolver_url)
+                if (type(r_status) is not int or not 0 <= r_status <= 599
+                        or not isinstance(r_body, str) or len(r_body) > MAX_BODY
+                        or type(r_oversized) is not bool
+                        or not isinstance(r_redirect_host, str)
+                        or (r_redirect_host and not HOST.fullmatch(r_redirect_host))):
+                    raise ValueError("invalid resolver probe transport")
+                shape = resolver_shape(r_status, r_body, r_oversized)
+                observations.append({
+                    "originHost": host,
+                    "routeKind": "token_resolver",
+                    "responseHost": (
+                        r_redirect_host
+                        if not 300 <= r_status < 400 and r_redirect_host == host else host
+                    ),
+                    "httpStatus": r_status,
+                    "httpStatusClass": (
+                        "3xx" if 300 <= r_status < 400 else
+                        "transport" if r_status == 0 else
+                        "2xx" if 200 <= r_status < 300 else
+                        "4xx" if 400 <= r_status < 500 else
+                        "5xx" if 500 <= r_status <= 599 else "other"
+                    ),
+                    "redirectTargetHost": r_redirect_host if 300 <= r_status < 400 else "",
+                    "redirectTargetCurated": (
+                        r_redirect_host == host if 300 <= r_status < 400 and r_redirect_host else False
+                    ),
+                    "sourceShape": "unknown_response_shape",
+                    "inlineSlotArrayObserved": False,
+                    "opaqueLinkTokenObserved": False,
+                    "jetonDeclarationObserved": False,
+                    "languageListDeclarationObserved": False,
+                    "oversizedResponse": r_oversized,
+                    "transportError": r_error == "transport_error",
+                    **shape,
+                })
             if len(observations) >= MAX_REQUESTS:
                 break
         if len(observations) >= MAX_REQUESTS:
@@ -327,6 +430,13 @@ def run(root: Path, request: dict, *, fetcher: Callable[[str], tuple[int, str, b
         "observations": observations,
         "probeRequestCount": len(observations),
         "inlineTokenResponseCount": sum(x["sourceShape"] == "catalogue_inline_token_episode" for x in observations),
+        "tokenResolverProbeCount": sum(x["routeKind"] == "token_resolver" for x in observations),
+        "tokenResolverJsonUrlCount": sum(
+            x.get("resolverJsonObjectObserved") is True
+            and x.get("resolverUrlFieldObserved") is True
+            and x.get("resolverHttpsUrlObserved") is True
+            for x in observations if x["routeKind"] == "token_resolver"
+        ),
         "proofAuthority": False,
         "publicationAuthority": False,
         "nativePlaybackAuthority": False,
@@ -347,6 +457,7 @@ def main() -> None:
     print("FIELD_BRAIN_CATALOGUE_SOURCE_PROBE "
           f"provider={output['providerId']} run={output['sourceRunId']} "
           f"requests={output['probeRequestCount']} inline={output['inlineTokenResponseCount']} "
+          f"resolver={output['tokenResolverJsonUrlCount']}/{output['tokenResolverProbeCount']} "
           "official_tv=false proof=false publication=false")
 
 
