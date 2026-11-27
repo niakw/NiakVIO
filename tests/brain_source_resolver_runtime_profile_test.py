@@ -129,4 +129,47 @@ with tempfile.TemporaryDirectory() as tmp:
     assert "NIAKVIO_SOURCE_RESOLVER_CONTRACT same-origin-api-lien-j-l-v1" in final_text
     assert "||/^lien:/i.test(x[1])" in final_text
 
+# Downstream request-contract profiles must compose the resolver primitive
+# instead of replacing it. This is the causal-chain regression that previously
+# produced changed bytes with a zero parent->candidate network delta.
+composed_candidate = {
+    "canonical_id": "resolver-representative",
+    "metadata": {
+        "name": "Resolver Representative",
+        "supportedTypes": ["anime"],
+        "baseUrl": "https://resolver-representative.example",
+    },
+    "brain_repair_plan": {
+        "failureClass": "media_extraction_gap",
+        "experimentVariant": 4,
+        "experimentGeneration": 5,
+        "postExhaustionStrategyProfile": "document_request_contract_mining_v2",
+        "allowedProfiles": ["document_request_contract_mining_v2"],
+        "learningPreferredRequested": "document_request_contract_mining_v2",
+        "learningPreferredSelected": True,
+    },
+}
+composed_bytes, composed_records = mod._apply_adaptive(
+    source.encode(),
+    composed_candidate,
+    profile_name="document_request_contract_mining_v2",
+)
+composed_text = composed_bytes.decode()
+assert composed_bytes != source.encode()
+assert "NIAKVIO_SOURCE_RESOLVER_CONTRACT same-origin-api-lien-j-l-v1" in composed_text
+assert "NUVIO_ADAPTIVE_RUNTIME_CORE_V7" in composed_text
+assert '"scriptedRequestMining":true' in composed_text
+assert '"newStrategyId":"document_request_contract_mining_v2"' in composed_text
+profiles = [str(row.get("profile") or "") for row in composed_records]
+assert profiles == [
+    "inline_token_resolver_contract",
+    "document_request_contract_mining_v2",
+], composed_records
+with tempfile.NamedTemporaryFile("w",suffix=".js",delete=False) as handle:
+    handle.write(composed_text)
+    composed_js=handle.name
+check=subprocess.run(["node","--check",composed_js],capture_output=True,text=True,check=False)
+Path(composed_js).unlink(missing_ok=True)
+assert check.returncode==0,check.stderr
+
 print("Brain source resolver runtime V2: primitive + planner-to-mutation integration passed")
