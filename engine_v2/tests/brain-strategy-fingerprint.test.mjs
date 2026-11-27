@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { profileRuntimeFingerprintMaterial as material, postExhaustionStrategyProfiles } from "../src/strategy-fingerprint.mjs";
+import { profileGeneratorFingerprintMaterial as generatorMaterial, profileRuntimeFingerprintMaterial as material, postExhaustionStrategyProfiles } from "../src/strategy-fingerprint.mjs";
 
 const source = [
   "prefix",
@@ -54,6 +54,38 @@ for (const existing of [
     `live ${existing} fingerprint changed because of unrelated sibling`);
 }
 console.log("Brain scoped implementation fingerprint contract passed");
+
+
+// The adaptive generator is shared by many profiles, but the scripted player
+// request parser is V2-only. Evolving that parser must not reset negative
+// memory for V1 or unrelated strategies.
+const generator = fs.readFileSync("scripts/adaptive_runtime/runtime_recovery_generator.py", "utf8");
+assert(generator.includes("function bootstrapMediaIntent("));
+assert(generator.includes('"scriptedRequestMining": bool(cfg.get("scripted_request_mining", False))'));
+const generatorChanged = generator.replace(
+  "function bootstrapMediaIntent(url,body){",
+  "function bootstrapMediaIntent(url,body){/* fingerprint-test-v2-change */",
+);
+assert.notEqual(
+  generatorMaterial(generator, "document_request_contract_mining_v2"),
+  generatorMaterial(generatorChanged, "document_request_contract_mining_v2"),
+  "scripted request-contract V2 implementation change must refresh V2",
+);
+for (const existing of [
+  "document_request_contract_mining_v1",
+  "player_media_extractor_v1",
+  "runtime_response_salvage_v1",
+  "catalogue_inline_token_resolver_v2",
+]) {
+  assert.equal(
+    generatorMaterial(generator, existing),
+    generatorMaterial(generatorChanged, existing),
+    `V2-only generator change must not resurrect ${existing}`,
+  );
+}
+assert(!generatorMaterial(generator, "document_request_contract_mining_v1").includes("function bootstrapMediaIntent("));
+assert(generatorMaterial(generator, "document_request_contract_mining_v2").includes("function bootstrapMediaIntent("));
+console.log("Brain scripted request-contract V2 fingerprint isolation passed");
 
 
 // The Learning persistence layer must never carry a hand-maintained copy of
