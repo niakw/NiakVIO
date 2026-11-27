@@ -30,6 +30,8 @@ from fill_brain_learning_guidance_gaps import (
 from build_provider_execution_plan import build as build_provider_execution_plan
 from brain_source_family_state import (
     RESOLVER_CONTRACT,
+    RESOLVER_FAILURE_CLASS,
+    RESOLVER_STRATEGY_ID,
     source_family_parser_installed,
     source_family_resolver_installed,
 )
@@ -1463,6 +1465,23 @@ def repair_method_fingerprints(report: dict[str, Any], attempted_profiles: list[
     return sorted(set(output))
 
 
+def learning_preferred_env(profile: str = "", failure_class: str = "") -> dict[str, str]:
+    profile = str(profile or "").strip().casefold()
+    failure_class = str(failure_class or "").strip().casefold()
+    if bool(profile) != bool(failure_class):
+        raise ValueError("Learning preferred strategy requires profile and causal failure class together")
+    if not profile:
+        return {}
+    if not re.fullmatch(r"[a-z][a-z0-9_]*_v[0-9]+", profile):
+        raise ValueError("invalid Learning preferred profile")
+    if not re.fullmatch(r"[a-z][a-z0-9_]{0,95}", failure_class):
+        raise ValueError("invalid Learning preferred failure class")
+    return {
+        "NUVIO_BRAIN_LEARNING_PREFERRED_PROFILE": profile,
+        "NUVIO_BRAIN_LEARNING_PREFERRED_FAILURE_CLASS": failure_class,
+    }
+
+
 def repair_attempt(
     provider_id: str,
     stage: Path,
@@ -1470,9 +1489,22 @@ def repair_attempt(
     output: Path,
     previous_state_path: Path,
     deadline: float,
+    *,
+    preferred_profile: str = "",
+    preferred_failure_class: str = "",
 ) -> dict[str, Any]:
     env = os.environ.copy()
     env["NUVIO_BRAIN_TARGET_PROVIDER"] = provider_id
+    preferred = learning_preferred_env(preferred_profile, preferred_failure_class)
+    env.update(preferred)
+    if preferred:
+        print(
+            "FIELD_BRAIN_LEARNING_PREFERRED_HANDOFF "
+            f"provider={provider_id} profile={preferred['NUVIO_BRAIN_LEARNING_PREFERRED_PROFILE']} "
+            f"failure={preferred['NUVIO_BRAIN_LEARNING_PREFERRED_FAILURE_CLASS']} "
+            "proof_authority=false",
+            flush=True,
+        )
     env["NUVIO_BRAIN_LEARNING_STATE"] = str(previous_state_path)
     # The child planner imports brain_repair_runtime before sandbox main() runs,
     # so the previous sanitized Learning state must be present in the process
@@ -2000,6 +2032,11 @@ def main() -> int:
                 attempt_dir = run_dir / f"attempt-{attempt_no}"
                 attempt_dir.mkdir(parents=True, exist_ok=True)
                 try:
+                    resolver_replay = (
+                        source_family_resolver_ready
+                        and provider_id in source_resolver_frontier
+                        and source_contract_status == "resolver_installed_replay_required"
+                    )
                     repair = repair_attempt(
                         provider_id,
                         stage,
@@ -2007,6 +2044,12 @@ def main() -> int:
                         attempt_dir,
                         phase_learning_state_path,
                         provider_deadline,
+                        preferred_profile=(
+                            RESOLVER_STRATEGY_ID if resolver_replay else ""
+                        ),
+                        preferred_failure_class=(
+                            RESOLVER_FAILURE_CLASS if resolver_replay else ""
+                        ),
                     )
                 except BudgetExhausted as error:
                     state["lastStatus"] = "fair_share_slice_exhausted"

@@ -1,3 +1,11 @@
+## 2026-11-27 — V84 : handoff Learning vers resolver V2 installé
+
+- Le FORCE 46041980628 a réellement promu `catalogue_inline_token_resolver_v2` via `a77d0d1d65d27c3ed7d82f2870c2089ac4f36834` (selector/planner/executor vérifiés). Le replay Learning 46043489688 reconnaît pourtant `sourceContractResolverInstalled=true`, `sourceContractResolverProviders=["anime-sama"]` et `resolver_installed_replay_required`, mais son ledger exécute encore `adaptive_runtime_recovery`, puis `lastOutcome=not_generated` / `brain_not_repairing`.
+- Cause : `run_brain_learning_queue.py` calculait le frontier resolver mais ne transmettait ni le profil installé ni sa famille causale au planner enfant. Le sandbox reclassait Anime-Sama en `unknown_failure`, alors que le V2 est enregistré dans la famille `chain_terminal_gap`.
+- Les bytes publiés Anime-Sama courants possèdent les trois ancres uniques du V2 ; l'application exacte du transformateur change réellement les bytes (+850 octets dans le contrôle en mémoire), élargit le filtre à `lien:`, ajoute le resolver same-origin et son appel épisode. Ce contrôle ne vaut pas lecture.
+- Correctif : canal `learningPreferredStrategy` + `learningPreferredFailureClass`, distinct du FORCE production. Il n'est alimenté que pour un provider attesté du resolver frontier avec état `resolver_installed_replay_required`; Python refuse un profil non installé ou une fuite hors Learning ; le planner Node vérifie que le profil appartient bien à la famille causale avant sélection.
+- Réparation provider certifiée par ce changement : **0** avant génération, compilation, rematérialisation, replay exact et lecture officielle correcte.
+
 ## 2026-11-27 — V83 : preuve V2 du resolver opaque, sans persistance de jeton ni URL
 
 - Le replay Learning Anime-Sama [46027343215](https://github.com/niakw/NiakVIO/actions/runs/46027343215) a validé la nouvelle machine d'état : `parser_installed=true deferred=0 replay=1 status=parser_installed_replay_required`. Le provider a réellement été rejoué mais reste `no_streams` (3 fixtures, 0 stream), 0 candidat et **0 réparation**. Le prochain gap est donc après le parser V1.

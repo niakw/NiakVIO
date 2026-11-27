@@ -1189,6 +1189,24 @@ def _safe_planner_stderr(value: Any) -> str:
     return " ".join(text.split())[:600]
 
 
+def _learning_preferred_context(mode: str) -> tuple[str, str]:
+    profile = str(os.environ.get("NUVIO_BRAIN_LEARNING_PREFERRED_PROFILE") or "").strip().casefold()
+    failure = str(os.environ.get("NUVIO_BRAIN_LEARNING_PREFERRED_FAILURE_CLASS") or "").strip().casefold()
+    if bool(profile) != bool(failure):
+        raise RuntimeError("Learning preferred strategy requires profile and causal failure class together")
+    if not profile:
+        return "", ""
+    if str(mode or "").strip().casefold() != "learning":
+        raise RuntimeError("Learning preferred strategy escaped Learning mode")
+    if not re.fullmatch(r"[a-z][a-z0-9_]*_v[0-9]+", profile):
+        raise RuntimeError("Learning preferred strategy id invalid")
+    if not re.fullmatch(r"[a-z][a-z0-9_]{0,95}", failure):
+        raise RuntimeError("Learning preferred failure class invalid")
+    if profile not in POST_EXHAUSTION_STRATEGY_PROFILES:
+        raise RuntimeError("Learning preferred strategy is not an installed Brain executor")
+    return profile, failure
+
+
 def _planner_base_payload(
     mode: str,
     transient_negative_memory: list[dict[str, Any]] | None = None,
@@ -1199,10 +1217,13 @@ def _planner_base_payload(
     FORCE 42500072566 lost forcePreferredStrategy in a duplicated dict and
     silently logged forcePreferredRequested="" despite executing the profile.
     """
+    learning_profile, learning_failure = _learning_preferred_context(mode)
     return {
         "mode": mode,
         "explorationChain": _exploration_chain_enabled(),
         "forcePreferredStrategy": _force_preferred_strategy(mode),
+        "learningPreferredStrategy": learning_profile,
+        "learningPreferredFailureClass": learning_failure,
         "policy": policy(),
         "learnedSkills": planner_learned_skills(mode),
         "historicalSolutions": planner_historical_solutions(),
@@ -1223,9 +1244,17 @@ def _execute_planner(
         return PLANS
     payload = _planner_base_payload(mode, transient_negative_memory)
     payload["items"] = items
+    if payload["learningPreferredStrategy"]:
+        print(
+            "FIELD_BRAIN_LEARNING_PLANNER_INPUT requested="
+            + payload["learningPreferredStrategy"]
+            + " failure=" + payload["learningPreferredFailureClass"]
+            + " proof_authority=false",
+            flush=True,
+        )
     if payload["forcePreferredStrategy"]:
         print(
-            "FIELD_BRAIN_FORCE_PLANNER_INPUT requested="
+            "FIELD_BRAIN_FORCE_PLANNER_INPUT requested=
             + payload["forcePreferredStrategy"] + " exploration="
             + str(payload["explorationChain"]).lower()
             + " origin=" + ("explicit-deep-cli" if _EXPLICIT_DEEP_FORCE_PROFILE else "ambient"),
@@ -1508,6 +1537,9 @@ def _plan_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
         # silently prevents post-exhaustion strategies from materializing.
         "forcePreferredRequested": str(plan.get("forcePreferredRequested") or ""),
         "forcePreferredSelected": plan.get("forcePreferredSelected") is True,
+        "learningPreferredRequested": str(plan.get("learningPreferredRequested") or ""),
+        "learningPreferredFailureClass": str(plan.get("learningPreferredFailureClass") or ""),
+        "learningPreferredSelected": plan.get("learningPreferredSelected") is True,
         "postExhaustionStrategyProfile": str(plan.get("postExhaustionStrategyProfile") or ""),
         "postExhaustionStrategyMethod": str(plan.get("postExhaustionStrategyMethod") or ""),
         "repairType": str(plan.get("repairType") or ""),
@@ -1961,6 +1993,9 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
             "providerPositiveProgramProductionRescue": row.get("providerPositiveProgramProductionRescue") is True,
             "forcePreferredRequested": row.get("forcePreferredRequested"),
             "forcePreferredSelected": row.get("forcePreferredSelected") is True,
+            "learningPreferredRequested": row.get("learningPreferredRequested"),
+            "learningPreferredFailureClass": row.get("learningPreferredFailureClass"),
+            "learningPreferredSelected": row.get("learningPreferredSelected") is True,
             "postExhaustionStrategyProfile": row.get("postExhaustionStrategyProfile"),
             "postExhaustionStrategyMethod": row.get("postExhaustionStrategyMethod"),
             "postExhaustionSourceFailureClass": row.get("postExhaustionSourceFailureClass"),

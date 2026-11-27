@@ -1,3 +1,7 @@
+## 2026-11-27 — Handoff d'executor installé dans Learning
+
+Une capacité Brain promue doit être reliée à la machine d'état qui l'a demandée. Lorsque la queue atteste un resolver source et constate `resolver_installed_replay_required`, elle transmet au planner enfant le couple profil installé + famille causale. Ce canal est Learning-only, sans autorité de publication ou de preuve, et reste distinct du FORCE production. Le planner rejette toute paire qui n'appartient pas à sa table de stratégies.
+
 ## 2026-11-27 — Source-family V2 : resolver opaque comme preuve non autoritaire
 
 Après le parser reader-matrix V1, le pipeline peut observer un resolver same-origin de manière bornée. Un couple jeton/id extrait de la page source est éphémère ; seul le contrat `same-origin-api-lien-j-l-v1`, le statut HTTP et trois booléens de forme JSON sont persistables. Une URL `u` HTTPS observée sur runner indépendant reste **diagnostique uniquement** : elle ne prouve ni bon épisode, ni lecteur terminal, ni média, ni client officiel. L'exécuteur V2 doit rester un étage Architecture séparé et ne peut être généré/promu qu'après cette preuve exacte-current-byte.

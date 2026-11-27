@@ -1062,6 +1062,20 @@ function buildPlan(item) {
   // profile and falsely appears to validate (or reject) the new architecture.
   // Ordinary production and Learning preserve their previous rotation policy.
   const forcePreferredProfile = stringValue(input.forcePreferredStrategy).toLowerCase();
+  const learningPreferredProfile = learningMode
+    ? stringValue(input.learningPreferredStrategy).toLowerCase()
+    : "";
+  const rawLearningPreferredFailureClass = learningMode
+    ? stringValue(input.learningPreferredFailureClass).toLowerCase()
+    : "";
+  const learningPreferredFailureClass = rawLearningPreferredFailureClass
+    ? canonicalFailureClass(rawLearningPreferredFailureClass)
+    : "";
+  const learningPreferredCandidateProfiles = learningPreferredFailureClass
+    ? postExhaustionCandidates(learningPreferredFailureClass)
+        .map((row) => stringValue(row.profile))
+        .filter(Boolean)
+    : [];
   const forcePreferredEligible = (
     explorationMode && !learningMode && !experimentExhausted
     && Boolean(forcePreferredProfile)
@@ -1073,6 +1087,21 @@ function buildPlan(item) {
         forcePreferredProfile, sourceEligibility,
       )
     : { profile: "", method: "", index: -1 };
+  const learningPreferredEligible = (
+    learningMode && !experimentExhausted
+    && Boolean(learningPreferredProfile)
+    && Boolean(learningPreferredFailureClass)
+    && learningPreferredCandidateProfiles.includes(learningPreferredProfile)
+  );
+  const earlyLearningHint = learningPreferredEligible
+    ? postExhaustionStrategyHint(
+        learningPreferredFailureClass, causalFamilyMemoryMatches, rotateEvery,
+        learningPreferredProfile, sourceEligibility,
+      )
+    : { profile: "", method: "", index: -1 };
+  const learningPreferredSelectedEarly = (
+    learningPreferredEligible && earlyLearningHint.profile === learningPreferredProfile
+  );
   // An executed-negative preferred strategy may rotate to a sibling inside
   // the selector, but BEFORE base exhaustion that fallback is not authorized
   // by the explicit replay contract. Never silently test a different profile.
@@ -1091,6 +1120,7 @@ function buildPlan(item) {
     && experimentExhausted
     && !positiveProgramReplayHint.profile
     && !forcePreferredProfile
+    && !learningPreferredProfile
   )
     ? llmAdvisorStrategyHint(
         providerId,
@@ -1110,17 +1140,27 @@ function buildPlan(item) {
     ? positiveProgramReplayHint
     : (explorationMode && experimentExhausted && !preEscalationLlmExecutable)
       ? postExhaustionStrategyHint(
-          evidence.failureClass, causalFamilyMemoryMatches, rotateEvery,
-          forcePreferredProfile, sourceEligibility,
+          learningPreferredProfile ? learningPreferredFailureClass : evidence.failureClass,
+          causalFamilyMemoryMatches,
+          rotateEvery,
+          forcePreferredProfile || learningPreferredProfile,
+          sourceEligibility,
         )
       : forcePreferredSelectedEarly
         ? earlyForceHint
-        : { profile: "", method: "", index: -1 };
+        : learningPreferredSelectedEarly
+          ? earlyLearningHint
+          : { profile: "", method: "", index: -1 };
   // The requested executor can also be selected AFTER base exhaustion.
   // Record the exact final selection, not just the pre-exhaustion branch.
   const forcePreferredSelected = Boolean(
     explorationMode && !learningMode && forcePreferredProfile
     && postExhaustionHint.profile === forcePreferredProfile
+  );
+  const learningPreferredSelected = Boolean(
+    learningMode && learningPreferredProfile
+    && learningPreferredFailureClass
+    && postExhaustionHint.profile === learningPreferredProfile
   );
   const strategyEscalated = Boolean(postExhaustionHint.profile);
   const architectureGapEscalation = (
@@ -1155,7 +1195,9 @@ function buildPlan(item) {
     && postExhaustionHint.profile === "provider_positive_program_replay_v1"
     && /^[0-9a-f]{64}$/.test(stringValue(postExhaustionHint.positiveProgramFingerprint).toLowerCase())
   );
-  const repairTarget = (experimentExhausted || metaGapEscalated || forcePreferredSelected)
+  const repairTarget = (
+    experimentExhausted || metaGapEscalated || forcePreferredSelected || learningPreferredSelected
+  )
     ? (
         (strategyEscalated || metaGapEscalated)
           ? (
@@ -1340,6 +1382,7 @@ function buildPlan(item) {
     && executionRepairTarget.scope === "capability"
     && allowedProfiles.length > 0
     && !forcePreferredProfile
+    && !learningPreferredProfile
     && structuralEvidence.profile === staticProfile
     && structuralEvidence.source === "current_candidate_bytes"
     && structuralEvidence.diagnosticOnly === true
@@ -1390,6 +1433,9 @@ function buildPlan(item) {
     strategyEscalated,
     forcePreferredRequested: forcePreferredProfile,
     forcePreferredSelected,
+    learningPreferredRequested: learningPreferredProfile,
+    learningPreferredFailureClass,
+    learningPreferredSelected,
     metaGapEscalated,
     architectureGapEscalation,
     providerPositiveProgramReplay: postExhaustionHint.profile === "provider_positive_program_replay_v1",

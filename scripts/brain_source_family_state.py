@@ -9,6 +9,7 @@ from typing import Any
 STRATEGY_ID = "catalogue_inline_token_episode_source_family_v1"
 RESOLVER_STRATEGY_ID = "catalogue_inline_token_resolver_v2"
 RESOLVER_CONTRACT = "same-origin-api-lien-j-l-v1"
+RESOLVER_FAILURE_CLASS = "chain_terminal_gap"
 SOURCE_BLUEPRINT: dict[str, Any] = {
     "strategyId": STRATEGY_ID,
     "gapKind": "missing_source_contract_family_executable",
