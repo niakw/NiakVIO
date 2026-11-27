@@ -1,3 +1,11 @@
+## 2026-11-27 — Contrat d'intention Brain exécutable
+
+Le plan Brain est une autorité d'exécution, pas une suggestion. La chaîne canonique est : preuve → planner → `allowedProfiles` → matching → générateur → bytes → matérialisation → replay → validation. À la frontière de mutation, le profil réellement demandé doit appartenir au `allowedProfiles` du plan ; un handoff Learning explicitement préféré doit exécuter exactement ce profil. Toute substitution implicite, notamment par `adaptive_runtime_recovery`, échoue avant mutation.
+
+Les registries séparées du planner, du Brain et du runtime adaptive restent les trois gates intentionnelles du FORCE et sont validées comme transaction d'installation. Learning ne possède plus de quatrième copie : il dérive sa vue de la registry Brain, et les gates vérifient la cohérence Brain ↔ runtime. Une capacité promue doit en outre disposer d'un test court traversant réellement planner → matching → mutation ; tester séparément la sélection et le transformateur ne suffit plus.
+
+Ce contrat ne change aucune autorité produit : génération, compilation ou bytes différents ne prouvent ni le bon épisode ni un média terminal. Les gates de rematérialisation, identité, décodage, client officiel et non-régression restent obligatoires.
+
 ## 2026-11-27 — Handoff d'executor installé dans Learning
 
 Une capacité Brain promue doit être reliée à la machine d'état qui l'a demandée. Lorsque la queue atteste un resolver source et constate `resolver_installed_replay_required`, elle transmet au planner enfant le couple profil installé + famille causale. Ce canal est Learning-only, sans autorité de publication ou de preuve, et reste distinct du FORCE production. Le planner rejette toute paire qui n'appartient pas à sa table de stratégies.

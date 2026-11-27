@@ -1,3 +1,11 @@
+### 27 novembre — P0 actuel : fermer la boucle décision → mutation → replay
+
+Le diagnostic V84 est resserré : le principal verrou n'est ni Qwen 7B ni l'absence de RAG, mais l'intégrité de l'orchestration entre une capacité promue et son exécution réelle. Le lot P0 est désormais : (1) aucune registry Learning dupliquée, (2) `allowedProfiles` autoritaire à la frontière de mutation, (3) handoff préféré exact et fail-closed, (4) test intégré planner → bytes, (5) replay réel sur représentant avant toute généralisation.
+
+Commits du lot : `b32c8b05`, `8089cd71`, `2a9efe36`, `e1eace08`, `d63325fa`. Le prochain critère de sortie n'est pas une CI verte : Anime-Sama doit exécuter `catalogue_inline_token_resolver_v2` sur les bytes courants, produire un candidat réellement différent, être rematérialisé puis rejoué. Si la lecture reste négative, le résultat doit identifier le prochain étage causal sans revenir à une ancienne stratégie. **0 réparation** jusqu'à preuve média/identité.
+
+La généralisation à une famille n'est autorisée qu'après ce premier closed loop puis un sibling compatible ; la campagne flotte reste secondaire tant que ce mécanisme n'est pas démontré.
+
 ### 20 novembre — FORCE source family : faire générer un vrai nouveau Lego
 
 Le 7B ne peut résoudre le contrat de source inline si le générateur l'enferme dans `recoveryProgram` (seules les anciennes sources sont accessibles). Corrigé sur `343f3efe` : blueprint famille dédié `requiresNewSourceFamilyLego`, édition Brain contrôlée de parseur + branche active + test multi-épisodes. Oracle [44812448148](https://github.com/niakw/NiakVIO/actions/runs/44812448148) SUCCESS; le FORCE [44810905047](https://github.com/niakw/NiakVIO/actions/runs/44810905047) sur SHA plus ancien n'a pas trouvé de blueprint, donc n'est pas un essai. Prochain verrou : Qwen7B doit émettre trois edits valides, puis tests de code et non-régression, puis le pipeline doit transformer ce Lego en correctif provider matérialisé et éprouvé sur NuvioTV; ne jamais comptabiliser une CI verte ou une génération seule. **0 réparation**.
