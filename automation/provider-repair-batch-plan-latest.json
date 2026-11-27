@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "46053010975",
-  "sourceTriggerSha": "9727fd54da64c9a1f7015ec7a5f916418be63e81",
+  "sourceRunId": "46054643475",
+  "sourceTriggerSha": "530b90d6a4b07ed7eb837d5397cf2fc0fb1bb86a",
   "unresolvedProviderCount": 67,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -270,10 +270,12 @@
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "chain",
-        "lookup"
+        "lookup",
+        "none"
       ],
       "dominantIssues": [
         "network_zero_result",
+        "provider_returned_streams, timeout",
         "timeout"
       ],
       "harnessTransportClasses": [],
