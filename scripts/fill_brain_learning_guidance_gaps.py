@@ -313,6 +313,54 @@ def _bounded_player_structure(item: dict[str, Any]) -> dict[str, Any] | None:
     }
 
 
+def attested_source_player_fixture_witnesses(
+    source_history: dict[str, Any],
+    native_history: dict[str, Any],
+    manifest: dict[str, Any],
+    root: Path,
+) -> dict[str, dict[str, str]]:
+    """Newest exact-parent source fixture that established the player frontier.
+
+    This carries only public fixture identity and provenance. It grants no
+    mutation, playback, identity or publication authority; Learning may use it
+    solely to reproduce the causal observation before rotating other fixtures.
+    """
+    if not isinstance(source_history, dict):
+        return {}
+    selected: dict[str, tuple[int, dict[str, str]]] = {}
+    for row in source_history.get("rows") or []:
+        if not isinstance(row, dict):
+            continue
+        provider = canon(row.get("providerId"))
+        fixture = str(row.get("fixture") or "").strip().casefold()
+        if (
+            not provider
+            or not re.fullmatch(r"[a-z0-9][a-z0-9-]{1,127}", fixture)
+        ):
+            continue
+        narrowed = dict(source_history)
+        narrowed["rows"] = [row]
+        if provider not in attested_source_player_target_frontier(
+            narrowed, native_history, manifest, root,
+        ):
+            continue
+        run_raw = str(row.get("latestProbeRunId") or "")
+        if not run_raw.isdigit():
+            continue
+        witness = {
+            "fixtureSlug": fixture,
+            "probeRunId": run_raw,
+            "manifestScope": str(row.get("manifestScope") or ""),
+            "proofAuthority": "false",
+            "publicationAuthority": "false",
+        }
+        run_number = int(run_raw)
+        previous = selected.get(provider)
+        if previous is None or run_number > previous[0]:
+            selected[provider] = (run_number, witness)
+    return {provider: value for provider, (_run, value) in selected.items()}
+
+
 def attested_source_player_structure_frontier(
     source_history: dict[str, Any],
     native_history: dict[str, Any],
