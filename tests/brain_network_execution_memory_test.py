@@ -259,6 +259,25 @@ v2_negative = {
     "failureClass": "media_extraction_gap",
     "profile": queue.PLAYER_REQUEST_CONTRACT_PROFILE,
     "networkExecutionSummary": session_summary,
+    "networkExecutionDelta": {
+        "schemaVersion": 1,
+        "providerRequestDelta": 24,
+        "successfulProviderRequestDelta": 6,
+        "networkFailureDelta": 1,
+        "statusBucketDelta": {"2xx": 6, "3xx": 0, "4xx": 17, "5xx": 0, "network": 1},
+        "newMethods": ["POST"],
+        "newStages": ["episode"],
+        "newResponseKinds": ["html"],
+        "parentDeepestStage": "content_lookup",
+        "candidateDeepestStage": "episode",
+        "stageRankDelta": 1,
+        "stageAdvanced": True,
+        "proofAuthority": False,
+        "publicationAuthority": False,
+        "rawAddressRetained": False,
+        "headersRetained": False,
+        "bodyRetained": False,
+    },
     "lastOutcome": "rejected",
     "executionObserved": True,
 }
@@ -273,6 +292,29 @@ assert followup["reason"] == "scripted_requests_reached_html_with_4xx_pressure_s
 assert followup["providerRequestCount"] == "57"
 assert followup["successfulProviderRequestCount"] == "12"
 assert followup["fourXxCount"] == "42"
+assert followup["providerRequestDelta"] == "24"
+assert followup["successfulProviderRequestDelta"] == "6"
+assert followup["fourXxDelta"] == "17"
+
+# Aggregate 4xx pressure that already belonged to the parent is not enough.
+parent_owned_pressure = {
+    **v2_negative,
+    "networkExecutionDelta": {
+        **v2_negative["networkExecutionDelta"],
+        "providerRequestDelta": 0,
+        "successfulProviderRequestDelta": 0,
+        "statusBucketDelta": {"2xx": 0, "3xx": 0, "4xx": 0, "5xx": 0, "network": 0},
+        "newMethods": [],
+        "newStages": [],
+        "newResponseKinds": [],
+        "stageRankDelta": 0,
+        "stageAdvanced": False,
+    },
+}
+assert queue.network_causal_followup(
+    {"experimentMemory": {"entries": [parent_owned_pressure]}},
+    "family-representative",
+) is None
 
 # A dead transport is not evidence for session bootstrap.
 dead_transport = {
