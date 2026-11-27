@@ -233,4 +233,73 @@ assert queue.missing_network_diagnostic_negative(
     profile,
 ) is None, "diagnostic replay must be one-shot once summary and delta telemetry exist"
 
+# Executed network evidence must change the next causal action. A scripted
+# request miner that emitted real requests, received some 2xx responses, but
+# hit a 4xx-heavy HTML-only surface should try the existing session-bootstrap
+# Lego exactly once before inventing another request-contract generation.
+session_summary = {
+    "schemaVersion": 1,
+    "providerRequestCount": 57,
+    "successfulProviderRequestCount": 12,
+    "networkFailureCount": 3,
+    "statusBuckets": {"2xx": 12, "3xx": 0, "4xx": 42, "5xx": 0, "network": 3},
+    "methods": ["GET", "POST"],
+    "stages": ["content_lookup", "episode"],
+    "deepestStage": "episode",
+    "responseKinds": ["html"],
+    "proofAuthority": False,
+    "publicationAuthority": False,
+    "rawAddressRetained": False,
+    "headersRetained": False,
+    "bodyRetained": False,
+}
+v2_negative = {
+    **row,
+    "providerId": "family-representative",
+    "failureClass": "media_extraction_gap",
+    "profile": queue.PLAYER_REQUEST_CONTRACT_PROFILE,
+    "networkExecutionSummary": session_summary,
+    "lastOutcome": "rejected",
+    "executionObserved": True,
+}
+followup = queue.network_causal_followup(
+    {"experimentMemory": {"schemaVersion": 1, "entries": [v2_negative]}},
+    "family-representative",
+)
+assert followup is not None
+assert followup["profile"] == queue.SESSION_BOOTSTRAP_FOLLOWUP_PROFILE
+assert followup["failureClass"] == "media_extraction_gap"
+assert followup["reason"] == "scripted_requests_reached_html_with_4xx_pressure_session_bootstrap_untried"
+assert followup["providerRequestCount"] == "57"
+assert followup["successfulProviderRequestCount"] == "12"
+assert followup["fourXxCount"] == "42"
+
+# A dead transport is not evidence for session bootstrap.
+dead_transport = {
+    **v2_negative,
+    "networkExecutionSummary": {
+        **session_summary,
+        "successfulProviderRequestCount": 0,
+        "networkFailureCount": 57,
+        "statusBuckets": {"2xx": 0, "3xx": 0, "4xx": 0, "5xx": 0, "network": 57},
+        "responseKinds": [],
+    },
+}
+assert queue.network_causal_followup(
+    {"experimentMemory": {"entries": [dead_transport]}},
+    "family-representative",
+) is None
+
+# Once the follow-up Lego has executed, it cannot look fresh again.
+session_negative = {
+    **v2_negative,
+    "profile": queue.SESSION_BOOTSTRAP_FOLLOWUP_PROFILE,
+    "strategyImplementationFingerprint": "c" * 64,
+    "networkExecutionSummary": {},
+}
+assert queue.network_causal_followup(
+    {"experimentMemory": {"entries": [v2_negative, session_negative]}},
+    "family-representative",
+) is None
+
 print("Brain sanitized network execution memory contract passed")
