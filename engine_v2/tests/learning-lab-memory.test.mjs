@@ -136,6 +136,28 @@ write(runtimeMemory, {
     consecutiveFailures: 1, successes: 0,
     lastOutcome: 'rejected', lastReason: 'required_category_playable_proof:movie',
     lastSeenAt: '2026-11-07T00:00:00Z', executionObserved: true,
+  }, {
+    providerId: 'llm-memory', providerVersion: '*',
+    signature: 'sig-llm', failureClass: 'variant_coverage_gap',
+    profile: 'chain_terminal_extractor_v1',
+    llmAdvisorExperimentFingerprint: 'a'.repeat(64),
+    llmAdvisorGuidanceKind: 'external-brain-llm',
+    llmAdvisorMetaGapGeneration: 0,
+    experimentVariant: 1, experimentGeneration: 1,
+    attempts: 1, failures: 1, consecutiveFailures: 1, successes: 0,
+    lastOutcome: 'rejected', lastReason: 'safety_gate:no_playable_proof',
+    lastSeenAt: '2026-11-27T01:00:00Z', executionObserved: true,
+  }, {
+    providerId: 'llm-memory', providerVersion: '*',
+    signature: 'sig-llm', failureClass: 'variant_coverage_gap',
+    profile: 'chain_terminal_extractor_v1',
+    llmAdvisorExperimentFingerprint: 'b'.repeat(64),
+    llmAdvisorGuidanceKind: 'meta-gap-synthesis',
+    llmAdvisorMetaGapGeneration: 1,
+    experimentVariant: 1, experimentGeneration: 1,
+    attempts: 1, failures: 1, consecutiveFailures: 1, successes: 0,
+    lastOutcome: 'rejected', lastReason: 'inferior_to_selected_variant',
+    lastSeenAt: '2026-11-27T01:01:00Z', executionObserved: true,
   }],
 });
 write(historical, {
@@ -208,6 +230,20 @@ assert.equal(laterExecuted.executionObserved, true);
 assert.equal(laterExecuted.lastOutcome, 'rejected');
 assert.equal(laterExecuted.lastReason, 'required_category_playable_proof:movie');
 assert.equal(laterExecuted.generationAttemptObserved, true);
+const llmRows = latest.experimentMemory.entries.filter(row =>
+  row.providerId === 'llm-memory'
+  && row.profile === 'chain_terminal_extractor_v1'
+  && row.experimentVariant === 1
+  && row.experimentGeneration === 1
+);
+assert.equal(llmRows.length, 2, 'distinct LLM experiment fingerprints must not collapse cross-day');
+const llmA = llmRows.find(row => row.llmAdvisorExperimentFingerprint === 'a'.repeat(64));
+const llmB = llmRows.find(row => row.llmAdvisorExperimentFingerprint === 'b'.repeat(64));
+assert.ok(llmA && llmB, 'LLM experiment fingerprints must survive cross-day sanitization');
+assert.equal(llmA.llmAdvisorGuidanceKind, 'external-brain-llm');
+assert.equal(llmA.llmAdvisorMetaGapGeneration, 0, 'meta-gap generation zero must remain zero');
+assert.equal(llmB.llmAdvisorGuidanceKind, 'meta-gap-synthesis');
+assert.equal(llmB.llmAdvisorMetaGapGeneration, 1);
 // Runtime ledger is authoritative when available; the repair-report fallback
 // must not double-count the same current phase.
 assert.equal(

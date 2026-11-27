@@ -1,3 +1,11 @@
+## 2026-11-27 — V70 : fingerprint LLM perdu par la mémoire cross-day, boucle Nakios expliquée
+
+- État vérifié : main `2553af1863b45`, census `45922579169` sur `fa5a98505962`, **8 FULL OK / 111**, repairQueue 9. Fast Repair `45920335334` : `accepted=0 / candidates=0 / validated=0`; Nakios est handoffé à Learning.
+- Learning `45921665063` puis `45922119683` ciblent Nakios. Ils créent un stream de diagnostic mais **0 playable** et `provider_proposals=0`. Le second passe de `variant=0` à `variant=1`. Qwen est disponible, mais la guidance utilisée est encore issue du chemin `deterministic_advisor` (`llm_calls=0`).
+- Défaut confirmé par artefact : `runtime-experiment-memory.json` contient `llmAdvisorExperimentFingerprint=7e83…`, le guidance kind et la génération méta-gap ; `brain-learning-output/latest.json` les perd dans `engine_v2/scripts/learning-lab.mjs`. Son `memoryKey()` omettait aussi ce fingerprint, contrairement à Repair/Python.
+- V70 conserve un fingerprint SHA-256 sanitizé, le guidance kind borné et `llmAdvisorMetaGapGeneration` (zéro inclus), inclut le fingerprint dans la clé cross-day et aligne le fallback repair-report. Le test crée deux hypothèses même provider/profil/génération avec fingerprints distincts et exige qu'elles restent séparées.
+- Ce fix répare la capacité du Brain à **ne pas répéter une hypothèse** ; il ne vaut pas réparation Nakios. **0 nouvelle réparation provider certifiée** avant nouvelle exécution, mutation différente, rematérialisation et replay playable/identité.
+
 ## 2026-11-27 — V69 : Repair rouge 45917895623 = contrat WAF obsolète, pas échec provider
 
 - Le run Repair [45917895623](https://github.com/niakw/NiakVIO/actions/runs/45917895623) sur `895f1872b267` a échoué **avant toute Repair canonique** dans `tests/provider_repair_waf_integration_workflow_test.py:63`. Le workflow courant avait déjà durci la réutilisation WAF : il exige `residentialExitNodeLastAttempt.available=true` et `residentialProviderReplay.lastAttempt.available=true`, alors que le test cherchait encore les anciens objets `residential` / `replay`.

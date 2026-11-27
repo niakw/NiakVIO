@@ -529,6 +529,7 @@ function mergeExperimentMemory(previousMemory, runtimeMemory, report, planMap, l
       if (!providerId || !profile || !signature) continue;
       const experimentVariant = nonNegative(plan.experimentVariant);
       const experimentGeneration = Math.max(1, nonNegative(plan.experimentGeneration) || 1);
+      const llmAdvisorExperimentFingerprint = String(plan.llmAdvisorExperimentFingerprint || '').trim().toLowerCase().slice(0, 64);
       const key = memoryKey({
         providerId,
         providerVersion: '*',
@@ -536,6 +537,7 @@ function mergeExperimentMemory(previousMemory, runtimeMemory, report, planMap, l
         profile,
         positiveProgramFingerprint: String(plan.positiveProgramFingerprint || '').trim().toLowerCase().slice(0, 256),
         strategyImplementationFingerprint: String(plan.strategyImplementationFingerprint || '').trim().toLowerCase().slice(0, 256),
+        llmAdvisorExperimentFingerprint,
         experimentVariant,
         experimentGeneration,
       });
@@ -547,6 +549,11 @@ function mergeExperimentMemory(previousMemory, runtimeMemory, report, planMap, l
         profile,
         positiveProgramFingerprint: String(plan.positiveProgramFingerprint || '').trim().toLowerCase().slice(0, 256),
         strategyImplementationFingerprint: String(plan.strategyImplementationFingerprint || '').trim().toLowerCase().slice(0, 256),
+        llmAdvisorExperimentFingerprint,
+        llmAdvisorGuidanceKind: String(plan.llmAdvisorGuidanceKind || '').trim().toLowerCase().slice(0, 64),
+        llmAdvisorMetaGapGeneration: Number.isFinite(Number(plan.llmAdvisorMetaGapGeneration))
+          ? Math.max(-1, Math.min(100000, Math.trunc(Number(plan.llmAdvisorMetaGapGeneration))))
+          : -1,
         experimentVariant,
         experimentGeneration,
         capabilityStrategy: String(plan.capabilityStrategy || '').slice(0, 96),
@@ -564,6 +571,16 @@ function mergeExperimentMemory(previousMemory, runtimeMemory, report, planMap, l
       next.experimentGeneration = experimentGeneration;
       if (String(plan.capabilityStrategy || '')) next.capabilityStrategy = String(plan.capabilityStrategy).slice(0, 96);
       if (String(plan.observedPipelineStage || '')) next.observedPipelineStage = String(plan.observedPipelineStage).slice(0, 64);
+      if (llmAdvisorExperimentFingerprint) next.llmAdvisorExperimentFingerprint = llmAdvisorExperimentFingerprint;
+      if (String(plan.llmAdvisorGuidanceKind || '')) {
+        next.llmAdvisorGuidanceKind = String(plan.llmAdvisorGuidanceKind).trim().toLowerCase().slice(0, 64);
+      }
+      if (plan.llmAdvisorMetaGapGeneration !== undefined && plan.llmAdvisorMetaGapGeneration !== null) {
+        const metaGapGeneration = Number(plan.llmAdvisorMetaGapGeneration);
+        next.llmAdvisorMetaGapGeneration = Number.isFinite(metaGapGeneration)
+          ? Math.max(-1, Math.min(100000, Math.trunc(metaGapGeneration)))
+          : -1;
+      }
       next.attempts += 1;
       const repairKey = String(attempt.repair_key || '');
       const accepted = acceptedByRepair.get(repairKey);
@@ -608,6 +625,16 @@ function sanitizeMemoryEntry(raw) {
     && lastOutcome === 'profile_unavailable'
     && executionObserved !== true
   ) return null;
+  const llmAdvisorExperimentFingerprintRaw = String(raw.llmAdvisorExperimentFingerprint || '').trim().toLowerCase();
+  const llmAdvisorExperimentFingerprint = /^[0-9a-f]{64}$/.test(llmAdvisorExperimentFingerprintRaw)
+    ? llmAdvisorExperimentFingerprintRaw
+    : '';
+  const llmAdvisorGuidanceKind = String(raw.llmAdvisorGuidanceKind || '')
+    .trim().toLowerCase().replace(/[^a-z0-9._-]+/g, '').slice(0, 64);
+  const llmAdvisorMetaGapGenerationRaw = Number(raw.llmAdvisorMetaGapGeneration);
+  const llmAdvisorMetaGapGeneration = Number.isFinite(llmAdvisorMetaGapGenerationRaw)
+    ? Math.max(-1, Math.min(100000, Math.trunc(llmAdvisorMetaGapGenerationRaw)))
+    : -1;
   return {
     providerId,
     providerVersion: String(raw.providerVersion || '*').trim().slice(0, 64) || '*',
@@ -616,6 +643,9 @@ function sanitizeMemoryEntry(raw) {
     profile,
     positiveProgramFingerprint: String(raw.positiveProgramFingerprint || '').trim().toLowerCase().slice(0, 256),
     strategyImplementationFingerprint: String(raw.strategyImplementationFingerprint || '').trim().toLowerCase().slice(0, 256),
+    llmAdvisorExperimentFingerprint,
+    llmAdvisorGuidanceKind,
+    llmAdvisorMetaGapGeneration,
     experimentVariant: nonNegative(raw.experimentVariant),
     experimentGeneration: Math.max(1, nonNegative(raw.experimentGeneration) || 1),
     capabilityStrategy: String(raw.capabilityStrategy || '').trim().toLowerCase().slice(0, 96),
@@ -640,6 +670,7 @@ function memoryKey(row) {
     row.profile,
     row.positiveProgramFingerprint || '',
     row.strategyImplementationFingerprint || '',
+    row.llmAdvisorExperimentFingerprint || '',
     `g${Math.max(1, nonNegative(row.experimentGeneration) || 1)}`,
     `v${nonNegative(row.experimentVariant)}`,
   ].join('::');

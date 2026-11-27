@@ -1,3 +1,7 @@
+## 2026-11-27 — Mémoire cross-day des hypothèses LLM
+
+Le ledger runtime et la mémoire cross-day doivent partager la même identité : provider/version/failure/signature/profile + positive-program fingerprint + strategy-implementation fingerprint + **LLM experiment fingerprint** + génération/variante. Le fingerprint LLM est un SHA-256 sanitizé, jamais du contenu modèle ; guidance kind et meta-gap generation sont une provenance bornée. Une hypothèse exécutée/rejetée doit survivre à la sérialisation quotidienne afin que le planner change réellement de stratégie au run suivant.
+
 ## 2026-11-27 — Méta-gap : fingerprint = identité d'expérience durable
 
 Une stratégie Qwen/meta-gap ne peut pas être identifiée uniquement par son profil et sa génération de base. Son `llmAdvisorExperimentFingerprint` fait partie des bytes/logiques de l'hypothèse et doit traverser : plan → event snapshot → ledger de phase → mémoire Learning → mémoire Repair/planner. Le merge Learning utilise la même identité que `brain_repair_runtime._memory_entry_key`, y compris le fingerprint LLM. Ainsi `failedFingerprint()` peut supprimer une hypothèse déjà exécutée et le plafond de trois fingerprints peut réellement faire changer d'exécuteur.
