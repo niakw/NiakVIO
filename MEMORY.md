@@ -1,3 +1,9 @@
+## 2026-11-27 — V79.3 : reprise Repair rendue déterministe
+
+- Repair [46001360755](https://github.com/niakw/NiakVIO/actions/runs/46001360755) a traité 4/8 providers avant budget : AnikotoTV, Anime-Sama, French Manga, Nakios ; non visités CorsFlix, FrenchStream, Moiflix, Primewire. L'ancien auto-resume dispatchait seulement `mode=repair`, donc la cohorte suivante dépendait indirectement du ranking de pression et pouvait retraiter un représentant déjà consommé.
+- Nouveau contrat : `target_providers` accepte une cohorte bornée dans un seul workflow. `select_provider_repair_resume_scope.py` autorise la reprise uniquement si `resumeRecommended=true`, dernier Repair réellement budget-exhausted, même `sourceCensusRunId`, même cohorte sélectionnée, partition processed/unvisited cohérente et providers encore présents dans la repairQueue. Le dispatch suivant transmet exactement ce CSV.
+- Pas de parallélisme concurrent sur mémoire/manifests, aucun changement de preuve ou de gate média. Le run 46001360755 demeure **0 réparation**.
+
 ## 2026-11-27 — V79.2 : second contrat pré-V78 supprimé avant replay Anime-Sama
 
 - Learning [46004697482](https://github.com/niakw/NiakVIO/actions/runs/46004697482), source `986b7b90`, franchit le contrat cron corrigé puis échoue encore **avant provider** dans `learning_targeted_domain_refresh_contract_test.py:33`. Ce test comptait deux occurrences de l'ancien appel direct `refresh_stage_routes(stage, provider_deadline, provider_id)`, supprimé par le helper V78.

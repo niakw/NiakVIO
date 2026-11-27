@@ -14,6 +14,11 @@ on:
         required: false
         default: ""
         type: string
+      target_providers:
+        description: Optional comma-separated bounded Repair cohort, used by deterministic resume
+        required: false
+        default: ""
+        type: string
       preferred_profile:
         description: Optional Brain-generated novel strategy for bounded representative FORCE replay only
         required: false
@@ -1356,6 +1361,7 @@ jobs:
         env:
           DISPATCH_MODE: ${{ inputs.mode || '' }}
           TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
+          TARGET_PROVIDERS: ${{ inputs.target_providers || '' }}
           PREFERRED_BRAIN_PROFILE: ${{ inputs.preferred_profile || '' }}
           ALLOW_LOSS: ${{ inputs.allow_upstream_positive_loss || 'false' }}
           FORCE_ACCEPTED: ${{ steps.force-mutations.outputs.accepted_csv || '' }}
@@ -1363,7 +1369,14 @@ jobs:
         run: |
           set -euo pipefail
           # Current-run evidence only. Never let a skipped/failed Repair read
-          # tracked artifacts produced by an earlier run.
+          # tracked artifacts produced by an earlier run. A workflow-dispatch
+          # Repair may consume the previous report only as a bounded scheduling
+          # resume hint; snapshot it before clearing current-run output paths.
+          RESUME_REPORT="$RUNNER_TEMP/provider-brain-repair-resume-source.json"
+          rm -f "$RESUME_REPORT"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -z "${TARGET_PROVIDER:-}" ] && [ -z "${TARGET_PROVIDERS:-}" ] && [ -s automation/provider-brain-repair-latest.json ]; then
+            cp automation/provider-brain-repair-latest.json "$RESUME_REPORT"
+          fi
           rm -f             automation/provider-route-recovery-v6-targeted.json             automation/provider-repair-v6-summary.json             automation/provider-brain-repair-latest.json             automation/brain-repair-experience.json             automation/provider-repair-portfolio-baseline.json             automation/provider-repair-portfolio-candidate.json             automation/provider-repair-portfolio-retry.json             automation/provider-repair-portfolio-losses.json
           if [ "${{ github.event_name }}" = "schedule" ]; then
             MODE=learn
@@ -1411,11 +1424,40 @@ jobs:
 
           EXPLICIT_SCOPE=0
           REMAINING_TARGETS=()
+          if [ -n "$TARGET_PROVIDER" ] && [ -n "${TARGET_PROVIDERS:-}" ]; then
+            echo "target_provider and target_providers are mutually exclusive" >&2
+            exit 2
+          fi
           if [ -n "$TARGET_PROVIDER" ]; then
             EXPLICIT_SCOPE=1
             normalized="$(printf '%s' "$TARGET_PROVIDER" | tr '[:upper:]_' '[:lower:]-' | xargs)"
             if [ -z "${FORCE_WINNER_SET[$normalized]+x}" ]; then
               REMAINING_TARGETS+=("$normalized")
+            fi
+          elif [ -n "${TARGET_PROVIDERS:-}" ]; then
+            EXPLICIT_SCOPE=1
+            mapfile -t DISPATCH_TARGETS < <(python - "$TARGET_PROVIDERS" <<'PY'
+          import sys
+          seen=set()
+          for raw in str(sys.argv[1] or "").split(","):
+              value=raw.strip().casefold().replace("_","-")
+              if value and value not in seen:
+                  seen.add(value); print(value)
+          PY
+            )
+            for provider in "${DISPATCH_TARGETS[@]}"; do
+              if [ -z "${FORCE_WINNER_SET[$provider]+x}" ]; then
+                REMAINING_TARGETS+=("$provider")
+              fi
+            done
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "$MODE" = "repair" ] && [ -s "$RESUME_REPORT" ]; then
+            mapfile -t RESUME_TARGETS < <(
+              python scripts/select_provider_repair_resume_scope.py                 --status automation/provider-census-status.json                 --report "$RESUME_REPORT"                 --format lines
+            )
+            if [ "${#RESUME_TARGETS[@]}" -gt 0 ]; then
+              EXPLICIT_SCOPE=1
+              REMAINING_TARGETS+=("${RESUME_TARGETS[@]}")
+              echo "FIELD_CANONICAL_REPAIR_RESUME_SCOPE providers=${#RESUME_TARGETS[@]} ids=$(IFS=,; echo "${RESUME_TARGETS[*]}")"
             fi
           elif [ "${{ github.event_name }}" = "push" ]; then
             mapfile -t PUSH_TARGETS < <(python - <<'PY'
@@ -1972,14 +2014,18 @@ jobs:
               fi
             fi
 
-            read -r resume remaining processed unvisited < <(python - "$tmp/provider-brain-repair-latest.json" <<'PY'
+            read -r resume remaining processed unvisited unvisited_csv < <(python - "$tmp/provider-brain-repair-latest.json" <<'PY'
           import json,sys
           data=json.load(open(sys.argv[1],encoding='utf-8'))
           resume='1' if data.get('resumeRecommended') is True else '0'
           remaining=len(data.get('remainingProviders') or [])
           processed=int(data.get('processedProviderCount') or 0)
-          unvisited=len(data.get('unvisitedProviders') or [])
-          print(resume,remaining,processed,unvisited)
+          values=[]; seen=set()
+          for raw in data.get('unvisitedProviders') or []:
+              value=str(raw or '').strip().casefold().replace('_','-')
+              if value and value not in seen:
+                  seen.add(value); values.append(value)
+          print(resume,remaining,processed,len(values),','.join(values) or '-')
           PY
             )
             if [ "$resume" = "1" ] && [ "$remaining" -gt 0 ] && [ "$unvisited" -gt 0 ]; then
@@ -1987,11 +2033,13 @@ jobs:
                 echo "FIELD_PROVIDER_BRAIN_FORCE_UNVISITED remaining=$remaining processed=$processed unvisited=$unvisited auto_resume=false reason=bounded-force-run"
               else
                 echo "FIELD_PROVIDER_BRAIN_RESUME remaining=$remaining processed=$processed unvisited=$unvisited target=provider-recognition-repair-v6"
+                test "${unvisited_csv:-"-"}" != "-" || { echo "resume requested without explicit unvisited provider list" >&2; exit 1; }
                 gh workflow run provider-recognition-repair-v6.yml \
                   --repo "$GITHUB_REPOSITORY" \
                   --ref main \
-                  -f mode=repair
-                echo "FIELD_PROVIDER_BRAIN_RESUME_MODE mode=repair force_requested=false"
+                  -f mode=repair \
+                  -f target_providers="$unvisited_csv"
+                echo "FIELD_PROVIDER_BRAIN_RESUME_MODE mode=repair force_requested=false targets=$unvisited_csv"
               fi
             elif [ "$resume" = "1" ] && [ "$remaining" -gt 0 ]; then
               echo "FIELD_PROVIDER_BRAIN_RESUME_SKIPPED reason=no-unvisited-provider remaining=$remaining processed=$processed unvisited=$unvisited"

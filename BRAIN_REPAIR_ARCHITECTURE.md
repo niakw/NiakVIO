@@ -1,3 +1,7 @@
+## 2026-11-27 — Reprise Repair déterministe par cohorte non visitée
+
+Un épuisement de budget peut produire `processedProviders` et `unvisitedProviders`. La continuation n'est valide que si le rapport est marqué resumable, si le dernier Repair du census porte le même `sourceCensusRunId`, la même cohorte sélectionnée et un vrai `timeBudgetExhausted`. Le run suivant reçoit alors les providers non visités encore présents dans la repairQueue comme scope explicite unique. Aucun worker concurrent ni fusion de mémoire concurrente : la continuation reste séquentielle.
+
 ## 2026-11-27 — Learning multi-step non-publishable exploration
 
 Learning may retain an intermediate sandbox improvement across a bounded three-round attempt by setting the Deep-loop chain flag, but this does **not** set the production planner exploration bit: `brain_repair_runtime._exploration_chain_enabled()` remains false whenever planner mode is `learning`. Provider proposals still require durable promotion eligibility, positive content identity and at least one playable stream. This closes the one-round throwaway loop without granting publication/FORCE authority.
