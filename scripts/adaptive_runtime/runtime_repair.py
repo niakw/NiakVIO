@@ -2745,7 +2745,7 @@ def _apply_inline_token_resolver_contract(
         return parent_data, []
     return patched.encode("utf-8"), [{
         "type": "patch_profile",
-        "profile": "catalogue_inline_token_resolver_v2",
+        "profile": "inline_token_resolver_contract",
         "phase": "runtime",
         "revision": 2,
         "scope": "generic_inline_opaque_token_resolver",
