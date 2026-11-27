@@ -1,3 +1,10 @@
+## 2026-11-27 — V74 : deux fingerprints chain-terminal exécutés, troisième essai demandé
+
+- Learning V73 `45939063038`, source `ab4e0560`, Brain `ffa619b0144a0af36b9d6f1cb76b27e77c3ef412`, est vert. Pré-route aligné : `advisor_memory_sources=1`, `advisor_only=true`, `routing_modes={deterministic_advisor:1}`, `llm_needed=false`; téléchargement/modèle Qwen correctement skipped avant le seuil.
+- Le planner choisit un nouveau fingerprint `9ebbb0c39146df58c94988c2e0876ff7fcc2d4b08bda2f9afe7f6a2650c80d20`, différent de `c1c5bdb3...` et `388b8e...`; aucun fingerprint connu n'est filtré après coup (`dropped_failed_fingerprints=0`).
+- Exécution réelle : `chain_terminal_extractor_v1` et `adaptive_runtime_recovery` exécutent `9ebbb0c3...`, variant 4 / génération 3. Ils produisent encore **1 stream**, mais `playable_before=0`, `playable_after=0`; garde `safety_gate:no_playable_proof`, `accepted_repairs=0`, `provider_proposals=0`, `candidateCount=0`, phase ledger 2.
+- La branche `brain-learning/proposals`, blob `c54447d05507da77f92939e9bfc1a7a0ba3035cc`, contient `c1c5bdb3...` et `9ebbb0c3...` avec `executionObserved=true` pour `chain_terminal_extractor_v1`. Compteur exact de cette famille : **2/3** fingerprints exécutés/rejetés. `5a773898...` reste non exécuté et ne compte pas.
+- Brain `d705de3daba4b59fc7990618e819276e87df7191` expose aussi `advisor_memory_sources` dans le résumé planner ; CI Brain `45939513066` verte. V74 demande le troisième essai déterministe, sans abaisser le seuil. **Toujours 0 nouvelle réparation provider certifiée.**
 ## 2026-11-27 — V73 : V72 exécute un second fingerprint et le pré-route est aligné
 
 - Brain-LLM `96c4b35ac041fb18e8dcaf524e664056c2545b2d` : CI 45938438257 verte, **603 tests**, dont les deux nouveaux tests cross-day ; audit confidentialité public OK.

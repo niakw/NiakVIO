@@ -1,3 +1,8 @@
+## 2026-11-27 — Seuil de causalité Primewire : 2/3
+
+Pour `chain_terminal_extractor_v1`, seules les hypothèses réellement exécutées avec fingerprint comptent : `c1c5bdb3...` (g2) et `9ebbb0c3...` (g3). Les deux ont produit un stream non jouable et ont été rejetées. Le troisième fingerprint doit être exécuté avant que l'escalade Qwen soit autorisée. Une guidance synthétisée mais non exécutée, comme `5a773898...`, ne débite pas ce budget.
+
+Pré-route et planner lisent désormais la même mémoire cross-day en `advisor_only`; leurs résumés exposent le nombre de sources mémoire advisor pour preuve.
 ## 2026-11-27 — Pré-route et planner partagent la même dette
 
 Le pré-route qui décide de démarrer Qwen et le planner advisor-only qui choisit l'expérience doivent consommer la même mémoire cross-day et le même mode `advisor_only`. À partir de Brain `ffa619b0`, les deux CLI acceptent la mémoire advisor supplémentaire ; NiakVIO leur transmet `brain-learning-input/previous.json`.
