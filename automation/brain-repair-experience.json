@@ -1186,7 +1186,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "ROUTE PROVEN",
+      "status": "HARNESS MISMATCH",
       "strategy": "mixed_embed_resolver"
     },
     "7movies": {
@@ -2949,7 +2949,7 @@
     "anisama": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=none"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -2976,7 +2976,7 @@
         "/?s={query}",
         "/recherche?q={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "PROVIDER NETWORK BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "arrowtv": {
@@ -4500,7 +4500,7 @@
     "film-a-revoir": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=none"
+        "movie=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -4525,7 +4525,7 @@
       "routeTemplates": [
         "/search?q={query}"
       ],
-      "status": "HARNESS MISMATCH",
+      "status": "CHAIN REACHED",
       "strategy": "mixed_embed_resolver"
     },
     "flemmix": {
@@ -4881,7 +4881,7 @@
         "/?s={query}",
         "/?q={query}"
       ],
-      "status": "NO PROOF",
+      "status": "HARNESS MISMATCH",
       "strategy": "mixed_embed_resolver"
     },
     "french-manga": {
@@ -7022,7 +7022,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "PROVIDER JS BROKEN",
+      "status": "CHAIN REACHED",
       "strategy": "mixed_embed_resolver"
     },
     "movy": {
@@ -9226,7 +9226,7 @@
     "sekai": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -9424,7 +9424,7 @@
         "/recherche?q={query}",
         "/recherche?query={query}"
       ],
-      "status": "ROUTE PROVEN",
+      "status": "HARNESS MISMATCH",
       "strategy": "mixed_embed_resolver"
     },
     "skstream": {
@@ -11980,8 +11980,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "45917906435",
-  "sourceSha": "895f1872b267413d89fcb1ba18574bc5df5bfda3",
+  "sourceRunId": "45934351459",
+  "sourceSha": "159a0d1c3c2632db3bd30761262f117e4da27fdb",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -12005,12 +12005,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "search",
           "supportRatio": 0.3333
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "other",
           "supportRatio": 0.3333
         }
       ]
@@ -12045,7 +12045,7 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "episode",
+          "role": "other",
           "supportRatio": 1.0
         },
         {
@@ -12055,7 +12055,7 @@
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "episode",
           "supportRatio": 1.0
         }
       ]
@@ -12071,17 +12071,17 @@
       "routeFamilies": [
         {
           "providerSupport": 2,
-          "role": "episode",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 2,
           "role": "search",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 2,
           "role": "detail",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 2,
+          "role": "episode",
           "supportRatio": 1.0
         },
         {
