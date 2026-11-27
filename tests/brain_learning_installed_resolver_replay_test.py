@@ -31,8 +31,8 @@ policy={"production":{
 },"skillMaturity":{}}
 candidate={"canonical_id":"resolver-representative","censusPrior":{"status":"CHAIN REACHED","dominantIssue":"provider_network_zero_result","evidenceDepth":["anime=chain_reached"]},"metadata":{"supportedTypes":["anime"]}}
 result={"status":"no_streams","evidence":{"streams_playable":0,"streams_returned":0},"tests":[{"fixture":{"mediaType":"anime","category":"anime","title":"Synthetic"},"failure_class":"content_lookup_completed_no_streams","status":"no_streams","network_observations":[],"streams_playable":0,"stream_count":0}]}
-def plan(mode="learning",profile="",failure="",negative_memory=None):
- payload={"mode":mode,"explorationChain":True,"forcePreferredStrategy":"","learningPreferredStrategy":profile,"learningPreferredFailureClass":failure,"policy":policy,"learnedSkills":{},"negativeMemory":list(negative_memory or []),"items":[{"key":"published:resolver-representative","candidate":candidate,"result":result,"state":{}}]}
+def plan(mode="learning",profile="",failure="",negative_memory=None,causal_failure=""):
+ payload={"mode":mode,"explorationChain":True,"forcePreferredStrategy":"","learningPreferredStrategy":profile,"learningPreferredFailureClass":failure,"learningCausalFailureClass":causal_failure,"policy":policy,"learnedSkills":{},"negativeMemory":list(negative_memory or []),"items":[{"key":"published:resolver-representative","candidate":candidate,"result":result,"state":{}}]}
  cp=subprocess.run(["node",str(PLANNER)],cwd=ROOT,input=json.dumps(payload),capture_output=True,text=True,check=True,timeout=20)
  return next(iter(json.loads(cp.stdout)["plans"].values()))
 selected=plan(profile="catalogue_inline_token_resolver_v2",failure="chain_terminal_gap")
@@ -69,11 +69,20 @@ assert after_negative["learningPreferredSelected"] is False,after_negative
 assert after_negative["postExhaustionStrategyProfile"]!="catalogue_inline_token_resolver_v2",after_negative
 assert "catalogue_inline_token_resolver_v2" not in after_negative["allowedProfiles"],after_negative
 
+player_frontier=plan(causal_failure="media_extraction_gap")
+assert player_frontier["failureClass"]=="media_extraction_gap",player_frontier
+assert player_frontier["learningCausalFailureRequested"]=="media_extraction_gap",player_frontier
+assert player_frontier["learningCausalFailureApplied"] is True,player_frontier
+assert player_frontier["learningPreferredRequested"]=="",player_frontier
+
 wrong=plan(profile="catalogue_inline_token_resolver_v2",failure="search_gap")
 assert wrong["learningPreferredSelected"] is False,wrong
 assert "catalogue_inline_token_resolver_v2" not in wrong["allowedProfiles"],wrong
 prod=plan(mode="repair",profile="catalogue_inline_token_resolver_v2",failure="chain_terminal_gap")
 assert prod["learningPreferredSelected"] is False,prod
 assert prod["learningPreferredRequested"]=="",prod
+prod_causal=plan(mode="repair",causal_failure="media_extraction_gap")
+assert prod_causal["learningCausalFailureRequested"]=="",prod_causal
+assert prod_causal["learningCausalFailureApplied"] is False,prod_causal
 assert "catalogue_inline_token_resolver_v2" not in prod["allowedProfiles"],prod
 print("Learning installed resolver replay contract passed")
