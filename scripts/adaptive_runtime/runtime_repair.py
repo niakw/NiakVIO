@@ -2211,6 +2211,12 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             current_request_recipes, provider_request_recipes, positive_request_recipes, limit=40
         )
         second_order_role_preferences = ["player", "source", "api", "episode", "detail", "other"]
+        # media_extraction_gap is downstream of an observed player target. Keep
+        # the source-family resolver capability in the same candidate so the
+        # request-contract miner runs on the player page that established this
+        # frontier instead of silently falling back to the published parent path.
+        if experiment_failure == "media_extraction_gap":
+            inline_token_resolver_contract = "same-origin-api-lien-j-l-v1"
     elif new_strategy_id == "provider_session_bootstrap_replay_v1":
         if experiment_failure == "media_extraction_gap":
             # Compose the already-proven scripted request-contract miner with
@@ -2227,6 +2233,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
                 current_request_recipes, provider_request_recipes, positive_request_recipes, limit=40
             )
             second_order_role_preferences = ["player", "source", "api", "episode", "detail", "other"]
+            inline_token_resolver_contract = "same-origin-api-lien-j-l-v1"
         else:
             search_paths = _unique_routes(learned_search, configured_search, limit=12)
             direct_paths = _unique_routes(learned_direct, configured_direct, limit=24)
@@ -2818,8 +2825,18 @@ def _apply_adaptive(
             )
     source_text = parent_data.decode("utf-8", errors="strict")
     resolver_contract = str(options.get("inline_token_resolver_contract") or "")
+    resolver_records: list[dict[str, Any]] = []
+    working_data = parent_data
     if resolver_contract:
-        return _apply_inline_token_resolver_contract(parent_data, resolver_contract)
+        working_data, resolver_records = _apply_inline_token_resolver_contract(
+            parent_data, resolver_contract
+        )
+        # The resolver profile itself remains a bounded resolver-only mutation.
+        # Downstream media-extraction profiles, however, must preserve this
+        # upstream capability and continue compiling their own runtime on top.
+        if expected == "catalogue_inline_token_resolver_v2":
+            return working_data, resolver_records
+        source_text = working_data.decode("utf-8", errors="strict")
     native_source = _strip_generated_adaptive_wrapper(source_text)
     options = dict(options)
     peers = list(options.get("endpoint_origins") or [])
@@ -2836,7 +2853,7 @@ def _apply_adaptive(
     patched = module.apply(source_text, options=options).encode("utf-8")
     if patched == parent_data:
         return parent_data, []
-    return patched, [{
+    adaptive_record = {
         "type": "patch_profile",
         "profile": profile_name,
         "strategy": expected or "adaptive_runtime_recovery",
@@ -2844,7 +2861,8 @@ def _apply_adaptive(
         "phase": "runtime",
         "revision": 5,
         "options": options,
-    }]
+    }
+    return patched, [*resolver_records, adaptive_record]
 
 
 def _apply_safe_structured_parse(parent_data: bytes) -> tuple[bytes, list[dict[str, Any]]]:
