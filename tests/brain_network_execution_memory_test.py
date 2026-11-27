@@ -177,7 +177,7 @@ assert queue.diagnostic_network_backfill_entry(
     summary,
 ) is None
 
-enriched = queue.merge_phase_learning_state(historical, [backfill])
+enriched = queue.apply_diagnostic_network_backfill(historical, backfill)
 enriched_row = enriched["experimentMemory"]["entries"][0]
 assert enriched_row["attempts"] == 7
 assert enriched_row["failures"] == 3
