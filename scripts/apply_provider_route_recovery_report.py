@@ -36,6 +36,31 @@ def provider_rows_for_apply(report: dict[str, Any]) -> list[dict[str, Any]]:
     return [row for row in rows if not is_catalogue_presence_only(row)]
 
 
+def apply_recovery_preserving_presence(
+    report: dict[str, Any],
+    *,
+    apply_fn=recovery.apply_recovery,
+) -> dict[str, Any]:
+    """Apply executable route rows while preserving presence-only provider DATA.
+
+    The merged report must retain full catalogue cardinality for scope validation,
+    but rows whose sole authority is current catalogue membership cannot be fed
+    to the recovery mutator. Otherwise an empty historical placeholder can
+    accidentally clear or rewrite a provider's existing runtime plan.
+    """
+    rows = [row for row in report.get("providers") or [] if isinstance(row, dict)]
+    applicable = provider_rows_for_apply(report)
+    filtered = dict(report)
+    filtered["providers"] = applicable
+    summary = apply_fn(filtered)
+    if not isinstance(summary, dict):
+        raise RuntimeError("route recovery apply summary must be an object")
+    result = dict(summary)
+    result["applicableProviders"] = len(applicable)
+    result["preservedUntouchedProviders"] = len(rows) - len(applicable)
+    return result
+
+
 def validate_report_scope(value: dict[str, object]) -> list[dict[str, object]]:
     expected_ids = current_scope.projection_active_provider_ids()
     expected_count = len(expected_ids)
@@ -81,7 +106,7 @@ def main() -> int:
         raise SystemExit(f"route recovery proof version={value.get('schemaVersion')}, expected={recovery.PROOF_VERSION}")
     providers = validate_report_scope(value)
 
-    summary = recovery.apply_recovery(value)
+    summary = apply_recovery_preserving_presence(value)
     # V19 cannot invent authority: it runs only after the exact HTTP recovery has
     # been applied and can bridge only a current live-positive request to an exact
     # observed/reviewed request shape.

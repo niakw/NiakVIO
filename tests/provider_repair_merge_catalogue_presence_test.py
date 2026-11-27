@@ -52,6 +52,18 @@ report = {"providers": [rows["historical-provider"], placeholder]}
 applicable = apply_report.provider_rows_for_apply(report)
 assert [row["providerId"] for row in applicable] == ["historical-provider"], applicable
 
+seen: dict[str, object] = {}
+def fake_apply(payload):
+    seen.update(payload)
+    return {"patchedProviders": 1, "provenRoutes": 1, "apiRecipes": 0}
+
+summary = apply_report.apply_recovery_preserving_presence(report, apply_fn=fake_apply)
+assert [row["providerId"] for row in seen["providers"]] == ["historical-provider"], seen
+assert summary["patchedProviders"] == 1
+assert summary["applicableProviders"] == 1
+assert summary["preservedUntouchedProviders"] == 1
+assert len(report["providers"]) == 2, "filtering must not rewrite the full-scope report"
+
 # A fresh targeted row replaces the placeholder and becomes applicable. This
 # verifies that the preservation state is temporary evidence debt, not a skip.
 fresh = {
@@ -69,6 +81,18 @@ assert [row["providerId"] for row in apply_report.provider_rows_for_apply({"prov
 tainted = dict(placeholder)
 tainted["routes"] = ["/invented"]
 assert not apply_report.is_catalogue_presence_only(tainted)
+
+tainted_report = {"providers": [tainted]}
+tainted_seen: dict[str, object] = {}
+tainted_summary = apply_report.apply_recovery_preserving_presence(
+    tainted_report,
+    apply_fn=lambda payload: (
+        tainted_seen.update(payload)
+        or {"patchedProviders": 1, "provenRoutes": 1, "apiRecipes": 0}
+    ),
+)
+assert [row["providerId"] for row in tainted_seen["providers"]] == ["newly-active-provider"]
+assert tainted_summary["preservedUntouchedProviders"] == 0
 
 print(
     "provider repair catalogue-presence merge passed: "
