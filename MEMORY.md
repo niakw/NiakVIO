@@ -1,3 +1,9 @@
+## 2026-11-27 — V79.2 : second contrat pré-V78 supprimé avant replay Anime-Sama
+
+- Learning [46004697482](https://github.com/niakw/NiakVIO/actions/runs/46004697482), source `986b7b90`, franchit le contrat cron corrigé puis échoue encore **avant provider** dans `learning_targeted_domain_refresh_contract_test.py:33`. Ce test comptait deux occurrences de l'ancien appel direct `refresh_stage_routes(stage, provider_deadline, provider_id)`, supprimé par le helper V78.
+- Le test ciblé exige désormais le helper `route_refresh_with_budget_scope`, son appel interne `refresh(stage, provider_deadline, provider_id)` et continue d'interdire le deadline global. Recherche dépôt : aucun autre contrat actif n'exige ce motif direct en dehors du test dynamique V78 qui vérifie déjà le helper. Aucun runtime/provider/gate média modifié.
+- Runs 46003347083 et 46004697482 : **0 réparation**, tous deux stoppés avant l'exécution Anime-Sama.
+
 ## 2026-11-27 — V79.1 : préflight Learning aligné sur le helper fair-share V78
 
 - Learning ciblé Anime-Sama [46003347083](https://github.com/niakw/NiakVIO/actions/runs/46003347083), source `ccfe6d21`, n'a pas atteint le provider. Il échoue dans `brain_cron_full_coverage_test.py:253` qui exige encore l'ancien appel direct `refresh_stage_routes(stage, provider_deadline, provider_id)`.
