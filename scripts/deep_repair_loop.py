@@ -59,6 +59,99 @@ def write_json(path: Path, value: Any) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+_NETWORK_STAGE_ORDER = {
+    "search": 1,
+    "content_lookup": 2,
+    "detail": 2,
+    "episode": 3,
+    "player": 4,
+    "media": 5,
+}
+
+
+def sanitized_network_execution_summary(result: dict[str, Any]) -> dict[str, Any]:
+    """Persist causal network progress without addresses, headers or bodies.
+
+    Health results already contain bounded network observations. Repair/Learning
+    only needs to know whether an executed hypothesis emitted provider requests,
+    whether they succeeded, and how deep they reached. Keeping only aggregate
+    enums/counters makes rejected experiments useful without retaining private
+    or signed network material.
+    """
+    tests = [
+        row for row in result.get("tests") or []
+        if isinstance(row, dict)
+    ]
+    observations = [
+        row
+        for test in tests
+        for row in test.get("network_observations") or []
+        if isinstance(row, dict) and row.get("infrastructure") is not True
+    ]
+
+    status_buckets = {"2xx": 0, "3xx": 0, "4xx": 0, "5xx": 0, "network": 0}
+    stages: set[str] = set()
+    methods: set[str] = set()
+    response_kinds: set[str] = set()
+    successful = 0
+    network_failures = 0
+
+    for row in observations:
+        raw_stage = str(row.get("stage") or "provider_fetch").strip().casefold()
+        stage = raw_stage if raw_stage in {*_NETWORK_STAGE_ORDER.keys(), "provider_fetch"} else "other"
+        stages.add(stage)
+
+        method = str(row.get("method") or "GET").strip().upper()
+        if method in {"GET", "POST", "HEAD"}:
+            methods.add(method)
+
+        status = row.get("status")
+        try:
+            code = int(status) if status is not None else 0
+        except (TypeError, ValueError):
+            code = 0
+        if 200 <= code < 300:
+            status_buckets["2xx"] += 1
+            successful += 1
+        elif 300 <= code < 400:
+            status_buckets["3xx"] += 1
+            successful += 1
+        elif 400 <= code < 500:
+            status_buckets["4xx"] += 1
+        elif code >= 500:
+            status_buckets["5xx"] += 1
+        else:
+            status_buckets["network"] += 1
+            network_failures += 1
+
+        shape = row.get("response_structure")
+        kind = str(shape.get("kind") or "").strip().casefold() if isinstance(shape, dict) else ""
+        if kind in {"html", "json", "javascript", "text", "binary", "media"}:
+            response_kinds.add(kind)
+
+    deepest = max(
+        stages,
+        key=lambda value: _NETWORK_STAGE_ORDER.get(value, 0),
+        default="none",
+    )
+    return {
+        "schemaVersion": 1,
+        "providerRequestCount": len(observations),
+        "successfulProviderRequestCount": successful,
+        "networkFailureCount": network_failures,
+        "statusBuckets": status_buckets,
+        "methods": sorted(methods),
+        "stages": sorted(stages, key=lambda value: (_NETWORK_STAGE_ORDER.get(value, 0), value)),
+        "deepestStage": deepest,
+        "responseKinds": sorted(response_kinds),
+        "proofAuthority": False,
+        "publicationAuthority": False,
+        "rawAddressRetained": False,
+        "headersRetained": False,
+        "bodyRetained": False,
+    }
+
+
 def durable_promotion_state(result: dict[str, Any], reason: str) -> tuple[bool, str]:
     """Keep quick-only endpoint improvements as Learning evidence, never mutations."""
     identity_ok, proof = automatic_repair_identity_gate(result)
@@ -391,6 +484,7 @@ def main() -> int:
                             "streams_playable_after": playable_stream_count(selected_result),
                             "runtime_errors_before": runtime_error_count(parent_result),
                             "runtime_errors_after": runtime_error_count(selected_result),
+                            "network_execution": sanitized_network_execution_summary(selected_result),
                         }
                     )
                     history.append(repair_event)
@@ -461,6 +555,7 @@ def main() -> int:
                             "streams_playable_after": playable_stream_count(selected_result),
                             "runtime_errors_before": runtime_error_count(parent_result),
                             "runtime_errors_after": runtime_error_count(selected_result),
+                            "network_execution": sanitized_network_execution_summary(selected_result),
                         }
                     )
                     exploration_history.append(exploration_event)
@@ -497,6 +592,7 @@ def main() -> int:
                             "streams_playable_after": playable_stream_count(selected_result),
                             "runtime_errors_before": runtime_error_count(parent_result),
                             "runtime_errors_after": runtime_error_count(selected_result),
+                            "network_execution": sanitized_network_execution_summary(selected_result),
                         }
                     )
                 else:
@@ -516,6 +612,7 @@ def main() -> int:
                             "malformed_requests": malformed_request_count(result_variant),
                             "error_summary": result_error_summary(result_variant),
                             "fixture_status_counts": (result_variant.get("evidence") or {}).get("fixture_status_counts") or {},
+                            "network_execution": sanitized_network_execution_summary(result_variant),
                         }
                     )
                     if (
