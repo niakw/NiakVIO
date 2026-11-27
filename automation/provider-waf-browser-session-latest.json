@@ -6,12 +6,46 @@
   "targetCount": 74,
   "providerFilter": [],
   "attemptsPerTarget": 2,
-  "clientProfileMatrixEnabled": false,
+  "clientProfileMatrixEnabled": true,
   "clientProfiles": [
     {
       "id": "github-default-browser",
       "transportApproximation": "GitHub-hosted Chromium",
       "userAgent": "browser-default"
+    },
+    {
+      "id": "nuvio-tv-ua-browser",
+      "transportApproximation": "GitHub-hosted Chromium with audited NuvioTV default UA only",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "nativeContract": {
+        "httpStack": "OkHttp",
+        "proxyPolicy": "Proxy.NO_PROXY",
+        "dnsPolicy": "IPv4FirstDns",
+        "redirects": "HTTP+SSL enabled"
+      }
+    },
+    {
+      "id": "nuvio-tv-okhttp-jvm",
+      "transportApproximation": "GitHub JVM OkHttp 4.12.0 with audited NuvioTV PluginRuntime policy",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "nativeContractApproximation": {
+        "httpStack": "OkHttp 4.12.0",
+        "proxyPolicy": "Proxy.NO_PROXY",
+        "dnsPolicy": "IPv4FirstDns",
+        "redirects": "HTTP+SSL enabled",
+        "tlsRuntime": "GitHub JVM, not Android device"
+      }
+    },
+    {
+      "id": "nuvio-tv-direct-http-approx",
+      "transportApproximation": "GitHub libcurl with IPv4, NO_PROXY, redirects and audited NuvioTV UA",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "nativeContractApproximation": {
+        "httpStack": "libcurl-not-OkHttp",
+        "proxyPolicy": "NO_PROXY",
+        "dnsPolicy": "IPv4 only",
+        "redirects": "enabled"
+      }
     }
   ],
   "limitations": [
@@ -4332,7 +4366,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "waf_persisted_cross_transport",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5987,
+      "durationMs": 5709,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -4372,16 +4406,16 @@
         ]
       },
       "transportReceipt": {
-        "sourceNiakvioSha": "0dc34413c393cea8c97249b8281e095585b53d4c",
+        "sourceNiakvioSha": "7edc47cd18c29203bfccb555a1b9894f970330bf",
         "providerBundleSha256": "7dbdeb16e2cdb8f46e0e351849e3e731ec08c3dc84c3026a0e7e3de771034a89",
-        "runId": "46057677304",
+        "runId": "46060877781",
         "proofAuthority": false,
         "publicationAuthority": false
       },
       "residentialReceipt": {
-        "sourceNiakvioSha": "0dc34413c393cea8c97249b8281e095585b53d4c",
+        "sourceNiakvioSha": "7edc47cd18c29203bfccb555a1b9894f970330bf",
         "providerBundleSha256": "7dbdeb16e2cdb8f46e0e351849e3e731ec08c3dc84c3026a0e7e3de771034a89",
-        "runId": "46057677304",
+        "runId": "46060877781",
         "proofAuthority": false,
         "publicationAuthority": false
       }
@@ -10698,9 +10732,9 @@
         "contradictions": 1,
         "identitySafe": false,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "0dc34413c393cea8c97249b8281e095585b53d4c",
+          "sourceNiakvioSha": "7edc47cd18c29203bfccb555a1b9894f970330bf",
           "providerBundleSha256": "7dbdeb16e2cdb8f46e0e351849e3e731ec08c3dc84c3026a0e7e3de771034a89",
-          "runId": "46057677304",
+          "runId": "46060877781",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -11623,42 +11657,33 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": false,
-      "providerCount": 0,
+      "available": true,
+      "providerCount": 1,
       "refreshedProviders": [
-        "1jour1film0626",
-        "aniflix-uno",
-        "animejlprovider",
-        "animeonsen",
-        "animesalt",
-        "animesultra",
-        "arrowtv",
-        "chillflix",
-        "cinegram",
-        "cinetimes"
+        "french-anime"
       ],
-      "replayedProviders": [],
-      "rawProviders": [],
-      "playableProviders": [],
+      "replayedProviders": [
+        "french-anime"
+      ],
+      "rawProviders": [
+        "french-anime"
+      ],
+      "playableProviders": [
+        "french-anime"
+      ],
       "verifiedProviders": [],
-      "sourceNiakvioSha": "",
-      "runId": "",
+      "byteMatchedProviders": [
+        "french-anime"
+      ],
+      "sourceNiakvioSha": "7edc47cd18c29203bfccb555a1b9894f970330bf",
+      "runId": "46060877781",
       "proofAuthority": false,
       "publicationAuthority": false
     },
     "providerBundleDigestAuthority": "executed-global-vf-published-bytes"
   },
   "lastRefreshProviderFilter": [
-    "1jour1film0626",
-    "aniflix-uno",
-    "animejlprovider",
-    "animeonsen",
-    "animesalt",
-    "animesultra",
-    "arrowtv",
-    "chillflix",
-    "cinegram",
-    "cinetimes"
+    "french-anime"
   ],
   "residentialExitNodeLastAttempt": {
     "enabled": true,
@@ -11674,22 +11699,22 @@
     }
   },
   "freshRunReceipt": {
-    "sourceNiakvioSha": "0dc34413c393cea8c97249b8281e095585b53d4c",
-    "runId": "46057677304",
+    "sourceNiakvioSha": "7edc47cd18c29203bfccb555a1b9894f970330bf",
+    "runId": "46060877781",
     "providerCount": 1,
     "proofAuthority": false,
     "publicationAuthority": false
   },
-  "currentRefreshProviderCount": 10,
-  "currentRefreshRowCount": 16,
+  "currentRefreshProviderCount": 1,
+  "currentRefreshRowCount": 1,
   "currentRefreshCounts": {
-    "browser_challenge_persisted": 13,
-    "browser_timeout": 3
+    "browser_challenge_persisted": 1
   },
-  "historicalRetainedRowCount": 58,
+  "historicalRetainedRowCount": 73,
   "historicalRetainedCounts": {
-    "browser_challenge_persisted": 17,
+    "browser_challenge_persisted": 29,
     "browser_content_reached": 40,
-    "browser_inconclusive": 1
+    "browser_inconclusive": 1,
+    "browser_timeout": 3
   }
 }

@@ -1783,7 +1783,11 @@
       "brainCheckRequired": true,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": false
+      "testedThisRun": false,
+      "residentialProviderReplayClass": "playable-unverified",
+      "residentialProviderReplayEvidence": [
+        "anime: status=wrong_content, stage=provider_returned_wrong_content, raw=1, playable=1, verified=0, identitySafe=false"
+      ]
     },
     {
       "provider": "french-manga",
@@ -5618,8 +5622,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "46060142494-sharded-waf",
-  "harnessEvidenceSha": "13244d3a18cc284bd26d015ea129ea726e2309f6",
+  "harnessEvidenceRunId": "46060877781-waf-transport",
+  "harnessEvidenceSha": "7edc47cd18c29203bfccb555a1b9894f970330bf",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
@@ -6850,9 +6854,9 @@
         "contradictions": 1,
         "identitySafe": false,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "0dc34413c393cea8c97249b8281e095585b53d4c",
+          "sourceNiakvioSha": "7edc47cd18c29203bfccb555a1b9894f970330bf",
           "providerBundleSha256": "7dbdeb16e2cdb8f46e0e351849e3e731ec08c3dc84c3026a0e7e3de771034a89",
-          "runId": "46057677304",
+          "runId": "46060877781",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7775,26 +7779,26 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": false,
-      "providerCount": 0,
+      "available": true,
+      "providerCount": 1,
       "refreshedProviders": [
-        "1jour1film0626",
-        "aniflix-uno",
-        "animejlprovider",
-        "animeonsen",
-        "animesalt",
-        "animesultra",
-        "arrowtv",
-        "chillflix",
-        "cinegram",
-        "cinetimes"
+        "french-anime"
       ],
-      "replayedProviders": [],
-      "rawProviders": [],
-      "playableProviders": [],
+      "replayedProviders": [
+        "french-anime"
+      ],
+      "rawProviders": [
+        "french-anime"
+      ],
+      "playableProviders": [
+        "french-anime"
+      ],
       "verifiedProviders": [],
-      "sourceNiakvioSha": "",
-      "runId": "",
+      "byteMatchedProviders": [
+        "french-anime"
+      ],
+      "sourceNiakvioSha": "7edc47cd18c29203bfccb555a1b9894f970330bf",
+      "runId": "46060877781",
       "proofAuthority": false,
       "publicationAuthority": false
     },
