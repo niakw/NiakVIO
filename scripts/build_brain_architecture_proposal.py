@@ -449,6 +449,46 @@ def build_strategy_blueprints(
     return blueprints
 
 
+
+def source_contract_deferred_state_matches(
+    queue_state: dict[str, Any],
+    queue_summary: dict[str, Any],
+    providers: list[str],
+    expected_status: str,
+) -> bool:
+    """Validate provider-local source frontier state, with legacy fallback.
+
+    New queue artifacts carry sourceContractProviderStates. Older historical
+    artifacts used one global sourceContractFamilyExecutableStatus and remain
+    readable for audit/replay only.
+    """
+    normalize = lambda value: str(value or "").strip().casefold().replace("_", "-")
+    state_map = queue_state.get("sourceContractProviderStates")
+    summary_map = queue_summary.get("sourceContractProviderStates")
+    if isinstance(state_map, dict) or isinstance(summary_map, dict):
+        if not isinstance(state_map, dict) or not isinstance(summary_map, dict):
+            return False
+        for provider in providers:
+            key = normalize(provider)
+            state_value = ""
+            summary_value = ""
+            for raw_key, raw_value in state_map.items():
+                if normalize(raw_key) == key:
+                    state_value = str(raw_value or "").strip()
+                    break
+            for raw_key, raw_value in summary_map.items():
+                if normalize(raw_key) == key:
+                    summary_value = str(raw_value or "").strip()
+                    break
+            if state_value != expected_status or summary_value != expected_status:
+                return False
+        return True
+    return (
+        queue_state.get("sourceContractFamilyExecutableStatus") == expected_status
+        and queue_summary.get("sourceContractFamilyExecutableStatus") == expected_status
+    )
+
+
 def source_contract_family_blueprint(
     queue_state: dict[str, Any],
     queue_summary: dict[str, Any],
@@ -467,10 +507,8 @@ def source_contract_family_blueprint(
         installed_source_family = source_family_parser_installed(SCRIPTS.parent)
     if installed_source_family:
         return None
-    if (queue_state.get("sourceContractFamilyExecutableStatus") != "new_family_required"
-            or queue_state.get("sourceContractFamilyEvidenceAuthority")
-            != "native-parent-and-independent-source-exact-current-js-diagnostic-only"
-            or queue_summary.get("sourceContractFamilyExecutableStatus") != "new_family_required"):
+    if (queue_state.get("sourceContractFamilyEvidenceAuthority")
+            != "native-parent-and-independent-source-exact-current-js-diagnostic-only"):
         return None
     providers = queue_state.get("sourceContractFamilyDeferredProviders")
     summary = queue_summary.get("sourceContractFamilyDeferredProviders")
@@ -480,6 +518,10 @@ def source_contract_family_blueprint(
             or queue_state["sourceContractFamilyDeferredProviderCount"] != len(providers)
             or type(queue_summary.get("sourceContractFamilyDeferredProviderCount")) is not int
             or queue_summary["sourceContractFamilyDeferredProviderCount"] != len(summary)):
+        return None
+    if not source_contract_deferred_state_matches(
+            queue_state, queue_summary, providers, "new_family_required"
+    ):
         return None
     normalized = [
         str(x or "").strip().casefold().replace("_", "-")
@@ -572,9 +614,7 @@ def source_contract_resolver_blueprint(
     if not installed_parser or installed_resolver:
         return None
     if (
-        queue_state.get("sourceContractFamilyExecutableStatus") != "resolver_family_required"
-        or queue_summary.get("sourceContractFamilyExecutableStatus") != "resolver_family_required"
-        or queue_state.get("sourceContractFamilyEvidenceAuthority")
+        queue_state.get("sourceContractFamilyEvidenceAuthority")
         != "native-parent-and-independent-source-exact-current-js-diagnostic-only"
         or queue_state.get("sourceContractResolverContract") != RESOLVER_CONTRACT
         or queue_summary.get("sourceContractResolverContract") != RESOLVER_CONTRACT
@@ -596,6 +636,10 @@ def source_contract_resolver_blueprint(
         or queue_state["sourceContractResolverProviderCount"] != len(resolver)
         or type(queue_summary.get("sourceContractResolverProviderCount")) is not int
         or queue_summary["sourceContractResolverProviderCount"] != len(resolver_summary)
+    ):
+        return None
+    if not source_contract_deferred_state_matches(
+            queue_state, queue_summary, providers, "resolver_family_required"
     ):
         return None
     normalize = lambda values: [
