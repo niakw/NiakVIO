@@ -127,19 +127,21 @@ assert state["productionWritesAllowed"] is False
 
 # One-shot diagnostic replay must enrich an old executed negative without
 # pretending it is a new experiment or changing its historical counters.
+historical_row = {
+    **row,
+    "attempts": 7,
+    "failures": 3,
+    "consecutiveFailures": 1,
+    "lastSeenAt": "2026-11-27T20:00:00+00:00",
+}
+historical_row.pop("networkExecutionSummary", None)
 historical = {
     "schemaVersion": 1,
     "publicationAllowed": False,
     "productionWritesAllowed": False,
     "experimentMemory": {
         "schemaVersion": 1,
-        "entries": [{
-            **row,
-            "attempts": 7,
-            "failures": 3,
-            "consecutiveFailures": 1,
-            "lastSeenAt": "2026-11-27T20:00:00+00:00",
-        }],
+        "entries": [historical_row],
     },
 }
 diagnostic_target = queue.missing_network_diagnostic_negative(
