@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "46074150637",
-  "sourceTriggerSha": "20d8e3bf641dcf5d0216f200cd617f4e30caa930",
+  "sourceRunId": "46075520333",
+  "sourceTriggerSha": "cd052845217d30a33b5aa2433c7a534c5714b84d",
   "unresolvedProviderCount": 67,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -13,13 +13,12 @@
     "stigstream"
   ],
   "lifecycleSuppressedDynamicProviders": [
-    "animevostfr"
+    "moviebox"
   ],
   "dynamicVariantCurrentObservedProviders": [
     "1jour1film0626",
     "4khdhub",
     "67movies",
-    "allanime",
     "allwish",
     "anidb",
     "aniflix-uno",
@@ -32,12 +31,10 @@
     "animesalt",
     "animesama-co",
     "animesultra",
-    "animevost-fr",
     "animevostfr",
     "anisama",
     "arrowtv",
     "boredflix",
-    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -63,15 +60,10 @@
     "fullanime",
     "hexa",
     "hianime",
-    "hindmoviez",
     "ihavenotv",
-    "internet-archive",
     "kehflix",
     "kidraz",
-    "kurage",
     "latestmovies",
-    "mallumv",
-    "meowtv",
     "moiflix",
     "moviebite",
     "moviebox",
@@ -79,10 +71,7 @@
     "moviesmod",
     "movish",
     "movix-fr",
-    "movy",
-    "mugiwarastream",
     "nakios",
-    "neko-sama",
     "neobam",
     "neonflix",
     "overlook",
@@ -97,13 +86,10 @@
     "rivestream-app",
     "rivestream-ru",
     "sadisflix",
-    "sekai",
     "showbox",
     "shuttletv",
     "skstream",
     "stigstream",
-    "streamzo",
-    "topcartoons",
     "uhdmovies",
     "videasy",
     "vidfast",
@@ -119,15 +105,13 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
-    "webflix",
     "wookafr",
-    "yflix",
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": false,
-  "groupCount": 8,
+  "dynamicVariantFallbackUsed": true,
+  "groupCount": 9,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -159,8 +143,7 @@
         "github-all-transports-challenged",
         "native-policy-inconclusive",
         "native-policy-reachable",
-        "residential-exit-browser-reachable",
-        "residential-exit-native-reachable"
+        "residential-exit-browser-reachable"
       ],
       "transportSignature": "not-applicable",
       "providerCount": 39,
@@ -278,26 +261,19 @@
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "chain",
-        "lookup",
-        "none"
+        "lookup"
       ],
       "dominantIssues": [
         "network_zero_result",
-        "provider_returned_streams, timeout",
-        "timeout",
-        "waf_challenge"
+        "timeout"
       ],
-      "harnessTransportClasses": [
-        "residential-exit-native-reachable"
-      ],
+      "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 7,
+      "providerCount": 5,
       "providers": [
         "67movies",
         "anime-sama",
-        "french-anime",
         "frenchstream",
-        "nakios",
         "sadisflix",
         "shuttletv"
       ],
@@ -305,9 +281,7 @@
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [
-        "nakios"
-      ],
+      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -327,16 +301,19 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 2,
+      "providerCount": 3,
       "providers": [
         "corsflix",
+        "nakios",
         "primewire"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [],
+      "dynamicVariantProviders": [
+        "nakios"
+      ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -361,6 +338,36 @@
         "french-manga"
       ],
       "action": "replay/rematerialize retained candidate knowledge against current bytes before new mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "not-applicable",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-native-reachable"
+      ],
+      "transportSignature": "residential-exit-native-reachable",
+      "providerCount": 1,
+      "providers": [
+        "french-anime"
+      ],
+      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
