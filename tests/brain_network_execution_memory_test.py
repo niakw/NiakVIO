@@ -77,9 +77,9 @@ poisoned = {
     "url": "https://must-not-survive.example/signed",
     "headers": {"cookie": "secret"},
     "body": "secret body",
-    "methods": ["POST", "DELETE"],
-    "stages": ["episode", "media", "credential_theft"],
-    "responseKinds": ["json", "private_blob"],
+    "methods": [*summary["methods"], "DELETE"],
+    "stages": [*summary["stages"], "credential_theft"],
+    "responseKinds": [*summary["responseKinds"], "private_blob"],
 }
 repair = {
     "attemptedProfiles": [profile],
