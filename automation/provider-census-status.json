@@ -1,6 +1,6 @@
 {
   "schemaVersion": 3,
-  "runId": "46043288388-post-repair-candidate",
+  "runId": "46043281887-post-repair-candidate",
   "triggerSha": "a77d0d1d65d27c3ed7d82f2870c2089ac4f36834",
   "providers": [
     {
@@ -1565,7 +1565,7 @@
       ],
       "harnessTransportClass": "residential-exit-native-reachable",
       "harnessTransportEvidence": [
-        "movie: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_http_error, desktop-okhttp=okhttp_jvm_http_error, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=unknown, residential-direct=direct_http_content_reached"
+        "movie: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_http_error, desktop-okhttp=okhttp_jvm_http_error, direct=direct_http_http_error, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=unknown, residential-direct=direct_http_content_reached"
       ],
       "authorityRepairEligible": false,
       "authorityAction": "REDISCOVER_SEARCH",
@@ -5631,10 +5631,10 @@
     "french-anime"
   ],
   "lastRepairAttempt": {
-    "runId": "46043288388",
-    "sourceCensusRunId": "46043288388-pre-repair",
-    "recordedAgainstCensusRunId": "46043288388-post-repair-candidate",
-    "mode": "repair",
+    "runId": "46043281887",
+    "sourceCensusRunId": "46043281887-pre-repair",
+    "recordedAgainstCensusRunId": "46043281887-post-repair-candidate",
+    "mode": "force",
     "selectedProviders": [
       "anime-sama"
     ],
@@ -5653,7 +5653,7 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "46043288388-repair-waf-final",
+  "harnessEvidenceRunId": "46043281887-repair-waf-final",
   "harnessEvidenceSha": "a77d0d1d65d27c3ed7d82f2870c2089ac4f36834",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
