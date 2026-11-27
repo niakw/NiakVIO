@@ -5641,21 +5641,32 @@
     "shuttletv"
   ],
   "lastRepairAttempt": {
-    "runId": "46011395212",
-    "sourceCensusRunId": "46006221258",
+    "runId": "46012852623",
+    "sourceCensusRunId": "46012852623-pre-repair",
+    "recordedAgainstCensusRunId": "46011890392",
+    "mode": "repair",
     "selectedProviders": [
+      "anikototv",
+      "anime-sama",
       "corsflix",
+      "french-manga",
+      "frenchstream",
+      "moiflix",
       "nakios",
-      "primewire"
+      "primewire",
+      "sadisflix"
     ],
     "candidateProviders": [],
     "validatedProviders": [],
+    "validationBasis": "gate-not-passed",
     "acceptedRepairCount": 0,
     "deferredToLearningSlotProviders": [
       "nakios"
     ],
-    "noProgressReason": "no_new_repair_experiment",
-    "timeBudgetExhausted": false,
+    "noProgressReason": "time_budget_exhausted_during_batch",
+    "timeBudgetExhausted": true,
+    "canonicalOutcome": "failure",
+    "candidateGateOutcome": "skipped",
     "publicationAllowed": false
   },
   "targetedTransportBlockedQueue": [],
