@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "46077018118",
+  "sourceRunId": "46076996338-post-repair-candidate",
   "sourceTriggerSha": "c9ea5cd669e2a80e8b2284c0dc892bcc27519175",
   "unresolvedProviderCount": 67,
   "dynamicVariantProviderCount": 6,
@@ -12,11 +12,14 @@
     "papadustream",
     "stigstream"
   ],
-  "lifecycleSuppressedDynamicProviders": [],
+  "lifecycleSuppressedDynamicProviders": [
+    "animevostfr"
+  ],
   "dynamicVariantCurrentObservedProviders": [
     "1jour1film0626",
     "4khdhub",
     "67movies",
+    "allanime",
     "allwish",
     "anidb",
     "aniflix-uno",
@@ -29,10 +32,12 @@
     "animesalt",
     "animesama-co",
     "animesultra",
+    "animevost-fr",
     "animevostfr",
     "anisama",
     "arrowtv",
     "boredflix",
+    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -58,10 +63,15 @@
     "fullanime",
     "hexa",
     "hianime",
+    "hindmoviez",
     "ihavenotv",
+    "internet-archive",
     "kehflix",
     "kidraz",
+    "kurage",
     "latestmovies",
+    "mallumv",
+    "meowtv",
     "moiflix",
     "moviebite",
     "moviebox",
@@ -69,7 +79,10 @@
     "moviesmod",
     "movish",
     "movix-fr",
+    "movy",
+    "mugiwarastream",
     "nakios",
+    "neko-sama",
     "neobam",
     "neonflix",
     "overlook",
@@ -84,10 +97,13 @@
     "rivestream-app",
     "rivestream-ru",
     "sadisflix",
+    "sekai",
     "showbox",
     "shuttletv",
     "skstream",
     "stigstream",
+    "streamzo",
+    "topcartoons",
     "uhdmovies",
     "videasy",
     "vidfast",
@@ -103,12 +119,14 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
+    "webflix",
     "wookafr",
+    "yflix",
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": true,
+  "dynamicVariantFallbackUsed": false,
   "groupCount": 9,
   "executionModel": {
     "default": "family/signature batch",
@@ -138,11 +156,9 @@
       ],
       "harnessTransportClasses": [
         "browser-profile-only",
-        "github-all-transports-challenged",
         "native-policy-inconclusive",
         "native-policy-reachable",
-        "residential-exit-browser-reachable",
-        "residential-exit-native-reachable"
+        "residential-exit-browser-reachable"
       ],
       "transportSignature": "not-applicable",
       "providerCount": 39,
@@ -218,7 +234,6 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "github-all-transports-challenged",
         "native-policy-reachable"
       ],
       "transportSignature": "not-applicable",
@@ -278,7 +293,7 @@
         "sadisflix",
         "shuttletv"
       ],
-      "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
+      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
