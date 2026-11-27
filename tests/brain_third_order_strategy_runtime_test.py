@@ -29,6 +29,7 @@ expected = {
     "identity_alias_search_traversal_v1",
     "runtime_response_salvage_v1",
     "document_request_contract_mining_v1",
+    "document_request_contract_mining_v2",
     "provider_session_bootstrap_replay_v1",
 }
 for profile in expected:
@@ -114,6 +115,15 @@ form_options = runtime._adaptive_runtime_options(
     config,
 )
 assert form_options and form_options["document_request_mining"] is True, form_options
+assert form_options["scripted_request_mining"] is False, form_options
+
+scripted_options = runtime._adaptive_runtime_options(
+    candidate("document_request_contract_mining_v2", "media_extraction_gap", "CHAIN REACHED"),
+    config,
+)
+assert scripted_options and scripted_options["document_request_mining"] is True, scripted_options
+assert scripted_options["scripted_request_mining"] is True, scripted_options
+assert scripted_options["new_strategy_id"] == "document_request_contract_mining_v2", scripted_options
 
 session_options = runtime._adaptive_runtime_options(
     candidate("provider_session_bootstrap_replay_v1", "provider_transport_gap", "PROVIDER NETWORK BLOCKED"),
