@@ -116,6 +116,58 @@ assert got["attempts"] == 6, got
 assert got["failures"] == 6, got
 assert merged2["concurrentMemoryMerge"]["deltaRows"] == 1
 
+# A telemetry-only delta must survive a concurrent publish without becoming
+# another experiment attempt.
+telemetry = {
+    "schemaVersion": 1,
+    "providerRequestCount": 57,
+    "successfulProviderRequestCount": 12,
+    "networkFailureCount": 3,
+    "statusBuckets": {"2xx": 12, "3xx": 0, "4xx": 42, "5xx": 0, "network": 3},
+    "methods": ["GET", "POST"],
+    "stages": ["episode"],
+    "deepestStage": "episode",
+    "responseKinds": ["html", "json"],
+    "proofAuthority": False,
+    "publicationAuthority": False,
+    "rawAddressRetained": False,
+    "headersRetained": False,
+    "bodyRetained": False,
+}
+base3_row = row("telemetry", attempts=7, failures=3)
+base3 = {
+    "experimentMemory": {
+        "schemaVersion": 1,
+        "entries": [base3_row],
+    }
+}
+previous3_row = row("telemetry", attempts=9, failures=5)
+previous3 = {
+    "generatedAt": "2026-11-19T00:03:00+00:00",
+    "experimentMemory": {
+        "schemaVersion": 1,
+        "entries": [previous3_row],
+    },
+}
+current3_row = row("telemetry", attempts=7, failures=3)
+current3_row["networkExecutionSummary"] = telemetry
+current3 = {
+    "generatedAt": "2026-11-19T00:02:30+00:00",
+    "publicationAllowed": False,
+    "productionWritesAllowed": False,
+    "experimentMemory": {
+        "schemaVersion": 1,
+        "entries": [current3_row],
+    },
+}
+merged3 = mod.merge_latest(base3, previous3, current3, max_entries=100)
+got3 = merged3["experimentMemory"]["entries"][0]
+assert got3["attempts"] == 9, got3
+assert got3["failures"] == 5, got3
+assert got3["networkExecutionSummary"] == telemetry, got3
+assert merged3["concurrentMemoryMerge"]["deltaRows"] == 0
+assert merged3["concurrentMemoryMerge"]["telemetryDeltaRows"] == 1
+
 # No delta means identity merge: historical counters cannot amplify.
 same = mod.merge_latest(base, previous, base, max_entries=100)
 same_by_provider = {
