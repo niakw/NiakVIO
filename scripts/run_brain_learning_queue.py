@@ -38,7 +38,7 @@ from brain_source_family_state import (
     source_family_resolver_installed,
 )
 
-PLAYER_REQUEST_CONTRACT_PROFILE = "document_request_contract_mining_v1"
+PLAYER_REQUEST_CONTRACT_PROFILE = "document_request_contract_mining_v2"
 PLAYER_REQUEST_CONTRACT_FAILURE = "media_extraction_gap"
 
 class BudgetExhausted(RuntimeError):
