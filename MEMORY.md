@@ -1,3 +1,8 @@
+## 2026-11-27 — V77.2 : scénarios de mémoire advisor séparés
+
+- Learning [45979142379](https://github.com/niakw/NiakVIO/actions/runs/45979142379) passe le nouveau contrat advisor-first puis échoue plus loin à une fixture de drift causal qui réutilisait la même `transport_memory`, déjà enrichie de trois fingerprints `search_contract_inference_v1`. Elle exigeait donc à tort `metaGapEscalated=true` pour un executor que le test précédent venait lui-même d'épuiser.
+- Le test de drift sibling utilise maintenant une copie qui conserve les négatifs codés mais retire uniquement les expériences `search_contract_inference_v1` du scénario précédent. Le test d'épuisement inter-label repart de cette même base puis ajoute explicitement ses trois fingerprints a/b/c. La politique 3-exécutions reste intacte. **0 réparation provider**.
+
 ## 2026-11-27 — V77.1 : second contrat historique aligné, sans assouplir les budgets
 
 - Learning [45978572983](https://github.com/niakw/NiakVIO/actions/runs/45978572983), source `5d194150`, s'arrête au préflight avant Qwen : `brain_llm_advisor_execution_test.py:863` exigeait encore que les stratégies post-exhaustion codées soient toutes exécutées avant le meta-gap advisor.

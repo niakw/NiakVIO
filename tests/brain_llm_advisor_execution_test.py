@@ -945,10 +945,17 @@ transport_family_guidance=[{
     "confidence":0.86,
     "experimentFingerprint":"8"*64,
 }]
+# Isolate the family-drift test from the three search-contract fingerprints
+# consumed by the advisor-first test above. Coded strategy negatives remain:
+# only the advisor executor budget is reset for this independent scenario.
+transport_coded_memory=[
+    row for row in transport_memory
+    if row.get("profile")!="search_contract_inference_v1"
+]
 transport_family_payload={
     **transport_base_payload,
     "llmGuidance":transport_family_guidance,
-    "negativeMemory":transport_memory,
+    "negativeMemory":transport_coded_memory,
 }
 transport_family_completed=subprocess.run(
     ["node",str(PLANNER)],
@@ -968,7 +975,7 @@ assert transport_family_plan["llmAdvisorSourceFailureClass"]=="transport_blocked
 # already consumed the same bounded causal-family budget. This is the Moviebox
 # loop: route_proven/search/transport labels drift, but three real
 # search_contract advisor executions exhaust that executor for route-terminal.
-transport_profile_exhausted_memory=list(transport_memory)
+transport_profile_exhausted_memory=list(transport_coded_memory)
 for index,(failure,fp) in enumerate((
     ("route_proven_gap","a"*64),
     ("search_gap","b"*64),
