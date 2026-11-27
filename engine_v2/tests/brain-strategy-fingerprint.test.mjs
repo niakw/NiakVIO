@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { profileRuntimeFingerprintMaterial as material } from "../src/strategy-fingerprint.mjs";
+import { profileRuntimeFingerprintMaterial as material, postExhaustionStrategyProfiles } from "../src/strategy-fingerprint.mjs";
 
 const source = [
   "prefix",
@@ -54,3 +54,26 @@ for (const existing of [
     `live ${existing} fingerprint changed because of unrelated sibling`);
 }
 console.log("Brain scoped implementation fingerprint contract passed");
+
+
+// The Learning persistence layer must never carry a hand-maintained copy of
+// installed Brain strategies. The Brain registry is authoritative, the adaptive
+// executor must contain every installed profile, and Learning derives the same
+// set at runtime.
+const brainRuntime = fs.readFileSync("scripts/brain_repair_runtime.py", "utf8");
+const adaptiveRuntime = fs.readFileSync("scripts/adaptive_runtime/runtime_repair.py", "utf8");
+const brainProfiles = postExhaustionStrategyProfiles(brainRuntime);
+const adaptiveProfiles = postExhaustionStrategyProfiles(adaptiveRuntime);
+assert(brainProfiles.size > 0, "Brain strategy registry must be readable");
+assert(brainProfiles.has("catalogue_inline_token_resolver_v2"),
+  "promoted resolver V2 missing from authoritative Brain registry");
+for (const profile of brainProfiles) {
+  assert(adaptiveProfiles.has(profile),
+    `adaptive runtime missing installed Brain strategy ${profile}`);
+}
+const learningLab = fs.readFileSync("engine_v2/scripts/learning-lab.mjs", "utf8");
+assert(learningLab.includes("postExhaustionStrategyProfiles("),
+  "Learning must derive installed strategies from the authoritative registry");
+assert(!learningLab.includes("const POST_EXHAUSTION_STRATEGY_PROFILES = new Set(["),
+  "Learning must not reintroduce a duplicated installed-strategy registry");
+console.log("Brain installed strategy registry synchronization contract passed");

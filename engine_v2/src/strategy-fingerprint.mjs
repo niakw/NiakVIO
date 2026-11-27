@@ -43,3 +43,23 @@ export function profileRuntimeFingerprintMaterial(source, profile) {
   }
   return `common:${common}\nprofile:${wanted}\nbranch:${selected.length ? selected.join("\n") : "missing"}`;
 }
+
+
+/**
+ * Read the installed post-exhaustion strategy registry from the Python Brain
+ * runtime. This is intentionally parser-only: the Python registry remains the
+ * authority, while Node consumers derive their view instead of duplicating it.
+ */
+export function postExhaustionStrategyProfiles(source) {
+  const raw = String(source || "").replace(/\r\n/g, "\n");
+  const marker = "POST_EXHAUSTION_STRATEGY_PROFILES = {";
+  const start = raw.indexOf(marker);
+  const end = start < 0 ? -1 : raw.indexOf("\n}", start);
+  if (start < 0 || end < 0) return new Set();
+  const block = raw.slice(start + marker.length, end);
+  const profiles = new Set();
+  for (const match of block.matchAll(/^\s*"([a-z][a-z0-9_]*_v[0-9]+)",\s*$/gm)) {
+    profiles.add(match[1]);
+  }
+  return profiles;
+}

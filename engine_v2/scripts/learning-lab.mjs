@@ -4,25 +4,14 @@ import path from 'node:path';
 import process from 'node:process';
 import { REPAIR_RECIPES } from '../src/repair-brain.mjs';
 import { retainBoundedBrainExperiments } from '../src/brain-negative-memory-retention.mjs';
+import { postExhaustionStrategyProfiles } from '../src/strategy-fingerprint.mjs';
 
-const POST_EXHAUSTION_STRATEGY_PROFILES = new Set([
-  'provider_positive_program_replay_v1',
-  'transport_request_differential_v1',
-  'route_transition_graph_v1',
-  'route_peer_transition_replay_v1',
-  'terminal_transition_graph_v1',
-  'terminal_request_program_inference_v1',
-  'candidate_divergence_trace_v1',
-  'candidate_request_program_replay_v1',
-  'player_protocol_family_replay_v1',
-  'media_response_shape_inference_v1',
-  'search_contract_inference_v1',
-  'search_response_route_binding_v1',
-  'identity_alias_search_traversal_v1',
-  'runtime_response_salvage_v1',
-  'document_request_contract_mining_v1',
-  'provider_session_bootstrap_replay_v1',
-]);
+const POST_EXHAUSTION_STRATEGY_PROFILES = postExhaustionStrategyProfiles(
+  fs.readFileSync(path.join(root, 'scripts/brain_repair_runtime.py'), 'utf8'),
+);
+if (POST_EXHAUSTION_STRATEGY_PROFILES.size === 0) {
+  throw new Error('Brain post-exhaustion strategy registry unavailable');
+}
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..');
 const args = process.argv.slice(2);
