@@ -573,6 +573,37 @@ def _learning_memory_capacity() -> int:
         return 1000
 
 
+def apply_diagnostic_network_backfill(
+    state: dict[str, Any],
+    backfill: dict[str, Any],
+) -> dict[str, Any]:
+    """Attach telemetry to one existing experiment without changing counters."""
+    output = copy.deepcopy(state) if isinstance(state, dict) else {}
+    output["publicationAllowed"] = False
+    output["productionWritesAllowed"] = False
+    memory = output.get("experimentMemory")
+    if not isinstance(memory, dict):
+        raise ValueError("diagnostic backfill requires existing experiment memory")
+    rows = memory.get("entries")
+    if not isinstance(rows, list):
+        raise ValueError("diagnostic backfill requires existing experiment entries")
+    key = _phase_experiment_key(backfill)
+    safe = sanitize_network_execution_summary(backfill.get("networkExecutionSummary"))
+    if "providerRequestCount" not in safe:
+        raise ValueError("diagnostic backfill requires sanitized network telemetry")
+    matched = 0
+    for row in rows:
+        if not isinstance(row, dict) or _phase_experiment_key(row) != key:
+            continue
+        row["networkExecutionSummary"] = copy.deepcopy(safe)
+        matched += 1
+    if matched != 1:
+        raise ValueError(
+            f"diagnostic backfill must match exactly one historical experiment, matched={matched}"
+        )
+    return output
+
+
 def merge_phase_learning_state(
     state: dict[str, Any],
     entries: list[dict[str, Any]],
@@ -2402,9 +2433,9 @@ def main() -> int:
                             )
                             if backfill is not None:
                                 phase_experiment_ledger.append(backfill)
-                                phase_learning_state = merge_phase_learning_state(
+                                phase_learning_state = apply_diagnostic_network_backfill(
                                     phase_learning_state,
-                                    [backfill],
+                                    backfill,
                                 )
                                 write_json(phase_learning_state_path, phase_learning_state)
                                 summary = backfill["networkExecutionSummary"]
