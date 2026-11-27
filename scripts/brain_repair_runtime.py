@@ -1566,6 +1566,19 @@ def wrap_create_repair_candidate(base_create: Callable[..., tuple[dict[str, Any]
         plan = PLANS.get(plan_key) or {}
         if str(plan.get("action") or "") != "probe-targeted-repair":
             return None, "brain_not_repairing"
+        allowed_profiles = {
+            str(value).strip()
+            for value in plan.get("allowedProfiles") or []
+            if str(value).strip()
+        }
+        if profile_name not in allowed_profiles:
+            return None, "brain_profile_contract_mismatch"
+        learning_preferred = str(plan.get("learningPreferredRequested") or "").strip().casefold()
+        if learning_preferred and (
+            plan.get("learningPreferredSelected") is not True
+            or str(profile_name).strip().casefold() != learning_preferred
+        ):
+            return None, "brain_learning_preferred_strategy_contract_mismatch"
         error = _budget_error(candidate, plan_key, plan)
         if error:
             return None, error

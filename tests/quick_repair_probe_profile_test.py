@@ -62,8 +62,8 @@ assert 'modes["deep"] = copy.deepcopy(quick)' not in source
 brain = module.brain
 brain.reset_runtime_state()
 brain.PLANS.update({
-    "source:one": {"action": "probe-targeted-repair", "signature": "same-signature", "failureClass": "search_gap", "providerId": "budget-provider"},
-    "source:two": {"action": "probe-targeted-repair", "signature": "same-signature", "failureClass": "search_gap", "providerId": "budget-provider"},
+    "source:one": {"action": "probe-targeted-repair", "signature": "same-signature", "failureClass": "search_gap", "providerId": "budget-provider", "allowedProfiles": ["adaptive_runtime_recovery"]},
+    "source:two": {"action": "probe-targeted-repair", "signature": "same-signature", "failureClass": "search_gap", "providerId": "budget-provider", "allowedProfiles": ["adaptive_runtime_recovery"]},
 })
 calls = []
 
@@ -88,6 +88,27 @@ budget = brain.runtime_state_snapshot()["budget-provider"]
 assert budget["mutationCount"] == 2
 assert budget["generatedBytes"] == 100
 assert budget["signatureCounts"]["same-signature"] == 2
+brain.reset_runtime_state()
+
+# Planner intent is executable authority. A lower layer must never substitute a
+# different profile after the Brain selected an installed strategy.
+brain.PLANS["source:contract"] = {
+    "action": "probe-targeted-repair",
+    "signature": "resolver-contract",
+    "failureClass": "chain_terminal_gap",
+    "providerId": "contract-provider",
+    "allowedProfiles": ["catalogue_inline_token_resolver_v2"],
+    "learningPreferredRequested": "catalogue_inline_token_resolver_v2",
+    "learningPreferredSelected": True,
+}
+contract_candidate = {"key": "source:contract", "canonical_id": "contract-provider", "bytes": 100}
+calls_before = len(calls)
+wrong, wrong_error = bounded_create(ROOT, contract_candidate, "adaptive_runtime_recovery", 1)
+assert wrong is None and wrong_error == "brain_profile_contract_mismatch"
+assert len(calls) == calls_before, "mismatched profile reached candidate generator"
+right, right_error = bounded_create(ROOT, contract_candidate, "catalogue_inline_token_resolver_v2", 1)
+assert right is not None and right_error is None
+assert calls[-1][1] == "catalogue_inline_token_resolver_v2"
 brain.reset_runtime_state()
 
 # The Python -> Node planner boundary must survive both Python-only numeric JSON
