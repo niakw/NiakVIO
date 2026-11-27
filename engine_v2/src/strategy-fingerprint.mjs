@@ -5,16 +5,16 @@
 export function profileRuntimeFingerprintMaterial(source, profile) {
   const original = String(source || "").replace(/\r\n/g, "\n");
   const wanted = String(profile || "").trim().toLowerCase();
-  const raw = wanted === "document_request_contract_mining_v2"
+  const keepsScriptedRequestComposition = new Set([
+    "document_request_contract_mining_v2",
+    "provider_session_bootstrap_replay_v1",
+  ]).has(wanted);
+  const raw = keepsScriptedRequestComposition
     ? original
     : original
       .replace(
-        '    document_request_mining = new_strategy_id in {"document_request_contract_mining_v1", "document_request_contract_mining_v2"} or llm_experiment.get("documentRequestMining") is True\n',
+        /    session_bootstrap_media_followup = \(\n        new_strategy_id == "provider_session_bootstrap_replay_v1"\n        and experiment_failure == "media_extraction_gap"\n    \)\n    document_request_mining = \(\n        new_strategy_id in \{"document_request_contract_mining_v1", "document_request_contract_mining_v2"\}\n        or session_bootstrap_media_followup\n        or llm_experiment\.get\("documentRequestMining"\) is True\n    \)\n    scripted_request_mining = \(\n        new_strategy_id == "document_request_contract_mining_v2"\n        or session_bootstrap_media_followup\n    \)\n/,
         '    document_request_mining = new_strategy_id == "document_request_contract_mining_v1" or llm_experiment.get("documentRequestMining") is True\n',
-      )
-      .replace(
-        /^    scripted_request_mining\s*=.*document_request_contract_mining_v2.*\n/m,
-        "",
       )
       .replace(
         /^        "scripted_request_mining":\s*scripted_request_mining,\n/m,
