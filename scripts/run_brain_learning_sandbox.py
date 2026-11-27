@@ -93,6 +93,39 @@ def _matches(row: dict[str, Any], *, provider_id: str, provider_version: str, si
     return int(row.get("successes") or 0) == 0
 
 
+def _negative_failure_count(
+    rows: list[dict[str, Any]],
+    *,
+    provider_id: str,
+    provider_version: str,
+    signature: str,
+    profile: str,
+    current_profile: str,
+    current_fingerprint: str,
+) -> int:
+    """Count only negatives that apply to the current executable implementation."""
+    trustworthy_current = bool(re.fullmatch(r"[0-9a-f]{64}", current_fingerprint))
+    values: list[int] = []
+    for row in rows:
+        if not _matches(
+            row,
+            provider_id=provider_id,
+            provider_version=provider_version,
+            signature=signature,
+            profile=profile,
+        ):
+            continue
+        if profile == current_profile and trustworthy_current:
+            remembered = str(row.get("strategyImplementationFingerprint") or "").strip().casefold()
+            # A valid different scoped fingerprint is historical evidence for
+            # older bytes, not a veto on the current implementation. Missing or
+            # malformed legacy provenance remains fail-closed.
+            if re.fullmatch(r"[0-9a-f]{64}", remembered) and remembered != current_fingerprint:
+                continue
+        values.append(int(row.get("consecutiveFailures") or row.get("failures") or 0))
+    return max(values or [0])
+
+
 def _safe_text(value: Any, limit: int) -> str:
     text = re.sub(r"https?://\S+", "<url>", str(value or ""))
     text = re.sub(
@@ -264,16 +297,18 @@ def main() -> int:
         signature = str(plan.get("signature") or plan.get("failureClass") or "unknown_failure")
         failure_class = str(plan.get("failureClass") or "unknown_failure")
         suppressed: set[str] = set()
+        current_profile = str(plan.get("postExhaustionStrategyProfile") or "").strip()
+        current_fingerprint = str(plan.get("strategyImplementationFingerprint") or "").strip().casefold()
 
         for profile in sorted(set(routine + broad)):
-            failures = max(
-                [int(row.get("consecutiveFailures") or row.get("failures") or 0) for row in negative if _matches(
-                    row,
-                    provider_id=provider_id,
-                    provider_version=provider_version,
-                    signature=signature,
-                    profile=profile,
-                )] or [0]
+            failures = _negative_failure_count(
+                negative,
+                provider_id=provider_id,
+                provider_version=provider_version,
+                signature=signature,
+                profile=profile,
+                current_profile=current_profile,
+                current_fingerprint=current_fingerprint,
             )
             if failures >= threshold:
                 suppressed.add(profile)
