@@ -252,7 +252,13 @@ def main()->int:
         key=(
             (scope,strategy,"harness:"+harness_class)
             if scope=="harness-compatibility"
-            else (scope,strategy,"runtime:"+runtime_family_key)
+            else (
+                scope,
+                strategy,
+                "runtime:"+runtime_family_key,
+                "issue:"+issue,
+                "depth:"+depth,
+            )
         )
         groups[key].append({
             "provider":pid,
@@ -275,6 +281,8 @@ def main()->int:
     for key,members in groups.items():
         scope,strategy=key[:2]
         signature_key = key[2] if len(key)>2 else ""
+        issue_signature_key = key[3] if len(key)>3 else ""
+        depth_signature_key = key[4] if len(key)>4 else ""
         transport_signature=(
             signature_key.split(":",1)[1]
             if signature_key.startswith("harness:")
@@ -283,6 +291,16 @@ def main()->int:
         runtime_family_signature=(
             signature_key.split(":",1)[1]
             if signature_key.startswith("runtime:")
+            else "not-applicable"
+        )
+        causal_issue_signature=(
+            issue_signature_key.split(":",1)[1]
+            if issue_signature_key.startswith("issue:")
+            else "not-applicable"
+        )
+        evidence_depth_signature=(
+            depth_signature_key.split(":",1)[1]
+            if depth_signature_key.startswith("depth:")
             else "not-applicable"
         )
         providers=sorted(m["provider"] for m in members)
@@ -302,6 +320,8 @@ def main()->int:
             "repairScope":scope,
             "runtimeFamilies":families,
             "runtimeFamilySignature":runtime_family_signature,
+            "causalIssueSignature":causal_issue_signature,
+            "evidenceDepthSignature":evidence_depth_signature,
             "capabilityStrategy":strategy,
             "evidenceDepths":depths,
             "dominantIssues":issues,
