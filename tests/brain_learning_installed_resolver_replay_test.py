@@ -31,8 +31,8 @@ policy={"production":{
 },"skillMaturity":{}}
 candidate={"canonical_id":"resolver-representative","censusPrior":{"status":"CHAIN REACHED","dominantIssue":"provider_network_zero_result","evidenceDepth":["anime=chain_reached"]},"metadata":{"supportedTypes":["anime"]}}
 result={"status":"no_streams","evidence":{"streams_playable":0,"streams_returned":0},"tests":[{"fixture":{"mediaType":"anime","category":"anime","title":"Synthetic"},"failure_class":"content_lookup_completed_no_streams","status":"no_streams","network_observations":[],"streams_playable":0,"stream_count":0}]}
-def plan(mode="learning",profile="",failure=""):
- payload={"mode":mode,"explorationChain":True,"forcePreferredStrategy":"","learningPreferredStrategy":profile,"learningPreferredFailureClass":failure,"policy":policy,"learnedSkills":{},"negativeMemory":[],"items":[{"key":"published:resolver-representative","candidate":candidate,"result":result,"state":{}}]}
+def plan(mode="learning",profile="",failure="",negative_memory=None):
+ payload={"mode":mode,"explorationChain":True,"forcePreferredStrategy":"","learningPreferredStrategy":profile,"learningPreferredFailureClass":failure,"policy":policy,"learnedSkills":{},"negativeMemory":list(negative_memory or []),"items":[{"key":"published:resolver-representative","candidate":candidate,"result":result,"state":{}}]}
  cp=subprocess.run(["node",str(PLANNER)],cwd=ROOT,input=json.dumps(payload),capture_output=True,text=True,check=True,timeout=20)
  return next(iter(json.loads(cp.stdout)["plans"].values()))
 selected=plan(profile="catalogue_inline_token_resolver_v2",failure="chain_terminal_gap")
@@ -43,6 +43,32 @@ assert selected["postExhaustionStrategyProfile"]=="catalogue_inline_token_resolv
 assert selected["allowedProfiles"]==["catalogue_inline_token_resolver_v2"],selected
 assert selected["action"]=="probe-targeted-repair" and selected["repairScope"]=="learning",selected
 assert selected["forcePreferredSelected"] is False,selected
+
+# Cross-run contract: once the installed resolver really produced bytes and was
+# rejected, the persisted negative memory must prevent it from being treated as
+# a fresh installed capability on the next Learning run. The planner may return
+# to a base experiment or rotate causally, but it must not select V2 again.
+executed_negative=[{
+ "providerId":"resolver-representative",
+ "failureClass":"",
+ "signature":"",
+ "profile":"catalogue_inline_token_resolver_v2",
+ "strategyImplementationFingerprint":"1"*64,
+ "experimentVariant":4,
+ "experimentGeneration":5,
+ "attempts":1,"successes":0,"failures":1,"consecutiveFailures":1,
+ "lastOutcome":"rejected","executionObserved":True,
+}]
+after_negative=plan(
+ profile="catalogue_inline_token_resolver_v2",
+ failure="chain_terminal_gap",
+ negative_memory=executed_negative,
+)
+assert after_negative["learningPreferredRequested"]=="catalogue_inline_token_resolver_v2",after_negative
+assert after_negative["learningPreferredSelected"] is False,after_negative
+assert after_negative["postExhaustionStrategyProfile"]!="catalogue_inline_token_resolver_v2",after_negative
+assert "catalogue_inline_token_resolver_v2" not in after_negative["allowedProfiles"],after_negative
+
 wrong=plan(profile="catalogue_inline_token_resolver_v2",failure="search_gap")
 assert wrong["learningPreferredSelected"] is False,wrong
 assert "catalogue_inline_token_resolver_v2" not in wrong["allowedProfiles"],wrong
