@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "46072430469",
+  "sourceRunId": "46072418453",
   "sourceTriggerSha": "b8f55e571c06bfac1f4405e6ae598346afc72a64",
   "unresolvedProviderCount": 67,
   "dynamicVariantProviderCount": 6,
@@ -268,12 +268,11 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 6,
+      "providerCount": 5,
       "providers": [
         "67movies",
         "anime-sama",
         "frenchstream",
-        "nakios",
         "sadisflix",
         "shuttletv"
       ],
@@ -281,9 +280,7 @@
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [
-        "nakios"
-      ],
+      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -303,16 +300,19 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 2,
+      "providerCount": 3,
       "providers": [
         "corsflix",
+        "nakios",
         "primewire"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [],
+      "dynamicVariantProviders": [
+        "nakios"
+      ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
