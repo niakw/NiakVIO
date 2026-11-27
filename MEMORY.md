@@ -1,3 +1,11 @@
+## 2026-11-27 — V89 : autorité Brain unique et frontier player consommant la dette resolver
+
+- Preuve d'intégration réelle 46054436980 sur NiakVIO 9df4ff5e + Brain 277735d6 : current_probe=46051901034, parent exact, target_shape=html_player et failure_class=media_extraction_gap. Cette preuve reste diagnostique : mutation/publication/playback=false.
+- Brain 277735d6 est validé par CI 46053873653 et sécurité 46053873630. NiakVIO 9fb8fd0f a déplacé atomiquement gitlink + automation/brain-pinned-source.json vers ce même SHA. Learning, Disabled Recovery, Hosted Repair et Canonical Repair consomment désormais scripts/resolve_validated_brain_pin.py ; Fast Repair refuse aussi une guidance externe dont brainLlmSha diffère du pin.
+- La machine d'état source ne s'arrête plus à resolver_installed_replay_required lorsqu'une preuve plus profonde existe. attested_source_player_target_frontier exige exact parent/bytes + resolver 200 + cible 2xx html_player + embed observé + aucun média direct ; le statut devient player_target_observed.
+- Conséquence : au frontier player, Learning ne transmet plus V2/chain_terminal_gap comme préférence. L'advisor Qwen redevient éligible sur media_extraction_gap au lieu d'être supprimé par une ancienne préférence one-shot.
+- La gate single-authority interdit aux workflows Repair/Learning opérationnels de reprendre un Brain main mobile ou un SHA historique de trigger comme autorité exécutable.
+- Learning player/media déclenché sur 8112f927 : run 46055172997. Réparation certifiée : 0 tant qu'il n'existe pas candidat généré/compilé/appliqué/rematérialisé puis média terminal identité correcte et lecture officielle NuvioTV.
 ## 2026-11-27 — V88 : resolver fermé, frontier déplacé vers un player HTML cross-origin
 
 - Brain-LLM `176ff76d` est validé sur SHA exact : CI 46051804297, sécurité 46051804284, Push/CodeQL 46051804462 SUCCESS. NiakVIO `907a7d73` épingle exactement ce Brain et le même gitlink.
