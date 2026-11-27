@@ -191,7 +191,7 @@ for (const [id, values] of byProvider) {
   const qualityEligible = contentSafetyEligible && nativeReliabilityEligible && evidenceEnough && coverageRate >= Number(cfg.minimum_catalogue_coverage_rate || 0.5) && crossRate >= Number(cfg.minimum_cross_platform_fixture_rate || 0.5) && slowRate <= Number(cfg.maximum_slow_execution_rate || 0.25);
   rows.push({
     provider: id,
-    currentlyActive: manifestRow.enabled !== false,
+    currentlyActive: manifestMap.has(id) && manifestRow.enabled !== false,
     vf,
     animeSpecialist,
     movieTvCore,
