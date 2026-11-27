@@ -1,19 +1,20 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "46028518118",
-  "sourceTriggerSha": "96c6db9f2b94e1ab32738f0878b4e09172d6fe0b",
+  "sourceRunId": "46031312506",
+  "sourceTriggerSha": "5c8d9a8d75d6fefd5eb0f11b0c435c769ccec51f",
   "unresolvedProviderCount": 67,
-  "dynamicVariantProviderCount": 6,
+  "dynamicVariantProviderCount": 7,
   "dynamicVariantProviders": [
     "hindmoviez",
     "meowtv",
+    "movish",
     "movix-fr",
     "nakios",
     "papadustream",
     "stigstream"
   ],
   "lifecycleSuppressedDynamicProviders": [
-    "animevostfr"
+    "moviebox"
   ],
   "dynamicVariantCurrentObservedProviders": [
     "1jour1film0626",
@@ -37,7 +38,6 @@
     "anisama",
     "arrowtv",
     "boredflix",
-    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -63,15 +63,11 @@
     "fullanime",
     "hexa",
     "hianime",
-    "hindmoviez",
     "ihavenotv",
-    "internet-archive",
     "kehflix",
     "kidraz",
-    "kurage",
     "latestmovies",
     "mallumv",
-    "meowtv",
     "moiflix",
     "moviebite",
     "moviebox",
@@ -80,9 +76,7 @@
     "movish",
     "movix-fr",
     "movy",
-    "mugiwarastream",
     "nakios",
-    "neko-sama",
     "neobam",
     "neonflix",
     "overlook",
@@ -119,15 +113,14 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
-    "webflix",
     "wookafr",
     "yflix",
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": false,
-  "groupCount": 10,
+  "dynamicVariantFallbackUsed": true,
+  "groupCount": 9,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -209,6 +202,7 @@
         "provider-census-status.json:brainCheckRequired"
       ],
       "dynamicVariantProviders": [
+        "movish",
         "movix-fr"
       ],
       "executionPolicy": "batch-first",
@@ -286,13 +280,15 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 3,
+      "providerCount": 5,
       "providers": [
+        "67movies",
         "anime-sama",
         "frenchstream",
-        "sadisflix"
+        "sadisflix",
+        "shuttletv"
       ],
-      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
+      "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -312,8 +308,7 @@
         "chain"
       ],
       "dominantIssues": [
-        "network_zero_result",
-        "waf_challenge"
+        "network_zero_result"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
@@ -330,38 +325,6 @@
       "dynamicVariantProviders": [
         "nakios"
       ],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "route-to-terminal|mixed_embed_resolver|runtime:mixed_embed_resolver",
-      "repairScope": "route-to-terminal",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "native-policy-reachable",
-        "residential-exit-native-reachable"
-      ],
-      "transportSignature": "not-applicable",
-      "providerCount": 2,
-      "providers": [
-        "67movies",
-        "shuttletv"
-      ],
-      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },

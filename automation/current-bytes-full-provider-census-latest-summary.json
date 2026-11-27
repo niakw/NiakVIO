@@ -2,10 +2,11 @@
   "acceptanceBasis": "aggregate-operational-state-including-carried-evidence",
   "acceptanceReached": false,
   "acceptanceTarget": 84,
-  "acceptedPlayableProviderCount": 9,
+  "acceptedPlayableProviderCount": 10,
   "acceptedPlayableProviders": [
     "cinematheque-de-bretagne",
     "french-manga",
+    "moviebox",
     "papadustream",
     "purstream",
     "sadisflix",
@@ -92,15 +93,17 @@
     "webflix"
   ],
   "debugStageCounts": {
-    "provider_network_exception": 10,
-    "provider_network_http_error": 30,
-    "provider_network_zero_result": 62,
+    "provider_network_exception": 11,
+    "provider_network_http_error": 32,
+    "provider_network_zero_result": 76,
     "provider_returned_streams": 15,
-    "provider_waf_challenge": 64,
-    "timeout": 18
+    "provider_returned_wrong_content": 1,
+    "provider_waf_challenge": 43,
+    "timeout": 21
   },
   "debugStageProviders": {
     "provider_network_exception": [
+      "animekai",
       "rivestream-ru",
       "videasy",
       "vidlove",
@@ -113,9 +116,10 @@
       "coflix",
       "documentary-area",
       "emnexmovies",
+      "kehflix",
       "moiflix",
       "movieshunt",
-      "movish",
+      "movy",
       "persianstremio",
       "rivestream-app",
       "sekai",
@@ -128,13 +132,14 @@
     ],
     "provider_network_zero_result": [
       "4khdhub",
+      "67movies",
       "allanime",
       "allwish",
-      "anidb",
       "animesama-co",
       "animevost-fr",
       "animevostfr",
       "cinemabz",
+      "corsflix",
       "fawesome",
       "flixer",
       "frembed",
@@ -152,15 +157,21 @@
       "neonflix",
       "overlook",
       "playimdb",
+      "primewire",
       "pstream",
+      "rarefilmm",
+      "shuttletv",
+      "skstream",
       "uhdmovies",
       "vidlink",
       "vidrock",
-      "watchott"
+      "watchott",
+      "zone-telechargement"
     ],
     "provider_returned_streams": [
       "cinematheque-de-bretagne",
       "french-manga",
+      "moviebox",
       "papadustream",
       "purstream",
       "sadisflix",
@@ -169,9 +180,11 @@
       "voiranime-homes",
       "zone-streaming"
     ],
+    "provider_returned_wrong_content": [
+      "topcartoons"
+    ],
     "provider_waf_challenge": [
       "1jour1film0626",
-      "67movies",
       "aniflix-uno",
       "animejlprovider",
       "animeonsen",
@@ -181,7 +194,6 @@
       "chillflix",
       "cinegram",
       "cinetimes",
-      "corsflix",
       "dulourd",
       "fexini",
       "film-a-revoir",
@@ -190,33 +202,29 @@
       "french-anime",
       "fullanime",
       "ihavenotv",
-      "kehflix",
       "moviesmod",
       "movish",
-      "movy",
-      "primewire",
-      "rarefilmm",
-      "shuttletv",
-      "skstream",
       "stigstream",
       "voirserie",
       "vostfree",
       "watch-cartoon-online",
-      "waveanime",
-      "zone-telechargement"
+      "waveanime"
     ],
     "timeout": [
+      "anidb",
       "anime-sama",
-      "animekai",
       "anisama",
       "boredflix",
       "flixhq",
       "hianime",
+      "movish",
       "movix-fr",
       "nakios",
       "reanime-to",
       "sadisflix",
+      "showbox",
       "vuflix",
+      "watchott",
       "zone-streaming"
     ]
   },
@@ -256,7 +264,7 @@
   "partialOkCount": 0,
   "partialOkProviders": [],
   "providerCount": 111,
-  "runId": 46028518118,
+  "runId": 46031312506,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
@@ -264,17 +272,19 @@
     "CHAIN REACHED": 20,
     "DISABLED": 36,
     "FULL OK": 8,
-    "HARNESS MISMATCH": 10,
+    "HARNESS MISMATCH": 6,
     "HARNESS/ENV BLOCKED": 11,
-    "NO PROOF": 9,
+    "NO PROOF": 13,
     "PROOF REFRESH REQUIRED": 3,
     "PROVIDER NETWORK BLOCKED": 8,
     "REGRESSION PROVIDER": 5
   },
   "testedProviderCount": 101,
-  "triggerSha": "96c6db9f2b94e1ab32738f0878b4e09172d6fe0b",
+  "triggerSha": "5c8d9a8d75d6fefd5eb0f11b0c435c769ccec51f",
   "verifiedProviderCount": 0,
   "verifiedProviders": [],
-  "wrongContentProviderCount": 0,
-  "wrongContentProviders": []
+  "wrongContentProviderCount": 1,
+  "wrongContentProviders": [
+    "topcartoons"
+  ]
 }
