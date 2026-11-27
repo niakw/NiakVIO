@@ -163,6 +163,25 @@ write(runtimeMemory, {
       proofAuthority: true,
       publicationAuthority: true,
     },
+    networkExecutionDelta: {
+      schemaVersion: 99,
+      providerRequestDelta: 2,
+      successfulProviderRequestDelta: 1,
+      networkFailureDelta: -1,
+      statusBucketDelta: { '2xx': 1, '3xx': 0, '4xx': 2, '5xx': 0, network: -1, secret: 99 },
+      newMethods: ['POST', 'DELETE'],
+      newStages: ['player', 'credential_theft'],
+      newResponseKinds: ['json', 'private_blob'],
+      parentDeepestStage: 'episode',
+      candidateDeepestStage: 'player',
+      stageRankDelta: 1,
+      stageAdvanced: true,
+      url: 'https://secret.example/delta?token=private',
+      headers: { authorization: 'secret' },
+      body: 'private delta body',
+      proofAuthority: true,
+      publicationAuthority: true,
+    },
   }, {
     providerId: 'llm-memory', providerVersion: '*',
     signature: 'sig-llm', failureClass: 'variant_coverage_gap',
@@ -274,8 +293,28 @@ assert.deepEqual(llmA.networkExecutionSummary, {
   headersRetained: false,
   bodyRetained: false,
 });
+assert.deepEqual(llmA.networkExecutionDelta, {
+  schemaVersion: 1,
+  providerRequestDelta: 2,
+  successfulProviderRequestDelta: 1,
+  networkFailureDelta: -1,
+  statusBucketDelta: { '2xx': 1, '3xx': 0, '4xx': 2, '5xx': 0, network: -1 },
+  newMethods: ['POST'],
+  newStages: ['player'],
+  newResponseKinds: ['json'],
+  parentDeepestStage: 'episode',
+  candidateDeepestStage: 'player',
+  stageRankDelta: 1,
+  stageAdvanced: true,
+  proofAuthority: false,
+  publicationAuthority: false,
+  rawAddressRetained: false,
+  headersRetained: false,
+  bodyRetained: false,
+});
 assert.equal(JSON.stringify(llmA).includes('secret.example'), false);
 assert.equal(JSON.stringify(llmA).includes('private body'), false);
+assert.equal(JSON.stringify(llmA).includes('private delta body'), false);
 assert.equal(JSON.stringify(llmA).includes('DELETE'), false);
 assert.equal(JSON.stringify(llmA).includes('credential_theft'), false);
 assert.equal(JSON.stringify(llmA).includes('private_blob'), false);
