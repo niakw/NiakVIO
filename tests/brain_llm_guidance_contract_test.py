@@ -135,7 +135,10 @@ workflow=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="u
 assert "repository: niakw/NiakVIO-Brain-LLM" in workflow
 assert "id: brain_llm_pin" in workflow
 assert "cache_policy=stale-guidance-ignored" in workflow
-assert "source=main freshness=current-main" in workflow
+assert "source=validated-gitlink freshness=source-pinned" in workflow
+assert "automation/brain-pinned-source.json" in workflow
+assert "git ls-tree HEAD -- brain-llm" in workflow
+assert "refs/heads/main:refs/remotes/origin/main" not in workflow
 assert "ref: ${{ steps.brain_llm_pin.outputs.sha }}" in workflow
 assert '--brain-llm-sha "${{ steps.brain_llm_pin.outputs.sha }}"' in workflow
 assert "repository: niakw/niakvio-private" in workflow
