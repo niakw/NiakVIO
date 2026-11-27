@@ -285,6 +285,19 @@ with tempfile.TemporaryDirectory() as td:
     assert shaped["resolvedTargetRequestStaticSameOriginMediaIntentCount"] == 0
     assert "player.example" not in json.dumps(shaped)
     assert "media.example" not in json.dumps(shaped)
+    packed = (
+        "eval(function(p,a,c,k,e,d){return p;}("
+        "'0(1);',62,2,'fetch|\"/api/source\"'.split('|'),0,{}))"
+    )
+    advanced = probe._advanced_expression_structure(packed)
+    assert advanced["resolvedTargetAdvancedAnalyzerAvailable"] is True
+    assert advanced["resolvedTargetAdvancedUnpackChanged"] is True
+    assert advanced["resolvedTargetAdvancedRouteCount"] >= 1
+    assert advanced["resolvedTargetAdvancedExecutedRouteCount"] >= 1
+    assert advanced["resolvedTargetAdvancedContractCount"] >= 1
+    assert advanced["resolvedTargetAdvancedExecutedContractCount"] >= 1
+    assert advanced["resolvedTargetAdvancedGetContractCount"] >= 1
+    assert "api/source" not in json.dumps(advanced)
     assert "PRIVATE" not in json.dumps(structured)
     for path in paths:
         if "/api/lien.php?" not in path:
