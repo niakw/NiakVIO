@@ -2212,12 +2212,28 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         )
         second_order_role_preferences = ["player", "source", "api", "episode", "detail", "other"]
     elif new_strategy_id == "provider_session_bootstrap_replay_v1":
-        search_paths = _unique_routes(learned_search, configured_search, limit=12)
-        direct_paths = _unique_routes(learned_direct, configured_direct, limit=24)
-        request_recipes = _unique_request_recipes(
-            current_request_recipes, provider_request_recipes, limit=32
-        )
-        second_order_role_preferences = ["detail", "search", "api", "player", "source", "episode", "other"]
+        if experiment_failure == "media_extraction_gap":
+            # Compose the already-proven scripted request-contract miner with
+            # session establishment. Replacing V2 here would regress the exact
+            # capability that reached provider requests and make the follow-up
+            # causally meaningless.
+            search_paths = _unique_routes(learned_search, configured_search, limit=12)
+            direct_paths = _unique_routes(
+                [route for route in learned_direct if _route_role(route) in TERMINAL_MEDIA_ROLES | {"detail", "episode"}],
+                [route for route in configured_direct if _route_role(route) in TERMINAL_MEDIA_ROLES | {"detail", "episode"}],
+                limit=32,
+            )
+            request_recipes = _unique_request_recipes(
+                current_request_recipes, provider_request_recipes, positive_request_recipes, limit=40
+            )
+            second_order_role_preferences = ["player", "source", "api", "episode", "detail", "other"]
+        else:
+            search_paths = _unique_routes(learned_search, configured_search, limit=12)
+            direct_paths = _unique_routes(learned_direct, configured_direct, limit=24)
+            request_recipes = _unique_request_recipes(
+                current_request_recipes, provider_request_recipes, limit=32
+            )
+            second_order_role_preferences = ["detail", "search", "api", "player", "source", "episode", "other"]
 
     # A planner-selected post-exhaustion strategy is a distinct causal
     # program, not a relabelled advisor experiment. Keep advisor metadata on
@@ -2431,8 +2447,19 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         or _generated_route_profile_preserves_v2_capabilities(new_strategy_id)
         or llm_experiment.get("responseSalvage") is True
     )
-    document_request_mining = new_strategy_id in {"document_request_contract_mining_v1", "document_request_contract_mining_v2"} or llm_experiment.get("documentRequestMining") is True
-    scripted_request_mining = new_strategy_id == "document_request_contract_mining_v2"
+    session_bootstrap_media_followup = (
+        new_strategy_id == "provider_session_bootstrap_replay_v1"
+        and experiment_failure == "media_extraction_gap"
+    )
+    document_request_mining = (
+        new_strategy_id in {"document_request_contract_mining_v1", "document_request_contract_mining_v2"}
+        or session_bootstrap_media_followup
+        or llm_experiment.get("documentRequestMining") is True
+    )
+    scripted_request_mining = (
+        new_strategy_id == "document_request_contract_mining_v2"
+        or session_bootstrap_media_followup
+    )
     session_bootstrap = new_strategy_id == "provider_session_bootstrap_replay_v1" or llm_experiment.get("sessionBootstrap") is True
 
     return {
