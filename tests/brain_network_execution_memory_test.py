@@ -125,4 +125,67 @@ assert saved["networkExecutionSummary"] == summary
 assert state["publicationAllowed"] is False
 assert state["productionWritesAllowed"] is False
 
+# One-shot diagnostic replay must enrich an old executed negative without
+# pretending it is a new experiment or changing its historical counters.
+historical = {
+    "schemaVersion": 1,
+    "publicationAllowed": False,
+    "productionWritesAllowed": False,
+    "experimentMemory": {
+        "schemaVersion": 1,
+        "entries": [{
+            **row,
+            "attempts": 7,
+            "failures": 3,
+            "consecutiveFailures": 1,
+            "lastSeenAt": "2026-11-27T20:00:00+00:00",
+        }],
+    },
+}
+diagnostic_target = queue.missing_network_diagnostic_negative(
+    historical,
+    "anime-sama",
+    profile,
+)
+assert diagnostic_target is not None
+assert diagnostic_target["strategyImplementationFingerprint"] == fingerprint
+masked = queue.diagnostic_replay_memory(historical, diagnostic_target)
+assert masked["experimentMemory"]["entries"] == []
+assert historical["experimentMemory"]["entries"], "source memory must remain immutable"
+
+diagnostic_plan = {
+    **plan,
+    "strategyImplementationFingerprint": fingerprint,
+}
+backfill = queue.diagnostic_network_backfill_entry(
+    diagnostic_target,
+    diagnostic_plan,
+    summary,
+)
+assert backfill is not None
+assert backfill["attempts"] == 7
+assert backfill["failures"] == 3
+assert backfill["consecutiveFailures"] == 1
+assert backfill["lastOutcome"] == "rejected"
+assert backfill["lastSeenAt"] == "2026-11-27T20:00:00+00:00"
+assert backfill["networkExecutionSummary"] == summary
+assert queue.diagnostic_network_backfill_entry(
+    diagnostic_target,
+    {**diagnostic_plan, "strategyImplementationFingerprint": "b" * 64},
+    summary,
+) is None
+
+enriched = queue.merge_phase_learning_state(historical, [backfill])
+enriched_row = enriched["experimentMemory"]["entries"][0]
+assert enriched_row["attempts"] == 7
+assert enriched_row["failures"] == 3
+assert enriched_row["consecutiveFailures"] == 1
+assert enriched_row["lastOutcome"] == "rejected"
+assert enriched_row["networkExecutionSummary"] == summary
+assert queue.missing_network_diagnostic_negative(
+    enriched,
+    "anime-sama",
+    profile,
+) is None, "diagnostic replay must be one-shot once telemetry exists"
+
 print("Brain sanitized network execution memory contract passed")
