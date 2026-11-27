@@ -185,18 +185,26 @@ assert rotated["postExhaustionStrategyProfile"] != "html_class_token_exact_v1", 
 assert rotated["postExhaustionStrategyProfile"], rotated
 assert rotated["action"] == "probe-targeted-repair", rotated
 
-# A child that was actually executed and rejected stays negative. Rewriting
-# fingerprints must not silently convert a failed playable/identity gate into
-# publication authority, or trigger the identical v1 strategy again.
+# A child that was actually executed and rejected stays negative for the exact
+# same scoped implementation. A different scoped implementation may be retried,
+# but this exact playable/identity failure cannot be erased by bookkeeping.
 executed_rejection = {
     **no_child_same_impl,
     "executionObserved": True,
     "lastOutcome": "rejected",
     "lastReason": "required_category_playable_proof:movie",
-    "strategyImplementationFingerprint": "a" * 64,
+    "strategyImplementationFingerprint": fp,
 }
 rejected = plan([*exhausted, executed_rejection], source_evidence=source_signal)
 assert rejected["postExhaustionStrategyProfile"] != "html_class_token_exact_v1", rejected
+
+stale_executed_rejection = {
+    **executed_rejection,
+    "strategyImplementationFingerprint": "a" * 64,
+}
+refreshed = plan([*exhausted, stale_executed_rejection], source_evidence=source_signal)
+assert refreshed["postExhaustionStrategyProfile"] == "html_class_token_exact_v1", refreshed
+assert refreshed["sourceStructuralProfileFingerprint"] == fp, refreshed
 
 # Legacy ingestion must normalize "not_generated" regardless of old flag.
 with tempfile.TemporaryDirectory(prefix="niakvio-brain-generation-") as folder:
@@ -227,6 +235,7 @@ print(json.dumps({
     "memory": "generation-vs-execution-distinguished",
     "replay_after_stale_fingerprint": True,
     "same_implementation_generation_loop_blocked": True,
-    "executed_rejection_still_blocked": True,
+    "executed_same_implementation_still_blocked": True,
+    "executed_stale_implementation_refreshes_once": True,
     "provider_publication_allowed": False,
 }, sort_keys=True))
