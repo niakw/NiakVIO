@@ -330,34 +330,34 @@ def _resolved_target_player_structure(body: str) -> dict[str, Any]:
     """Return bounded player-markup structure only; never raw text, URLs or hosts."""
     source = str(body or "")[:TARGET_MAX_BODY]
     lowered = source.casefold()
-    iframe_count = min(8, len(re.findall(r"<iframe\\b", lowered)))
-    video_count = min(8, len(re.findall(r"<video\\b", lowered)))
-    source_count = min(16, len(re.findall(r"<source\\b", lowered)))
-    script_tags = re.findall(r"<script\\b([^>]*)>([\\s\\S]*?)</script\\s*>", source, re.I)
+    iframe_count = min(8, len(re.findall(r"<iframe\b", lowered)))
+    video_count = min(8, len(re.findall(r"<video\b", lowered)))
+    source_count = min(16, len(re.findall(r"<source\b", lowered)))
+    script_tags = re.findall(r"<script\b([^>]*)>([\s\S]*?)</script\s*>", source, re.I)
     external_script_count = min(
-        16, sum(1 for attrs, _body in script_tags if re.search(r"\\bsrc\\s*=", attrs, re.I))
+        16, sum(1 for attrs, _body in script_tags if re.search(r"\bsrc\s*=", attrs, re.I))
     )
     inline_script_count = min(
         16, sum(1 for attrs, script_body in script_tags
-                if not re.search(r"\\bsrc\\s*=", attrs, re.I) and script_body.strip())
+                if not re.search(r"\bsrc\s*=", attrs, re.I) and script_body.strip())
     )
-    forms = re.findall(r"<form\\b([^>]*)>([\\s\\S]*?)</form\\s*>", source, re.I)
+    forms = re.findall(r"<form\b([^>]*)>([\s\S]*?)</form\s*>", source, re.I)
     form_count = min(8, len(forms))
-    post_form = any(re.search(r"\\bmethod\\s*=\\s*([\"']?)post\\1", attrs, re.I)
+    post_form = any(re.search(r"\bmethod\s*=\s*([\"']?)post\1", attrs, re.I)
                     for attrs, _form_body in forms)
     hidden_count = min(
         32,
-        sum(len(re.findall(r"<input\\b[^>]*\\btype\\s*=\\s*([\"']?)hidden\\1", form_body, re.I))
+        sum(len(re.findall(r"<input\b[^>]*\btype\s*=\s*([\"']?)hidden\1", form_body, re.I))
             for _attrs, form_body in forms[:8]),
     )
     request_bootstrap = bool(re.search(
-        r"\\b(?:fetch\\s*\\(|XMLHttpRequest\\b|\\$\\s*\\.\\s*ajax\\s*\\(|axios\\s*\\.)",
+        r"\b(?:fetch\s*\(|XMLHttpRequest\b|\$\s*\.\s*ajax\s*\(|axios\s*\.)",
         source, re.I,
     ))
     packed_script = "eval(function(p,a,c,k,e,d)" in source.replace(" ", "")
-    base64_decode = bool(re.search(r"\\b(?:atob|base64_decode)\\s*\\(", source, re.I))
+    base64_decode = bool(re.search(r"\b(?:atob|base64_decode)\s*\(", source, re.I))
     meta_refresh = bool(re.search(
-        r"<meta\\b[^>]*http-equiv\\s*=\\s*([\"']?)refresh\\1", source, re.I,
+        r"<meta\b[^>]*http-equiv\s*=\s*([\"']?)refresh\1", source, re.I,
     ))
     mechanisms = sum((
         iframe_count > 0,
