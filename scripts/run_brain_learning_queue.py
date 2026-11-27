@@ -1629,6 +1629,39 @@ def repair_attempt(
         "validationReason": "",
     }
 
+def source_contract_provider_states(
+    order: list[str],
+    frontier: set[str] | dict[str, Any],
+    parser_installed: bool,
+    resolver_frontier: set[str] | dict[str, Any] | None = None,
+    resolver_installed: bool = False,
+    player_target_frontier: set[str] | dict[str, Any] | None = None,
+) -> dict[str, str]:
+    """Return one monotone source-contract state per provider.
+
+    Installed parser/resolver capabilities are global code facts, while evidence
+    depth is provider-local. Never let one representative's deeper frontier
+    advance or rewind a sibling in the same Learning cohort.
+    """
+    resolver_frontier = resolver_frontier or set()
+    player_target_frontier = player_target_frontier or set()
+    states: dict[str, str] = {}
+    for provider_id in order:
+        if provider_id not in frontier:
+            continue
+        if not parser_installed:
+            states[provider_id] = "new_family_required"
+        elif provider_id in player_target_frontier and resolver_installed:
+            states[provider_id] = "player_target_observed"
+        elif provider_id in resolver_frontier and not resolver_installed:
+            states[provider_id] = "resolver_family_required"
+        elif provider_id in resolver_frontier and resolver_installed:
+            states[provider_id] = "resolver_installed_replay_required"
+        else:
+            states[provider_id] = "parser_installed_replay_required"
+    return states
+
+
 def source_contract_capability_state(
     order: list[str],
     frontier: set[str] | dict[str, Any],
@@ -1637,26 +1670,22 @@ def source_contract_capability_state(
     resolver_installed: bool = False,
     player_target_frontier: set[str] | dict[str, Any] | None = None,
 ) -> tuple[list[str], list[str], str]:
-    observed = [pid for pid in order if pid in frontier]
-    if not observed:
+    states = source_contract_provider_states(
+        order,
+        frontier,
+        parser_installed,
+        resolver_frontier,
+        resolver_installed,
+        player_target_frontier,
+    )
+    if not states:
         return [], [], "not_attested"
-    if not parser_installed:
-        return observed, [], "new_family_required"
-    resolver_frontier = resolver_frontier or set()
-    player_target_frontier = player_target_frontier or set()
-    resolver_observed = [pid for pid in observed if pid in resolver_frontier]
-    player_target_observed = [pid for pid in resolver_observed if pid in player_target_frontier]
-    # A deeper exact-parent player target supersedes resolver replay debt. The
-    # provider stays in Learning, but no longer carries V2 as preferred intent;
-    # the current causal failure (e.g. media_extraction_gap) owns planning.
-    if player_target_observed and resolver_installed:
-        return [], observed, "player_target_observed"
-    if resolver_observed and not resolver_installed:
-        replay = [pid for pid in observed if pid not in set(resolver_observed)]
-        return resolver_observed, replay, "resolver_family_required"
-    if resolver_observed and resolver_installed:
-        return [], observed, "resolver_installed_replay_required"
-    return [], observed, "parser_installed_replay_required"
+    deferred_states = {"new_family_required", "resolver_family_required"}
+    deferred = [pid for pid in order if states.get(pid) in deferred_states]
+    replay = [pid for pid in order if pid in states and pid not in set(deferred)]
+    distinct = sorted(set(states.values()))
+    status = distinct[0] if len(distinct) == 1 else "mixed_source_contract_frontier"
+    return deferred, replay, status
 
 
 def defer_new_source_contract_family(
@@ -1666,7 +1695,12 @@ def defer_new_source_contract_family(
     queue: dict[str, Any],
 ) -> dict[str, Any]:
     """Preserve a new source-contract family as debt without legacy executor work."""
-    status = str(queue.get("sourceContractFamilyExecutableStatus") or "new_family_required")
+    provider_states = queue.get("sourceContractProviderStates")
+    status = str(
+        (provider_states.get(provider_id) if isinstance(provider_states, dict) else "")
+        or queue.get("sourceContractFamilyExecutableStatus")
+        or "new_family_required"
+    )
     resolver_debt = status == "resolver_family_required"
     state["lastStatus"] = (
         "new_source_resolver_executable_required"
@@ -1912,6 +1946,14 @@ def main() -> int:
     source_family_resolver_ready = (
         source_family_resolver_installed(ROOT) if source_resolver_frontier else False
     )
+    source_contract_provider_states_map = source_contract_provider_states(
+        order,
+        source_contract_frontier,
+        source_family_parser_ready,
+        source_resolver_frontier,
+        source_family_resolver_ready,
+        source_player_target_frontier,
+    )
     source_contract_deferred, source_contract_replay, source_contract_status = (
         source_contract_capability_state(
             order,
@@ -1922,6 +1964,7 @@ def main() -> int:
             source_player_target_frontier,
         )
     )
+    queue["sourceContractProviderStates"] = source_contract_provider_states_map
     queue["sourceContractFamilyDeferredProviders"] = source_contract_deferred
     queue["sourceContractFamilyDeferredProviderCount"] = len(source_contract_deferred)
     queue["sourceContractFamilyReplayProviders"] = source_contract_replay
@@ -2064,10 +2107,13 @@ def main() -> int:
                 attempt_dir = run_dir / f"attempt-{attempt_no}"
                 attempt_dir.mkdir(parents=True, exist_ok=True)
                 try:
+                    provider_source_contract_status = str(
+                        source_contract_provider_states_map.get(provider_id) or source_contract_status
+                    )
                     resolver_replay = (
                         source_family_resolver_ready
                         and provider_id in source_resolver_frontier
-                        and source_contract_status == "resolver_installed_replay_required"
+                        and provider_source_contract_status == "resolver_installed_replay_required"
                     )
                     repair = repair_attempt(
                         provider_id,
@@ -2404,6 +2450,7 @@ def main() -> int:
         "sourceContractResolverInstalled": queue["sourceContractResolverInstalled"],
         "sourceContractPlayerTargetProviders": queue["sourceContractPlayerTargetProviders"],
         "sourceContractPlayerTargetProviderCount": queue["sourceContractPlayerTargetProviderCount"],
+        "sourceContractProviderStates": queue["sourceContractProviderStates"],
         "sourceContractFamilyExecutableStatus": queue["sourceContractFamilyExecutableStatus"],
         "legacyExecutableSeedAllowed": False,
         "processedProviders": processed,
