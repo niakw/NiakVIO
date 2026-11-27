@@ -68,6 +68,18 @@ PLAYER_REQUEST_FILTER_COUNT_LIMITS={
     "resolvedTargetRequestMissingDefinitionFunctionParameterCount":32,
     "resolvedTargetRequestMissingDefinitionUnboundCount":32,
 }
+PLAYER_ADVANCED_ANALYZER_COUNT_LIMITS={
+    "resolvedTargetAdvancedRouteCount":32,
+    "resolvedTargetAdvancedExecutedRouteCount":32,
+    "resolvedTargetAdvancedContractCount":32,
+    "resolvedTargetAdvancedExecutedContractCount":32,
+    "resolvedTargetAdvancedGetContractCount":32,
+    "resolvedTargetAdvancedPostContractCount":32,
+}
+PLAYER_ADVANCED_ANALYZER_FLAGS=(
+    "resolvedTargetAdvancedAnalyzerAvailable",
+    "resolvedTargetAdvancedUnpackChanged",
+)
 PLAYER_STRUCTURE_FLAGS=(
     "resolvedTargetPostFormObserved",
     "resolvedTargetRequestBootstrapObserved",
@@ -194,6 +206,22 @@ def sanitized_evidence(result:dict[str,Any])->list[dict[str,Any]]:
                 if type(value) is not int or not 0<=value<=limit:
                     raise ValueError("invalid resolved target request filter count")
                 optional_filter_counts[key]=value
+            advanced_counts={}
+            for key,limit in PLAYER_ADVANCED_ANALYZER_COUNT_LIMITS.items():
+                if key not in raw:
+                    continue
+                value=raw.get(key)
+                if type(value) is not int or not 0<=value<=limit:
+                    raise ValueError("invalid resolved target advanced analyzer count")
+                advanced_counts[key]=value
+            advanced_flags={}
+            for key in PLAYER_ADVANCED_ANALYZER_FLAGS:
+                if key not in raw:
+                    continue
+                value=raw.get(key)
+                if type(value) is not bool:
+                    raise ValueError("invalid resolved target advanced analyzer flag")
+                advanced_flags[key]=value
             structure_flags={}
             for key in PLAYER_STRUCTURE_FLAGS:
                 value=raw.get(key)
@@ -220,6 +248,8 @@ def sanitized_evidence(result:dict[str,Any])->list[dict[str,Any]]:
                 "resolvedTargetPlayerStructureClass":structure_class,
                 **structure_counts,
                 **optional_filter_counts,
+                **advanced_counts,
+                **advanced_flags,
                 **structure_flags,
             })
         elif route=="catalogue_search":
