@@ -136,8 +136,8 @@ assert "repository: niakw/NiakVIO-Brain-LLM" in workflow
 assert "id: brain_llm_pin" in workflow
 assert "cache_policy=stale-guidance-ignored" in workflow
 assert "source=validated-gitlink freshness=source-pinned" in workflow
+assert "scripts/resolve_validated_brain_pin.py" in workflow
 assert "automation/brain-pinned-source.json" in workflow
-assert "git ls-tree HEAD -- brain-llm" in workflow
 assert "refs/heads/main:refs/remotes/origin/main" not in workflow
 assert "ref: ${{ steps.brain_llm_pin.outputs.sha }}" in workflow
 assert '--brain-llm-sha "${{ steps.brain_llm_pin.outputs.sha }}"' in workflow
