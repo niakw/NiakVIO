@@ -27,6 +27,26 @@ from brain_layers.declarative_gap_strategy import synthesize_rows
 SOURCE_SHAPES = frozenset({"script_http_missing", "script_html_2xx"})
 SOURCE_INLINE = "catalogue_inline_token_episode"
 SOURCE_RESOLVER_CONTRACT = "same-origin-api-lien-j-l-v1"
+PLAYER_STRUCTURE_CLASSES = frozenset({
+    "none", "iframe_shell", "video_tag", "scripted_player",
+    "form_handoff", "packed_script", "request_bootstrap", "mixed",
+})
+PLAYER_STRUCTURE_COUNT_LIMITS = {
+    "resolvedTargetIframeCount": 8,
+    "resolvedTargetVideoTagCount": 8,
+    "resolvedTargetSourceTagCount": 16,
+    "resolvedTargetExternalScriptCount": 16,
+    "resolvedTargetInlineScriptCount": 16,
+    "resolvedTargetFormCount": 8,
+    "resolvedTargetHiddenInputCount": 32,
+}
+PLAYER_STRUCTURE_FLAGS = (
+    "resolvedTargetPostFormObserved",
+    "resolvedTargetRequestBootstrapObserved",
+    "resolvedTargetPackedScriptObserved",
+    "resolvedTargetBase64DecodeObserved",
+    "resolvedTargetMetaRefreshObserved",
+)
 FRONTIER_FLAGS = (
     "proofAuthority", "publicationAuthority",
     "nativePlaybackAuthority", "providerMutationAuthority",
@@ -246,6 +266,81 @@ def attested_source_player_target_frontier(
     return attested_source_resolver_frontier(
         narrowed, native_history, manifest, root,
     )
+
+
+def _bounded_player_structure(item: dict[str, Any]) -> dict[str, Any] | None:
+    structure_class = str(item.get("resolvedTargetPlayerStructureClass") or "")
+    if structure_class not in PLAYER_STRUCTURE_CLASSES:
+        return None
+    counts: dict[str, int] = {}
+    for key, limit in PLAYER_STRUCTURE_COUNT_LIMITS.items():
+        value = item.get(key)
+        if type(value) is not int or not 0 <= value <= limit:
+            return None
+        counts[key] = value
+    flags: dict[str, bool] = {}
+    for key in PLAYER_STRUCTURE_FLAGS:
+        value = item.get(key)
+        if type(value) is not bool:
+            return None
+        flags[key] = value
+    return {
+        "resolvedTargetPlayerStructureClass": structure_class,
+        **counts,
+        **flags,
+    }
+
+
+def attested_source_player_structure_frontier(
+    source_history: dict[str, Any],
+    native_history: dict[str, Any],
+    manifest: dict[str, Any],
+    root: Path,
+) -> dict[str, dict[str, Any]]:
+    """Newest exact-parent sanitized player structure per provider.
+
+    This is diagnosis only. It derives from rows that independently satisfy the
+    existing exact-current player-target attestation; it cannot grant mutation,
+    identity, playback or publication authority.
+    """
+    if not isinstance(source_history, dict):
+        return {}
+    selected: dict[str, tuple[int, dict[str, Any]]] = {}
+    for row in source_history.get("rows") or []:
+        if not isinstance(row, dict):
+            continue
+        provider = canon(row.get("providerId"))
+        if not provider:
+            continue
+        narrowed = dict(source_history)
+        narrowed["rows"] = [row]
+        if provider not in attested_source_player_target_frontier(
+            narrowed, native_history, manifest, root,
+        ):
+            continue
+        evidence = row.get("evidence")
+        if not isinstance(evidence, list):
+            continue
+        structure: dict[str, Any] | None = None
+        for item in evidence:
+            if (
+                isinstance(item, dict)
+                and item.get("resolvedTargetShape") == "html_player"
+                and item.get("resolvedTargetPlayerEmbedObserved") is True
+                and item.get("resolvedTargetDirectMediaObserved") is False
+            ):
+                structure = _bounded_player_structure(item)
+                if structure is not None:
+                    break
+        if structure is None:
+            continue
+        run_raw = str(row.get("latestProbeRunId") or "")
+        run_number = int(run_raw) if run_raw.isdigit() else 0
+        structure["probeRunId"] = run_raw if run_raw.isdigit() else ""
+        previous = selected.get(provider)
+        if previous is None or run_number > previous[0]:
+            selected[provider] = (run_number, structure)
+    return {provider: value for provider, (_run, value) in selected.items()}
 
 
 ROW_FIELDS={
