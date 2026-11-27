@@ -147,6 +147,7 @@ POST_EXHAUSTION_STRATEGY_PROFILES = {
     "runtime_response_salvage_v1",
     "catalogue_inline_token_resolver_v2",
     "document_request_contract_mining_v1",
+    "document_request_contract_mining_v2",
     "provider_session_bootstrap_replay_v1",
     HTML_CLASS_TOKEN_PROFILE,
 }
@@ -2199,6 +2200,17 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             current_request_recipes, provider_request_recipes, positive_request_recipes, limit=40
         )
         second_order_role_preferences = ["player", "source", "api", "episode", "detail", "other"]
+    elif new_strategy_id == "document_request_contract_mining_v2":
+        search_paths = _unique_routes(learned_search, configured_search, limit=12)
+        direct_paths = _unique_routes(
+            [route for route in learned_direct if _route_role(route) in TERMINAL_MEDIA_ROLES | {"detail", "episode"}],
+            [route for route in configured_direct if _route_role(route) in TERMINAL_MEDIA_ROLES | {"detail", "episode"}],
+            limit=32,
+        )
+        request_recipes = _unique_request_recipes(
+            current_request_recipes, provider_request_recipes, positive_request_recipes, limit=40
+        )
+        second_order_role_preferences = ["player", "source", "api", "episode", "detail", "other"]
     elif new_strategy_id == "provider_session_bootstrap_replay_v1":
         search_paths = _unique_routes(learned_search, configured_search, limit=12)
         direct_paths = _unique_routes(learned_direct, configured_direct, limit=24)
@@ -2419,7 +2431,8 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         or _generated_route_profile_preserves_v2_capabilities(new_strategy_id)
         or llm_experiment.get("responseSalvage") is True
     )
-    document_request_mining = new_strategy_id == "document_request_contract_mining_v1" or llm_experiment.get("documentRequestMining") is True
+    document_request_mining = new_strategy_id in {"document_request_contract_mining_v1", "document_request_contract_mining_v2"} or llm_experiment.get("documentRequestMining") is True
+    scripted_request_mining = new_strategy_id == "document_request_contract_mining_v2"
     session_bootstrap = new_strategy_id == "provider_session_bootstrap_replay_v1" or llm_experiment.get("sessionBootstrap") is True
 
     return {
@@ -2491,6 +2504,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         "llm_experiment_applied": bool(llm_experiment and llm_experiment_fingerprint),
         "runtime_response_salvage": runtime_response_salvage,
         "document_request_mining": document_request_mining,
+        "scripted_request_mining": scripted_request_mining,
         "session_bootstrap": session_bootstrap,
         "historical_strategy_profile": historical_strategy_profile,
         "historical_strategy_case": str(brain_plan.get("historicalStrategyCase") or ""),
