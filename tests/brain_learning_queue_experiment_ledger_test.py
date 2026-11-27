@@ -240,6 +240,19 @@ assert playable["successes"] == 1, playable
 assert playable["failures"] == 0 and playable["consecutiveFailures"] == 0, playable
 assert playable["lastOutcome"] == "accepted", playable
 
+slice_exhausted = queue.phase_experiment_entries(
+    "synthetic-ledger",
+    plan,
+    accepted_repair,
+    {"status": "fair_share_slice_exhausted"},
+)[0]
+assert slice_exhausted["successes"] == 0, slice_exhausted
+assert slice_exhausted["failures"] == 0, slice_exhausted
+assert slice_exhausted["consecutiveFailures"] == 0, slice_exhausted
+assert slice_exhausted["lastOutcome"] == "executed_inconclusive", slice_exhausted
+assert slice_exhausted["lastReason"] == "strict_lab_not_completed_due_fair_share_budget", slice_exhausted
+assert slice_exhausted["executionObserved"] is True, slice_exhausted
+
 workflow = (ROOT / ".github" / "workflows" / "brain-learning-lab.yml").read_text(encoding="utf-8")
 assert "--runtime-experiment-memory brain-sandbox/health-output/runtime-experiment-memory.json" in workflow
 assert "brain-sandbox/health-output/runtime-experiment-memory.json" in workflow
@@ -342,6 +355,8 @@ source = SCRIPT.read_text(encoding="utf-8")
 assert "phase_learning_state_path" in source
 assert "merge_phase_learning_state(" in source
 assert "fastRepairHandoffMaxEvolvedAttemptsPerProviderThisPhase" in source
+assert "incomplete_entries = phase_experiment_entries(" in source
+assert "strict_lab_not_completed_due_fair_share_budget" in source
 
 # A sandbox profile can be selected and fail before child bytes exist. Its
 # generation attempt is useful rotation evidence, but NOT executed-negative

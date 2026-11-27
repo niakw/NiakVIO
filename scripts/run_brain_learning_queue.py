@@ -345,7 +345,9 @@ def phase_experiment_entries(
         return []
 
     now = datetime.now(timezone.utc).isoformat()
-    playable = isinstance(final_lab, dict) and str(final_lab.get("status") or "") == "playable"
+    lab_status = str(final_lab.get("status") or "") if isinstance(final_lab, dict) else ""
+    playable = lab_status == "playable"
+    strict_lab_incomplete = lab_status == "fair_share_slice_exhausted"
 
     def events(kind: str, profile: str) -> list[dict[str, Any]]:
         output: list[dict[str, Any]] = []
@@ -405,7 +407,17 @@ def phase_experiment_entries(
         outcome = ""
         reason = ""
 
-        if success_count > 0:
+        if accepted and strict_lab_incomplete:
+            # The child already produced executable, provisionally improving
+            # bytes, but the independent strict Lab did not finish. Preserve
+            # the experiment without granting success or poisoning negative
+            # memory. A later phase must replay the same hypothesis to obtain
+            # terminal playback authority.
+            failures = 0
+            progresses = 0
+            outcome = "executed_inconclusive"
+            reason = "strict_lab_not_completed_due_fair_share_budget"
+        elif success_count > 0:
             outcome = "accepted"
             reason = str(accepted[-1].get("reason") or "strict_playable_stream_improvement")
         elif progress:
@@ -2807,14 +2819,29 @@ def main() -> int:
                 except BudgetExhausted as error:
                     state["lastStatus"] = "fair_share_slice_exhausted"
                     state["lastAttemptAt"] = datetime.now(timezone.utc).isoformat()
+                    incomplete_lab = {"status": "fair_share_slice_exhausted"}
                     provider_attempts.append({
                         "attempt": attempt_no,
                         "repairAccepted": repair["accepted"],
                         "attemptedProfiles": repair["attemptedProfiles"],
                         "attemptedMethods": repair["attemptedMethods"],
-                        "lab": {"status": "fair_share_slice_exhausted"},
+                        "lab": incomplete_lab,
                     })
                     attempts_this_phase += 1
+                    if provider_plan:
+                        incomplete_entries = phase_experiment_entries(
+                            provider_id,
+                            provider_plan,
+                            repair,
+                            incomplete_lab,
+                        )
+                        phase_experiment_ledger.extend(incomplete_entries)
+                        if incomplete_entries:
+                            phase_learning_state = merge_phase_learning_state(
+                                phase_learning_state,
+                                incomplete_entries,
+                            )
+                            write_json(phase_learning_state_path, phase_learning_state)
                     print(
                         "FIELD_BRAIN_HANDOFF_SLICE_EXHAUSTED "
                         f"provider={provider_id} stage=lab reason={error}"
