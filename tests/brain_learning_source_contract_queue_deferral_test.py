@@ -31,6 +31,44 @@ deferred,replay,status=mod.source_contract_capability_state(
     ["sample","sibling"], {"sample":{}}, True, {"sample"}, True, {"sample"}
 )
 assert deferred==[] and replay==["sample"] and status=="player_target_observed"
+states=mod.source_contract_provider_states(
+    ["sample","sibling","third"],
+    {"sample":{},"sibling":{},"third":{}},
+    True,
+    {"sample","sibling"},
+    True,
+    {"sample"},
+)
+assert states=={
+    "sample":"player_target_observed",
+    "sibling":"resolver_installed_replay_required",
+    "third":"parser_installed_replay_required",
+},states
+deferred,replay,status=mod.source_contract_capability_state(
+    ["sample","sibling","third"],
+    {"sample":{},"sibling":{},"third":{}},
+    True,
+    {"sample","sibling"},
+    True,
+    {"sample"},
+)
+assert deferred==[],deferred
+assert replay==["sample","sibling","third"],replay
+assert status=="mixed_source_contract_frontier",status
+
+mixed_uninstalled=mod.source_contract_provider_states(
+    ["sample","sibling"],
+    {"sample":{},"sibling":{}},
+    True,
+    {"sample"},
+    False,
+    set(),
+)
+assert mixed_uninstalled=={
+    "sample":"resolver_family_required",
+    "sibling":"parser_installed_replay_required",
+},mixed_uninstalled
+
 assert mod.source_contract_capability_state(["sample"], {}, True, {"sample"}, False)==([],[],"not_attested")
 
 provider="sample"
