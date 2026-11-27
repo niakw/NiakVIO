@@ -261,6 +261,10 @@ with tempfile.TemporaryDirectory() as td:
     assert shaped["resolvedTargetRequestLiteralUrlCount"] == 2
     assert shaped["resolvedTargetRequestDynamicUrlCount"] == 2
     assert shaped["resolvedTargetRequestTemplateUrlCount"] == 1
+    assert shaped["resolvedTargetRequestIdentifierUrlCount"] == 1
+    assert shaped["resolvedTargetRequestMemberUrlCount"] == 0
+    assert shaped["resolvedTargetRequestCallExpressionUrlCount"] == 0
+    assert shaped["resolvedTargetRequestOtherDynamicUrlCount"] == 1
     assert shaped["resolvedTargetRequestSameOriginLiteralCount"] == 1
     assert shaped["resolvedTargetRequestCrossOriginLiteralCount"] == 1
     assert "player.example" not in json.dumps(shaped)
