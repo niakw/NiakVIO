@@ -167,6 +167,43 @@ POST_EXHAUSTION_STRATEGY_PROFILES = {
     "provider_session_bootstrap_replay_v1",
 }
 
+# A generated child can execute without actually exercising the causal
+# capability it was meant to test. Keep that distinction in the single Brain
+# strategy registry instead of teaching every consumer its own exceptions.
+STRATEGY_EXECUTION_PROOF = {
+    "catalogue_inline_token_resolver_v2": "provider_request",
+    "document_request_contract_mining_v1": "provider_request",
+    "document_request_contract_mining_v2": "provider_request",
+    "provider_session_bootstrap_replay_v1": "provider_request",
+}
+if not set(STRATEGY_EXECUTION_PROOF).issubset(POST_EXHAUSTION_STRATEGY_PROFILES):
+    raise RuntimeError("strategy execution-proof registry escaped installed Brain profiles")
+
+
+def strategy_causal_exercise_observed(
+    profile: object,
+    network_summary: object,
+) -> bool | None:
+    """Return whether the selected Bloc's causal capability was exercised.
+
+    True means the strategy reached the evidence boundary required by its
+    registry contract. False means executable bytes ran but the intended
+    mechanism never reached that boundary. None is legacy/unknown evidence and
+    remains fail-closed when consumed as historical memory.
+    """
+    name = str(profile or "").strip().casefold()
+    proof = STRATEGY_EXECUTION_PROOF.get(name)
+    if not proof:
+        return True
+    if proof == "provider_request":
+        if not isinstance(network_summary, dict) or "providerRequestCount" not in network_summary:
+            return None
+        try:
+            return int(network_summary.get("providerRequestCount") or 0) > 0
+        except (TypeError, ValueError):
+            return None
+    raise RuntimeError(f"unsupported strategy execution proof: {proof}")
+
 
 def _load_json(path: Path, default: Any) -> Any:
     try:
@@ -743,6 +780,12 @@ def _learning_experiment_entries() -> list[dict[str, Any]]:
             continue
         last_outcome = _clip_text(raw.get("lastOutcome"), 48)
         execution_observed = (raw.get("executionObserved") is True and str(raw.get("lastOutcome") or "") not in {"not_generated", "profile_unavailable"})
+        causal_exercise = raw.get("causalExerciseObserved")
+        if not isinstance(causal_exercise, bool):
+            causal_exercise = strategy_causal_exercise_observed(
+                raw.get("profile"),
+                raw.get("networkExecutionSummary"),
+            )
         # Memory published before the exact-ledger fix could mark a newly
         # planned post-g5 strategy as profile_unavailable without ever running
         # it. Such rows are applicability noise, not executed negative evidence,
@@ -1079,6 +1122,7 @@ def planner_negative_memory(_mode: str) -> list[dict[str, Any]]:
             "consecutiveFailures": max(0, int(raw.get("consecutiveFailures") or 0)),
             "successes": max(0, int(raw.get("successes") or 0)),
             "executionObserved": execution_observed,
+            "causalExerciseObserved": causal_exercise,
             "lastOutcome": _clip_text(raw.get("lastOutcome"), 48),
             "lastReason": _clip_text(raw.get("lastReason"), 240),
             "generationAttemptObserved": str(raw.get("lastOutcome") or "") == "not_generated",
