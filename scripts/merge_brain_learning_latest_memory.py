@@ -132,9 +132,18 @@ def telemetry_backfills(
         if old is None:
             continue
         summary = row.get("networkExecutionSummary")
-        if not isinstance(summary, dict) or "providerRequestCount" not in summary:
-            continue
-        if summary == old.get("networkExecutionSummary"):
+        delta = row.get("networkExecutionDelta")
+        summary_changed = (
+            isinstance(summary, dict)
+            and "providerRequestCount" in summary
+            and summary != old.get("networkExecutionSummary")
+        )
+        delta_changed = (
+            isinstance(delta, dict)
+            and "providerRequestDelta" in delta
+            and delta != old.get("networkExecutionDelta")
+        )
+        if not summary_changed and not delta_changed:
             continue
         output.append(copy.deepcopy(row))
     output.sort(key=_phase_experiment_key)
