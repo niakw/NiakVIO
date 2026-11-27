@@ -1767,7 +1767,7 @@
       ],
       "harnessTransportClass": "residential-exit-native-reachable",
       "harnessTransportEvidence": [
-        "anime: browser=browser_challenge_persisted, tv-browser=browser_challenge_observed, okhttp=okhttp_jvm_challenge_persisted, desktop-okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
+        "anime: browser=browser_challenge_observed, tv-browser=browser_challenge_observed, okhttp=okhttp_jvm_challenge_persisted, desktop-okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
       ],
       "authorityRepairEligible": true,
       "authorityAction": "KEEP_ROUTE_AUTHORITY",
@@ -5621,8 +5621,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "46084364666-waf-transport",
-  "harnessEvidenceSha": "016471f82a4459a69a1c0b4214bb33b6f4238a96",
+  "harnessEvidenceRunId": "46084604148-waf-transport",
+  "harnessEvidenceSha": "5aa22bb8b67072d6af8713576a583d75bd89f0cb",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
@@ -6838,15 +6838,18 @@
         "lane": "anime",
         "status": "wrong_content",
         "debugStage": "provider_returned_wrong_content",
-        "sampleCount": 1,
+        "sampleCount": 2,
         "sampleDebugStages": [
-          "provider_returned_wrong_content"
+          "provider_returned_wrong_content",
+          "provider_zero_before_provider_network"
         ],
         "sampleStatuses": [
+          "no_streams",
           "wrong_content"
         ],
         "sampleProgressStages": [
-          "chain_reached"
+          "lookup_only",
+          "none"
         ],
         "raw": 1,
         "playable": 1,
@@ -6854,9 +6857,9 @@
         "contradictions": 1,
         "identitySafe": false,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "5f123bbb288e862feecf0bc54e6997d3d0234537",
+          "sourceNiakvioSha": "9c6f55de1cf666f88ee551d492cda874fd0bb80d",
           "providerBundleSha256": "7dbdeb16e2cdb8f46e0e351849e3e731ec08c3dc84c3026a0e7e3de771034a89",
-          "runId": "46084364666",
+          "runId": "46084604148",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7797,8 +7800,8 @@
       "byteMatchedProviders": [
         "french-anime"
       ],
-      "sourceNiakvioSha": "5f123bbb288e862feecf0bc54e6997d3d0234537",
-      "runId": "46084364666",
+      "sourceNiakvioSha": "9c6f55de1cf666f88ee551d492cda874fd0bb80d",
+      "runId": "46084604148",
       "proofAuthority": false,
       "publicationAuthority": false
     },

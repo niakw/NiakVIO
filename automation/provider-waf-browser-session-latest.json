@@ -56,8 +56,8 @@
     "exact failed provider GET replay is transport differential evidence only; it cannot grant playback proof"
   ],
   "counts": {
-    "browser_challenge_observed": 3,
-    "browser_challenge_persisted": 30,
+    "browser_challenge_observed": 4,
+    "browser_challenge_persisted": 29,
     "browser_content_reached": 40,
     "browser_inconclusive": 1
   },
@@ -4235,13 +4235,12 @@
       "challenge": "metadata-search-seed",
       "seedKind": "metadata-search",
       "seedRoute": "/?s={query}",
-      "outcome": "browser_challenge_persisted",
+      "outcome": "browser_challenge_observed",
       "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_challenge_observed",
-          "exitCode": 0
+          "outcome": "browser_timeout"
         },
         {
           "attempt": 2,
@@ -4255,13 +4254,12 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_challenge_persisted",
+          "outcome": "browser_challenge_observed",
           "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_challenge_observed",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             },
             {
               "attempt": 2,
@@ -4374,18 +4372,18 @@
         "exitCode": 0
       },
       "contentProfiles": [],
-      "transportDiagnosis": "waf_persisted_cross_transport",
+      "transportDiagnosis": "challenge_observed_unconfirmed",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 13579,
+      "durationMs": 18818,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
-        "attemptCount": 1,
+        "attemptCount": 2,
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
             "outcome": "browser_content_reached",
-            "attemptCount": 1
+            "attemptCount": 2
           },
           {
             "profile": "nuvio-tv-ua-browser",
@@ -4416,16 +4414,16 @@
         ]
       },
       "transportReceipt": {
-        "sourceNiakvioSha": "5f123bbb288e862feecf0bc54e6997d3d0234537",
+        "sourceNiakvioSha": "9c6f55de1cf666f88ee551d492cda874fd0bb80d",
         "providerBundleSha256": "7dbdeb16e2cdb8f46e0e351849e3e731ec08c3dc84c3026a0e7e3de771034a89",
-        "runId": "46084364666",
+        "runId": "46084604148",
         "proofAuthority": false,
         "publicationAuthority": false
       },
       "residentialReceipt": {
-        "sourceNiakvioSha": "5f123bbb288e862feecf0bc54e6997d3d0234537",
+        "sourceNiakvioSha": "9c6f55de1cf666f88ee551d492cda874fd0bb80d",
         "providerBundleSha256": "7dbdeb16e2cdb8f46e0e351849e3e731ec08c3dc84c3026a0e7e3de771034a89",
-        "runId": "46084364666",
+        "runId": "46084604148",
         "proofAuthority": false,
         "publicationAuthority": false
       }
@@ -10726,15 +10724,18 @@
         "lane": "anime",
         "status": "wrong_content",
         "debugStage": "provider_returned_wrong_content",
-        "sampleCount": 1,
+        "sampleCount": 2,
         "sampleDebugStages": [
-          "provider_returned_wrong_content"
+          "provider_returned_wrong_content",
+          "provider_zero_before_provider_network"
         ],
         "sampleStatuses": [
+          "no_streams",
           "wrong_content"
         ],
         "sampleProgressStages": [
-          "chain_reached"
+          "lookup_only",
+          "none"
         ],
         "raw": 1,
         "playable": 1,
@@ -10742,9 +10743,9 @@
         "contradictions": 1,
         "identitySafe": false,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "5f123bbb288e862feecf0bc54e6997d3d0234537",
+          "sourceNiakvioSha": "9c6f55de1cf666f88ee551d492cda874fd0bb80d",
           "providerBundleSha256": "7dbdeb16e2cdb8f46e0e351849e3e731ec08c3dc84c3026a0e7e3de771034a89",
-          "runId": "46084364666",
+          "runId": "46084604148",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -11685,8 +11686,8 @@
       "byteMatchedProviders": [
         "french-anime"
       ],
-      "sourceNiakvioSha": "5f123bbb288e862feecf0bc54e6997d3d0234537",
-      "runId": "46084364666",
+      "sourceNiakvioSha": "9c6f55de1cf666f88ee551d492cda874fd0bb80d",
+      "runId": "46084604148",
       "proofAuthority": false,
       "publicationAuthority": false
     },
@@ -11709,8 +11710,8 @@
     }
   },
   "freshRunReceipt": {
-    "sourceNiakvioSha": "5f123bbb288e862feecf0bc54e6997d3d0234537",
-    "runId": "46084364666",
+    "sourceNiakvioSha": "9c6f55de1cf666f88ee551d492cda874fd0bb80d",
+    "runId": "46084604148",
     "providerCount": 1,
     "proofAuthority": false,
     "publicationAuthority": false
@@ -11718,7 +11719,7 @@
   "currentRefreshProviderCount": 1,
   "currentRefreshRowCount": 1,
   "currentRefreshCounts": {
-    "browser_challenge_persisted": 1
+    "browser_challenge_observed": 1
   },
   "historicalRetainedRowCount": 73,
   "historicalRetainedCounts": {
