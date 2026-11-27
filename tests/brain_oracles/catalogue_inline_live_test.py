@@ -271,6 +271,11 @@ with tempfile.TemporaryDirectory() as td:
     assert shaped["resolvedTargetRequestOtherDynamicUrlCount"] == 1
     assert shaped["resolvedTargetRequestSameOriginLiteralCount"] == 1
     assert shaped["resolvedTargetRequestCrossOriginLiteralCount"] == 1
+    assert shaped["resolvedTargetRequestStaticCandidateCount"] == 2
+    assert shaped["resolvedTargetRequestStaticSameOriginCount"] == 1
+    assert shaped["resolvedTargetRequestStaticCrossOriginCount"] == 1
+    assert shaped["resolvedTargetRequestStaticMediaIntentCount"] == 1
+    assert shaped["resolvedTargetRequestStaticSameOriginMediaIntentCount"] == 0
     assert "player.example" not in json.dumps(shaped)
     assert "media.example" not in json.dumps(shaped)
     assert "PRIVATE" not in json.dumps(structured)
