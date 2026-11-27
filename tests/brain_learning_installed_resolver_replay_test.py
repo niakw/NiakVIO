@@ -134,6 +134,40 @@ assert request_contract_after_negative["learningPreferredSelected"] is False,req
 assert request_contract_after_negative["postExhaustionStrategyProfile"]!="document_request_contract_mining_v2",request_contract_after_negative
 assert "document_request_contract_mining_v2" not in request_contract_after_negative["allowedProfiles"],request_contract_after_negative
 
+# Sanitized network telemetry may promote the existing session-bootstrap Lego
+# as the next one-shot hypothesis inside the same media-extraction family.
+session_followup=plan(
+ profile=queue.SESSION_BOOTSTRAP_FOLLOWUP_PROFILE,
+ failure=queue.PLAYER_REQUEST_CONTRACT_FAILURE,
+ causal_failure="media_extraction_gap",
+ negative_memory=request_contract_negative,
+)
+assert session_followup["learningPreferredRequested"]==queue.SESSION_BOOTSTRAP_FOLLOWUP_PROFILE,session_followup
+assert session_followup["learningPreferredSelected"] is True,session_followup
+assert session_followup["postExhaustionStrategyProfile"]==queue.SESSION_BOOTSTRAP_FOLLOWUP_PROFILE,session_followup
+assert session_followup["allowedProfiles"]==[queue.SESSION_BOOTSTRAP_FOLLOWUP_PROFILE],session_followup
+
+session_negative=[{
+ "providerId":"resolver-representative",
+ "failureClass":"media_extraction_gap",
+ "signature":"",
+ "profile":queue.SESSION_BOOTSTRAP_FOLLOWUP_PROFILE,
+ "strategyImplementationFingerprint":"3"*64,
+ "experimentVariant":4,
+ "experimentGeneration":5,
+ "attempts":1,"successes":0,"failures":1,"consecutiveFailures":1,
+ "lastOutcome":"rejected","executionObserved":True,
+}]
+session_after_negative=plan(
+ profile=queue.SESSION_BOOTSTRAP_FOLLOWUP_PROFILE,
+ failure=queue.PLAYER_REQUEST_CONTRACT_FAILURE,
+ causal_failure="media_extraction_gap",
+ negative_memory=[*request_contract_negative,*session_negative],
+)
+assert session_after_negative["learningPreferredSelected"] is False,session_after_negative
+assert session_after_negative["postExhaustionStrategyProfile"]!=queue.SESSION_BOOTSTRAP_FOLLOWUP_PROFILE,session_after_negative
+assert queue.SESSION_BOOTSTRAP_FOLLOWUP_PROFILE not in session_after_negative["allowedProfiles"],session_after_negative
+
 wrong=plan(profile="catalogue_inline_token_resolver_v2",failure="search_gap")
 assert wrong["learningPreferredSelected"] is False,wrong
 assert "catalogue_inline_token_resolver_v2" not in wrong["allowedProfiles"],wrong
