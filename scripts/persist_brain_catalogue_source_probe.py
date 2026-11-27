@@ -42,6 +42,10 @@ PLAYER_STRUCTURE_COUNT_LIMITS={
     "resolvedTargetRequestDynamicUrlCount":32,
     "resolvedTargetRequestTemplateUrlCount":32,
     "resolvedTargetRequestConcatUrlCount":32,
+    "resolvedTargetRequestIdentifierUrlCount":32,
+    "resolvedTargetRequestMemberUrlCount":32,
+    "resolvedTargetRequestCallExpressionUrlCount":32,
+    "resolvedTargetRequestOtherDynamicUrlCount":32,
     "resolvedTargetRequestSameOriginLiteralCount":32,
     "resolvedTargetRequestCrossOriginLiteralCount":32,
 }

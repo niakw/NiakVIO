@@ -354,6 +354,7 @@ def _request_bootstrap_structure(source: str, page_url: str) -> dict[str, int]:
         add("xhr", match.group(1))
 
     literal = dynamic = template = concatenated = 0
+    identifier = member = call_expression = other_dynamic = 0
     same_origin = cross_origin = 0
     base = urllib.parse.urlsplit(str(page_url or ""))
     base_origin = (
@@ -395,6 +396,20 @@ def _request_bootstrap_structure(source: str, page_url: str) -> dict[str, int]:
                 template += 1
             if "+" in value:
                 concatenated += 1
+            if re.fullmatch(r"[A-Za-z_$][A-Za-z0-9_$]*", value):
+                identifier += 1
+            elif re.fullmatch(
+                r"[A-Za-z_$][A-Za-z0-9_$]*(?:\s*\.\s*[A-Za-z_$][A-Za-z0-9_$]*)+",
+                value,
+            ):
+                member += 1
+            elif re.match(
+                r"[A-Za-z_$][A-Za-z0-9_$]*(?:\s*\.\s*[A-Za-z_$][A-Za-z0-9_$]*)*\s*\(",
+                value,
+            ):
+                call_expression += 1
+            else:
+                other_dynamic += 1
 
     by_kind = {kind: sum(1 for row_kind, _expr in calls if row_kind == kind)
                for kind in ("fetch", "xhr", "axios", "ajax")}
@@ -408,6 +423,10 @@ def _request_bootstrap_structure(source: str, page_url: str) -> dict[str, int]:
         "resolvedTargetRequestDynamicUrlCount": min(32, dynamic),
         "resolvedTargetRequestTemplateUrlCount": min(32, template),
         "resolvedTargetRequestConcatUrlCount": min(32, concatenated),
+        "resolvedTargetRequestIdentifierUrlCount": min(32, identifier),
+        "resolvedTargetRequestMemberUrlCount": min(32, member),
+        "resolvedTargetRequestCallExpressionUrlCount": min(32, call_expression),
+        "resolvedTargetRequestOtherDynamicUrlCount": min(32, other_dynamic),
         "resolvedTargetRequestSameOriginLiteralCount": min(32, same_origin),
         "resolvedTargetRequestCrossOriginLiteralCount": min(32, cross_origin),
     }
