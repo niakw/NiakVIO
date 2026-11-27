@@ -1579,12 +1579,12 @@ def _source_family_response_format(payload: dict[str, Any] | None = None) -> dic
     """The current family uses a bounded data grammar; legacy offline fixtures remain readable."""
     if _uses_source_matrix_compiler(payload or {}):
         fields = {
-            "slotPrefix": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,15}$"},
+            "slotPrefix": {"type": "string", "enum": ["eps"]},
             "declarations": {"type": "array", "minItems": 1, "maxItems": 3,
                              "items": {"type": "string", "enum": ["var", "let", "const"]}},
-            "matrixAxis": {"type": "string", "enum": ["reader-slots", "episode-slots"]},
-            "slotOrder": {"type": "string", "enum": ["numeric", "source"]},
-            "valuePrefix": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,15}:$"},
+            "matrixAxis": {"type": "string", "enum": ["reader-slots"]},
+            "slotOrder": {"type": "string", "enum": ["numeric"]},
+            "valuePrefix": {"type": "string", "enum": ["lien:"]},
         }
         return {"type": "json_object", "schema": {
             "type": "object", "properties": {"sourceFamilyProgram": {
@@ -1726,7 +1726,29 @@ def _compile_source_matrix_program(program: Any, payload: dict[str, Any]) -> lis
             or len(set(declarations)) != len(declarations)
             or axis not in ("reader-slots", "episode-slots") or order not in ("numeric", "source")):
         raise ValueError("source-family matrix grammar outside bounded compiler contract")
-    # The model controls only grammar data, never Python code, paths, imports or tests.
+    print(
+        "FIELD_BRAIN_SOURCE_MATRIX_GRAMMAR "
+        f"slot_prefix={prefix} declarations={','.join(declarations)} "
+        f"matrix_axis={axis} slot_order={order} value_prefix={tag}",
+        flush=True,
+    )
+    mismatches = []
+    if prefix != "eps":
+        mismatches.append("slotPrefix must be eps")
+    if tag != "lien:":
+        mismatches.append("valuePrefix must be lien:")
+    if "var" not in declarations:
+        mismatches.append("declarations must include var")
+    if axis != "reader-slots":
+        mismatches.append("matrixAxis must be reader-slots")
+    if order != "numeric":
+        mismatches.append("slotOrder must be numeric")
+    if mismatches:
+        raise ValueError(
+            "source-family reader-matrix-v2 grammar mismatch: " + "; ".join(mismatches)
+        )
+    # The model controls only grammar data within the attested v2 contract;
+    # Brain owns executable code, paths, hooks and tests.
     header = (
         "import json\nimport re\n"
         f"SLOT_PREFIX = {prefix!r}\nVALUE_PREFIX = {tag!r}\n"
@@ -2791,11 +2813,25 @@ def _validated_generated_edits(
                 correction = _minimal_payload(payload)
                 correction["correctionReason"] = "source-family-typed-contract"
                 correction["validationError"] = str(error)[:400]
+                rejected_program = (
+                    planned.get("sourceFamilyProgram")
+                    if isinstance(planned.get("sourceFamilyProgram"), dict) else {}
+                )
+                if _uses_source_matrix_compiler(payload) and rejected_program:
+                    allowed = {"slotPrefix", "declarations", "matrixAxis", "slotOrder", "valuePrefix"}
+                    correction["rejectedSourceFamilyProgram"] = {
+                        key: rejected_program[key]
+                        for key in allowed
+                        if key in rejected_program
+                    }
                 correction["correctionContract"] = {
                     "keepExactRuntimeDecodeAnchor": _source_family_anchor(payload),
                     "neverReplaceFunctionHeader": True,
                     "mustProducePureParserAndExecutableHook": True,
                     "mustReturnSourceFamilyProgram": True,
+                    "mustDifferFromRejectedSourceFamilyProgram": bool(
+                        correction.get("rejectedSourceFamilyProgram")
+                    ),
                     "providerPublicationAuthority": False,
                 }
                 planned = _request_corrected_plan(endpoint, model, correction)
@@ -2958,6 +2994,13 @@ def validated_model_plan(
         )
         return planned, edits
     except ValueError as exc:
+        if _uses_source_matrix_compiler(payload):
+            print(
+                "FIELD_BRAIN_ARCH_FORCE_OWNER owner=brain-source-compiler "
+                f"model_corrections_skipped=true error={str(exc)[:240]}",
+                flush=True,
+            )
+            raise
         if _deterministic_brain_scaffold_failure(exc):
             print(
                 "FIELD_BRAIN_ARCH_FORCE_OWNER owner=brain-scaffold "
@@ -3070,6 +3113,13 @@ def validated_model_plan(
             )
             return corrected, corrected_edits
         except ValueError as correction_error:
+            if _uses_source_matrix_compiler(payload):
+                print(
+                    "FIELD_BRAIN_ARCH_FORCE_OWNER owner=brain-source-compiler "
+                    f"model_corrections_skipped=true error={str(correction_error)[:240]}",
+                    flush=True,
+                )
+                raise
             if _deterministic_brain_scaffold_failure(correction_error):
                 print(
                     "FIELD_BRAIN_ARCH_FORCE_OWNER owner=brain-scaffold "

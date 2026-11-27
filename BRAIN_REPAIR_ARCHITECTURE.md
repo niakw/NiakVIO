@@ -1,3 +1,9 @@
+## 2026-11-27 — Reader-matrix-v2 : frontière modèle / compilateur
+
+Le modèle choisit une grammaire **typée** dans le contrat source-family, mais ne possède ni fichiers, ni Python, ni hook, ni test. Pour `reader-matrix-v2`, la preuve indépendante et la source observée bornent `slotPrefix=eps`, `matrixAxis=reader-slots`, `slotOrder=numeric`, `valuePrefix=lien:` et exigent la déclaration `var`. Une réponse hors contrat est rejetée avant matérialisation et le programme typé rejeté est fourni à l'unique correction Qwen.
+
+Après cette prévalidation, toute panne du parser/hook/test matérialisé est attribuée au **compilateur Brain**, pas au modèle. Le pipeline échoue fermé au lieu de payer plusieurs régénérations identiques. L'oracle multi-épisode reste indépendant et obligatoire.
+
 ## 2026-11-27 — Reprise Repair déterministe par cohorte non visitée
 
 Un épuisement de budget peut produire `processedProviders` et `unvisitedProviders`. La continuation n'est valide que si le rapport est marqué resumable, si le dernier Repair du census porte le même `sourceCensusRunId`, la même cohorte sélectionnée et un vrai `timeBudgetExhausted`. Le run suivant reçoit alors les providers non visités encore présents dans la repairQueue comme scope explicite unique. Aucun worker concurrent ni fusion de mémoire concurrente : la continuation reste séquentielle.

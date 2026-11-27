@@ -1,3 +1,10 @@
+## 2026-11-27 — V80.4 : FORCE source-family atteint le bon blueprint, puis Qwen répète une grammaire rejetée
+
+- FORCE [46014198757](https://github.com/niakw/NiakVIO/actions/runs/46014198757), source `2a0b9ae8`, atteint réellement `catalogue_inline_token_episode_source_family_v1` / `reader-matrix-v2` pour Anime-Sama après la preuve source exacte. La matérialisation échoue trois fois sur le même oracle : `LEGOTEST_ALPHA_1` absent pour épisode 1. **0 patch, 0 promotion, 0 réparation**.
+- Le compilateur déterministe reproduit correctement la fixture avec la grammaire attendue `eps + var + reader-slots + numeric + lien:`. Le défaut est le contrat de génération/retry : une grammaire sémantiquement incompatible pouvait être compilée, puis le retry recevait surtout le Python compilé et un AssertionError au lieu du programme typé rejeté.
+- Correctif Brain : le schéma JSON v2 borne maintenant préfixe/axe/ordre/valuePrefix à la famille attestée, le compilateur exige aussi `var`, journalise seulement les cinq champs sanitizés et rejette avant génération toute grammaire transposée. Le retry typé reçoit `rejectedSourceFamilyProgram` et doit en différer. Une grammaire conforme qui échoue ensuite au test matérialisé devient propriétaire `brain-source-compiler` et ne relance plus trois fois Qwen. L'oracle multi-épisode reste inchangé/fail-closed.
+- Expérience négative persistée dans le seed et le registre dérivé. Nouveau FORCE ciblé demandé ; aucun provider, manifest ou ProviderBase modifié par ce correctif.
+
 ## 2026-11-27 — V80.3 : poison RAG `epsN` neutralisé pendant le FORCE courant
 
 - Audit parallèle au FORCE Anime-Sama : `BRAIN_REPAIR_ARCHITECTURE.md` conservait une section historique affirmant l'inverse du contrat actif (« un tableau = un épisode »). Le code actif `build_brain_architecture_proposal.py` et le materializer utilisent déjà la sémantique corrigée : **`epsN` = slot lecteur, index du tableau = épisode**.

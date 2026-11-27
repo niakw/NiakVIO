@@ -233,13 +233,38 @@ assert "moduleCode" not in schema["properties"] and "runtimeReplace" not in sche
 for invalid in ({**grammar, "moduleCode": "eval('1')"},
                 {**grammar, "slotPrefix": "x;open()"},
                 {**grammar, "valuePrefix": "https:"},
-                {**grammar, "declarations": ["import"]}):
+                {**grammar, "declarations": ["import"]},
+                {**grammar, "slotPrefix": "episodes"},
+                {**grammar, "valuePrefix": "token:"},
+                {**grammar, "matrixAxis": "episode-slots"},
+                {**grammar, "declarations": ["let", "const"]},
+                {**grammar, "slotOrder": "source"}):
     try:
         mod._model_edits({"sourceFamilyProgram": invalid}, matrix_payload)
     except ValueError:
         pass
     else:
         raise AssertionError("unsafe matrix grammar accepted")
+
+# A rejected typed grammar is fed back to the one corrective model call.
+bad_axis = {**grammar, "matrixAxis": "episode-slots"}
+captured_retry = {}
+original_corrected_plan = mod._request_corrected_plan
+def fake_corrected_plan(endpoint, model, correction):
+    captured_retry.update(correction)
+    return {"sourceFamilyProgram": grammar}
+mod._request_corrected_plan = fake_corrected_plan
+try:
+    corrected_plan, corrected_edits = mod._validated_generated_edits(
+        "http://127.0.0.1:1", "unused", matrix_payload,
+        {"sourceFamilyProgram": bad_axis},
+    )
+finally:
+    mod._request_corrected_plan = original_corrected_plan
+assert captured_retry["rejectedSourceFamilyProgram"] == bad_axis
+assert captured_retry["correctionContract"]["mustDifferFromRejectedSourceFamilyProgram"] is True
+assert corrected_plan["sourceFamilyProgram"] == grammar
+assert len(corrected_edits) == 3
 
 with tempfile.TemporaryDirectory() as td:
     root = Path(td)
@@ -306,14 +331,20 @@ with tempfile.TemporaryDirectory() as td:
     else:
         raise AssertionError("modified applied classifier was accepted")
     real.write_bytes(original)
-    # A grammar that transposes reader slots must not pass the independent oracle.
-    wrong = mod._model_edits({"sourceFamilyProgram": {**grammar, "matrixAxis": "episode-slots"}}, matrix_payload)
-    (root / edits[0]["path"]).write_text(wrong[0]["content"], encoding="utf-8")
+    # A transposed grammar is rejected before compilation. If compiler bytes
+    # are corrupted after prevalidation, the independent materialized oracle
+    # still rejects the bad axis.
+    layer_path = root / edits[0]["path"]
+    valid_layer = layer_path.read_text(encoding="utf-8")
+    layer_path.write_text(
+        valid_layer.replace("AXIS = 'reader-slots'", "AXIS = 'episode-slots'", 1),
+        encoding="utf-8",
+    )
     try:
         mod.validate_source_family_implementation([e["path"] for e in edits], matrix_blueprint, root=root)
     except ValueError as exc:
         assert "source-family synthetic parser replay failed" in str(exc)
     else:
-        raise AssertionError("transposed matrix grammar was accepted")
+        raise AssertionError("tampered transposed matrix compiler bytes were accepted")
 
 print("Source-family Brain FORCE mode: typed program compiled into 3 deterministic edits, actual wired parser test and hostile negatives passed")
