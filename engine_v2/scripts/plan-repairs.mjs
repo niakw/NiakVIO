@@ -4,7 +4,7 @@ import crypto from "node:crypto";
 import process from "node:process";
 import { BRAIN_CONTROL_PLANE_VERSION, classifyFailure, planRepair } from "../src/repair-brain.mjs";
 import { evidenceSignature } from "../src/recipe-memory.mjs";
-import { profileRuntimeFingerprintMaterial } from "../src/strategy-fingerprint.mjs";
+import { profileGeneratorFingerprintMaterial, profileRuntimeFingerprintMaterial } from "../src/strategy-fingerprint.mjs";
 
 let input;
 let rawInput = "";
@@ -219,6 +219,9 @@ function strategyImplementationFingerprint(profile) {
         // v1/v2 strategies. Shared helper changes still affect their hashes.
         hash.update("file:" + file + "\n");
         hash.update(profileRuntimeFingerprintMaterial(content, normalized));
+      } else if (file === "scripts/adaptive_runtime/runtime_recovery_generator.py") {
+        hash.update("file:" + file + "\n");
+        hash.update(profileGeneratorFingerprintMaterial(content, normalized));
       } else if (
         file !== "scripts/adaptive_runtime/html_class_token_exact_v1.py"
         || normalized === "html_class_token_exact_v1"
