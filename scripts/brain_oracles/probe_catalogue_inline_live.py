@@ -32,6 +32,11 @@ except ImportError:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from catalogue_inline_episode_source import classify
 
+try:
+    from .packed_player_static import unpack_packed_player
+except ImportError:
+    from packed_player_static import unpack_packed_player
+
 ROOT = Path(__file__).resolve().parents[2]
 ID = re.compile(r"[a-z0-9][a-z0-9-]{0,79}")
 SLUG = re.compile(r"[a-z0-9][a-z0-9-]{0,125}")
@@ -325,6 +330,63 @@ def fetch_resolved_target(url: str, referer: str) -> tuple[int, str, bool, str, 
             return status, prefix, oversized, "", content_type
     except (TimeoutError, OSError, ValueError):
         return 0, "", False, "transport_error", ""
+
+
+def _advanced_expression_structure(source: str) -> dict[str, Any]:
+    """Compare the installed generic expression analyzer on post-unpack text.
+
+    Returns bounded counts only. Route strings, expressions, identifiers and
+    request payload material are deliberately discarded.
+    """
+    base = {
+        "resolvedTargetAdvancedAnalyzerAvailable": False,
+        "resolvedTargetAdvancedUnpackChanged": False,
+        "resolvedTargetAdvancedRouteCount": 0,
+        "resolvedTargetAdvancedExecutedRouteCount": 0,
+        "resolvedTargetAdvancedContractCount": 0,
+        "resolvedTargetAdvancedExecutedContractCount": 0,
+        "resolvedTargetAdvancedGetContractCount": 0,
+        "resolvedTargetAdvancedPostContractCount": 0,
+    }
+    try:
+        import sys
+        scripts_dir = str(ROOT / "scripts")
+        if scripts_dir not in sys.path:
+            sys.path.insert(0, scripts_dir)
+        import provider_contract_recognizer as recognizer
+        from provider_route_expression_analyzer import (
+            expression_request_contracts,
+            extract_expression_routes,
+        )
+        raw = str(source or "")[:TARGET_MAX_BODY]
+        decoded = unpack_packed_player(raw)
+        routes, evidence, _decoded = extract_expression_routes(decoded, recognizer)
+        contracts = expression_request_contracts(decoded, recognizer)
+        executed_routes = sum(
+            1 for route in routes
+            if isinstance(evidence.get(route), dict)
+            and evidence[route].get("executedEvidence") is True
+        )
+        executed_contracts = sum(
+            1 for row in contracts
+            if isinstance(row, dict) and row.get("executedEvidence") is True
+        )
+        methods = [
+            str(row.get("method") or "").upper()
+            for row in contracts if isinstance(row, dict)
+        ]
+        return {
+            "resolvedTargetAdvancedAnalyzerAvailable": True,
+            "resolvedTargetAdvancedUnpackChanged": decoded != raw,
+            "resolvedTargetAdvancedRouteCount": min(32, len(routes)),
+            "resolvedTargetAdvancedExecutedRouteCount": min(32, executed_routes),
+            "resolvedTargetAdvancedContractCount": min(32, len(contracts)),
+            "resolvedTargetAdvancedExecutedContractCount": min(32, executed_contracts),
+            "resolvedTargetAdvancedGetContractCount": min(32, methods.count("GET")),
+            "resolvedTargetAdvancedPostContractCount": min(32, methods.count("POST")),
+        }
+    except Exception:
+        return base
 
 
 def _request_bootstrap_structure(source: str, page_url: str) -> dict[str, int]:
@@ -722,6 +784,7 @@ def _resolved_target_player_structure(body: str, page_url: str = "") -> dict[str
             for _attrs, form_body in forms[:8]),
     )
     request_shape = _request_bootstrap_structure(source, page_url)
+    advanced_shape = _advanced_expression_structure(source)
     request_bootstrap = bool(re.search(
         r"\b(?:fetch\s*\(|XMLHttpRequest\b|\$\s*\.\s*ajax\s*\(|axios\s*\.)",
         source, re.I,
@@ -764,6 +827,7 @@ def _resolved_target_player_structure(body: str, page_url: str = "") -> dict[str
         "resolvedTargetFormCount": form_count,
         "resolvedTargetHiddenInputCount": hidden_count,
         **request_shape,
+        **advanced_shape,
         "resolvedTargetPostFormObserved": post_form,
         "resolvedTargetRequestBootstrapObserved": request_bootstrap,
         "resolvedTargetPackedScriptObserved": packed_script,
