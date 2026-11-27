@@ -1414,7 +1414,6 @@ jobs:
               REMAINING_TARGETS+=("$normalized")
             fi
           elif [ "${{ github.event_name }}" = "push" ]; then
-            EXPLICIT_SCOPE=1
             mapfile -t PUSH_TARGETS < <(python - <<'PY'
           import json
           from pathlib import Path
@@ -1425,11 +1424,14 @@ jobs:
               if value: print(value)
           PY
             )
-            for provider in "${PUSH_TARGETS[@]}"; do
-              if [ -z "${FORCE_WINNER_SET[$provider]+x}" ]; then
-                REMAINING_TARGETS+=("$provider")
-              fi
-            done
+            if [ "${#PUSH_TARGETS[@]}" -gt 0 ]; then
+              EXPLICIT_SCOPE=1
+              for provider in "${PUSH_TARGETS[@]}"; do
+                if [ -z "${FORCE_WINNER_SET[$provider]+x}" ]; then
+                  REMAINING_TARGETS+=("$provider")
+                fi
+              done
+            fi
           elif [ -n "${FORCE_ACCEPTED:-}" ]; then
             EXPLICIT_SCOPE=1
             mapfile -t CURRENT_REPAIR_TARGETS < <(python - <<'PY'

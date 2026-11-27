@@ -1,3 +1,9 @@
+## 2026-11-27 — V77.6 : push Repair vide n'est plus confondu avec un scope explicite FORCE
+
+- L'artefact/log du Repair [45983905193](https://github.com/niakw/NiakVIO/actions/runs/45983905193) révèle la cause du `selected=0` : le pipeline canonique n'a pas été lancé. Le workflow a émis `FIELD_CANONICAL_REPAIR skipped=true reason=all-explicit-targets-resolved-by-isolated-force` en mode `repair`, sans FORCE accepté et avec `targetProviders=[]`.
+- Cause : la branche `github.event_name == push` posait inconditionnellement `EXPLICIT_SCOPE=1` avant de lire la liste du trigger. Une liste vide devenait donc un scope explicite de taille zéro, interprété comme « toutes les cibles sont déjà résolues ». Le fichier post-repair 4khdhub visible dans l'artefact est un résidu suivi, pas la preuve d'une sélection actuelle.
+- Correctif : un push n'active désormais `EXPLICIT_SCOPE` que si `PUSH_TARGETS` contient au moins un provider. Avec un trigger Repair vide, aucun `--provider` n'est ajouté et `run_provider_repair_pipeline_v6.py` reçoit la repairQueue du census. Test de workflow dédié ajouté. Aucun provider, ProviderBase, preuve playback ou seuil d'acceptation modifié. **0 réparation** au run 45983905193.
+
 ## 2026-11-27 — V77.5 : gate non-régression débloqué sur normalisation des invalidations
 
 - Repair [45983905193](https://github.com/niakw/NiakVIO/actions/runs/45983905193), source `339cfff0`, franchit désormais le préflight V17 et exécute le Repair canonique jusqu'au bout. Verdict produit : `selected=0 candidates=0 validated=0 outcome=success`; donc **0 réparation**. Le run échoue ensuite uniquement au candidate gate.
