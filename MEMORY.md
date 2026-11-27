@@ -1,3 +1,11 @@
+## 2026-11-27 — V87 : la preuve resolver était persistée mais supprimée avant Qwen
+
+- Audit de la frontière NiakVIO → Brain-LLM : le probe resolver actuel produit 13 observations et le lead `catalogue_inline_token_resolver_observed_unverified`. Brain-LLM main `d705de3d` limitait encore ce flux au contrat V1 (12 observations et deux hypothèses pré-resolver). La ligne V2 valide était donc rejetée par `niakvio_adapter.py` avant le prompt : le système stockait le bon fait mais Qwen raisonnait sans lui.
+- Brain-LLM `2ba59f84` corrige cette frontière : plafond borné 18, allowlist resolver/target terminal, projection des seuls statuts/enums/booléens sanitizés, témoin prompt exact-parent. CI Brain LLM, Push, mémoire privée et sécurité sont vertes sur ce SHA. Aucun token, id, body ou URL n'entre dans le prompt.
+- NiakVIO `943faef6` ajoute l'étage diagnostic suivant : après un resolver HTTPS attesté, au plus un GET de forme par origine, 64 KiB maximum, sans suivre les redirections. Il classe seulement HLS/DASH/media, page player, page HTML, JSON/JS/text, redirect ou erreur. Cette observation reste sans autorité playback/identité/mutation/publication.
+- Cause de fond corrigée : les capacités et preuves nouvelles doivent traverser **observation → persistance → adaptateur Brain → prompt → planner → exécution**. Une preuve présente dans MEMORY/JSON mais filtrée par une vieille frontière équivaut à une preuve absente pour le modèle.
+- Réparation provider certifiée : **0**. La prochaine preuve attendue est la forme réelle de la cible resolver, puis un replay Brain consommant cette forme.
+
 ## 2026-11-27 — V86 : le replay V2 a réellement exécuté la capacité, puis rotation causale
 
 - Le Learning supersédé 46047131409 sur `ce96e2dc` apporte la preuve qui manquait à V84 : `resolver_installed_replay_required` est reconnu, le handoff demande `catalogue_inline_token_resolver_v2`, et le premier candidat réellement exécuté est `published:anime-sama::repair:r1:catalogue_inline_token_resolver_v2:6e60623b`.

@@ -1,3 +1,7 @@
+### 27 novembre — P0 déplacé vers la frontière preuve → modèle → terminal
+
+Le resolver V2 a été réellement exécuté et atteint le frontier épisode. Le verrou suivant était double : (1) la preuve resolver V2 était filtrée par l'adaptateur Brain-LLM V1, corrigé par `2ba59f84`; (2) la cible HTTPS n'était pas classée, corrigé côté oracle par `943faef6`. Critère de sortie : obtenir une forme terminale sanitizée sur le probe actuel, vérifier qu'elle apparaît dans le contexte Brain, puis exécuter une stratégie causale correspondante. Ne pas créer V3 avant cette observation. **0 réparation** jusqu'au média terminal identity-matched et au client officiel.
+
 ### 27 novembre — V2 franchi : prochain verrou = terminal après épisode
 
 Le replay 46047131409 démontre que le resolver V2 est désormais réellement sélectionné et exécuté sur Anime-Sama. Résultat : candidat V2 généré, progression jusqu'au frontier épisode, mais 0 stream / 0 playable. La roadmap ne doit plus considérer « V2 jamais exécuté » comme le P0. Le prochain lot causal est la transition épisode/resolver → média terminal, avec rotation autorisée après le négatif V2. Tout fallback avant le premier essai exact reste interdit. **0 réparation**.

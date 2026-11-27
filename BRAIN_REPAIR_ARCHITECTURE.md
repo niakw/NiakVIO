@@ -1,3 +1,9 @@
+## 2026-11-27 — Contrat de version de la preuve entre Oracle et Brain-LLM
+
+Une évolution d'oracle n'est intégrée que si ses champs sanitizés traversent la frontière Brain-LLM. Toute augmentation bornée de requêtes, nouvel enum causal ou nouvel étage de forme doit être couverte simultanément par : producteur NiakVIO, persistance, adaptateur Brain, témoin prompt et tests hostiles. Une ligne valide rejetée par un adaptateur supersédé est une panne d'orchestration, même si le JSON est correctement persisté.
+
+Le resolver V2 a révélé ce cas : NiakVIO conservait une preuve 13-requêtes avec `catalogue_inline_token_resolver_observed_unverified`, tandis que Brain-LLM acceptait encore seulement le plafond V1 de 12 et deux hypothèses antérieures. Brain `2ba59f84` rétablit le contrat exact-parent sans augmenter l'autorité de la preuve.
+
 ## 2026-11-27 — Handoff préféré = autorité one-shot, pas verrou permanent
 
 Un exécuteur fraîchement installé doit obtenir un essai représentatif exact avant tout fallback. Tant que le planner marque `learningPreferredSelected=true`, la frontière de mutation exige l'identité stricte entre profil préféré, `allowedProfiles` et profil exécuté. Après un négatif réellement exécuté et persisté, le planner peut marquer `learningPreferredSelected=false` et tourner vers un sibling causal ; le nouveau `allowedProfiles` devient alors l'autorité. Conserver `learningPreferredRequested` dans le plan sert à la provenance, pas à interdire l'apprentissage après l'essai initial.
