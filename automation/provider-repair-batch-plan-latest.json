@@ -1,16 +1,15 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "45921511526",
-  "sourceTriggerSha": "315b0b247d7c59cf31529b32a71c2f7634ad5b20",
+  "sourceRunId": "45922579169",
+  "sourceTriggerSha": "fa5a98505962b5ce20677657153e789fbd7d36b0",
   "unresolvedProviderCount": 67,
-  "dynamicVariantProviderCount": 7,
+  "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
     "hindmoviez",
     "meowtv",
     "movix-fr",
     "nakios",
     "papadustream",
-    "sadisflix",
     "stigstream"
   ],
   "lifecycleSuppressedDynamicProviders": [
@@ -152,7 +151,8 @@
         "native-policy-reachable",
         "no-transport-evidence",
         "residential-exit-all-challenged",
-        "residential-exit-browser-reachable"
+        "residential-exit-browser-reachable",
+        "residential-exit-native-reachable"
       ],
       "transportSignature": "not-applicable",
       "providerCount": 39,
@@ -274,8 +274,8 @@
       ],
       "dominantIssues": [
         "network_zero_result",
-        "timeout",
-        "timeout, provider_returned_wrong_content"
+        "provider_returned_streams, timeout",
+        "timeout"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
@@ -289,9 +289,7 @@
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [
-        "sadisflix"
-      ],
+      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
