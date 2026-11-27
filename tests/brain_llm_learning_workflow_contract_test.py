@@ -152,6 +152,10 @@ assert 'model_timeout=180' in workflow
 assert 'model_workers=1' in workflow
 
 # Fast-Handoff advisor work must reduce to repair-family oracles before LLM calls.
+pre_route_call=workflow.split("args=(python brain-llm/scripts/route_batch_from_checkout.py",1)[1].split('"${args[@]}"',1)[0]
+assert "--mode brain" in pre_route_call
+assert "--advisor-only" in pre_route_call
+assert "--advisor-memory brain-learning-input/previous.json" in pre_route_call
 planner_call=workflow.split("args=(python brain-llm/scripts/plan_batch_from_checkout.py",1)[1].split('"${args[@]}"',1)[0]
 assert "--mode brain" in planner_call
 assert "--advisor-only" in planner_call

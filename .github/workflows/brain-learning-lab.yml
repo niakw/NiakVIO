@@ -772,7 +772,9 @@ jobs:
           args=(python brain-llm/scripts/route_batch_from_checkout.py
             --niakvio-root .
             --experience brain-sandbox/brain-llm/public-experience.jsonl
+            --advisor-memory brain-learning-input/previous.json
             --mode brain
+            --advisor-only
             --output brain-sandbox/brain-llm/routing.jsonl
             --summary brain-sandbox/brain-llm/routing-summary.json)
           if [ -n "${PROVIDER_FILTER:-}" ]; then

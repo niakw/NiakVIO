@@ -1,3 +1,8 @@
+## 2026-11-27 — Pré-route et planner partagent la même dette
+
+Le pré-route qui décide de démarrer Qwen et le planner advisor-only qui choisit l'expérience doivent consommer la même mémoire cross-day et le même mode `advisor_only`. À partir de Brain `ffa619b0`, les deux CLI acceptent la mémoire advisor supplémentaire ; NiakVIO leur transmet `brain-learning-input/previous.json`.
+
+La progression V72 est causale mais non fonctionnelle : nouveau fingerprint exécuté, 1 stream observé, 0 playable. Elle autorise une nouvelle hypothèse, pas une réparation comptée.
 ## 2026-11-27 — Pont cross-day → routage Brain-LLM
 
 La décision d'appeler Qwen doit consommer la même mémoire négative que le filtre de guidance et le runtime. La mémoire cross-day Learning est une autorité d'**exclusion d'hypothèses exécutées**, jamais une autorité de preuve média ou de publication. NiakVIO transmet `brain-learning-input/previous.json` au planner Brain-LLM ; l'adapter projette seulement les champs d'expérience sanitizés et fusionne les doublons sans pouvoir dégrader un `executionObserved=true`.

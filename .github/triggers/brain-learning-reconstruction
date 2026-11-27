@@ -1,12 +1,13 @@
-Brain Learning V72 — cross-day negative memory visible before advisor/Qwen routing.
-source_niakvio_main_pretrigger_sha: e5fc24c6a02c6bade098a8db55303e020c5b5e92
-source_brain_main_sha: 96c4b35ac041fb18e8dcaf524e664056c2545b2d
-source_census_run_id: 45934351459
+Brain Learning V73 — aligned pre-route/planner memory, continue Primewire causal rotation.
+source_niakvio_main_pretrigger_sha: 4316caba62752221ed9d541bad474b51adc72d96
+source_brain_main_sha: ffa619b0144a0af36b9d6f1cb76b27e77c3ef412
+source_learning_run_id: 45938579486
 requested_at: 2026-11-27
 target_provider:
 target_providers: primewire
 architecture_force: false
 budget_minutes: 90
-reason: Primewire run 45937650364 proved the previous 388b8e fingerprint is dropped only after Brain-LLM already routed deterministic_advisor. V72 passes cross-day previous.json into Brain-LLM request construction before routing. Do not lower the three-executed-fingerprint Qwen threshold.
-proof_goal: Verify the run pins Brain 96c4b35a. The advisor route must not return the already executed 388b8e fingerprint. Record routing mode, llm_calls, selected fingerprint, exact runtime-selected profile/fingerprint, phase ledger, providerProposal/candidate counts and playback/identity verdict. If another deterministic fingerprint is selected, it must be executed and persisted before the next phase; if three same-executor executed fingerprints are present, routing must become llm_repair and llm_calls > 0.
-publication_policy: 0 repair unless generated candidate bytes are compiled/applied/rematerialized and exact-byte replay proves playable correct content, then official NuvioTV decoded video/audio/identity and non-regression.
+executed_negative_fingerprints: 388b8ec82ebe860e24fe3740955bfcdf709389ce0522bffdbf94a36015e5783c;c1c5bdb37b68178d79437c8c245c91346eeb34eb2041773c4ff696f2da3b6d98
+reason: V72 rotated away from 388b8e and executed c1c5bdb3 on chain_terminal_extractor_v1/adaptive_runtime_recovery, yielding one unverified stream and zero playable. Pre-route and planner now use the same advisor-only cross-day memory. Do not count 5a773898 because it was synthesized but not executed.
+proof_goal: Pin Brain ffa619b0. Pre-route and planner must report advisor_memory_sources=1 and compatible routing. Never execute 388b8e or c1c5bdb3 again. Persist the next executed fingerprint/profile. Only three distinct executed fingerprints for the exact executor may escalate to llm_repair with llm_calls>0. Record streams/playable/identity, providerProposal and candidate bytes.
+publication_policy: no provider publication without compile/apply/rematerialize/exact-byte replay plus official NuvioTV correct-content decoded playback and non-regression.

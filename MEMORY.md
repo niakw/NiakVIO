@@ -1,3 +1,10 @@
+## 2026-11-27 — V73 : V72 exécute un second fingerprint et le pré-route est aligné
+
+- Brain-LLM `96c4b35ac041fb18e8dcaf524e664056c2545b2d` : CI 45938438257 verte, **603 tests**, dont les deux nouveaux tests cross-day ; audit confidentialité public OK.
+- Learning V72 `45938579486`, source `4316caba`, a épinglé Brain `96c4b35a`. Le planner advisor-only produit un nouveau fingerprint `c1c5bdb37b68178d79437c8c245c91346eeb34eb2041773c4ff696f2da3b6d98`; `dropped_failed_fingerprints=0`, donc il ne recycle pas `388b8e...`. Le seuil de trois négatifs du même executor n'est pas encore atteint : `routing_modes={deterministic_advisor:1}`, `llm_calls=0` est attendu.
+- Exécution réelle : `chain_terminal_extractor_v1` et `adaptive_runtime_recovery` exécutent `c1c5bdb3...`, variant 4 / génération 2. Primewire passe de 0 à **1 stream**, mais `playable_before=0`, `playable_after=0`; garde `safety_gate:no_playable_proof`. `phase_ledger=2`. Aucune lecture terminale décodée.
+- `5a773898...` reste une guidance synthétisée mais n'est pas dans le ledger d'exécution : ne pas le compter comme négatif exécuté. `provider_proposals=0`, `candidateCount=0`, `strictLabPlayableCount=0`. **0 réparation**.
+- Brain-LLM `ffa619b0144a0af36b9d6f1cb76b27e77c3ef412` aligne aussi `route_batch_from_checkout.py` sur la mémoire advisor supplémentaire. NiakVIO pré-route passe la même `previous.json` et `--advisor-only`; le seuil des trois fingerprints exécutés reste inchangé.
 ## 2026-11-27 — V72 : la mémoire Learning entre enfin dans la décision Qwen
 
 - **Cause observée** sur Learning Primewire [45937236335](https://github.com/niakw/NiakVIO/actions/runs/45937236335) puis [45937650364](https://github.com/niakw/NiakVIO/actions/runs/45937650364) : le serveur Qwen est disponible, mais `plan_batch_from_checkout.py` route encore `deterministic_advisor` avec `llm_calls=0`. Dans le même run, le filtre NiakVIO supprime pourtant le fingerprint déjà exécuté `388b8ec82ebe...` (`dropped_failed_fingerprints=1`). Le routeur Brain-LLM décidait donc **avant** de voir la mémoire cross-day qui prouvait l'échec.
