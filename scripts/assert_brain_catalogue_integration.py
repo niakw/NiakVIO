@@ -128,6 +128,17 @@ if int(current.get("resolvedTargetProbeCount") or 0) > 0:
             "resolvedTargetInlineScriptCount": 16,
             "resolvedTargetFormCount": 8,
             "resolvedTargetHiddenInputCount": 32,
+            "resolvedTargetRequestCallCount": 32,
+            "resolvedTargetFetchCallCount": 32,
+            "resolvedTargetXhrCallCount": 32,
+            "resolvedTargetAxiosCallCount": 32,
+            "resolvedTargetAjaxCallCount": 32,
+            "resolvedTargetRequestLiteralUrlCount": 32,
+            "resolvedTargetRequestDynamicUrlCount": 32,
+            "resolvedTargetRequestTemplateUrlCount": 32,
+            "resolvedTargetRequestConcatUrlCount": 32,
+            "resolvedTargetRequestSameOriginLiteralCount": 32,
+            "resolvedTargetRequestCrossOriginLiteralCount": 32,
         }.items():
             assert type(inline.get(key)) is int and 0 <= inline[key] <= limit, (key, inline.get(key))
         for key in (
@@ -178,11 +189,18 @@ if int(current.get("resolvedTargetProbeCount") or 0) > 0:
             "resolvedTargetIframeCount", "resolvedTargetVideoTagCount",
             "resolvedTargetSourceTagCount", "resolvedTargetExternalScriptCount",
             "resolvedTargetInlineScriptCount", "resolvedTargetFormCount",
-            "resolvedTargetHiddenInputCount", "resolvedTargetPostFormObserved",
+            "resolvedTargetHiddenInputCount", "resolvedTargetRequestCallCount",
+            "resolvedTargetFetchCallCount", "resolvedTargetXhrCallCount",
+            "resolvedTargetAxiosCallCount", "resolvedTargetAjaxCallCount",
+            "resolvedTargetRequestLiteralUrlCount", "resolvedTargetRequestDynamicUrlCount",
+            "resolvedTargetRequestTemplateUrlCount", "resolvedTargetRequestConcatUrlCount",
+            "resolvedTargetRequestSameOriginLiteralCount", "resolvedTargetRequestCrossOriginLiteralCount",
+            "resolvedTargetPostFormObserved",
             "resolvedTargetRequestBootstrapObserved", "resolvedTargetPackedScriptObserved",
             "resolvedTargetBase64DecodeObserved", "resolvedTargetMetaRefreshObserved",
         ):
-            assert witness.get(key) == inline.get(key), (key, witness.get(key), inline.get(key))
+            if key in inline:
+                assert witness.get(key) == inline.get(key), (key, witness.get(key), inline.get(key))
 
 print(
     "FIELD_BRAIN_CATALOGUE_ADAPTER_INTEGRATION "

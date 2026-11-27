@@ -40,6 +40,19 @@ PLAYER_STRUCTURE_COUNT_LIMITS = {
     "resolvedTargetFormCount": 8,
     "resolvedTargetHiddenInputCount": 32,
 }
+PLAYER_REQUEST_SHAPE_COUNT_LIMITS = {
+    "resolvedTargetRequestCallCount": 32,
+    "resolvedTargetFetchCallCount": 32,
+    "resolvedTargetXhrCallCount": 32,
+    "resolvedTargetAxiosCallCount": 32,
+    "resolvedTargetAjaxCallCount": 32,
+    "resolvedTargetRequestLiteralUrlCount": 32,
+    "resolvedTargetRequestDynamicUrlCount": 32,
+    "resolvedTargetRequestTemplateUrlCount": 32,
+    "resolvedTargetRequestConcatUrlCount": 32,
+    "resolvedTargetRequestSameOriginLiteralCount": 32,
+    "resolvedTargetRequestCrossOriginLiteralCount": 32,
+}
 PLAYER_STRUCTURE_FLAGS = (
     "resolvedTargetPostFormObserved",
     "resolvedTargetRequestBootstrapObserved",
@@ -284,9 +297,18 @@ def _bounded_player_structure(item: dict[str, Any]) -> dict[str, Any] | None:
         if type(value) is not bool:
             return None
         flags[key] = value
+    optional_counts: dict[str, int] = {}
+    for key, limit in PLAYER_REQUEST_SHAPE_COUNT_LIMITS.items():
+        if key not in item:
+            continue
+        value = item.get(key)
+        if type(value) is not int or not 0 <= value <= limit:
+            return None
+        optional_counts[key] = value
     return {
         "resolvedTargetPlayerStructureClass": structure_class,
         **counts,
+        **optional_counts,
         **flags,
     }
 

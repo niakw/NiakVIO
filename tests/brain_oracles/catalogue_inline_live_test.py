@@ -241,6 +241,30 @@ with tempfile.TemporaryDirectory() as td:
     assert structured["resolvedTargetPostFormObserved"] is True
     assert structured["resolvedTargetRequestBootstrapObserved"] is True
     assert structured["resolvedTargetBase64DecodeObserved"] is True
+    shaped = probe.resolved_target_shape(
+        200,
+        '<!doctype html><script>'
+        'fetch("/same");'
+        'axios.post("https://media.example/api", {id: 1});'
+        'x.open("POST", endpoint);'
+        '$.ajax({url: `/dynamic/${episode}`});'
+        '</script>',
+        False,
+        "text/html",
+        "https://player.example/watch/1",
+    )
+    assert shaped["resolvedTargetRequestCallCount"] == 4
+    assert shaped["resolvedTargetFetchCallCount"] == 1
+    assert shaped["resolvedTargetAxiosCallCount"] == 1
+    assert shaped["resolvedTargetXhrCallCount"] == 1
+    assert shaped["resolvedTargetAjaxCallCount"] == 1
+    assert shaped["resolvedTargetRequestLiteralUrlCount"] == 2
+    assert shaped["resolvedTargetRequestDynamicUrlCount"] == 2
+    assert shaped["resolvedTargetRequestTemplateUrlCount"] == 1
+    assert shaped["resolvedTargetRequestSameOriginLiteralCount"] == 1
+    assert shaped["resolvedTargetRequestCrossOriginLiteralCount"] == 1
+    assert "player.example" not in json.dumps(shaped)
+    assert "media.example" not in json.dumps(shaped)
     assert "PRIVATE" not in json.dumps(structured)
     for path in paths:
         if "/api/lien.php?" not in path:
