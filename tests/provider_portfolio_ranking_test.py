@@ -14,6 +14,17 @@ SCRIPT_SOURCE = SCRIPT.read_text(encoding="utf-8")
 POLICY = json.loads((ROOT / ".github/provider-portfolio-policy.json").read_text(encoding="utf-8"))
 WORKFLOW_GATE = (ROOT / ".github/workflows/github-actions-gate.yml").read_text(encoding="utf-8")
 
+MANIFEST = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+ACTIVE_PROVIDER = next(
+    str(row.get("id") or "").strip().casefold()
+    for row in MANIFEST.get("scrapers") or []
+    if isinstance(row, dict)
+    and row.get("enabled") is True
+    and {"movie", "tv", "anime"}.issubset(
+        {str(value).strip().casefold() for value in row.get("published_types") or []}
+    )
+)
+
 
 def b64(value: str) -> str:
     return base64.urlsafe_b64encode(value.encode()).decode().rstrip("=")
@@ -45,7 +56,7 @@ with tempfile.TemporaryDirectory() as tmp:
         fixture = row["fixture"]
         duration = int(fixture.get("expectedDurationMinutes") or 1) * 60
         for client in ("desktop", "mobile", "tv"):
-            emit(lines, client, row["slug"], "streamzo", fixture["title"], duration)
+            emit(lines, client, row["slug"], ACTIVE_PROVIDER, fixture["title"], duration)
             # A high-response provider that serves unrelated content must never
             # survive the portfolio selector just because its catalogue looks big.
             emit(lines, client, row["slug"], "1shows", "Ben 10 Ultimate Alien", duration)
@@ -69,10 +80,10 @@ with tempfile.TemporaryDirectory() as tmp:
     data = json.loads(output.read_text(encoding="utf-8"))
     providers = {row["provider"]: row for row in data["providers"]}
 
-    assert providers["streamzo"]["qualityEligible"] is True, providers["streamzo"]
-    assert providers["streamzo"]["recommendation"] == "active_core", providers["streamzo"]
-    assert providers["streamzo"]["catalogueCoverageRate"] == 1, providers["streamzo"]
-    assert providers["streamzo"]["crossPlatformFixtureRate"] == 1, providers["streamzo"]
+    assert providers[ACTIVE_PROVIDER]["qualityEligible"] is True, providers[ACTIVE_PROVIDER]
+    assert providers[ACTIVE_PROVIDER]["recommendation"] == "active_core", providers[ACTIVE_PROVIDER]
+    assert providers[ACTIVE_PROVIDER]["catalogueCoverageRate"] == 1, providers[ACTIVE_PROVIDER]
+    assert providers[ACTIVE_PROVIDER]["crossPlatformFixtureRate"] == 1, providers[ACTIVE_PROVIDER]
 
     assert providers["1shows"]["identityContradictions"] > 0, providers["1shows"]
     assert providers["1shows"]["contentSafetyEligible"] is False, providers["1shows"]
