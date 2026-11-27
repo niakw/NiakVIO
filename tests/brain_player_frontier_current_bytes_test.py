@@ -123,15 +123,19 @@ for provider in frontier[:4]:
         assert repaired["runtime_repair"]["profile"] == "player_media_extractor_v1", repaired
         assert repaired["runtime_repair"]["strategy"] == "player_media_extractor_v1", repaired
 
-        mutated = staged.read_bytes()
+        repaired_path = (stage / str(repaired.get("local_path") or "")).resolve()
+        repaired_path.relative_to((stage / "providers" / "runtime-repairs").resolve())
+        assert repaired_path.is_file(), (provider, repaired.get("local_path"))
+        mutated = repaired_path.read_bytes()
         assert mutated != original, (provider, "player profile made no byte change")
         assert hashlib.sha256(mutated).hexdigest() != original_digest
         assert int(repaired.get("bytes") or 0) == len(mutated)
+        assert str(repaired.get("sha256") or "") == hashlib.sha256(mutated).hexdigest()
         records = repaired.get("local_patches") or []
         assert records and records[-1].get("profile") == "player_media_extractor_v1", records
 
         check_file = stage / "candidate.js"
-        shutil.copyfile(staged, check_file)
+        shutil.copyfile(repaired_path, check_file)
         check = subprocess.run(
             ["node", "--check", str(check_file)],
             cwd=ROOT,
