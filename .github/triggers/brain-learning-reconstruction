@@ -1,16 +1,16 @@
-Brain architecture FORCE V2 — generate and promote the reusable opaque-token resolver after V1 parser replay.
-source_niakvio_main_pretrigger_sha: d9e282c38f1e22edead63efbd288772ebfc17e65
+Brain installed resolver replay V2 — execute the promoted opaque-token resolver on the attested representative.
+source_niakvio_main_pretrigger_sha: 563afca1f26d99313d4e20b4bd7a786012781fb7
 source_brain_main_sha: d705de3daba4b59fc7990618e819276e87df7191
 requested_at: 2026-11-27
 budget_minutes: 65
-execution_mode: targeted-source-resolver-force-v2
+execution_mode: targeted-source-resolver-installed-replay-v2
 target_provider: anime-sama
 target_providers:
-architecture_force: true
+architecture_force: false
 required_strategy_id: catalogue_inline_token_resolver_v2
-required_source_compiler_contract: opaque-token-resolver-v1
+required_failure_class: chain_terminal_gap
 required_resolver_contract: same-origin-api-lien-j-l-v1
-required_evidence: parser-promotion-0c4bae792080;parser-replay-46027343215;resolver-probe-46031425328;parent-tv-45321345600;provider-artifact-478cbfbaa246a9ede48db8daf5d876c8e1512c0501387d3b56b8b86321e5f0ef;v2-compiler-10bd7a78;v2-runtime-gate-de71ae47;v2-absence-202ffb02;v2-preflight-d9e282c3
-causal_change: V1 reader-matrix parser is installed and replayed but Anime-Sama remains no_streams. Exact-current-byte independent diagnostics observed one ephemeral same-origin resolver response with HTTP 200, JSON object, field u and HTTPS output. Generate only the typed reusable resolver V2; do not regenerate V1, do not hard-code provider ids/domains/tokens/URLs, and do not persist resolver material.
-proof_goal: Real Qwen execution -> exact typed resolverProgram -> Brain-owned compilation -> all three executable Repair selection surfaces -> promotion on exact bytes -> one representative Repair replay. Count zero repair unless generated provider bytes differ, compile, rematerialize, resolve the requested episode and official NuvioTV decodes correct video/audio. Preserve sibling/non-regression gates before fanout.
-publication_policy: Source/resolver evidence is diagnostic only. No provider publication authority, proof authority, native playback authority or mutation authority from this FORCE alone. Keep all four manifests and no-anime variants; do not reintroduce native-hub46.
+required_evidence: resolver-promotion-a77d0d1d;learning-selection-gate-563afca1;resolver-probe-46031425328;parent-tv-45321345600;provider-artifact-478cbfbaa246a9ede48db8daf5d876c8e1512c0501387d3b56b8b86321e5f0ef
+causal_change: V2 is already promoted and executable. The Learning queue must hand off the installed resolver plus its attested chain_terminal_gap family to the child planner. Do not synthesize V3, do not fall back to adaptive_runtime_recovery before this bounded V2 attempt, and do not persist resolver token/id/URL material.
+proof_goal: Planner selects catalogue_inline_token_resolver_v2 -> provider candidate bytes differ -> syntax/byte stability -> rematerialization -> exact-byte replay. Count zero repair unless the requested episode is identity-matched and official NuvioTV decodes correct video/audio; then require sibling/non-regression before fanout.
+publication_policy: Learning remains non-authoritative. No provider publication from source shape or resolver response alone. Preserve four manifests and no-anime variants; never reintroduce native-hub46.
