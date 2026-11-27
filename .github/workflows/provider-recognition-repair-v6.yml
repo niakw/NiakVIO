@@ -117,15 +117,14 @@ jobs:
           node-version: '24'
           package-manager-cache: false
 
-      - name: Resolve exact current Brain LLM static coverage auditor
+      - name: Resolve validated Brain LLM static coverage auditor
         id: brain_static_pin
         shell: bash
         run: |
           set -euo pipefail
-          sha="$(git ls-remote https://github.com/niakw/NiakVIO-Brain-LLM.git refs/heads/main | awk 'NR==1{print $1}')"
-          test -n "$sha"
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
-          echo "FIELD_BRAIN_STATIC_COVERAGE_PIN sha=$sha"
+          python scripts/resolve_validated_brain_pin.py --github-output "$GITHUB_OUTPUT"
+          sha="$(python scripts/resolve_validated_brain_pin.py --sha-only)"
+          echo "FIELD_BRAIN_STATIC_COVERAGE_PIN sha=$sha source=validated-gitlink"
 
       - name: Checkout pinned Brain LLM static coverage auditor
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -902,7 +901,7 @@ jobs:
           print("FIELD_EXTERNAL_BRAIN_LLM_GUIDANCE_PIN verified=true providers="+str(len(requested)))
           PY
               fi
-              current_brain_sha="$(git ls-remote https://github.com/niakw/NiakVIO-Brain-LLM.git refs/heads/main | awk 'NR==1{print $1}')"
+              current_brain_sha="$(python scripts/resolve_validated_brain_pin.py --sha-only)"
               if python scripts/import_external_brain_llm_guidance.py --input "$RUNNER_TEMP/external-brain-llm-guidance.json" --output "$RUNNER_TEMP/external-brain-llm-guidance-repair.json" --current-sha "$GITHUB_SHA" --brain-llm-sha "$current_brain_sha" --guidance-commit "$guidance_commit" --negative-memory automation/brain-repair-memory.json --negative-memory "$RUNNER_TEMP/brain-learning-latest.json"; then
                 python scripts/scope_brain_guidance_to_repair_cohort.py \
                   --input "$RUNNER_TEMP/external-brain-llm-guidance-repair.json" \
@@ -1172,7 +1171,7 @@ jobs:
           fi
 
           artifact_brain_sha="$(python -c 'import json,sys; print(str(json.load(open(sys.argv[1],encoding="utf-8")).get("brainLlmSha") or "").strip().lower())' "$RUNNER_TEMP/external-brain-llm-force-mutations.json")"
-          current_brain_sha="$(git ls-remote https://github.com/niakw/NiakVIO-Brain-LLM.git refs/heads/main | awk 'NR==1{print $1}')"
+          current_brain_sha="$(python scripts/resolve_validated_brain_pin.py --sha-only)"
           # A private-guidance cycle is pinned to the Brain SHA that generated
           # the exact mutation. Later MEMORY.md / documentation-only changes
           # cannot invalidate those generator bytes. Verify real Git ancestry,
