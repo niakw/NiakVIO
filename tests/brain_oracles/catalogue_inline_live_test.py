@@ -100,6 +100,7 @@ with tempfile.TemporaryDirectory() as td:
     assert hosts == ["current.example", "fallback.example", "previous.example"], hosts
 
     paths = []
+    target_paths = []
     def fake_fetch(url: str):
         paths.append(url)
         if "/api/lien.php?" in url:
@@ -117,8 +118,20 @@ with tempfile.TemporaryDirectory() as td:
             return 200, "<!doctype html><html>fallback</html>", False, "", ""
         return 200, LEGACY, False, "", ""
 
-    report = probe.run(root, request, fetcher=fake_fetch)
-    assert report["probeRequestCount"] == 15
+    def fake_target_fetch(url: str):
+        target_paths.append(url)
+        return (
+            200,
+            '<!doctype html><html><iframe src="https://SECRET.invalid/player"></iframe></html>',
+            False,
+            "",
+            "text/html; charset=utf-8",
+        )
+
+    report = probe.run(
+        root, request, fetcher=fake_fetch, target_fetcher=fake_target_fetch
+    )
+    assert report["probeRequestCount"] == 18
     assert sum(x.get("catalogueSearchLinkCount") == 1 for x in report["observations"]) == 3
     assert sum(x.get("catalogueSearchExactSlugPresent") is True for x in report["observations"]) == 0
     assert sum(x.get("catalogueCandidateSlugUnverified") == "mushoku-tensei-extra"
@@ -128,6 +141,9 @@ with tempfile.TemporaryDirectory() as td:
     assert report["inlineTokenResponseCount"] == 3
     assert report["tokenResolverProbeCount"] == 3
     assert report["tokenResolverJsonUrlCount"] == 3
+    assert report["resolvedTargetProbeCount"] == 3
+    assert report["resolvedTargetDirectMediaCount"] == 0
+    assert report["resolvedTargetPlayerPageCount"] == 3
     resolver_rows=[x for x in report["observations"] if x["routeKind"]=="token_resolver"]
     assert len(resolver_rows)==3
     assert all(x["resolverContract"]=="same-origin-api-lien-j-l-v1"
@@ -135,6 +151,13 @@ with tempfile.TemporaryDirectory() as td:
                and x["resolverUrlFieldObserved"] is True
                and x["resolverHttpsUrlObserved"] is True
                for x in resolver_rows)
+    target_rows=[x for x in report["observations"] if x["routeKind"]=="resolved_target"]
+    assert len(target_rows)==3
+    assert all(x["resolvedTargetShape"]=="html_player"
+               and x["resolvedTargetPlayerEmbedObserved"] is True
+               and x["resolvedTargetDirectMediaObserved"] is False
+               and x["resolvedTargetSameOrigin"] is False
+               for x in target_rows)
     assert probe.catalogue_search_matches(
         '<!doctype html><a href="/catalogue/mushoku-tensei/">exact</a>',
         "mushoku-tensei", "current.example"
@@ -153,7 +176,8 @@ with tempfile.TemporaryDirectory() as td:
                for x in report["observations"]) == 3
     for row_out in report["observations"]:
         assert row_out["routeKind"] in {
-            "catalogue", "season_page", "legacy_script", "catalogue_search", "token_resolver"
+            "catalogue", "season_page", "legacy_script", "catalogue_search",
+            "token_resolver", "resolved_target"
         }
         assert row_out["originHost"] in hosts
         assert row_out["httpStatusClass"] in {"2xx", "4xx"}
@@ -174,7 +198,12 @@ with tempfile.TemporaryDirectory() as td:
                for x in redirects["observations"])
     resolver_paths=[path for path in paths if "/api/lien.php?" in path]
     assert len(resolver_paths)==3
+    assert len(target_paths)==3
     assert all("?j=PRIVATE_JETON&l=PRIVATE_ID" in path for path in resolver_paths)
+    assert all("media.invalid/private?sig=SECRET" in path for path in target_paths)
+    assert probe.resolved_target_shape(
+        200, "#EXTM3U\n#EXT-X-VERSION:3", False, "application/vnd.apple.mpegurl"
+    )["resolvedTargetShape"] == "hls_manifest"
     for path in paths:
         if "/api/lien.php?" not in path:
             assert not any(p in path for p in ("PRIVATE", "secret", "player", "m3u8"))

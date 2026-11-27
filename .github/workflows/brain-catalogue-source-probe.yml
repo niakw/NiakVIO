@@ -84,8 +84,10 @@ jobs:
           assert result["publicationAuthority"] is False
           assert result["providerMutationAuthority"] is False
           assert result["sourceContractVerifiedOnOfficialTv"] is False
-          assert result["probeRequestCount"] <= 15
+          assert result["probeRequestCount"] <= 18
           assert 0 <= result["tokenResolverJsonUrlCount"] <= result["tokenResolverProbeCount"] <= 3
+          assert 0 <= result["resolvedTargetDirectMediaCount"] <= result["resolvedTargetProbeCount"] <= 3
+          assert 0 <= result["resolvedTargetPlayerPageCount"] <= result["resolvedTargetProbeCount"] <= 3
           assert len(result["observations"]) == result["probeRequestCount"]
           print("FIELD_BRAIN_SOURCE_CONTRACT_GATE independent_only=true playback=false publication=false")
           PY

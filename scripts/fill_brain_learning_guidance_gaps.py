@@ -105,7 +105,7 @@ def attested_source_contract_frontier(
                 or not re.fullmatch(r"[a-f0-9]{40}", probe_sha)
                 or not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,95}", fixture)
                 or scope != "manifest.json"
-                or type(requests) is not int or not 1 <= requests <= 15
+                or type(requests) is not int or not 1 <= requests <= 18
                 or type(inline_count) is not int or not 1 <= inline_count <= requests
                 or row.get("independentNetworkNotOfficialClient") is not True
                 or row.get("sourceContractVerifiedOnOfficialTv") is not False

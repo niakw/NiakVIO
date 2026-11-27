@@ -4,9 +4,10 @@
 Independent HTTP from a CI runner is NOT the official Android TV network.
 Only pre-allowlisted provider origins, fixed catalogue/episode paths and a
 sanitized source-shape summary are supported. When an inline token contract is
-observed, at most one same-origin resolver request per origin may be performed.
-The opaque token, jeton, resolver response body and resolved URL are ephemeral
-and are never persisted or granted playback/mutation authority.
+observed, at most one same-origin resolver request and one bounded resolved-target
+shape request per origin may be performed. The opaque token, jeton, resolver
+response body, resolved URL and target body are ephemeral and are never persisted
+or granted playback/mutation authority.
 """
 from __future__ import annotations
 
@@ -38,7 +39,8 @@ SHA64 = re.compile(r"[0-9a-f]{64}")
 HOST = re.compile(r"(?=.{1,253}$)[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?")
 MAX_BODY = 524288
 MAX_HOSTS = 3
-MAX_REQUESTS = 15
+MAX_REQUESTS = 18
+TARGET_MAX_BODY = 65536
 RESOLVER_CONTRACT = "same-origin-api-lien-j-l-v1"
 JETON_VALUE = re.compile(r"""\b(?:var|let|const)\s+epsJeton\s*=\s*["']([A-Za-z0-9_.:-]{1,256})["']""")
 LINK_VALUE = re.compile(r"""["']lien:([A-Za-z0-9_.:-]{1,200})["']""")
@@ -270,6 +272,105 @@ def resolver_shape(status: int, body: str, oversized: bool) -> dict[str, Any]:
     }
 
 
+def resolver_target_url(status: int, body: str, oversized: bool) -> str:
+    """Return one safe HTTPS target ephemerally; callers must never persist it."""
+    if oversized or not 200 <= status < 300 or not isinstance(body, str) or len(body) > MAX_BODY:
+        return ""
+    try:
+        value = json.loads(body)
+    except (json.JSONDecodeError, UnicodeError, TypeError):
+        return ""
+    target = str(value.get("u") or "").strip() if isinstance(value, dict) else ""
+    if not target or not origin_host(target):
+        return ""
+    try:
+        parsed = urllib.parse.urlsplit(target)
+    except ValueError:
+        return ""
+    return target if parsed.scheme == "https" and not parsed.fragment else ""
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """Never follow a resolved player/media redirect during diagnostic probing."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+def fetch_resolved_target(url: str, referer: str) -> tuple[int, str, bool, str, str]:
+    """Read only a bounded prefix of one ephemeral HTTPS target, with no redirects."""
+    if not origin_host(url) or not origin_host(referer):
+        return 0, "", False, "unsafe_target", ""
+    request = urllib.request.Request(url, method="GET", headers={
+        "User-Agent": "Mozilla/5.0 (compatible; NiakVIO-TargetShape-ReadOnly/1)",
+        "Accept": "application/vnd.apple.mpegurl,application/dash+xml,text/html,application/json,text/plain;q=0.8,*/*;q=0.5",
+        "Referer": referer,
+        "Range": f"bytes=0-{TARGET_MAX_BODY - 1}",
+    })
+    opener = urllib.request.build_opener(_NoRedirect())
+    try:
+        response = opener.open(request, timeout=TIMEOUT)
+    except urllib.error.HTTPError as error:
+        response = error
+    except (urllib.error.URLError, TimeoutError, OSError, ValueError):
+        return 0, "", False, "transport_error", ""
+    try:
+        with response:
+            status = int(response.status)
+            content_type = str(response.headers.get("Content-Type", "") or "").split(";", 1)[0].strip().lower()[:80]
+            raw = response.read(TARGET_MAX_BODY + 1)
+            oversized = len(raw) > TARGET_MAX_BODY
+            return status, "" if oversized else raw.decode("utf-8", errors="replace"), oversized, "", content_type
+    except (TimeoutError, OSError, ValueError):
+        return 0, "", False, "transport_error", ""
+
+
+def resolved_target_shape(
+    status: int, body: str, oversized: bool, content_type: str,
+) -> dict[str, Any]:
+    """Classify only terminal response shape; never return body, URL or host."""
+    ctype = str(content_type or "").casefold()
+    raw = str(body or "")
+    stripped = raw.lstrip()
+    lowered = stripped.casefold()
+    if status == 0:
+        shape = "transport_error"
+    elif 300 <= status < 400:
+        shape = "redirect"
+    elif not 200 <= status < 300:
+        shape = "http_error"
+    elif ctype.startswith(("video/", "audio/")) or ctype in {
+        "application/octet-stream", "application/mp4", "video/mp2t",
+    }:
+        shape = "media_binary"
+    elif oversized:
+        shape = "oversized"
+    elif stripped.startswith("#EXTM3U"):
+        shape = "hls_manifest"
+    elif "<mpd" in lowered[:4096]:
+        shape = "dash_manifest"
+    elif lowered.startswith(("<!doctype", "<html")) or "<iframe" in lowered[:16384]:
+        player_markers = (
+            "<iframe", "<video", "<source", "jwplayer", "videojs",
+            "video.js", "playerjs", "plyr", "hls.js",
+        )
+        shape = "html_player" if any(marker in lowered[:32768] for marker in player_markers) else "html_page"
+    elif ctype in {"application/json", "text/json"} or stripped.startswith(("{", "[")):
+        shape = "json"
+    elif "javascript" in ctype:
+        shape = "javascript"
+    elif not stripped:
+        shape = "empty"
+    else:
+        shape = "text"
+    return {
+        "resolvedTargetShape": shape,
+        "resolvedTargetDirectMediaObserved": shape in {"hls_manifest", "dash_manifest", "media_binary"},
+        "resolvedTargetPlayerEmbedObserved": shape == "html_player",
+        "resolvedTargetRedirectObserved": shape == "redirect",
+    }
+
+
 def catalogue_search_matches(body: str, expected: str, origin: str) -> tuple[int, bool, str, int]:
     """Only same-host catalogue slugs: source candidates are never identity proof."""
     if (not isinstance(body, str) or len(body) > MAX_BODY
@@ -299,10 +400,17 @@ def catalogue_search_matches(body: str, expected: str, origin: str) -> tuple[int
     return min(32, len(slugs)), expected in slugs, candidate, score
 
 
-def run(root: Path, request: dict, *, fetcher: Callable[[str], tuple[int, str, bool, str, str]] = fetch) -> dict:
+def run(
+    root: Path,
+    request: dict,
+    *,
+    fetcher: Callable[[str], tuple[int, str, bool, str, str]] = fetch,
+    target_fetcher: Callable[[str], tuple[int, str, bool, str, str]] | None = None,
+) -> dict:
     details, hosts = attest(root, request)
     slug, season, voice = details["catalogueSlug"], details["season"], details["voice"]
-    # Fixed paths only. Never request a player, signed HLS URL or opaque token resolver.
+    # Fixed source paths only. Resolver and target probes below are single-use,
+    # bounded diagnostics whose opaque material never leaves this process.
     templates = (
         ("catalogue", f"/catalogue/{slug}/"),
         ("season_page", f"/catalogue/{slug}/saison{season}/{voice}/"),
@@ -412,6 +520,46 @@ def run(root: Path, request: dict, *, fetcher: Callable[[str], tuple[int, str, b
                     "transportError": r_error == "transport_error",
                     **shape,
                 })
+                target_url = resolver_target_url(r_status, r_body, r_oversized)
+                target_probe = target_fetcher
+                if target_probe is None and fetcher is fetch:
+                    target_probe = lambda value: fetch_resolved_target(
+                        value, "https://" + host + "/"
+                    )
+                if target_url and target_probe is not None and len(observations) < MAX_REQUESTS:
+                    t_status, t_body, t_oversized, t_error, t_content_type = target_probe(target_url)
+                    if (type(t_status) is not int or not 0 <= t_status <= 599
+                            or not isinstance(t_body, str) or len(t_body) > TARGET_MAX_BODY
+                            or type(t_oversized) is not bool or not isinstance(t_error, str)
+                            or not isinstance(t_content_type, str) or len(t_content_type) > 80):
+                        raise ValueError("invalid resolved target probe transport")
+                    target_shape = resolved_target_shape(
+                        t_status, t_body, t_oversized, t_content_type,
+                    )
+                    observations.append({
+                        "originHost": host,
+                        "routeKind": "resolved_target",
+                        "responseHost": host,
+                        "httpStatus": t_status,
+                        "httpStatusClass": (
+                            "3xx" if 300 <= t_status < 400 else
+                            "transport" if t_status == 0 else
+                            "2xx" if 200 <= t_status < 300 else
+                            "4xx" if 400 <= t_status < 500 else
+                            "5xx" if 500 <= t_status <= 599 else "other"
+                        ),
+                        "redirectTargetHost": "",
+                        "redirectTargetCurated": False,
+                        "sourceShape": "unknown_response_shape",
+                        "inlineSlotArrayObserved": False,
+                        "opaqueLinkTokenObserved": False,
+                        "jetonDeclarationObserved": False,
+                        "languageListDeclarationObserved": False,
+                        "oversizedResponse": t_oversized,
+                        "transportError": t_error == "transport_error",
+                        "resolvedTargetSameOrigin": origin_host(target_url) == host,
+                        **target_shape,
+                    })
             if len(observations) >= MAX_REQUESTS:
                 break
         if len(observations) >= MAX_REQUESTS:
@@ -436,6 +584,17 @@ def run(root: Path, request: dict, *, fetcher: Callable[[str], tuple[int, str, b
             and x.get("resolverUrlFieldObserved") is True
             and x.get("resolverHttpsUrlObserved") is True
             for x in observations if x["routeKind"] == "token_resolver"
+        ),
+        "resolvedTargetProbeCount": sum(
+            x["routeKind"] == "resolved_target" for x in observations
+        ),
+        "resolvedTargetDirectMediaCount": sum(
+            x.get("resolvedTargetDirectMediaObserved") is True
+            for x in observations if x["routeKind"] == "resolved_target"
+        ),
+        "resolvedTargetPlayerPageCount": sum(
+            x.get("resolvedTargetPlayerEmbedObserved") is True
+            for x in observations if x["routeKind"] == "resolved_target"
         ),
         "proofAuthority": False,
         "publicationAuthority": False,

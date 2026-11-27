@@ -26,8 +26,10 @@ with tempfile.TemporaryDirectory() as td:
         "sourceNiakvioSha":"a"*40,"providerArtifactSha256":digest,"manifestScope":"manifest.json",
         "catalogueSlug":"mushoku-tensei","independentNetworkNotOfficialClient":True,
         "catalogueIdentityVerified":False,"episodeIdentityVerified":False,
-        "sourceContractVerifiedOnOfficialTv":False,"probeRequestCount":5,"inlineTokenResponseCount":1,
+        "sourceContractVerifiedOnOfficialTv":False,"probeRequestCount":6,"inlineTokenResponseCount":1,
         "tokenResolverProbeCount":1,"tokenResolverJsonUrlCount":1,
+        "resolvedTargetProbeCount":1,"resolvedTargetDirectMediaCount":0,
+        "resolvedTargetPlayerPageCount":1,
         "observations":[
           {"originHost":"example.test","routeKind":"catalogue","httpStatus":200,"httpStatusClass":"2xx",
            "sourceShape":"script_html_2xx","redirectTargetHost":"","redirectTargetCurated":False},
@@ -41,6 +43,11 @@ with tempfile.TemporaryDirectory() as td:
            "sourceShape":"unknown_response_shape","resolverContract":"same-origin-api-lien-j-l-v1",
            "resolverJsonObjectObserved":True,"resolverUrlFieldObserved":True,
            "resolverHttpsUrlObserved":True,"redirectTargetHost":"","redirectTargetCurated":False},
+          {"originHost":"example.test","routeKind":"resolved_target","httpStatus":200,"httpStatusClass":"2xx",
+           "sourceShape":"unknown_response_shape","resolvedTargetShape":"html_player",
+           "resolvedTargetDirectMediaObserved":False,"resolvedTargetPlayerEmbedObserved":True,
+           "resolvedTargetSameOrigin":False,"resolvedTargetRedirectObserved":False,
+           "redirectTargetHost":"","redirectTargetCurated":False},
           {"originHost":"example.test","routeKind":"catalogue_search","httpStatus":200,"httpStatusClass":"2xx",
            "sourceShape":"script_html_2xx","catalogueSearchLinkCount":1,
            "catalogueSearchExactSlugPresent":True,"catalogueCandidateSlugUnverified":"mushoku-tensei",
@@ -48,8 +55,10 @@ with tempfile.TemporaryDirectory() as td:
         ],**FLAGS}
     row=mod.build_row(root,result,"45323000000","b"*40)
     assert row["inlineTokenResponseCount"]==1
-    assert row["leadHypothesis"]=="catalogue_inline_token_resolver_observed_unverified"
+    assert row["leadHypothesis"]=="catalogue_inline_token_player_target_observed_unresolved"
     assert row["tokenResolverProbeCount"]==1 and row["tokenResolverJsonUrlCount"]==1
+    assert row["resolvedTargetProbeCount"]==1
+    assert row["resolvedTargetPlayerPageCount"]==1
     assert row["tokenResolverContract"]=="same-origin-api-lien-j-l-v1"
     assert row["evidence"]==[{"originHost":"example.test","catalogueStatus":200,
         "seasonPageStatus":200,"seasonSourceShape":"catalogue_inline_token_episode",
@@ -58,6 +67,9 @@ with tempfile.TemporaryDirectory() as td:
         "tokenResolverContract":"same-origin-api-lien-j-l-v1",
         "tokenResolverJsonObjectObserved":True,"tokenResolverUrlFieldObserved":True,
         "tokenResolverHttpsUrlObserved":True,
+        "resolvedTargetStatus":200,"resolvedTargetShape":"html_player",
+        "resolvedTargetDirectMediaObserved":False,"resolvedTargetPlayerEmbedObserved":True,
+        "resolvedTargetSameOrigin":False,"resolvedTargetRedirectObserved":False,
         "searchStatus":200,"searchLinkCount":1,
         "searchExactSlugPresent":True,"candidateSlugUnverified":"mushoku-tensei",
         "candidateTokenOverlapPercent":100}]

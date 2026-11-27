@@ -22,7 +22,8 @@ RUN=re.compile(r"^[0-9]{8,20}$")
 HOST=re.compile(r"^(?=.{1,253}$)[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$")
 SHAPES={"catalogue_inline_token_episode","legacy_external_episode_javascript","script_html_2xx","script_http_missing","unknown_response_shape"}
 STATUS_CLASS={"2xx","3xx","4xx","5xx","other","transport"}
-ROUTES={"catalogue","season_page","legacy_script","catalogue_search","token_resolver"}
+ROUTES={"catalogue","season_page","legacy_script","catalogue_search","token_resolver","resolved_target"}
+TARGET_SHAPES={"hls_manifest","dash_manifest","media_binary","html_player","html_page","json","javascript","text","empty","redirect","http_error","transport_error","oversized"}
 RESOLVER_CONTRACT="same-origin-api-lien-j-l-v1"
 
 
@@ -82,7 +83,7 @@ def validate_parent(root:Path, result:dict[str,Any])->None:
 def sanitized_evidence(result:dict[str,Any])->list[dict[str,Any]]:
     observations=result.get("observations")
     count=result.get("probeRequestCount")
-    if not isinstance(observations,list) or type(count) is not int or count!=len(observations) or not 1<=count<=15:
+    if not isinstance(observations,list) or type(count) is not int or count!=len(observations) or not 1<=count<=18:
         raise ValueError("invalid source-probe observation count")
     by_host:dict[str,dict[str,Any]]={}
     for raw in observations:
@@ -118,6 +119,24 @@ def sanitized_evidence(result:dict[str,Any])->list[dict[str,Any]]:
                 "tokenResolverJsonObjectObserved":json_obj,
                 "tokenResolverUrlFieldObserved":url_field,
                 "tokenResolverHttpsUrlObserved":https_url,
+            })
+        elif route=="resolved_target":
+            target_shape=str(raw.get("resolvedTargetShape") or "")
+            direct=raw.get("resolvedTargetDirectMediaObserved")
+            player=raw.get("resolvedTargetPlayerEmbedObserved")
+            same_origin=raw.get("resolvedTargetSameOrigin")
+            redirected=raw.get("resolvedTargetRedirectObserved")
+            if (target_shape not in TARGET_SHAPES or type(direct) is not bool
+                    or type(player) is not bool or type(same_origin) is not bool
+                    or type(redirected) is not bool):
+                raise ValueError("invalid resolved target evidence")
+            row.update({
+                "resolvedTargetStatus":status,
+                "resolvedTargetShape":target_shape,
+                "resolvedTargetDirectMediaObserved":direct,
+                "resolvedTargetPlayerEmbedObserved":player,
+                "resolvedTargetSameOrigin":same_origin,
+                "resolvedTargetRedirectObserved":redirected,
             })
         elif route=="catalogue_search":
             links=raw.get("catalogueSearchLinkCount")
@@ -158,11 +177,19 @@ def build_row(root:Path,result:dict[str,Any],probe_run:str,probe_sha:str)->dict[
     inline=result.get("inlineTokenResponseCount")
     resolver_probes=result.get("tokenResolverProbeCount")
     resolver_urls=result.get("tokenResolverJsonUrlCount")
+    target_probes=result.get("resolvedTargetProbeCount",0)
+    target_media=result.get("resolvedTargetDirectMediaCount",0)
+    target_players=result.get("resolvedTargetPlayerPageCount",0)
     if type(inline) is not int or not 0<=inline<=int(result["probeRequestCount"]):
         raise ValueError("invalid inline source count")
     if (type(resolver_probes) is not int or type(resolver_urls) is not int
             or not 0<=resolver_urls<=resolver_probes<=3):
         raise ValueError("invalid token resolver counts")
+    if (type(target_probes) is not int or type(target_media) is not int
+            or type(target_players) is not int
+            or not 0<=target_media<=target_probes<=3
+            or not 0<=target_players<=target_probes<=3):
+        raise ValueError("invalid resolved target counts")
     candidates=[
         (int(row.get("candidateTokenOverlapPercent") or 0),str(row.get("candidateSlugUnverified") or ""))
         for row in evidence if row.get("candidateSlugUnverified")
@@ -172,7 +199,10 @@ def build_row(root:Path,result:dict[str,Any],probe_run:str,probe_sha:str)->dict[
     input_slug=str(result.get("catalogueSlug") or "")
     if input_slug and not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,125}",input_slug):
         raise ValueError("invalid input catalogue slug")
-    lead=("catalogue_inline_token_resolver_observed_unverified"
+    lead=("catalogue_inline_token_terminal_media_observed_unverified"
+          if target_media>0 else "catalogue_inline_token_player_target_observed_unresolved"
+          if target_players>0 else "catalogue_inline_token_target_observed_unresolved"
+          if target_probes>0 else "catalogue_inline_token_resolver_observed_unverified"
           if resolver_urls>0 else "catalogue_slug_and_episode_source_contract_drift_candidate_unverified"
           if inline>0 else "catalogue_search_slug_mismatch_unverified"
           if next_slug and next_slug!=input_slug else "catalogue_source_contract_unresolved")
@@ -190,6 +220,9 @@ def build_row(root:Path,result:dict[str,Any],probe_run:str,probe_sha:str)->dict[
         "tokenResolverProbeCount":resolver_probes,
         "tokenResolverJsonUrlCount":resolver_urls,
         "tokenResolverContract":RESOLVER_CONTRACT if resolver_probes else None,
+        "resolvedTargetProbeCount":target_probes,
+        "resolvedTargetDirectMediaCount":target_media,
+        "resolvedTargetPlayerPageCount":target_players,
         "sourceContractVerifiedOnOfficialTv":False,
         "catalogueIdentityVerified":False,"episodeIdentityVerified":False,
         "evidence":evidence,"leadHypothesis":lead,
