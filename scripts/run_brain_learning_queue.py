@@ -433,6 +433,112 @@ def phase_experiment_entries(
     return entries
 
 
+def missing_network_diagnostic_negative(
+    state: dict[str, Any],
+    provider_id: str,
+    profile: str,
+) -> dict[str, Any] | None:
+    """Return the newest executed negative missing causal network telemetry."""
+    memory = state.get("experimentMemory") if isinstance(state.get("experimentMemory"), dict) else {}
+    rows = memory.get("entries") if isinstance(memory.get("entries"), list) else []
+    provider = norm(provider_id)
+    wanted_profile = str(profile or "").strip()
+    candidates: list[dict[str, Any]] = []
+    for raw in rows:
+        if not isinstance(raw, dict):
+            continue
+        if norm(raw.get("providerId")) != provider:
+            continue
+        if str(raw.get("profile") or "").strip() != wanted_profile:
+            continue
+        if raw.get("executionObserved") is not True:
+            continue
+        if str(raw.get("lastOutcome") or "") in {"not_generated", "profile_unavailable"}:
+            continue
+        fingerprint = str(raw.get("strategyImplementationFingerprint") or "").strip().casefold()
+        if not re.fullmatch(r"[0-9a-f]{64}", fingerprint):
+            continue
+        summary = raw.get("networkExecutionSummary")
+        if isinstance(summary, dict) and "providerRequestCount" in summary:
+            continue
+        candidates.append(raw)
+    if not candidates:
+        return None
+    return copy.deepcopy(sorted(
+        candidates,
+        key=lambda row: str(row.get("lastSeenAt") or ""),
+        reverse=True,
+    )[0])
+
+
+def diagnostic_replay_memory(
+    state: dict[str, Any],
+    target: dict[str, Any],
+) -> dict[str, Any]:
+    """Mask one exact executed implementation only inside a diagnostic child."""
+    output = copy.deepcopy(state)
+    memory = output.get("experimentMemory") if isinstance(output.get("experimentMemory"), dict) else {}
+    rows = memory.get("entries") if isinstance(memory.get("entries"), list) else []
+    provider = norm(target.get("providerId"))
+    profile = str(target.get("profile") or "").strip()
+    fingerprint = str(target.get("strategyImplementationFingerprint") or "").strip().casefold()
+    memory["entries"] = [
+        row for row in rows
+        if not (
+            isinstance(row, dict)
+            and norm(row.get("providerId")) == provider
+            and str(row.get("profile") or "").strip() == profile
+            and str(row.get("strategyImplementationFingerprint") or "").strip().casefold() == fingerprint
+            and row.get("executionObserved") is True
+        )
+    ]
+    output["experimentMemory"] = memory
+    output["publicationAllowed"] = False
+    output["productionWritesAllowed"] = False
+    return output
+
+
+def repair_network_execution_summary(
+    repair: dict[str, Any],
+    profile: str,
+) -> dict[str, Any]:
+    report = repair.get("report") if isinstance(repair.get("report"), dict) else {}
+    matches: list[dict[str, Any]] = []
+    for round_row in report.get("rounds") or []:
+        if not isinstance(round_row, dict):
+            continue
+        for kind in ("accepted", "exploration_progress", "rejected"):
+            for event in round_row.get(kind) or []:
+                if not isinstance(event, dict):
+                    continue
+                if str(event.get("profile") or "").strip() != str(profile or "").strip():
+                    continue
+                summary = sanitize_network_execution_summary(event.get("network_execution"))
+                if "providerRequestCount" in summary:
+                    matches.append(summary)
+    return matches[-1] if matches else {}
+
+
+def diagnostic_network_backfill_entry(
+    target: dict[str, Any],
+    plan: dict[str, Any],
+    summary: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Update telemetry only; never change the historical experiment verdict."""
+    target_fp = str(target.get("strategyImplementationFingerprint") or "").strip().casefold()
+    plan_fp = str(plan.get("strategyImplementationFingerprint") or "").strip().casefold()
+    if not re.fullmatch(r"[0-9a-f]{64}", target_fp) or plan_fp != target_fp:
+        return None
+    safe = sanitize_network_execution_summary(summary)
+    if "providerRequestCount" not in safe:
+        return None
+    row = copy.deepcopy(target)
+    row["networkExecutionSummary"] = safe
+    # The replay enriches an already-counted experiment; counters and verdict
+    # intentionally remain byte-for-byte those of the historical row.
+    return row
+
+
 def _phase_experiment_key(row: dict[str, Any]) -> tuple[str, str, str, str, str, str, str, str, int, int]:
     """Match the production Brain memory identity, including LLM experiment bytes.
 
