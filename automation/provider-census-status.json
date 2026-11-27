@@ -35,9 +35,9 @@
       ],
       "harnessTransportClass": "github-all-transports-challenged",
       "harnessTransportEvidence": [
-        "anime: browser=browser_challenge_observed, tv-browser=unknown, okhttp=unknown, desktop-okhttp=unknown, direct=unknown",
+        "anime: browser=browser_timeout, tv-browser=unknown, okhttp=unknown, desktop-okhttp=unknown, direct=unknown",
         "movie: browser=browser_timeout, tv-browser=unknown, okhttp=unknown, desktop-okhttp=unknown, direct=unknown",
-        "tv: browser=browser_challenge_observed, tv-browser=unknown, okhttp=unknown, desktop-okhttp=unknown, direct=unknown"
+        "tv: browser=browser_timeout, tv-browser=unknown, okhttp=unknown, desktop-okhttp=unknown, direct=unknown"
       ],
       "authorityRepairEligible": false,
       "authorityAction": "REDISCOVER_SEARCH",
@@ -1827,9 +1827,9 @@
     },
     {
       "provider": "french-anime",
-      "status": "HARNESS/ENV BLOCKED",
+      "status": "HARNESS MISMATCH",
       "underlyingStatus": "",
-      "color": "🟫",
+      "color": "🟧",
       "declaredLanes": [
         "anime"
       ],
@@ -1847,9 +1847,9 @@
       "evidenceDepth": [
         "anime=none"
       ],
-      "harnessTransportClass": "github-all-transports-challenged",
+      "harnessTransportClass": "residential-exit-native-reachable",
       "harnessTransportEvidence": [
-        "anime: browser=browser_challenge_persisted, tv-browser=browser_challenge_observed, okhttp=okhttp_jvm_challenge_persisted, desktop-okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted"
+        "anime: browser=browser_challenge_persisted, tv-browser=browser_challenge_observed, okhttp=okhttp_jvm_challenge_persisted, desktop-okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
       ],
       "authorityRepairEligible": true,
       "authorityAction": "KEEP_ROUTE_AUTHORITY",
@@ -1863,11 +1863,15 @@
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
-      "action": "require real native-device/IP transport evidence before blaming provider code",
+      "action": "GitHub-hosted IP/environment differential confirmed by private residential exit; keep provider JS unchanged and reproduce with native transport/playback before any code blame",
       "brainCheckRequired": true,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": false
+      "testedThisRun": false,
+      "residentialProviderReplayClass": "playable-unverified",
+      "residentialProviderReplayEvidence": [
+        "anime: status=wrong_content, stage=provider_returned_wrong_content, raw=1, playable=1, verified=0, identitySafe=false"
+      ]
     },
     {
       "provider": "french-manga",
@@ -5289,8 +5293,8 @@
     "CHAIN REACHED": 20,
     "DISABLED": 36,
     "FULL OK": 8,
-    "HARNESS MISMATCH": 9,
-    "HARNESS/ENV BLOCKED": 8,
+    "HARNESS MISMATCH": 10,
+    "HARNESS/ENV BLOCKED": 7,
     "NO PROOF": 13,
     "PROOF REFRESH REQUIRED": 3,
     "PROVIDER JS BROKEN": 1,
@@ -5623,10 +5627,10 @@
   "environmentQueue": [
     "french-anime"
   ],
-  "harnessMismatchQueue": [],
-  "environmentBlockedQueue": [
+  "harnessMismatchQueue": [
     "french-anime"
   ],
+  "environmentBlockedQueue": [],
   "harnessQueue": [
     "french-anime"
   ],
@@ -5653,8 +5657,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "46056034654-sharded-waf",
-  "harnessEvidenceSha": "d990c611773d05889e354d875d04484647144e3b",
+  "harnessEvidenceRunId": "46057677304-waf-transport",
+  "harnessEvidenceSha": "2b0a18de4309c9ea3ba4871e41e72fe2e37e86e8",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
@@ -5683,7 +5687,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 16,
+    "matchedProviderLanes": 1,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -5696,7 +5700,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 16,
+    "matchedProviderLanes": 1,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -6886,9 +6890,9 @@
         "contradictions": 1,
         "identitySafe": false,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "58595888f7795c2f5f99cd62e5f72b9a6742450f",
+          "sourceNiakvioSha": "0dc34413c393cea8c97249b8281e095585b53d4c",
           "providerBundleSha256": "7dbdeb16e2cdb8f46e0e351849e3e731ec08c3dc84c3026a0e7e3de771034a89",
-          "runId": "46029655050",
+          "runId": "46057677304",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7811,26 +7815,26 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": false,
-      "providerCount": 0,
+      "available": true,
+      "providerCount": 1,
       "refreshedProviders": [
-        "1jour1film0626",
-        "aniflix-uno",
-        "animejlprovider",
-        "animeonsen",
-        "animesalt",
-        "animesultra",
-        "arrowtv",
-        "chillflix",
-        "cinegram",
-        "cinetimes"
+        "french-anime"
       ],
-      "replayedProviders": [],
-      "rawProviders": [],
-      "playableProviders": [],
+      "replayedProviders": [
+        "french-anime"
+      ],
+      "rawProviders": [
+        "french-anime"
+      ],
+      "playableProviders": [
+        "french-anime"
+      ],
       "verifiedProviders": [],
-      "sourceNiakvioSha": "",
-      "runId": "",
+      "byteMatchedProviders": [
+        "french-anime"
+      ],
+      "sourceNiakvioSha": "0dc34413c393cea8c97249b8281e095585b53d4c",
+      "runId": "46057677304",
       "proofAuthority": false,
       "publicationAuthority": false
     },
