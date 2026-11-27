@@ -589,7 +589,8 @@ def network_causal_followup(
         }:
             continue
         summary = sanitize_network_execution_summary(row.get("networkExecutionSummary"))
-        if "providerRequestCount" not in summary:
+        delta = sanitize_network_execution_delta(row.get("networkExecutionDelta"))
+        if "providerRequestCount" not in summary or "providerRequestDelta" not in delta:
             continue
         requests = int(summary.get("providerRequestCount") or 0)
         successful = int(summary.get("successfulProviderRequestCount") or 0)
@@ -598,6 +599,11 @@ def network_causal_followup(
         four_xx = int(buckets.get("4xx") or 0)
         kinds = set(summary.get("responseKinds") or [])
         deepest = str(summary.get("deepestStage") or "none")
+        request_delta = int(delta.get("providerRequestDelta") or 0)
+        successful_delta = int(delta.get("successfulProviderRequestDelta") or 0)
+        delta_buckets = delta.get("statusBucketDelta") or {}
+        four_xx_delta = int(delta_buckets.get("4xx") or 0)
+        new_kinds = set(delta.get("newResponseKinds") or [])
         if requests <= 0 or successful <= 0:
             continue
         if four_xx < max(2, successful):
@@ -607,6 +613,16 @@ def network_causal_followup(
         if kinds != {"html"}:
             continue
         if deepest not in {"content_lookup", "episode", "player"}:
+            continue
+        # The aggregate shape is only a hint. Require causal attribution to
+        # the candidate: V2 must have introduced requests, successful responses
+        # and additional 4xx pressure. If the parent already owned those facts,
+        # session bootstrap is not justified by this experiment.
+        if request_delta <= 0 or successful_delta <= 0 or four_xx_delta <= 0:
+            continue
+        if "media" in new_kinds:
+            continue
+        if new_kinds - {"html"}:
             continue
         candidates.append(row)
 
@@ -626,6 +642,9 @@ def network_causal_followup(
         "providerRequestCount": str(int(summary.get("providerRequestCount") or 0)),
         "successfulProviderRequestCount": str(int(summary.get("successfulProviderRequestCount") or 0)),
         "fourXxCount": str(int((summary.get("statusBuckets") or {}).get("4xx") or 0)),
+        "providerRequestDelta": str(int((source.get("networkExecutionDelta") or {}).get("providerRequestDelta") or 0)),
+        "successfulProviderRequestDelta": str(int((source.get("networkExecutionDelta") or {}).get("successfulProviderRequestDelta") or 0)),
+        "fourXxDelta": str(int(((source.get("networkExecutionDelta") or {}).get("statusBucketDelta") or {}).get("4xx") or 0)),
         "deepestStage": str(summary.get("deepestStage") or "none"),
     }
 
@@ -2674,6 +2693,9 @@ def main() -> int:
                             f"requests={followup['providerRequestCount']} "
                             f"successful={followup['successfulProviderRequestCount']} "
                             f"four_xx={followup['fourXxCount']} "
+                            f"request_delta={followup['providerRequestDelta']} "
+                            f"successful_delta={followup['successfulProviderRequestDelta']} "
+                            f"four_xx_delta={followup['fourXxDelta']} "
                             f"deepest={followup['deepestStage']} "
                             f"reason={followup['reason']} "
                             "proof_authority=false publication=false",
