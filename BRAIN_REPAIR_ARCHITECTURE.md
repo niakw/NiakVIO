@@ -1,3 +1,9 @@
+## 2026-11-27 — Frontier resolver → player HTML cross-origin
+
+Le contrat source-family possède désormais trois étages distincts : (1) matrice épisode inline, (2) resolver opaque same-origin `/api/lien.php`, (3) cible résolue. Une cible HTTPS résolue qui répond `html_player` et n'est pas same-origin déplace la causalité vers la famille de traversée/extraction player ; elle ne justifie ni une nouvelle version du resolver ni une mutation transport générique sans preuve supplémentaire.
+
+L'oracle de target-shape reste diagnostique : statut, same-origin et enum de forme seulement. URL, host cible, body, jeton et identifiants opaques ne sont pas persistés. La validation terminale reste séparée : bon épisode, média, décodage, audio/langues et client officiel.
+
 ## 2026-11-27 — Contrat de version de la preuve entre Oracle et Brain-LLM
 
 Une évolution d'oracle n'est intégrée que si ses champs sanitizés traversent la frontière Brain-LLM. Toute augmentation bornée de requêtes, nouvel enum causal ou nouvel étage de forme doit être couverte simultanément par : producteur NiakVIO, persistance, adaptateur Brain, témoin prompt et tests hostiles. Une ligne valide rejetée par un adaptateur supersédé est une panne d'orchestration, même si le JSON est correctement persisté.

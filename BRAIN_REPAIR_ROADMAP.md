@@ -1,3 +1,7 @@
+### 27 novembre — Resolver V2 fermé ; cible courante = player HTML cross-origin
+
+Le source probe 46051901034 (attempt 2) + commit d'évidence `89385552` déplacent le P0 : Anime-Sama n'est plus bloqué avant le resolver. La chaîne observée est maintenant `catalogue_inline_token_episode → same-origin resolver 200 → HTTPS cross-origin html_player 200 → 0 média terminal validé`. Le prochain Learning 46053146055 doit exploiter ce fait et ne pas rejouer V2 comme neuf. Sortie du lot : stratégie player réellement exécutée, bytes/remat/replay, puis média terminal identité correcte. **0 réparation** avant cette preuve.
+
 ### 27 novembre — P0 déplacé vers la frontière preuve → modèle → terminal
 
 Le resolver V2 a été réellement exécuté et atteint le frontier épisode. Le verrou suivant était double : (1) la preuve resolver V2 était filtrée par l'adaptateur Brain-LLM V1, corrigé par `2ba59f84`; (2) la cible HTTPS n'était pas classée, corrigé côté oracle par `943faef6`. Critère de sortie : obtenir une forme terminale sanitizée sur le probe actuel, vérifier qu'elle apparaît dans le contexte Brain, puis exécuter une stratégie causale correspondante. Ne pas créer V3 avant cette observation. **0 réparation** jusqu'au média terminal identity-matched et au client officiel.

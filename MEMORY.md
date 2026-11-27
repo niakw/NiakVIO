@@ -1,3 +1,12 @@
+## 2026-11-27 — V88 : resolver fermé, frontier déplacé vers un player HTML cross-origin
+
+- Brain-LLM `176ff76d` est validé sur SHA exact : CI 46051804297, sécurité 46051804284, Push/CodeQL 46051804462 SUCCESS. NiakVIO `907a7d73` épingle exactement ce Brain et le même gitlink.
+- L'intégration source-memory [46052724062](https://github.com/niakw/NiakVIO/actions/runs/46052724062) est SUCCESS : Brain `176ff76d`, parent Android TV exact, 3 probes historiques appariés, resolver visible, target visible, aucune autorité mutation/publication/playback. Le probe courant au moment de cette gate était encore classé `oversized`.
+- Le probe terminal amélioré [46051901034](https://github.com/niakw/NiakVIO/actions/runs/46051901034), tentative 2, est SUCCESS. Il a persisté sur main via `89385552` la preuve sanitizée actuelle : `/api/lien.php` répond bien avec une cible HTTPS ; cette cible répond HTTP 200, est **cross-origin** et sa forme est **`html_player`**, pas HLS/DASH/media direct. Le body, l'URL cible, le jeton et l'id restent éphémères/non persistés.
+- Le V2 n'est donc plus le verrou causal : il résout le token vers une page player. Le prochain propriétaire est la transition **player HTML cross-origin → média terminal**. Générer un V3 resolver sans nouvelle preuve serait une mauvaise attribution.
+- La mémoire cross-run publiée contient déjà le négatif V2 réellement exécuté (`executionObserved=true`, `lastOutcome=rejected`, fingerprint `16e0cace…`). Le test `brain_learning_installed_resolver_replay_test.py` couvre désormais le caractère one-shot cross-run : un V2 déjà exécuté/rejeté ne doit pas être resélectionné comme capacité fraîche.
+- Nouveau Learning déclenché : 46053146055 sur source `89385552`. Critère de sortie : le Brain doit consommer `html_player`, éviter V2, sélectionner/générer une stratégie player causale, produire des bytes, puis replay. **0 réparation** tant qu'aucun stream identity-matched n'est jouable sur client officiel.
+
 ## 2026-11-27 — V87 : la preuve resolver était persistée mais supprimée avant Qwen
 
 - Audit de la frontière NiakVIO → Brain-LLM : le probe resolver actuel produit 13 observations et le lead `catalogue_inline_token_resolver_observed_unverified`. Brain-LLM main `d705de3d` limitait encore ce flux au contrat V1 (12 observations et deux hypothèses pré-resolver). La ligne V2 valide était donc rejetée par `niakvio_adapter.py` avant le prompt : le système stockait le bon fait mais Qwen raisonnait sans lui.
