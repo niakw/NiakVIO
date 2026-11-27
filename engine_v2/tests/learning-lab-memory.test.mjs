@@ -147,6 +147,22 @@ write(runtimeMemory, {
     attempts: 1, failures: 1, consecutiveFailures: 1, successes: 0,
     lastOutcome: 'rejected', lastReason: 'safety_gate:no_playable_proof',
     lastSeenAt: '2026-11-27T01:00:00Z', executionObserved: true,
+    networkExecutionSummary: {
+      schemaVersion: 99,
+      providerRequestCount: 3,
+      successfulProviderRequestCount: 2,
+      networkFailureCount: 1,
+      statusBuckets: { '2xx': 2, '3xx': 0, '4xx': 0, '5xx': 0, network: 1, secret: 99 },
+      methods: ['POST', 'DELETE'],
+      stages: ['episode', 'player', 'credential_theft'],
+      deepestStage: 'player',
+      responseKinds: ['json', 'private_blob'],
+      url: 'https://secret.example/signed?token=private',
+      headers: { authorization: 'secret' },
+      body: 'private body',
+      proofAuthority: true,
+      publicationAuthority: true,
+    },
   }, {
     providerId: 'llm-memory', providerVersion: '*',
     signature: 'sig-llm', failureClass: 'variant_coverage_gap',
@@ -242,6 +258,27 @@ const llmB = llmRows.find(row => row.llmAdvisorExperimentFingerprint === 'b'.rep
 assert.ok(llmA && llmB, 'LLM experiment fingerprints must survive cross-day sanitization');
 assert.equal(llmA.llmAdvisorGuidanceKind, 'external-brain-llm');
 assert.equal(llmA.llmAdvisorMetaGapGeneration, 0, 'meta-gap generation zero must remain zero');
+assert.deepEqual(llmA.networkExecutionSummary, {
+  schemaVersion: 1,
+  providerRequestCount: 3,
+  successfulProviderRequestCount: 2,
+  networkFailureCount: 1,
+  statusBuckets: { '2xx': 2, '3xx': 0, '4xx': 0, '5xx': 0, network: 1 },
+  methods: ['POST'],
+  stages: ['episode', 'player'],
+  deepestStage: 'player',
+  responseKinds: ['json'],
+  proofAuthority: false,
+  publicationAuthority: false,
+  rawAddressRetained: false,
+  headersRetained: false,
+  bodyRetained: false,
+});
+assert.equal(JSON.stringify(llmA).includes('secret.example'), false);
+assert.equal(JSON.stringify(llmA).includes('private body'), false);
+assert.equal(JSON.stringify(llmA).includes('DELETE'), false);
+assert.equal(JSON.stringify(llmA).includes('credential_theft'), false);
+assert.equal(JSON.stringify(llmA).includes('private_blob'), false);
 assert.equal(llmB.llmAdvisorGuidanceKind, 'meta-gap-synthesis');
 assert.equal(llmB.llmAdvisorMetaGapGeneration, 1);
 // Runtime ledger is authoritative when available; the repair-report fallback
