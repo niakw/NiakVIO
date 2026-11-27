@@ -1186,7 +1186,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "HARNESS MISMATCH",
+      "status": "ROUTE PROVEN",
       "strategy": "mixed_embed_resolver"
     },
     "7movies": {
@@ -2949,7 +2949,7 @@
     "anisama": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=none"
+        "anime=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -2976,7 +2976,7 @@
         "/?s={query}",
         "/recherche?q={query}"
       ],
-      "status": "PROVIDER NETWORK BLOCKED",
+      "status": "CHAIN REACHED",
       "strategy": "mixed_embed_resolver"
     },
     "arrowtv": {
@@ -4881,7 +4881,7 @@
         "/?s={query}",
         "/?q={query}"
       ],
-      "status": "HARNESS MISMATCH",
+      "status": "NO PROOF",
       "strategy": "mixed_embed_resolver"
     },
     "french-manga": {
@@ -9424,7 +9424,7 @@
         "/recherche?q={query}",
         "/recherche?query={query}"
       ],
-      "status": "HARNESS MISMATCH",
+      "status": "ROUTE PROVEN",
       "strategy": "mixed_embed_resolver"
     },
     "skstream": {
@@ -11143,7 +11143,7 @@
       "domainMemory": true,
       "evidenceDepth": [
         "movie=lookup_only",
-        "tv=lookup_only"
+        "tv=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -11980,8 +11980,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "45910350390",
-  "sourceSha": "67aeb7d13779db11252d1cce9c2742646cb64fc6",
+  "sourceRunId": "45917906435",
+  "sourceSha": "895f1872b267413d89fcb1ba18574bc5df5bfda3",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -12005,12 +12005,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "other",
           "supportRatio": 0.3333
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "search",
           "supportRatio": 0.3333
         }
       ]
@@ -12050,12 +12050,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "api",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "api",
+          "role": "other",
           "supportRatio": 1.0
         }
       ]
@@ -12101,12 +12101,12 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "source",
+          "role": "other",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "source",
           "supportRatio": 1.0
         }
       ]
