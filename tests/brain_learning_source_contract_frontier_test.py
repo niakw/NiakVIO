@@ -86,6 +86,8 @@ with tempfile.TemporaryDirectory() as td:
     assert resolver=={"sample"},resolver
     player=mod.attested_source_player_target_frontier(history,native,manifest,root)
     assert player=={"sample"},player
+    released_source_frontier=frontier-player
+    assert released_source_frontier==set()
     old_guidance={
         "sourceSha":"a"*40,"brainLlmSha":"a"*40,"schemaVersion":2,
         "providerCount":1,
@@ -106,6 +108,21 @@ with tempfile.TemporaryDirectory() as td:
         census=census,memory={"entries":[]},source_frontier=frontier,
     )
     assert not added and out["providerCount"]==0 and out["rows"]==[],out
+    released_guidance, released_added=mod.fill(
+        old_guidance,providers=["sample"],current_sha="c"*40,
+        census=census,memory={"entries":[]},source_frontier=released_source_frontier,
+    )
+    assert released_guidance["providerCount"]>=1,released_guidance
+    assert any(
+        row.get("providerId")=="sample"
+        for row in released_guidance["rows"]
+        if isinstance(row,dict)
+    ),released_guidance
+    released_report=mod.exhaustion_report(
+        providers=["sample"],current_sha="c"*40,census=census,
+        memory={"entries":[]},source_frontier=released_source_frontier,
+    )
+    assert released_report["deferredSourceContractProviders"]==[],released_report
     report=mod.exhaustion_report(
         providers=["sample"],current_sha="c"*40,census=census,
         memory={"entries":[]},source_frontier=frontier,
