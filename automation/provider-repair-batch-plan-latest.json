@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "46019147685",
-  "sourceTriggerSha": "0c4bae79208010e7c29d952b3f66af33f13b01e8",
+  "sourceRunId": "46017635659-post-repair-candidate",
+  "sourceTriggerSha": "e332fe2a39e6bef1a725d5e43efa1e8a5c1f5151",
   "unresolvedProviderCount": 67,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -155,12 +155,11 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "github-all-transports-challenged",
+        "browser-profile-only",
         "native-policy-reachable",
         "no-transport-evidence",
         "residential-exit-all-challenged",
-        "residential-exit-browser-reachable",
-        "residential-exit-native-reachable"
+        "residential-exit-browser-reachable"
       ],
       "transportSignature": "not-applicable",
       "providerCount": 39,
@@ -205,7 +204,7 @@
         "zone-streaming",
         "zone-telechargement"
       ],
-      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
+      "action": "refresh domain/upstream transport and residential/native evidence before provider-local code changes",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -236,7 +235,7 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "github-all-transports-challenged",
+        "native-policy-reachable",
         "no-transport-evidence"
       ],
       "transportSignature": "not-applicable",
@@ -278,11 +277,11 @@
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "chain",
-        "lookup"
+        "lookup",
+        "none"
       ],
       "dominantIssues": [
         "network_zero_result",
-        "provider_returned_streams, timeout",
         "timeout"
       ],
       "harnessTransportClasses": [],
@@ -291,13 +290,15 @@
       "providers": [
         "anime-sama",
         "frenchstream",
-        "sadisflix"
+        "nakios"
       ],
       "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [],
+      "dynamicVariantProviders": [
+        "nakios"
+      ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -313,7 +314,6 @@
         "chain"
       ],
       "dominantIssues": [
-        "network_zero_result",
         "waf_challenge"
       ],
       "harnessTransportClasses": [],
@@ -321,16 +321,14 @@
       "providerCount": 3,
       "providers": [
         "corsflix",
-        "nakios",
-        "primewire"
+        "primewire",
+        "sadisflix"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [
-        "nakios"
-      ],
+      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -394,7 +392,7 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable",
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:github-all-transports-challenged",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver"
@@ -408,9 +406,9 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "residential-exit-native-reachable"
+        "github-all-transports-challenged"
       ],
-      "transportSignature": "residential-exit-native-reachable",
+      "transportSignature": "github-all-transports-challenged",
       "providerCount": 1,
       "providers": [
         "french-anime"

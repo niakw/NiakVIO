@@ -7,22 +7,22 @@
   "advisorHypothesisWaveBudget": 3,
   "batchSize": 48,
   "deferredLearningProviders": [
-    "nakios"
+    "anime-sama"
   ],
   "effectiveWaves": 3,
-  "elapsedSeconds": 65.374,
+  "elapsedSeconds": 554.024,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 8,
     "providerCount": 142,
     "schemaVersion": 2,
-    "sourceRunId": "46019147685",
-    "sourceSha": "0c4bae79208010e7c29d952b3f66af33f13b01e8",
+    "sourceRunId": "46017635659-pre-repair",
+    "sourceSha": "e332fe2a39e6bef1a725d5e43efa1e8a5c1f5151",
     "strategyCount": 5
   },
   "familyFrontierPendingProviders": [
     "corsflix",
-    "primewire"
+    "frenchstream"
   ],
   "familyFrontierScheduling": {
     "enabled": true,
@@ -36,36 +36,42 @@
   "healthConcurrency": 0,
   "healthConcurrencyMode": "auto-per-batch",
   "initialStatuses": {
+    "anime-sama": "REGRESSION PROVIDER",
     "corsflix": "CHAIN REACHED",
-    "nakios": "CHAIN REACHED",
+    "frenchstream": "NO PROOF",
+    "moiflix": "PROVIDER NETWORK BLOCKED",
     "primewire": "CHAIN REACHED"
   },
   "labOnlyWithoutCompiledRepairProviders": [],
   "learningHandoffProviders": [
-    "nakios"
+    "anime-sama"
   ],
-  "maxRoundsPerBatch": 3,
+  "maxRoundsPerBatch": 1,
   "maxWaves": 3,
-  "noProgressReason": "no_new_repair_experiment",
+  "noProgressReason": "time_budget_exhausted_during_batch",
   "positiveProgramRecovery": {
     "durableProviders": [],
     "durableRecordCount": 0,
     "recoveredRecordCount": 0,
     "reportCount": 116
   },
-  "processedProviderCount": 1,
+  "processedProviderCount": 3,
   "processedProviders": [
-    "nakios"
+    "anime-sama",
+    "moiflix",
+    "primewire"
   ],
   "providerSpecificRules": false,
   "rawLabAcceptedCount": 0,
   "rawLabAcceptedRepairs": [],
   "remainingProviders": [
     "corsflix",
+    "frenchstream",
+    "moiflix",
     "primewire"
   ],
   "requestedWaves": 1,
-  "resumeRecommended": false,
+  "resumeRecommended": true,
   "safety": {
     "acceptedMutationRequiresStrictImprovement": true,
     "crossWaveExplorationCarryoverRole": "same-run-sandbox-only-retested-no-publication-authority",
@@ -79,42 +85,94 @@
     "wafEnvironmentExcludedByDefault": true
   },
   "schemaVersion": 1,
-  "selectedProviderCount": 3,
+  "selectedProviderCount": 5,
   "selectedProviders": [
+    "anime-sama",
     "corsflix",
-    "nakios",
+    "frenchstream",
+    "moiflix",
     "primewire"
   ],
   "selectionSource": "automation/provider-census-status.json:repairQueue",
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "46019147685",
-  "timeBudgetExhausted": false,
-  "timeBudgetSeconds": 1200,
+  "sourceCensusRunId": "46017635659-pre-repair",
+  "timeBudgetExhausted": true,
+  "timeBudgetSeconds": 600,
   "unvisitedProviders": [
     "corsflix",
-    "primewire"
+    "frenchstream"
   ],
   "waves": [
     {
       "acceptedCount": 0,
       "acceptedProgramCompileFailures": {},
       "acceptedProgramCompiledProviders": [],
-      "advisorRotationPending": [],
+      "advisorRotationPending": [
+        "moiflix",
+        "primewire"
+      ],
       "batches": [
         {
           "accepted": [],
           "acceptedCount": 0,
-          "advisorRemainingFingerprintCounts": {},
-          "advisorRotationPending": [],
+          "advisorRemainingFingerprintCounts": {
+            "moiflix": 3,
+            "primewire": 0
+          },
+          "advisorRotationPending": [
+            "moiflix",
+            "primewire"
+          ],
           "batch": 1,
           "brain": {
-            "attemptDiagnostics": [],
+            "attemptDiagnostics": [
+              {
+                "parentSha256": "fe3a4c845dca37dad14126bbbf6672e7dc15184e0bebe2d7c0d5df54e40e4ea2",
+                "phase": "attempts",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "moiflix",
+                "reasonCode": "",
+                "repairSha256": "d776aae6d1a813857a26b0c60e171a9d84c0dc15e7d78fc93309ef6327215e51",
+                "round": 1,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "7c73ccabfe24e2710fc2d30b79d6db2f82ca5fe619dabdda2f61a0d7df70b415",
+                "phase": "attempts",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "primewire",
+                "reasonCode": "",
+                "repairSha256": "1d13c5060eaf527374d99747d82d6b87f30f4b55d3daba1ea3e398affae010a8",
+                "round": 1,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "moiflix",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 1,
+                "status": "no_streams"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "primewire",
+                "reasonCode": "introduced_runtime_error",
+                "repairSha256": "",
+                "round": 1,
+                "status": "no_streams"
+              }
+            ],
             "harnessDifferentialProviders": [],
             "learnedEvents": 0,
             "plans": {
-              "published:nakios": {
+              "published:anime-sama": {
                 "action": "collect-more-evidence",
                 "allowedProfiles": [],
                 "baseExperimentExhausted": true,
@@ -125,7 +183,7 @@
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
-                "failureClass": "variant_coverage_gap",
+                "failureClass": "unknown_failure",
                 "forcePreferredRequested": "",
                 "forcePreferredSelected": false,
                 "hypotheses": [],
@@ -142,13 +200,179 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 28,
+                "negativeMemoryMatches": 9,
+                "positiveProgramFingerprint": "",
+                "postExhaustionCandidateProfiles": [],
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "anime-sama",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "learning",
+                "repairType": "architecture_gap",
+                "signature": "5483782c3b851d5d525648d5",
+                "strategyEscalated": false,
+                "targetCategories": []
+              },
+              "published:moiflix": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "adaptive_runtime_recovery"
+                ],
+                "baseExperimentExhausted": false,
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 1,
+                "experimentVariant": 1,
+                "experimentVariantCount": 5,
+                "explorationChainEnabled": true,
+                "explorationModeEnabled": true,
+                "failureClass": "transport_blocked",
+                "forcePreferredRequested": "",
+                "forcePreferredSelected": false,
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "bootstrap-session",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "alternate-official-route",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorExperiment": {},
+                "llmAdvisorExperimentFingerprint": "",
+                "llmAdvisorExplorationRescue": false,
+                "llmAdvisorFailureCompatibility": "",
+                "llmAdvisorGuidanceKind": "",
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "",
+                "llmAdvisorStrategy": "",
+                "metaGapEscalated": false,
+                "negativeMemoryMatches": 1,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
-                  "player_protocol_family_replay_v1",
-                  "media_response_shape_inference_v1",
+                  "transport_request_differential_v1",
+                  "provider_session_bootstrap_replay_v1",
                   "runtime_response_salvage_v1",
-                  "document_request_contract_mining_v1",
+                  "transport_request_differential_v2",
+                  "route_transition_graph_v2",
+                  "route_transition_graph_v3",
+                  "route_transition_graph_v4",
+                  "route_transition_graph_v5",
+                  "route_transition_graph_v6",
+                  "route_transition_graph_v7",
+                  "route_transition_graph_v8",
+                  "route_transition_graph_v9",
+                  "route_transition_graph_v10",
+                  "route_transition_graph_v11",
+                  "route_transition_graph_v12",
+                  "route_transition_graph_v13",
+                  "route_transition_graph_v14",
+                  "route_transition_graph_v15",
+                  "route_transition_graph_v16",
+                  "route_transition_graph_v17",
+                  "route_transition_graph_v18",
+                  "route_transition_graph_v19",
+                  "route_transition_graph_v20",
+                  "route_transition_graph_v21"
+                ],
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "moiflix",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "capability",
+                "repairType": "session_transport",
+                "signature": "9408dea970ee2148302affa4",
+                "strategyEscalated": false,
+                "targetCategories": []
+              },
+              "published:primewire": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "adaptive_runtime_recovery"
+                ],
+                "baseExperimentExhausted": true,
+                "exitReason": null,
+                "experimentExhausted": true,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "explorationChainEnabled": true,
+                "explorationModeEnabled": true,
+                "failureClass": "chain_terminal_gap",
+                "forcePreferredRequested": "",
+                "forcePreferredSelected": false,
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "finish-reached-terminal-chain",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "resolve-terminal-wrapper",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "execute_meta_gap_synthesized_strategy",
+                "llmAdvisorApplied": true,
+                "llmAdvisorConfidence": 0.86,
+                "llmAdvisorExperiment": {
+                  "aliasSearch": false,
+                  "documentRequestMining": true,
+                  "maxDepth": 6,
+                  "maxEmbeds": 35,
+                  "maxPages": 26,
+                  "maxRecipePasses": 6,
+                  "recipePolicy": "current_plus_provider",
+                  "responseSalvage": true,
+                  "roleOrder": [
+                    "source",
+                    "api",
+                    "episode",
+                    "detail",
+                    "search",
+                    "other",
+                    "player"
+                  ],
+                  "routePolicy": "owned_plus_peer",
+                  "sessionBootstrap": true,
+                  "terminalOnly": true
+                },
+                "llmAdvisorExperimentFingerprint": "3896de63df23798ee38e31cbb96e456a15a77769456a3559675dd65c74c42021",
+                "llmAdvisorExplorationRescue": false,
+                "llmAdvisorFailureCompatibility": "exact",
+                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
+                "llmAdvisorProfile": "adaptive_runtime_recovery",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "chain_terminal_gap",
+                "llmAdvisorStrategy": "meta-gap-adaptive-runtime-fallback",
+                "metaGapEscalated": true,
+                "negativeMemoryMatches": 8,
+                "positiveProgramFingerprint": "",
+                "postExhaustionCandidateProfiles": [
                   "terminal_transition_graph_v1",
                   "terminal_transition_graph_v2",
                   "terminal_transition_graph_v3",
@@ -163,54 +387,79 @@
                   "terminal_transition_graph_v12",
                   "terminal_transition_graph_v13",
                   "terminal_transition_graph_v14",
-                  "terminal_request_program_inference_v1"
+                  "terminal_request_program_inference_v1",
+                  "runtime_response_salvage_v1",
+                  "document_request_contract_mining_v1",
+                  "player_protocol_family_replay_v1",
+                  "media_response_shape_inference_v1"
                 ],
                 "postExhaustionSourceFailureClass": "",
                 "postExhaustionStrategyMethod": "",
                 "postExhaustionStrategyProfile": "",
-                "providerId": "nakios",
+                "providerId": "primewire",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
                 "repairScope": "learning",
-                "repairType": "architecture_gap",
-                "signature": "9c5dc8cd7f63b9fd3ee69aad",
+                "repairType": "synthesized_strategy",
+                "signature": "4e8d92b8a8961450d87b63b2",
                 "strategyEscalated": false,
                 "targetCategories": []
               }
             },
             "queuedForLearning": [
-              "nakios"
+              "anime-sama",
+              "primewire"
             ],
             "validatedRepairLearningExecuted": true
           },
-          "capabilityStrategy": "mixed_embed_resolver",
+          "capabilityStrategy": "mixed",
           "causalProgressCount": 0,
           "causalProgressObserved": true,
           "crossWaveExplorationCarryoverApplied": [],
           "crossWaveExplorationCarryoverCaptured": [],
           "deferredToLearning": [
-            "nakios"
+            "anime-sama"
           ],
           "familyGroups": [
             {
               "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver",
+              "providers": [
+                "moiflix"
+              ],
+              "repairScope": "transport"
+            },
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+              "providers": [
+                "anime-sama"
+              ],
+              "repairScope": "learning"
+            },
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
               "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
               "providers": [
-                "nakios"
+                "primewire"
               ],
               "repairScope": "terminal-extraction"
             }
           ],
           "fixedInLab": [],
-          "genericLearningHandoff": [],
-          "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
-          "harnessDifferentialProviders": [],
-          "healthConcurrency": 1,
-          "providerCount": 1,
-          "providers": [
-            "nakios"
+          "genericLearningHandoff": [
+            "moiflix"
           ],
-          "repairScope": "terminal-extraction",
+          "groupId": "packed",
+          "harnessDifferentialProviders": [],
+          "healthConcurrency": 3,
+          "providerCount": 3,
+          "providers": [
+            "moiflix",
+            "anime-sama",
+            "primewire"
+          ],
+          "repairScope": "mixed",
           "unexecutableLlmHandoff": []
         }
       ],
@@ -218,32 +467,75 @@
       "causalProgressObserved": true,
       "compileRejectedToLearning": [],
       "deferredToLearning": [
-        "nakios"
+        "anime-sama"
       ],
       "deferredToLearningCount": 1,
       "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": false,
+      "experimentMemoryAdvanced": true,
       "familyFrontierDeferredProviders": [
         "corsflix",
-        "primewire"
+        "frenchstream"
       ],
       "familyFrontierGroups": [
-        "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver"
+        "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
+        "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+        "transport|mixed_embed_resolver|runtime:mixed_embed_resolver"
       ],
       "familyFrontierSelectedProviders": [
-        "nakios"
+        "primewire",
+        "anime-sama",
+        "moiflix"
       ],
       "fixedInLab": [],
       "fixedInLabCount": 0,
-      "inputProviderCount": 1,
+      "inputProviderCount": 3,
       "labOnlyWithoutCompiledRepair": [],
       "pinnedAdvisorFamilyGroups": [],
       "rawFixedInLab": [],
       "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 2,
+      "remainingProviderCount": 4,
       "timeBudgetExhausted": false,
       "trustedFamilyFanoutGroups": [],
       "wave": 1
+    },
+    {
+      "acceptedCount": 0,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [],
+      "advisorRotationPending": [],
+      "batches": [],
+      "causalProgressCount": 0,
+      "causalProgressObserved": false,
+      "compileRejectedToLearning": [],
+      "deferredToLearning": [],
+      "deferredToLearningCount": 0,
+      "durableMaterializeTargets": [],
+      "experimentMemoryAdvanced": false,
+      "familyFrontierDeferredProviders": [
+        "corsflix"
+      ],
+      "familyFrontierGroups": [
+        "learning|mixed_embed_resolver|runtime:mixed_embed_resolver"
+      ],
+      "familyFrontierSelectedProviders": [
+        "primewire",
+        "frenchstream",
+        "moiflix"
+      ],
+      "fixedInLab": [],
+      "fixedInLabCount": 0,
+      "inputProviderCount": 0,
+      "labOnlyWithoutCompiledRepair": [],
+      "pinnedAdvisorFamilyGroups": [
+        "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
+        "transport|mixed_embed_resolver|runtime:mixed_embed_resolver"
+      ],
+      "rawFixedInLab": [],
+      "rawLabAcceptedCount": 0,
+      "remainingProviderCount": 4,
+      "timeBudgetExhausted": true,
+      "trustedFamilyFanoutGroups": [],
+      "wave": 2
     }
   ]
 }
