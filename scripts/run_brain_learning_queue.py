@@ -246,6 +246,60 @@ def sanitize_network_execution_summary(value: Any) -> dict[str, Any]:
     }
 
 
+def sanitize_network_execution_delta(value: Any) -> dict[str, Any]:
+    """Allow only bounded signed parent-vs-candidate causal deltas."""
+    if not isinstance(value, dict):
+        return {}
+    bucket_names = ("2xx", "3xx", "4xx", "5xx", "network")
+    raw_buckets = value.get("statusBucketDelta") if isinstance(value.get("statusBucketDelta"), dict) else {}
+    def signed(raw: Any) -> int:
+        try:
+            number = int(raw or 0)
+        except (TypeError, ValueError):
+            number = 0
+        return max(-10000, min(10000, number))
+    allowed_methods = {"GET", "POST", "HEAD"}
+    allowed_stages = {"search", "content_lookup", "detail", "episode", "player", "media", "provider_fetch", "other"}
+    allowed_kinds = {"html", "json", "javascript", "text", "binary", "media"}
+    parent_deepest = str(value.get("parentDeepestStage") or "none").strip().casefold()
+    candidate_deepest = str(value.get("candidateDeepestStage") or "none").strip().casefold()
+    if parent_deepest not in allowed_stages | {"none"}:
+        parent_deepest = "none"
+    if candidate_deepest not in allowed_stages | {"none"}:
+        candidate_deepest = "none"
+    return {
+        "schemaVersion": 1,
+        "providerRequestDelta": signed(value.get("providerRequestDelta")),
+        "successfulProviderRequestDelta": signed(value.get("successfulProviderRequestDelta")),
+        "networkFailureDelta": signed(value.get("networkFailureDelta")),
+        "statusBucketDelta": {name: signed(raw_buckets.get(name)) for name in bucket_names},
+        "newMethods": sorted({
+            str(item).upper()
+            for item in value.get("newMethods") or []
+            if str(item).upper() in allowed_methods
+        }),
+        "newStages": sorted({
+            str(item).strip().casefold()
+            for item in value.get("newStages") or []
+            if str(item).strip().casefold() in allowed_stages
+        }),
+        "newResponseKinds": sorted({
+            str(item).strip().casefold()
+            for item in value.get("newResponseKinds") or []
+            if str(item).strip().casefold() in allowed_kinds
+        }),
+        "parentDeepestStage": parent_deepest,
+        "candidateDeepestStage": candidate_deepest,
+        "stageRankDelta": max(-16, min(16, signed(value.get("stageRankDelta")))),
+        "stageAdvanced": value.get("stageAdvanced") is True,
+        "proofAuthority": False,
+        "publicationAuthority": False,
+        "rawAddressRetained": False,
+        "headersRetained": False,
+        "bodyRetained": False,
+    }
+
+
 def phase_experiment_entries(
     provider_id: str,
     plan: dict[str, Any],
@@ -384,6 +438,10 @@ def phase_experiment_entries(
             network_event.get("network_execution") if isinstance(network_event, dict) else {}
         )
 
+        network_execution_delta = sanitize_network_execution_delta(
+            network_event.get("network_execution_delta") if isinstance(network_event, dict) else {}
+        )
+
         entries.append({
             "providerId": norm(provider_id),
             "providerVersion": "*",
@@ -429,6 +487,7 @@ def phase_experiment_entries(
             "executionObserved": bool(accepted or rejected or progress),
             "generationAttemptObserved": bool(not_generated),
             "networkExecutionSummary": network_execution,
+            "networkExecutionDelta": network_execution_delta,
         })
     return entries
 
@@ -459,7 +518,13 @@ def missing_network_diagnostic_negative(
         if not re.fullmatch(r"[0-9a-f]{64}", fingerprint):
             continue
         summary = raw.get("networkExecutionSummary")
-        if isinstance(summary, dict) and "providerRequestCount" in summary:
+        delta = raw.get("networkExecutionDelta")
+        if (
+            isinstance(summary, dict)
+            and "providerRequestCount" in summary
+            and isinstance(delta, dict)
+            and "providerRequestDelta" in delta
+        ):
             continue
         candidates.append(raw)
     if not candidates:
@@ -519,10 +584,32 @@ def repair_network_execution_summary(
     return matches[-1] if matches else {}
 
 
+def repair_network_execution_delta(
+    repair: dict[str, Any],
+    profile: str,
+) -> dict[str, Any]:
+    report = repair.get("report") if isinstance(repair.get("report"), dict) else {}
+    matches: list[dict[str, Any]] = []
+    for round_row in report.get("rounds") or []:
+        if not isinstance(round_row, dict):
+            continue
+        for kind in ("accepted", "exploration_progress", "rejected"):
+            for event in round_row.get(kind) or []:
+                if not isinstance(event, dict):
+                    continue
+                if str(event.get("profile") or "").strip() != str(profile or "").strip():
+                    continue
+                delta = sanitize_network_execution_delta(event.get("network_execution_delta"))
+                if "providerRequestDelta" in delta:
+                    matches.append(delta)
+    return matches[-1] if matches else {}
+
+
 def diagnostic_network_backfill_entry(
     target: dict[str, Any],
     plan: dict[str, Any],
     summary: dict[str, Any],
+    delta: dict[str, Any],
 ) -> dict[str, Any] | None:
     """Update telemetry only; never change the historical experiment verdict."""
     target_fp = str(target.get("strategyImplementationFingerprint") or "").strip().casefold()
@@ -532,8 +619,12 @@ def diagnostic_network_backfill_entry(
     safe = sanitize_network_execution_summary(summary)
     if "providerRequestCount" not in safe:
         return None
+    safe_delta = sanitize_network_execution_delta(delta)
+    if "providerRequestDelta" not in safe_delta:
+        return None
     row = copy.deepcopy(target)
     row["networkExecutionSummary"] = safe
+    row["networkExecutionDelta"] = safe_delta
     # The replay enriches an already-counted experiment; counters and verdict
     # intentionally remain byte-for-byte those of the historical row.
     return row
@@ -589,13 +680,15 @@ def apply_diagnostic_network_backfill(
         raise ValueError("diagnostic backfill requires existing experiment entries")
     key = _phase_experiment_key(backfill)
     safe = sanitize_network_execution_summary(backfill.get("networkExecutionSummary"))
-    if "providerRequestCount" not in safe:
-        raise ValueError("diagnostic backfill requires sanitized network telemetry")
+    safe_delta = sanitize_network_execution_delta(backfill.get("networkExecutionDelta"))
+    if "providerRequestCount" not in safe or "providerRequestDelta" not in safe_delta:
+        raise ValueError("diagnostic backfill requires sanitized network telemetry and delta")
     matched = 0
     for row in rows:
         if not isinstance(row, dict) or _phase_experiment_key(row) != key:
             continue
         row["networkExecutionSummary"] = copy.deepcopy(safe)
+        row["networkExecutionDelta"] = copy.deepcopy(safe_delta)
         matched += 1
     if matched != 1:
         raise ValueError(
@@ -664,6 +757,7 @@ def merge_phase_learning_state(
             "capabilityStrategy", "observedPipelineStage",
             "llmAdvisorGuidanceKind", "llmAdvisorMetaGapGeneration",
             "networkExecutionSummary",
+            "networkExecutionDelta",
         ):
             if field in row and (incoming_executed or not prior_executed or field not in {"lastOutcome", "lastReason"}):
                 current[field] = row[field]
@@ -2403,6 +2497,10 @@ def main() -> int:
                             diagnostic_repair,
                             preferred_profile,
                         )
+                        diagnostic_delta = repair_network_execution_delta(
+                            diagnostic_repair,
+                            preferred_profile,
+                        )
                         target_fingerprint = str(
                             diagnostic_target.get("strategyImplementationFingerprint") or ""
                         ).strip().casefold()
@@ -2430,6 +2528,7 @@ def main() -> int:
                                 diagnostic_target,
                                 diagnostic_plan,
                                 diagnostic_summary,
+                                diagnostic_delta,
                             )
                             if backfill is not None:
                                 phase_experiment_ledger.append(backfill)
@@ -2447,6 +2546,9 @@ def main() -> int:
                                     f"successful={int(summary.get('successfulProviderRequestCount') or 0)} "
                                     f"network_failures={int(summary.get('networkFailureCount') or 0)} "
                                     f"deepest={str(summary.get('deepestStage') or 'none')} "
+                                    f"request_delta={int((backfill.get('networkExecutionDelta') or {}).get('providerRequestDelta') or 0)} "
+                                    f"success_delta={int((backfill.get('networkExecutionDelta') or {}).get('successfulProviderRequestDelta') or 0)} "
+                                    f"stage_advanced={str(bool((backfill.get('networkExecutionDelta') or {}).get('stageAdvanced'))).lower()} "
                                     "attempts_incremented=false failures_incremented=false "
                                     "publication=false",
                                     flush=True,
