@@ -29,48 +29,44 @@ export function profileRuntimeFingerprintMaterial(source, profile) {
     );
   }
   if (!keepsScriptedRequestComposition) {
-    raw = raw
-      .replace(
-        `    resolver_records: list[dict[str, Any]] = []
-    working_data = parent_data
-    if resolver_contract:
-        working_data, resolver_records = _apply_inline_token_resolver_contract(
-            parent_data, resolver_contract
-        )
-        # The resolver profile itself remains a bounded resolver-only mutation.
-        # Downstream media-extraction profiles, however, must preserve this
-        # upstream capability and continue compiling their own runtime on top.
-        if expected == "catalogue_inline_token_resolver_v2":
-            return working_data, resolver_records
-        source_text = working_data.decode("utf-8", errors="strict")
-`,
-        `    if resolver_contract:
-        return _apply_inline_token_resolver_contract(parent_data, resolver_contract)
-`,
-      )
-      .replace(
-        `    adaptive_record = {
-        "type": "patch_profile",
-        "profile": profile_name,
-        "strategy": expected or "adaptive_runtime_recovery",
-        "engine": "adaptive_runtime_recovery",
-        "phase": "runtime",
-        "revision": 5,
-        "options": options,
-    }
-    return patched, [*resolver_records, adaptive_record]
-`,
-        `    return patched, [{
-        "type": "patch_profile",
-        "profile": profile_name,
-        "strategy": expected or "adaptive_runtime_recovery",
-        "engine": "adaptive_runtime_recovery",
-        "phase": "runtime",
-        "revision": 5,
-        "options": options,
-    }]
-`,
+    const lines = raw.split("\n");
+    const resolverStart = lines.indexOf(
+      "    resolver_records: list[dict[str, Any]] = []",
+    );
+    const resolverEnd = lines.findIndex(
+      (line, index) => index > resolverStart
+        && line === "    native_source = _strip_generated_adaptive_wrapper(source_text)",
+    );
+    if (resolverStart >= 0 && resolverEnd > resolverStart) {
+      lines.splice(
+        resolverStart,
+        resolverEnd - resolverStart,
+        "    if resolver_contract:",
+        "        return _apply_inline_token_resolver_contract(parent_data, resolver_contract)",
       );
+    }
+
+    const adaptiveStart = lines.indexOf("    adaptive_record = {");
+    const adaptiveEnd = lines.findIndex(
+      (line, index) => index > adaptiveStart
+        && line === "    return patched, [*resolver_records, adaptive_record]",
+    );
+    if (adaptiveStart >= 0 && adaptiveEnd > adaptiveStart) {
+      lines.splice(
+        adaptiveStart,
+        adaptiveEnd - adaptiveStart + 1,
+        "    return patched, [{",
+        '        "type": "patch_profile",',
+        '        "profile": profile_name,',
+        '        "strategy": expected or "adaptive_runtime_recovery",',
+        '        "engine": "adaptive_runtime_recovery",',
+        '        "phase": "runtime",',
+        '        "revision": 5,',
+        '        "options": options,',
+        "    }]",
+      );
+    }
+    raw = lines.join("\n");
   }
   const registryStart = raw.indexOf("POST_EXHAUSTION_STRATEGY_PROFILES = {");
   const registryEnd = registryStart < 0 ? -1 : raw.indexOf("\n}", registryStart);
