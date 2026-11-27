@@ -1,3 +1,9 @@
+## 2026-11-27 — V69 : Repair rouge 45917895623 = contrat WAF obsolète, pas échec provider
+
+- Le run Repair [45917895623](https://github.com/niakw/NiakVIO/actions/runs/45917895623) sur `895f1872b267` a échoué **avant toute Repair canonique** dans `tests/provider_repair_waf_integration_workflow_test.py:63`. Le workflow courant avait déjà durci la réutilisation WAF : il exige `residentialExitNodeLastAttempt.available=true` et `residentialProviderReplay.lastAttempt.available=true`, alors que le test cherchait encore les anciens objets `residential` / `replay`.
+- Le même run a ensuite persisté explicitement `selected=0 candidates=0 validated=0 outcome=skipped gate=skipped`. Il ne constitue donc ni une réparation échouée d'un provider, ni une preuve de fonctionnement. **0 réparation**.
+- V69 aligne uniquement le test de contrat sur les champs actuels `current` et `replay_attempt` et exige la présence des deux chemins `residentialExitNodeLastAttempt` / `lastAttempt`. Aucune sémantique réseau, aucun provider, manifest ou seuil de validation n'est relâché.
+
 ## 2026-11-27 — V68 : identité des méta-gaps persistée et merge mémoire trois voies rendu effectif
 
 - V67 Learning `45917308211` est vert. Papadustream a quitté la boucle `terminal_transition_graph_v15+` et a changé de méthodes. Anime-Sama a été planifié avec `baseExperimentExhausted=true` / `exhausted=true` : l'ancien g5 publié était donc bien lu. L'exécution suivante sous `adaptive_runtime_recovery` était une **escalade méta-gap fingerprintée**, pas une simple répétition g5.

@@ -60,8 +60,10 @@ assert 'cp "$waf" "$RUNNER_TEMP/provider-repair-waf-prior.json"' in reuse_block
 assert 'git log -1 --format=%H -- "$waf"' in reuse_block
 assert '--base "$source"' in reuse_block
 assert '"mode") or "all"' in reuse_block
-assert 'residential.get("available") is True' in reuse_block
-assert 'replay.get("available") is True' in reuse_block
+assert 'current.get("available") is True' in reuse_block
+assert 'replay_attempt.get("available") is True' in reuse_block
+assert 'residentialExitNodeLastAttempt' in reuse_block
+assert 'replay.get("lastAttempt")' in reuse_block
 final_block=wf[final_merge:persist]
 assert "if: ${{ always() }}" in final_block
 assert "merge_waf_census_transport.py" in final_block
