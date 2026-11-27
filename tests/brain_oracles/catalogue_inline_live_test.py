@@ -157,6 +157,19 @@ with tempfile.TemporaryDirectory() as td:
                and x["resolvedTargetPlayerEmbedObserved"] is True
                and x["resolvedTargetDirectMediaObserved"] is False
                and x["resolvedTargetSameOrigin"] is False
+               and x["resolvedTargetPlayerStructureClass"]=="iframe_shell"
+               and x["resolvedTargetIframeCount"]==1
+               and x["resolvedTargetVideoTagCount"]==0
+               and x["resolvedTargetSourceTagCount"]==0
+               and x["resolvedTargetExternalScriptCount"]==0
+               and x["resolvedTargetInlineScriptCount"]==0
+               and x["resolvedTargetFormCount"]==0
+               and x["resolvedTargetHiddenInputCount"]==0
+               and x["resolvedTargetPostFormObserved"] is False
+               and x["resolvedTargetRequestBootstrapObserved"] is False
+               and x["resolvedTargetPackedScriptObserved"] is False
+               and x["resolvedTargetBase64DecodeObserved"] is False
+               and x["resolvedTargetMetaRefreshObserved"] is False
                for x in target_rows)
     assert probe.catalogue_search_matches(
         '<!doctype html><a href="/catalogue/mushoku-tensei/">exact</a>',
@@ -213,6 +226,22 @@ with tempfile.TemporaryDirectory() as td:
     assert probe.resolved_target_shape(
         200, "unclassified " + ("x" * 70000), True, "text/plain"
     )["resolvedTargetShape"] == "oversized"
+    structured = probe.resolved_target_shape(
+        200,
+        '<!doctype html><html><form method="POST"><input type="hidden" name="id" value="PRIVATE"></form>'
+        '<script>fetch("/PRIVATE");atob("PRIVATE")</script><iframe src="/PRIVATE"></iframe></html>',
+        False,
+        "text/html",
+    )
+    assert structured["resolvedTargetShape"] == "html_player"
+    assert structured["resolvedTargetPlayerStructureClass"] == "mixed"
+    assert structured["resolvedTargetIframeCount"] == 1
+    assert structured["resolvedTargetFormCount"] == 1
+    assert structured["resolvedTargetHiddenInputCount"] == 1
+    assert structured["resolvedTargetPostFormObserved"] is True
+    assert structured["resolvedTargetRequestBootstrapObserved"] is True
+    assert structured["resolvedTargetBase64DecodeObserved"] is True
+    assert "PRIVATE" not in json.dumps(structured)
     for path in paths:
         if "/api/lien.php?" not in path:
             assert not any(p in path for p in ("PRIVATE", "secret", "player", "m3u8"))
