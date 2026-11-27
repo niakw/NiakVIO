@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Current provider artifacts must materialize the Core terminal stream sanitizer.
 
-Active providers are sourced only from ``providers/``. Lifecycle-disabled providers
+Global and France providers are sourced from canonical ``provider_catalog.json``; active files remain under ``providers/``. Lifecycle-disabled providers
 may remain visible under ``provider-disabled/`` during retention. Bulk-pending
 onboarding also lives under ``provider-disabled/``, but it is staging rather than
 retention and deliberately has no disabledAt/purgeAfter. No fixed provider census is
@@ -26,9 +26,20 @@ result = subprocess.run([sys.executable, str(ROOT / "tests/provider_capabilities
 if result.returncode:
     raise SystemExit(result.returncode)
 
-manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
-rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
-assert rows, "current provider publication must not be empty"
+catalog = json.loads((ROOT / "provider_catalog.json").read_text(encoding="utf-8"))
+assert catalog.get("sourceOfTruth") is True, "provider_catalog.json must remain the canonical Global+France authority"
+rows = []
+seen_catalog_ids = set()
+for entry in catalog.get("providers") or []:
+    if not isinstance(entry, dict) or not isinstance(entry.get("scraper"), dict):
+        continue
+    canonical_id = str(entry.get("canonicalId") or "").strip().casefold().replace("_", "-")
+    assert canonical_id and canonical_id not in seen_catalog_ids, entry
+    seen_catalog_ids.add(canonical_id)
+    row = dict(entry["scraper"])
+    row["_canonicalId"] = canonical_id
+    rows.append(row)
+assert rows, "current Global+France provider catalogue must not be empty"
 
 provider_filter = {
     str(value or "").strip().casefold().replace("_", "-")
@@ -36,33 +47,30 @@ provider_filter = {
     if str(value or "").strip()
 }
 if provider_filter:
-    all_ids = {
-        str(row.get("id") or "").strip().casefold().replace("_", "-")
-        for row in rows
-    }
+    all_ids = {str(row.get("_canonicalId") or "") for row in rows}
     missing_filter = sorted(provider_filter - all_ids)
     assert not missing_filter, f"unknown provider filter ids: {missing_filter}"
     rows = [
         row for row in rows
-        if str(row.get("id") or "").strip().casefold().replace("_", "-") in provider_filter
+        if str(row.get("_canonicalId") or "") in provider_filter
     ]
 
 active_rows = [row for row in rows if row.get("enabled") is not False]
 disabled_rows = [row for row in rows if row.get("enabled") is False]
 pending_ids = pending_provider_ids()
-pending_rows = [row for row in disabled_rows if str(row.get("id") or "").strip().casefold().replace("_", "-") in pending_ids]
-retained_rows = [row for row in disabled_rows if str(row.get("id") or "").strip().casefold().replace("_", "-") not in pending_ids]
+pending_rows = [row for row in disabled_rows if str(row.get("_canonicalId") or "") in pending_ids]
+retained_rows = [row for row in disabled_rows if str(row.get("_canonicalId") or "") not in pending_ids]
 assert active_rows, "current active provider publication must not be empty"
 
 missing = []
 weak = []
 for row in rows:
-    provider_id = str(row.get("id") or "").strip()
+    provider_id = str(row.get("_canonicalId") or "").strip()
     relative = str(row.get("filename") or "").strip()
-    assert provider_id, row
+    assert provider_id and str(row.get("id") or "").strip(), row
     if row.get("enabled") is False:
         assert relative.startswith("provider-disabled/"), row
-        canonical_id = provider_id.casefold().replace("_", "-")
+        canonical_id = provider_id
         if canonical_id in pending_ids:
             assert not row.get("disabledAt") and not row.get("purgeAfter"), row
         else:

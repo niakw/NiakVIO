@@ -170,6 +170,8 @@ jobs:
           set -euo pipefail
           python -m py_compile \
             scripts/run_provider_repair_pipeline_v6.py \
+            scripts/apply_provider_route_recovery_report.py \
+            scripts/run_brain_learning_queue.py \
             scripts/run_provider_brain_repair.py \
             scripts/recover_brain_positive_program_memory.py \
             scripts/sanitize_brain_learning_memory.py \
@@ -196,6 +198,8 @@ jobs:
             scripts/reconcile_targeted_provider_publication.py
           python scripts/upgrade_provider_runtime_reconstruction_v21_12.py
           python tests/provider_repair_pipeline_v6_contract_test.py
+          python tests/provider_repair_merge_catalogue_presence_test.py
+          python tests/global_stream_output_guard_catalog_scope_test.py
           python tests/provider_search_detail_bridge_v17_current_contract_test.py
           python tests/stream_sanitizer_v7_monotonic_test.py
           python tests/provider_authority_arbiter_test.py

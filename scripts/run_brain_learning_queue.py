@@ -1181,6 +1181,41 @@ def refresh_stage_routes(stage: Path, deadline: float, provider_id: str) -> dict
             return result
     return {"ok": True, "provider": provider_id, "step": "complete", "returncode": 0}
 
+
+def route_refresh_with_budget_scope(
+    provider_id: str,
+    run_dir: Path,
+    stage: Path,
+    provider_deadline: float,
+    work_deadline: float,
+    fair_handoff: bool,
+    *,
+    route_search_fn: Any | None = None,
+    refresh_fn: Any | None = None,
+) -> tuple[dict[str, Any] | None, dict[str, Any]]:
+    """Keep a provider fair-share timeout local while preserving true global exhaustion."""
+    search = route_search if route_search_fn is None else route_search_fn
+    refresh = refresh_stage_routes if refresh_fn is None else refresh_fn
+    route: dict[str, Any] | None = None
+    try:
+        route = search(provider_id, run_dir, provider_deadline)
+        return route, refresh(stage, provider_deadline, provider_id)
+    except BudgetExhausted:
+        # When min(work_deadline, now+slice) selected the global deadline,
+        # this is a real phase exhaustion and must retain the outer fail-closed
+        # persistence semantics. Only a strictly earlier fair-share deadline
+        # is provider-local.
+        if not fair_handoff or provider_deadline >= work_deadline:
+            raise
+        return route, {
+            "ok": False,
+            "provider": provider_id,
+            "step": "fair_share_route_refresh",
+            "returncode": 124,
+            "sliceExhausted": True,
+            "proofAuthority": False,
+        }
+
 def _semantic_type(value: Any) -> str:
     value = norm(value)
     if value == "anime" or value.startswith("anim"):
@@ -1864,8 +1899,14 @@ def main() -> int:
             route = None
             route_refresh: dict[str, Any] | None = None
             if bool(info.get("needs_route_search")) and time.time() < provider_deadline:
-                route = route_search(provider_id, run_dir, provider_deadline)
-                route_refresh = refresh_stage_routes(stage, provider_deadline, provider_id)
+                route, route_refresh = route_refresh_with_budget_scope(
+                    provider_id,
+                    run_dir,
+                    stage,
+                    provider_deadline,
+                    work_deadline,
+                    fair_handoff,
+                )
     
             provider_attempts: list[dict[str, Any]] = []
             seen_method_sets: set[tuple[str, ...]] = set()
@@ -2013,8 +2054,14 @@ def main() -> int:
                 # with a route search before abandoning the provider.
                 any_runtime = any(int(x.get("runtimeStreams") or 0) > 0 for x in (final_lab.get("clients") or {}).values())
                 if not any_runtime and route is None and time.time() < provider_deadline:
-                    route = route_search(provider_id, run_dir, provider_deadline)
-                    route_refresh = refresh_stage_routes(stage, provider_deadline, provider_id)
+                    route, route_refresh = route_refresh_with_budget_scope(
+                        provider_id,
+                        run_dir,
+                        stage,
+                        provider_deadline,
+                        work_deadline,
+                        fair_handoff,
+                    )
                     if route_refresh.get("ok") is False:
                         break
                     if fair_handoff and attempts_this_phase >= 1 and not should_continue_evolved_frontier(
@@ -2047,7 +2094,15 @@ def main() -> int:
                     continue
     
             if isinstance(route_refresh, dict) and route_refresh.get("ok") is False:
-                state["lastStatus"] = "stage_refresh_blocked"
+                if route_refresh.get("sliceExhausted") is True:
+                    state["lastStatus"] = "fair_share_slice_exhausted"
+                    state["lastAttemptAt"] = datetime.now(timezone.utc).isoformat()
+                    print(
+                        "FIELD_BRAIN_HANDOFF_SLICE_EXHAUSTED "
+                        f"provider={provider_id} stage=route-refresh reason=provider-fair-share-deadline"
+                    )
+                else:
+                    state["lastStatus"] = "stage_refresh_blocked"
                 state["lastStageRefresh"] = copy.deepcopy(route_refresh)
             processed.append(provider_id)
             if not resolved:

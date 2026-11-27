@@ -1,3 +1,9 @@
+## 2026-11-27 — Contrats de scope catalogue et budget Learning
+
+Le garde de sortie média est global au produit, donc sa source d'identité provider est `provider_catalog.json` (Global + France), pas le seul manifest Global. Les quatre manifests restent des projections de publication contrôlées séparément. Un filtre ciblé France-only ne doit jamais être classé « provider inconnu » parce qu'il n'appartient pas au catalogue Global.
+
+En Learning fair-share, `provider_deadline` est un budget de rotation et non le budget de phase. Une expiration de route discovery/refresh avec `provider_deadline < work_deadline` est persistée comme `fair_share_slice_exhausted`, sans preuve, puis le provider est remis en retry et la cohorte continue. Seule l'expiration du vrai `work_deadline` peut produire `FIELD_BRAIN_QUEUE_BUDGET_EXHAUSTED` et arrêter toute la phase.
+
 ## 2026-11-27 — Propriété causale des expériences advisor après épuisement
 
 Après épuisement des variantes de base, une expérience advisor compatible portant un fingerprint SHA-256 valide est un programme Brain exécutable, pas une simple annotation. Ordre d'autorité : programme positif strict du même provider ; replay FORCE explicitement demandé ; expérience advisor fraîche ; stratégie post-exhaustion codée. Le runtime ne doit persister le fingerprint advisor comme exécuté que si ses paramètres ont réellement possédé le programme testé. Après rejet exact, le fingerprint est filtré et le fallback codé peut reprendre la main. Les gates de lecture, identité et non-régression restent inchangées.
