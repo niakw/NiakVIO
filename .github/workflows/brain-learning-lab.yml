@@ -993,6 +993,7 @@ jobs:
             args=(python brain-llm/scripts/plan_batch_from_checkout.py
               --niakvio-root .
               --experience brain-sandbox/brain-llm/public-experience.jsonl
+              --advisor-memory brain-learning-input/previous.json
               --documents brain-sandbox/brain-llm/public-documents.jsonl
               --mode brain
               --advisor-only

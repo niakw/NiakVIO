@@ -41,6 +41,7 @@ for required in (
     '--workers "$model_workers"',
     "model_workers=2",
     "--advisor-only",
+    "--advisor-memory brain-learning-input/previous.json",
     "--advisor-family-wave",
     "--max-hypotheses 1",
     "max_tokens=160",
@@ -154,4 +155,5 @@ assert 'model_workers=1' in workflow
 planner_call=workflow.split("args=(python brain-llm/scripts/plan_batch_from_checkout.py",1)[1].split('"${args[@]}"',1)[0]
 assert "--mode brain" in planner_call
 assert "--advisor-only" in planner_call
+assert "--advisor-memory brain-learning-input/previous.json" in planner_call
 assert "--advisor-family-wave" in planner_call

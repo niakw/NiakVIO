@@ -1,3 +1,9 @@
+## 2026-11-27 — Pont cross-day → routage Brain-LLM
+
+La décision d'appeler Qwen doit consommer la même mémoire négative que le filtre de guidance et le runtime. La mémoire cross-day Learning est une autorité d'**exclusion d'hypothèses exécutées**, jamais une autorité de preuve média ou de publication. NiakVIO transmet `brain-learning-input/previous.json` au planner Brain-LLM ; l'adapter projette seulement les champs d'expérience sanitizés et fusionne les doublons sans pouvoir dégrader un `executionObserved=true`.
+
+Le seuil de trois fingerprints exécutés distincts par même executor reste inchangé. L'objectif du raccordement est d'éviter les répétitions silencieuses et de permettre l'escalade Qwen quand la dette réelle l'exige, pas d'accélérer artificiellement le compteur.
+
 ## 2026-11-27 — Unifier la mémoire du synthétiseur et du filtre de guidance
 
 La sélection du prochain meta-gap et son rapport d'épuisement doivent voir exactement les mêmes négatifs exécutés que le filtre final. Learning cross-day et Repair canonique sont donc joints en lecture seule avant `synthesize_rows`; aucune ligne n'acquiert d'autorité supplémentaire. Un fingerprint absent de Repair mais rejeté en Learning doit être traité comme déjà exécuté pour l'ordonnancement de l'hypothèse suivante.
