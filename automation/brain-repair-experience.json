@@ -1214,7 +1214,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "HARNESS MISMATCH",
+      "status": "ROUTE PROVEN",
       "strategy": "mixed_embed_resolver"
     },
     "7movies": {
@@ -2166,7 +2166,7 @@
         "/?s={query}",
         "/search?q={query}"
       ],
-      "status": "HARNESS MISMATCH",
+      "status": "HARNESS/ENV BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "animesalt": {
@@ -3301,7 +3301,7 @@
       "requestRecipes": [],
       "routeFamilies": [],
       "routeTemplates": [],
-      "status": "HARNESS/ENV BLOCKED",
+      "status": "HARNESS MISMATCH",
       "strategy": "mixed_embed_resolver"
     },
     "cinejoy": {
@@ -3454,7 +3454,7 @@
         "/?s={query}",
         "/search?query={query}"
       ],
-      "status": "HARNESS/ENV BLOCKED",
+      "status": "HARNESS MISMATCH",
       "strategy": "mixed_embed_resolver"
     },
     "coflix": {
@@ -4371,7 +4371,7 @@
       "routeTemplates": [
         "/index.php?do=search&subaction=search&story={query}"
       ],
-      "status": "HARNESS/ENV BLOCKED",
+      "status": "HARNESS MISMATCH",
       "strategy": "mixed_embed_resolver"
     },
     "emnexmovies": {
@@ -4522,13 +4522,13 @@
       "routeTemplates": [
         "/series/{slug}"
       ],
-      "status": "HARNESS/ENV BLOCKED",
+      "status": "HARNESS MISMATCH",
       "strategy": "mixed_embed_resolver"
     },
     "film-a-revoir": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=lookup_only"
+        "movie=none"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -4841,7 +4841,7 @@
         "/?s={query}",
         "/recherche?q={query}"
       ],
-      "status": "HARNESS/ENV BLOCKED",
+      "status": "HARNESS MISMATCH",
       "strategy": "mixed_embed_resolver"
     },
     "frembed": {
@@ -5600,7 +5600,7 @@
     "hianime": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=none"
+        "anime=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -5627,7 +5627,7 @@
         "/?s={query}",
         "/search?q={query}"
       ],
-      "status": "PROVIDER NETWORK BLOCKED",
+      "status": "CHAIN REACHED",
       "strategy": "mixed_embed_resolver"
     },
     "hindmoviez": {
@@ -6721,8 +6721,8 @@
     "moviebox": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=chain_reached",
-        "tv=chain_reached"
+        "movie=lookup_only",
+        "tv=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -9254,7 +9254,7 @@
     "sekai": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -9452,7 +9452,7 @@
         "/recherche?q={query}",
         "/recherche?query={query}"
       ],
-      "status": "HARNESS MISMATCH",
+      "status": "ROUTE PROVEN",
       "strategy": "mixed_embed_resolver"
     },
     "skstream": {
@@ -10967,7 +10967,7 @@
     "vuflix": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=chain_reached",
+        "anime=none",
         "movie=none",
         "tv=chain_reached"
       ],
@@ -12008,8 +12008,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "46019147685",
-  "sourceSha": "0c4bae79208010e7c29d952b3f66af33f13b01e8",
+  "sourceRunId": "46028518118",
+  "sourceSha": "96c6db9f2b94e1ab32738f0878b4e09172d6fe0b",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -12033,12 +12033,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "search",
           "supportRatio": 0.3333
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "other",
           "supportRatio": 0.3333
         }
       ]
@@ -12053,12 +12053,12 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "detail",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "search",
           "supportRatio": 1.0
         }
       ]
@@ -12078,12 +12078,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "episode",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "episode",
+          "role": "other",
           "supportRatio": 1.0
         }
       ]
@@ -12099,12 +12099,12 @@
       "routeFamilies": [
         {
           "providerSupport": 2,
-          "role": "search",
+          "role": "detail",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 2,
-          "role": "detail",
+          "role": "search",
           "supportRatio": 1.0
         },
         {
