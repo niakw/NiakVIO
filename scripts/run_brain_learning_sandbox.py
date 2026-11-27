@@ -120,6 +120,7 @@ def _negative_failure_count(
             causal_exercise = quick.brain.strategy_causal_exercise_observed(
                 row.get("profile"),
                 row.get("networkExecutionSummary"),
+                row.get("networkExecutionDelta"),
             )
         if causal_exercise is False:
             continue

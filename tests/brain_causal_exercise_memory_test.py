@@ -48,6 +48,21 @@ ZERO_DELTA = {
     "headersRetained": False,
     "bodyRetained": False,
 }
+REAL_DELTA = {
+    **ZERO_DELTA,
+    "providerRequestDelta": 6,
+    "successfulProviderRequestDelta": 2,
+    "networkFailureDelta": 0,
+    "statusBucketDelta": {"2xx": 2, "3xx": 0, "4xx": 4, "5xx": 0, "network": 0},
+    "newMethods": ["POST"],
+    "newStages": ["episode"],
+    "newResponseKinds": ["html"],
+    "parentDeepestStage": "content_lookup",
+    "candidateDeepestStage": "episode",
+    "stageRankDelta": 1,
+    "stageAdvanced": True,
+}
+
 REAL_NETWORK = {
     **ZERO_NETWORK,
     "providerRequestCount": 57,
@@ -62,9 +77,10 @@ REAL_NETWORK = {
 
 session = "provider_session_bootstrap_replay_v1"
 v2 = "document_request_contract_mining_v2"
-assert brain.strategy_causal_exercise_observed(session, ZERO_NETWORK) is False
-assert brain.strategy_causal_exercise_observed(v2, REAL_NETWORK) is True
-assert brain.strategy_causal_exercise_observed(session, {}) is None
+assert brain.strategy_causal_exercise_observed(session, ZERO_NETWORK, ZERO_DELTA) is False
+assert brain.strategy_causal_exercise_observed(v2, REAL_NETWORK, ZERO_DELTA) is False
+assert brain.strategy_causal_exercise_observed(v2, REAL_NETWORK, REAL_DELTA) is True
+assert brain.strategy_causal_exercise_observed(session, {}, {}) is None
 
 plan = {
     "failureClass": "media_extraction_gap",

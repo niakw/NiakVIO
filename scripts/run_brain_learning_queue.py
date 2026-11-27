@@ -445,7 +445,7 @@ def phase_experiment_entries(
         )
         execution_observed = bool(accepted or rejected or progress)
         causal_exercise = (
-            strategy_causal_exercise_observed(profile, network_execution)
+            strategy_causal_exercise_observed(profile, network_execution, network_execution_delta)
             if execution_observed else False
         )
         if execution_observed and success_count == 0 and causal_exercise is not True:
@@ -1237,6 +1237,7 @@ def exhausted_repair_providers(memory: dict[str, Any], policy: dict[str, Any]) -
             causal_exercise = strategy_causal_exercise_observed(
                 row.get("profile"),
                 row.get("networkExecutionSummary"),
+                row.get("networkExecutionDelta"),
             )
         if causal_exercise is False:
             continue

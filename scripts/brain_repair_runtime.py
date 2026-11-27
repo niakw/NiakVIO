@@ -172,9 +172,9 @@ POST_EXHAUSTION_STRATEGY_PROFILES = {
 # strategy registry instead of teaching every consumer its own exceptions.
 STRATEGY_EXECUTION_PROOF = {
     "catalogue_inline_token_resolver_v2": "provider_request",
-    "document_request_contract_mining_v1": "provider_request",
-    "document_request_contract_mining_v2": "provider_request",
-    "provider_session_bootstrap_replay_v1": "provider_request",
+    "document_request_contract_mining_v1": "provider_request_delta",
+    "document_request_contract_mining_v2": "provider_request_delta",
+    "provider_session_bootstrap_replay_v1": "provider_request_delta",
 }
 if not set(STRATEGY_EXECUTION_PROOF).issubset(POST_EXHAUSTION_STRATEGY_PROFILES):
     raise RuntimeError("strategy execution-proof registry escaped installed Brain profiles")
@@ -183,6 +183,7 @@ if not set(STRATEGY_EXECUTION_PROOF).issubset(POST_EXHAUSTION_STRATEGY_PROFILES)
 def strategy_causal_exercise_observed(
     profile: object,
     network_summary: object,
+    network_delta: object = None,
 ) -> bool | None:
     """Return whether the selected Bloc's causal capability was exercised.
 
@@ -200,6 +201,13 @@ def strategy_causal_exercise_observed(
             return None
         try:
             return int(network_summary.get("providerRequestCount") or 0) > 0
+        except (TypeError, ValueError):
+            return None
+    if proof == "provider_request_delta":
+        if not isinstance(network_delta, dict) or "providerRequestDelta" not in network_delta:
+            return None
+        try:
+            return int(network_delta.get("providerRequestDelta") or 0) > 0
         except (TypeError, ValueError):
             return None
     raise RuntimeError(f"unsupported strategy execution proof: {proof}")
@@ -785,6 +793,7 @@ def _learning_experiment_entries() -> list[dict[str, Any]]:
             causal_exercise = strategy_causal_exercise_observed(
                 raw.get("profile"),
                 raw.get("networkExecutionSummary"),
+                raw.get("networkExecutionDelta"),
             )
         # Memory published before the exact-ledger fix could mark a newly
         # planned post-g5 strategy as profile_unavailable without ever running
@@ -823,6 +832,7 @@ def _learning_experiment_entries() -> list[dict[str, Any]]:
             "lastOutcome": last_outcome,
             "lastReason": _clip_text(raw.get("lastReason"), 240),
             "executionObserved": execution_observed,
+            "causalExerciseObserved": causal_exercise is True,
             "generationAttemptObserved": last_outcome == "not_generated",
         })
     return out
@@ -864,6 +874,8 @@ def repair_memory() -> dict[str, Any]:
             ):
                 if str(incoming.get(field) or ""):
                     next_row[field] = incoming[field]
+            next_row["causalExerciseObserved"] = incoming.get("causalExerciseObserved") is True
+            next_row["executionObserved"] = incoming.get("executionObserved") is True
             next_row["experimentVariant"] = incoming["experimentVariant"]
             next_row["experimentGeneration"] = incoming["experimentGeneration"]
             merged[key] = next_row
