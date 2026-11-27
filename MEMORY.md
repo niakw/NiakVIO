@@ -1,3 +1,11 @@
+## 2026-11-27 — V75 : seuil 3/3 Primewire atteint, escalade Qwen exigée
+
+- Learning V74 [45940048236](https://github.com/niakw/NiakVIO/actions/runs/45940048236), source `b20ec794`, Brain `d705de3d`, est vert. Pré-route et planner voient chacun `advisor_memory_sources=1` et restent `deterministic_advisor` au départ, comme attendu lorsque la mémoire d'entrée ne contenait encore que deux fingerprints exécutés de `chain_terminal_extractor_v1`.
+- Troisième fingerprint exécuté : `a149c7311570e801dfbc4311429aa2897ea20a012cb4946c362763662244ec40`, variant 4 / génération 3, pour `chain_terminal_extractor_v1` et `adaptive_runtime_recovery`. Résultat identique : 1 stream, 0 playable, `safety_gate:no_playable_proof`, accepted repairs 0, provider proposals 0, candidates 0.
+- Le ref publié `brain-learning/proposals`, blob `f2c2451c7cb9fb6b84a0710c25d9286262bae57c`, contient exactement trois fingerprints distincts avec `executionObserved=true` pour `chain_terminal_extractor_v1` : `c1c5bdb3...`, `9ebbb0c3...`, `a149c731...`. Le seuil causal Brain-LLM est donc **3/3** sur la même famille/executor.
+- La publication V74 signale `brain_revision_drop=2` pour une mémoire de guidance liée à une ancienne révision Brain, mais le ledger d'expérience publié conserve bien les trois négatifs exécutés ci-dessus. V75 doit juger l'escalade à partir de ce ledger effectif, pas d'un compteur historique synthétique.
+- **Attente V75** : pré-route `mode=llm_repair`, `llm_needed=true`; serveur Qwen démarré ; planner `routing_modes.llm_repair=1`, `llm_calls>0`; la sortie modèle doit produire une expérience nouvelle puis celle-ci doit être réellement exécutée. Un appel LLM seul vaut toujours 0 réparation.
+
 ## 2026-11-27 — V75-prep : Repair canonique débloqué au niveau ProviderBase V14
 
 - Repair canonique [45938902184](https://github.com/niakw/NiakVIO/actions/runs/45938902184), source `4316caba`, n'a pas échoué sur Primewire : le pipeline s'arrête avant sélection avec `upgrade_provider_search_request_plan_v14.py` → `AssertionError: V14 ProviderBase missing: _crawlDirectMedia(_uniq(details).slice(0, 8)`. Métadonnées finales : selected=0, candidates=0, validated=0, outcome=failure, gate=skipped. **0 réparation**.

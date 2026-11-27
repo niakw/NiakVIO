@@ -1,15 +1,14 @@
-Brain Learning V74 — third executed chain-terminal fingerprint before Qwen escalation.
-source_niakvio_main_pretrigger_sha: bbf3d5baba9bc343f00e006a5617cea5caa43d4d
+Brain Learning V75 — Primewire 3/3 executed terminal fingerprints, require real Qwen escalation.
+source_niakvio_main_pretrigger_sha: 762829b619a3594642a36fb3cd604ae6bc42def6
 source_brain_main_sha: d705de3daba4b59fc7990618e819276e87df7191
-source_census_run_id: 45938918938
-source_learning_run_id: 45939063038
+source_learning_run_id: 45940048236
+published_learning_blob: f2c2451c7cb9fb6b84a0710c25d9286262bae57c
 requested_at: 2026-11-27
 target_provider:
 target_providers: primewire
 architecture_force: false
 budget_minutes: 90
-chain_terminal_executed_fingerprints: c1c5bdb37b68178d79437c8c245c91346eeb34eb2041773c4ff696f2da3b6d98;9ebbb0c39146df58c94988c2e0876ff7fcc2d4b08bda2f9afe7f6a2650c80d20
-excluded_nonexecuted_fingerprint: 5a773898e2e38aebe601ac27f5ab08872663e951bdb04a57998dac58a76a822f
-reason: V73 proves two distinct executed/rejected chain_terminal_extractor_v1 fingerprints. Execute exactly one new deterministic fingerprint for the same executor; never replay c1c5 or 9ebb. Do not count synthesized-only guidance.
-proof_goal: Pin Brain d705de3d. Both pre-route and planner summaries must show advisor_memory_sources=1 and deterministic_advisor while the count is 2/3. Persist the third distinct executed fingerprint with executionObserved=true. If it fails, the published memory must then contain 3/3; only the subsequent run may route llm_repair and report llm_calls>0.
+chain_terminal_executed_fingerprints: c1c5bdb37b68178d79437c8c245c91346eeb34eb2041773c4ff696f2da3b6d98;9ebbb0c39146df58c94988c2e0876ff7fcc2d4b08bda2f9afe7f6a2650c80d20;a149c7311570e801dfbc4311429aa2897ea20a012cb4946c362763662244ec40
+reason: Published cross-day experiment memory proves three distinct executed/rejected fingerprints for chain_terminal_extractor_v1. The deterministic advisor budget is exhausted for this exact executor.
+proof_goal: Pin Brain d705de3d. Pre-route must select llm_repair with advisor_memory_sources=1 and llm_needed=true. Start local Qwen. Planner must report routing_modes.llm_repair=1 and llm_calls>0. Persist the model-produced experiment fingerprint and execute its selected profile/strategy. Record streams, playable, content identity, candidate/providerProposal bytes and safety verdict. Replaying c1c5, 9ebb or a149 is a failure.
 publication_policy: zero repair absent compiled/applied/rematerialized candidate bytes, exact-byte playable correct-content replay, official NuvioTV decoded video/audio/identity, and non-regression.

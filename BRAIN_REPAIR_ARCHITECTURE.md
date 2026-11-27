@@ -1,3 +1,7 @@
+## 2026-11-27 — Escalade modèle après dette exécutée 3/3
+
+Le seuil de trois fingerprints distincts exécutés/rejetés pour `chain_terminal_extractor_v1` est maintenant atteint sur Primewire. La prochaine décision n'a plus le droit de recycler une quatrième recette déterministe du même executor : le Brain-LLM doit passer par `llm_repair`. La preuve attendue comporte séparément le routage, l'appel modèle, la nouvelle hypothèse, son fingerprint, son exécution effective et son verdict de lecture. Aucun de ces stades intermédiaires n'est une réparation provider.
+
 ## 2026-11-27 — Compatibilité ascendante des migrations ProviderBase
 
 Les migrations anciennes ne doivent pas exiger textuellement une implémentation supersédée lorsqu'une version ultérieure conserve et renforce son invariant. V14 accepte l'ancien crawl direct de huit détails ou le contrat V28 complet : huit détails corrélés maximum, résolution individuelle, crawl du même ensemble borné, déduplication et cap global. Une disparition de l'un de ces éléments reste fail-closed.
