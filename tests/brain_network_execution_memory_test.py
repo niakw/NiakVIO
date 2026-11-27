@@ -332,16 +332,20 @@ assert queue.network_causal_followup(
     "family-representative",
 ) is None
 
-# Once the follow-up Lego has executed, it cannot look fresh again.
+# An older implementation of the follow-up profile cannot suppress a newly
+# evolved implementation here. The planner owns exact implementation freshness
+# through strategyImplementationFingerprint-aware negative memory.
 session_negative = {
     **v2_negative,
     "profile": queue.SESSION_BOOTSTRAP_FOLLOWUP_PROFILE,
     "strategyImplementationFingerprint": "c" * 64,
     "networkExecutionSummary": {},
 }
-assert queue.network_causal_followup(
+historical_followup = queue.network_causal_followup(
     {"experimentMemory": {"entries": [v2_negative, session_negative]}},
     "family-representative",
-) is None
+)
+assert historical_followup is not None
+assert historical_followup["profile"] == queue.SESSION_BOOTSTRAP_FOLLOWUP_PROFILE
 
 print("Brain sanitized network execution memory contract passed")
