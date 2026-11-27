@@ -10,7 +10,9 @@ classifier=(ROOT/"scripts/classify_disabled_recovery_disposition.py").read_text(
 assert "group: niakvio-brain-disabled-recovery-lab" in workflow
 assert "cancel-in-progress: true" in workflow
 
-assert "Resolve exact current Brain LLM revision" in workflow
+assert "Resolve validated source-pinned Brain LLM revision" in workflow
+assert "scripts/resolve_validated_brain_pin.py" in workflow
+assert "source=validated-gitlink" in workflow
 assert "repository: niakw/NiakVIO-Brain-LLM" in workflow
 assert "--allow-disabled-explicit" in workflow
 assert "Synthesize disabled-provider guidance through Brain LLM" in workflow
