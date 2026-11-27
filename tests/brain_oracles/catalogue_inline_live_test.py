@@ -119,11 +119,11 @@ with tempfile.TemporaryDirectory() as td:
 
     report = probe.run(root, request, fetcher=fake_fetch)
     assert report["probeRequestCount"] == 15
-    assert sum(x["catalogueSearchLinkCount"] == 1 for x in report["observations"]) == 3
-    assert sum(x["catalogueSearchExactSlugPresent"] for x in report["observations"]) == 0
-    assert sum(x["catalogueCandidateSlugUnverified"] == "mushoku-tensei-extra"
+    assert sum(x.get("catalogueSearchLinkCount") == 1 for x in report["observations"]) == 3
+    assert sum(x.get("catalogueSearchExactSlugPresent") is True for x in report["observations"]) == 0
+    assert sum(x.get("catalogueCandidateSlugUnverified") == "mushoku-tensei-extra"
                for x in report["observations"]) == 3
-    assert sum(x["catalogueCandidateTokenOverlapPercent"] == 100
+    assert sum(x.get("catalogueCandidateTokenOverlapPercent") == 100
                for x in report["observations"]) == 3
     assert report["inlineTokenResponseCount"] == 3
     assert report["tokenResolverProbeCount"] == 3
