@@ -1189,6 +1189,17 @@ def _safe_planner_stderr(value: Any) -> str:
     return " ".join(text.split())[:600]
 
 
+def _learning_causal_failure_class(mode: str) -> str:
+    value = str(os.environ.get("NUVIO_BRAIN_LEARNING_CAUSAL_FAILURE_CLASS") or "").strip().casefold()
+    if not value:
+        return ""
+    if str(mode or "").strip().casefold() != "learning":
+        raise RuntimeError("Learning causal failure class escaped Learning mode")
+    if not re.fullmatch(r"[a-z][a-z0-9_]{0,95}", value):
+        raise RuntimeError("Learning causal failure class invalid")
+    return value
+
+
 def _learning_preferred_context(mode: str) -> tuple[str, str]:
     profile = str(os.environ.get("NUVIO_BRAIN_LEARNING_PREFERRED_PROFILE") or "").strip().casefold()
     failure = str(os.environ.get("NUVIO_BRAIN_LEARNING_PREFERRED_FAILURE_CLASS") or "").strip().casefold()
@@ -1218,12 +1229,14 @@ def _planner_base_payload(
     silently logged forcePreferredRequested="" despite executing the profile.
     """
     learning_profile, learning_failure = _learning_preferred_context(mode)
+    learning_causal_failure = _learning_causal_failure_class(mode)
     return {
         "mode": mode,
         "explorationChain": _exploration_chain_enabled(),
         "forcePreferredStrategy": _force_preferred_strategy(mode),
         "learningPreferredStrategy": learning_profile,
         "learningPreferredFailureClass": learning_failure,
+        "learningCausalFailureClass": learning_causal_failure,
         "policy": policy(),
         "learnedSkills": planner_learned_skills(mode),
         "historicalSolutions": planner_historical_solutions(),
