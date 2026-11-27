@@ -353,8 +353,78 @@ def _request_bootstrap_structure(source: str, page_url: str) -> dict[str, int]:
     ):
         add("xhr", match.group(1))
 
+    # Mirror the current Bloc V2 static-variable capability without retaining
+    # any identifier name or value. This tells Brain whether the dynamic request
+    # arguments are inside the existing static grammar or require a new parser.
+    declarations: dict[str, str] = {}
+    for match in re.finditer(
+        r"(?:^|[;{}>])\s*(?:const|let|var)\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*=\s*([^;\n]{1,1000})",
+        text,
+    ):
+        declarations[match.group(1)] = match.group(2).strip()
+
+    def static_expr_resolvable(expr: str, resolved: set[str]) -> bool:
+        value = str(expr or "").strip()
+        if not value or len(value) > 1000:
+            return False
+        parts: list[str] = []
+        buf = ""
+        quote = ""
+        escaped = False
+        for char in value:
+            if escaped:
+                buf += char
+                escaped = False
+                continue
+            if char == "\\" and quote:
+                buf += char
+                escaped = True
+                continue
+            if quote:
+                buf += char
+                if char == quote:
+                    quote = ""
+                continue
+            if char in {"\"", "'"}:
+                quote = char
+                buf += char
+                continue
+            if char == "+":
+                parts.append(buf.strip())
+                buf = ""
+                continue
+            buf += char
+        if quote:
+            return False
+        parts.append(buf.strip())
+        if not parts or any(not part for part in parts):
+            return False
+        for part in parts:
+            if (
+                len(part) >= 2
+                and part[0] in {"\"", "'"}
+                and part[-1] == part[0]
+            ):
+                continue
+            if re.fullmatch(r"[A-Za-z_$][A-Za-z0-9_$]*", part) and part in resolved:
+                continue
+            return False
+        return True
+
+    static_vars: set[str] = set()
+    for _pass in range(4):
+        changed = False
+        for name, expr in declarations.items():
+            if name not in static_vars and static_expr_resolvable(expr, static_vars):
+                static_vars.add(name)
+                changed = True
+        if not changed:
+            break
+
     literal = dynamic = template = concatenated = 0
     identifier = member = call_expression = other_dynamic = 0
+    identifier_static = identifier_unresolved = 0
+    identifier_missing_definition = identifier_dynamic_definition = 0
     same_origin = cross_origin = 0
     base = urllib.parse.urlsplit(str(page_url or ""))
     base_origin = (
@@ -398,6 +468,14 @@ def _request_bootstrap_structure(source: str, page_url: str) -> dict[str, int]:
                 concatenated += 1
             if re.fullmatch(r"[A-Za-z_$][A-Za-z0-9_$]*", value):
                 identifier += 1
+                if value in static_vars:
+                    identifier_static += 1
+                else:
+                    identifier_unresolved += 1
+                    if value in declarations:
+                        identifier_dynamic_definition += 1
+                    else:
+                        identifier_missing_definition += 1
             elif re.fullmatch(
                 r"[A-Za-z_$][A-Za-z0-9_$]*(?:\s*\.\s*[A-Za-z_$][A-Za-z0-9_$]*)+",
                 value,
@@ -424,6 +502,10 @@ def _request_bootstrap_structure(source: str, page_url: str) -> dict[str, int]:
         "resolvedTargetRequestTemplateUrlCount": min(32, template),
         "resolvedTargetRequestConcatUrlCount": min(32, concatenated),
         "resolvedTargetRequestIdentifierUrlCount": min(32, identifier),
+        "resolvedTargetRequestIdentifierStaticResolvableCount": min(32, identifier_static),
+        "resolvedTargetRequestIdentifierUnresolvedCount": min(32, identifier_unresolved),
+        "resolvedTargetRequestIdentifierMissingDefinitionCount": min(32, identifier_missing_definition),
+        "resolvedTargetRequestIdentifierDynamicDefinitionCount": min(32, identifier_dynamic_definition),
         "resolvedTargetRequestMemberUrlCount": min(32, member),
         "resolvedTargetRequestCallExpressionUrlCount": min(32, call_expression),
         "resolvedTargetRequestOtherDynamicUrlCount": min(32, other_dynamic),
