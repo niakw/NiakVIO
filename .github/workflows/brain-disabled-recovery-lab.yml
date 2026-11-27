@@ -179,19 +179,14 @@ jobs:
               raise SystemExit(f"clean disabled recovery reconstruction missing {provider}")
           PY
 
-      - name: Resolve exact current Brain LLM revision
+      - name: Resolve validated source-pinned Brain LLM revision
         id: brain_llm_pin
         shell: bash
         run: |
           set -euo pipefail
-          tmp="$(mktemp -d)"
-          git -C "$tmp" init -q
-          git -C "$tmp" remote add origin https://github.com/niakw/NiakVIO-Brain-LLM.git
-          git -C "$tmp" fetch --quiet --depth=1 origin refs/heads/main:refs/remotes/origin/main
-          sha="$(git -C "$tmp" rev-parse refs/remotes/origin/main)"
-          [[ "$sha" =~ ^[0-9a-f]{40}$ ]]
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
-          echo "FIELD_DISABLED_RECOVERY_BRAIN_PIN sha=$sha source=main"
+          python scripts/resolve_validated_brain_pin.py --github-output "$GITHUB_OUTPUT"
+          sha="$(python -c 'import json; print(str(json.load(open("automation/brain-pinned-source.json",encoding="utf-8")).get("sha") or ""))')"
+          echo "FIELD_DISABLED_RECOVERY_BRAIN_PIN sha=$sha source=validated-gitlink"
 
       - name: Checkout pinned Brain LLM synthesis authority
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
