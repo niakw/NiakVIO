@@ -106,12 +106,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python scripts/resolve_validated_brain_pin.py --github-output "$GITHUB_OUTPUT"
           pin_sha="$(python -c 'import json; print(str(json.load(open("automation/brain-pinned-source.json",encoding="utf-8")).get("sha") or ""))')"
-          [[ "$pin_sha" =~ ^[0-9a-f]{40}$ ]] || { echo "validated Brain pin unavailable" >&2; exit 1; }
-          gitlink_sha="$(git ls-tree HEAD -- brain-llm | awk 'NR==1{print $3}')"
-          [[ "$gitlink_sha" =~ ^[0-9a-f]{40}$ ]] || { echo "Brain gitlink unavailable" >&2; exit 1; }
-          test "$pin_sha" = "$gitlink_sha"
-          echo "sha=$pin_sha" >> "$GITHUB_OUTPUT"
           echo "FIELD_BRAIN_LLM_PIN sha=$pin_sha source=validated-gitlink freshness=source-pinned cache_policy=stale-guidance-ignored"
 
       - name: Checkout pinned NiakVIO Brain LLM advisor
