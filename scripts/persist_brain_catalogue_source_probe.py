@@ -59,6 +59,14 @@ PLAYER_REQUEST_FILTER_COUNT_LIMITS={
     "resolvedTargetRequestStaticCrossOriginCount":32,
     "resolvedTargetRequestStaticMediaIntentCount":32,
     "resolvedTargetRequestStaticSameOriginMediaIntentCount":32,
+    "resolvedTargetRequestDynamicDefinitionCallCount":32,
+    "resolvedTargetRequestDynamicDefinitionMemberCount":32,
+    "resolvedTargetRequestDynamicDefinitionTemplateCount":32,
+    "resolvedTargetRequestDynamicDefinitionConditionalCount":32,
+    "resolvedTargetRequestDynamicDefinitionOtherCount":32,
+    "resolvedTargetRequestMissingDefinitionAssignmentCount":32,
+    "resolvedTargetRequestMissingDefinitionFunctionParameterCount":32,
+    "resolvedTargetRequestMissingDefinitionUnboundCount":32,
 }
 PLAYER_STRUCTURE_FLAGS=(
     "resolvedTargetPostFormObserved",
