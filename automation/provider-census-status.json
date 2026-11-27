@@ -48,7 +48,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS MISMATCH"
+        "current_status:HARNESS/ENV BLOCKED"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -274,7 +274,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS MISMATCH"
+        "current_status:HARNESS/ENV BLOCKED"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -454,7 +454,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS MISMATCH"
+        "current_status:HARNESS/ENV BLOCKED"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -542,7 +542,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS MISMATCH"
+        "current_status:HARNESS/ENV BLOCKED"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -812,7 +812,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS MISMATCH"
+        "current_status:HARNESS/ENV BLOCKED"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -954,7 +954,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS MISMATCH"
+        "current_status:HARNESS/ENV BLOCKED"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -1098,7 +1098,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS MISMATCH"
+        "current_status:HARNESS/ENV BLOCKED"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -1767,7 +1767,7 @@
       ],
       "harnessTransportClass": "residential-exit-native-reachable",
       "harnessTransportEvidence": [
-        "anime: browser=browser_challenge_persisted, tv-browser=browser_challenge_observed, okhttp=okhttp_jvm_challenge_persisted, desktop-okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
+        "anime: browser=browser_challenge_persisted, tv-browser=browser_challenge_observed, okhttp=okhttp_jvm_challenge_persisted, desktop-okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
       ],
       "authorityRepairEligible": true,
       "authorityAction": "KEEP_ROUTE_AUTHORITY",
@@ -1785,7 +1785,11 @@
       "brainCheckRequired": true,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": false
+      "testedThisRun": false,
+      "residentialProviderReplayClass": "playable-unverified",
+      "residentialProviderReplayEvidence": [
+        "anime: status=wrong_content, stage=provider_returned_wrong_content, raw=1, playable=1, verified=0, identitySafe=false"
+      ]
     },
     {
       "provider": "french-manga",
@@ -5621,9 +5625,17 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "46082489022-sharded-waf",
-  "harnessEvidenceSha": "9547b49a9dd9c1176136e3d7875258c509d675d2",
-  "authorityRefreshedProviders": [],
+  "harnessEvidenceRunId": "46082947574-waf-transport",
+  "harnessEvidenceSha": "91c75bb14fc03701724f5d09f0e06befbc74bdd0",
+  "authorityRefreshedProviders": [
+    "1jour1film0626",
+    "aniflix-uno",
+    "animejlprovider",
+    "animeonsen",
+    "arrowtv",
+    "cinegram",
+    "cinetimes"
+  ],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
     "aniflix-uno",
@@ -5651,7 +5663,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 16,
+    "matchedProviderLanes": 1,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -5664,7 +5676,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 16,
+    "matchedProviderLanes": 1,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -6854,9 +6866,9 @@
         "contradictions": 1,
         "identitySafe": false,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "6facb8a2bcce139393c056c550221f7f89854954",
+          "sourceNiakvioSha": "bc187c07f37fad1344c3b4837170fdf57c12fb96",
           "providerBundleSha256": "7dbdeb16e2cdb8f46e0e351849e3e731ec08c3dc84c3026a0e7e3de771034a89",
-          "runId": "46076068348",
+          "runId": "46082947574",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7779,26 +7791,26 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": false,
-      "providerCount": 0,
+      "available": true,
+      "providerCount": 1,
       "refreshedProviders": [
-        "1jour1film0626",
-        "aniflix-uno",
-        "animejlprovider",
-        "animeonsen",
-        "animesalt",
-        "animesultra",
-        "arrowtv",
-        "chillflix",
-        "cinegram",
-        "cinetimes"
+        "french-anime"
       ],
-      "replayedProviders": [],
-      "rawProviders": [],
-      "playableProviders": [],
+      "replayedProviders": [
+        "french-anime"
+      ],
+      "rawProviders": [
+        "french-anime"
+      ],
+      "playableProviders": [
+        "french-anime"
+      ],
       "verifiedProviders": [],
-      "sourceNiakvioSha": "",
-      "runId": "",
+      "byteMatchedProviders": [
+        "french-anime"
+      ],
+      "sourceNiakvioSha": "bc187c07f37fad1344c3b4837170fdf57c12fb96",
+      "runId": "46082947574",
       "proofAuthority": false,
       "publicationAuthority": false
     },
