@@ -29,7 +29,12 @@ const explorationMode = learningMode || input.explorationChain === true;
 const skillTransfer = asRecord(production.learnedSkillTransferPolicy);
 const learnedSkillInputAllowed = learningMode || production.learnedSkillInputAllowed === true;
 const negativeMemoryPolicy = asRecord(production.negativeExperimentMemory);
-const negativeMemory = asArray(input.negativeMemory).filter(isRecord);
+const negativeMemory = asArray(input.negativeMemory)
+  .filter(isRecord)
+  // Executable bytes can run without exercising the causal mechanism. Such
+  // rows remain diagnostic history but cannot veto a strategy as a negative.
+  // Legacy rows omit the field and remain fail-closed.
+  .filter((row) => row.causalExerciseObserved !== false);
 const historicalSolutions = asArray(input.historicalSolutions).filter(isRecord);
 const llmGuidance = asArray(input.llmGuidance).filter(isRecord);
 const inputLearnedSkills = normalizeLearnedSkills(input.learnedSkills);
