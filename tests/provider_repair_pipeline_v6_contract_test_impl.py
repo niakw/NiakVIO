@@ -34,7 +34,8 @@ assert 'automation/provider-census-status.json' in workflow
 assert 'targetProviders' in workflow
 assert 'NIAKVIO_BRAIN_STATIC_VARIANT_DEBT' in workflow
 assert 'audit_registered_runtime_variant_coverage' in workflow
-assert 'Resolve exact current Brain LLM static coverage auditor' in workflow
+assert 'Resolve validated Brain LLM static coverage auditor' in workflow
+assert 'scripts/resolve_validated_brain_pin.py' in workflow
 assert 'CANONICAL_REPAIR_ARGS' in workflow
 assert 'provider-repair-portfolio-baseline.json' in workflow
 assert 'provider-repair-portfolio-candidate.json' in workflow
