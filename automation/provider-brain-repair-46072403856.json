@@ -1,0 +1,213 @@
+{
+  "acceptedProgramCompileFailures": {},
+  "acceptedProgramCompiledProviders": [],
+  "acceptedRepairCount": 0,
+  "acceptedRepairs": [],
+  "advisorDynamicWaveCeiling": 6,
+  "advisorHypothesisWaveBudget": 1,
+  "batchSize": 48,
+  "deferredLearningProviders": [
+    "anime-sama"
+  ],
+  "effectiveWaves": 1,
+  "elapsedSeconds": 73.209,
+  "executionModel": "family-batched-multi-wave-brain-repair",
+  "experienceMemory": {
+    "operationalProviderCount": 8,
+    "providerCount": 142,
+    "schemaVersion": 2,
+    "sourceRunId": "46072403856-pre-repair",
+    "sourceSha": "b8f55e571c06bfac1f4405e6ae598346afc72a64",
+    "strategyCount": 5
+  },
+  "familyFrontierPendingProviders": [],
+  "familyFrontierScheduling": {
+    "enabled": true,
+    "policy": "one-oracle-per-causal-family-until-transferable-trust-then-fanout",
+    "siblingValidationBypassAllowed": false,
+    "trustedSkillAuthority": "validated-repair-learning-only"
+  },
+  "fixedInLabProviders": [],
+  "harnessDifferentialProviderCount": 0,
+  "harnessDifferentialProviders": [],
+  "healthConcurrency": 0,
+  "healthConcurrencyMode": "auto-per-batch",
+  "initialStatuses": {
+    "anime-sama": "REGRESSION PROVIDER"
+  },
+  "labOnlyWithoutCompiledRepairProviders": [],
+  "learningHandoffProviders": [
+    "anime-sama"
+  ],
+  "maxRoundsPerBatch": 1,
+  "maxWaves": 1,
+  "noProgressReason": "no_new_repair_experiment",
+  "positiveProgramRecovery": {
+    "durableProviders": [],
+    "durableRecordCount": 0,
+    "recoveredRecordCount": 0,
+    "reportCount": 121
+  },
+  "processedProviderCount": 1,
+  "processedProviders": [
+    "anime-sama"
+  ],
+  "providerSpecificRules": false,
+  "rawLabAcceptedCount": 0,
+  "rawLabAcceptedRepairs": [],
+  "remainingProviders": [],
+  "requestedWaves": 1,
+  "resumeRecommended": false,
+  "safety": {
+    "acceptedMutationRequiresStrictImprovement": true,
+    "crossWaveExplorationCarryoverRole": "same-run-sandbox-only-retested-no-publication-authority",
+    "currentByteRetestRequired": true,
+    "directSkillApplication": false,
+    "experienceMemoryRole": "prior-only-no-acceptance-authority",
+    "harnessDifferentialExcludedFromLearningDebt": true,
+    "identityGateRequired": true,
+    "learnedSkillRole": "hypothesis-ordering-only",
+    "sameByteHarnessDifferentialBlocksProviderMutation": true,
+    "wafEnvironmentExcludedByDefault": true
+  },
+  "schemaVersion": 1,
+  "selectedProviderCount": 1,
+  "selectedProviders": [
+    "anime-sama"
+  ],
+  "selectionSource": "automation/provider-census-status.json:repairQueue",
+  "shardCount": 1,
+  "shardIndex": 0,
+  "skippedEnvironmentProviders": [],
+  "sourceCensusRunId": "46072403856-pre-repair",
+  "timeBudgetExhausted": false,
+  "timeBudgetSeconds": 600,
+  "unvisitedProviders": [],
+  "waves": [
+    {
+      "acceptedCount": 0,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [],
+      "advisorRotationPending": [],
+      "batches": [
+        {
+          "accepted": [],
+          "acceptedCount": 0,
+          "advisorRemainingFingerprintCounts": {},
+          "advisorRotationPending": [],
+          "batch": 1,
+          "brain": {
+            "attemptDiagnostics": [],
+            "harnessDifferentialProviders": [],
+            "learnedEvents": 0,
+            "plans": {
+              "published:anime-sama": {
+                "action": "collect-more-evidence",
+                "allowedProfiles": [],
+                "baseExperimentExhausted": true,
+                "exitReason": "learning_generations_exhausted",
+                "experimentExhausted": true,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "explorationChainEnabled": true,
+                "explorationModeEnabled": true,
+                "failureClass": "unknown_failure",
+                "forcePreferredRequested": "",
+                "forcePreferredSelected": false,
+                "hypotheses": [],
+                "learningDisposition": "propose_new_or_evolved_core_type",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorExperiment": {},
+                "llmAdvisorExperimentFingerprint": "",
+                "llmAdvisorExplorationRescue": false,
+                "llmAdvisorFailureCompatibility": "",
+                "llmAdvisorGuidanceKind": "",
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "",
+                "llmAdvisorStrategy": "",
+                "metaGapEscalated": false,
+                "negativeMemoryMatches": 9,
+                "positiveProgramFingerprint": "",
+                "postExhaustionCandidateProfiles": [],
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "anime-sama",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "learning",
+                "repairType": "architecture_gap",
+                "signature": "5483782c3b851d5d525648d5",
+                "strategyEscalated": false,
+                "targetCategories": []
+              }
+            },
+            "queuedForLearning": [
+              "anime-sama"
+            ],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "mixed_embed_resolver",
+          "causalProgressCount": 0,
+          "causalProgressObserved": true,
+          "crossWaveExplorationCarryoverApplied": [],
+          "crossWaveExplorationCarryoverCaptured": [],
+          "deferredToLearning": [
+            "anime-sama"
+          ],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+              "providers": [
+                "anime-sama"
+              ],
+              "repairScope": "learning"
+            }
+          ],
+          "fixedInLab": [],
+          "genericLearningHandoff": [],
+          "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+          "harnessDifferentialProviders": [],
+          "healthConcurrency": 1,
+          "providerCount": 1,
+          "providers": [
+            "anime-sama"
+          ],
+          "repairScope": "learning",
+          "unexecutableLlmHandoff": []
+        }
+      ],
+      "causalProgressCount": 0,
+      "causalProgressObserved": true,
+      "compileRejectedToLearning": [],
+      "deferredToLearning": [
+        "anime-sama"
+      ],
+      "deferredToLearningCount": 1,
+      "durableMaterializeTargets": [],
+      "experimentMemoryAdvanced": false,
+      "familyFrontierDeferredProviders": [],
+      "familyFrontierGroups": [
+        "learning|mixed_embed_resolver|runtime:mixed_embed_resolver"
+      ],
+      "familyFrontierSelectedProviders": [
+        "anime-sama"
+      ],
+      "fixedInLab": [],
+      "fixedInLabCount": 0,
+      "inputProviderCount": 1,
+      "labOnlyWithoutCompiledRepair": [],
+      "pinnedAdvisorFamilyGroups": [],
+      "rawFixedInLab": [],
+      "rawLabAcceptedCount": 0,
+      "remainingProviderCount": 0,
+      "timeBudgetExhausted": false,
+      "trustedFamilyFanoutGroups": [],
+      "wave": 1
+    }
+  ]
+}
