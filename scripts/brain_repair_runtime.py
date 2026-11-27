@@ -1103,6 +1103,11 @@ def planner_negative_memory(_mode: str) -> list[dict[str, Any]]:
     learning_mode = str(_mode or "").strip().casefold() == "learning"
     for raw in repair_memory().get("entries") or []:
         execution_observed = (raw.get("executionObserved") is True and str(raw.get("lastOutcome") or "") not in {"not_generated", "profile_unavailable"})
+        causal_exercise = raw.get("causalExerciseObserved")
+        if not isinstance(causal_exercise, bool):
+            # Legacy production rows may predate causal-exercise telemetry.
+            # Keep them fail-closed/unknown rather than inventing false evidence.
+            causal_exercise = None
         # Production negative-memory authority requires a child that was
         # *actually executed*. Older versions only skipped one flavour of
         # profile_unavailable and leaked not_generated (executionObserved=false)
