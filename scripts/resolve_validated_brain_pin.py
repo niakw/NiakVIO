@@ -53,6 +53,7 @@ def main() -> int:
     parser.add_argument("--github-output", type=Path)
     parser.add_argument("--env-output", type=Path)
     parser.add_argument("--env-name", default="BRAIN_SHA")
+    parser.add_argument("--sha-only", action="store_true")
     args = parser.parse_args()
 
     sha = resolve_validated_brain_pin()
@@ -65,10 +66,13 @@ def main() -> int:
             raise ValueError("invalid environment output name")
         with args.env_output.open("a", encoding="utf-8") as handle:
             handle.write(f"{name}={sha}\n")
-    print(
-        "FIELD_BRAIN_VALIDATED_PIN "
-        f"sha={sha} source=validated-gitlink proof_authority=false publication=false"
-    )
+    if args.sha_only:
+        print(sha)
+    else:
+        print(
+            "FIELD_BRAIN_VALIDATED_PIN "
+            f"sha={sha} source=validated-gitlink proof_authority=false publication=false"
+        )
     return 0
 
 
