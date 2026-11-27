@@ -122,6 +122,35 @@ assert.notEqual(
 console.log("Brain scripted request-contract/session runtime fingerprint isolation passed");
 
 
+const resolverCompositionChanged = liveV2Runtime.replace(
+  'working_data, resolver_records = _apply_inline_token_resolver_contract(\n            parent_data, resolver_contract\n        )',
+  'working_data, resolver_records = _apply_inline_token_resolver_contract(\n            parent_data, resolver_contract\n        ) /* resolver-composition-change */',
+);
+for (const unaffected of [
+  "document_request_contract_mining_v1",
+  "player_media_extractor_v1",
+  "runtime_response_salvage_v1",
+  "catalogue_inline_token_resolver_v2",
+]) {
+  assert.equal(
+    material(liveV2Runtime, unaffected),
+    material(resolverCompositionChanged, unaffected),
+    `resolver composition must not resurrect ${unaffected}`,
+  );
+}
+for (const composed of [
+  "document_request_contract_mining_v2",
+  "provider_session_bootstrap_replay_v1",
+]) {
+  assert.notEqual(
+    material(liveV2Runtime, composed),
+    material(resolverCompositionChanged, composed),
+    `resolver composition must refresh ${composed}`,
+  );
+}
+console.log("Brain resolver composition fingerprint isolation passed");
+
+
 // The Learning persistence layer must never carry a hand-maintained copy of
 // installed Brain strategies. The Brain registry is authoritative, the adaptive
 // executor must contain every installed profile, and Learning derives the same
