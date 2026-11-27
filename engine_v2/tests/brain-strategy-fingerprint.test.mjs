@@ -56,9 +56,9 @@ for (const existing of [
 console.log("Brain scoped implementation fingerprint contract passed");
 
 
-// The adaptive generator is shared by many profiles, but the scripted player
-// request parser is V2-only. Evolving that parser must not reset negative
-// memory for V1 or unrelated strategies.
+// The adaptive generator is shared by many profiles. The scripted player
+// request parser belongs to V2 and to the media-extraction session follow-up
+// that composes V2; unrelated profiles must remain isolated.
 const generator = fs.readFileSync("scripts/adaptive_runtime/runtime_recovery_generator.py", "utf8");
 assert(generator.includes("function bootstrapMediaIntent("));
 assert(generator.includes('"scriptedRequestMining": bool(cfg.get("scripted_request_mining", False))'));
@@ -70,6 +70,11 @@ assert.notEqual(
   generatorMaterial(generator, "document_request_contract_mining_v2"),
   generatorMaterial(generatorChanged, "document_request_contract_mining_v2"),
   "scripted request-contract V2 implementation change must refresh V2",
+);
+assert.notEqual(
+  generatorMaterial(generator, "provider_session_bootstrap_replay_v1"),
+  generatorMaterial(generatorChanged, "provider_session_bootstrap_replay_v1"),
+  "scripted request parser change must refresh composed session-bootstrap provenance",
 );
 for (const existing of [
   "document_request_contract_mining_v1",
@@ -85,16 +90,19 @@ for (const existing of [
 }
 assert(!generatorMaterial(generator, "document_request_contract_mining_v1").includes("function bootstrapMediaIntent("));
 assert(generatorMaterial(generator, "document_request_contract_mining_v2").includes("function bootstrapMediaIntent("));
+assert(generatorMaterial(generator, "provider_session_bootstrap_replay_v1").includes("function bootstrapMediaIntent("));
 console.log("Brain scripted request-contract V2 fingerprint isolation passed");
 
 
 const liveV2Runtime = fs.readFileSync("scripts/adaptive_runtime/runtime_repair.py", "utf8");
-assert(liveV2Runtime.includes('scripted_request_mining = new_strategy_id == "document_request_contract_mining_v2"'));
-assert(!material(liveV2Runtime, "document_request_contract_mining_v1").includes("scripted_request_mining ="));
+assert(liveV2Runtime.includes('session_bootstrap_media_followup = ('));
+assert(liveV2Runtime.includes('new_strategy_id == "document_request_contract_mining_v2"'));
+assert(!material(liveV2Runtime, "document_request_contract_mining_v1").includes("session_bootstrap_media_followup ="));
 assert(material(liveV2Runtime, "document_request_contract_mining_v2").includes("scripted_request_mining ="));
+assert(material(liveV2Runtime, "provider_session_bootstrap_replay_v1").includes("session_bootstrap_media_followup"));
 const liveV2RuntimeChanged = liveV2Runtime.replace(
-  'scripted_request_mining = new_strategy_id == "document_request_contract_mining_v2"',
-  'scripted_request_mining = (new_strategy_id == "document_request_contract_mining_v2") /* v2-change */',
+  'new_strategy_id == "document_request_contract_mining_v2"\n        or session_bootstrap_media_followup',
+  'new_strategy_id == "document_request_contract_mining_v2"\n        or session_bootstrap_media_followup /* composed-v2-change */',
 );
 assert.equal(
   material(liveV2Runtime, "document_request_contract_mining_v1"),
@@ -106,7 +114,12 @@ assert.notEqual(
   material(liveV2RuntimeChanged, "document_request_contract_mining_v2"),
   "V2 runtime change must refresh V2 provenance",
 );
-console.log("Brain scripted request-contract V2 runtime fingerprint isolation passed");
+assert.notEqual(
+  material(liveV2Runtime, "provider_session_bootstrap_replay_v1"),
+  material(liveV2RuntimeChanged, "provider_session_bootstrap_replay_v1"),
+  "composed session-bootstrap runtime change must refresh its provenance",
+);
+console.log("Brain scripted request-contract/session runtime fingerprint isolation passed");
 
 
 // The Learning persistence layer must never carry a hand-maintained copy of
