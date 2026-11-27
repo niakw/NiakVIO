@@ -168,6 +168,55 @@ assert got3["networkExecutionSummary"] == telemetry, got3
 assert merged3["concurrentMemoryMerge"]["deltaRows"] == 0
 assert merged3["concurrentMemoryMerge"]["telemetryDeltaRows"] == 1
 
+# A later diagnostics-only replay may add candidate-minus-parent delta while
+# keeping the absolute summary unchanged. The delta must survive concurrent
+# publication without incrementing counters.
+delta_only = {
+    "schemaVersion": 1,
+    "providerRequestDelta": 24,
+    "successfulProviderRequestDelta": 6,
+    "networkFailureDelta": 1,
+    "statusBucketDelta": {"2xx": 6, "3xx": 0, "4xx": 17, "5xx": 0, "network": 1},
+    "newMethods": ["POST"],
+    "newStages": ["episode"],
+    "newResponseKinds": ["html"],
+    "parentDeepestStage": "content_lookup",
+    "candidateDeepestStage": "episode",
+    "stageRankDelta": 1,
+    "stageAdvanced": True,
+    "proofAuthority": False,
+    "publicationAuthority": False,
+    "rawAddressRetained": False,
+    "headersRetained": False,
+    "bodyRetained": False,
+}
+base4_row = row("telemetry", attempts=7, failures=3)
+base4_row["networkExecutionSummary"] = telemetry
+base4 = {"experimentMemory": {"schemaVersion": 1, "entries": [base4_row]}}
+previous4_row = row("telemetry", attempts=9, failures=5)
+previous4_row["networkExecutionSummary"] = telemetry
+previous4 = {
+    "generatedAt": "2026-11-19T00:04:00+00:00",
+    "experimentMemory": {"schemaVersion": 1, "entries": [previous4_row]},
+}
+current4_row = row("telemetry", attempts=7, failures=3)
+current4_row["networkExecutionSummary"] = telemetry
+current4_row["networkExecutionDelta"] = delta_only
+current4 = {
+    "generatedAt": "2026-11-19T00:03:30+00:00",
+    "publicationAllowed": False,
+    "productionWritesAllowed": False,
+    "experimentMemory": {"schemaVersion": 1, "entries": [current4_row]},
+}
+merged4 = mod.merge_latest(base4, previous4, current4, max_entries=100)
+got4 = merged4["experimentMemory"]["entries"][0]
+assert got4["attempts"] == 9, got4
+assert got4["failures"] == 5, got4
+assert got4["networkExecutionSummary"] == telemetry, got4
+assert got4["networkExecutionDelta"] == delta_only, got4
+assert merged4["concurrentMemoryMerge"]["deltaRows"] == 0
+assert merged4["concurrentMemoryMerge"]["telemetryDeltaRows"] == 1
+
 # No delta means identity merge: historical counters cannot amplify.
 same = mod.merge_latest(base, previous, base, max_entries=100)
 same_by_provider = {
