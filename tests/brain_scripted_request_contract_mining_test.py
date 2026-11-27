@@ -31,8 +31,9 @@ generated = generator.apply(
         "search_paths": [],
         "direct_paths": [],
         "request_recipes": [],
-        "new_strategy_id": "document_request_contract_mining_v1",
+        "new_strategy_id": "document_request_contract_mining_v2",
         "document_request_mining": True,
+        "scripted_request_mining": True,
         "max_pages": 8,
         "max_embeds": 6,
         "max_depth": 4,
@@ -42,6 +43,7 @@ generated = generator.apply(
 )
 for marker in (
     '"documentRequestMining":true',
+    '"scriptedRequestMining":true',
     "function bootstrapRows(",
     "async function documentRequestBootstrap(",
     "async function executeBootstrap(",
