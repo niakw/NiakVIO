@@ -4,20 +4,22 @@
   "acceptedRepairCount": 0,
   "acceptedRepairs": [],
   "advisorDynamicWaveCeiling": 6,
-  "advisorHypothesisWaveBudget": 2,
+  "advisorHypothesisWaveBudget": 3,
   "batchSize": 48,
   "deferredLearningProviders": [
+    "corsflix",
+    "nakios",
     "primewire"
   ],
-  "effectiveWaves": 5,
-  "elapsedSeconds": 1154.724,
+  "effectiveWaves": 3,
+  "elapsedSeconds": 644.662,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 8,
     "providerCount": 142,
     "schemaVersion": 2,
-    "sourceRunId": "45934351459",
-    "sourceSha": "159a0d1c3c2632db3bd30761262f117e4da27fdb",
+    "sourceRunId": "45942738857",
+    "sourceSha": "0edd344dee29483da6c38cfe43ccc882e361ea71",
     "strategyCount": 5
   },
   "familyFrontierPendingProviders": [],
@@ -34,34 +36,36 @@
   "healthConcurrencyMode": "auto-per-batch",
   "initialStatuses": {
     "corsflix": "CHAIN REACHED",
+    "nakios": "PROVIDER JS BROKEN",
     "primewire": "CHAIN REACHED"
   },
   "labOnlyWithoutCompiledRepairProviders": [],
   "learningHandoffProviders": [
+    "corsflix",
+    "nakios",
     "primewire"
   ],
   "maxRoundsPerBatch": 3,
-  "maxWaves": 5,
-  "noProgressReason": "time_budget_exhausted_during_batch",
+  "maxWaves": 3,
+  "noProgressReason": "experiment_variants_exhausted",
   "positiveProgramRecovery": {
     "durableProviders": [],
     "durableRecordCount": 0,
     "recoveredRecordCount": 0,
     "reportCount": 112
   },
-  "processedProviderCount": 2,
+  "processedProviderCount": 3,
   "processedProviders": [
     "corsflix",
+    "nakios",
     "primewire"
   ],
   "providerSpecificRules": false,
   "rawLabAcceptedCount": 0,
   "rawLabAcceptedRepairs": [],
-  "remainingProviders": [
-    "corsflix"
-  ],
+  "remainingProviders": [],
   "requestedWaves": 1,
-  "resumeRecommended": true,
+  "resumeRecommended": false,
   "safety": {
     "acceptedMutationRequiresStrictImprovement": true,
     "crossWaveExplorationCarryoverRole": "same-run-sandbox-only-retested-no-publication-authority",
@@ -75,17 +79,18 @@
     "wafEnvironmentExcludedByDefault": true
   },
   "schemaVersion": 1,
-  "selectedProviderCount": 2,
+  "selectedProviderCount": 3,
   "selectedProviders": [
     "corsflix",
+    "nakios",
     "primewire"
   ],
   "selectionSource": "automation/provider-census-status.json:repairQueue",
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "45934351459",
-  "timeBudgetExhausted": true,
+  "sourceCensusRunId": "45942738857",
+  "timeBudgetExhausted": false,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
   "waves": [
@@ -104,103 +109,104 @@
           "brain": {
             "attemptDiagnostics": [
               {
-                "parentSha256": "81ee0287ce650b13b19434df9509b2264489a65560cfe96fec3b3351dea3e602",
+                "parentSha256": "8a061633312e36c1b5091a3eed839aa6aa65eb16b7a155ae9b430022b1078f1f",
                 "phase": "attempts",
-                "profile": "chain_terminal_extractor_v1",
-                "provider": "primewire",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "corsflix",
                 "reasonCode": "",
-                "repairSha256": "837c5435222af975946a269577f6d0b1a8da756fb6f87efc1a5371afe5a55af3",
+                "repairSha256": "f77989b07333b702a22eb06199ea18266d0561b4ed5f02535abcfd0722a9b4e5",
                 "round": 1,
                 "status": "generated"
+              },
+              {
+                "parentSha256": "a7a36147b0fb40130c900396b01c5068de8b0ca11123481b4a250013f23e1542",
+                "phase": "attempts",
+                "profile": "terminal_request_program_inference_v1",
+                "provider": "nakios",
+                "reasonCode": "",
+                "repairSha256": "8c88587dbf11692f0a11986bbf2a77f0d82631c95ac219d6d0ea904c31275ffd",
+                "round": 1,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "terminal_request_program_inference_v1",
+                "provider": "nakios",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 1,
+                "status": "no_streams"
               },
               {
                 "parentSha256": "",
                 "phase": "exploration_progress",
-                "profile": "chain_terminal_extractor_v1",
-                "provider": "primewire",
+                "profile": "adaptive_runtime_recovery",
+                "provider": "corsflix",
                 "reasonCode": "sandbox_diagnostic_progress",
-                "repairSha256": "837c5435222af975946a269577f6d0b1a8da756fb6f87efc1a5371afe5a55af3",
+                "repairSha256": "f77989b07333b702a22eb06199ea18266d0561b4ed5f02535abcfd0722a9b4e5",
                 "round": 1,
                 "status": ""
               },
               {
-                "parentSha256": "837c5435222af975946a269577f6d0b1a8da756fb6f87efc1a5371afe5a55af3",
+                "parentSha256": "f77989b07333b702a22eb06199ea18266d0561b4ed5f02535abcfd0722a9b4e5",
                 "phase": "attempts",
                 "profile": "adaptive_runtime_recovery",
-                "provider": "primewire",
+                "provider": "corsflix",
                 "reasonCode": "",
-                "repairSha256": "eb0023e4b5ca4862911f290d926d8088c1d2797de35af8681f6508aaeb7f2de1",
+                "repairSha256": "cd49fcfd22f0af4f95315d409b17f1cd8dd1d390db0ddc83fdbe8691ecdd6c44",
                 "round": 2,
                 "status": "generated"
+              },
+              {
+                "parentSha256": "a7a36147b0fb40130c900396b01c5068de8b0ca11123481b4a250013f23e1542",
+                "phase": "attempts",
+                "profile": "terminal_request_program_inference_v1",
+                "provider": "nakios",
+                "reasonCode": "identical_repair_already_retested",
+                "repairSha256": "8c88587dbf11692f0a11986bbf2a77f0d82631c95ac219d6d0ea904c31275ffd",
+                "round": 2,
+                "status": "skipped"
               },
               {
                 "parentSha256": "",
                 "phase": "rejected",
                 "profile": "adaptive_runtime_recovery",
-                "provider": "primewire",
+                "provider": "corsflix",
                 "reasonCode": "required_category_playable_proof",
                 "repairSha256": "",
                 "round": 2,
                 "status": "no_streams"
               },
               {
-                "parentSha256": "837c5435222af975946a269577f6d0b1a8da756fb6f87efc1a5371afe5a55af3",
+                "parentSha256": "a7a36147b0fb40130c900396b01c5068de8b0ca11123481b4a250013f23e1542",
                 "phase": "attempts",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "primewire",
-                "reasonCode": "",
-                "repairSha256": "3444d874faa4d768195470723c5d82997842905baca6820e0cabc8ee0aef8d81",
-                "round": 3,
-                "status": "generated"
-              },
-              {
-                "parentSha256": "",
-                "phase": "rejected",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "primewire",
-                "reasonCode": "required_category_playable_proof",
+                "profile": "terminal_request_program_inference_v1",
+                "provider": "nakios",
+                "reasonCode": "brain_repair_loop_detected",
                 "repairSha256": "",
                 "round": 3,
-                "status": "no_streams"
+                "status": "not_generated"
               }
             ],
             "harnessDifferentialProviders": [],
             "learnedEvents": 0,
             "plans": {
-              "published:primewire": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "adaptive_runtime_recovery"
-                ],
+              "published:corsflix": {
+                "action": "deferred_retry",
+                "allowedProfiles": [],
                 "baseExperimentExhausted": false,
-                "exitReason": null,
+                "exitReason": "repair_loop_detected",
                 "experimentExhausted": false,
                 "experimentGeneration": 1,
                 "experimentVariant": 3,
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
-                "failureClass": "media_extraction_gap",
+                "failureClass": "chain_terminal_gap",
                 "forcePreferredRequested": "",
                 "forcePreferredSelected": false,
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "capture-media-network",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "inspect-player-javascript",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
+                "hypotheses": [],
                 "learningDisposition": "core_repair_only",
                 "llmAdvisorApplied": false,
                 "llmAdvisorConfidence": 0,
@@ -215,6 +221,310 @@
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
                 "negativeMemoryMatches": 3,
+                "positiveProgramFingerprint": "",
+                "postExhaustionCandidateProfiles": [
+                  "terminal_transition_graph_v1",
+                  "terminal_transition_graph_v2",
+                  "terminal_transition_graph_v3",
+                  "terminal_transition_graph_v4",
+                  "terminal_transition_graph_v5",
+                  "terminal_transition_graph_v6",
+                  "terminal_transition_graph_v7",
+                  "terminal_transition_graph_v8",
+                  "terminal_transition_graph_v9",
+                  "terminal_transition_graph_v10",
+                  "terminal_transition_graph_v11",
+                  "terminal_transition_graph_v12",
+                  "terminal_transition_graph_v13",
+                  "terminal_transition_graph_v14",
+                  "terminal_request_program_inference_v1",
+                  "runtime_response_salvage_v1",
+                  "document_request_contract_mining_v1",
+                  "player_protocol_family_replay_v1",
+                  "media_response_shape_inference_v1"
+                ],
+                "postExhaustionSourceFailureClass": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "corsflix",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "capability",
+                "repairType": "terminal_media_resolution",
+                "signature": "4e8d92b8a8961450d87b63b2",
+                "strategyEscalated": false,
+                "targetCategories": []
+              },
+              "published:nakios": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "terminal_request_program_inference_v1"
+                ],
+                "baseExperimentExhausted": true,
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "explorationChainEnabled": true,
+                "explorationModeEnabled": true,
+                "failureClass": "variant_coverage_gap",
+                "forcePreferredRequested": "",
+                "forcePreferredSelected": false,
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "enumerate-announced-player-variants",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "remove-premature-variant-short-circuit",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "execute_bounded_evolved_strategy",
+                "llmAdvisorApplied": true,
+                "llmAdvisorConfidence": 0.86,
+                "llmAdvisorExperiment": {
+                  "aliasSearch": false,
+                  "documentRequestMining": true,
+                  "maxDepth": 6,
+                  "maxEmbeds": 34,
+                  "maxPages": 24,
+                  "maxRecipePasses": 6,
+                  "recipePolicy": "current_plus_provider_peer",
+                  "responseSalvage": true,
+                  "roleOrder": [
+                    "player",
+                    "source",
+                    "api",
+                    "episode",
+                    "detail",
+                    "search",
+                    "other"
+                  ],
+                  "routePolicy": "owned_plus_peer",
+                  "sessionBootstrap": true,
+                  "terminalOnly": true
+                },
+                "llmAdvisorExperimentFingerprint": "25f846c418458326f6e1de1fa334149d8154b9b57e0ddac72f19b29511322618",
+                "llmAdvisorExplorationRescue": false,
+                "llmAdvisorFailureCompatibility": "exact-rebound",
+                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
+                "llmAdvisorProfile": "chain_terminal_extractor_v1",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "variant_coverage_gap",
+                "llmAdvisorStrategy": "meta-gap-terminal-media-composition",
+                "metaGapEscalated": false,
+                "negativeMemoryMatches": 15,
+                "positiveProgramFingerprint": "",
+                "postExhaustionCandidateProfiles": [
+                  "player_protocol_family_replay_v1",
+                  "media_response_shape_inference_v1",
+                  "runtime_response_salvage_v1",
+                  "document_request_contract_mining_v1",
+                  "terminal_transition_graph_v1",
+                  "terminal_transition_graph_v2",
+                  "terminal_transition_graph_v3",
+                  "terminal_transition_graph_v4",
+                  "terminal_transition_graph_v5",
+                  "terminal_transition_graph_v6",
+                  "terminal_transition_graph_v7",
+                  "terminal_transition_graph_v8",
+                  "terminal_transition_graph_v9",
+                  "terminal_transition_graph_v10",
+                  "terminal_transition_graph_v11",
+                  "terminal_transition_graph_v12",
+                  "terminal_transition_graph_v13",
+                  "terminal_transition_graph_v14",
+                  "terminal_request_program_inference_v1"
+                ],
+                "postExhaustionSourceFailureClass": "chain_terminal_gap",
+                "postExhaustionStrategyMethod": "terminal-request-program-inference",
+                "postExhaustionStrategyProfile": "terminal_request_program_inference_v1",
+                "providerId": "nakios",
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
+                "repairScope": "learning",
+                "repairType": "evolved_strategy",
+                "signature": "9c5dc8cd7f63b9fd3ee69aad",
+                "strategyEscalated": true,
+                "targetCategories": []
+              }
+            },
+            "queuedForLearning": [
+              "nakios"
+            ],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "mixed",
+          "causalProgressCount": 1,
+          "causalProgressObserved": true,
+          "crossWaveExplorationCarryoverApplied": [],
+          "crossWaveExplorationCarryoverCaptured": [
+            "corsflix"
+          ],
+          "deferredToLearning": [
+            "nakios"
+          ],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+              "providers": [
+                "nakios"
+              ],
+              "repairScope": "learning"
+            },
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
+              "providers": [
+                "corsflix"
+              ],
+              "repairScope": "terminal-extraction"
+            }
+          ],
+          "fixedInLab": [],
+          "genericLearningHandoff": [],
+          "groupId": "packed",
+          "harnessDifferentialProviders": [],
+          "healthConcurrency": 2,
+          "providerCount": 2,
+          "providers": [
+            "nakios",
+            "corsflix"
+          ],
+          "repairScope": "mixed",
+          "unexecutableLlmHandoff": []
+        }
+      ],
+      "causalProgressCount": 1,
+      "causalProgressObserved": true,
+      "compileRejectedToLearning": [],
+      "deferredToLearning": [
+        "nakios"
+      ],
+      "deferredToLearningCount": 1,
+      "durableMaterializeTargets": [],
+      "experimentMemoryAdvanced": true,
+      "familyFrontierDeferredProviders": [
+        "primewire"
+      ],
+      "familyFrontierGroups": [
+        "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
+        "learning|mixed_embed_resolver|runtime:mixed_embed_resolver"
+      ],
+      "familyFrontierSelectedProviders": [
+        "corsflix",
+        "nakios"
+      ],
+      "fixedInLab": [],
+      "fixedInLabCount": 0,
+      "inputProviderCount": 2,
+      "labOnlyWithoutCompiledRepair": [],
+      "pinnedAdvisorFamilyGroups": [],
+      "rawFixedInLab": [],
+      "rawLabAcceptedCount": 0,
+      "remainingProviderCount": 2,
+      "timeBudgetExhausted": false,
+      "trustedFamilyFanoutGroups": [],
+      "wave": 1
+    },
+    {
+      "acceptedCount": 0,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [],
+      "advisorRotationPending": [],
+      "batches": [
+        {
+          "accepted": [],
+          "acceptedCount": 0,
+          "advisorRemainingFingerprintCounts": {},
+          "advisorRotationPending": [],
+          "batch": 1,
+          "brain": {
+            "attemptDiagnostics": [
+              {
+                "parentSha256": "81ee0287ce650b13b19434df9509b2264489a65560cfe96fec3b3351dea3e602",
+                "phase": "attempts",
+                "profile": "proven_route_terminal_traversal_v1",
+                "provider": "primewire",
+                "reasonCode": "",
+                "repairSha256": "f6cc63d9fb8b0def40555777046a98882efb396b89504218a11a6053c56b8aaf",
+                "round": 1,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "",
+                "phase": "exploration_progress",
+                "profile": "proven_route_terminal_traversal_v1",
+                "provider": "primewire",
+                "reasonCode": "sandbox_diagnostic_progress",
+                "repairSha256": "f6cc63d9fb8b0def40555777046a98882efb396b89504218a11a6053c56b8aaf",
+                "round": 1,
+                "status": ""
+              },
+              {
+                "parentSha256": "f6cc63d9fb8b0def40555777046a98882efb396b89504218a11a6053c56b8aaf",
+                "phase": "attempts",
+                "profile": "proven_route_terminal_traversal_v1",
+                "provider": "primewire",
+                "reasonCode": "",
+                "repairSha256": "e4e049d65e6e739e7595490ad2010d3392a01379f5a56f64d823e044e4799ea4",
+                "round": 2,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "proven_route_terminal_traversal_v1",
+                "provider": "primewire",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 2,
+                "status": "no_streams"
+              }
+            ],
+            "harnessDifferentialProviders": [],
+            "learnedEvents": 0,
+            "plans": {
+              "published:primewire": {
+                "action": "collect-more-evidence",
+                "allowedProfiles": [],
+                "baseExperimentExhausted": true,
+                "exitReason": "learning_generations_exhausted",
+                "experimentExhausted": true,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "explorationChainEnabled": true,
+                "explorationModeEnabled": true,
+                "failureClass": "media_extraction_gap",
+                "forcePreferredRequested": "",
+                "forcePreferredSelected": false,
+                "hypotheses": [],
+                "learningDisposition": "propose_new_or_evolved_core_type",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorExperiment": {},
+                "llmAdvisorExperimentFingerprint": "",
+                "llmAdvisorExplorationRescue": false,
+                "llmAdvisorFailureCompatibility": "",
+                "llmAdvisorGuidanceKind": "",
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": "",
+                "llmAdvisorStrategy": "",
+                "metaGapEscalated": false,
+                "negativeMemoryMatches": 28,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "player_protocol_family_replay_v1",
@@ -243,14 +553,16 @@
                 "providerId": "primewire",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "terminal_media_resolution",
+                "repairScope": "learning",
+                "repairType": "architecture_gap",
                 "signature": "c92d106e5a46a2b33459e485",
                 "strategyEscalated": false,
                 "targetCategories": []
               }
             },
-            "queuedForLearning": [],
+            "queuedForLearning": [
+              "primewire"
+            ],
             "validatedRepairLearningExecuted": true
           },
           "capabilityStrategy": "mixed_embed_resolver",
@@ -274,9 +586,7 @@
             }
           ],
           "fixedInLab": [],
-          "genericLearningHandoff": [
-            "primewire"
-          ],
+          "genericLearningHandoff": [],
           "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
           "harnessDifferentialProviders": [],
           "healthConcurrency": 1,
@@ -316,62 +626,56 @@
       "remainingProviderCount": 1,
       "timeBudgetExhausted": false,
       "trustedFamilyFanoutGroups": [],
-      "wave": 1
+      "wave": 2
     },
     {
       "acceptedCount": 0,
       "acceptedProgramCompileFailures": {},
       "acceptedProgramCompiledProviders": [],
-      "advisorRotationPending": [
-        "corsflix"
-      ],
+      "advisorRotationPending": [],
       "batches": [
         {
           "accepted": [],
           "acceptedCount": 0,
-          "advisorRemainingFingerprintCounts": {
-            "corsflix": 0
-          },
-          "advisorRotationPending": [
-            "corsflix"
-          ],
+          "advisorRemainingFingerprintCounts": {},
+          "advisorRotationPending": [],
           "batch": 1,
           "brain": {
             "attemptDiagnostics": [
               {
-                "parentSha256": "8a061633312e36c1b5091a3eed839aa6aa65eb16b7a155ae9b430022b1078f1f",
+                "parentSha256": "f77989b07333b702a22eb06199ea18266d0561b4ed5f02535abcfd0722a9b4e5",
                 "phase": "attempts",
-                "profile": "chain_terminal_extractor_v1",
+                "profile": "adaptive_runtime_recovery",
                 "provider": "corsflix",
                 "reasonCode": "",
-                "repairSha256": "7943ef7962d1c442e21126ba1a5a6579dced339389b829ec1e232ee93950b164",
+                "repairSha256": "499e6dfd5a1cf872bce6f5b85b9d9215ece2760b3a1db5f75a1f658cf2321383",
                 "round": 1,
                 "status": "generated"
               },
               {
                 "parentSha256": "",
-                "phase": "exploration_progress",
-                "profile": "chain_terminal_extractor_v1",
+                "phase": "rejected",
+                "profile": "adaptive_runtime_recovery",
                 "provider": "corsflix",
-                "reasonCode": "sandbox_diagnostic_progress",
-                "repairSha256": "7943ef7962d1c442e21126ba1a5a6579dced339389b829ec1e232ee93950b164",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
                 "round": 1,
-                "status": ""
+                "status": "no_streams"
               },
               {
-                "parentSha256": "7943ef7962d1c442e21126ba1a5a6579dced339389b829ec1e232ee93950b164",
+                "parentSha256": "f77989b07333b702a22eb06199ea18266d0561b4ed5f02535abcfd0722a9b4e5",
                 "phase": "attempts",
-                "profile": "search_contract_inference_v1",
+                "profile": "chain_terminal_extractor_v1",
                 "provider": "corsflix",
                 "reasonCode": "",
-                "repairSha256": "ec5d83edae1fbf3909a56183e537dffe5f828f7e986e067f0f4bfe0e59ab9c8c",
+                "repairSha256": "80dad11433bf331540905959c0d0c549be0785822be2cf0b0f1fb631a0285b39",
                 "round": 2,
                 "status": "generated"
               },
               {
                 "parentSha256": "",
                 "phase": "rejected",
-                "profile": "search_contract_inference_v1",
+                "profile": "chain_terminal_extractor_v1",
                 "provider": "corsflix",
                 "reasonCode": "required_category_playable_proof",
                 "repairSha256": "",
@@ -379,24 +683,14 @@
                 "status": "no_streams"
               },
               {
-                "parentSha256": "7943ef7962d1c442e21126ba1a5a6579dced339389b829ec1e232ee93950b164",
+                "parentSha256": "f77989b07333b702a22eb06199ea18266d0561b4ed5f02535abcfd0722a9b4e5",
                 "phase": "attempts",
-                "profile": "search_contract_inference_v1",
+                "profile": "terminal_transition_graph_v1",
                 "provider": "corsflix",
-                "reasonCode": "",
-                "repairSha256": "396bbad6c8b41fd8c2163efebcac49f863c0ab4672ac968fbcfdf3d9b54e5bdb",
-                "round": 3,
-                "status": "generated"
-              },
-              {
-                "parentSha256": "",
-                "phase": "rejected",
-                "profile": "search_contract_inference_v1",
-                "provider": "corsflix",
-                "reasonCode": "required_category_playable_proof",
+                "reasonCode": "brain_repair_loop_detected",
                 "repairSha256": "",
                 "round": 3,
-                "status": "no_streams"
+                "status": "not_generated"
               }
             ],
             "harnessDifferentialProviders": [],
@@ -405,109 +699,66 @@
               "published:corsflix": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "search_contract_inference_v1"
+                  "terminal_transition_graph_v1"
                 ],
                 "baseExperimentExhausted": true,
                 "exitReason": null,
-                "experimentExhausted": true,
+                "experimentExhausted": false,
                 "experimentGeneration": 2,
                 "experimentVariant": 4,
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
-                "failureClass": "transport_blocked",
+                "failureClass": "chain_terminal_gap",
                 "forcePreferredRequested": "",
                 "forcePreferredSelected": false,
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "bootstrap-session",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "alternate-official-route",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "execute_meta_gap_synthesized_strategy",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.86,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": false,
-                  "documentRequestMining": true,
-                  "maxDepth": 4,
-                  "maxEmbeds": 17,
-                  "maxPages": 20,
-                  "maxRecipePasses": 5,
-                  "recipePolicy": "current_only",
-                  "responseSalvage": true,
-                  "roleOrder": [
-                    "detail",
-                    "search",
-                    "player",
-                    "source",
-                    "episode",
-                    "other",
-                    "api"
-                  ],
-                  "routePolicy": "owned_only",
-                  "sessionBootstrap": true,
-                  "terminalOnly": false
-                },
-                "llmAdvisorExperimentFingerprint": "63e19ca3198cf98a92ae098d9d28d2f98ca877c2b8124442bfd603fa3b5cebaa",
+                "hypotheses": [],
+                "learningDisposition": "execute_bounded_evolved_strategy",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorExperiment": {},
+                "llmAdvisorExperimentFingerprint": "",
                 "llmAdvisorExplorationRescue": false,
-                "llmAdvisorFailureCompatibility": "exact",
-                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "search_contract_inference_v1",
+                "llmAdvisorFailureCompatibility": "",
+                "llmAdvisorGuidanceKind": "",
+                "llmAdvisorProfile": "",
                 "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "transport_blocked",
-                "llmAdvisorStrategy": "meta-gap-search-contract-fallback",
-                "metaGapEscalated": true,
-                "negativeMemoryMatches": 24,
+                "llmAdvisorSourceFailureClass": "",
+                "llmAdvisorStrategy": "",
+                "metaGapEscalated": false,
+                "negativeMemoryMatches": 7,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
-                  "transport_request_differential_v1",
-                  "provider_session_bootstrap_replay_v1",
+                  "terminal_transition_graph_v1",
+                  "terminal_transition_graph_v2",
+                  "terminal_transition_graph_v3",
+                  "terminal_transition_graph_v4",
+                  "terminal_transition_graph_v5",
+                  "terminal_transition_graph_v6",
+                  "terminal_transition_graph_v7",
+                  "terminal_transition_graph_v8",
+                  "terminal_transition_graph_v9",
+                  "terminal_transition_graph_v10",
+                  "terminal_transition_graph_v11",
+                  "terminal_transition_graph_v12",
+                  "terminal_transition_graph_v13",
+                  "terminal_transition_graph_v14",
+                  "terminal_request_program_inference_v1",
                   "runtime_response_salvage_v1",
-                  "transport_request_differential_v2",
-                  "route_transition_graph_v2",
-                  "route_transition_graph_v3",
-                  "route_transition_graph_v4",
-                  "route_transition_graph_v5",
-                  "route_transition_graph_v6",
-                  "route_transition_graph_v7",
-                  "route_transition_graph_v8",
-                  "route_transition_graph_v9",
-                  "route_transition_graph_v10",
-                  "route_transition_graph_v11",
-                  "route_transition_graph_v12",
-                  "route_transition_graph_v13",
-                  "route_transition_graph_v14",
-                  "route_transition_graph_v15",
-                  "route_transition_graph_v16",
-                  "route_transition_graph_v17",
-                  "route_transition_graph_v18",
-                  "route_transition_graph_v19",
-                  "route_transition_graph_v20",
-                  "route_transition_graph_v21"
+                  "document_request_contract_mining_v1",
+                  "player_protocol_family_replay_v1",
+                  "media_response_shape_inference_v1"
                 ],
-                "postExhaustionSourceFailureClass": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
+                "postExhaustionSourceFailureClass": "chain_terminal_gap",
+                "postExhaustionStrategyMethod": "terminal-response-transition-graph",
+                "postExhaustionStrategyProfile": "terminal_transition_graph_v1",
                 "providerId": "corsflix",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
                 "repairScope": "learning",
-                "repairType": "synthesized_strategy",
-                "signature": "407798151f15452ec1ccd098",
-                "strategyEscalated": false,
+                "repairType": "evolved_strategy",
+                "signature": "4e8d92b8a8961450d87b63b2",
+                "strategyEscalated": true,
                 "targetCategories": []
               }
             },
@@ -517,13 +768,17 @@
             "validatedRepairLearningExecuted": true
           },
           "capabilityStrategy": "mixed_embed_resolver",
-          "causalProgressCount": 1,
+          "causalProgressCount": 0,
           "causalProgressObserved": true,
-          "crossWaveExplorationCarryoverApplied": [],
+          "crossWaveExplorationCarryoverApplied": [
+            "corsflix"
+          ],
           "crossWaveExplorationCarryoverCaptured": [
             "corsflix"
           ],
-          "deferredToLearning": [],
+          "deferredToLearning": [
+            "corsflix"
+          ],
           "familyGroups": [
             {
               "capabilityStrategy": "mixed_embed_resolver",
@@ -547,11 +802,13 @@
           "unexecutableLlmHandoff": []
         }
       ],
-      "causalProgressCount": 1,
+      "causalProgressCount": 0,
       "causalProgressObserved": true,
       "compileRejectedToLearning": [],
-      "deferredToLearning": [],
-      "deferredToLearningCount": 0,
+      "deferredToLearning": [
+        "corsflix"
+      ],
+      "deferredToLearningCount": 1,
       "durableMaterializeTargets": [],
       "experimentMemoryAdvanced": true,
       "familyFrontierDeferredProviders": [],
@@ -568,499 +825,10 @@
       "pinnedAdvisorFamilyGroups": [],
       "rawFixedInLab": [],
       "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 1,
-      "timeBudgetExhausted": false,
-      "trustedFamilyFanoutGroups": [],
-      "wave": 2
-    },
-    {
-      "acceptedCount": 0,
-      "acceptedProgramCompileFailures": {},
-      "acceptedProgramCompiledProviders": [],
-      "advisorRotationPending": [
-        "corsflix"
-      ],
-      "batches": [
-        {
-          "accepted": [],
-          "acceptedCount": 0,
-          "advisorRemainingFingerprintCounts": {
-            "corsflix": 0
-          },
-          "advisorRotationPending": [
-            "corsflix"
-          ],
-          "batch": 1,
-          "brain": {
-            "attemptDiagnostics": [
-              {
-                "parentSha256": "7943ef7962d1c442e21126ba1a5a6579dced339389b829ec1e232ee93950b164",
-                "phase": "attempts",
-                "profile": "proven_route_terminal_traversal_v1",
-                "provider": "corsflix",
-                "reasonCode": "",
-                "repairSha256": "90fff51909e44f82fc7f2245b800b6c4ebaec7c6d9108fd54e63f9f54a86e289",
-                "round": 1,
-                "status": "generated"
-              },
-              {
-                "parentSha256": "",
-                "phase": "rejected",
-                "profile": "proven_route_terminal_traversal_v1",
-                "provider": "corsflix",
-                "reasonCode": "required_category_playable_proof",
-                "repairSha256": "",
-                "round": 1,
-                "status": "no_streams"
-              },
-              {
-                "parentSha256": "7943ef7962d1c442e21126ba1a5a6579dced339389b829ec1e232ee93950b164",
-                "phase": "attempts",
-                "profile": "proven_route_terminal_traversal_v1",
-                "provider": "corsflix",
-                "reasonCode": "",
-                "repairSha256": "126563370fe079147cda4ddf06e10003fd3e5a9f2bfbc0b34ab683fd784ee870",
-                "round": 2,
-                "status": "generated"
-              },
-              {
-                "parentSha256": "",
-                "phase": "rejected",
-                "profile": "proven_route_terminal_traversal_v1",
-                "provider": "corsflix",
-                "reasonCode": "required_category_playable_proof",
-                "repairSha256": "",
-                "round": 2,
-                "status": "no_streams"
-              },
-              {
-                "parentSha256": "7943ef7962d1c442e21126ba1a5a6579dced339389b829ec1e232ee93950b164",
-                "phase": "attempts",
-                "profile": "proven_route_terminal_traversal_v1",
-                "provider": "corsflix",
-                "reasonCode": "brain_repair_loop_detected",
-                "repairSha256": "",
-                "round": 3,
-                "status": "not_generated"
-              }
-            ],
-            "harnessDifferentialProviders": [],
-            "learnedEvents": 0,
-            "plans": {
-              "published:corsflix": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "proven_route_terminal_traversal_v1"
-                ],
-                "baseExperimentExhausted": true,
-                "exitReason": null,
-                "experimentExhausted": true,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "explorationChainEnabled": true,
-                "explorationModeEnabled": true,
-                "failureClass": "transport_blocked",
-                "forcePreferredRequested": "",
-                "forcePreferredSelected": false,
-                "hypotheses": [],
-                "learningDisposition": "execute_meta_gap_synthesized_strategy",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.86,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": false,
-                  "documentRequestMining": true,
-                  "maxDepth": 4,
-                  "maxEmbeds": 17,
-                  "maxPages": 20,
-                  "maxRecipePasses": 5,
-                  "recipePolicy": "current_only",
-                  "responseSalvage": true,
-                  "roleOrder": [
-                    "detail",
-                    "search",
-                    "player",
-                    "source",
-                    "episode",
-                    "other",
-                    "api"
-                  ],
-                  "routePolicy": "owned_only",
-                  "sessionBootstrap": true,
-                  "terminalOnly": false
-                },
-                "llmAdvisorExperimentFingerprint": "63e19ca3198cf98a92ae098d9d28d2f98ca877c2b8124442bfd603fa3b5cebaa",
-                "llmAdvisorExplorationRescue": false,
-                "llmAdvisorFailureCompatibility": "exact",
-                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "proven_route_terminal_traversal_v1",
-                "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "transport_blocked",
-                "llmAdvisorStrategy": "meta-gap-route-terminal-fallback",
-                "metaGapEscalated": true,
-                "negativeMemoryMatches": 27,
-                "positiveProgramFingerprint": "",
-                "postExhaustionCandidateProfiles": [
-                  "transport_request_differential_v1",
-                  "provider_session_bootstrap_replay_v1",
-                  "runtime_response_salvage_v1",
-                  "transport_request_differential_v2",
-                  "route_transition_graph_v2",
-                  "route_transition_graph_v3",
-                  "route_transition_graph_v4",
-                  "route_transition_graph_v5",
-                  "route_transition_graph_v6",
-                  "route_transition_graph_v7",
-                  "route_transition_graph_v8",
-                  "route_transition_graph_v9",
-                  "route_transition_graph_v10",
-                  "route_transition_graph_v11",
-                  "route_transition_graph_v12",
-                  "route_transition_graph_v13",
-                  "route_transition_graph_v14",
-                  "route_transition_graph_v15",
-                  "route_transition_graph_v16",
-                  "route_transition_graph_v17",
-                  "route_transition_graph_v18",
-                  "route_transition_graph_v19",
-                  "route_transition_graph_v20",
-                  "route_transition_graph_v21"
-                ],
-                "postExhaustionSourceFailureClass": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "corsflix",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "learning",
-                "repairType": "synthesized_strategy",
-                "signature": "407798151f15452ec1ccd098",
-                "strategyEscalated": false,
-                "targetCategories": []
-              }
-            },
-            "queuedForLearning": [
-              "corsflix"
-            ],
-            "validatedRepairLearningExecuted": true
-          },
-          "capabilityStrategy": "mixed_embed_resolver",
-          "causalProgressCount": 0,
-          "causalProgressObserved": true,
-          "crossWaveExplorationCarryoverApplied": [
-            "corsflix"
-          ],
-          "crossWaveExplorationCarryoverCaptured": [
-            "corsflix"
-          ],
-          "deferredToLearning": [],
-          "familyGroups": [
-            {
-              "capabilityStrategy": "mixed_embed_resolver",
-              "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
-              "providers": [
-                "corsflix"
-              ],
-              "repairScope": "terminal-extraction"
-            }
-          ],
-          "fixedInLab": [],
-          "genericLearningHandoff": [],
-          "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
-          "harnessDifferentialProviders": [],
-          "healthConcurrency": 1,
-          "providerCount": 1,
-          "providers": [
-            "corsflix"
-          ],
-          "repairScope": "terminal-extraction",
-          "unexecutableLlmHandoff": []
-        }
-      ],
-      "causalProgressCount": 0,
-      "causalProgressObserved": true,
-      "compileRejectedToLearning": [],
-      "deferredToLearning": [],
-      "deferredToLearningCount": 0,
-      "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": true,
-      "familyFrontierDeferredProviders": [],
-      "familyFrontierGroups": [],
-      "familyFrontierSelectedProviders": [
-        "corsflix"
-      ],
-      "fixedInLab": [],
-      "fixedInLabCount": 0,
-      "inputProviderCount": 1,
-      "labOnlyWithoutCompiledRepair": [],
-      "pinnedAdvisorFamilyGroups": [
-        "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver"
-      ],
-      "rawFixedInLab": [],
-      "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 1,
+      "remainingProviderCount": 0,
       "timeBudgetExhausted": false,
       "trustedFamilyFanoutGroups": [],
       "wave": 3
-    },
-    {
-      "acceptedCount": 0,
-      "acceptedProgramCompileFailures": {},
-      "acceptedProgramCompiledProviders": [],
-      "advisorRotationPending": [
-        "corsflix"
-      ],
-      "batches": [
-        {
-          "accepted": [],
-          "acceptedCount": 0,
-          "advisorRemainingFingerprintCounts": {
-            "corsflix": 0
-          },
-          "advisorRotationPending": [
-            "corsflix"
-          ],
-          "batch": 1,
-          "brain": {
-            "attemptDiagnostics": [
-              {
-                "parentSha256": "7943ef7962d1c442e21126ba1a5a6579dced339389b829ec1e232ee93950b164",
-                "phase": "attempts",
-                "profile": "proven_route_terminal_traversal_v1",
-                "provider": "corsflix",
-                "reasonCode": "",
-                "repairSha256": "4bce621b2949a2b8d4d2ca0b689fb4a918e14f5a9e588c5cdc2b4fc9a38fa016",
-                "round": 1,
-                "status": "generated"
-              },
-              {
-                "parentSha256": "",
-                "phase": "rejected",
-                "profile": "proven_route_terminal_traversal_v1",
-                "provider": "corsflix",
-                "reasonCode": "required_category_playable_proof",
-                "repairSha256": "",
-                "round": 1,
-                "status": "no_streams"
-              },
-              {
-                "parentSha256": "7943ef7962d1c442e21126ba1a5a6579dced339389b829ec1e232ee93950b164",
-                "phase": "attempts",
-                "profile": "proven_route_terminal_traversal_v1",
-                "provider": "corsflix",
-                "reasonCode": "identical_repair_already_retested",
-                "repairSha256": "4bce621b2949a2b8d4d2ca0b689fb4a918e14f5a9e588c5cdc2b4fc9a38fa016",
-                "round": 2,
-                "status": "skipped"
-              }
-            ],
-            "harnessDifferentialProviders": [],
-            "learnedEvents": 0,
-            "plans": {
-              "published:corsflix": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "proven_route_terminal_traversal_v1"
-                ],
-                "baseExperimentExhausted": true,
-                "exitReason": null,
-                "experimentExhausted": true,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "explorationChainEnabled": true,
-                "explorationModeEnabled": true,
-                "failureClass": "transport_blocked",
-                "forcePreferredRequested": "",
-                "forcePreferredSelected": false,
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "bootstrap-session",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "alternate-official-route",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "execute_meta_gap_synthesized_strategy",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.86,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": false,
-                  "documentRequestMining": true,
-                  "maxDepth": 4,
-                  "maxEmbeds": 18,
-                  "maxPages": 22,
-                  "maxRecipePasses": 5,
-                  "recipePolicy": "current_plus_provider",
-                  "responseSalvage": true,
-                  "roleOrder": [
-                    "search",
-                    "player",
-                    "source",
-                    "episode",
-                    "other",
-                    "api",
-                    "detail"
-                  ],
-                  "routePolicy": "owned_plus_peer_generic",
-                  "sessionBootstrap": true,
-                  "terminalOnly": false
-                },
-                "llmAdvisorExperimentFingerprint": "565cff80744399e6b88de8ca3b656f819fa3fb75f82760f2a43271e5c3b083c1",
-                "llmAdvisorExplorationRescue": false,
-                "llmAdvisorFailureCompatibility": "exact",
-                "llmAdvisorGuidanceKind": "meta-gap-synthesis",
-                "llmAdvisorProfile": "proven_route_terminal_traversal_v1",
-                "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "transport_blocked",
-                "llmAdvisorStrategy": "meta-gap-route-terminal-fallback",
-                "metaGapEscalated": true,
-                "negativeMemoryMatches": 30,
-                "positiveProgramFingerprint": "",
-                "postExhaustionCandidateProfiles": [
-                  "transport_request_differential_v1",
-                  "provider_session_bootstrap_replay_v1",
-                  "runtime_response_salvage_v1",
-                  "transport_request_differential_v2",
-                  "route_transition_graph_v2",
-                  "route_transition_graph_v3",
-                  "route_transition_graph_v4",
-                  "route_transition_graph_v5",
-                  "route_transition_graph_v6",
-                  "route_transition_graph_v7",
-                  "route_transition_graph_v8",
-                  "route_transition_graph_v9",
-                  "route_transition_graph_v10",
-                  "route_transition_graph_v11",
-                  "route_transition_graph_v12",
-                  "route_transition_graph_v13",
-                  "route_transition_graph_v14",
-                  "route_transition_graph_v15",
-                  "route_transition_graph_v16",
-                  "route_transition_graph_v17",
-                  "route_transition_graph_v18",
-                  "route_transition_graph_v19",
-                  "route_transition_graph_v20",
-                  "route_transition_graph_v21"
-                ],
-                "postExhaustionSourceFailureClass": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "corsflix",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "learning",
-                "repairType": "synthesized_strategy",
-                "signature": "407798151f15452ec1ccd098",
-                "strategyEscalated": false,
-                "targetCategories": []
-              }
-            },
-            "queuedForLearning": [
-              "corsflix"
-            ],
-            "validatedRepairLearningExecuted": true
-          },
-          "capabilityStrategy": "mixed_embed_resolver",
-          "causalProgressCount": 0,
-          "causalProgressObserved": true,
-          "crossWaveExplorationCarryoverApplied": [
-            "corsflix"
-          ],
-          "crossWaveExplorationCarryoverCaptured": [
-            "corsflix"
-          ],
-          "deferredToLearning": [],
-          "familyGroups": [
-            {
-              "capabilityStrategy": "mixed_embed_resolver",
-              "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
-              "providers": [
-                "corsflix"
-              ],
-              "repairScope": "terminal-extraction"
-            }
-          ],
-          "fixedInLab": [],
-          "genericLearningHandoff": [],
-          "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
-          "harnessDifferentialProviders": [],
-          "healthConcurrency": 1,
-          "providerCount": 1,
-          "providers": [
-            "corsflix"
-          ],
-          "repairScope": "terminal-extraction",
-          "unexecutableLlmHandoff": []
-        }
-      ],
-      "causalProgressCount": 0,
-      "causalProgressObserved": true,
-      "compileRejectedToLearning": [],
-      "deferredToLearning": [],
-      "deferredToLearningCount": 0,
-      "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": true,
-      "familyFrontierDeferredProviders": [],
-      "familyFrontierGroups": [],
-      "familyFrontierSelectedProviders": [
-        "corsflix"
-      ],
-      "fixedInLab": [],
-      "fixedInLabCount": 0,
-      "inputProviderCount": 1,
-      "labOnlyWithoutCompiledRepair": [],
-      "pinnedAdvisorFamilyGroups": [
-        "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver"
-      ],
-      "rawFixedInLab": [],
-      "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 1,
-      "timeBudgetExhausted": false,
-      "trustedFamilyFanoutGroups": [],
-      "wave": 4
-    },
-    {
-      "acceptedCount": 0,
-      "acceptedProgramCompileFailures": {},
-      "acceptedProgramCompiledProviders": [],
-      "advisorRotationPending": [],
-      "batches": [],
-      "causalProgressCount": 0,
-      "causalProgressObserved": false,
-      "compileRejectedToLearning": [],
-      "deferredToLearning": [],
-      "deferredToLearningCount": 0,
-      "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": false,
-      "familyFrontierDeferredProviders": [],
-      "familyFrontierGroups": [],
-      "familyFrontierSelectedProviders": [
-        "corsflix"
-      ],
-      "fixedInLab": [],
-      "fixedInLabCount": 0,
-      "inputProviderCount": 0,
-      "labOnlyWithoutCompiledRepair": [],
-      "pinnedAdvisorFamilyGroups": [
-        "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver"
-      ],
-      "rawFixedInLab": [],
-      "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 1,
-      "timeBudgetExhausted": true,
-      "trustedFamilyFanoutGroups": [],
-      "wave": 5
     }
   ]
 }

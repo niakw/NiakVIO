@@ -2949,7 +2949,7 @@
     "anisama": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=none"
+        "anime=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -2976,7 +2976,7 @@
         "/?s={query}",
         "/recherche?q={query}"
       ],
-      "status": "PROVIDER NETWORK BLOCKED",
+      "status": "CHAIN REACHED",
       "strategy": "mixed_embed_resolver"
     },
     "arrowtv": {
@@ -4500,7 +4500,7 @@
     "film-a-revoir": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=chain_reached"
+        "movie=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -4525,7 +4525,7 @@
       "routeTemplates": [
         "/search?q={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "HARNESS MISMATCH",
       "strategy": "mixed_embed_resolver"
     },
     "flemmix": {
@@ -6693,8 +6693,8 @@
     "moviebox": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=chain_reached",
-        "tv=chain_reached"
+        "movie=lookup_only",
+        "tv=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -7022,7 +7022,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "PROVIDER JS BROKEN",
       "strategy": "mixed_embed_resolver"
     },
     "movy": {
@@ -8040,7 +8040,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "PROVIDER JS BROKEN",
       "strategy": "mixed_embed_resolver"
     },
     "neko-sama": {
@@ -10940,7 +10940,7 @@
       "domainMemory": true,
       "evidenceDepth": [
         "anime=chain_reached",
-        "movie=chain_reached",
+        "movie=none",
         "tv=chain_reached"
       ],
       "hasApiRecipe": false,
@@ -11143,7 +11143,7 @@
       "domainMemory": true,
       "evidenceDepth": [
         "movie=lookup_only",
-        "tv=chain_reached"
+        "tv=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -11980,8 +11980,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "45934351459",
-  "sourceSha": "159a0d1c3c2632db3bd30761262f117e4da27fdb",
+  "sourceRunId": "45942738857",
+  "sourceSha": "0edd344dee29483da6c38cfe43ccc882e361ea71",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -12050,12 +12050,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "api",
+          "role": "episode",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "episode",
+          "role": "api",
           "supportRatio": 1.0
         }
       ]

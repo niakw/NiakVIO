@@ -5641,20 +5641,23 @@
     "shuttletv"
   ],
   "lastRepairAttempt": {
-    "runId": "45941195364",
-    "sourceCensusRunId": "",
-    "recordedAgainstCensusRunId": "45941207257",
-    "mode": "repair",
-    "selectedProviders": [],
+    "runId": "45944533232",
+    "sourceCensusRunId": "45942738857",
+    "selectedProviders": [
+      "corsflix",
+      "nakios",
+      "primewire"
+    ],
     "candidateProviders": [],
     "validatedProviders": [],
-    "validationBasis": "gate-not-passed",
     "acceptedRepairCount": 0,
-    "deferredToLearningSlotProviders": [],
-    "noProgressReason": "canonical-failure",
+    "deferredToLearningSlotProviders": [
+      "corsflix",
+      "nakios",
+      "primewire"
+    ],
+    "noProgressReason": "experiment_variants_exhausted",
     "timeBudgetExhausted": false,
-    "canonicalOutcome": "failure",
-    "candidateGateOutcome": "skipped",
     "publicationAllowed": false
   },
   "targetedTransportBlockedQueue": [],
