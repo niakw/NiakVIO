@@ -1,11 +1,11 @@
-Brain Learning V79 — prove bounded non-publishable multi-step exploration on Anime-Sama.
-source_niakvio_main_pretrigger_sha: 67f8355296fceff2459fbd33d807fcb9c761983d
+Brain Learning V79.1 — replay Anime-Sama after fair-share preflight contract fix.
+source_niakvio_main_pretrigger_sha: f320f8612e65445ac3b165d9f31bef2223f31ee6
 source_brain_main_sha: d705de3daba4b59fc7990618e819276e87df7191
 requested_at: 2026-11-27
 target_provider: anime-sama
 target_providers:
 architecture_force: false
 budget_minutes: 30
-causal_change: Learning previously selected exploratory profiles but ran one Deep round without the sandbox chain flag, so non-production intermediate improvements were discarded before a later hypothesis could build on them.
-proof_goal: Execute the current Anime-Sama bytes with Learning planner mode, sandbox-only chain enabled and bounded max-rounds=3. Record rounds_executed, exploration_progress_count, generated candidate bytes, streams/playable/identity deltas and exact executed fingerprints. The production planner exploration bit must remain false. If no intermediate progress exists, persist that negative result and change causal strategy rather than replaying the same profile.
-publication_policy: No provider proposal or publication unless durable_promotion_eligible=true, identity_strict_reason=positive_content_identity_proof, streams_playable_after>0, exact rematerialized bytes replay, official NuvioTV decoded video/audio and non-regression.
+causal_change: Learning now retains bounded non-publishable intermediate progress for up to three rounds; the previous replay never reached provider work because the cron contract still searched for the pre-V78 direct route-refresh call.
+proof_goal: Reach Anime-Sama provider execution. Require sandbox-only exploration chain=true, max-rounds=3 unless caller explicitly overrides, production planner exploration authority=false. Record rounds_executed, exploration_progress_count, generated repair SHA/fingerprint, streams/playable/identity deltas. If no causal progress remains, persist the negative and change strategy rather than recycling the same fingerprint.
+publication_policy: 0 repair absent durable_promotion_eligible=true, positive_content_identity_proof, playable media on exact rematerialized bytes, official NuvioTV decoded video/audio and sibling non-regression.

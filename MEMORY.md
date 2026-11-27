@@ -1,3 +1,10 @@
+## 2026-11-27 — V79.1 : préflight Learning aligné sur le helper fair-share V78
+
+- Learning ciblé Anime-Sama [46003347083](https://github.com/niakw/NiakVIO/actions/runs/46003347083), source `ccfe6d21`, n'a pas atteint le provider. Il échoue dans `brain_cron_full_coverage_test.py:253` qui exige encore l'ancien appel direct `refresh_stage_routes(stage, provider_deadline, provider_id)`.
+- Depuis V78, la route et sa reprojection passent volontairement par `route_refresh_with_budget_scope(...)`; ce helper appelle bien `refresh(stage, provider_deadline, provider_id)`, isole un timeout seulement lorsque le slice est strictement antérieur au deadline global, et `brain_learning_fair_share_route_deadline_test.py` couvre dynamiquement timeout route, timeout refresh et vrai budget global.
+- Le contrat cron vérifie désormais le helper + l'appel au provider deadline et continue d'interdire tout `refresh_stage_routes(stage, work_deadline, ...)`. Aucun runtime/provider/gate média modifié. Le run 46003347083 = **0 réparation**, échec avant Learning provider.
+- Repair [46001360755](https://github.com/niakw/NiakVIO/actions/runs/46001360755) a enfin exécuté le portfolio Brain : 8 sélectionnés, 4 visités (AnikotoTV, Anime-Sama, French Manga, Nakios), 0 accepté, 2 progressions causales sandbox au premier passage, puis budget épuisé. Non visités : CorsFlix, FrenchStream, Moiflix, Primewire. Une reprise Repair a été lancée automatiquement ; ces progressions ne sont pas des réparations.
+
 ## 2026-11-27 — V79 : Learning conservait les hypothèses mais jetait les progrès intermédiaires
 
 - Learning [46000113439](https://github.com/niakw/NiakVIO/actions/runs/46000113439), source `1880e0c2`, exécute 7 providers ciblés et produit 26 propositions/45 skills, mais `provider_proposals=0`, `strict_lab_playable=0`. Anime-Sama reste 0 stream ; MeowTV/Papadustream épuisent leur slice ; HindMoviez est sain mais la variante Repair reste sans playback vérifié.
