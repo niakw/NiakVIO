@@ -284,6 +284,21 @@ def _post_harness_repair_state(
 
     stages = _replay_stages(replay_rows)
     statuses = _replay_statuses(replay_rows)
+
+    # Native-like transport has already been proven above. If the full provider
+    # runtime now returns explicit wrong content, transport/harness cannot remain
+    # the causal owner. Move the case back to provider/identity Repair without
+    # granting any playback or publication proof.
+    wrong_content = any(
+        str(item.get("status") or "").strip().casefold() == "wrong_content"
+        or str(item.get("debugStage") or "").strip().casefold() == "provider_returned_wrong_content"
+        or int(item.get("contradictions") or 0) > 0
+        for item in replay_rows
+        if isinstance(item, dict)
+    )
+    if wrong_content:
+        return "REGRESSION PROVIDER JS" if row.get("historicalProof") else "PROVIDER JS BROKEN"
+
     if any(int(item.get("playable") or 0) > 0 for item in replay_rows if isinstance(item, dict)):
         return None
     if any(item.get("identitySafe") is False for item in replay_rows if isinstance(item, dict)):
