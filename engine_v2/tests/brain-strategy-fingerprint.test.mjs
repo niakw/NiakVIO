@@ -88,6 +88,27 @@ assert(generatorMaterial(generator, "document_request_contract_mining_v2").inclu
 console.log("Brain scripted request-contract V2 fingerprint isolation passed");
 
 
+const liveV2Runtime = fs.readFileSync("scripts/adaptive_runtime/runtime_repair.py", "utf8");
+assert(liveV2Runtime.includes('scripted_request_mining = new_strategy_id == "document_request_contract_mining_v2"'));
+assert(!material(liveV2Runtime, "document_request_contract_mining_v1").includes("scripted_request_mining ="));
+assert(material(liveV2Runtime, "document_request_contract_mining_v2").includes("scripted_request_mining ="));
+const liveV2RuntimeChanged = liveV2Runtime.replace(
+  'scripted_request_mining = new_strategy_id == "document_request_contract_mining_v2"',
+  'scripted_request_mining = (new_strategy_id == "document_request_contract_mining_v2") /* v2-change */',
+);
+assert.equal(
+  material(liveV2Runtime, "document_request_contract_mining_v1"),
+  material(liveV2RuntimeChanged, "document_request_contract_mining_v1"),
+  "document request-contract V2 runtime flags must not reset V1",
+);
+assert.notEqual(
+  material(liveV2Runtime, "document_request_contract_mining_v2"),
+  material(liveV2RuntimeChanged, "document_request_contract_mining_v2"),
+  "V2 runtime change must refresh V2 provenance",
+);
+console.log("Brain scripted request-contract V2 runtime fingerprint isolation passed");
+
+
 // The Learning persistence layer must never carry a hand-maintained copy of
 // installed Brain strategies. The Brain registry is authoritative, the adaptive
 // executor must contain every installed profile, and Learning derives the same
