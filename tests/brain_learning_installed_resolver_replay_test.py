@@ -75,6 +75,45 @@ assert player_frontier["learningCausalFailureRequested"]=="media_extraction_gap"
 assert player_frontier["learningCausalFailureApplied"] is True,player_frontier
 assert player_frontier["learningPreferredRequested"]=="",player_frontier
 
+# A sanitized exact-parent scripted player with request bootstrap should reuse
+# the already-installed document request-contract Lego before Architecture
+# FORCE invents another player extractor family.
+request_contract=plan(
+ profile=queue.PLAYER_REQUEST_CONTRACT_PROFILE,
+ failure=queue.PLAYER_REQUEST_CONTRACT_FAILURE,
+ causal_failure="media_extraction_gap",
+)
+assert request_contract["learningPreferredRequested"]=="document_request_contract_mining_v1",request_contract
+assert request_contract["learningPreferredFailureClass"]=="media_extraction_gap",request_contract
+assert request_contract["learningPreferredSelected"] is True,request_contract
+assert request_contract["postExhaustionStrategyProfile"]=="document_request_contract_mining_v1",request_contract
+assert request_contract["allowedProfiles"]==["document_request_contract_mining_v1"],request_contract
+assert request_contract["failureClass"]=="media_extraction_gap",request_contract
+
+# Once this exact installed Lego was genuinely executed and rejected, the same
+# preferred handoff must fail closed and rotate instead of looking fresh again.
+request_contract_negative=[{
+ "providerId":"resolver-representative",
+ "failureClass":"media_extraction_gap",
+ "signature":"",
+ "profile":"document_request_contract_mining_v1",
+ "strategyImplementationFingerprint":"2"*64,
+ "experimentVariant":4,
+ "experimentGeneration":5,
+ "attempts":1,"successes":0,"failures":1,"consecutiveFailures":1,
+ "lastOutcome":"rejected","executionObserved":True,
+}]
+request_contract_after_negative=plan(
+ profile=queue.PLAYER_REQUEST_CONTRACT_PROFILE,
+ failure=queue.PLAYER_REQUEST_CONTRACT_FAILURE,
+ causal_failure="media_extraction_gap",
+ negative_memory=request_contract_negative,
+)
+assert request_contract_after_negative["learningPreferredRequested"]=="document_request_contract_mining_v1",request_contract_after_negative
+assert request_contract_after_negative["learningPreferredSelected"] is False,request_contract_after_negative
+assert request_contract_after_negative["postExhaustionStrategyProfile"]!="document_request_contract_mining_v1",request_contract_after_negative
+assert "document_request_contract_mining_v1" not in request_contract_after_negative["allowedProfiles"],request_contract_after_negative
+
 wrong=plan(profile="catalogue_inline_token_resolver_v2",failure="search_gap")
 assert wrong["learningPreferredSelected"] is False,wrong
 assert "catalogue_inline_token_resolver_v2" not in wrong["allowedProfiles"],wrong
