@@ -2,9 +2,10 @@
   "acceptanceBasis": "aggregate-operational-state-including-carried-evidence",
   "acceptanceReached": false,
   "acceptanceTarget": 84,
-  "acceptedPlayableProviderCount": 7,
+  "acceptedPlayableProviderCount": 8,
   "acceptedPlayableProviders": [
     "cinematheque-de-bretagne",
+    "moviebox",
     "papadustream",
     "purstream",
     "sadisflix",
@@ -91,12 +92,12 @@
   ],
   "debugStageCounts": {
     "provider_network_exception": 7,
-    "provider_network_http_error": 29,
-    "provider_network_zero_result": 65,
-    "provider_returned_streams": 15,
+    "provider_network_http_error": 26,
+    "provider_network_zero_result": 60,
+    "provider_returned_streams": 16,
     "provider_returned_wrong_content": 1,
-    "provider_waf_challenge": 62,
-    "timeout": 20
+    "provider_waf_challenge": 63,
+    "timeout": 26
   },
   "debugStageProviders": {
     "provider_network_exception": [
@@ -115,10 +116,11 @@
       "moiflix",
       "movieshunt",
       "persianstremio",
-      "rivestream-app",
+      "rarefilmm",
       "rivestream-ru",
       "showbox",
       "vidfast",
+      "voiranime-rip",
       "watchott",
       "wookafr",
       "youtitou"
@@ -141,8 +143,6 @@
       "latestmovies",
       "mallumv",
       "moviebite",
-      "moviebox",
-      "movish",
       "movix-fr",
       "nakios",
       "neobam",
@@ -154,13 +154,12 @@
       "uhdmovies",
       "vidlink",
       "vidrock",
-      "voiranime-rip",
       "watchott"
     ],
     "provider_returned_streams": [
       "cinematheque-de-bretagne",
       "french-manga",
-      "movix-fr",
+      "moviebox",
       "papadustream",
       "purstream",
       "sadisflix",
@@ -194,9 +193,9 @@
       "ihavenotv",
       "kehflix",
       "moviesmod",
+      "movish",
       "movy",
       "primewire",
-      "rarefilmm",
       "shuttletv",
       "skstream",
       "stigstream",
@@ -215,10 +214,13 @@
       "flixhq",
       "hianime",
       "movish",
+      "movix-fr",
       "nakios",
       "reanime-to",
+      "rivestream-app",
       "rivestream-ru",
       "sadisflix",
+      "showbox",
       "vuflix",
       "zone-streaming"
     ]
@@ -259,26 +261,27 @@
   "partialOkCount": 0,
   "partialOkProviders": [],
   "providerCount": 111,
-  "runId": 45913909218,
+  "runId": 45917915451,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 20,
+    "CHAIN REACHED": 21,
     "DISABLED": 36,
     "FULL OK": 8,
     "HARNESS MISMATCH": 7,
     "HARNESS/ENV BLOCKED": 14,
     "NO PROOF": 9,
     "PROOF REFRESH REQUIRED": 3,
-    "PROVIDER JS BROKEN": 1,
     "PROVIDER NETWORK BLOCKED": 7,
     "REGRESSION PROVIDER": 5
   },
   "testedProviderCount": 101,
-  "triggerSha": "16046dbcee62fbafcc3a75a6686eb33feb710098",
-  "verifiedProviderCount": 0,
-  "verifiedProviders": [],
+  "triggerSha": "895f1872b267413d89fcb1ba18574bc5df5bfda3",
+  "verifiedProviderCount": 1,
+  "verifiedProviders": [
+    "moviebox"
+  ],
   "wrongContentProviderCount": 1,
   "wrongContentProviders": [
     "topcartoons"
