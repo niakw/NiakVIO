@@ -6,14 +6,13 @@ import { REPAIR_RECIPES } from '../src/repair-brain.mjs';
 import { retainBoundedBrainExperiments } from '../src/brain-negative-memory-retention.mjs';
 import { postExhaustionStrategyProfiles } from '../src/strategy-fingerprint.mjs';
 
+const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..');
 const POST_EXHAUSTION_STRATEGY_PROFILES = postExhaustionStrategyProfiles(
   fs.readFileSync(path.join(root, 'scripts/brain_repair_runtime.py'), 'utf8'),
 );
 if (POST_EXHAUSTION_STRATEGY_PROFILES.size === 0) {
   throw new Error('Brain post-exhaustion strategy registry unavailable');
 }
-
-const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..');
 const args = process.argv.slice(2);
 const outputDir = resolveArg('--output-dir', path.join(root, 'engine_v2/learning'));
 const repairPath = resolveArg('--repair-report', path.join(root, 'repair-report.json'));
