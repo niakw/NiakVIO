@@ -1,4 +1,4 @@
-/** Scoped implementation provenance for Brain Repair strategy Lego.
+/** Scoped implementation provenance for Brain Repair strategy Bloc.
  * Adding a new sibling profile must NEVER make exhausted older profiles
  * look fresh. Common code still participates in every fingerprint.
  */
@@ -9,17 +9,25 @@ export function profileRuntimeFingerprintMaterial(source, profile) {
     "document_request_contract_mining_v2",
     "provider_session_bootstrap_replay_v1",
   ]).has(wanted);
-  let raw = keepsScriptedRequestComposition
-    ? original
-    : original
-      .replace(
-        /    session_bootstrap_media_followup = \(\n        new_strategy_id == "provider_session_bootstrap_replay_v1"\n        and experiment_failure == "media_extraction_gap"\n    \)\n    document_request_mining = \(\n        new_strategy_id in \{"document_request_contract_mining_v1", "document_request_contract_mining_v2"\}\n        or session_bootstrap_media_followup\n        or llm_experiment\.get\("documentRequestMining"\) is True\n    \)\n    scripted_request_mining = \(\n        new_strategy_id == "document_request_contract_mining_v2"\n        or session_bootstrap_media_followup\n    \)\n/,
-        '    document_request_mining = new_strategy_id == "document_request_contract_mining_v1" or llm_experiment.get("documentRequestMining") is True\n',
-      )
-      .replace(
-        /^        "scripted_request_mining":\s*scripted_request_mining,\n/m,
-        "",
+  let raw = original;
+  if (!keepsScriptedRequestComposition) {
+    const lines = raw.split("\n");
+    const compositionStart = lines.indexOf("    session_bootstrap_media_followup = (");
+    const compositionEnd = lines.findIndex(
+      (line, index) => index > compositionStart && line.startsWith("    session_bootstrap = "),
+    );
+    if (compositionStart >= 0 && compositionEnd > compositionStart) {
+      lines.splice(
+        compositionStart,
+        compositionEnd - compositionStart,
+        '    document_request_mining = new_strategy_id == "document_request_contract_mining_v1" or llm_experiment.get("documentRequestMining") is True',
       );
+    }
+    raw = lines.join("\n").replace(
+      /^        "scripted_request_mining":\s*scripted_request_mining,\n/m,
+      "",
+    );
+  }
   if (!keepsScriptedRequestComposition) {
     raw = raw
       .replace(
