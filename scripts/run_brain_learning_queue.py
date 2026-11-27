@@ -27,6 +27,7 @@ from fill_brain_learning_guidance_gaps import (
     attested_source_contract_frontier,
     attested_source_resolver_frontier,
     attested_source_player_target_frontier,
+    attested_source_player_structure_frontier,
 )
 from build_provider_execution_plan import build as build_provider_execution_plan
 from brain_source_family_state import (
@@ -36,6 +37,9 @@ from brain_source_family_state import (
     source_family_parser_installed,
     source_family_resolver_installed,
 )
+
+PLAYER_REQUEST_CONTRACT_PROFILE = "document_request_contract_mining_v1"
+PLAYER_REQUEST_CONTRACT_FAILURE = "media_extraction_gap"
 
 class BudgetExhausted(RuntimeError):
     """The bounded Learning work window ended; persist state and resume later."""
@@ -1767,6 +1771,9 @@ def main() -> int:
     source_player_target_frontier = attested_source_player_target_frontier(
         source_history, native_history, manifest_authority, ROOT,
     )
+    source_player_structures = attested_source_player_structure_frontier(
+        source_history, native_history, manifest_authority, ROOT,
+    )
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
 
@@ -1978,6 +1985,17 @@ def main() -> int:
     queue["sourceContractPlayerTargetProviderCount"] = len(
         queue["sourceContractPlayerTargetProviders"]
     )
+    queue["sourceContractPlayerTargetStructures"] = {
+        pid: source_player_structures[pid]
+        for pid in order
+        if pid in source_player_structures and pid in source_player_target_frontier
+    }
+    queue["sourceContractPlayerTargetStructureProviderCount"] = len(
+        queue["sourceContractPlayerTargetStructures"]
+    )
+    queue["sourceContractPlayerTargetStructureAuthority"] = (
+        "exact-parent-sanitized-player-target-structure-diagnostic-only"
+    )
     queue["sourceContractResolverProviderCount"] = len(
         queue["sourceContractResolverProviders"]
     )
@@ -1995,6 +2013,7 @@ def main() -> int:
         f"resolver_attested={len(queue['sourceContractResolverProviders'])} "
         f"resolver_installed={str(source_family_resolver_ready).lower()} "
         f"player_target={len(queue['sourceContractPlayerTargetProviders'])} "
+        f"player_structure={queue['sourceContractPlayerTargetStructureProviderCount']} "
         f"deferred={len(source_contract_deferred)} replay={len(source_contract_replay)} "
         f"status={source_contract_status}",
         flush=True,
@@ -2115,6 +2134,13 @@ def main() -> int:
                         and provider_id in source_resolver_frontier
                         and provider_source_contract_status == "resolver_installed_replay_required"
                     )
+                    player_structure = source_player_structures.get(provider_id) or {}
+                    request_contract_replay = (
+                        source_family_resolver_ready
+                        and provider_id in source_player_target_frontier
+                        and provider_source_contract_status == "player_target_observed"
+                        and player_structure.get("resolvedTargetRequestBootstrapObserved") is True
+                    )
                     repair = repair_attempt(
                         provider_id,
                         stage,
@@ -2123,9 +2149,13 @@ def main() -> int:
                         phase_learning_state_path,
                         provider_deadline,
                         preferred_profile=(
+                            PLAYER_REQUEST_CONTRACT_PROFILE
+                            if request_contract_replay else
                             RESOLVER_STRATEGY_ID if resolver_replay else ""
                         ),
                         preferred_failure_class=(
+                            PLAYER_REQUEST_CONTRACT_FAILURE
+                            if request_contract_replay else
                             RESOLVER_FAILURE_CLASS if resolver_replay else ""
                         ),
                         causal_failure_class=(
@@ -2450,6 +2480,9 @@ def main() -> int:
         "sourceContractResolverInstalled": queue["sourceContractResolverInstalled"],
         "sourceContractPlayerTargetProviders": queue["sourceContractPlayerTargetProviders"],
         "sourceContractPlayerTargetProviderCount": queue["sourceContractPlayerTargetProviderCount"],
+        "sourceContractPlayerTargetStructures": queue["sourceContractPlayerTargetStructures"],
+        "sourceContractPlayerTargetStructureProviderCount": queue["sourceContractPlayerTargetStructureProviderCount"],
+        "sourceContractPlayerTargetStructureAuthority": queue["sourceContractPlayerTargetStructureAuthority"],
         "sourceContractProviderStates": queue["sourceContractProviderStates"],
         "sourceContractFamilyExecutableStatus": queue["sourceContractFamilyExecutableStatus"],
         "legacyExecutableSeedAllowed": False,
