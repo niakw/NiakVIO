@@ -91,20 +91,20 @@
   ],
   "debugStageCounts": {
     "provider_network_exception": 8,
-    "provider_network_http_error": 27,
-    "provider_network_zero_result": 64,
-    "provider_returned_streams": 17,
-    "provider_returned_wrong_content": 1,
-    "provider_waf_challenge": 66,
-    "timeout": 16
+    "provider_network_http_error": 25,
+    "provider_network_zero_result": 66,
+    "provider_returned_streams": 15,
+    "provider_returned_wrong_content": 2,
+    "provider_waf_challenge": 64,
+    "timeout": 19
   },
   "debugStageProviders": {
     "provider_network_exception": [
-      "rivestream-app",
       "videasy",
       "vidlove",
       "voiranime",
-      "yflix"
+      "yflix",
+      "youtitou"
     ],
     "provider_network_http_error": [
       "anikototv",
@@ -115,15 +115,12 @@
       "emnexmovies",
       "moiflix",
       "movieshunt",
+      "movish",
       "persianstremio",
-      "rivestream-app",
-      "sekai",
       "showbox",
       "vidfast",
-      "voiranime-rip",
       "watchott",
-      "wookafr",
-      "youtitou"
+      "wookafr"
     ],
     "provider_network_zero_result": [
       "4khdhub",
@@ -152,15 +149,16 @@
       "overlook",
       "playimdb",
       "pstream",
+      "skstream",
       "uhdmovies",
       "vidlink",
       "vidrock",
+      "voiranime-rip",
       "watchott"
     ],
     "provider_returned_streams": [
       "cinematheque-de-bretagne",
       "french-manga",
-      "movix-fr",
       "nakios",
       "papadustream",
       "purstream",
@@ -171,7 +169,8 @@
       "zone-streaming"
     ],
     "provider_returned_wrong_content": [
-      "sadisflix"
+      "sekai",
+      "topcartoons"
     ],
     "provider_waf_challenge": [
       "1jour1film0626",
@@ -189,6 +188,7 @@
       "fexini",
       "film-a-revoir",
       "flemmix",
+      "flixhq",
       "franime",
       "french-anime",
       "fullanime",
@@ -216,8 +216,10 @@
       "anisama",
       "flixhq",
       "hianime",
+      "movix-fr",
       "rivestream-app",
       "rivestream-ru",
+      "sadisflix",
       "vuflix",
       "zone-streaming"
     ]
@@ -258,29 +260,29 @@
   "partialOkCount": 0,
   "partialOkProviders": [],
   "providerCount": 111,
-  "runId": 45930936658,
+  "runId": 45930943468,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 19,
+    "CHAIN REACHED": 20,
     "DISABLED": 36,
     "FULL OK": 8,
     "HARNESS MISMATCH": 7,
     "HARNESS/ENV BLOCKED": 14,
     "NO PROOF": 9,
     "PROOF REFRESH REQUIRED": 3,
-    "PROVIDER JS BROKEN": 2,
+    "PROVIDER JS BROKEN": 1,
     "PROVIDER NETWORK BLOCKED": 7,
-    "REGRESSION PROVIDER": 4,
-    "REGRESSION PROVIDER JS": 1
+    "REGRESSION PROVIDER": 5
   },
   "testedProviderCount": 101,
   "triggerSha": "79699360fef20c2ab0c2c07bbaad3b24d42c908e",
   "verifiedProviderCount": 0,
   "verifiedProviders": [],
-  "wrongContentProviderCount": 1,
+  "wrongContentProviderCount": 2,
   "wrongContentProviders": [
-    "sadisflix"
+    "sekai",
+    "topcartoons"
   ]
 }
