@@ -53,6 +53,13 @@ PLAYER_STRUCTURE_COUNT_LIMITS={
     "resolvedTargetRequestSameOriginLiteralCount":32,
     "resolvedTargetRequestCrossOriginLiteralCount":32,
 }
+PLAYER_REQUEST_FILTER_COUNT_LIMITS={
+    "resolvedTargetRequestStaticCandidateCount":32,
+    "resolvedTargetRequestStaticSameOriginCount":32,
+    "resolvedTargetRequestStaticCrossOriginCount":32,
+    "resolvedTargetRequestStaticMediaIntentCount":32,
+    "resolvedTargetRequestStaticSameOriginMediaIntentCount":32,
+}
 PLAYER_STRUCTURE_FLAGS=(
     "resolvedTargetPostFormObserved",
     "resolvedTargetRequestBootstrapObserved",
@@ -171,6 +178,14 @@ def sanitized_evidence(result:dict[str,Any])->list[dict[str,Any]]:
                 if type(value) is not int or not 0<=value<=limit:
                     raise ValueError("invalid resolved target player structure count")
                 structure_counts[key]=value
+            optional_filter_counts={}
+            for key,limit in PLAYER_REQUEST_FILTER_COUNT_LIMITS.items():
+                if key not in raw:
+                    continue
+                value=raw.get(key)
+                if type(value) is not int or not 0<=value<=limit:
+                    raise ValueError("invalid resolved target request filter count")
+                optional_filter_counts[key]=value
             structure_flags={}
             for key in PLAYER_STRUCTURE_FLAGS:
                 value=raw.get(key)
@@ -196,6 +211,7 @@ def sanitized_evidence(result:dict[str,Any])->list[dict[str,Any]]:
                 "resolvedTargetRedirectObserved":redirected,
                 "resolvedTargetPlayerStructureClass":structure_class,
                 **structure_counts,
+                **optional_filter_counts,
                 **structure_flags,
             })
         elif route=="catalogue_search":
