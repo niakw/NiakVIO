@@ -85,3 +85,9 @@ assert "'unavailableEvidenceReason': reason" in source
 assert "'acceptedProviderCount': 0" in source
 assert 'No strictly decoded, materialized Brain repair proved' in source
 print("BRAIN_HOSTED_LOCAL_PROOF_WORKFLOW_OK local-inference exact-main strict decode no-provider-writes")
+
+# Hosted repair generates executable proposals and therefore must use the exact
+# validated Brain paired with this NiakVIO SHA, never a moving remote main.
+assert "scripts/resolve_validated_brain_pin.py" in source
+assert "source=validated-gitlink" in source
+assert "git ls-remote https://github.com/niakw/NiakVIO-Brain-LLM.git refs/heads/main" not in source
