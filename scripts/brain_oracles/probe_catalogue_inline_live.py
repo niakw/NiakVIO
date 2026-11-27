@@ -336,19 +336,19 @@ def _request_bootstrap_structure(source: str, page_url: str) -> dict[str, int]:
             return
         calls.append((kind, str(expr or "").strip()[:1024]))
 
-    for match in re.finditer(r"\\bfetch\\s*\\(\\s*([^,\\)\\n]{1,1024})", text, re.I):
+    for match in re.finditer(r"\bfetch\s*\(\s*([^,\)\n]{1,1024})", text, re.I):
         add("fetch", match.group(1))
     for match in re.finditer(
-        r"\\baxios\\s*\\.\\s*(?:get|post)\\s*\\(\\s*([^,\\)\\n]{1,1024})",
+        r"\baxios\s*\.\s*(?:get|post)\s*\(\s*([^,\)\n]{1,1024})",
         text, re.I,
     ):
         add("axios", match.group(1))
-    for match in re.finditer(r"\\$\\s*\\.\\s*ajax\\s*\\(", text, re.I):
+    for match in re.finditer(r"\$\s*\.\s*ajax\s*\(", text, re.I):
         window = text[match.end():match.end() + 1600]
-        url_match = re.search(r"\\b(?:url|endpoint)\\s*:\\s*([^,}\\n]{1,1024})", window, re.I)
+        url_match = re.search(r"\b(?:url|endpoint)\s*:\s*([^,}\n]{1,1024})", window, re.I)
         add("ajax", url_match.group(1) if url_match else "")
     for match in re.finditer(
-        r"\\.\\s*open\\s*\\(\\s*[^,\\)\\n]{1,256}\\s*,\\s*([^,\\)\\n]{1,1024})",
+        r"\.\s*open\s*\(\s*[^,\)\n]{1,256}\s*,\s*([^,\)\n]{1,1024})",
         text, re.I,
     ):
         add("xhr", match.group(1))
@@ -366,7 +366,7 @@ def _request_bootstrap_structure(source: str, page_url: str) -> dict[str, int]:
         value = expr.strip()
         quote = value[:1]
         is_literal = (
-            quote in {"\\"", "'"}
+            quote in {"\"", "'"}
             and len(value) >= 2
             and value.endswith(quote)
         )
