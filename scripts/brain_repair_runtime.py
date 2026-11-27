@@ -163,6 +163,7 @@ POST_EXHAUSTION_STRATEGY_PROFILES = {
     "runtime_response_salvage_v1",
     "catalogue_inline_token_resolver_v2",
     "document_request_contract_mining_v1",
+    "document_request_contract_mining_v2",
     "provider_session_bootstrap_replay_v1",
 }
 
