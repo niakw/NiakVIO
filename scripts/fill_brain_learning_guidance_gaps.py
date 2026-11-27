@@ -198,6 +198,56 @@ def attested_source_resolver_frontier(
     )
 
 
+def attested_source_player_target_frontier(
+    source_history: dict[str, Any],
+    native_history: dict[str, Any],
+    manifest: dict[str, Any],
+    root: Path,
+) -> set[str]:
+    """Return exact-parent providers whose resolver target is a player page.
+
+    This frontier is deeper than resolver availability: the same sanitized row
+    must prove resolver shape plus a 2xx HTML player target with an observed
+    player embed and no direct media. It remains diagnostic-only and carries no
+    playback, identity, mutation or publication authority.
+    """
+    if not isinstance(source_history, dict):
+        return set()
+    eligible: list[dict[str, Any]] = []
+    for row in source_history.get("rows") or []:
+        if not isinstance(row, dict):
+            continue
+        target_probes = row.get("resolvedTargetProbeCount")
+        if type(target_probes) is not int or not 1 <= target_probes <= 3:
+            continue
+        evidence = row.get("evidence")
+        if not isinstance(evidence, list) or not any(
+            isinstance(item, dict)
+            and item.get("seasonSourceShape") == SOURCE_INLINE
+            and item.get("seasonPageStatus") == 200
+            and item.get("tokenResolverStatus") == 200
+            and item.get("tokenResolverContract") == SOURCE_RESOLVER_CONTRACT
+            and item.get("tokenResolverJsonObjectObserved") is True
+            and item.get("tokenResolverUrlFieldObserved") is True
+            and item.get("tokenResolverHttpsUrlObserved") is True
+            and type(item.get("resolvedTargetStatus")) is int
+            and 200 <= item.get("resolvedTargetStatus") < 300
+            and item.get("resolvedTargetShape") == "html_player"
+            and item.get("resolvedTargetDirectMediaObserved") is False
+            and item.get("resolvedTargetPlayerEmbedObserved") is True
+            and type(item.get("resolvedTargetSameOrigin")) is bool
+            and type(item.get("resolvedTargetRedirectObserved")) is bool
+            for item in evidence
+        ):
+            continue
+        eligible.append(row)
+    narrowed = dict(source_history)
+    narrowed["rows"] = eligible
+    return attested_source_resolver_frontier(
+        narrowed, native_history, manifest, root,
+    )
+
+
 ROW_FIELDS={
     "providerId","failureClass","targetLayer","strategy","profile",
     "confidence","priorOnly","experiment","experimentFingerprint",
