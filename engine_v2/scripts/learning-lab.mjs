@@ -624,6 +624,7 @@ function sanitizeMemoryEntry(raw) {
     ? Math.max(-1, Math.min(100000, Math.trunc(llmAdvisorMetaGapGenerationRaw)))
     : -1;
   const networkExecutionSummary = sanitizeNetworkExecutionSummary(raw.networkExecutionSummary);
+  const networkExecutionDelta = sanitizeNetworkExecutionDelta(raw.networkExecutionDelta);
   return {
     providerId,
     providerVersion: String(raw.providerVersion || '*').trim().slice(0, 64) || '*',
@@ -650,6 +651,7 @@ function sanitizeMemoryEntry(raw) {
     executionObserved,
     generationAttemptObserved: lastOutcome === 'not_generated' || raw.generationAttemptObserved === true,
     ...(networkExecutionSummary ? { networkExecutionSummary } : {}),
+    ...(networkExecutionDelta ? { networkExecutionDelta } : {}),
   };
 }
 function memoryKey(row) {
@@ -701,6 +703,54 @@ function sanitizeNetworkExecutionSummary(raw) {
     bodyRetained: false,
   };
 }
+function sanitizeNetworkExecutionDelta(raw) {
+  if (!isRecord(raw)) return null;
+  const signed = (value, limit = 10000) => {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return 0;
+    return Math.max(-limit, Math.min(limit, Math.trunc(number)));
+  };
+  const bucketNames = ['2xx', '3xx', '4xx', '5xx', 'network'];
+  const rawBuckets = isRecord(raw.statusBucketDelta) ? raw.statusBucketDelta : {};
+  const statusBucketDelta = Object.fromEntries(
+    bucketNames.map((name) => [name, signed(rawBuckets[name])]),
+  );
+  const methods = [...new Set((Array.isArray(raw.newMethods) ? raw.newMethods : [])
+    .map((value) => String(value || '').toUpperCase())
+    .filter((value) => ['GET', 'POST', 'HEAD'].includes(value)))].sort();
+  const allowedStages = new Set(['search', 'content_lookup', 'detail', 'episode', 'player', 'media', 'provider_fetch', 'other']);
+  const newStages = [...new Set((Array.isArray(raw.newStages) ? raw.newStages : [])
+    .map((value) => String(value || '').trim().toLowerCase())
+    .filter((value) => allowedStages.has(value)))].sort();
+  const allowedKinds = new Set(['html', 'json', 'javascript', 'text', 'binary', 'media']);
+  const newResponseKinds = [...new Set((Array.isArray(raw.newResponseKinds) ? raw.newResponseKinds : [])
+    .map((value) => String(value || '').trim().toLowerCase())
+    .filter((value) => allowedKinds.has(value)))].sort();
+  let parentDeepestStage = String(raw.parentDeepestStage || 'none').trim().toLowerCase();
+  let candidateDeepestStage = String(raw.candidateDeepestStage || 'none').trim().toLowerCase();
+  if (!allowedStages.has(parentDeepestStage) && parentDeepestStage !== 'none') parentDeepestStage = 'none';
+  if (!allowedStages.has(candidateDeepestStage) && candidateDeepestStage !== 'none') candidateDeepestStage = 'none';
+  return {
+    schemaVersion: 1,
+    providerRequestDelta: signed(raw.providerRequestDelta),
+    successfulProviderRequestDelta: signed(raw.successfulProviderRequestDelta),
+    networkFailureDelta: signed(raw.networkFailureDelta),
+    statusBucketDelta,
+    newMethods: methods,
+    newStages,
+    newResponseKinds,
+    parentDeepestStage,
+    candidateDeepestStage,
+    stageRankDelta: signed(raw.stageRankDelta, 16),
+    stageAdvanced: raw.stageAdvanced === true,
+    proofAuthority: false,
+    publicationAuthority: false,
+    rawAddressRetained: false,
+    headersRetained: false,
+    bodyRetained: false,
+  };
+}
+
 function sanitizeReason(value) { return String(value || '').replace(/https?:\/\/\S+/gi, '<url>').replace(/(?:(?:token|authorization|cookie|secret)\s*[:=]\s*)\S+/gi, 'credential=<redacted>').replace(/\s+/g, ' ').trim().slice(0, 240); }
 function nonNegative(value) { const n = Number(value); return Number.isFinite(n) ? Math.max(0, Math.trunc(n)) : 0; }
 function priorityScore(value) { return ({ critical: 4, high: 3, medium: 2, low: 1 })[String(value)] || 0; }
