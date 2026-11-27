@@ -130,6 +130,20 @@ session_options = runtime._adaptive_runtime_options(
     config,
 )
 assert session_options and session_options["session_bootstrap"] is True, session_options
+assert session_options["scripted_request_mining"] is False, session_options
+assert session_options["document_request_mining"] is False, session_options
+
+# In a media-extraction follow-up the session Lego composes the already-proven
+# scripted request-contract miner instead of replacing it. This preserves the
+# causal capability that reached provider requests while adding session state.
+media_session_options = runtime._adaptive_runtime_options(
+    candidate("provider_session_bootstrap_replay_v1", "media_extraction_gap", "CHAIN REACHED"),
+    config,
+)
+assert media_session_options and media_session_options["session_bootstrap"] is True, media_session_options
+assert media_session_options["document_request_mining"] is True, media_session_options
+assert media_session_options["scripted_request_mining"] is True, media_session_options
+assert media_session_options["new_strategy_id"] == "provider_session_bootstrap_replay_v1", media_session_options
 
 planner = (ROOT / "engine_v2/scripts/plan-repairs.mjs").read_text(encoding="utf-8")
 for profile in expected:
