@@ -560,20 +560,11 @@ def network_causal_followup(
     ]
     wanted_failure = str(failure_class or "").strip().casefold()
 
-    # One-shot means one-shot across runs. Once this exact causal Lego has been
-    # executed for the provider/failure, its negative/positive verdict owns the
-    # next transition and it must not be presented as fresh again.
-    for row in rows:
-        if str(row.get("profile") or "").strip() != SESSION_BOOTSTRAP_FOLLOWUP_PROFILE:
-            continue
-        row_failure = str(row.get("failureClass") or "").strip().casefold()
-        if row_failure not in {"", wanted_failure}:
-            continue
-        if (
-            row.get("executionObserved") is True
-            and str(row.get("lastOutcome") or "") not in {"not_generated", "profile_unavailable"}
-        ):
-            return None
+    # Do not suppress the causal proposal merely because an older implementation
+    # of the same profile executed. Implementation freshness belongs to the
+    # planner's strategyImplementationFingerprint-aware negative memory. This is
+    # essential when a Lego evolves from session-only to resolver+V2+session:
+    # the old negative remains historical evidence but cannot veto new bytes.
 
     candidates: list[dict[str, Any]] = []
     for row in rows:
