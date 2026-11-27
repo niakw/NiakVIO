@@ -2,9 +2,11 @@
 from __future__ import annotations
 
 import importlib.util
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
 PATH = ROOT / "scripts" / "upgrade_provider_search_detail_bridge_v17.py"
 spec = importlib.util.spec_from_file_location("upgrade_provider_search_detail_bridge_v17", PATH)
 assert spec and spec.loader
