@@ -36,6 +36,10 @@ gitlink = subprocess.check_output(
 assert sha == gitlink, f"Brain pin/gitlink drift: pin={sha} gitlink={gitlink}"
 
 request = request_from_checkout(ROOT, "anime-sama")
+assert request.failure_class == "media_extraction_gap", (
+    "current exact-parent html_player evidence did not refine the Brain causal owner: "
+    + str(request.failure_class)
+)
 native = [
     x.get("value") for x in request.observations
     if x.get("source") == "official-android-tv-emulator"
@@ -149,6 +153,7 @@ print(
     f"brain_sha={sha[:12]} provider=anime-sama "
     f"native_parents={len(native)} probe_history={len(probes)} "
     f"matched_probes={len(matched)} current_probe={current.get('probeRunId')} "
+    f"failure_class={request.failure_class} "
     f"resolver={int(current.get('tokenResolverProbeCount') or 0)} "
     f"resolved_target={int(current.get('resolvedTargetProbeCount') or 0)} "
     f"target_shape={witness.get('resolvedTargetShape') or 'none'} "
