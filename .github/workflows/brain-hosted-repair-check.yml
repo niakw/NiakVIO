@@ -128,16 +128,17 @@ jobs:
             --manual "$MANUAL_PROVIDER" \
             --github-env "$GITHUB_ENV" --github-output "$GITHUB_OUTPUT"
 
-      - name: Pin current Brain-LLM source for this exact repair run
+      - name: Pin validated Brain-LLM source for this exact repair run
         id: brain_pin
         shell: bash
         run: |
           set -euo pipefail
-          sha="$(git ls-remote https://github.com/niakw/NiakVIO-Brain-LLM.git refs/heads/main | awk 'NR==1{print $1}')"
-          [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || { echo "Brain main SHA unavailable" >&2; exit 1; }
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
-          echo "BRAIN_SHA=$sha" >> "$GITHUB_ENV"
-          echo "FIELD_BRAIN_HOSTED_PIN sha=$sha"
+          python scripts/resolve_validated_brain_pin.py \
+            --github-output "$GITHUB_OUTPUT" \
+            --env-output "$GITHUB_ENV" \
+            --env-name BRAIN_SHA
+          sha="$(python scripts/resolve_validated_brain_pin.py --sha-only)"
+          echo "FIELD_BRAIN_HOSTED_PIN sha=$sha source=validated-gitlink"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: niakw/NiakVIO-Brain-LLM
