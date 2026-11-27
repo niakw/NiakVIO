@@ -2977,7 +2977,7 @@
     "anisama": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=none"
+        "anime=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -3004,7 +3004,7 @@
         "/?s={query}",
         "/recherche?q={query}"
       ],
-      "status": "PROVIDER NETWORK BLOCKED",
+      "status": "CHAIN REACHED",
       "strategy": "mixed_embed_resolver"
     },
     "arrowtv": {
@@ -4553,7 +4553,7 @@
       "routeTemplates": [
         "/search?q={query}"
       ],
-      "status": "PROVIDER NETWORK BLOCKED",
+      "status": "HARNESS MISMATCH",
       "strategy": "mixed_embed_resolver"
     },
     "flemmix": {
@@ -6721,8 +6721,8 @@
     "moviebox": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=lookup_only",
-        "tv=lookup_only"
+        "movie=chain_reached",
+        "tv=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -7922,7 +7922,7 @@
     "nakios": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=none",
+        "movie=chain_reached",
         "tv=chain_reached"
       ],
       "hasApiRecipe": false,
@@ -8068,7 +8068,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "PROVIDER JS BROKEN",
       "strategy": "mixed_embed_resolver"
     },
     "neko-sama": {
@@ -10968,8 +10968,8 @@
       "domainMemory": true,
       "evidenceDepth": [
         "anime=chain_reached",
-        "movie=none",
-        "tv=none"
+        "movie=chain_reached",
+        "tv=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -12008,8 +12008,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "46060142494",
-  "sourceSha": "13244d3a18cc284bd26d015ea129ea726e2309f6",
+  "sourceRunId": "46082489022",
+  "sourceSha": "9547b49a9dd9c1176136e3d7875258c509d675d2",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -12033,12 +12033,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "other",
           "supportRatio": 0.3333
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "search",
           "supportRatio": 0.3333
         }
       ]
@@ -12053,12 +12053,12 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "detail",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "search",
           "supportRatio": 1.0
         }
       ]
@@ -12073,17 +12073,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "episode",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
           "role": "api",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "other",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "episode",
           "supportRatio": 1.0
         }
       ]
@@ -12099,17 +12099,17 @@
       "routeFamilies": [
         {
           "providerSupport": 2,
+          "role": "detail",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 2,
           "role": "episode",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 2,
           "role": "search",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 2,
-          "role": "detail",
           "supportRatio": 1.0
         },
         {

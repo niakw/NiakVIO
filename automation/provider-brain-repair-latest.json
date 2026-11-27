@@ -7,20 +7,22 @@
   "advisorHypothesisWaveBudget": 1,
   "batchSize": 48,
   "deferredLearningProviders": [
-    "anime-sama"
+    "primewire"
   ],
   "effectiveWaves": 1,
-  "elapsedSeconds": 55.245,
+  "elapsedSeconds": 127.247,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 8,
     "providerCount": 142,
     "schemaVersion": 2,
-    "sourceRunId": "46076996338-pre-repair",
-    "sourceSha": "c9ea5cd669e2a80e8b2284c0dc892bcc27519175",
+    "sourceRunId": "46082489022",
+    "sourceSha": "9547b49a9dd9c1176136e3d7875258c509d675d2",
     "strategyCount": 5
   },
-  "familyFrontierPendingProviders": [],
+  "familyFrontierPendingProviders": [
+    "corsflix"
+  ],
   "familyFrontierScheduling": {
     "enabled": true,
     "policy": "one-oracle-per-causal-family-until-transferable-trust-then-fanout",
@@ -33,29 +35,32 @@
   "healthConcurrency": 0,
   "healthConcurrencyMode": "auto-per-batch",
   "initialStatuses": {
-    "anime-sama": "REGRESSION PROVIDER"
+    "corsflix": "CHAIN REACHED",
+    "primewire": "CHAIN REACHED"
   },
   "labOnlyWithoutCompiledRepairProviders": [],
   "learningHandoffProviders": [
-    "anime-sama"
+    "primewire"
   ],
-  "maxRoundsPerBatch": 1,
+  "maxRoundsPerBatch": 3,
   "maxWaves": 1,
-  "noProgressReason": "no_new_repair_experiment",
+  "noProgressReason": "experiment_variants_exhausted",
   "positiveProgramRecovery": {
     "durableProviders": [],
     "durableRecordCount": 0,
     "recoveredRecordCount": 0,
-    "reportCount": 122
+    "reportCount": 123
   },
   "processedProviderCount": 1,
   "processedProviders": [
-    "anime-sama"
+    "primewire"
   ],
   "providerSpecificRules": false,
   "rawLabAcceptedCount": 0,
   "rawLabAcceptedRepairs": [],
-  "remainingProviders": [],
+  "remainingProviders": [
+    "corsflix"
+  ],
   "requestedWaves": 1,
   "resumeRecommended": false,
   "safety": {
@@ -71,18 +76,21 @@
     "wafEnvironmentExcludedByDefault": true
   },
   "schemaVersion": 1,
-  "selectedProviderCount": 1,
+  "selectedProviderCount": 2,
   "selectedProviders": [
-    "anime-sama"
+    "corsflix",
+    "primewire"
   ],
   "selectionSource": "automation/provider-census-status.json:repairQueue",
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "46076996338-pre-repair",
+  "sourceCensusRunId": "46082489022",
   "timeBudgetExhausted": false,
-  "timeBudgetSeconds": 600,
-  "unvisitedProviders": [],
+  "timeBudgetSeconds": 1200,
+  "unvisitedProviders": [
+    "corsflix"
+  ],
   "waves": [
     {
       "acceptedCount": 0,
@@ -97,26 +105,66 @@
           "advisorRotationPending": [],
           "batch": 1,
           "brain": {
-            "attemptDiagnostics": [],
+            "attemptDiagnostics": [
+              {
+                "parentSha256": "81ee0287ce650b13b19434df9509b2264489a65560cfe96fec3b3351dea3e602",
+                "phase": "attempts",
+                "profile": "terminal_transition_graph_v1",
+                "provider": "primewire",
+                "reasonCode": "",
+                "repairSha256": "b589d5140e5559d90c2937954a2c7f0283e39281018c2fd5d0e77e52f0e06560",
+                "round": 1,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "terminal_transition_graph_v1",
+                "provider": "primewire",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 1,
+                "status": "degraded"
+              }
+            ],
             "harnessDifferentialProviders": [],
             "learnedEvents": 0,
             "plans": {
-              "published:anime-sama": {
-                "action": "collect-more-evidence",
-                "allowedProfiles": [],
+              "published:primewire": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "terminal_transition_graph_v1"
+                ],
                 "baseExperimentExhausted": true,
-                "exitReason": "learning_generations_exhausted",
-                "experimentExhausted": true,
+                "exitReason": null,
+                "experimentExhausted": false,
                 "experimentGeneration": 2,
                 "experimentVariant": 4,
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
-                "failureClass": "unknown_failure",
+                "failureClass": "chain_terminal_gap",
                 "forcePreferredRequested": "",
                 "forcePreferredSelected": false,
-                "hypotheses": [],
-                "learningDisposition": "propose_new_or_evolved_core_type",
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "finish-reached-terminal-chain",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "resolve-terminal-wrapper",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "execute_bounded_evolved_strategy",
                 "llmAdvisorApplied": false,
                 "llmAdvisorConfidence": 0,
                 "llmAdvisorExperiment": {},
@@ -131,22 +179,45 @@
                 "metaGapEscalated": false,
                 "negativeMemoryMatches": 9,
                 "positiveProgramFingerprint": "",
-                "postExhaustionCandidateProfiles": [],
-                "postExhaustionSourceFailureClass": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "anime-sama",
+                "postExhaustionCandidateProfiles": [
+                  "terminal_transition_graph_v1",
+                  "terminal_transition_graph_v2",
+                  "terminal_transition_graph_v3",
+                  "terminal_transition_graph_v4",
+                  "terminal_transition_graph_v5",
+                  "terminal_transition_graph_v6",
+                  "terminal_transition_graph_v7",
+                  "terminal_transition_graph_v8",
+                  "terminal_transition_graph_v9",
+                  "terminal_transition_graph_v10",
+                  "terminal_transition_graph_v11",
+                  "terminal_transition_graph_v12",
+                  "terminal_transition_graph_v13",
+                  "terminal_transition_graph_v14",
+                  "terminal_request_program_inference_v1",
+                  "runtime_response_salvage_v1",
+                  "catalogue_inline_token_resolver_v2",
+                  "document_request_contract_mining_v1",
+                  "document_request_contract_mining_v2",
+                  "provider_session_bootstrap_replay_v1",
+                  "player_protocol_family_replay_v1",
+                  "media_response_shape_inference_v1"
+                ],
+                "postExhaustionSourceFailureClass": "chain_terminal_gap",
+                "postExhaustionStrategyMethod": "terminal-response-transition-graph",
+                "postExhaustionStrategyProfile": "terminal_transition_graph_v1",
+                "providerId": "primewire",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
                 "repairScope": "learning",
-                "repairType": "architecture_gap",
-                "signature": "5483782c3b851d5d525648d5",
-                "strategyEscalated": false,
+                "repairType": "evolved_strategy",
+                "signature": "4e8d92b8a8961450d87b63b2",
+                "strategyEscalated": true,
                 "targetCategories": []
               }
             },
             "queuedForLearning": [
-              "anime-sama"
+              "primewire"
             ],
             "validatedRepairLearningExecuted": true
           },
@@ -156,28 +227,28 @@
           "crossWaveExplorationCarryoverApplied": [],
           "crossWaveExplorationCarryoverCaptured": [],
           "deferredToLearning": [
-            "anime-sama"
+            "primewire"
           ],
           "familyGroups": [
             {
               "capabilityStrategy": "mixed_embed_resolver",
-              "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+              "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
               "providers": [
-                "anime-sama"
+                "primewire"
               ],
-              "repairScope": "learning"
+              "repairScope": "terminal-extraction"
             }
           ],
           "fixedInLab": [],
           "genericLearningHandoff": [],
-          "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
+          "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
           "harnessDifferentialProviders": [],
           "healthConcurrency": 1,
           "providerCount": 1,
           "providers": [
-            "anime-sama"
+            "primewire"
           ],
-          "repairScope": "learning",
+          "repairScope": "terminal-extraction",
           "unexecutableLlmHandoff": []
         }
       ],
@@ -185,17 +256,19 @@
       "causalProgressObserved": true,
       "compileRejectedToLearning": [],
       "deferredToLearning": [
-        "anime-sama"
+        "primewire"
       ],
       "deferredToLearningCount": 1,
       "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": false,
-      "familyFrontierDeferredProviders": [],
+      "experimentMemoryAdvanced": true,
+      "familyFrontierDeferredProviders": [
+        "corsflix"
+      ],
       "familyFrontierGroups": [
-        "learning|mixed_embed_resolver|runtime:mixed_embed_resolver"
+        "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver"
       ],
       "familyFrontierSelectedProviders": [
-        "anime-sama"
+        "primewire"
       ],
       "fixedInLab": [],
       "fixedInLabCount": 0,
@@ -204,7 +277,7 @@
       "pinnedAdvisorFamilyGroups": [],
       "rawFixedInLab": [],
       "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 0,
+      "remainingProviderCount": 1,
       "timeBudgetExhausted": false,
       "trustedFamilyFanoutGroups": [],
       "wave": 1
