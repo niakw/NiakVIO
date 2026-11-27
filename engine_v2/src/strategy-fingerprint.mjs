@@ -3,8 +3,23 @@
  * look fresh. Common code still participates in every fingerprint.
  */
 export function profileRuntimeFingerprintMaterial(source, profile) {
-  const raw = String(source || "").replace(/\r\n/g, "\n");
+  const original = String(source || "").replace(/\r\n/g, "\n");
   const wanted = String(profile || "").trim().toLowerCase();
+  const raw = wanted === "document_request_contract_mining_v2"
+    ? original
+    : original
+      .replace(
+        '    document_request_mining = new_strategy_id in {"document_request_contract_mining_v1", "document_request_contract_mining_v2"} or llm_experiment.get("documentRequestMining") is True\n',
+        '    document_request_mining = new_strategy_id == "document_request_contract_mining_v1" or llm_experiment.get("documentRequestMining") is True\n',
+      )
+      .replace(
+        '    scripted_request_mining = new_strategy_id == "document_request_contract_mining_v2"\n',
+        "",
+      )
+      .replace(
+        '        "scripted_request_mining": scripted_request_mining,\n',
+        "",
+      );
   const registryStart = raw.indexOf("POST_EXHAUSTION_STRATEGY_PROFILES = {");
   const registryEnd = registryStart < 0 ? -1 : raw.indexOf("\n}", registryStart);
   const trimmed = registryStart >= 0 && registryEnd >= 0
