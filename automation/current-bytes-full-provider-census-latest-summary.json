@@ -7,11 +7,11 @@
     "cinematheque-de-bretagne",
     "french-manga",
     "moviebox",
+    "nakios",
     "papadustream",
     "purstream",
     "sadisflix",
     "streamzo",
-    "topcartoons",
     "voiranime-homes",
     "zone-streaming"
   ],
@@ -95,10 +95,11 @@
   "debugStageCounts": {
     "provider_network_exception": 10,
     "provider_network_http_error": 27,
-    "provider_network_zero_result": 61,
-    "provider_returned_streams": 16,
+    "provider_network_zero_result": 65,
+    "provider_returned_streams": 15,
+    "provider_returned_wrong_content": 1,
     "provider_waf_challenge": 65,
-    "timeout": 20
+    "timeout": 16
   },
   "debugStageProviders": {
     "provider_network_exception": [
@@ -119,9 +120,9 @@
       "movish",
       "persianstremio",
       "rivestream-app",
+      "sekai",
       "showbox",
       "vidfast",
-      "voiranime-rip",
       "watchott",
       "wookafr",
       "youtitou"
@@ -133,6 +134,7 @@
       "animesama-co",
       "animevost-fr",
       "animevostfr",
+      "boredflix",
       "cinemabz",
       "fawesome",
       "flixer",
@@ -144,6 +146,7 @@
       "latestmovies",
       "mallumv",
       "moviebite",
+      "moviebox",
       "movix-fr",
       "nakios",
       "neobam",
@@ -151,24 +154,27 @@
       "overlook",
       "playimdb",
       "pstream",
-      "sekai",
       "topcartoons",
       "uhdmovies",
       "vidlink",
       "vidrock",
+      "voiranime-rip",
       "watchott"
     ],
     "provider_returned_streams": [
       "cinematheque-de-bretagne",
       "french-manga",
       "moviebox",
+      "nakios",
       "papadustream",
       "purstream",
       "sadisflix",
       "streamzo",
-      "topcartoons",
       "voiranime-homes",
       "zone-streaming"
+    ],
+    "provider_returned_wrong_content": [
+      "topcartoons"
     ],
     "provider_waf_challenge": [
       "1jour1film0626",
@@ -211,11 +217,9 @@
       "anime-sama",
       "animekai",
       "anisama",
-      "boredflix",
       "flixhq",
       "hianime",
       "movix-fr",
-      "nakios",
       "reanime-to",
       "sadisflix",
       "showbox",
@@ -259,27 +263,30 @@
   "partialOkCount": 0,
   "partialOkProviders": [],
   "providerCount": 111,
-  "runId": 46002233485,
+  "runId": 46006207668,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 21,
+    "CHAIN REACHED": 20,
     "DISABLED": 36,
     "FULL OK": 8,
     "HARNESS MISMATCH": 7,
     "HARNESS/ENV BLOCKED": 14,
     "NO PROOF": 9,
     "PROOF REFRESH REQUIRED": 3,
+    "PROVIDER JS BROKEN": 1,
     "PROVIDER NETWORK BLOCKED": 7,
     "REGRESSION PROVIDER": 5
   },
   "testedProviderCount": 101,
-  "triggerSha": "256a96eb3e01c342ba3e6c4621c85148f33013a4",
+  "triggerSha": "31d18c32526145b23a254f6a395e3347467f3ddb",
   "verifiedProviderCount": 1,
   "verifiedProviders": [
     "moviebox"
   ],
-  "wrongContentProviderCount": 0,
-  "wrongContentProviders": []
+  "wrongContentProviderCount": 1,
+  "wrongContentProviders": [
+    "topcartoons"
+  ]
 }

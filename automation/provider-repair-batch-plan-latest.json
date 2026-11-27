@@ -1,15 +1,16 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "46002233485",
-  "sourceTriggerSha": "256a96eb3e01c342ba3e6c4621c85148f33013a4",
+  "sourceRunId": "46006207668",
+  "sourceTriggerSha": "31d18c32526145b23a254f6a395e3347467f3ddb",
   "unresolvedProviderCount": 67,
-  "dynamicVariantProviderCount": 6,
+  "dynamicVariantProviderCount": 7,
   "dynamicVariantProviders": [
     "hindmoviez",
     "meowtv",
     "movix-fr",
     "nakios",
     "papadustream",
+    "sadisflix",
     "stigstream"
   ],
   "lifecycleSuppressedDynamicProviders": [
@@ -279,49 +280,20 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 3,
+      "providerCount": 4,
       "providers": [
         "anime-sama",
         "frenchstream",
+        "nakios",
         "sadisflix"
       ],
       "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
-      "repairScope": "terminal-extraction",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_zero_result",
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 3,
-      "providers": [
-        "corsflix",
-        "nakios",
-        "primewire"
-      ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
       "dynamicVariantProviders": [
-        "nakios"
+        "nakios",
+        "sadisflix"
       ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
@@ -351,6 +323,35 @@
         "french-anime"
       ],
       "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
+      "repairScope": "terminal-extraction",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "mixed_embed_resolver",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 2,
+      "providers": [
+        "corsflix",
+        "primewire"
+      ],
+      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
