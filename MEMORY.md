@@ -1,3 +1,9 @@
+## 2026-11-27 — V80.2 : source-probe offline défigé, parent TV exact actuel conservé
+
+- Source probe [46013704964](https://github.com/niakw/NiakVIO/actions/runs/46013704964), SHA `a29e6602`, échoue **avant réseau** dans `catalogue_inline_live_test.py` : le test offline appelait encore `attest(ROOT,...)` avec l'ancien artefact `9e917c...` / run 44781039914. Le garde runtime rejette correctement ce digest devenu obsolète.
+- Le ledger officiel courant contient déjà un parent exact Anime-Sama : Android TV run **45321345600**, source `8ebd8668...`, artefact `478cbfbaa246a9ed...f0ef`, `appSelected=true`, `readerEvidenceComplete=true`, `nativeExtractionZeroObserved=true`, shapes `script_http_missing` + `script_html_2xx`. Le manifest courant référence toujours `providers/anime-sama--nuvio--478cbfbaa246a9ed.js`.
+- Correction : le test offline ne fige plus aucun digest de production. L'attestation production reste dans `build_brain_catalogue_source_probe_request.py` + `probe_catalogue_inline_live.py`, qui exigent le digest courant, le parent TV exact et les quatre autorités à false. La fixture dédiée du builder couvre déjà drift digest, run incorrect, shape absente et autorité forgée. Aucun provider/gate média/manifest modifié. **0 réparation** ajoutée.
+
 ## 2026-11-27 — V80.1 : Fast Repair ne bloque plus sur des guards historiques désactivés
 
 - Push `970b11b6` : Fast Repair [46011993471](https://github.com/niakw/NiakVIO/actions/runs/46011993471) échoue avant réseau dans `provider_parallel_sweep_plan_v1.py` : `unknown explicit/guard providers: kehflix,streamzo`.

@@ -224,18 +224,9 @@ with tempfile.TemporaryDirectory() as td:
     except ValueError:
         pass
 
-# The current production repo must also attest the real V42 source digest;
-# no network access and no sandbox artifacts are created in this test.
-current = {
-    **REQ,
-    "providerId": "anime-sama",
-    "fixture": "mushoku-tensei-s01e01",
-    "catalogueSlug": "mushoku-tensei-jobless-reincarnation",
-    "providerArtifactSha256":
-        "9e917c77346af2a5c88826a5b9f476180a9868c88dde97a45a3a744941aa0c5b",
-}
-current_context, current_hosts = probe.attest(ROOT, current)
-assert current_context["sourceRunId"] == "44781039914"
-assert "animes-sama.fr" in current_hosts
-assert "anime-sama.store" in current_hosts
-print("Source-contract probe: exact native SHA, 12 bounded observations, offline inline/legacy/missing and negative authority checks passed")
+# Production provenance is deliberately not frozen into this offline contract.
+# The workflow builder joins the current materialized bytes to the exact
+# official-TV ledger row immediately before any network probe. Keeping an
+# old production digest here would turn valid rematerialization into a test
+# failure before that fail-closed current-byte attestation can run.
+print("Source-contract probe: bounded offline inline/legacy/missing and negative authority checks passed; production bytes are attested dynamically")
