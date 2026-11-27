@@ -152,13 +152,33 @@ def validate_base(text: str | None = None) -> None:
         'playerFallbacks.push({ url: stepUrl, referer: fallbackReferer });',
         '"step_player_fallback"',
         "const fallbackStreams = _spv216FallbackStreams(playerFallbacks);",
-        "if (fallbackStreams.length) return fallbackStreams;",
     ):
         if needle not in value:
             raise AssertionError(f"V21.6 ProviderBase missing {needle}")
     start = value.index(MARKER)
     end = value.index("async function _resolveSearchRequestPlan", start)
-    runtime = value[start:end].casefold()
+    resolver = value[start:end]
+
+    # V21.6 originally returned correlated player fallbacks immediately. Newer
+    # ProviderBase revisions preserve those exact fallbacks while accumulating
+    # direct/nested/player variants into one bounded, deduplicated plan result.
+    # Accept the legacy spelling or require the complete evolved contract; a
+    # partial accumulator must still fail closed.
+    legacy_fallback = "if (fallbackStreams.length) return fallbackStreams;"
+    evolved_contract = (
+        "const planStreams = [];",
+        "if (fallbackStreams.length) planStreams.push(...fallbackStreams);",
+        "const resolvedPlanStreams = _dedupeStreamRows(planStreams);",
+        "if (resolvedPlanStreams.length) return resolvedPlanStreams.slice(0, 40);",
+    )
+    if legacy_fallback not in resolver:
+        missing = [needle for needle in evolved_contract if needle not in resolver]
+        if missing:
+            raise AssertionError(
+                "V21.6 evolved ProviderBase fallback contract missing: " + ", ".join(missing)
+            )
+
+    runtime = resolver.casefold()
     for forbidden in (
         "animesama",
         "animevostfr",

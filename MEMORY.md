@@ -1,3 +1,9 @@
+## 2026-11-27 — V77.7 : V21.6 reconnaît le contrat ProviderBase accumulé moderne
+
+- Repair [45984797444](https://github.com/niakw/NiakVIO/actions/runs/45984797444), source `61e7e966`, exécute enfin le pipeline canonique réel. Baseline : 15 providers, 32 tâches, 93 probes, 6 résultats bruts, 4 jouables/acceptés, 2 vérifiés frais, 0 wrong-content ; jouables `hindmoviez,meowtv,papadustream,sadisflix`. Après overlay WAF, repairQueue=11. **Ce sont des preuves de baseline, pas des réparations.**
+- Le pipeline s'arrête ensuite dans `upgrade_provider_composite_request_template_v21_8.py` → V21.7 → V21.6 : le validateur V21.6 exige encore littéralement `if (fallbackStreams.length) return fallbackStreams;`. Le ProviderBase courant conserve pourtant les fallbacks corrélés : il les ajoute à `planStreams`, agrège aussi direct/nested/player, déduplique via `_dedupeStreamRows` puis retourne au plus 40 streams.
+- Correctif de contrat, sans modification du ProviderBase : V21.6 accepte soit l'ancien retour immédiat, soit l'ensemble moderne **complet** `planStreams` + ajout des fallbackStreams + déduplication + retour borné 40. Un test sur les bytes ProviderBase actuels valide le contrat moderne, valide encore la forme legacy, et rejette la suppression de chacune des invariants modernes. Aucun provider JS, manifest, preuve média ou seuil d'acceptation n'est modifié. Le run 45984797444 reste **0 réparation**.
+
 ## 2026-11-27 — V77.6 : push Repair vide n'est plus confondu avec un scope explicite FORCE
 
 - L'artefact/log du Repair [45983905193](https://github.com/niakw/NiakVIO/actions/runs/45983905193) révèle la cause du `selected=0` : le pipeline canonique n'a pas été lancé. Le workflow a émis `FIELD_CANONICAL_REPAIR skipped=true reason=all-explicit-targets-resolved-by-isolated-force` en mode `repair`, sans FORCE accepté et avec `targetProviders=[]`.
