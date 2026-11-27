@@ -120,3 +120,52 @@ print(
     "FIELD_BRAIN_CAUSAL_EXERCISE "
     "bytes_executed=true capability_exercised=false negative_memory=false"
 )
+
+# The planner-facing memory bridge must preserve an explicit inconclusive
+# causal-exercise verdict. Legacy rows without the field remain unknown/fail-
+# closed instead of being rewritten as false.
+original_repair_memory = brain.repair_memory
+try:
+    brain.repair_memory = lambda: {
+        "entries": [
+            {
+                "providerId": "family-representative",
+                "providerVersion": "*",
+                "failureClass": "media_extraction_gap",
+                "signature": "sig",
+                "profile": v2,
+                "strategyImplementationFingerprint": "d" * 64,
+                "experimentVariant": 4,
+                "experimentGeneration": 5,
+                "failures": 0,
+                "consecutiveFailures": 0,
+                "successes": 0,
+                "lastOutcome": "executed_inconclusive",
+                "executionObserved": True,
+                "causalExerciseObserved": False,
+            },
+            {
+                "providerId": "legacy-representative",
+                "providerVersion": "*",
+                "failureClass": "media_extraction_gap",
+                "signature": "legacy",
+                "profile": v2,
+                "strategyImplementationFingerprint": "e" * 64,
+                "experimentVariant": 4,
+                "experimentGeneration": 5,
+                "failures": 1,
+                "consecutiveFailures": 1,
+                "successes": 0,
+                "lastOutcome": "rejected",
+                "executionObserved": True,
+            },
+        ]
+    }
+    planner_rows = brain.planner_negative_memory("learning")
+    by_provider = {row["providerId"]: row for row in planner_rows}
+    assert by_provider["family-representative"]["causalExerciseObserved"] is False
+    assert by_provider["legacy-representative"]["causalExerciseObserved"] is None
+finally:
+    brain.repair_memory = original_repair_memory
+
+print("planner_negative_memory_causal_bridge=true")
