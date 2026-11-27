@@ -1,3 +1,9 @@
+## 2026-11-27 — V67 : correctif TDZ du budget causal V66
+
+- Run Learning `45917041571` sur V66 a échoué au préflight, avant toute expérience provider : `brain_final_experiment_generation_test.py:113` recevait un plan d'erreur sans `baseExperimentExhausted`.
+- Cause exacte : `MAX_EXECUTED_IMPLEMENTATIONS_PER_EVOLVED_METHOD` était déclaré avec `const` après la boucle top-level qui appelle déjà `buildPlan()`. Les fonctions sont hoistées, la constante ne l'est pas ; l'accès tombait dans la temporal dead zone et le planner capturait l'exception en plan différé.
+- V67 déplace uniquement la constante avant toute exécution du planner. Aucun seuil, profil, provider, manifest ou règle d'acceptation n'est modifié. Le Non-Regression V66 était déjà vert ; le run Learning V66 ne constitue aucune preuve provider. **0 réparation supplémentaire**.
+
 ## 2026-11-27 — V66 : borne causale des exécuteurs évolués et épuisement g5 réel
 
 - État vérifié avant changement : main `47b95a0a0c4c`, census `45913909218` sur `16046dbcee62`, **8 FULL OK / 111**, repairQueue 9. Fast Repair `45911136814` : 0 candidat/0 réparation ; Learning `45911617902`, `45912082668`, `45912320829` verts mais le dernier artefact produit `providerProposalCount=0` et `candidateCount=0`.

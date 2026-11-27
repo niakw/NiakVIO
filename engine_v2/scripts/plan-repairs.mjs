@@ -57,6 +57,8 @@ const HISTORICAL_SOLUTION_PROFILES = {
   provider_owned_api_request_differential: "transport_request_differential_v1",
   reuse_existing_clean_provider_lego: "chain_terminal_extractor_v1",
 };
+const MAX_EXECUTED_IMPLEMENTATIONS_PER_EVOLVED_METHOD = 3;
+
 const LLM_ADVISOR_PROFILES = new Set([
   "provider_origin_failover_v1",
   "proven_route_terminal_traversal_v1",
@@ -477,8 +479,6 @@ function historicalStrategyHint(providerId, failureClass, generation, memoryRows
   }
   return { profile: "", caseId: "", solutionClass: "" };
 }
-
-const MAX_EXECUTED_IMPLEMENTATIONS_PER_EVOLVED_METHOD = 3;
 
 function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery, preferredProfile = "", sourceEligibility = {}) {
   const failure = canonicalFailureClass(failureClass);
