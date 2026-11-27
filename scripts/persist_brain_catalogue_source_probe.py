@@ -24,6 +24,23 @@ SHAPES={"catalogue_inline_token_episode","legacy_external_episode_javascript","s
 STATUS_CLASS={"2xx","3xx","4xx","5xx","other","transport"}
 ROUTES={"catalogue","season_page","legacy_script","catalogue_search","token_resolver","resolved_target"}
 TARGET_SHAPES={"hls_manifest","dash_manifest","media_binary","html_player","html_page","json","javascript","text","empty","redirect","http_error","transport_error","oversized"}
+PLAYER_STRUCTURE_CLASSES={"none","iframe_shell","video_tag","scripted_player","form_handoff","packed_script","request_bootstrap","mixed"}
+PLAYER_STRUCTURE_COUNT_LIMITS={
+    "resolvedTargetIframeCount":8,
+    "resolvedTargetVideoTagCount":8,
+    "resolvedTargetSourceTagCount":16,
+    "resolvedTargetExternalScriptCount":16,
+    "resolvedTargetInlineScriptCount":16,
+    "resolvedTargetFormCount":8,
+    "resolvedTargetHiddenInputCount":32,
+}
+PLAYER_STRUCTURE_FLAGS=(
+    "resolvedTargetPostFormObserved",
+    "resolvedTargetRequestBootstrapObserved",
+    "resolvedTargetPackedScriptObserved",
+    "resolvedTargetBase64DecodeObserved",
+    "resolvedTargetMetaRefreshObserved",
+)
 RESOLVER_CONTRACT="same-origin-api-lien-j-l-v1"
 
 
@@ -126,10 +143,31 @@ def sanitized_evidence(result:dict[str,Any])->list[dict[str,Any]]:
             player=raw.get("resolvedTargetPlayerEmbedObserved")
             same_origin=raw.get("resolvedTargetSameOrigin")
             redirected=raw.get("resolvedTargetRedirectObserved")
+            structure_class=str(raw.get("resolvedTargetPlayerStructureClass") or "")
+            if structure_class not in PLAYER_STRUCTURE_CLASSES:
+                raise ValueError("invalid resolved target player structure class")
+            structure_counts={}
+            for key,limit in PLAYER_STRUCTURE_COUNT_LIMITS.items():
+                value=raw.get(key)
+                if type(value) is not int or not 0<=value<=limit:
+                    raise ValueError("invalid resolved target player structure count")
+                structure_counts[key]=value
+            structure_flags={}
+            for key in PLAYER_STRUCTURE_FLAGS:
+                value=raw.get(key)
+                if type(value) is not bool:
+                    raise ValueError("invalid resolved target player structure flag")
+                structure_flags[key]=value
             if (target_shape not in TARGET_SHAPES or type(direct) is not bool
                     or type(player) is not bool or type(same_origin) is not bool
                     or type(redirected) is not bool):
                 raise ValueError("invalid resolved target evidence")
+            if target_shape not in {"html_player","html_page"} and (
+                structure_class!="none"
+                or any(structure_counts.values())
+                or any(structure_flags.values())
+            ):
+                raise ValueError("non-html target carried player structure")
             row.update({
                 "resolvedTargetStatus":status,
                 "resolvedTargetShape":target_shape,
@@ -137,6 +175,9 @@ def sanitized_evidence(result:dict[str,Any])->list[dict[str,Any]]:
                 "resolvedTargetPlayerEmbedObserved":player,
                 "resolvedTargetSameOrigin":same_origin,
                 "resolvedTargetRedirectObserved":redirected,
+                "resolvedTargetPlayerStructureClass":structure_class,
+                **structure_counts,
+                **structure_flags,
             })
         elif route=="catalogue_search":
             links=raw.get("catalogueSearchLinkCount")
