@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "46043281887-post-repair-candidate",
-  "sourceTriggerSha": "a77d0d1d65d27c3ed7d82f2870c2089ac4f36834",
+  "sourceRunId": "46051172281",
+  "sourceTriggerSha": "2994f244facaf9332f26583f6d5bc898528e96ae",
   "unresolvedProviderCount": 67,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -12,9 +12,7 @@
     "papadustream",
     "stigstream"
   ],
-  "lifecycleSuppressedDynamicProviders": [
-    "animevostfr"
-  ],
+  "lifecycleSuppressedDynamicProviders": [],
   "dynamicVariantCurrentObservedProviders": [
     "1jour1film0626",
     "4khdhub",
@@ -37,7 +35,6 @@
     "anisama",
     "arrowtv",
     "boredflix",
-    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -63,15 +60,11 @@
     "fullanime",
     "hexa",
     "hianime",
-    "hindmoviez",
     "ihavenotv",
-    "internet-archive",
     "kehflix",
     "kidraz",
-    "kurage",
     "latestmovies",
     "mallumv",
-    "meowtv",
     "moiflix",
     "moviebite",
     "moviebox",
@@ -80,9 +73,7 @@
     "movish",
     "movix-fr",
     "movy",
-    "mugiwarastream",
     "nakios",
-    "neko-sama",
     "neobam",
     "neonflix",
     "overlook",
@@ -119,14 +110,13 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
-    "webflix",
     "wookafr",
     "yflix",
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": false,
+  "dynamicVariantFallbackUsed": true,
   "groupCount": 9,
   "executionModel": {
     "default": "family/signature batch",
@@ -156,10 +146,10 @@
       ],
       "harnessTransportClasses": [
         "browser-profile-only",
+        "github-all-transports-challenged",
         "native-policy-inconclusive",
         "native-policy-reachable",
-        "residential-exit-browser-reachable",
-        "residential-exit-native-reachable"
+        "residential-exit-browser-reachable"
       ],
       "transportSignature": "not-applicable",
       "providerCount": 39,
@@ -235,6 +225,7 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
+        "github-all-transports-challenged",
         "native-policy-reachable"
       ],
       "transportSignature": "not-applicable",
@@ -276,29 +267,31 @@
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "chain",
-        "lookup",
-        "none"
+        "lookup"
       ],
       "dominantIssues": [
         "network_zero_result",
         "provider_returned_streams, timeout",
-        "provider_zero_before_provider_network"
+        "timeout"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 5,
+      "providerCount": 6,
       "providers": [
         "67movies",
         "anime-sama",
         "frenchstream",
+        "nakios",
         "sadisflix",
         "shuttletv"
       ],
-      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
+      "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [],
+      "dynamicVariantProviders": [
+        "nakios"
+      ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -318,19 +311,16 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 3,
+      "providerCount": 2,
       "providers": [
         "corsflix",
-        "nakios",
         "primewire"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [
-        "nakios"
-      ],
+      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
