@@ -29,8 +29,8 @@ const explorationMode = learningMode || input.explorationChain === true;
 const skillTransfer = asRecord(production.learnedSkillTransferPolicy);
 const learnedSkillInputAllowed = learningMode || production.learnedSkillInputAllowed === true;
 const negativeMemoryPolicy = asRecord(production.negativeExperimentMemory);
-const negativeMemory = asArray(input.negativeMemory)
-  .filter(isRecord)
+const attemptMemory = asArray(input.negativeMemory).filter(isRecord);
+const negativeMemory = attemptMemory
   // Executable bytes can run without exercising the causal mechanism. Such
   // rows remain diagnostic history but cannot veto a strategy as a negative.
   // Legacy rows omit the field and remain fail-closed.
@@ -490,7 +490,7 @@ function historicalStrategyHint(providerId, failureClass, generation, memoryRows
   return { profile: "", caseId: "", solutionClass: "" };
 }
 
-function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery, preferredProfile = "", sourceEligibility = {}) {
+function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery, preferredProfile = "", sourceEligibility = {}, attemptRows = memoryRows) {
   const failure = canonicalFailureClass(failureClass);
   const candidates = postExhaustionCandidates(failure);
   const preferred = stringValue(preferredProfile).toLowerCase();
@@ -547,7 +547,22 @@ function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery, prefe
     if (row.profile === "html_class_token_exact_v1"
         && sourceEligibility.exactHtmlTokenSource !== true) continue;
     const implementationFingerprint = strategyImplementationFingerprint(row.profile);
-    const alreadyFailed = memoryRows.some((memory) => {
+    const attemptedWithoutCausalExercise = attemptRows.some((memory) => {
+      if (
+        stringValue(memory.profile) !== row.profile
+        || memory.executionObserved !== true
+        || memory.causalExerciseObserved !== false
+      ) return false;
+      const outcome = stringValue(memory.lastOutcome).toLowerCase();
+      if (outcome === "not_generated" || outcome === "profile_unavailable") return false;
+      const previous = stringValue(memory.strategyImplementationFingerprint).toLowerCase();
+      return (
+        /^[0-9a-f]{64}$/.test(previous)
+        && /^[0-9a-f]{64}$/.test(implementationFingerprint)
+        && previous === implementationFingerprint
+      );
+    });
+    const alreadyFailed = attemptedWithoutCausalExercise || memoryRows.some((memory) => {
       if (
         stringValue(memory.profile) !== row.profile
         || Math.max(0, finiteNumber(memory.consecutiveFailures, 0)) < rotateEvery
@@ -1124,7 +1139,7 @@ function buildPlan(item) {
   const earlyForceHint = forcePreferredEligible
     ? postExhaustionStrategyHint(
         evidence.failureClass, causalFamilyMemoryMatches, rotateEvery,
-        forcePreferredProfile, sourceEligibility,
+        forcePreferredProfile, sourceEligibility, attemptMemory,
       )
     : { profile: "", method: "", index: -1 };
   const learningPreferredEligible = (
@@ -1136,7 +1151,7 @@ function buildPlan(item) {
   const earlyLearningHint = learningPreferredEligible
     ? postExhaustionStrategyHint(
         learningPreferredFailureClass, causalFamilyMemoryMatches, rotateEvery,
-        learningPreferredProfile, sourceEligibility,
+        learningPreferredProfile, sourceEligibility, attemptMemory,
       )
     : { profile: "", method: "", index: -1 };
   const learningPreferredSelectedEarly = (
@@ -1185,6 +1200,7 @@ function buildPlan(item) {
           rotateEvery,
           forcePreferredProfile || learningPreferredProfile,
           sourceEligibility,
+          attemptMemory,
         )
       : forcePreferredSelectedEarly
         ? earlyForceHint

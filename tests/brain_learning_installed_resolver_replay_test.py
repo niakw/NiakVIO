@@ -141,6 +141,38 @@ assert request_contract_after_stale_impl["learningPreferredSelected"] is True,re
 assert request_contract_after_stale_impl["postExhaustionStrategyProfile"]==queue.PLAYER_REQUEST_CONTRACT_PROFILE,request_contract_after_stale_impl
 assert request_contract_after_stale_impl["strategyImplementationFingerprint"]==request_contract["strategyImplementationFingerprint"],request_contract_after_stale_impl
 
+# Executed bytes that did not causally exercise the Bloc are not a failure,
+# but the exact implementation fingerprint must not loop forever. A materially
+# new fingerprint remains eligible.
+request_contract_inconclusive=[{
+ **request_contract_negative[0],
+ "attempts":1,"successes":0,"failures":0,"consecutiveFailures":0,
+ "lastOutcome":"executed_inconclusive","executionObserved":True,
+ "causalExerciseObserved":False,
+}]
+request_contract_after_inconclusive=plan(
+ profile=queue.PLAYER_REQUEST_CONTRACT_PROFILE,
+ failure=queue.PLAYER_REQUEST_CONTRACT_FAILURE,
+ causal_failure="media_extraction_gap",
+ negative_memory=request_contract_inconclusive,
+)
+assert request_contract_after_inconclusive["learningPreferredSelected"] is False,request_contract_after_inconclusive
+assert request_contract_after_inconclusive["postExhaustionStrategyProfile"]!=queue.PLAYER_REQUEST_CONTRACT_PROFILE,request_contract_after_inconclusive
+assert queue.PLAYER_REQUEST_CONTRACT_PROFILE not in request_contract_after_inconclusive["allowedProfiles"],request_contract_after_inconclusive
+
+stale_request_contract_inconclusive=[{
+ **request_contract_inconclusive[0],
+ "strategyImplementationFingerprint":"c"*64,
+}]
+request_contract_after_stale_inconclusive=plan(
+ profile=queue.PLAYER_REQUEST_CONTRACT_PROFILE,
+ failure=queue.PLAYER_REQUEST_CONTRACT_FAILURE,
+ causal_failure="media_extraction_gap",
+ negative_memory=stale_request_contract_inconclusive,
+)
+assert request_contract_after_stale_inconclusive["learningPreferredSelected"] is True,request_contract_after_stale_inconclusive
+assert request_contract_after_stale_inconclusive["postExhaustionStrategyProfile"]==queue.PLAYER_REQUEST_CONTRACT_PROFILE,request_contract_after_stale_inconclusive
+
 request_contract_after_negative=plan(
  profile=queue.PLAYER_REQUEST_CONTRACT_PROFILE,
  failure=queue.PLAYER_REQUEST_CONTRACT_FAILURE,
