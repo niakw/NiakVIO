@@ -3,17 +3,18 @@
   "sourceRunId": "45930943468",
   "sourceTriggerSha": "79699360fef20c2ab0c2c07bbaad3b24d42c908e",
   "unresolvedProviderCount": 67,
-  "dynamicVariantProviderCount": 7,
+  "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
     "hindmoviez",
     "meowtv",
-    "movish",
     "movix-fr",
     "nakios",
     "papadustream",
     "stigstream"
   ],
-  "lifecycleSuppressedDynamicProviders": [],
+  "lifecycleSuppressedDynamicProviders": [
+    "animevostfr"
+  ],
   "dynamicVariantCurrentObservedProviders": [
     "1jour1film0626",
     "4khdhub",
@@ -36,6 +37,7 @@
     "anisama",
     "arrowtv",
     "boredflix",
+    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -61,11 +63,15 @@
     "fullanime",
     "hexa",
     "hianime",
+    "hindmoviez",
     "ihavenotv",
+    "internet-archive",
     "kehflix",
     "kidraz",
+    "kurage",
     "latestmovies",
     "mallumv",
+    "meowtv",
     "moiflix",
     "moviebite",
     "moviebox",
@@ -74,7 +80,9 @@
     "movish",
     "movix-fr",
     "movy",
+    "mugiwarastream",
     "nakios",
+    "neko-sama",
     "neobam",
     "neonflix",
     "overlook",
@@ -111,13 +119,14 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
+    "webflix",
     "wookafr",
     "yflix",
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": true,
+  "dynamicVariantFallbackUsed": false,
   "groupCount": 10,
   "executionModel": {
     "default": "family/signature batch",
@@ -202,7 +211,6 @@
         "provider-census-status.json:brainCheckRequired"
       ],
       "dynamicVariantProviders": [
-        "movish",
         "movix-fr"
       ],
       "executionPolicy": "batch-first",
@@ -298,7 +306,7 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable",
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:native-policy-reachable",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver"
@@ -306,20 +314,19 @@
       "runtimeFamilySignature": "not-applicable",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "lookup",
-        "none"
+        "lookup"
       ],
       "dominantIssues": [
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "residential-exit-native-reachable"
+        "native-policy-reachable"
       ],
-      "transportSignature": "residential-exit-native-reachable",
+      "transportSignature": "native-policy-reachable",
       "providerCount": 2,
       "providers": [
         "67movies",
-        "french-anime"
+        "shuttletv"
       ],
       "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
@@ -387,7 +394,7 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:native-policy-reachable",
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver"
@@ -395,18 +402,18 @@
       "runtimeFamilySignature": "not-applicable",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "lookup"
+        "none"
       ],
       "dominantIssues": [
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "native-policy-reachable"
+        "residential-exit-native-reachable"
       ],
-      "transportSignature": "native-policy-reachable",
+      "transportSignature": "residential-exit-native-reachable",
       "providerCount": 1,
       "providers": [
-        "shuttletv"
+        "french-anime"
       ],
       "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [

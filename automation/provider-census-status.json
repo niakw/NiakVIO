@@ -133,11 +133,11 @@
         "movie=lookup_only",
         "tv=lookup_only"
       ],
-      "harnessTransportClass": "residential-exit-native-reachable",
+      "harnessTransportClass": "native-policy-reachable",
       "harnessTransportEvidence": [
-        "anime: browser=browser_content_reached, tv-browser=unknown, okhttp=unknown, desktop-okhttp=unknown, direct=unknown, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached",
-        "movie: browser=browser_content_reached, tv-browser=unknown, okhttp=unknown, desktop-okhttp=unknown, direct=unknown, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached",
-        "tv: browser=browser_content_reached, tv-browser=unknown, okhttp=unknown, desktop-okhttp=unknown, direct=unknown, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
+        "anime: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_content_reached, desktop-okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached",
+        "movie: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_content_reached, desktop-okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached",
+        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_content_reached, desktop-okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
       ],
       "authorityRepairEligible": true,
       "authorityAction": "KEEP_ROUTE_AUTHORITY",
@@ -151,7 +151,7 @@
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
-      "action": "GitHub-hosted IP/environment differential confirmed by private residential exit; keep provider JS unchanged and reproduce with native transport/playback before any code blame",
+      "action": "replay provider-owned route with NuvioTV-like/native transport; do not mutate provider JS unless route/playback still fails causally",
       "brainCheckRequired": true,
       "statusRepairEligible": false,
       "repairEligible": false,
@@ -1851,7 +1851,7 @@
       ],
       "harnessTransportClass": "residential-exit-native-reachable",
       "harnessTransportEvidence": [
-        "anime: browser=browser_challenge_observed, tv-browser=browser_challenge_observed, okhttp=okhttp_jvm_challenge_persisted, desktop-okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
+        "anime: browser=browser_challenge_persisted, tv-browser=browser_challenge_observed, okhttp=okhttp_jvm_challenge_persisted, desktop-okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
       ],
       "authorityRepairEligible": true,
       "authorityAction": "KEEP_ROUTE_AUTHORITY",
@@ -5660,8 +5660,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "45930943468-sharded-waf",
-  "harnessEvidenceSha": "79699360fef20c2ab0c2c07bbaad3b24d42c908e",
+  "harnessEvidenceRunId": "45931411523-waf-transport",
+  "harnessEvidenceSha": "041110189f7c31868bf08ca672091db0ba02f133",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
@@ -5702,9 +5702,10 @@
   },
   "residentialExitNodeLastAttempt": {
     "enabled": true,
-    "available": true,
+    "available": false,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 7,
+    "matchedProviderLanes": 0,
+    "reason": "exit-node-offline",
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -7830,22 +7831,17 @@
       "available": false,
       "providerCount": 0,
       "refreshedProviders": [
-        "1jour1film0626",
         "67movies",
-        "aniflix-uno",
-        "animejlprovider",
-        "animeonsen",
-        "animesalt",
-        "arrowtv",
-        "chillflix",
-        "cinegram"
+        "french-anime",
+        "shuttletv"
       ],
       "replayedProviders": [],
       "rawProviders": [],
       "playableProviders": [],
       "verifiedProviders": [],
-      "sourceNiakvioSha": "",
-      "runId": "",
+      "byteMatchedProviders": [],
+      "sourceNiakvioSha": "041110189f7c31868bf08ca672091db0ba02f133",
+      "runId": "45931411523",
       "proofAuthority": false,
       "publicationAuthority": false
     },
