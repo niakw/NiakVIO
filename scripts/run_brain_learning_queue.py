@@ -329,7 +329,12 @@ def phase_experiment_entries(
                 effective_plan.get("llmAdvisorGuidanceKind") or ""
             ).strip().casefold(),
             "llmAdvisorMetaGapGeneration": max(
-                -1, int(effective_plan.get("llmAdvisorMetaGapGeneration") or -1)
+                -1,
+                int(
+                    effective_plan["llmAdvisorMetaGapGeneration"]
+                    if effective_plan.get("llmAdvisorMetaGapGeneration") is not None
+                    else -1
+                ),
             ),
             "experimentVariant": variant,
             "experimentGeneration": generation,

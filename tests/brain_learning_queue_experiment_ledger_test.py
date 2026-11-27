@@ -135,7 +135,7 @@ meta_rows = queue.phase_experiment_entries(
 assert len(meta_rows) == 1, meta_rows
 assert meta_rows[0]["llmAdvisorExperimentFingerprint"] == "a" * 64, meta_rows
 assert meta_rows[0]["llmAdvisorGuidanceKind"] == "meta-gap-synthesis", meta_rows
-assert meta_rows[0]["llmAdvisorMetaGapGeneration"] == -1 or meta_rows[0]["llmAdvisorMetaGapGeneration"] == 0, meta_rows
+assert meta_rows[0]["llmAdvisorMetaGapGeneration"] == 0, meta_rows
 
 meta_plan_2 = {
     **meta_plan,
@@ -174,6 +174,7 @@ meta_state = queue.merge_phase_learning_state(meta_state, meta_rows_2)
 stored_meta = meta_state["experimentMemory"]["entries"]
 assert len(stored_meta) == 2, stored_meta
 assert {row["llmAdvisorExperimentFingerprint"] for row in stored_meta} == {"a" * 64, "b" * 64}, stored_meta
+assert {row["llmAdvisorMetaGapGeneration"] for row in stored_meta} == {0, 1}, stored_meta
 meta_state = queue.merge_phase_learning_state(meta_state, meta_rows)
 stored_meta = meta_state["experimentMemory"]["entries"]
 assert len(stored_meta) == 2, stored_meta
