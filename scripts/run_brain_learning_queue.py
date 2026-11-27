@@ -322,6 +322,15 @@ def phase_experiment_entries(
             "strategyImplementationFingerprint": str(
                 effective_plan.get("strategyImplementationFingerprint") or ""
             ).strip().casefold(),
+            "llmAdvisorExperimentFingerprint": str(
+                effective_plan.get("llmAdvisorExperimentFingerprint") or ""
+            ).strip().casefold(),
+            "llmAdvisorGuidanceKind": str(
+                effective_plan.get("llmAdvisorGuidanceKind") or ""
+            ).strip().casefold(),
+            "llmAdvisorMetaGapGeneration": max(
+                -1, int(effective_plan.get("llmAdvisorMetaGapGeneration") or -1)
+            ),
             "experimentVariant": variant,
             "experimentGeneration": generation,
             "capabilityStrategy": str(effective_plan.get("capabilityStrategy") or "").strip().casefold(),
@@ -344,7 +353,14 @@ def phase_experiment_entries(
     return entries
 
 
-def _phase_experiment_key(row: dict[str, Any]) -> tuple[str, str, str, str, str, str, str, int, int]:
+def _phase_experiment_key(row: dict[str, Any]) -> tuple[str, str, str, str, str, str, str, str, int, int]:
+    """Match the production Brain memory identity, including LLM experiment bytes.
+
+    A meta-gap fingerprint is part of the executable hypothesis. Dropping it
+    collapses distinct Qwen experiments into the same profile/generation row
+    and makes failedFingerprint() unable to rotate away from an executed
+    negative hypothesis.
+    """
     return (
         norm(row.get("providerId")),
         str(row.get("providerVersion") or "*").strip() or "*",
@@ -353,6 +369,7 @@ def _phase_experiment_key(row: dict[str, Any]) -> tuple[str, str, str, str, str,
         str(row.get("profile") or "").strip(),
         str(row.get("positiveProgramFingerprint") or "").strip().casefold(),
         str(row.get("strategyImplementationFingerprint") or "").strip().casefold(),
+        str(row.get("llmAdvisorExperimentFingerprint") or "").strip().casefold(),
         max(0, int(row.get("experimentVariant") or 0)),
         max(1, int(row.get("experimentGeneration") or 1)),
     )
@@ -425,7 +442,11 @@ def merge_phase_learning_state(
             row.get("executionObserved") is True
             and str(row.get("lastOutcome") or "") not in nonexecuted_outcomes
         )
-        for field in ("lastOutcome", "lastReason", "lastSeenAt", "memoryRole", "capabilityStrategy", "observedPipelineStage"):
+        for field in (
+            "lastOutcome", "lastReason", "lastSeenAt", "memoryRole",
+            "capabilityStrategy", "observedPipelineStage",
+            "llmAdvisorGuidanceKind", "llmAdvisorMetaGapGeneration",
+        ):
             if field in row and (incoming_executed or not prior_executed or field not in {"lastOutcome", "lastReason"}):
                 current[field] = row[field]
         current["executionObserved"] = prior_executed or incoming_executed

@@ -87,6 +87,13 @@ for required in (
 merge_script=(ROOT/"scripts/merge_brain_llm_guidance_memory.py").read_text(encoding="utf-8")
 assert "FIELD_BRAIN_GUIDANCE_MEMORY_MERGE" in merge_script
 negative_filter_script=(ROOT/"scripts/filter_brain_learning_guidance.py").read_text(encoding="utf-8")
+upload_state = workflow[
+    workflow.index("- name: Upload sanitized learning and proposal state"):
+    workflow.index("  publish-learning:")
+]
+assert "brain-learning-input/previous.json" in upload_state, (
+    "three-way memory publish needs the exact restored base snapshot in the artifact"
+)
 assert "FIELD_BRAIN_LEARNING_GUIDANCE_NEGATIVE_FILTER" in negative_filter_script
 gap_fill_script=(ROOT/"scripts/fill_brain_learning_guidance_gaps.py").read_text(encoding="utf-8")
 assert "FIELD_BRAIN_LEARNING_GUIDANCE_GAP_FILL" in gap_fill_script

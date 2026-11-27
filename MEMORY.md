@@ -1,3 +1,11 @@
+## 2026-11-27 — V68 : identité des méta-gaps persistée et merge mémoire trois voies rendu effectif
+
+- V67 Learning `45917308211` est vert. Papadustream a quitté la boucle `terminal_transition_graph_v15+` et a changé de méthodes. Anime-Sama a été planifié avec `baseExperimentExhausted=true` / `exhausted=true` : l'ancien g5 publié était donc bien lu. L'exécution suivante sous `adaptive_runtime_recovery` était une **escalade méta-gap fingerprintée**, pas une simple répétition g5.
+- Défaut Brain confirmé : `engine_v2/scripts/plan-repairs.mjs` produit `llmAdvisorExperimentFingerprint` et utilise `failedFingerprint()` + un plafond de 3 fingerprints exécutés/profil, mais `run_brain_learning_queue.py::phase_experiment_entries` supprimait ce fingerprint du ledger. Sa clé `_phase_experiment_key` omettait également le fingerprint, alors que `brain_repair_runtime._memory_entry_key` l'inclut déjà. Une hypothèse Qwen méta-gap exécutée/rejetée devenait donc indistinguable du profil générique g5 et ne pouvait pas être évitée au run suivant.
+- V68 persiste `llmAdvisorExperimentFingerprint`, `llmAdvisorGuidanceKind` et la génération méta-gap issue du plan effectivement exécuté. La clé Learning est alignée sur la clé Repair avec le fingerprint LLM. Deux méta-gaps du même profil/génération restent deux expériences ; rejouer le même fingerprint accumule sa propre ligne.
+- Autre défaut de continuité : le job de publication contient un merge à trois voies `base / previous / current`, mais l'artefact n'emportait pas `brain-learning-input/previous.json`; le merge était donc normalement court-circuité. V68 transporte maintenant cette base restaurée vers le job Publish. Cela protège les updates concurrentes de la branche `brain-learning/proposals`.
+- La preuve fonctionnelle reste stricte : V67 = 0 repair, 0 providerProposal, 0 candidate. **0 nouvelle réparation certifiée**.
+
 ## 2026-11-27 — V67 : correctif TDZ du budget causal V66
 
 - Run Learning `45917041571` sur V66 a échoué au préflight, avant toute expérience provider : `brain_final_experiment_generation_test.py:113` recevait un plan d'erreur sans `baseExperimentExhausted`.

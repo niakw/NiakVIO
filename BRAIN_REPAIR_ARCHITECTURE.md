@@ -1,3 +1,9 @@
+## 2026-11-27 — Méta-gap : fingerprint = identité d'expérience durable
+
+Une stratégie Qwen/meta-gap ne peut pas être identifiée uniquement par son profil et sa génération de base. Son `llmAdvisorExperimentFingerprint` fait partie des bytes/logiques de l'hypothèse et doit traverser : plan → event snapshot → ledger de phase → mémoire Learning → mémoire Repair/planner. Le merge Learning utilise la même identité que `brain_repair_runtime._memory_entry_key`, y compris le fingerprint LLM. Ainsi `failedFingerprint()` peut supprimer une hypothèse déjà exécutée et le plafond de trois fingerprints peut réellement faire changer d'exécuteur.
+
+La publication de la mémoire doit être un vrai merge trois voies. Le snapshot exact `brain-learning-input/previous.json` restauré par le job sandbox fait donc partie de l'artefact transmis au job Publish ; sans lui, le code de merge base/previous/current est inactif et des runs concurrents peuvent perdre des expériences.
+
 ## 2026-11-27 — Budget de causalité des stratégies évoluées
 
 Une suite de profils versionnés appartenant à la même méthode `brain-evolved-executable-transition` n'est pas une preuve de nouveauté illimitée. Après trois implémentations distinctes réellement exécutées et rejetées dans la même famille causale, le planner doit changer de méthode. Les non-exécutions (`profile_unavailable`, `not_generated`) restent une dette de génération/architecture et ne sont pas débitées comme échecs runtime. Une architecture FORCE fraîche peut toutefois imposer une fois son profil exact sur le représentant afin de tester une nouvelle implémentation validée.

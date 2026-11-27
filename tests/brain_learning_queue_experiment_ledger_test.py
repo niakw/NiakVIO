@@ -97,6 +97,90 @@ assert deferred_unavailable[0]["experimentGeneration"] == 4, deferred_unavailabl
 assert deferred_unavailable[0]["profile"] == "chain_terminal_extractor_v1_g4", deferred_unavailable
 assert deferred_unavailable[0]["lastOutcome"] == "profile_unavailable", deferred_unavailable
 
+# Fingerprinted meta-gap experiments are executable hypotheses, not aliases for
+# the generic profile/generation. Persist the exact fingerprint so the JS
+# planner's failedFingerprint() and three-fingerprint causal budget can work.
+meta_plan = {
+    **plan,
+    "failureClass": "unknown_failure",
+    "signature": "sig-meta-gap",
+    "profile": "adaptive_runtime_recovery",
+    "allowedProfiles": ["adaptive_runtime_recovery"],
+    "llmAdvisorExperimentFingerprint": "a" * 64,
+    "llmAdvisorGuidanceKind": "meta-gap-synthesis",
+    "llmAdvisorMetaGapGeneration": 0,
+}
+meta_repair = {
+    "attemptedProfiles": ["adaptive_runtime_recovery"],
+    "report": {
+        "rounds": [{
+            "attempts": [{
+                "profile": "adaptive_runtime_recovery",
+                "status": "generated",
+                "brain_plan": meta_plan,
+            }],
+            "accepted": [],
+            "exploration_progress": [],
+            "rejected": [{
+                "profile": "adaptive_runtime_recovery",
+                "reason": "safety_gate:no_playable_proof",
+                "brain_plan": meta_plan,
+            }],
+        }]
+    },
+}
+meta_rows = queue.phase_experiment_entries(
+    "synthetic-ledger", meta_plan, meta_repair, {"status": "no_streams"},
+)
+assert len(meta_rows) == 1, meta_rows
+assert meta_rows[0]["llmAdvisorExperimentFingerprint"] == "a" * 64, meta_rows
+assert meta_rows[0]["llmAdvisorGuidanceKind"] == "meta-gap-synthesis", meta_rows
+assert meta_rows[0]["llmAdvisorMetaGapGeneration"] == -1 or meta_rows[0]["llmAdvisorMetaGapGeneration"] == 0, meta_rows
+
+meta_plan_2 = {
+    **meta_plan,
+    "llmAdvisorExperimentFingerprint": "b" * 64,
+    "llmAdvisorMetaGapGeneration": 1,
+}
+meta_repair_2 = {
+    "attemptedProfiles": ["adaptive_runtime_recovery"],
+    "report": {
+        "rounds": [{
+            "attempts": [{
+                "profile": "adaptive_runtime_recovery",
+                "status": "generated",
+                "brain_plan": meta_plan_2,
+            }],
+            "accepted": [],
+            "exploration_progress": [],
+            "rejected": [{
+                "profile": "adaptive_runtime_recovery",
+                "reason": "safety_gate:no_playable_proof",
+                "brain_plan": meta_plan_2,
+            }],
+        }]
+    },
+}
+meta_rows_2 = queue.phase_experiment_entries(
+    "synthetic-ledger", meta_plan_2, meta_repair_2, {"status": "no_streams"},
+)
+meta_state = {
+    "publicationAllowed": False,
+    "productionWritesAllowed": False,
+    "experimentMemory": {"schemaVersion": 1, "entries": []},
+}
+meta_state = queue.merge_phase_learning_state(meta_state, meta_rows)
+meta_state = queue.merge_phase_learning_state(meta_state, meta_rows_2)
+stored_meta = meta_state["experimentMemory"]["entries"]
+assert len(stored_meta) == 2, stored_meta
+assert {row["llmAdvisorExperimentFingerprint"] for row in stored_meta} == {"a" * 64, "b" * 64}, stored_meta
+meta_state = queue.merge_phase_learning_state(meta_state, meta_rows)
+stored_meta = meta_state["experimentMemory"]["entries"]
+assert len(stored_meta) == 2, stored_meta
+by_fp = {row["llmAdvisorExperimentFingerprint"]: row for row in stored_meta}
+assert by_fp["a" * 64]["attempts"] == 2, by_fp
+assert by_fp["b" * 64]["attempts"] == 1, by_fp
+
 # Non-publishable progress is still durable experiment evidence and raw endpoint
 # or credential-shaped text must never enter cross-phase memory.
 progress_repair = {
