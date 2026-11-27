@@ -1068,6 +1068,7 @@ jobs:
               --providers "$PROVIDER_FILTER" \
               --current-sha "$GITHUB_SHA" \
               --census automation/provider-census-status.json \
+              --memory brain-learning-input/previous.json \
               --memory automation/brain-repair-memory.json \
               --report brain-sandbox/brain-llm/guidance-gap-report.json
             python scripts/filter_brain_learning_guidance.py \

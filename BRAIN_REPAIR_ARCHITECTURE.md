@@ -1,3 +1,7 @@
+## 2026-11-27 — Unifier la mémoire du synthétiseur et du filtre de guidance
+
+La sélection du prochain meta-gap et son rapport d'épuisement doivent voir exactement les mêmes négatifs exécutés que le filtre final. Learning cross-day et Repair canonique sont donc joints en lecture seule avant `synthesize_rows`; aucune ligne n'acquiert d'autorité supplémentaire. Un fingerprint absent de Repair mais rejeté en Learning doit être traité comme déjà exécuté pour l'ordonnancement de l'hypothèse suivante.
+
 ## 2026-11-27 — Mémoire cross-day des hypothèses LLM
 
 Le ledger runtime et la mémoire cross-day doivent partager la même identité : provider/version/failure/signature/profile + positive-program fingerprint + strategy-implementation fingerprint + **LLM experiment fingerprint** + génération/variante. Le fingerprint LLM est un SHA-256 sanitizé, jamais du contenu modèle ; guidance kind et meta-gap generation sont une provenance bornée. Une hypothèse exécutée/rejetée doit survivre à la sérialisation quotidienne afin que le planner change réellement de stratégie au run suivant.

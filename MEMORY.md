@@ -1,3 +1,9 @@
+## 2026-11-27 — V71 : meta-gap synthesis utilisait une mémoire plus faible que son filtre final
+
+- Audit de la chaîne post-V70 : le filtre de guidance lit déjà `brain-learning-input/previous.json` + `automation/brain-repair-memory.json`, mais `fill_brain_learning_guidance_gaps.py` ne synthétisait qu'avec la mémoire Repair canonique. Une expérience meta-gap exécutée uniquement en Learning pouvait donc être resynthétisée ; le filtre final la supprimait ensuite, tandis que `exhaustion_report` calculé avant ce filtre déclarait encore le provider non épuisé. C'est une boucle silencieuse, indépendante de Nakios.
+- V71 rend `--memory` répétable et fusionne sans inventer d'autorité les lignes `entries` et `experimentMemory.entries`. Le workflow fournit cross-day + Repair au **même** synthétiseur et au rapport d'épuisement. Les helpers de stratégie restent set-based pour fingerprints/exécuteurs, donc les doublons n'augmentent pas artificiellement les échecs.
+- Tests ajoutés : un fingerprint rejeté présent seulement dans `previous.experimentMemory` et un autre dans la mémoire Repair survivent tous deux dans l'entrée causale fusionnée ; puis le **premier fingerprint réellement synthétisé** est placé uniquement dans la mémoire cross-day et le synthétiseur doit choisir un fingerprint différent. Le contrat workflow exige les deux mémoires. **Toujours 0 réparation provider** : cette correction garantit la rotation, pas un média playable.
+
 ## 2026-11-27 — V70 : fingerprint LLM perdu par la mémoire cross-day, boucle Nakios expliquée
 
 - État vérifié : main `2553af1863b45`, census `45922579169` sur `fa5a98505962`, **8 FULL OK / 111**, repairQueue 9. Fast Repair `45920335334` : `accepted=0 / candidates=0 / validated=0`; Nakios est handoffé à Learning.

@@ -97,6 +97,10 @@ assert "brain-learning-input/previous.json" in upload_state, (
 assert "FIELD_BRAIN_LEARNING_GUIDANCE_NEGATIVE_FILTER" in negative_filter_script
 gap_fill_script=(ROOT/"scripts/fill_brain_learning_guidance_gaps.py").read_text(encoding="utf-8")
 assert "FIELD_BRAIN_LEARNING_GUIDANCE_GAP_FILL" in gap_fill_script
+assert '--memory brain-learning-input/previous.json' in workflow
+assert '--memory automation/brain-repair-memory.json' in workflow
+assert 'action="append"' in gap_fill_script
+assert "merge_memory_payloads" in gap_fill_script
 
 cross_day=workflow[
     workflow.index("- name: Build sanitized cross-day Brain state"):

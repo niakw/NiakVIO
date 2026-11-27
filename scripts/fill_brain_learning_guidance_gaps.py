@@ -165,6 +165,28 @@ def load(path:Path)->dict[str,Any]:
     return value
 
 
+def merge_memory_payloads(payloads:list[dict[str,Any]])->dict[str,Any]:
+    """Join sanitized Repair + Learning experiment ledgers for hypothesis rotation.
+
+    Duplicate rows are harmless to the declarative strategy because failed
+    fingerprints/executed-profile accounting is set based. Keep the original
+    rows intact so this bridge cannot invent execution authority or proof.
+    """
+    entries:list[dict[str,Any]]=[]
+    for payload in payloads:
+        if not isinstance(payload,dict):
+            continue
+        for raw in payload.get("entries") or []:
+            if isinstance(raw,dict):
+                entries.append(json.loads(json.dumps(raw)))
+        experiment=payload.get("experimentMemory")
+        if isinstance(experiment,dict):
+            for raw in experiment.get("entries") or []:
+                if isinstance(raw,dict):
+                    entries.append(json.loads(json.dumps(raw)))
+    return {"entries":entries}
+
+
 def public_row(raw:dict[str,Any])->dict[str,Any]:
     row={key:raw.get(key) for key in ROW_FIELDS}
     if (
@@ -291,13 +313,20 @@ def main()->int:
     p.add_argument("--providers",default="")
     p.add_argument("--current-sha",required=True)
     p.add_argument("--census",type=Path,default=Path("automation/provider-census-status.json"))
-    p.add_argument("--memory",type=Path,default=Path("automation/brain-repair-memory.json"))
+    p.add_argument("--memory",type=Path,action="append",default=[])
     p.add_argument("--report",type=Path)
     a=p.parse_args()
     providers=[*a.provider,*str(a.providers or "").split(",")]
     payload=load(a.input)
     census=json.loads(a.census.read_text(encoding="utf-8"))
-    memory=json.loads(a.memory.read_text(encoding="utf-8"))
+    memory_paths=list(a.memory or [Path("automation/brain-repair-memory.json")])
+    memory_payloads=[]
+    for memory_path in memory_paths:
+        value=json.loads(memory_path.read_text(encoding="utf-8"))
+        if not isinstance(value,dict):
+            raise ValueError(f"invalid Brain memory payload: {memory_path}")
+        memory_payloads.append(value)
+    memory=merge_memory_payloads(memory_payloads)
     def optional_json(path:Path)->dict[str,Any]:
         try:
             value=json.loads(path.read_text(encoding="utf-8"))
