@@ -26,6 +26,7 @@ from repair_promotion_state import durable_accepted_event, provisional_accepted_
 from fill_brain_learning_guidance_gaps import (
     attested_source_contract_frontier,
     attested_source_resolver_frontier,
+    attested_source_player_target_frontier,
 )
 from build_provider_execution_plan import build as build_provider_execution_plan
 from brain_source_family_state import (
@@ -1622,6 +1623,7 @@ def source_contract_capability_state(
     parser_installed: bool,
     resolver_frontier: set[str] | dict[str, Any] | None = None,
     resolver_installed: bool = False,
+    player_target_frontier: set[str] | dict[str, Any] | None = None,
 ) -> tuple[list[str], list[str], str]:
     observed = [pid for pid in order if pid in frontier]
     if not observed:
@@ -1629,7 +1631,14 @@ def source_contract_capability_state(
     if not parser_installed:
         return observed, [], "new_family_required"
     resolver_frontier = resolver_frontier or set()
+    player_target_frontier = player_target_frontier or set()
     resolver_observed = [pid for pid in observed if pid in resolver_frontier]
+    player_target_observed = [pid for pid in resolver_observed if pid in player_target_frontier]
+    # A deeper exact-parent player target supersedes resolver replay debt. The
+    # provider stays in Learning, but no longer carries V2 as preferred intent;
+    # the current causal failure (e.g. media_extraction_gap) owns planning.
+    if player_target_observed and resolver_installed:
+        return [], observed, "player_target_observed"
     if resolver_observed and not resolver_installed:
         replay = [pid for pid in observed if pid not in set(resolver_observed)]
         return resolver_observed, replay, "resolver_family_required"
@@ -1707,6 +1716,9 @@ def main() -> int:
         source_history, native_history, manifest_authority, ROOT,
     )
     source_resolver_frontier = attested_source_resolver_frontier(
+        source_history, native_history, manifest_authority, ROOT,
+    )
+    source_player_target_frontier = attested_source_player_target_frontier(
         source_history, native_history, manifest_authority, ROOT,
     )
     output = args.output_dir.resolve()
@@ -1895,6 +1907,7 @@ def main() -> int:
             source_family_parser_ready,
             source_resolver_frontier,
             source_family_resolver_ready,
+            source_player_target_frontier,
         )
     )
     queue["sourceContractFamilyDeferredProviders"] = source_contract_deferred
@@ -1904,6 +1917,12 @@ def main() -> int:
     queue["sourceContractResolverProviders"] = [
         pid for pid in order if pid in source_resolver_frontier
     ]
+    queue["sourceContractPlayerTargetProviders"] = [
+        pid for pid in order if pid in source_player_target_frontier
+    ]
+    queue["sourceContractPlayerTargetProviderCount"] = len(
+        queue["sourceContractPlayerTargetProviders"]
+    )
     queue["sourceContractResolverProviderCount"] = len(
         queue["sourceContractResolverProviders"]
     )
@@ -1920,6 +1939,7 @@ def main() -> int:
         f"parser_installed={str(source_family_parser_ready).lower()} "
         f"resolver_attested={len(queue['sourceContractResolverProviders'])} "
         f"resolver_installed={str(source_family_resolver_ready).lower()} "
+        f"player_target={len(queue['sourceContractPlayerTargetProviders'])} "
         f"deferred={len(source_contract_deferred)} replay={len(source_contract_replay)} "
         f"status={source_contract_status}",
         flush=True,
@@ -2362,6 +2382,8 @@ def main() -> int:
         "sourceContractResolverProviderCount": queue["sourceContractResolverProviderCount"],
         "sourceContractResolverContract": queue["sourceContractResolverContract"],
         "sourceContractResolverInstalled": queue["sourceContractResolverInstalled"],
+        "sourceContractPlayerTargetProviders": queue["sourceContractPlayerTargetProviders"],
+        "sourceContractPlayerTargetProviderCount": queue["sourceContractPlayerTargetProviderCount"],
         "sourceContractFamilyExecutableStatus": queue["sourceContractFamilyExecutableStatus"],
         "legacyExecutableSeedAllowed": False,
         "processedProviders": processed,
