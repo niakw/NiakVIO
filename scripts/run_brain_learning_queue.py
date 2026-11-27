@@ -30,6 +30,7 @@ from fill_brain_learning_guidance_gaps import (
     attested_source_player_structure_frontier,
 )
 from build_provider_execution_plan import build as build_provider_execution_plan
+from brain_repair_runtime import strategy_causal_exercise_observed
 from brain_source_family_state import (
     RESOLVER_CONTRACT,
     RESOLVER_FAILURE_CLASS,
@@ -442,6 +443,19 @@ def phase_experiment_entries(
         network_execution_delta = sanitize_network_execution_delta(
             network_event.get("network_execution_delta") if isinstance(network_event, dict) else {}
         )
+        execution_observed = bool(accepted or rejected or progress)
+        causal_exercise = (
+            strategy_causal_exercise_observed(profile, network_execution)
+            if execution_observed else False
+        )
+        if execution_observed and success_count == 0 and causal_exercise is not True:
+            # The candidate bytes ran, but the strategy never reached the
+            # evidence boundary declared by its Bloc contract. Persist the run
+            # as diagnostic/inconclusive rather than poisoning negative memory.
+            failures = 0
+            progresses = 0
+            outcome = "executed_inconclusive"
+            reason = "causal_capability_not_exercised"
 
         entries.append({
             "providerId": norm(provider_id),
@@ -485,7 +499,8 @@ def phase_experiment_entries(
             # A generated-and-retested child is distinct from an attempt that
             # never produced executable bytes. Do not poison runtime-negative
             # memory with not_generated/profile_unavailable outcomes.
-            "executionObserved": bool(accepted or rejected or progress),
+            "executionObserved": execution_observed,
+            "causalExerciseObserved": causal_exercise is True,
             "generationAttemptObserved": bool(not_generated),
             "networkExecutionSummary": network_execution,
             "networkExecutionDelta": network_execution_delta,
@@ -866,6 +881,7 @@ def merge_phase_learning_state(
             "lastOutcome", "lastReason", "lastSeenAt", "memoryRole",
             "capabilityStrategy", "observedPipelineStage",
             "llmAdvisorGuidanceKind", "llmAdvisorMetaGapGeneration",
+            "causalExerciseObserved",
             "networkExecutionSummary",
             "networkExecutionDelta",
         ):
@@ -1214,7 +1230,15 @@ def exhausted_repair_providers(memory: dict[str, Any], policy: dict[str, Any]) -
         if not provider or int(row.get("consecutiveFailures") or 0) < rotate_every:
             continue
         outcome = str(row.get("lastOutcome") or "").strip().casefold().replace("-", "_")
-        if outcome in {"profile_unavailable", "not_generated"} or row.get("executionObserved") is False:
+        if outcome in {"profile_unavailable", "not_generated", "executed_inconclusive"} or row.get("executionObserved") is False:
+            continue
+        causal_exercise = row.get("causalExerciseObserved")
+        if not isinstance(causal_exercise, bool):
+            causal_exercise = strategy_causal_exercise_observed(
+                row.get("profile"),
+                row.get("networkExecutionSummary"),
+            )
+        if causal_exercise is False:
             continue
         key = (
             provider,
