@@ -73,7 +73,26 @@ assert without_fingerprint["llmAdvisorApplied"] is False, without_fingerprint
 assert without_fingerprint["action"] == "collect-more-evidence", without_fingerprint
 
 still_evolving = with_advice(base, advice)
-assert still_evolving["strategyEscalated"] is True, still_evolving
-assert still_evolving["llmAdvisorApplied"] is False, still_evolving
-assert still_evolving["allowedProfiles"] == ["terminal_transition_graph_v1"], still_evolving
+assert still_evolving["strategyEscalated"] is False, still_evolving
+assert still_evolving["postExhaustionStrategyProfile"] == "", still_evolving
+assert still_evolving["llmAdvisorApplied"] is True, still_evolving
+assert still_evolving["llmAdvisorExplorationRescue"] is True, still_evolving
+assert still_evolving["llmAdvisorExperimentFingerprint"] == "a" * 64, still_evolving
+assert still_evolving["allowedProfiles"] == ["chain_terminal_extractor_v1"], still_evolving
+
+# Once that exact advisor experiment is genuinely rejected, the still-fresh
+# coded post-exhaustion family owns the next attempt.
+fallback_after_advisor = with_advice([*base, {
+    "providerId": "synthetic-generation",
+    "failureClass": "chain_terminal_gap",
+    "profile": "chain_terminal_extractor_v1",
+    "llmAdvisorExperimentFingerprint": "a" * 64,
+    "consecutiveFailures": 1, "failures": 1,
+    "executionObserved": True,
+    "lastOutcome": "rejected",
+}], advice)
+assert fallback_after_advisor["llmAdvisorApplied"] is False, fallback_after_advisor
+assert fallback_after_advisor["strategyEscalated"] is True, fallback_after_advisor
+assert fallback_after_advisor["postExhaustionStrategyProfile"] == "terminal_transition_graph_v1", fallback_after_advisor
+assert fallback_after_advisor["allowedProfiles"] == ["terminal_transition_graph_v1"], fallback_after_advisor
 print("Exhausted Learning LLM novelty/negative-memory replay passed")

@@ -1,3 +1,9 @@
+## 2026-11-27 — V77.3 : contrat novelty aligné sur la propriété advisor-first
+
+- Workflow Gate [45979521173](https://github.com/niakw/NiakVIO/actions/runs/45979521173) échoue dans `brain_exhausted_llm_novelty_test.py:76` alors que le plan produit exactement V77 : `llmAdvisorApplied=true`, fingerprint `a…a`, `strategyEscalated=false`, `postExhaustionStrategyProfile=""`.
+- Le test historique attendait encore `terminal_transition_graph_v1` avant l'expérience advisor. Nouveau contrat : après base exhaustion, le fingerprint advisor frais possède l'essai ; après rejet exact de ce fingerprint, `terminal_transition_graph_v1` reprend la main. Le cas où toute la famille codée est déjà épuisée reste `collect-more-evidence`. Aucun gate média/identité modifié.
+- Cette correction de test ne retouche pas le trigger V77.2 afin de ne pas annuler le Learning Corsflix déjà en cours sur `021f86d8`. **0 réparation provider**.
+
 ## 2026-11-27 — V77.2 : scénarios de mémoire advisor séparés
 
 - Learning [45979142379](https://github.com/niakw/NiakVIO/actions/runs/45979142379) passe le nouveau contrat advisor-first puis échoue plus loin à une fixture de drift causal qui réutilisait la même `transport_memory`, déjà enrichie de trois fingerprints `search_contract_inference_v1`. Elle exigeait donc à tort `metaGapEscalated=true` pour un executor que le test précédent venait lui-même d'épuiser.
