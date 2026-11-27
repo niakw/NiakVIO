@@ -50,6 +50,8 @@ with tempfile.TemporaryDirectory() as td:
         "inlineTokenResponseCount":1,"probeRequestCount":13,
         "tokenResolverProbeCount":1,"tokenResolverJsonUrlCount":1,
         "tokenResolverContract":"same-origin-api-lien-j-l-v1",
+        "resolvedTargetProbeCount":1,"resolvedTargetDirectMediaCount":0,
+        "resolvedTargetPlayerPageCount":1,
         "independentNetworkNotOfficialClient":True,
         "sourceContractVerifiedOnOfficialTv":False,
         "catalogueIdentityVerified":False,"episodeIdentityVerified":False,
@@ -65,6 +67,11 @@ with tempfile.TemporaryDirectory() as td:
             "tokenResolverJsonObjectObserved":True,
             "tokenResolverUrlFieldObserved":True,
             "tokenResolverHttpsUrlObserved":True,
+            "resolvedTargetStatus":200,"resolvedTargetShape":"html_player",
+            "resolvedTargetDirectMediaObserved":False,
+            "resolvedTargetPlayerEmbedObserved":True,
+            "resolvedTargetSameOrigin":False,
+            "resolvedTargetRedirectObserved":False,
         }],
         **FLAGS,
     }
@@ -77,6 +84,8 @@ with tempfile.TemporaryDirectory() as td:
     assert frontier=={"sample"},frontier
     resolver=mod.attested_source_resolver_frontier(history,native,manifest,root)
     assert resolver=={"sample"},resolver
+    player=mod.attested_source_player_target_frontier(history,native,manifest,root)
+    assert player=={"sample"},player
     old_guidance={
         "sourceSha":"a"*40,"brainLlmSha":"a"*40,"schemaVersion":2,
         "providerCount":1,
@@ -118,6 +127,19 @@ with tempfile.TemporaryDirectory() as td:
         assert not mod.attested_source_contract_frontier(
             edited,native,manifest,root
         ),forged
+
+    for forged_player in (
+        {"resolvedTargetProbeCount":0},
+        {"evidence":[{**probe_row["evidence"][0],"resolvedTargetStatus":403}]},
+        {"evidence":[{**probe_row["evidence"][0],"resolvedTargetShape":"json"}]},
+        {"evidence":[{**probe_row["evidence"][0],"resolvedTargetDirectMediaObserved":True}]},
+        {"evidence":[{**probe_row["evidence"][0],"resolvedTargetPlayerEmbedObserved":False}]},
+    ):
+        edited=json.loads(json.dumps(history))
+        edited["rows"][0].update(forged_player)
+        assert not mod.attested_source_player_target_frontier(
+            edited,native,manifest,root
+        ),forged_player
 
     for forged_resolver in (
         {"tokenResolverProbeCount":0},
