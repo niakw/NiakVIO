@@ -2308,6 +2308,128 @@ def main() -> int:
                         and provider_source_contract_status == "player_target_observed"
                         and player_structure.get("resolvedTargetRequestBootstrapObserved") is True
                     )
+                    preferred_profile = (
+                        PLAYER_REQUEST_CONTRACT_PROFILE
+                        if request_contract_replay else
+                        RESOLVER_STRATEGY_ID if resolver_replay else ""
+                    )
+                    preferred_failure_class = (
+                        PLAYER_REQUEST_CONTRACT_FAILURE
+                        if request_contract_replay else
+                        RESOLVER_FAILURE_CLASS if resolver_replay else ""
+                    )
+                    causal_failure_class = (
+                        "media_extraction_gap"
+                        if provider_id in source_player_target_frontier
+                        else ""
+                    )
+
+                    # Older executed negatives predate per-experiment network
+                    # telemetry. Replay the exact installed implementation once
+                    # in a temporary child memory, enrich the historical row,
+                    # and keep its attempts/failures/outcome unchanged.
+                    diagnostic_target = (
+                        missing_network_diagnostic_negative(
+                            phase_learning_state,
+                            provider_id,
+                            preferred_profile,
+                        )
+                        if preferred_profile else None
+                    )
+                    if diagnostic_target is not None:
+                        diagnostic_state = diagnostic_replay_memory(
+                            phase_learning_state,
+                            diagnostic_target,
+                        )
+                        diagnostic_state_path = attempt_dir / "diagnostic-learning-state.json"
+                        write_json(diagnostic_state_path, diagnostic_state)
+                        diagnostic_output = attempt_dir / "diagnostic-network-replay"
+                        diagnostic_repair = repair_attempt(
+                            provider_id,
+                            stage,
+                            target_path,
+                            diagnostic_output,
+                            diagnostic_state_path,
+                            provider_deadline,
+                            preferred_profile=preferred_profile,
+                            preferred_failure_class=preferred_failure_class,
+                            causal_failure_class=causal_failure_class,
+                        )
+                        # Diagnostic replay never owns the staged registry.
+                        write_json(target_path, targeted_registry(full_registry, provider_id))
+                        diagnostic_plans = (
+                            (diagnostic_repair.get("report") or {}).get("brain") or {}
+                        ).get("plans") or {}
+                        diagnostic_plan: dict[str, Any] = {}
+                        for value in diagnostic_plans.values():
+                            if (
+                                isinstance(value, dict)
+                                and norm(value.get("providerId")) == provider_id
+                            ):
+                                diagnostic_plan = value
+                                break
+                        diagnostic_summary = repair_network_execution_summary(
+                            diagnostic_repair,
+                            preferred_profile,
+                        )
+                        target_fingerprint = str(
+                            diagnostic_target.get("strategyImplementationFingerprint") or ""
+                        ).strip().casefold()
+                        if int(diagnostic_repair.get("accepted") or 0) > 0:
+                            # A previously negative implementation changed
+                            # outcome. Remove only that exact historical
+                            # implementation from this phase so the normal path
+                            # can revalidate and, if still green, promote it
+                            # through the ordinary strict gates.
+                            phase_learning_state = diagnostic_replay_memory(
+                                phase_learning_state,
+                                diagnostic_target,
+                            )
+                            write_json(phase_learning_state_path, phase_learning_state)
+                            print(
+                                "FIELD_BRAIN_DIAGNOSTIC_REPLAY_CHANGED "
+                                f"provider={provider_id} profile={preferred_profile} "
+                                f"fingerprint={target_fingerprint[:12]} "
+                                "outcome=accepted action=normal_revalidation_required "
+                                "publication=false",
+                                flush=True,
+                            )
+                        else:
+                            backfill = diagnostic_network_backfill_entry(
+                                diagnostic_target,
+                                diagnostic_plan,
+                                diagnostic_summary,
+                            )
+                            if backfill is not None:
+                                phase_experiment_ledger.append(backfill)
+                                phase_learning_state = merge_phase_learning_state(
+                                    phase_learning_state,
+                                    [backfill],
+                                )
+                                write_json(phase_learning_state_path, phase_learning_state)
+                                summary = backfill["networkExecutionSummary"]
+                                print(
+                                    "FIELD_BRAIN_DIAGNOSTIC_NETWORK_BACKFILL "
+                                    f"provider={provider_id} profile={preferred_profile} "
+                                    f"fingerprint={target_fingerprint[:12]} "
+                                    f"requests={int(summary.get('providerRequestCount') or 0)} "
+                                    f"successful={int(summary.get('successfulProviderRequestCount') or 0)} "
+                                    f"network_failures={int(summary.get('networkFailureCount') or 0)} "
+                                    f"deepest={str(summary.get('deepestStage') or 'none')} "
+                                    "attempts_incremented=false failures_incremented=false "
+                                    "publication=false",
+                                    flush=True,
+                                )
+                            else:
+                                print(
+                                    "FIELD_BRAIN_DIAGNOSTIC_NETWORK_BACKFILL "
+                                    f"provider={provider_id} profile={preferred_profile} "
+                                    f"fingerprint={target_fingerprint[:12]} "
+                                    "status=unavailable reason=fingerprint-or-summary-mismatch "
+                                    "publication=false",
+                                    flush=True,
+                                )
+
                     repair = repair_attempt(
                         provider_id,
                         stage,
@@ -2315,21 +2437,9 @@ def main() -> int:
                         attempt_dir,
                         phase_learning_state_path,
                         provider_deadline,
-                        preferred_profile=(
-                            PLAYER_REQUEST_CONTRACT_PROFILE
-                            if request_contract_replay else
-                            RESOLVER_STRATEGY_ID if resolver_replay else ""
-                        ),
-                        preferred_failure_class=(
-                            PLAYER_REQUEST_CONTRACT_FAILURE
-                            if request_contract_replay else
-                            RESOLVER_FAILURE_CLASS if resolver_replay else ""
-                        ),
-                        causal_failure_class=(
-                            "media_extraction_gap"
-                            if provider_id in source_player_target_frontier
-                            else ""
-                        ),
+                        preferred_profile=preferred_profile,
+                        preferred_failure_class=preferred_failure_class,
+                        causal_failure_class=causal_failure_class,
                     )
                 except BudgetExhausted as error:
                     state["lastStatus"] = "fair_share_slice_exhausted"
