@@ -4,26 +4,23 @@
   "acceptedRepairCount": 0,
   "acceptedRepairs": [],
   "advisorDynamicWaveCeiling": 6,
-  "advisorHypothesisWaveBudget": 3,
+  "advisorHypothesisWaveBudget": 2,
   "batchSize": 48,
   "deferredLearningProviders": [
-    "nakios"
+    "anime-sama"
   ],
-  "effectiveWaves": 3,
-  "elapsedSeconds": 84.729,
+  "effectiveWaves": 2,
+  "elapsedSeconds": 81.124,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 8,
     "providerCount": 142,
     "schemaVersion": 2,
-    "sourceRunId": "46028518118",
-    "sourceSha": "96c6db9f2b94e1ab32738f0878b4e09172d6fe0b",
+    "sourceRunId": "46043288388-pre-repair",
+    "sourceSha": "a77d0d1d65d27c3ed7d82f2870c2089ac4f36834",
     "strategyCount": 5
   },
-  "familyFrontierPendingProviders": [
-    "corsflix",
-    "primewire"
-  ],
+  "familyFrontierPendingProviders": [],
   "familyFrontierScheduling": {
     "enabled": true,
     "policy": "one-oracle-per-causal-family-until-transferable-trust-then-fanout",
@@ -36,16 +33,14 @@
   "healthConcurrency": 0,
   "healthConcurrencyMode": "auto-per-batch",
   "initialStatuses": {
-    "corsflix": "CHAIN REACHED",
-    "nakios": "CHAIN REACHED",
-    "primewire": "CHAIN REACHED"
+    "anime-sama": "REGRESSION PROVIDER JS"
   },
   "labOnlyWithoutCompiledRepairProviders": [],
   "learningHandoffProviders": [
-    "nakios"
+    "anime-sama"
   ],
-  "maxRoundsPerBatch": 3,
-  "maxWaves": 3,
+  "maxRoundsPerBatch": 1,
+  "maxWaves": 2,
   "noProgressReason": "no_new_repair_experiment",
   "positiveProgramRecovery": {
     "durableProviders": [],
@@ -55,15 +50,12 @@
   },
   "processedProviderCount": 1,
   "processedProviders": [
-    "nakios"
+    "anime-sama"
   ],
   "providerSpecificRules": false,
   "rawLabAcceptedCount": 0,
   "rawLabAcceptedRepairs": [],
-  "remainingProviders": [
-    "corsflix",
-    "primewire"
-  ],
+  "remainingProviders": [],
   "requestedWaves": 1,
   "resumeRecommended": false,
   "safety": {
@@ -79,23 +71,18 @@
     "wafEnvironmentExcludedByDefault": true
   },
   "schemaVersion": 1,
-  "selectedProviderCount": 3,
+  "selectedProviderCount": 1,
   "selectedProviders": [
-    "corsflix",
-    "nakios",
-    "primewire"
+    "anime-sama"
   ],
   "selectionSource": "automation/provider-census-status.json:repairQueue",
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "46028518118",
+  "sourceCensusRunId": "46043288388-pre-repair",
   "timeBudgetExhausted": false,
-  "timeBudgetSeconds": 1200,
-  "unvisitedProviders": [
-    "corsflix",
-    "primewire"
-  ],
+  "timeBudgetSeconds": 600,
+  "unvisitedProviders": [],
   "waves": [
     {
       "acceptedCount": 0,
@@ -114,7 +101,7 @@
             "harnessDifferentialProviders": [],
             "learnedEvents": 0,
             "plans": {
-              "published:nakios": {
+              "published:anime-sama": {
                 "action": "collect-more-evidence",
                 "allowedProfiles": [],
                 "baseExperimentExhausted": true,
@@ -125,7 +112,7 @@
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
-                "failureClass": "variant_coverage_gap",
+                "failureClass": "unknown_failure",
                 "forcePreferredRequested": "",
                 "forcePreferredSelected": false,
                 "hypotheses": [],
@@ -142,44 +129,24 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 28,
+                "negativeMemoryMatches": 9,
                 "positiveProgramFingerprint": "",
-                "postExhaustionCandidateProfiles": [
-                  "player_protocol_family_replay_v1",
-                  "media_response_shape_inference_v1",
-                  "runtime_response_salvage_v1",
-                  "document_request_contract_mining_v1",
-                  "terminal_transition_graph_v1",
-                  "terminal_transition_graph_v2",
-                  "terminal_transition_graph_v3",
-                  "terminal_transition_graph_v4",
-                  "terminal_transition_graph_v5",
-                  "terminal_transition_graph_v6",
-                  "terminal_transition_graph_v7",
-                  "terminal_transition_graph_v8",
-                  "terminal_transition_graph_v9",
-                  "terminal_transition_graph_v10",
-                  "terminal_transition_graph_v11",
-                  "terminal_transition_graph_v12",
-                  "terminal_transition_graph_v13",
-                  "terminal_transition_graph_v14",
-                  "terminal_request_program_inference_v1"
-                ],
+                "postExhaustionCandidateProfiles": [],
                 "postExhaustionSourceFailureClass": "",
                 "postExhaustionStrategyMethod": "",
                 "postExhaustionStrategyProfile": "",
-                "providerId": "nakios",
+                "providerId": "anime-sama",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
                 "repairScope": "learning",
                 "repairType": "architecture_gap",
-                "signature": "9c5dc8cd7f63b9fd3ee69aad",
+                "signature": "5483782c3b851d5d525648d5",
                 "strategyEscalated": false,
                 "targetCategories": []
               }
             },
             "queuedForLearning": [
-              "nakios"
+              "anime-sama"
             ],
             "validatedRepairLearningExecuted": true
           },
@@ -189,28 +156,28 @@
           "crossWaveExplorationCarryoverApplied": [],
           "crossWaveExplorationCarryoverCaptured": [],
           "deferredToLearning": [
-            "nakios"
+            "anime-sama"
           ],
           "familyGroups": [
             {
               "capabilityStrategy": "mixed_embed_resolver",
-              "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
+              "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
               "providers": [
-                "nakios"
+                "anime-sama"
               ],
-              "repairScope": "terminal-extraction"
+              "repairScope": "learning"
             }
           ],
           "fixedInLab": [],
           "genericLearningHandoff": [],
-          "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver",
+          "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver",
           "harnessDifferentialProviders": [],
           "healthConcurrency": 1,
           "providerCount": 1,
           "providers": [
-            "nakios"
+            "anime-sama"
           ],
-          "repairScope": "terminal-extraction",
+          "repairScope": "learning",
           "unexecutableLlmHandoff": []
         }
       ],
@@ -218,20 +185,17 @@
       "causalProgressObserved": true,
       "compileRejectedToLearning": [],
       "deferredToLearning": [
-        "nakios"
+        "anime-sama"
       ],
       "deferredToLearningCount": 1,
       "durableMaterializeTargets": [],
       "experimentMemoryAdvanced": false,
-      "familyFrontierDeferredProviders": [
-        "corsflix",
-        "primewire"
-      ],
+      "familyFrontierDeferredProviders": [],
       "familyFrontierGroups": [
-        "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver"
+        "learning|mixed_embed_resolver|runtime:mixed_embed_resolver"
       ],
       "familyFrontierSelectedProviders": [
-        "nakios"
+        "anime-sama"
       ],
       "fixedInLab": [],
       "fixedInLabCount": 0,
@@ -240,7 +204,7 @@
       "pinnedAdvisorFamilyGroups": [],
       "rawFixedInLab": [],
       "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 2,
+      "remainingProviderCount": 0,
       "timeBudgetExhausted": false,
       "trustedFamilyFanoutGroups": [],
       "wave": 1

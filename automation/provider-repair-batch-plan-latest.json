@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "46044548692",
-  "sourceTriggerSha": "2664d22d236f5e1a4f2a69fc09c6dbc17cd52ed8",
+  "sourceRunId": "46043288388-post-repair-candidate",
+  "sourceTriggerSha": "a77d0d1d65d27c3ed7d82f2870c2089ac4f36834",
   "unresolvedProviderCount": 67,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -12,7 +12,9 @@
     "papadustream",
     "stigstream"
   ],
-  "lifecycleSuppressedDynamicProviders": [],
+  "lifecycleSuppressedDynamicProviders": [
+    "animevostfr"
+  ],
   "dynamicVariantCurrentObservedProviders": [
     "1jour1film0626",
     "4khdhub",
@@ -35,6 +37,7 @@
     "anisama",
     "arrowtv",
     "boredflix",
+    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -60,11 +63,15 @@
     "fullanime",
     "hexa",
     "hianime",
+    "hindmoviez",
     "ihavenotv",
+    "internet-archive",
     "kehflix",
     "kidraz",
+    "kurage",
     "latestmovies",
     "mallumv",
+    "meowtv",
     "moiflix",
     "moviebite",
     "moviebox",
@@ -73,7 +80,9 @@
     "movish",
     "movix-fr",
     "movy",
+    "mugiwarastream",
     "nakios",
+    "neko-sama",
     "neobam",
     "neonflix",
     "overlook",
@@ -110,13 +119,14 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
+    "webflix",
     "wookafr",
     "yflix",
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": true,
+  "dynamicVariantFallbackUsed": false,
   "groupCount": 9,
   "executionModel": {
     "default": "family/signature batch",
@@ -145,11 +155,11 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "github-all-transports-challenged",
+        "browser-profile-only",
+        "native-policy-inconclusive",
         "native-policy-reachable",
-        "no-transport-evidence",
-        "residential-exit-all-challenged",
-        "residential-exit-browser-reachable"
+        "residential-exit-browser-reachable",
+        "residential-exit-native-reachable"
       ],
       "transportSignature": "not-applicable",
       "providerCount": 39,
@@ -225,8 +235,7 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "github-all-transports-challenged",
-        "no-transport-evidence"
+        "native-policy-reachable"
       ],
       "transportSignature": "not-applicable",
       "providerCount": 15,
@@ -267,12 +276,13 @@
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "chain",
-        "lookup"
+        "lookup",
+        "none"
       ],
       "dominantIssues": [
         "network_zero_result",
         "provider_returned_streams, timeout",
-        "timeout"
+        "provider_zero_before_provider_network"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
@@ -284,7 +294,7 @@
         "sadisflix",
         "shuttletv"
       ],
-      "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
+      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -353,7 +363,7 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable",
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:github-all-transports-challenged",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver"
@@ -367,9 +377,9 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "residential-exit-native-reachable"
+        "github-all-transports-challenged"
       ],
-      "transportSignature": "residential-exit-native-reachable",
+      "transportSignature": "github-all-transports-challenged",
       "providerCount": 1,
       "providers": [
         "french-anime"
