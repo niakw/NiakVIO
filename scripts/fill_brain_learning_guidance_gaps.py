@@ -26,6 +26,7 @@ from brain_layers.declarative_gap_strategy import synthesize_rows
 
 SOURCE_SHAPES = frozenset({"script_http_missing", "script_html_2xx"})
 SOURCE_INLINE = "catalogue_inline_token_episode"
+SOURCE_RESOLVER_CONTRACT = "same-origin-api-lien-j-l-v1"
 FRONTIER_FLAGS = (
     "proofAuthority", "publicationAuthority",
     "nativePlaybackAuthority", "providerMutationAuthority",
@@ -104,7 +105,7 @@ def attested_source_contract_frontier(
                 or not re.fullmatch(r"[a-f0-9]{40}", probe_sha)
                 or not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,95}", fixture)
                 or scope != "manifest.json"
-                or type(requests) is not int or not 1 <= requests <= 12
+                or type(requests) is not int or not 1 <= requests <= 15
                 or type(inline_count) is not int or not 1 <= inline_count <= requests
                 or row.get("independentNetworkNotOfficialClient") is not True
                 or row.get("sourceContractVerifiedOnOfficialTv") is not False
@@ -145,6 +146,56 @@ def attested_source_contract_frontier(
         ):
             out.add(provider)
     return out
+
+
+def attested_source_resolver_frontier(
+    source_history: dict[str, Any],
+    native_history: dict[str, Any],
+    manifest: dict[str, Any],
+    root: Path,
+) -> set[str]:
+    """Return only exact-parent source rows that also proved the sanitized resolver shape.
+
+    This remains diagnostic-only: the underlying source frontier still requires the
+    immutable current provider bytes and exact official-TV zero-extraction parent.
+    No token, identifier, response body or resolved URL is consumed here.
+    """
+    if not isinstance(source_history, dict):
+        return set()
+    eligible: list[dict[str, Any]] = []
+    for row in source_history.get("rows") or []:
+        if not isinstance(row, dict):
+            continue
+        probes = row.get("tokenResolverProbeCount")
+        urls = row.get("tokenResolverJsonUrlCount")
+        if (
+            type(probes) is not int or type(urls) is not int
+            or not 1 <= probes <= 3 or not 1 <= urls <= probes
+            or row.get("tokenResolverContract") != SOURCE_RESOLVER_CONTRACT
+        ):
+            continue
+        evidence = row.get("evidence")
+        if not isinstance(evidence, list) or not any(
+            isinstance(e, dict)
+            and e.get("seasonSourceShape") == SOURCE_INLINE
+            and e.get("seasonPageStatus") == 200
+            and e.get("inlineSlotArrayObserved") is True
+            and e.get("opaqueLinkTokenObserved") is True
+            and e.get("jetonDeclarationObserved") is True
+            and e.get("tokenResolverStatus") == 200
+            and e.get("tokenResolverContract") == SOURCE_RESOLVER_CONTRACT
+            and e.get("tokenResolverJsonObjectObserved") is True
+            and e.get("tokenResolverUrlFieldObserved") is True
+            and e.get("tokenResolverHttpsUrlObserved") is True
+            for e in evidence
+        ):
+            continue
+        eligible.append(row)
+    narrowed = dict(source_history)
+    narrowed["rows"] = eligible
+    return attested_source_contract_frontier(
+        narrowed, native_history, manifest, root,
+    )
 
 
 ROW_FIELDS={

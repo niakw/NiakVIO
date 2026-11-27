@@ -21,7 +21,11 @@ from brain_meta_learning import (
     diagnose_gap,
     synthesize_gap_blueprint,
 )
-from brain_source_family_state import source_family_parser_installed
+from brain_source_family_state import (
+    RESOLVER_CONTRACT,
+    source_family_parser_installed,
+    source_family_resolver_installed,
+)
 
 def load_json(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
@@ -551,6 +555,108 @@ def source_contract_family_blueprint(
     }
 
 
+def source_contract_resolver_blueprint(
+    queue_state: dict[str, Any],
+    queue_summary: dict[str, Any],
+    *,
+    installed_parser: bool | None = None,
+    installed_resolver: bool | None = None,
+) -> dict[str, Any] | None:
+    """Promote sanitized V2 source evidence into a bounded executable Repair capability."""
+    if not isinstance(queue_state, dict) or not isinstance(queue_summary, dict):
+        return None
+    if installed_parser is None:
+        installed_parser = source_family_parser_installed(SCRIPTS.parent)
+    if installed_resolver is None:
+        installed_resolver = source_family_resolver_installed(SCRIPTS.parent)
+    if not installed_parser or installed_resolver:
+        return None
+    if (
+        queue_state.get("sourceContractFamilyExecutableStatus") != "resolver_family_required"
+        or queue_summary.get("sourceContractFamilyExecutableStatus") != "resolver_family_required"
+        or queue_state.get("sourceContractFamilyEvidenceAuthority")
+        != "native-parent-and-independent-source-exact-current-js-diagnostic-only"
+        or queue_state.get("sourceContractResolverContract") != RESOLVER_CONTRACT
+        or queue_summary.get("sourceContractResolverContract") != RESOLVER_CONTRACT
+    ):
+        return None
+    providers = queue_state.get("sourceContractFamilyDeferredProviders")
+    summary = queue_summary.get("sourceContractFamilyDeferredProviders")
+    resolver = queue_state.get("sourceContractResolverProviders")
+    resolver_summary = queue_summary.get("sourceContractResolverProviders")
+    if (
+        not isinstance(providers, list) or not isinstance(summary, list)
+        or not isinstance(resolver, list) or not isinstance(resolver_summary, list)
+        or not 1 <= len(providers) <= 24
+        or type(queue_state.get("sourceContractFamilyDeferredProviderCount")) is not int
+        or queue_state["sourceContractFamilyDeferredProviderCount"] != len(providers)
+        or type(queue_summary.get("sourceContractFamilyDeferredProviderCount")) is not int
+        or queue_summary["sourceContractFamilyDeferredProviderCount"] != len(summary)
+        or type(queue_state.get("sourceContractResolverProviderCount")) is not int
+        or queue_state["sourceContractResolverProviderCount"] != len(resolver)
+        or type(queue_summary.get("sourceContractResolverProviderCount")) is not int
+        or queue_summary["sourceContractResolverProviderCount"] != len(resolver_summary)
+    ):
+        return None
+    normalize = lambda values: [
+        str(x or "").strip().casefold().replace("_", "-") for x in values
+    ]
+    normalized = normalize(providers)
+    if (
+        len(set(normalized)) != len(normalized)
+        or any(not re.fullmatch(r"[a-z0-9][a-z0-9-]{1,79}", p) for p in normalized)
+        or sorted(normalized) != sorted(normalize(summary))
+        or not set(normalized).issubset(set(normalize(resolver)))
+        or not set(normalized).issubset(set(normalize(resolver_summary)))
+        or not set(normalized).issubset(set(normalize(queue_state.get("deferredRepairProviders") or [])))
+    ):
+        return None
+    return {
+        "strategyId": "catalogue_inline_token_resolver_v2",
+        "evolvesFromStrategyId": "runtime_response_salvage_v1",
+        "groupId": "native-attested-independent-source-resolver-contract",
+        "failureFamily": "catalogue_inline_episode_source",
+        "repairScope": "terminal-extraction",
+        "targetLayer": "brain",
+        "gapKind": "missing_source_token_resolver_executable",
+        "requiresNewExecutableRepairProfile": True,
+        "requiresNewSourceFamilyLego": False,
+        "forcePromotionEligible": True,
+        "providers": sorted(normalized),
+        "providerCount": len(normalized),
+        "causalTrigger": (
+            "The V1 reader-matrix parser is installed and replayed, but the provider still "
+            "returns zero streams. Exact-parent independent diagnostics observed opaque lien "
+            "identifiers plus epsJeton and one same-origin resolver response with HTTP 200, "
+            "JSON object, URL field and HTTPS output. This is diagnostic source evidence only."
+        ),
+        "method": (
+            "Generate a reusable typed opaque-token resolver profile. Preserve lien identifiers "
+            "during episode selection, extract the source-owned token without evaluating scripts, "
+            "resolve only the same-origin /api/lien.php contract, accept only an HTTPS URL field, "
+            "then hand it to existing trusted media extraction. Never persist token/id/response URL."
+        ),
+        "requiredEvidence": [
+            "installed and revalidated reader-matrix V1 parser",
+            "exact current provider bytes plus official Android TV zero-extraction parent",
+            "sanitized same-origin resolver HTTP/JSON/HTTPS contract",
+        ],
+        "acceptanceProof": [
+            "typed Brain resolver program compiled and wired into all Repair selection gates",
+            "candidate bytes actually differ, compile, rematerialize and replay",
+            "official NuvioTV decodes the correct requested episode with audio",
+            "compatible sibling non-regression before family fanout",
+        ],
+        "negativeMemorySignature": "source-family:catalogue-inline-token-resolver-v2",
+        "sourceCompilerContract": "opaque-token-resolver-v1",
+        "resolverContract": RESOLVER_CONTRACT,
+        "episodeAxisVerifiedOnOfficialClient": False,
+        "productionWritesAllowed": False,
+        "providerPublicationAuthority": False,
+        "requiresHumanMerge": True,
+    }
+
+
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--learning-state", type=Path, required=True)
@@ -778,7 +884,9 @@ def main() -> int:
         deferred_set,
         failed_profiles_by_provider,
     )
-    source_blueprint = source_contract_family_blueprint(queue_state, queue_summary)
+    source_blueprint = source_contract_resolver_blueprint(queue_state, queue_summary)
+    if source_blueprint is None:
+        source_blueprint = source_contract_family_blueprint(queue_state, queue_summary)
     if source_blueprint is not None:
         # Put the causally specific family before the generic exhaustion
         # blueprints so FORCE does not select another route-traversal variant.

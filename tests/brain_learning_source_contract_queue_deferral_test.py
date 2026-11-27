@@ -19,7 +19,15 @@ deferred,replay,status=mod.source_contract_capability_state(
     ["sample","sibling"], {"sample":{}}, True
 )
 assert deferred==[] and replay==["sample"] and status=="parser_installed_replay_required"
-assert mod.source_contract_capability_state(["sample"], {}, True)==([],[],"not_attested")
+deferred,replay,status=mod.source_contract_capability_state(
+    ["sample","sibling"], {"sample":{}}, True, {"sample"}, False
+)
+assert deferred==["sample"] and replay==[] and status=="resolver_family_required"
+deferred,replay,status=mod.source_contract_capability_state(
+    ["sample","sibling"], {"sample":{}}, True, {"sample"}, True
+)
+assert deferred==[] and replay==["sample"] and status=="resolver_installed_replay_required"
+assert mod.source_contract_capability_state(["sample"], {}, True, {"sample"}, False)==([],[],"not_attested")
 
 provider="sample"
 state={"attemptCount":11,"lastStatus":"unresolved",
@@ -45,4 +53,15 @@ assert queue["pendingProviders"]==["sibling"]
 assert queue["completedInCycle"]==["other","sample"]
 assert queue["sourceContractFamilyDeferredProviders"]==["sample"]
 assert all(key not in row for key in ("playable", "acceptedRepairs", "playerUrl"))
+
+resolver_queue={"pendingProviders":["sample"],"completedInCycle":[],
+                "sourceContractFamilyDeferredProviders":["sample"],
+                "sourceContractFamilyExecutableStatus":"resolver_family_required"}
+resolver_state={"attemptCount":4,"lastStatus":"no_streams"}
+resolver_row=mod.defer_new_source_contract_family(
+    "sample",resolver_state,info,resolver_queue
+)
+assert resolver_row["sourceContractFamilyStatus"]=="resolver_family_required"
+assert resolver_state["lastStatus"]=="new_source_resolver_executable_required"
+assert resolver_state["attemptCount"]==4
 print("Learning queue source-contract deferral: zero legacy attempts, zero fake playback, sibling pending, debt retained")

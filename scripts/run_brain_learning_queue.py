@@ -23,9 +23,16 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 from brain_negative_memory_retention import select_bounded_negative_memory
 from repair_promotion_state import durable_accepted_event, provisional_accepted_event
-from fill_brain_learning_guidance_gaps import attested_source_contract_frontier
+from fill_brain_learning_guidance_gaps import (
+    attested_source_contract_frontier,
+    attested_source_resolver_frontier,
+)
 from build_provider_execution_plan import build as build_provider_execution_plan
-from brain_source_family_state import source_family_parser_installed
+from brain_source_family_state import (
+    RESOLVER_CONTRACT,
+    source_family_parser_installed,
+    source_family_resolver_installed,
+)
 
 class BudgetExhausted(RuntimeError):
     """The bounded Learning work window ended; persist state and resume later."""
@@ -1578,14 +1585,25 @@ def repair_attempt(
     }
 
 def source_contract_capability_state(
-    order: list[str], frontier: dict[str, Any], parser_installed: bool,
+    order: list[str],
+    frontier: set[str] | dict[str, Any],
+    parser_installed: bool,
+    resolver_frontier: set[str] | dict[str, Any] | None = None,
+    resolver_installed: bool = False,
 ) -> tuple[list[str], list[str], str]:
     observed = [pid for pid in order if pid in frontier]
     if not observed:
         return [], [], "not_attested"
-    if parser_installed:
-        return [], observed, "parser_installed_replay_required"
-    return observed, [], "new_family_required"
+    if not parser_installed:
+        return observed, [], "new_family_required"
+    resolver_frontier = resolver_frontier or set()
+    resolver_observed = [pid for pid in observed if pid in resolver_frontier]
+    if resolver_observed and not resolver_installed:
+        replay = [pid for pid in observed if pid not in set(resolver_observed)]
+        return resolver_observed, replay, "resolver_family_required"
+    if resolver_observed and resolver_installed:
+        return [], observed, "resolver_installed_replay_required"
+    return [], observed, "parser_installed_replay_required"
 
 
 def defer_new_source_contract_family(
@@ -1595,7 +1613,12 @@ def defer_new_source_contract_family(
     queue: dict[str, Any],
 ) -> dict[str, Any]:
     """Preserve a new source-contract family as debt without legacy executor work."""
-    state["lastStatus"] = "new_source_family_executable_required"
+    status = str(queue.get("sourceContractFamilyExecutableStatus") or "new_family_required")
+    resolver_debt = status == "resolver_family_required"
+    state["lastStatus"] = (
+        "new_source_resolver_executable_required"
+        if resolver_debt else "new_source_family_executable_required"
+    )
     state["lastAttemptAt"] = datetime.now(timezone.utc).isoformat()
     queue["pendingProviders"] = [
         pid for pid in queue.get("pendingProviders") or []
@@ -1612,7 +1635,7 @@ def defer_new_source_contract_family(
         "resolved": False,
         "attempts": [],
         "finalLab": None,
-        "sourceContractFamilyStatus": "new_family_required",
+        "sourceContractFamilyStatus": status,
         "independentSourceEvidenceNotNativePlayback": True,
     }
 
@@ -1642,10 +1665,17 @@ def main() -> int:
     # an unrelated legacy Core executor only with the same official TV
     # source/run/fixture and currently materialized JS bytes. It never proves
     # NuvioTV playback, identity, or permission to mutate.
+    source_history = load_json(
+        ROOT / "automation" / "brain-catalogue-source-probe-history.json", {}
+    )
+    native_history = load_json(
+        ROOT / "automation" / "brain-android-tv-emulator-history.json", {}
+    )
     source_contract_frontier = attested_source_contract_frontier(
-        load_json(ROOT / "automation" / "brain-catalogue-source-probe-history.json", {}),
-        load_json(ROOT / "automation" / "brain-android-tv-emulator-history.json", {}),
-        manifest_authority, ROOT,
+        source_history, native_history, manifest_authority, ROOT,
+    )
+    source_resolver_frontier = attested_source_resolver_frontier(
+        source_history, native_history, manifest_authority, ROOT,
     )
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -1823,15 +1853,32 @@ def main() -> int:
     source_family_parser_ready = (
         source_family_parser_installed(ROOT) if source_contract_frontier else False
     )
+    source_family_resolver_ready = (
+        source_family_resolver_installed(ROOT) if source_resolver_frontier else False
+    )
     source_contract_deferred, source_contract_replay, source_contract_status = (
         source_contract_capability_state(
-            order, source_contract_frontier, source_family_parser_ready
+            order,
+            source_contract_frontier,
+            source_family_parser_ready,
+            source_resolver_frontier,
+            source_family_resolver_ready,
         )
     )
     queue["sourceContractFamilyDeferredProviders"] = source_contract_deferred
     queue["sourceContractFamilyDeferredProviderCount"] = len(source_contract_deferred)
     queue["sourceContractFamilyReplayProviders"] = source_contract_replay
     queue["sourceContractFamilyReplayProviderCount"] = len(source_contract_replay)
+    queue["sourceContractResolverProviders"] = [
+        pid for pid in order if pid in source_resolver_frontier
+    ]
+    queue["sourceContractResolverProviderCount"] = len(
+        queue["sourceContractResolverProviders"]
+    )
+    queue["sourceContractResolverContract"] = (
+        RESOLVER_CONTRACT if queue["sourceContractResolverProviders"] else ""
+    )
+    queue["sourceContractResolverInstalled"] = source_family_resolver_ready
     queue["sourceContractFamilyEvidenceAuthority"] = (
         "native-parent-and-independent-source-exact-current-js-diagnostic-only"
     )
@@ -1839,6 +1886,8 @@ def main() -> int:
     print(
         "FIELD_BRAIN_SOURCE_FAMILY_CAPABILITY "
         f"parser_installed={str(source_family_parser_ready).lower()} "
+        f"resolver_attested={len(queue['sourceContractResolverProviders'])} "
+        f"resolver_installed={str(source_family_resolver_ready).lower()} "
         f"deferred={len(source_contract_deferred)} replay={len(source_contract_replay)} "
         f"status={source_contract_status}",
         flush=True,
@@ -1891,7 +1940,7 @@ def main() -> int:
             run_dir = output / "providers" / provider_id
             run_dir.mkdir(parents=True, exist_ok=True)
             info = info_by_id.get(provider_id, {"provider": provider_id, "status": "", "needs_route_search": False})
-            if provider_id in source_contract_frontier and not source_family_parser_ready:
+            if provider_id in source_contract_deferred:
                 run_results.append(
                     defer_new_source_contract_family(provider_id, state, info, queue)
                 )
@@ -1899,7 +1948,7 @@ def main() -> int:
                 print(
                     "FIELD_BRAIN_LEARNING_SOURCE_CONTRACT_DEFER "
                     f"provider={provider_id} old_profiles_executed=0 "
-                    "new_family_required=true native_playback=false "
+                    f"status={source_contract_status} native_playback=false "
                     "publication=false",
                     flush=True,
                 )
@@ -2266,6 +2315,10 @@ def main() -> int:
         "sourceContractFamilyDeferredProviderCount": len(source_contract_deferred),
         "sourceContractFamilyReplayProviders": source_contract_replay,
         "sourceContractFamilyReplayProviderCount": len(source_contract_replay),
+        "sourceContractResolverProviders": queue["sourceContractResolverProviders"],
+        "sourceContractResolverProviderCount": queue["sourceContractResolverProviderCount"],
+        "sourceContractResolverContract": queue["sourceContractResolverContract"],
+        "sourceContractResolverInstalled": queue["sourceContractResolverInstalled"],
         "sourceContractFamilyExecutableStatus": queue["sourceContractFamilyExecutableStatus"],
         "legacyExecutableSeedAllowed": False,
         "processedProviders": processed,

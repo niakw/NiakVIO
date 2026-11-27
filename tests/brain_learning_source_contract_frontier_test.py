@@ -47,7 +47,9 @@ with tempfile.TemporaryDirectory() as td:
         "parentNativeProviderArtifactSha256":DIGEST,"manifestScope":"manifest.json",
         "latestProbeRunId":"44798438960","latestProbeSourceSha":PUBSHA,
         "inputCatalogueSlug":"test",
-        "inlineTokenResponseCount":1,"probeRequestCount":12,
+        "inlineTokenResponseCount":1,"probeRequestCount":13,
+        "tokenResolverProbeCount":1,"tokenResolverJsonUrlCount":1,
+        "tokenResolverContract":"same-origin-api-lien-j-l-v1",
         "independentNetworkNotOfficialClient":True,
         "sourceContractVerifiedOnOfficialTv":False,
         "catalogueIdentityVerified":False,"episodeIdentityVerified":False,
@@ -58,6 +60,11 @@ with tempfile.TemporaryDirectory() as td:
             "seasonSourceShape":"catalogue_inline_token_episode",
             "inlineSlotArrayObserved":True,"opaqueLinkTokenObserved":True,
             "jetonDeclarationObserved":True,
+            "tokenResolverStatus":200,
+            "tokenResolverContract":"same-origin-api-lien-j-l-v1",
+            "tokenResolverJsonObjectObserved":True,
+            "tokenResolverUrlFieldObserved":True,
+            "tokenResolverHttpsUrlObserved":True,
         }],
         **FLAGS,
     }
@@ -68,6 +75,8 @@ with tempfile.TemporaryDirectory() as td:
     }
     frontier=mod.attested_source_contract_frontier(history,native,manifest,root)
     assert frontier=={"sample"},frontier
+    resolver=mod.attested_source_resolver_frontier(history,native,manifest,root)
+    assert resolver=={"sample"},resolver
     old_guidance={
         "sourceSha":"a"*40,"brainLlmSha":"a"*40,"schemaVersion":2,
         "providerCount":1,
@@ -109,6 +118,19 @@ with tempfile.TemporaryDirectory() as td:
         assert not mod.attested_source_contract_frontier(
             edited,native,manifest,root
         ),forged
+
+    for forged_resolver in (
+        {"tokenResolverProbeCount":0},
+        {"tokenResolverJsonUrlCount":0},
+        {"tokenResolverContract":"other"},
+        {"evidence":[{**probe_row["evidence"][0],"tokenResolverStatus":403}]},
+        {"evidence":[{**probe_row["evidence"][0],"tokenResolverHttpsUrlObserved":False}]},
+    ):
+        edited=json.loads(json.dumps(history))
+        edited["rows"][0].update(forged_resolver)
+        assert not mod.attested_source_resolver_frontier(
+            edited,native,manifest,root
+        ),forged_resolver
     incompatible=json.loads(json.dumps(native))
     incompatible["rows"][0]["nativeExtractionZeroObserved"]=False
     assert not mod.attested_source_contract_frontier(history,incompatible,manifest,root)

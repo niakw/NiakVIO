@@ -70,6 +70,8 @@ MAX_MATERIALIZED_FAILURE_CONTEXT = 3200
 # The model may extend the Brain diagnostic body, never rewrite its signature.
 SOURCE_FAMILY_RUNTIME_ANCHOR = '        source_text = source_bytes.decode("utf-8")'
 SOURCE_MATRIX_CONTRACT = "reader-matrix-v2"
+SOURCE_RESOLVER_COMPILER_CONTRACT = "opaque-token-resolver-v1"
+SOURCE_RESOLVER_RUNTIME_CONTRACT = "same-origin-api-lien-j-l-v1"
 SOURCE_MATRIX_RUNTIME_PATH = "scripts/brain_oracles/catalogue_inline_episode_source.py"
 SOURCE_MATRIX_RUNTIME_ANCHOR = (
     '    return {\n'
@@ -81,6 +83,14 @@ SOURCE_MATRIX_RUNTIME_ANCHOR = (
 def _uses_source_matrix_compiler(value: dict[str, Any]) -> bool:
     blueprint = value.get("blueprint", value) if isinstance(value, dict) else {}
     return isinstance(blueprint, dict) and blueprint.get("sourceCompilerContract") == SOURCE_MATRIX_CONTRACT
+
+
+def _uses_source_resolver_compiler(value: dict[str, Any]) -> bool:
+    blueprint = value.get("blueprint", value) if isinstance(value, dict) else {}
+    return (
+        isinstance(blueprint, dict)
+        and blueprint.get("sourceCompilerContract") == SOURCE_RESOLVER_COMPILER_CONTRACT
+    )
 
 
 def _source_family_anchor(payload: dict[str, Any]) -> str:
@@ -1611,6 +1621,56 @@ def _source_family_response_format(payload: dict[str, Any] | None = None) -> dic
     }}
 
 
+def _source_resolver_response_format() -> dict[str, Any]:
+    fields = {
+        "resolverContract": {"type": "string", "enum": [SOURCE_RESOLVER_RUNTIME_CONTRACT]},
+        "opaquePrefix": {"type": "string", "enum": ["lien:"]},
+        "tokenVariable": {"type": "string", "enum": ["epsJeton"]},
+        "endpointPath": {"type": "string", "enum": ["/api/lien.php"]},
+        "tokenQueryParam": {"type": "string", "enum": ["j"]},
+        "idQueryParam": {"type": "string", "enum": ["l"]},
+        "responseField": {"type": "string", "enum": ["u"]},
+    }
+    return {"type": "json_object", "schema": {
+        "type": "object",
+        "properties": {"resolverProgram": {
+            "type": "object", "properties": fields, "required": list(fields),
+            "additionalProperties": False,
+        }},
+        "required": ["resolverProgram"], "additionalProperties": False,
+    }}
+
+
+def _compile_source_resolver_program(
+    program: dict[str, Any], payload: dict[str, Any], *, root: Path = ROOT,
+) -> list[dict[str, Any]]:
+    expected = {
+        "resolverContract": SOURCE_RESOLVER_RUNTIME_CONTRACT,
+        "opaquePrefix": "lien:",
+        "tokenVariable": "epsJeton",
+        "endpointPath": "/api/lien.php",
+        "tokenQueryParam": "j",
+        "idQueryParam": "l",
+        "responseField": "u",
+    }
+    if not isinstance(program, dict) or set(program) != set(expected):
+        raise ValueError("source resolver program must contain the exact typed contract fields")
+    mismatch = [key for key, value in expected.items() if program.get(key) != value]
+    if mismatch:
+        raise ValueError("source resolver typed contract mismatch: " + ",".join(mismatch))
+    blueprint = payload.get("blueprint") if isinstance(payload.get("blueprint"), dict) else {}
+    body = (
+        'search_paths = _unique_routes(learned_search, configured_search, limit=12)\n'
+        'direct_paths = _unique_routes(learned_direct, configured_direct, limit=28)\n'
+        'request_recipes = _unique_request_recipes(current_request_recipes, provider_request_recipes, limit=32)\n'
+        'second_order_role_preferences = ["api", "player", "source", "episode", "detail", "other"]\n'
+        f'inline_token_resolver_contract = "{SOURCE_RESOLVER_RUNTIME_CONTRACT}"'
+    )
+    return [branch_body_edit(
+        body, blueprint, root=root, max_find=MAX_FIND, max_replace=MAX_REPLACE,
+    )]
+
+
 def _branch_body_response_format() -> dict[str, Any]:
     """Typed Lego program: 7B chooses strategy, Brain writes executable bytes."""
     src = lambda values: {
@@ -1872,6 +1932,11 @@ def _model_edits(
         # below may inspect historical allowlisted edit fixtures.
         raise ValueError("new source-family model must return typed sourceFamilyProgram")
     if _requires_new_repair_profile(payload):
+        if _uses_source_resolver_compiler(payload):
+            program = planned.get("resolverProgram")
+            if not isinstance(program, dict):
+                raise ValueError("source resolver architecture requires typed resolverProgram")
+            return _compile_source_resolver_program(program, payload, root=root)
         if isinstance(planned.get("recoveryProgram"), dict):
             body = compile_recovery_program(planned["recoveryProgram"], max_chars=4200)
             runtime_path = root / NEW_REPAIR_PROFILE_SURFACES[2]
@@ -1921,7 +1986,19 @@ def _model_request(
     blueprint = payload.get("blueprint") if isinstance(payload.get("blueprint"), dict) else {}
     requires_new_profile = blueprint.get("requiresNewExecutableRepairProfile") is True
     source_family = _requires_new_source_family_lego(payload)
-    if requires_new_profile:
+    if requires_new_profile and _uses_source_resolver_compiler(payload):
+        system = (
+            "You are NiakVIO Brain's typed opaque source-token resolver designer. "
+            "Return exactly one resolverProgram object using only the supplied enum values. "
+            "The current exact-parent diagnostics observed lien: identifiers, epsJeton and "
+            "the same-origin resolver contract; they are diagnostic evidence, not playback proof. "
+            "Do not emit Python/JavaScript, provider IDs, hosts, full URLs, tokens, identifiers, "
+            "responses, file paths, test code, explanation or Markdown. Brain owns executable code "
+            "and all filesystem edits. Preserve episode/voice selection and existing validation gates."
+        )
+        if payload.get("validationError"):
+            system += " Correct the typed contract according to validationError."
+    elif requires_new_profile:
         child = str(blueprint.get("strategyId") or "")
         parent = str(blueprint.get("evolvesFromStrategyId") or "")
         system = (
@@ -2030,7 +2107,9 @@ def _model_request(
         "temperature": _force_generation_temperature(payload),
         "max_tokens": max_tokens,
         "response_format": (
-            _branch_body_response_format() if requires_new_profile
+            _source_resolver_response_format()
+            if requires_new_profile and _uses_source_resolver_compiler(payload)
+            else _branch_body_response_format() if requires_new_profile
             else _source_family_response_format(payload) if source_family
             else _response_format(exact_paths)
         ),

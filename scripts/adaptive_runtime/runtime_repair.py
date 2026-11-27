@@ -1630,6 +1630,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     # bounded g2..g5 family is exhausted.
     second_order_role_preferences: list[str] | None = None
     transition_prefixes: list[str] = []
+    inline_token_resolver_contract = ""
     if new_strategy_id == "provider_positive_program_replay_v1":
         # This is an exact same-provider replay, not a generic recovery wave.
         # Do not mix peer/generic routes or recipes into the same bounded
@@ -2473,6 +2474,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             else "learned-family-new-strategy"
         ),
         "new_strategy_id": new_strategy_id,
+        "inline_token_resolver_contract": inline_token_resolver_contract,
         "positive_program_replay": strict_positive_replay,
         "positive_program_fingerprint": (
             expected_positive_program_fingerprint if strict_positive_replay else ""
@@ -2689,6 +2691,68 @@ def _source_endpoint_origins(source_text: str) -> list[str]:
     return output
 
 
+def _apply_inline_token_resolver_contract(
+    parent_data: bytes, contract: str,
+) -> tuple[bytes, list[dict[str, Any]]]:
+    """Compile the bounded source-family resolver into matching provider bytes.
+
+    The mechanism is provider-ID agnostic and intentionally requires all three
+    structural anchors. Missing anchors produce no mutation. Tokens, ids and
+    resolved URLs exist only at provider runtime and are never persisted here.
+    """
+    if contract != "same-origin-api-lien-j-l-v1":
+        raise ValueError("unsupported inline token resolver contract")
+    source = parent_data.decode("utf-8", errors="strict")
+    token_filter = 'if(/^https?:\\/\\//i.test(x[1]))vals.push(x[1])'
+    token_filter_v2 = (
+        'if(/^https?:\\/\\//i.test(x[1])||/^lien:/i.test(x[1]))vals.push(x[1])'
+    )
+    direct_anchor = 'async function direct(player,referer)'
+    episode_anchor = (
+        'var player=groups[i][idx];if(!player)continue;'
+        'var rows=await direct(player,origin+"/");'
+    )
+    if (
+        source.count(token_filter) != 1
+        or source.count(direct_anchor) != 1
+        or source.count(episode_anchor) != 1
+        or "same-origin-api-lien-j-l-v1" in source
+    ):
+        return parent_data, []
+    helpers = (
+        'function opaqueJeton(js){var m=/\\b(?:var|let|const)\\s+epsJeton\\s*=\\s*["\\\']'
+        '([^"\\\']{1,200})["\\\']/i.exec(txt(js));return m?m[1]:""} '
+        'async function resolveOpaque(player,origin,js){'
+        'if(!/^lien:[a-zA-Z0-9_.:-]{1,200}$/i.test(txt(player)))return player;'
+        'var j=opaqueJeton(js),id=txt(player).slice(5);'
+        'if(!j||!/^[a-zA-Z0-9_.:-]{1,200}$/.test(j)||'
+        '!/^[a-zA-Z0-9_.:-]{1,200}$/.test(id)||!/^https?:\\/\\//i.test(origin))return "";'
+        'var raw=await text(origin+"/api/lien.php?j="+encodeURIComponent(j)+"&l="+encodeURIComponent(id),'
+        '{headers:{Referer:origin+"/"}});if(!raw)return "";try{var obj=JSON.parse(raw),u=txt(obj&&obj.u);'
+        'return /^https:\\/\\//i.test(u)?u:""}catch(_e){return ""}} '
+        '/* NIAKVIO_SOURCE_RESOLVER_CONTRACT same-origin-api-lien-j-l-v1 */ '
+    )
+    patched = source.replace(token_filter, token_filter_v2, 1)
+    patched = patched.replace(direct_anchor, helpers + direct_anchor, 1)
+    patched = patched.replace(
+        episode_anchor,
+        'var player=groups[i][idx];if(!player)continue;'
+        'if(/^lien:/i.test(txt(player))){player=await resolveOpaque(player,origin,body);'
+        'if(!player)continue}var rows=await direct(player,origin+"/");',
+        1,
+    )
+    if patched == source:
+        return parent_data, []
+    return patched.encode("utf-8"), [{
+        "type": "patch_profile",
+        "profile": "catalogue_inline_token_resolver_v2",
+        "phase": "runtime",
+        "revision": 2,
+        "scope": "generic_inline_opaque_token_resolver",
+        "contract": contract,
+    }]
+
+
 def _apply_adaptive(
     parent_data: bytes,
     candidate: dict[str, Any],
@@ -2705,6 +2769,9 @@ def _apply_adaptive(
                 f"causal profile does not match current Brain plan: requested={profile_name} expected={expected or 'none'}"
             )
     source_text = parent_data.decode("utf-8", errors="strict")
+    resolver_contract = str(options.get("inline_token_resolver_contract") or "")
+    if resolver_contract:
+        return _apply_inline_token_resolver_contract(parent_data, resolver_contract)
     native_source = _strip_generated_adaptive_wrapper(source_text)
     options = dict(options)
     peers = list(options.get("endpoint_origins") or [])

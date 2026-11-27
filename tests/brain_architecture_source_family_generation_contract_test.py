@@ -348,3 +348,42 @@ with tempfile.TemporaryDirectory() as td:
         raise AssertionError("tampered transposed matrix compiler bytes were accepted")
 
 print("Source-family Brain FORCE mode: typed program compiled into 3 deterministic edits, actual wired parser test and hostile negatives passed")
+
+# V2 source resolver: model selects only an attested typed contract; Brain owns code.
+resolver_blueprint = {
+    "strategyId": "catalogue_inline_token_resolver_v2",
+    "evolvesFromStrategyId": "runtime_response_salvage_v1",
+    "requiresNewExecutableRepairProfile": True,
+    "requiresNewSourceFamilyLego": False,
+    "repairScope": "terminal-extraction",
+    "sourceCompilerContract": "opaque-token-resolver-v1",
+}
+resolver_payload = {"blueprint": resolver_blueprint}
+resolver_program = {
+    "resolverContract": "same-origin-api-lien-j-l-v1",
+    "opaquePrefix": "lien:",
+    "tokenVariable": "epsJeton",
+    "endpointPath": "/api/lien.php",
+    "tokenQueryParam": "j",
+    "idQueryParam": "l",
+    "responseField": "u",
+}
+resolver_schema = mod._source_resolver_response_format()["schema"]["properties"]["resolverProgram"]
+assert set(resolver_schema["required"]) == set(resolver_program)
+compiled = mod._model_edits({"resolverProgram": resolver_program}, resolver_payload)
+assert len(compiled) == 1 and compiled[0]["path"] == "scripts/adaptive_runtime/runtime_repair.py"
+assert "catalogue_inline_token_resolver_v2" in compiled[0]["replace"]
+assert 'inline_token_resolver_contract = "same-origin-api-lien-j-l-v1"' in compiled[0]["replace"]
+for bad in (
+    {**resolver_program, "resolverContract":"other"},
+    {**resolver_program, "endpointPath":"/other"},
+    {**resolver_program, "responseField":"url"},
+    {**resolver_program, "provider":"anime-sama"},
+):
+    try:
+        mod._model_edits({"resolverProgram":bad}, resolver_payload)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("invalid/source-specific resolver program accepted")
+print("Source resolver V2 compiler: exact typed contract -> provider-agnostic runtime branch")

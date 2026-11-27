@@ -95,4 +95,45 @@ assert rejects({}, {
 assert arch.source_contract_family_blueprint(
     queue, summary, installed_source_family=True
 ) is None
+
+resolver_queue={
+    **queue,
+    "sourceContractFamilyExecutableStatus":"resolver_family_required",
+    "sourceContractResolverProviders":["sample-anime","another-sibling"],
+    "sourceContractResolverProviderCount":2,
+    "sourceContractResolverContract":"same-origin-api-lien-j-l-v1",
+}
+resolver_summary={
+    **summary,
+    "sourceContractFamilyExecutableStatus":"resolver_family_required",
+    "sourceContractResolverProviders":["another-sibling","sample-anime"],
+    "sourceContractResolverProviderCount":2,
+    "sourceContractResolverContract":"same-origin-api-lien-j-l-v1",
+}
+resolver_blueprint=arch.source_contract_resolver_blueprint(
+    resolver_queue,resolver_summary,installed_parser=True,installed_resolver=False
+)
+assert resolver_blueprint is not None
+assert resolver_blueprint["strategyId"]=="catalogue_inline_token_resolver_v2"
+assert resolver_blueprint["evolvesFromStrategyId"]=="runtime_response_salvage_v1"
+assert resolver_blueprint["requiresNewExecutableRepairProfile"] is True
+assert resolver_blueprint["requiresNewSourceFamilyLego"] is False
+assert resolver_blueprint["sourceCompilerContract"]=="opaque-token-resolver-v1"
+assert resolver_blueprint["resolverContract"]=="same-origin-api-lien-j-l-v1"
+assert resolver_blueprint["forcePromotionEligible"] is True
+assert arch.source_contract_resolver_blueprint(
+    resolver_queue,resolver_summary,installed_parser=False,installed_resolver=False
+) is None
+assert arch.source_contract_resolver_blueprint(
+    resolver_queue,resolver_summary,installed_parser=True,installed_resolver=True
+) is None
+for forged in (
+    {"sourceContractResolverContract":"other"},
+    {"sourceContractResolverProviders":[]},
+    {"sourceContractFamilyExecutableStatus":"parser_installed_replay_required"},
+):
+    bad={**resolver_queue,**forged}
+    assert arch.source_contract_resolver_blueprint(
+        bad,resolver_summary,installed_parser=True,installed_resolver=False
+    ) is None
 print("Brain architecture source contract: novel family selected only before install; installed parser suppresses duplicate FORCE")
