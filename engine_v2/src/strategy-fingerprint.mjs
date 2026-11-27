@@ -9,7 +9,7 @@ export function profileRuntimeFingerprintMaterial(source, profile) {
     "document_request_contract_mining_v2",
     "provider_session_bootstrap_replay_v1",
   ]).has(wanted);
-  const raw = keepsScriptedRequestComposition
+  let raw = keepsScriptedRequestComposition
     ? original
     : original
       .replace(
@@ -20,6 +20,50 @@ export function profileRuntimeFingerprintMaterial(source, profile) {
         /^        "scripted_request_mining":\s*scripted_request_mining,\n/m,
         "",
       );
+  if (!keepsScriptedRequestComposition) {
+    raw = raw
+      .replace(
+        `    resolver_records: list[dict[str, Any]] = []
+    working_data = parent_data
+    if resolver_contract:
+        working_data, resolver_records = _apply_inline_token_resolver_contract(
+            parent_data, resolver_contract
+        )
+        # The resolver profile itself remains a bounded resolver-only mutation.
+        # Downstream media-extraction profiles, however, must preserve this
+        # upstream capability and continue compiling their own runtime on top.
+        if expected == "catalogue_inline_token_resolver_v2":
+            return working_data, resolver_records
+        source_text = working_data.decode("utf-8", errors="strict")
+`,
+        `    if resolver_contract:
+        return _apply_inline_token_resolver_contract(parent_data, resolver_contract)
+`,
+      )
+      .replace(
+        `    adaptive_record = {
+        "type": "patch_profile",
+        "profile": profile_name,
+        "strategy": expected or "adaptive_runtime_recovery",
+        "engine": "adaptive_runtime_recovery",
+        "phase": "runtime",
+        "revision": 5,
+        "options": options,
+    }
+    return patched, [*resolver_records, adaptive_record]
+`,
+        `    return patched, [{
+        "type": "patch_profile",
+        "profile": profile_name,
+        "strategy": expected or "adaptive_runtime_recovery",
+        "engine": "adaptive_runtime_recovery",
+        "phase": "runtime",
+        "revision": 5,
+        "options": options,
+    }]
+`,
+      );
+  }
   const registryStart = raw.indexOf("POST_EXHAUSTION_STRATEGY_PROFILES = {");
   const registryEnd = registryStart < 0 ? -1 : raw.indexOf("\n}", registryStart);
   const trimmed = registryStart >= 0 && registryEnd >= 0
