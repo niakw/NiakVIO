@@ -435,16 +435,28 @@ def main()->int:
         except (OSError,ValueError):
             return {}
     root=Path(__file__).resolve().parents[1]
+    source_history=optional_json(root/"automation/brain-catalogue-source-probe-history.json")
+    native_history=optional_json(root/"automation/brain-android-tv-emulator-history.json")
+    manifest=optional_json(root/"manifest.json")
     source_frontier=attested_source_contract_frontier(
-        optional_json(root/"automation/brain-catalogue-source-probe-history.json"),
-        optional_json(root/"automation/brain-android-tv-emulator-history.json"),
-        optional_json(root/"manifest.json"),root,
+        source_history,native_history,manifest,root,
     )
+    player_target_frontier=attested_source_player_target_frontier(
+        source_history,native_history,manifest,root,
+    )
+    # The source-family defer gate is monotone. Once exact-parent evidence has
+    # advanced through the resolver to a player target, generic source-family
+    # synthesis is no longer the owner; current player/media guidance must be
+    # allowed to reach the planner.
+    deferred_source_frontier=set(source_frontier)-set(player_target_frontier)
     output,added=fill(payload,providers=providers,current_sha=a.current_sha,census=census,memory=memory,
-                      source_frontier=source_frontier)
+                      source_frontier=deferred_source_frontier)
     report=exhaustion_report(
         providers=providers,current_sha=a.current_sha,census=census,memory=memory,
-        source_frontier=source_frontier
+        source_frontier=deferred_source_frontier
+    )
+    report["playerTargetReleasedProviders"]=sorted(
+        set(player_target_frontier) & {canon(x) for x in providers if canon(x)}
     )
     a.output.parent.mkdir(parents=True,exist_ok=True)
     a.output.write_text(json.dumps(output,indent=2,sort_keys=True)+"\n",encoding="utf-8")
@@ -458,7 +470,8 @@ def main()->int:
         f"exhausted={len(report['exhaustedProviders'])} "
         f"exhausted_providers={','.join(report['exhaustedProviders']) or 'none'} "
         f"final={output.get('providerCount',0)} "
-        f"deferred_source_contract={','.join(report['deferredSourceContractProviders']) or 'none'}"
+        f"deferred_source_contract={','.join(report['deferredSourceContractProviders']) or 'none'} "
+        f"released_player_target={','.join(report['playerTargetReleasedProviders']) or 'none'}"
     )
     return 0
 
