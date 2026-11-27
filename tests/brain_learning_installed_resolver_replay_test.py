@@ -83,20 +83,40 @@ request_contract=plan(
  failure=queue.PLAYER_REQUEST_CONTRACT_FAILURE,
  causal_failure="media_extraction_gap",
 )
-assert request_contract["learningPreferredRequested"]=="document_request_contract_mining_v1",request_contract
+assert request_contract["learningPreferredRequested"]=="document_request_contract_mining_v2",request_contract
 assert request_contract["learningPreferredFailureClass"]=="media_extraction_gap",request_contract
 assert request_contract["learningPreferredSelected"] is True,request_contract
-assert request_contract["postExhaustionStrategyProfile"]=="document_request_contract_mining_v1",request_contract
-assert request_contract["allowedProfiles"]==["document_request_contract_mining_v1"],request_contract
+assert request_contract["postExhaustionStrategyProfile"]=="document_request_contract_mining_v2",request_contract
+assert request_contract["allowedProfiles"]==["document_request_contract_mining_v2"],request_contract
 assert request_contract["failureClass"]=="media_extraction_gap",request_contract
 
 # Once this exact installed Lego was genuinely executed and rejected, the same
 # preferred handoff must fail closed and rotate instead of looking fresh again.
-request_contract_negative=[{
+request_contract_v1_negative=[{
  "providerId":"resolver-representative",
  "failureClass":"media_extraction_gap",
  "signature":"",
  "profile":"document_request_contract_mining_v1",
+ "strategyImplementationFingerprint":"1"*64,
+ "experimentVariant":4,
+ "experimentGeneration":5,
+ "attempts":1,"successes":0,"failures":1,"consecutiveFailures":1,
+ "lastOutcome":"rejected","executionObserved":True,
+}]
+request_contract_with_legacy_negative=plan(
+ profile=queue.PLAYER_REQUEST_CONTRACT_PROFILE,
+ failure=queue.PLAYER_REQUEST_CONTRACT_FAILURE,
+ causal_failure="media_extraction_gap",
+ negative_memory=request_contract_v1_negative,
+)
+assert request_contract_with_legacy_negative["learningPreferredSelected"] is True,request_contract_with_legacy_negative
+assert request_contract_with_legacy_negative["postExhaustionStrategyProfile"]=="document_request_contract_mining_v2",request_contract_with_legacy_negative
+
+request_contract_negative=[{
+ "providerId":"resolver-representative",
+ "failureClass":"media_extraction_gap",
+ "signature":"",
+ "profile":"document_request_contract_mining_v2",
  "strategyImplementationFingerprint":"2"*64,
  "experimentVariant":4,
  "experimentGeneration":5,
@@ -109,10 +129,10 @@ request_contract_after_negative=plan(
  causal_failure="media_extraction_gap",
  negative_memory=request_contract_negative,
 )
-assert request_contract_after_negative["learningPreferredRequested"]=="document_request_contract_mining_v1",request_contract_after_negative
+assert request_contract_after_negative["learningPreferredRequested"]=="document_request_contract_mining_v2",request_contract_after_negative
 assert request_contract_after_negative["learningPreferredSelected"] is False,request_contract_after_negative
-assert request_contract_after_negative["postExhaustionStrategyProfile"]!="document_request_contract_mining_v1",request_contract_after_negative
-assert "document_request_contract_mining_v1" not in request_contract_after_negative["allowedProfiles"],request_contract_after_negative
+assert request_contract_after_negative["postExhaustionStrategyProfile"]!="document_request_contract_mining_v2",request_contract_after_negative
+assert "document_request_contract_mining_v2" not in request_contract_after_negative["allowedProfiles"],request_contract_after_negative
 
 wrong=plan(profile="catalogue_inline_token_resolver_v2",failure="search_gap")
 assert wrong["learningPreferredSelected"] is False,wrong
