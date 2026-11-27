@@ -147,7 +147,7 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS MISMATCH"
+        "current_status:ROUTE PROVEN"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -156,16 +156,15 @@
       "statusRepairEligible": true,
       "repairEligible": true,
       "testedThisRun": true,
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
         "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
         "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
         "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
-      "transportRepairEligible": true,
-      "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayReclassified": true
+      ]
     },
     {
       "provider": "allanime",
@@ -1871,7 +1870,7 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS MISMATCH"
+        "current_status:NO PROOF"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -1880,14 +1879,13 @@
       "statusRepairEligible": true,
       "repairEligible": true,
       "testedThisRun": true,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
       "targetedTransportEvidence": [],
-      "residentialProviderReplayReclassified": true
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "french-manga",
@@ -3668,7 +3666,7 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS MISMATCH"
+        "current_status:ROUTE PROVEN"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -3677,16 +3675,15 @@
       "statusRepairEligible": true,
       "repairEligible": true,
       "testedThisRun": true,
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
         "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
         "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
         "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
-      "transportRepairEligible": true,
-      "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayReclassified": true
+      ]
     },
     {
       "provider": "skstream",
@@ -5660,9 +5657,9 @@
   "environmentBlockedQueue": [],
   "harnessQueue": [],
   "lastRepairAttempt": {
-    "runId": "45980456643",
+    "runId": "45983905193",
     "sourceCensusRunId": "",
-    "recordedAgainstCensusRunId": "45946887740",
+    "recordedAgainstCensusRunId": "45980495119",
     "mode": "repair",
     "selectedProviders": [],
     "candidateProviders": [],
@@ -5670,20 +5667,19 @@
     "validationBasis": "gate-not-passed",
     "acceptedRepairCount": 0,
     "deferredToLearningSlotProviders": [],
-    "noProgressReason": "canonical-skipped",
+    "noProgressReason": "canonical-success",
     "timeBudgetExhausted": false,
-    "canonicalOutcome": "skipped",
-    "candidateGateOutcome": "skipped",
+    "canonicalOutcome": "success",
+    "candidateGateOutcome": "failure",
     "publicationAllowed": false
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "45981330130-waf-transport",
-  "harnessEvidenceSha": "2cfb3ad65b72bc839fd13236d6101b5e2dff90e1",
+  "harnessEvidenceRunId": "45983905193-repair-waf-final",
+  "harnessEvidenceSha": "339cfff0d69d55abcd567d087e794fa8c44ab14a",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
-    "67movies",
     "aniflix-uno",
     "animejlprovider",
     "animeonsen",
@@ -5694,25 +5690,15 @@
     "fexini",
     "film-a-revoir",
     "franime",
-    "french-anime",
     "fullanime",
-    "shuttletv",
     "skstream",
     "voirserie",
     "waveanime"
   ],
   "networkDifferentialUpdatedProviders": [],
   "residentialProviderReplayPromotedProviders": [],
-  "residentialProviderReplayReclassifiedProviders": [
-    "67movies",
-    "french-anime",
-    "shuttletv"
-  ],
-  "residentialProviderReplayRepairableProviders": [
-    "67movies",
-    "french-anime",
-    "shuttletv"
-  ],
+  "residentialProviderReplayReclassifiedProviders": [],
+  "residentialProviderReplayRepairableProviders": [],
   "residentialExitNodeEvidence": {
     "enabled": true,
     "available": true,
