@@ -127,10 +127,29 @@ def validate(text: str | None = None) -> None:
         "const url = _spv17CurrentResponseUrl(link[2], base);",
         "const family = _spv4Family();",
         "const detailStreams = await _spv4ResolveDetail(",
-        "const crawled = await _crawlDirectMedia(_uniq(details).slice(0, 8)",
     ):
         if needle not in value:
             raise AssertionError(f"V17 missing {needle}")
+
+    # V17 originally spelled the bounded fallback crawl inline. V28 preserves
+    # the same eight-detail bound, resolves every correlated detail first,
+    # accumulates variants, then crawls that exact bounded set. Validate the
+    # behavior, not the obsolete source spelling.
+    legacy_crawl = "const crawled = await _crawlDirectMedia(_uniq(details).slice(0, 8)"
+    evolved_contract = (
+        "NIAKVIO_PROVIDER_PLAN_STREAM_COVERAGE_V28",
+        "const boundedDetails = _uniq(details).slice(0, 8);",
+        "for (const detailUrl of boundedDetails)",
+        "const detailStreams = await _spv4ResolveDetail(",
+        "_crawlDirectMedia(boundedDetails, payload.base || url, 3)",
+        "return _dedupeStreamRows(planStreams).slice(0, 40);",
+    )
+    if legacy_crawl not in value:
+        missing = [needle for needle in evolved_contract if needle not in value]
+        if missing:
+            raise AssertionError(
+                "V17 bounded detail fallback missing: " + ", ".join(missing)
+            )
     if 'url: _substituteDomain(url),\n        score: Math.max(identityScore' in value:
         raise AssertionError("V17 article detail still rewrites the current live origin")
 

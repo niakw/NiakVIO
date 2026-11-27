@@ -1,3 +1,10 @@
+## 2026-11-27 — V76 : Repair canonique V17 aligné sur le ProviderBase V28
+
+- Repair canonique [45941195364](https://github.com/niakw/NiakVIO/actions/runs/45941195364), source `640d57bfe793`, échoue avant sélection provider dans `upgrade_provider_search_detail_bridge_v17.py` : `AssertionError: V17 missing const crawled = await _crawlDirectMedia(_uniq(details).slice(0, 8)`. Métadonnées finales : selected=0, candidates=0, validated=0, outcome=failure. **0 réparation**.
+- Le ProviderBase courant conserve le contrat V17 sous V28 : `boundedDetails = _uniq(details).slice(0, 8)`, résolution de chaque détail par `_spv4ResolveDetail`, accumulation/déduplication des variantes, puis crawl de secours exactement sur `boundedDetails` profondeur 3, plafond 40. Le validateur V17 est rendu comportemental comme V14 : ancien spelling accepté ou ensemble complet V28 exigé.
+- Nouveau test préflight : le ProviderBase courant doit passer ; supprimer le crawl borné ou le résolveur canonique doit faire échouer V17. Aucun provider, manifest, seuil média ou autorité de publication n'est modifié.
+- Learning courant : Qwen est désormais réellement appelé sur Corsflix et Nakios (`routing_modes.llm_repair=1`, `llm_calls=1`), mais leurs expériences exécutées restent à 0 playable et 0 provider proposal. Un appel modèle n'est donc toujours pas une réparation.
+
 ## 2026-11-27 — V75 : seuil 3/3 Primewire atteint, escalade Qwen exigée
 
 - Learning V74 [45940048236](https://github.com/niakw/NiakVIO/actions/runs/45940048236), source `b20ec794`, Brain `d705de3d`, est vert. Pré-route et planner voient chacun `advisor_memory_sources=1` et restent `deterministic_advisor` au départ, comme attendu lorsque la mémoire d'entrée ne contenait encore que deux fingerprints exécutés de `chain_terminal_extractor_v1`.
