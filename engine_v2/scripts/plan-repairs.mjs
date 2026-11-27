@@ -188,6 +188,7 @@ const POST_EXHAUSTION_STRATEGIES = {
   ],
   media_extraction_gap: [
     { profile: "document_request_contract_mining_v2", method: "scripted-player-request-contract-mining" },
+    { profile: "provider_session_bootstrap_replay_v1", method: "provider-owned-session-bootstrap-replay" },
     { profile: "player_protocol_family_replay_v1", method: "player-protocol-family-replay" },
     { profile: "media_response_shape_inference_v1", method: "media-response-shape-inference" },
     { profile: "runtime_response_salvage_v1", method: "successful-runtime-response-salvage" },
