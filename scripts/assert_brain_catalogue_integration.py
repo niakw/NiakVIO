@@ -114,6 +114,30 @@ if int(current.get("resolvedTargetProbeCount") or 0) > 0:
     assert type(inline.get("resolvedTargetPlayerEmbedObserved")) is bool
     assert type(inline.get("resolvedTargetSameOrigin")) is bool
     assert type(inline.get("resolvedTargetRedirectObserved")) is bool
+    structure_class = inline.get("resolvedTargetPlayerStructureClass")
+    if structure_class is not None:
+        assert structure_class in {
+            "none", "iframe_shell", "video_tag", "scripted_player",
+            "form_handoff", "packed_script", "request_bootstrap", "mixed",
+        }
+        for key, limit in {
+            "resolvedTargetIframeCount": 8,
+            "resolvedTargetVideoTagCount": 8,
+            "resolvedTargetSourceTagCount": 16,
+            "resolvedTargetExternalScriptCount": 16,
+            "resolvedTargetInlineScriptCount": 16,
+            "resolvedTargetFormCount": 8,
+            "resolvedTargetHiddenInputCount": 32,
+        }.items():
+            assert type(inline.get(key)) is int and 0 <= inline[key] <= limit, (key, inline.get(key))
+        for key in (
+            "resolvedTargetPostFormObserved",
+            "resolvedTargetRequestBootstrapObserved",
+            "resolvedTargetPackedScriptObserved",
+            "resolvedTargetBase64DecodeObserved",
+            "resolvedTargetMetaRefreshObserved",
+        ):
+            assert type(inline.get(key)) is bool, (key, inline.get(key))
 
 body = json.dumps(probes, sort_keys=True)
 for secret in (
@@ -148,6 +172,17 @@ if int(current.get("tokenResolverProbeCount") or 0) > 0:
     assert witness.get("tokenResolverContract") == "same-origin-api-lien-j-l-v1"
 if int(current.get("resolvedTargetProbeCount") or 0) > 0:
     assert witness.get("resolvedTargetShape") == inline.get("resolvedTargetShape")
+    if inline.get("resolvedTargetPlayerStructureClass") is not None:
+        assert witness.get("resolvedTargetPlayerStructureClass") == inline.get("resolvedTargetPlayerStructureClass")
+        for key in (
+            "resolvedTargetIframeCount", "resolvedTargetVideoTagCount",
+            "resolvedTargetSourceTagCount", "resolvedTargetExternalScriptCount",
+            "resolvedTargetInlineScriptCount", "resolvedTargetFormCount",
+            "resolvedTargetHiddenInputCount", "resolvedTargetPostFormObserved",
+            "resolvedTargetRequestBootstrapObserved", "resolvedTargetPackedScriptObserved",
+            "resolvedTargetBase64DecodeObserved", "resolvedTargetMetaRefreshObserved",
+        ):
+            assert witness.get(key) == inline.get(key), (key, witness.get(key), inline.get(key))
 
 print(
     "FIELD_BRAIN_CATALOGUE_ADAPTER_INTEGRATION "
@@ -159,6 +194,9 @@ print(
     f"resolver={int(current.get('tokenResolverProbeCount') or 0)} "
     f"resolved_target={int(current.get('resolvedTargetProbeCount') or 0)} "
     f"target_shape={witness.get('resolvedTargetShape') or 'none'} "
+    f"player_structure={witness.get('resolvedTargetPlayerStructureClass') or 'none'} "
+    f"packed={str(witness.get('resolvedTargetPackedScriptObserved') is True).lower()} "
+    f"bootstrap={str(witness.get('resolvedTargetRequestBootstrapObserved') is True).lower()} "
     "exact_parent=true independent_not_tv=true publication=false mutation=false "
     "terminal_playback=false"
 )
