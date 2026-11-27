@@ -11,7 +11,7 @@
   "fixture_selection_policy": "retained-proof-first-then-provider-targeted-then-representative-then-three-corpus-rotated",
   "provider_count": 1,
   "task_count": 1,
-  "probe_count": 4,
+  "probe_count": 3,
   "rotated_task_count": 1,
   "max_samples_per_lane": 4,
   "raw_provider_count": 0,
@@ -51,13 +51,13 @@
     }
   },
   "status_counts": {
-    "no_streams": 1
+    "timeout": 1
   },
   "debug_stage_counts": {
-    "provider_zero_before_provider_network": 1
+    "timeout": 1
   },
   "debug_stage_providers": {
-    "provider_zero_before_provider_network": [
+    "timeout": [
       "anime-sama"
     ]
   },
@@ -66,16 +66,24 @@
       "provider_id": "anime-sama",
       "provider_name": "🐍 Anime-Sama",
       "semantic_type": "anime",
-      "fixture_title": "Hell Teacher: Jigoku Sensei Nube",
+      "fixture_title": "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
       "fixture": {
-        "tmdbId": "259544",
+        "tmdbId": "245285",
         "mediaType": "anime",
         "category": "anime",
-        "title": "Hell Teacher: Jigoku Sensei Nube",
-        "year": 2025,
+        "title": "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+        "year": 2024,
         "season": 1,
         "episode": 1
       },
+      "status": "timeout",
+      "debug_stage": "timeout",
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "duration_ms": 89420,
+      "sample_count": 3,
       "streams_returned": 0,
       "announced_player_candidates": 0,
       "announced_variant_candidates": 0,
@@ -84,148 +92,12 @@
       "explored_player_requests": 0,
       "explored_player_hosts": [],
       "variant_fanout_state": "not-observed",
-      "status": "no_streams",
-      "debug_stage": "provider_zero_before_provider_network",
-      "debug_model": {
-        "strategy": "mixed_embed_resolver",
-        "source_runtime_family": "catalogue-episodes-js",
-        "reconstruction_state": "learning-clean-seed",
-        "identity_mode": "catalog_search",
-        "requires_tmdb_before_run": true,
-        "supported_types": [
-          "anime"
-        ],
-        "route_count": 2,
-        "route_kinds": [
-          "detail"
-        ],
-        "has_api_recipe": false,
-        "official_site": "https://anime-sama.to",
-        "official_hub": "https://anime-sama.wiki/",
-        "official_api": null
-      },
-      "debug_fetch_count": 9,
-      "debug_provider_fetch_count": 0,
-      "debug_progress_stage": "none",
-      "debug_fetches": [
-        {
-          "url": "https://api.themoviedb.org/3/tv/259544?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "",
-          "method": "GET",
-          "request_headers": {
-            "accept": "application/json"
-          },
-          "status": 0,
-          "duration_ms": 1801,
-          "error": "TimeoutError"
-        },
-        {
-          "url": "https://api.themoviedb.org/3/movie/259544?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "",
-          "method": "GET",
-          "request_headers": {
-            "accept": "application/json"
-          },
-          "status": 0,
-          "duration_ms": 1800,
-          "error": "TimeoutError"
-        },
-        {
-          "url": "https://api.themoviedb.org/3/tv/259544?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "",
-          "method": "GET",
-          "request_headers": {
-            "accept": "application/json"
-          },
-          "status": 0,
-          "duration_ms": 1801,
-          "error": "TimeoutError"
-        },
-        {
-          "url": "https://api.themoviedb.org/3/tv/259544?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "",
-          "method": "GET",
-          "request_headers": {
-            "accept": "application/json"
-          },
-          "status": 0,
-          "duration_ms": 1800,
-          "error": "TimeoutError"
-        },
-        {
-          "url": "https://api.themoviedb.org/3/movie/259544?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "",
-          "method": "GET",
-          "request_headers": {
-            "accept": "application/json"
-          },
-          "status": 0,
-          "duration_ms": 1800,
-          "error": "TimeoutError"
-        },
-        {
-          "url": "https://api.themoviedb.org/3/tv/259544?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "",
-          "method": "GET",
-          "request_headers": {
-            "accept": "application/json"
-          },
-          "status": 0,
-          "duration_ms": 1800,
-          "error": "TimeoutError"
-        },
-        {
-          "url": "https://api.themoviedb.org/3/tv/259544?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "",
-          "method": "GET",
-          "request_headers": {
-            "accept": "application/json"
-          },
-          "status": 0,
-          "duration_ms": 1800,
-          "error": "TimeoutError"
-        },
-        {
-          "url": "https://api.themoviedb.org/3/movie/259544?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "",
-          "method": "GET",
-          "request_headers": {
-            "accept": "application/json"
-          },
-          "status": 0,
-          "duration_ms": 1800,
-          "error": "TimeoutError"
-        },
-        {
-          "url": "https://api.themoviedb.org/3/tv/259544?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "",
-          "method": "GET",
-          "request_headers": {
-            "accept": "application/json"
-          },
-          "status": 0,
-          "duration_ms": 1800,
-          "error": "TimeoutError"
-        }
-      ],
-      "debug_provider_value_trace_v18": null,
-      "debug_provider_value_trace_history_v21": [],
-      "debug_provider_runtime_dispatch_error_v1": null,
-      "debug_identity_reasons": [],
-      "stderr_tail": "FIELD_TMDB_PROBE_CONTEXT state=core_ready credential_visible=false metadata_hydrated=false dynamic=true core_capability=true\n",
-      "raw": 0,
-      "playable": 0,
-      "verified": 0,
-      "contradictions": 0,
-      "identity_safe": true,
-      "duration_ms": 71698,
-      "sample_count": 4,
       "fanout_fixture_title": "Mushoku Tensei: Jobless Reincarnation",
+      "debug_progress_stage": "lookup_only",
       "sample_titles": [
         "Mushoku Tensei: Jobless Reincarnation",
         "Jujutsu Kaisen",
-        "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
-        "Hell Teacher: Jigoku Sensei Nube"
+        "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells"
       ],
       "adaptive_rotated": true,
       "samples": [
@@ -241,13 +113,13 @@
             "episode": 1
           },
           "status": "no_streams",
-          "debug_stage": "provider_zero_before_provider_network",
-          "debug_progress_stage": "none",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 16211,
+          "duration_ms": 25003,
           "streams_returned": 0,
           "announced_player_candidates": 0,
           "announced_variant_candidates": 0,
@@ -268,22 +140,22 @@
             "season": 1,
             "episode": 1
           },
-          "status": "no_streams",
-          "debug_stage": "provider_zero_before_provider_network",
-          "debug_progress_stage": "none",
+          "status": "timeout",
+          "debug_stage": "timeout",
+          "debug_progress_stage": null,
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 16210,
-          "streams_returned": 0,
-          "announced_player_candidates": 0,
-          "announced_variant_candidates": 0,
-          "announced_player_hosts": [],
-          "announced_quality_heights": [],
-          "explored_player_requests": 0,
-          "explored_player_hosts": [],
-          "variant_fanout_state": "not-observed"
+          "duration_ms": 45032,
+          "streams_returned": null,
+          "announced_player_candidates": null,
+          "announced_variant_candidates": null,
+          "announced_player_hosts": null,
+          "announced_quality_heights": null,
+          "explored_player_requests": null,
+          "explored_player_hosts": null,
+          "variant_fanout_state": null
         },
         {
           "fixture_title": "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
@@ -296,54 +168,26 @@
             "season": 1,
             "episode": 1
           },
-          "status": "no_streams",
-          "debug_stage": "provider_zero_before_provider_network",
-          "debug_progress_stage": "none",
+          "status": "timeout",
+          "debug_stage": "timeout",
+          "debug_progress_stage": null,
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 16212,
-          "streams_returned": 0,
-          "announced_player_candidates": 0,
-          "announced_variant_candidates": 0,
-          "announced_player_hosts": [],
-          "announced_quality_heights": [],
-          "explored_player_requests": 0,
-          "explored_player_hosts": [],
-          "variant_fanout_state": "not-observed"
-        },
-        {
-          "fixture_title": "Hell Teacher: Jigoku Sensei Nube",
-          "fixture": {
-            "tmdbId": "259544",
-            "mediaType": "anime",
-            "category": "anime",
-            "title": "Hell Teacher: Jigoku Sensei Nube",
-            "year": 2025,
-            "season": 1,
-            "episode": 1
-          },
-          "status": "no_streams",
-          "debug_stage": "provider_zero_before_provider_network",
-          "debug_progress_stage": "none",
-          "raw": 0,
-          "playable": 0,
-          "verified": 0,
-          "contradictions": 0,
-          "duration_ms": 16209,
-          "streams_returned": 0,
-          "announced_player_candidates": 0,
-          "announced_variant_candidates": 0,
-          "announced_player_hosts": [],
-          "announced_quality_heights": [],
-          "explored_player_requests": 0,
-          "explored_player_hosts": [],
-          "variant_fanout_state": "not-observed"
+          "duration_ms": 19029,
+          "streams_returned": null,
+          "announced_player_candidates": null,
+          "announced_variant_candidates": null,
+          "announced_player_hosts": null,
+          "announced_quality_heights": null,
+          "explored_player_requests": null,
+          "explored_player_hosts": null,
+          "variant_fanout_state": null
         }
       ],
       "provider_budget_seconds": 90,
-      "provider_budget_exhausted": false
+      "provider_budget_exhausted": true
     }
   ],
   "same_run_positive_evidence_merge": {
