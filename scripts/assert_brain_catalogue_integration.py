@@ -147,6 +147,11 @@ if int(current.get("resolvedTargetProbeCount") or 0) > 0:
             "resolvedTargetRequestOtherDynamicUrlCount": 32,
             "resolvedTargetRequestSameOriginLiteralCount": 32,
             "resolvedTargetRequestCrossOriginLiteralCount": 32,
+            "resolvedTargetRequestStaticCandidateCount": 32,
+            "resolvedTargetRequestStaticSameOriginCount": 32,
+            "resolvedTargetRequestStaticCrossOriginCount": 32,
+            "resolvedTargetRequestStaticMediaIntentCount": 32,
+            "resolvedTargetRequestStaticSameOriginMediaIntentCount": 32,
         }.items():
             assert type(inline.get(key)) is int and 0 <= inline[key] <= limit, (key, inline.get(key))
         for key in (
@@ -207,6 +212,9 @@ if int(current.get("resolvedTargetProbeCount") or 0) > 0:
             "resolvedTargetRequestIdentifierDynamicDefinitionCount", "resolvedTargetRequestMemberUrlCount",
             "resolvedTargetRequestCallExpressionUrlCount", "resolvedTargetRequestOtherDynamicUrlCount",
             "resolvedTargetRequestSameOriginLiteralCount", "resolvedTargetRequestCrossOriginLiteralCount",
+            "resolvedTargetRequestStaticCandidateCount", "resolvedTargetRequestStaticSameOriginCount",
+            "resolvedTargetRequestStaticCrossOriginCount", "resolvedTargetRequestStaticMediaIntentCount",
+            "resolvedTargetRequestStaticSameOriginMediaIntentCount",
             "resolvedTargetPostFormObserved",
             "resolvedTargetRequestBootstrapObserved", "resolvedTargetPackedScriptObserved",
             "resolvedTargetBase64DecodeObserved", "resolvedTargetMetaRefreshObserved",
