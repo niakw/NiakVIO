@@ -74,6 +74,7 @@ assert player_frontier["failureClass"]=="media_extraction_gap",player_frontier
 assert player_frontier["learningCausalFailureRequested"]=="media_extraction_gap",player_frontier
 assert player_frontier["learningCausalFailureApplied"] is True,player_frontier
 assert player_frontier["learningPreferredRequested"]=="",player_frontier
+assert queue.SESSION_BOOTSTRAP_FOLLOWUP_PROFILE not in player_frontier["postExhaustionCandidateProfiles"],player_frontier
 
 # A sanitized exact-parent scripted player with request bootstrap should reuse
 # the already-installed document request-contract Lego before Architecture
