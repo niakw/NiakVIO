@@ -197,6 +197,55 @@ def sanitize_experiment_reason(value: Any, limit: int = 180) -> str:
     return " ".join(text.split())[:limit]
 
 
+def sanitize_network_execution_summary(value: Any) -> dict[str, Any]:
+    """Allow only bounded aggregate execution facts into cross-run memory."""
+    if not isinstance(value, dict):
+        return {}
+    buckets = value.get("statusBuckets") if isinstance(value.get("statusBuckets"), dict) else {}
+    allowed_bucket_names = ("2xx", "3xx", "4xx", "5xx", "network")
+    status_buckets = {
+        name: max(0, min(10000, int(buckets.get(name) or 0)))
+        for name in allowed_bucket_names
+    }
+    allowed_methods = {"GET", "POST", "HEAD"}
+    methods = sorted({
+        str(item).upper()
+        for item in value.get("methods") or []
+        if str(item).upper() in allowed_methods
+    })
+    allowed_stages = {"search", "content_lookup", "detail", "episode", "player", "media", "provider_fetch", "other"}
+    stages = sorted({
+        str(item).strip().casefold()
+        for item in value.get("stages") or []
+        if str(item).strip().casefold() in allowed_stages
+    })
+    allowed_kinds = {"html", "json", "javascript", "text", "binary", "media"}
+    response_kinds = sorted({
+        str(item).strip().casefold()
+        for item in value.get("responseKinds") or []
+        if str(item).strip().casefold() in allowed_kinds
+    })
+    deepest = str(value.get("deepestStage") or "none").strip().casefold()
+    if deepest not in allowed_stages | {"none"}:
+        deepest = "none"
+    return {
+        "schemaVersion": 1,
+        "providerRequestCount": max(0, min(10000, int(value.get("providerRequestCount") or 0))),
+        "successfulProviderRequestCount": max(0, min(10000, int(value.get("successfulProviderRequestCount") or 0))),
+        "networkFailureCount": max(0, min(10000, int(value.get("networkFailureCount") or 0))),
+        "statusBuckets": status_buckets,
+        "methods": methods,
+        "stages": stages,
+        "deepestStage": deepest,
+        "responseKinds": response_kinds,
+        "proofAuthority": False,
+        "publicationAuthority": False,
+        "rawAddressRetained": False,
+        "headersRetained": False,
+        "bodyRetained": False,
+    }
+
+
 def phase_experiment_entries(
     provider_id: str,
     plan: dict[str, Any],
@@ -325,6 +374,16 @@ def phase_experiment_entries(
             outcome = "rejected"
             reason = "fair_share_no_validated_improvement"
 
+        network_event = (
+            accepted[-1] if accepted
+            else progress[-1] if progress
+            else rejected[-1] if rejected
+            else {}
+        )
+        network_execution = sanitize_network_execution_summary(
+            network_event.get("network_execution") if isinstance(network_event, dict) else {}
+        )
+
         entries.append({
             "providerId": norm(provider_id),
             "providerVersion": "*",
@@ -369,6 +428,7 @@ def phase_experiment_entries(
             # memory with not_generated/profile_unavailable outcomes.
             "executionObserved": bool(accepted or rejected or progress),
             "generationAttemptObserved": bool(not_generated),
+            "networkExecutionSummary": network_execution,
         })
     return entries
 
@@ -466,6 +526,7 @@ def merge_phase_learning_state(
             "lastOutcome", "lastReason", "lastSeenAt", "memoryRole",
             "capabilityStrategy", "observedPipelineStage",
             "llmAdvisorGuidanceKind", "llmAdvisorMetaGapGeneration",
+            "networkExecutionSummary",
         ):
             if field in row and (incoming_executed or not prior_executed or field not in {"lastOutcome", "lastReason"}):
                 current[field] = row[field]
