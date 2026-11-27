@@ -583,6 +583,62 @@ assert post_by_id["timeout-runtime"]["repairEligible"] is False
 assert "timeout-runtime" in post_harness["environmentQueue"]
 
 
+# Native-like transport plus an explicit wrong-content provider replay transfers
+# ownership back to provider/identity Repair. It must never remain HARNESS merely
+# because the returned stream is technically playable.
+wrong_content_baseline = {
+    "repairQueue": [],
+    "environmentQueue": ["wrong-content-runtime"],
+    "harnessQueue": ["wrong-content-runtime"],
+    "symptomaticProviders": ["wrong-content-runtime"],
+    "brainQueue": ["wrong-content-runtime"],
+    "providers": [{
+        "provider": "wrong-content-runtime",
+        "status": "HARNESS MISMATCH",
+        "color": "🟧",
+        "declaredLanes": ["anime"],
+        "currentVerifiedLanes": [],
+        "historicalProof": [],
+        "evidenceDepth": ["anime=chain_reached"],
+        "authorityRepairEligible": True,
+        "repairEligible": False,
+        "brainCheckRequired": True,
+    }],
+}
+wrong_content_waf = {
+    "rows": [{
+        "provider": "wrong-content-runtime",
+        "lane": "anime",
+        "outcome": "browser_content_reached",
+        "directHttpProfile": {"outcome": "direct_http_content_reached"},
+        "okHttpJvmProfile": {"outcome": "okhttp_jvm_content_reached"},
+    }],
+    "residentialProviderReplay": {
+        "available": True,
+        "rows": [{
+            "provider": "wrong-content-runtime",
+            "lane": "anime",
+            "status": "wrong_content",
+            "debugStage": "provider_returned_wrong_content",
+            "raw": 1,
+            "playable": 1,
+            "verified": 0,
+            "contradictions": 1,
+            "identitySafe": False,
+        }],
+    },
+}
+wrong_content = mod.merge_transport(wrong_content_baseline, wrong_content_waf)
+wrong_row = wrong_content["providers"][0]
+assert wrong_row["status"] == "PROVIDER JS BROKEN", wrong_row
+assert wrong_row["repairEligible"] is True, wrong_row
+assert wrong_row["residentialProviderReplayReclassified"] is True, wrong_row
+assert wrong_content["repairQueue"] == ["wrong-content-runtime"], wrong_content
+assert wrong_content["environmentQueue"] == [], wrong_content
+assert wrong_content["harnessQueue"] == [], wrong_content
+assert wrong_content["residentialProviderReplayRepairableProviders"] == ["wrong-content-runtime"], wrong_content
+
+
 # Canonical census ownership also strips WAF-only fields from a carried row.
 # Otherwise a later census can correctly reclassify status while still showing
 # a stale "residential replay verified" annotation from an older overlay.
