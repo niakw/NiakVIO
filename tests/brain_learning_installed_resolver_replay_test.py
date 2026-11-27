@@ -53,7 +53,7 @@ executed_negative=[{
  "failureClass":"",
  "signature":"",
  "profile":"catalogue_inline_token_resolver_v2",
- "strategyImplementationFingerprint":"1"*64,
+ "strategyImplementationFingerprint":selected["strategyImplementationFingerprint"],
  "experimentVariant":4,
  "experimentGeneration":5,
  "attempts":1,"successes":0,"failures":1,"consecutiveFailures":1,
@@ -117,12 +117,29 @@ request_contract_negative=[{
  "failureClass":"media_extraction_gap",
  "signature":"",
  "profile":"document_request_contract_mining_v2",
- "strategyImplementationFingerprint":"2"*64,
+ "strategyImplementationFingerprint":request_contract["strategyImplementationFingerprint"],
  "experimentVariant":4,
  "experimentGeneration":5,
  "attempts":1,"successes":0,"failures":1,"consecutiveFailures":1,
  "lastOutcome":"rejected","executionObserved":True,
 }]
+# A rejected older implementation of the same Bloc does not poison materially
+# changed scoped bytes. This is the exact migration exercised by resolver+V2
+# composition: old V2 remains historical, current V2 gets one real replay.
+stale_request_contract_negative=[{
+ **request_contract_negative[0],
+ "strategyImplementationFingerprint":"a"*64,
+}]
+request_contract_after_stale_impl=plan(
+ profile=queue.PLAYER_REQUEST_CONTRACT_PROFILE,
+ failure=queue.PLAYER_REQUEST_CONTRACT_FAILURE,
+ causal_failure="media_extraction_gap",
+ negative_memory=stale_request_contract_negative,
+)
+assert request_contract_after_stale_impl["learningPreferredSelected"] is True,request_contract_after_stale_impl
+assert request_contract_after_stale_impl["postExhaustionStrategyProfile"]==queue.PLAYER_REQUEST_CONTRACT_PROFILE,request_contract_after_stale_impl
+assert request_contract_after_stale_impl["strategyImplementationFingerprint"]==request_contract["strategyImplementationFingerprint"],request_contract_after_stale_impl
+
 request_contract_after_negative=plan(
  profile=queue.PLAYER_REQUEST_CONTRACT_PROFILE,
  failure=queue.PLAYER_REQUEST_CONTRACT_FAILURE,
@@ -152,7 +169,7 @@ session_negative=[{
  "failureClass":"media_extraction_gap",
  "signature":"",
  "profile":queue.SESSION_BOOTSTRAP_FOLLOWUP_PROFILE,
- "strategyImplementationFingerprint":"3"*64,
+ "strategyImplementationFingerprint":session_followup["strategyImplementationFingerprint"],
  "experimentVariant":4,
  "experimentGeneration":5,
  "attempts":1,"successes":0,"failures":1,"consecutiveFailures":1,
