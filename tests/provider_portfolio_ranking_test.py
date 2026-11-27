@@ -19,10 +19,8 @@ ACTIVE_PROVIDER = next(
     str(row.get("id") or "").strip().casefold()
     for row in MANIFEST.get("scrapers") or []
     if isinstance(row, dict)
-    and row.get("enabled") is True
-    and {"movie", "tv", "anime"}.issubset(
-        {str(value).strip().casefold() for value in row.get("published_types") or []}
-    )
+    and row.get("enabled") is not False
+    and str(row.get("id") or "").strip()
 )
 
 
