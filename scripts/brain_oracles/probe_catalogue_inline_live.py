@@ -326,7 +326,94 @@ def fetch_resolved_target(url: str, referer: str) -> tuple[int, str, bool, str, 
         return 0, "", False, "transport_error", ""
 
 
-def _resolved_target_player_structure(body: str) -> dict[str, Any]:
+def _request_bootstrap_structure(source: str, page_url: str) -> dict[str, int]:
+    """Classify bounded request-expression shapes without retaining values."""
+    text = str(source or "")[:TARGET_MAX_BODY]
+    calls: list[tuple[str, str]] = []
+
+    def add(kind: str, expr: str) -> None:
+        if len(calls) >= 32:
+            return
+        calls.append((kind, str(expr or "").strip()[:1024]))
+
+    for match in re.finditer(r"\\bfetch\\s*\\(\\s*([^,\\)\\n]{1,1024})", text, re.I):
+        add("fetch", match.group(1))
+    for match in re.finditer(
+        r"\\baxios\\s*\\.\\s*(?:get|post)\\s*\\(\\s*([^,\\)\\n]{1,1024})",
+        text, re.I,
+    ):
+        add("axios", match.group(1))
+    for match in re.finditer(r"\\$\\s*\\.\\s*ajax\\s*\\(", text, re.I):
+        window = text[match.end():match.end() + 1600]
+        url_match = re.search(r"\\b(?:url|endpoint)\\s*:\\s*([^,}\\n]{1,1024})", window, re.I)
+        add("ajax", url_match.group(1) if url_match else "")
+    for match in re.finditer(
+        r"\\.\\s*open\\s*\\(\\s*[^,\\)\\n]{1,256}\\s*,\\s*([^,\\)\\n]{1,1024})",
+        text, re.I,
+    ):
+        add("xhr", match.group(1))
+
+    literal = dynamic = template = concatenated = 0
+    same_origin = cross_origin = 0
+    base = urllib.parse.urlsplit(str(page_url or ""))
+    base_origin = (
+        base.scheme.casefold(),
+        (base.hostname or "").casefold(),
+        base.port,
+    ) if base.scheme in {"http", "https"} and base.hostname else None
+
+    for _kind, expr in calls:
+        value = expr.strip()
+        quote = value[:1]
+        is_literal = (
+            quote in {"\\"", "'"}
+            and len(value) >= 2
+            and value.endswith(quote)
+        )
+        if is_literal:
+            literal += 1
+            raw_value = value[1:-1]
+            try:
+                parsed = urllib.parse.urlsplit(
+                    urllib.parse.urljoin(str(page_url or ""), raw_value)
+                )
+                origin = (
+                    parsed.scheme.casefold(),
+                    (parsed.hostname or "").casefold(),
+                    parsed.port,
+                ) if parsed.scheme in {"http", "https"} and parsed.hostname else None
+                if base_origin and origin:
+                    if origin == base_origin:
+                        same_origin += 1
+                    else:
+                        cross_origin += 1
+            except ValueError:
+                pass
+        else:
+            dynamic += 1
+            if value.startswith("`"):
+                template += 1
+            if "+" in value:
+                concatenated += 1
+
+    by_kind = {kind: sum(1 for row_kind, _expr in calls if row_kind == kind)
+               for kind in ("fetch", "xhr", "axios", "ajax")}
+    return {
+        "resolvedTargetRequestCallCount": min(32, len(calls)),
+        "resolvedTargetFetchCallCount": min(32, by_kind["fetch"]),
+        "resolvedTargetXhrCallCount": min(32, by_kind["xhr"]),
+        "resolvedTargetAxiosCallCount": min(32, by_kind["axios"]),
+        "resolvedTargetAjaxCallCount": min(32, by_kind["ajax"]),
+        "resolvedTargetRequestLiteralUrlCount": min(32, literal),
+        "resolvedTargetRequestDynamicUrlCount": min(32, dynamic),
+        "resolvedTargetRequestTemplateUrlCount": min(32, template),
+        "resolvedTargetRequestConcatUrlCount": min(32, concatenated),
+        "resolvedTargetRequestSameOriginLiteralCount": min(32, same_origin),
+        "resolvedTargetRequestCrossOriginLiteralCount": min(32, cross_origin),
+    }
+
+
+def _resolved_target_player_structure(body: str, page_url: str = "") -> dict[str, Any]:
     """Return bounded player-markup structure only; never raw text, URLs or hosts."""
     source = str(body or "")[:TARGET_MAX_BODY]
     lowered = source.casefold()
@@ -350,6 +437,7 @@ def _resolved_target_player_structure(body: str) -> dict[str, Any]:
         sum(len(re.findall(r"<input\b[^>]*\btype\s*=\s*([\"']?)hidden\1", form_body, re.I))
             for _attrs, form_body in forms[:8]),
     )
+    request_shape = _request_bootstrap_structure(source, page_url)
     request_bootstrap = bool(re.search(
         r"\b(?:fetch\s*\(|XMLHttpRequest\b|\$\s*\.\s*ajax\s*\(|axios\s*\.)",
         source, re.I,
@@ -391,6 +479,7 @@ def _resolved_target_player_structure(body: str) -> dict[str, Any]:
         "resolvedTargetInlineScriptCount": inline_script_count,
         "resolvedTargetFormCount": form_count,
         "resolvedTargetHiddenInputCount": hidden_count,
+        **request_shape,
         "resolvedTargetPostFormObserved": post_form,
         "resolvedTargetRequestBootstrapObserved": request_bootstrap,
         "resolvedTargetPackedScriptObserved": packed_script,
@@ -400,7 +489,7 @@ def _resolved_target_player_structure(body: str) -> dict[str, Any]:
 
 
 def resolved_target_shape(
-    status: int, body: str, oversized: bool, content_type: str,
+    status: int, body: str, oversized: bool, content_type: str, page_url: str = "",
 ) -> dict[str, Any]:
     """Classify only terminal response shape; never return body, URL or host."""
     ctype = str(content_type or "").casefold()
@@ -438,9 +527,9 @@ def resolved_target_shape(
     else:
         shape = "text"
     structure = (
-        _resolved_target_player_structure(raw)
+        _resolved_target_player_structure(raw, page_url)
         if shape in {"html_player", "html_page"} else
-        _resolved_target_player_structure("")
+        _resolved_target_player_structure("", "")
     )
     return {
         "resolvedTargetShape": shape,
@@ -614,7 +703,7 @@ def run(
                             or not isinstance(t_content_type, str) or len(t_content_type) > 80):
                         raise ValueError("invalid resolved target probe transport")
                     target_shape = resolved_target_shape(
-                        t_status, t_body, t_oversized, t_content_type,
+                        t_status, t_body, t_oversized, t_content_type, target_url,
                     )
                     observations.append({
                         "originHost": host,
