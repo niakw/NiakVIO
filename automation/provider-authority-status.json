@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "authority": "provider-authority-arbiter-v1",
-  "censusStatusSource": "/tmp/provider-census-preauthority.json",
+  "censusStatusSource": "/home/runner/work/NiakVIO/NiakVIO/automation/provider-census-status.json",
   "productionFreshnessStatusSource": "persisted-all-scope",
   "policy": {
     "searchRole": "historical-supplement-only",
@@ -19,7 +19,7 @@
     "terminalPlaybackRequiredForActiveCurrentBytes": true,
     "bulkOnboardingPendingGetsTargetedProofWithoutRuntimeAuthority": true
   },
-  "providerCount": 140,
+  "providerCount": 132,
   "projectionScope": "Global+France visible union",
   "repairEligible": [
     "67movies",
@@ -50,7 +50,6 @@
     "7movies",
     "aether",
     "all-you-can-watch",
-    "allanime",
     "allwish",
     "anidb",
     "aniflix-uno",
@@ -62,7 +61,6 @@
     "animesalt",
     "animesama-co",
     "animesultra",
-    "animevost-fr",
     "animevostfr",
     "anisama",
     "arrowtv",
@@ -109,14 +107,12 @@
     "kisskh",
     "kordoz",
     "latestmovies",
-    "mallumv",
     "moviebite",
     "moviebox",
     "movieshunt",
     "moviesmod",
     "movish",
     "movix-fr",
-    "movy",
     "myfluneo",
     "nakastream",
     "neobam",
@@ -132,14 +128,11 @@
     "rivestream",
     "rivestream-app",
     "rivestream-ru",
-    "sekai",
     "sflix",
     "showbox",
     "skstream",
     "stigstream",
-    "streamzo",
     "svstream",
-    "topcartoons",
     "uhdmovies",
     "videasy",
     "vidfast",
@@ -160,7 +153,6 @@
     "wookafr",
     "wowfilms0626",
     "yablom",
-    "yflix",
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
@@ -243,17 +235,6 @@
       "failureCount": 0,
       "reasons": [
         "bulk_onboarding_pending"
-      ]
-    },
-    {
-      "provider": "allanime",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "manual_off_zero_playable_anime_2026-11-14_cohort2"
       ]
     },
     {
@@ -431,17 +412,6 @@
       "failureCount": 0,
       "reasons": [
         "already_disabled"
-      ]
-    },
-    {
-      "provider": "animevost-fr",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "manual_off_zero_playable_anime_2026-11-14"
       ]
     },
     {
@@ -1221,17 +1191,6 @@
       "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
-      "provider": "mallumv",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "manual_off_zero_playable_movie_2026-11-14_cohort2"
-      ]
-    },
-    {
       "provider": "meowtv",
       "action": "KEEP_BACKEND",
       "repairEligible": true,
@@ -1349,17 +1308,6 @@
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
-    },
-    {
-      "provider": "movy",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "already_disabled"
-      ]
     },
     {
       "provider": "mugiwarastream",
@@ -1691,17 +1639,6 @@
       "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
-      "provider": "sekai",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "already_disabled"
-      ]
-    },
-    {
       "provider": "sflix",
       "action": "ONBOARDING_PENDING",
       "repairEligible": false,
@@ -1780,17 +1717,6 @@
       "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
-      "provider": "streamzo",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "already_disabled"
-      ]
-    },
-    {
       "provider": "svstream",
       "action": "ONBOARDING_PENDING",
       "repairEligible": false,
@@ -1799,17 +1725,6 @@
       "failureCount": 0,
       "reasons": [
         "bulk_onboarding_pending"
-      ]
-    },
-    {
-      "provider": "topcartoons",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "already_disabled"
       ]
     },
     {
@@ -2088,17 +2003,6 @@
       "failureCount": 0,
       "reasons": [
         "bulk_onboarding_pending"
-      ]
-    },
-    {
-      "provider": "yflix",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
-      "failureCount": 0,
-      "reasons": [
-        "manual_off_zero_playable_movie_tv_2026-11-14"
       ]
     },
     {
