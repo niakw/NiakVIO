@@ -1,3 +1,7 @@
+## Repair : visibilité diagnostic ≠ autorité static runtime
+
+Le catalogue Global+France peut contenir des providers d'onboarding pending afin qu'ils restent observables et apprenables. Ils ne sont toutefois pas des Provider Objects exécutables. Le finalizer Repair doit donc conserver leurs diagnostics dans les overrides/rapports, tout en limitant `provider-v3-static-knowledge.json` à `projection_runtime_visible_provider_ids()`. Toute identité runtime-visible absente du static est un défaut d'autorité ; toute identité pending présente dans le static est une fuite de scope.
+
 # NiakVIO — Architecture des familles Provider v3
 
 > [!IMPORTANT]

@@ -173,6 +173,7 @@ def hub46_targets() -> set[str]:
 
 def main() -> int:
     run_child_test("provider_contract_recognizer_test.py")
+    run_child_test("provider_repair_disposition_runtime_static_scope_test.py")
     run_child_test("provider_v3_local_recognition_contract_test.py")
 
     overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))

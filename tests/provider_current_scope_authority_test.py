@@ -29,6 +29,9 @@ for name in ("canonical_repair", "fast_repair"):
 disposition = sources["disposition"]
 assert "projection_visible_provider_ids()" in disposition
 assert "projection_active_provider_ids()" in disposition
+assert "projection_runtime_visible_provider_ids()" in disposition
+assert "runtime_scoped_static_rows(" in disposition
+assert "if provider in runtime_ids and isinstance(model, dict):" in disposition
 assert "HUB_MATRIX" not in disposition
 assert "load(args.hub_matrix)" not in disposition
 assert "MATRIX_STALE" not in disposition

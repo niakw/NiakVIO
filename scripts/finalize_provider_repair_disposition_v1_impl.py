@@ -21,7 +21,11 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
-from current_provider_scope import projection_active_provider_ids, projection_visible_provider_ids
+from current_provider_scope import (
+    projection_active_provider_ids,
+    projection_runtime_visible_provider_ids,
+    projection_visible_provider_ids,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
@@ -83,6 +87,40 @@ def publication_rows(
 
 def cid(value: object) -> str:
     return str(value or "").strip().casefold().replace("_", "-")
+
+
+def runtime_scoped_static_rows(
+    rows: dict[str, Any],
+    runtime_ids: set[str],
+    *,
+    require_complete: bool,
+) -> dict[str, dict[str, Any]]:
+    """Keep Brain/runtime authority separate from diagnostic catalogue visibility."""
+    scoped: dict[str, dict[str, Any]] = {}
+    for raw_id, row in rows.items():
+        provider = cid(raw_id)
+        if not provider or provider not in runtime_ids:
+            continue
+        if provider in scoped:
+            raise SystemExit(f"duplicate runtime static provider identity: {provider}")
+        if not isinstance(row, dict):
+            raise SystemExit(f"{provider}: runtime static provider row must be an object")
+        scoped[provider] = row
+    if require_complete:
+        missing = sorted(runtime_ids - set(scoped))
+        if missing:
+            raise SystemExit(
+                "runtime-visible providers missing from static knowledge: " + ",".join(missing)
+            )
+    return scoped
+
+
+def refresh_static_provider_counts(knowledge: dict[str, Any], count: int) -> None:
+    knowledge["providerCount"] = count
+    for key in ("contractRecognition", "routeReconstruction", "routeRecovery"):
+        row = knowledge.get(key)
+        if isinstance(row, dict) and "providerCount" in row:
+            row["providerCount"] = count
 
 
 def lane(value: object) -> str:
@@ -239,8 +277,10 @@ def main() -> int:
     if repository_scope:
         active_ids = projection_active_provider_ids()
         visible_ids = projection_visible_provider_ids()
+        runtime_ids = projection_runtime_visible_provider_ids()
     else:
         visible_ids = set(manifest_rows)
+        runtime_ids = set(manifest_rows)
         active_ids = {
             provider for provider, row in manifest_rows.items()
             if row.get("enabled") is not False
@@ -253,7 +293,12 @@ def main() -> int:
             f"extra={sorted(set(manifest_rows)-visible_ids)}"
         )
     patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
-    static = knowledge.get("providers") if isinstance(knowledge.get("providers"), dict) else {}
+    raw_static = knowledge.get("providers") if isinstance(knowledge.get("providers"), dict) else {}
+    static = runtime_scoped_static_rows(
+        raw_static,
+        runtime_ids,
+        require_complete=repository_scope,
+    )
     recovered = recovery_rows(recovery)
     verified, lane_statuses, debug_stages = quick_evidence(quick)
     locked = exact_locked_lanes(locks, manifest_rows)
@@ -370,7 +415,10 @@ def main() -> int:
         patch["repair_disposition"] = disposition
         patches[provider] = patch
 
-        if isinstance(model, dict):
+        # The diagnostic catalogue includes pending onboarding rows, but Brain
+        # static knowledge is executable/runtime reconstruction authority.
+        # Never manufacture a static Provider Object for a pending-only row.
+        if provider in runtime_ids and isinstance(model, dict):
             model["routeDataState"] = route_state
             model["repairDisposition"] = disposition
             static_row["model"] = model
@@ -381,10 +429,13 @@ def main() -> int:
 
     overrides["provider_patches"] = patches
     knowledge["providers"] = static
+    refresh_static_provider_counts(knowledge, len(static))
     summary = {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
         "catalogueProviderCount": len(manifest_rows),
+        "runtimeStaticProviderCount": len(static),
+        "diagnosticOnlyProviderCount": len(visible_ids - runtime_ids),
         "policy": {
             "activeBrokenProviderAllowed": True,
             "incompleteProviderEnabled": True,

@@ -1,3 +1,10 @@
+## 2026-11-27 — V80 : finalizer Repair séparé du catalogue diagnostic pending
+
+- Repair [46008634490](https://github.com/niakw/NiakVIO/actions/runs/46008634490), source `2d1ea0526a98`, atteint réellement le portfolio Brain. 5 providers sont dans la reprise canonique ; Brain traite AnikotoTV/Anime-Sama sur 6 vagues, **0 accepté**, puis le quick-yield voit Nakios et SadisFlix jouables mais **verified=0**. Donc **0 réparation**.
+- Le verrou terminal est ensuite `provider_route_reconstructor_test.py` : census route = 140 alors que `projection_runtime_visible_provider_count()=109`. Les 31 extras sont exactement les onboarding pending. Contrôle du blob Git courant `automation/provider-v3-static-knowledge.json@65eacc0c` : il est sain à **109**, SHA blob `d5e9024e...`. Le 140 est créé dans le workspace par `finalize_provider_repair_disposition_v1_impl.py`.
+- Cause : le finalizer parcourt les 140 providers diagnostiques, initialise `model={}` pour les pending absents du static, puis le test `isinstance(model, dict)` recrée une ligne static vide. Correction : diagnostics/overrides restent sur les 140 visibles, mais static knowledge est borné à `projection_runtime_visible_provider_ids()`; les extras pending sont retirés, tout runtime-visible manquant échoue, et les compteurs static sont resynchronisés. Test dédié reproduit runtime + retained + pending et vérifie l'exclusion pending ; il est branché dans la gate stratégie qui avait cassé le run.
+- Test logique isolé du filtre : PASS. CI/Repair réel sur le nouveau SHA à vérifier avant toute conclusion produit.
+
 ## 2026-11-27 — V79.3 : reprise Repair rendue déterministe
 
 - Repair [46001360755](https://github.com/niakw/NiakVIO/actions/runs/46001360755) a traité 4/8 providers avant budget : AnikotoTV, Anime-Sama, French Manga, Nakios ; non visités CorsFlix, FrenchStream, Moiflix, Primewire. L'ancien auto-resume dispatchait seulement `mode=repair`, donc la cohorte suivante dépendait indirectement du ranking de pression et pouvait retraiter un représentant déjà consommé.
