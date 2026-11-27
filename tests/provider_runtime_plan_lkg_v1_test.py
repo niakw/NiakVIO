@@ -4,10 +4,13 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import sys
 import tempfile
 from pathlib import Path
 
-SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "provider_runtime_plan_lkg_v1.py"
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+SCRIPT = ROOT / "scripts" / "provider_runtime_plan_lkg_v1.py"
 spec = importlib.util.spec_from_file_location("runtime_plan_lkg", SCRIPT)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None

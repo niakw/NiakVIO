@@ -1,3 +1,9 @@
+## 2026-11-27 — V77.8 : test Runtime Plan LKG charge ses dépendances siblings correctement
+
+- Repair [45985985610](https://github.com/niakw/NiakVIO/actions/runs/45985985610), source `5df023a2`, confirme que le correctif V21.6 fonctionne : les migrations V21.8/V21.9/V21.12 et les tests suivants avancent jusqu'à `provider_runtime_plan_lkg_v1_test.py`.
+- Nouveau blocage exact : ce test charge `scripts/provider_runtime_plan_lkg_v1.py` avec `importlib.util.spec_from_file_location` depuis la racine mais n'ajoute pas `scripts/` à `sys.path`; l'import sibling `current_provider_scope` échoue avec `ModuleNotFoundError`. Le script runtime lui-même est exécuté normalement depuis `scripts/` dans le pipeline ; le défaut est donc encore un harness de test, pas un défaut de plan LKG.
+- Correctif minimal : le test définit `ROOT`, ajoute `ROOT/scripts` à `sys.path` avant `exec_module`, puis conserve toutes ses assertions LKG existantes. `provider_external_drift_preservation_test.py`, test suivant du pipeline, lance son script en subprocess et n'a pas ce défaut. Aucun provider, ProviderBase, mémoire de preuve ou seuil d'acceptation modifié. Run 45985985610 : **0 réparation**, pipeline interrompu avant Brain.
+
 ## 2026-11-27 — V77.7 : V21.6 reconnaît le contrat ProviderBase accumulé moderne
 
 - Repair [45984797444](https://github.com/niakw/NiakVIO/actions/runs/45984797444), source `61e7e966`, exécute enfin le pipeline canonique réel. Baseline : 15 providers, 32 tâches, 93 probes, 6 résultats bruts, 4 jouables/acceptés, 2 vérifiés frais, 0 wrong-content ; jouables `hindmoviez,meowtv,papadustream,sadisflix`. Après overlay WAF, repairQueue=11. **Ce sont des preuves de baseline, pas des réparations.**
