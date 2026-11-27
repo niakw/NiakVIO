@@ -44,9 +44,14 @@ def classify(status: int, body: str) -> dict:
         shape = "script_html_2xx"
     else:
         shape = "unknown_response_shape"
+    matrix_counts = []
+    if shape == "catalogue_inline_token_episode":
+        from brain_layers.source_catalogue_inline_token_episode_source_fami_d2cf3259 import parse_episode_source
+        matrix_counts = [len(parse_episode_source(body, pos)) for pos in (1, 2)]
     return {
         "schemaVersion": 1,
         "source": "read-only-catalogue-episode-shape-oracle",
+        "episodeMatrixSampleCounts": matrix_counts,
         "shape": shape,
         "httpStatusClass": "2xx" if 200 <= status < 300 else "4xx" if 400 <= status < 500 else "5xx" if 500 <= status <= 599 else "other",
         "inlineSlotArrayObserved": slot,
