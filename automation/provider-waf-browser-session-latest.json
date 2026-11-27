@@ -6,46 +6,12 @@
   "targetCount": 74,
   "providerFilter": [],
   "attemptsPerTarget": 2,
-  "clientProfileMatrixEnabled": true,
+  "clientProfileMatrixEnabled": false,
   "clientProfiles": [
     {
       "id": "github-default-browser",
       "transportApproximation": "GitHub-hosted Chromium",
       "userAgent": "browser-default"
-    },
-    {
-      "id": "nuvio-tv-ua-browser",
-      "transportApproximation": "GitHub-hosted Chromium with audited NuvioTV default UA only",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      "nativeContract": {
-        "httpStack": "OkHttp",
-        "proxyPolicy": "Proxy.NO_PROXY",
-        "dnsPolicy": "IPv4FirstDns",
-        "redirects": "HTTP+SSL enabled"
-      }
-    },
-    {
-      "id": "nuvio-tv-okhttp-jvm",
-      "transportApproximation": "GitHub JVM OkHttp 4.12.0 with audited NuvioTV PluginRuntime policy",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      "nativeContractApproximation": {
-        "httpStack": "OkHttp 4.12.0",
-        "proxyPolicy": "Proxy.NO_PROXY",
-        "dnsPolicy": "IPv4FirstDns",
-        "redirects": "HTTP+SSL enabled",
-        "tlsRuntime": "GitHub JVM, not Android device"
-      }
-    },
-    {
-      "id": "nuvio-tv-direct-http-approx",
-      "transportApproximation": "GitHub libcurl with IPv4, NO_PROXY, redirects and audited NuvioTV UA",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      "nativeContractApproximation": {
-        "httpStack": "libcurl-not-OkHttp",
-        "proxyPolicy": "NO_PROXY",
-        "dnsPolicy": "IPv4 only",
-        "redirects": "enabled"
-      }
     }
   ],
   "limitations": [
@@ -112,7 +78,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "transport_inconclusive",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 24181
+      "durationMs": 24141
     },
     {
       "provider": "1jour1film0626",
@@ -164,7 +130,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "transport_inconclusive",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 24157
+      "durationMs": 24124
     },
     {
       "provider": "1jour1film0626",
@@ -216,7 +182,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "transport_inconclusive",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 24177
+      "durationMs": 24130
     },
     {
       "provider": "67movies",
@@ -1228,7 +1194,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3692
+      "durationMs": 4974
     },
     {
       "provider": "animejlprovider",
@@ -1284,7 +1250,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3593
+      "durationMs": 4243
     },
     {
       "provider": "animeonsen",
@@ -1340,7 +1306,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4544
+      "durationMs": 4236
     },
     {
       "provider": "animesalt",
@@ -1396,7 +1362,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 6068,
+      "durationMs": 5793,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -1480,7 +1446,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 5281
+      "durationMs": 5051
     },
     {
       "provider": "animevost-fr",
@@ -1663,7 +1629,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4428
+      "durationMs": 4297
     },
     {
       "provider": "arrowtv",
@@ -1719,7 +1685,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4395
+      "durationMs": 3771
     },
     {
       "provider": "arrowtv",
@@ -1775,14 +1741,14 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4181
+      "durationMs": 4363
     },
     {
       "provider": "chillflix",
       "lane": "movie",
-      "publicUrl": "https://www.chillflix.lol/movie/10513",
+      "publicUrl": "https://www.chillflix.lol/movie/118340",
       "host": "www.chillflix.lol",
-      "path": "/movie/10513",
+      "path": "/movie/118340",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1831,14 +1797,14 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3581
+      "durationMs": 3763
     },
     {
       "provider": "chillflix",
       "lane": "tv",
-      "publicUrl": "https://www.chillflix.lol/tv/43348",
+      "publicUrl": "https://www.chillflix.lol/tv/69050",
       "host": "www.chillflix.lol",
-      "path": "/tv/43348",
+      "path": "/tv/69050",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -1887,7 +1853,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3564
+      "durationMs": 3701
     },
     {
       "provider": "cinegram",
@@ -1943,7 +1909,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3758
+      "durationMs": 4072
     },
     {
       "provider": "cinetimes",
@@ -1999,7 +1965,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4223
+      "durationMs": 4301
     },
     {
       "provider": "cinetimes",
@@ -2055,7 +2021,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2604
+      "durationMs": 3174
     },
     {
       "provider": "coflix",
@@ -11657,33 +11623,42 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": true,
-      "providerCount": 1,
+      "available": false,
+      "providerCount": 0,
       "refreshedProviders": [
-        "french-anime"
+        "1jour1film0626",
+        "aniflix-uno",
+        "animejlprovider",
+        "animeonsen",
+        "animesalt",
+        "animesultra",
+        "arrowtv",
+        "chillflix",
+        "cinegram",
+        "cinetimes"
       ],
-      "replayedProviders": [
-        "french-anime"
-      ],
-      "rawProviders": [
-        "french-anime"
-      ],
-      "playableProviders": [
-        "french-anime"
-      ],
+      "replayedProviders": [],
+      "rawProviders": [],
+      "playableProviders": [],
       "verifiedProviders": [],
-      "byteMatchedProviders": [
-        "french-anime"
-      ],
-      "sourceNiakvioSha": "0dc34413c393cea8c97249b8281e095585b53d4c",
-      "runId": "46057677304",
+      "sourceNiakvioSha": "",
+      "runId": "",
       "proofAuthority": false,
       "publicationAuthority": false
     },
     "providerBundleDigestAuthority": "executed-global-vf-published-bytes"
   },
   "lastRefreshProviderFilter": [
-    "french-anime"
+    "1jour1film0626",
+    "aniflix-uno",
+    "animejlprovider",
+    "animeonsen",
+    "animesalt",
+    "animesultra",
+    "arrowtv",
+    "chillflix",
+    "cinegram",
+    "cinetimes"
   ],
   "residentialExitNodeLastAttempt": {
     "enabled": true,
@@ -11705,16 +11680,16 @@
     "proofAuthority": false,
     "publicationAuthority": false
   },
-  "currentRefreshProviderCount": 1,
-  "currentRefreshRowCount": 1,
+  "currentRefreshProviderCount": 10,
+  "currentRefreshRowCount": 16,
   "currentRefreshCounts": {
-    "browser_challenge_persisted": 1
-  },
-  "historicalRetainedRowCount": 73,
-  "historicalRetainedCounts": {
-    "browser_challenge_persisted": 29,
-    "browser_content_reached": 40,
-    "browser_inconclusive": 1,
+    "browser_challenge_persisted": 13,
     "browser_timeout": 3
+  },
+  "historicalRetainedRowCount": 58,
+  "historicalRetainedCounts": {
+    "browser_challenge_persisted": 17,
+    "browser_content_reached": 40,
+    "browser_inconclusive": 1
   }
 }

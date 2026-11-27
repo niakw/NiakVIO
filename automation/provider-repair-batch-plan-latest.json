@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "46056034654",
-  "sourceTriggerSha": "d990c611773d05889e354d875d04484647144e3b",
-  "unresolvedProviderCount": 67,
+  "sourceRunId": "46057426669",
+  "sourceTriggerSha": "5e7307d15b5bd8d1fc3e4263266f8e5edcead3f0",
+  "unresolvedProviderCount": 68,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
     "hindmoviez",
@@ -12,9 +12,7 @@
     "papadustream",
     "stigstream"
   ],
-  "lifecycleSuppressedDynamicProviders": [
-    "animevostfr"
-  ],
+  "lifecycleSuppressedDynamicProviders": [],
   "dynamicVariantCurrentObservedProviders": [
     "1jour1film0626",
     "4khdhub",
@@ -37,7 +35,6 @@
     "anisama",
     "arrowtv",
     "boredflix",
-    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -63,15 +60,11 @@
     "fullanime",
     "hexa",
     "hianime",
-    "hindmoviez",
     "ihavenotv",
-    "internet-archive",
     "kehflix",
     "kidraz",
-    "kurage",
     "latestmovies",
     "mallumv",
-    "meowtv",
     "moiflix",
     "moviebite",
     "moviebox",
@@ -80,9 +73,7 @@
     "movish",
     "movix-fr",
     "movy",
-    "mugiwarastream",
     "nakios",
-    "neko-sama",
     "neobam",
     "neonflix",
     "overlook",
@@ -119,14 +110,13 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
-    "webflix",
     "wookafr",
     "yflix",
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": false,
+  "dynamicVariantFallbackUsed": true,
   "groupCount": 9,
   "executionModel": {
     "default": "family/signature batch",
@@ -163,7 +153,7 @@
         "residential-exit-native-reachable"
       ],
       "transportSignature": "not-applicable",
-      "providerCount": 39,
+      "providerCount": 40,
       "providers": [
         "1jour1film0626",
         "anikototv",
@@ -173,6 +163,7 @@
         "boredflix",
         "cinegram",
         "cinemabz",
+        "cinematheque-de-bretagne",
         "cinetimes",
         "dulourd",
         "emnexmovies",
@@ -364,7 +355,7 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable",
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:github-all-transports-challenged",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver"
@@ -378,9 +369,9 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "residential-exit-native-reachable"
+        "github-all-transports-challenged"
       ],
-      "transportSignature": "residential-exit-native-reachable",
+      "transportSignature": "github-all-transports-challenged",
       "providerCount": 1,
       "providers": [
         "french-anime"
