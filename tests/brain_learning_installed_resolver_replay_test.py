@@ -74,10 +74,15 @@ assert player_frontier["failureClass"]=="media_extraction_gap",player_frontier
 assert player_frontier["learningCausalFailureRequested"]=="media_extraction_gap",player_frontier
 assert player_frontier["learningCausalFailureApplied"] is True,player_frontier
 assert player_frontier["learningPreferredRequested"]=="",player_frontier
-assert queue.SESSION_BOOTSTRAP_FOLLOWUP_PROFILE not in player_frontier["postExhaustionCandidateProfiles"],player_frontier
+# Session bootstrap belongs to the terminal-media family, but mere family
+# membership never grants selection. A causal network/session signal must
+# request it explicitly.
+assert queue.SESSION_BOOTSTRAP_FOLLOWUP_PROFILE in player_frontier["postExhaustionCandidateProfiles"],player_frontier
+assert player_frontier["learningPreferredSelected"] is False,player_frontier
+assert player_frontier["postExhaustionStrategyProfile"]!=queue.SESSION_BOOTSTRAP_FOLLOWUP_PROFILE,player_frontier
 
 # A sanitized exact-parent scripted player with request bootstrap should reuse
-# the already-installed document request-contract Lego before Architecture
+# the already-installed document request-contract Bloc before Architecture
 # FORCE invents another player extractor family.
 request_contract=plan(
  profile=queue.PLAYER_REQUEST_CONTRACT_PROFILE,
@@ -91,7 +96,7 @@ assert request_contract["postExhaustionStrategyProfile"]=="document_request_cont
 assert request_contract["allowedProfiles"]==["document_request_contract_mining_v2"],request_contract
 assert request_contract["failureClass"]=="media_extraction_gap",request_contract
 
-# Once this exact installed Lego was genuinely executed and rejected, the same
+# Once this exact installed Bloc was genuinely executed and rejected, the same
 # preferred handoff must fail closed and rotate instead of looking fresh again.
 request_contract_v1_negative=[{
  "providerId":"resolver-representative",
