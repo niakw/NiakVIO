@@ -544,7 +544,7 @@ def network_causal_followup(
     source_profile: str = PLAYER_REQUEST_CONTRACT_PROFILE,
     failure_class: str = PLAYER_REQUEST_CONTRACT_FAILURE,
 ) -> dict[str, str] | None:
-    """Turn sanitized executed-negative network facts into one next causal Lego.
+    """Turn sanitized executed-negative network facts into one next causal Bloc.
 
     This is decision evidence only. It never grants proof, playback, mutation or
     publication authority. The transition is intentionally narrow: the scripted
@@ -563,7 +563,7 @@ def network_causal_followup(
     # Do not suppress the causal proposal merely because an older implementation
     # of the same profile executed. Implementation freshness belongs to the
     # planner's strategyImplementationFingerprint-aware negative memory. This is
-    # essential when a Lego evolves from session-only to resolver+V2+session:
+    # essential when a Bloc evolves from session-only to resolver+V2+session:
     # the old negative remains historical evidence but cannot veto new bytes.
 
     candidates: list[dict[str, Any]] = []
@@ -785,14 +785,20 @@ def apply_diagnostic_network_backfill(
     key = _phase_experiment_key(backfill)
     safe = sanitize_network_execution_summary(backfill.get("networkExecutionSummary"))
     safe_delta = sanitize_network_execution_delta(backfill.get("networkExecutionDelta"))
-    if "providerRequestCount" not in safe or "providerRequestDelta" not in safe_delta:
-        raise ValueError("diagnostic backfill requires sanitized network telemetry and delta")
+    has_summary = "providerRequestCount" in safe
+    has_delta = "providerRequestDelta" in safe_delta
+    if not has_summary and not has_delta:
+        raise ValueError("diagnostic backfill requires sanitized network telemetry or delta")
     matched = 0
     for row in rows:
         if not isinstance(row, dict) or _phase_experiment_key(row) != key:
             continue
-        row["networkExecutionSummary"] = copy.deepcopy(safe)
-        row["networkExecutionDelta"] = copy.deepcopy(safe_delta)
+        # Absolute telemetry and candidate-minus-parent delta may arrive in
+        # separate diagnostic passes. Neither is a new experiment attempt.
+        if has_summary:
+            row["networkExecutionSummary"] = copy.deepcopy(safe)
+        if has_delta:
+            row["networkExecutionDelta"] = copy.deepcopy(safe_delta)
         matched += 1
     if matched != 1:
         raise ValueError(
