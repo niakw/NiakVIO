@@ -68,3 +68,26 @@ assert "exact_parent_match" in integration
 assert "current = max(matched, key=run_number)" in integration
 
 print("FIELD_BRAIN_SINGLE_AUTHORITY_CONTRACT verified=true")
+
+# Every workflow that can generate, select, or execute repair guidance must use
+# the same validated Brain authority. Workflows dedicated solely to qualifying a
+# new Brain revision are intentionally outside this list.
+operational_brain_workflows = (
+    ".github/workflows/brain-learning-lab.yml",
+    ".github/workflows/brain-disabled-recovery-lab.yml",
+    ".github/workflows/brain-hosted-repair-check.yml",
+    ".github/workflows/provider-recognition-repair-v6.yml",
+)
+for relative in operational_brain_workflows:
+    workflow = (ROOT / relative).read_text(encoding="utf-8")
+    assert "scripts/resolve_validated_brain_pin.py" in workflow, relative
+    assert (
+        "git ls-remote https://github.com/niakw/NiakVIO-Brain-LLM.git refs/heads/main"
+        not in workflow
+    ), f"{relative}: moving Brain main reintroduced as execution authority"
+
+fast_repair = (ROOT / ".github/workflows/provider-fast-repair.yml").read_text(
+    encoding="utf-8"
+)
+assert "scripts/resolve_validated_brain_pin.py --sha-only" in fast_repair
+assert "--brain-llm-sha" in fast_repair
