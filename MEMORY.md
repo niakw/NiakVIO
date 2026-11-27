@@ -1,3 +1,10 @@
+## 2026-11-27 — V77 : Qwen appelé mais son expérience n'était pas celle exécutée
+
+- Learning Corsflix [45946323839](https://github.com/niakw/NiakVIO/actions/runs/45946323839), Brain `d705de3d` : pré-route/planner `llm_repair`, Qwen réellement exécuté (`llm_calls=1`). Guidance principale : `chain_terminal_extractor_v1`, fingerprint `91892ede401af15446778155fc6846557876088459e7091e2f0b71dd899726f9`. Pourtant le runtime exécute `chain_terminal_extractor_v1_g4`, 0 stream/0 playable, et le ledger porte un fingerprint LLM vide.
+- Nakios [45946245152](https://github.com/niakw/NiakVIO/actions/runs/45946245152) présente le même défaut : Qwen produit `37360b6c30bedd09106b1da3708a09f0868d09f68c732def08d0f98d90480ff2`, mais `player_media_extractor_v1_g3` s'exécute avec fingerprint vide.
+- Cause code : `plan-repairs.mjs` sélectionnait `postExhaustionStrategyHint` avant l'advisor ; `strategyEscalated=true` supprimait ensuite la guidance. `adaptive_runtime/runtime_repair.py` efface volontairement `llm_experiment` quand un post-exhaustion profile possède le programme. Les ledgers v68 étaient donc exacts : le modèle était appelé mais **pas exécuté**.
+- Politique corrigée : replay positif strict > FORCE explicite > expérience advisor fraîche/fingerprintée > fallback post-exhaustion codé. Un fingerprint exécuté/rejeté est ensuite filtré normalement ; aucun garde playback/identité n'est relâché. Test ciblé exige advisor-first puis fallback déterministe après rejet exact. **0 nouvelle réparation provider** à ce stade.
+
 ## 2026-11-27 — V76 : Repair canonique V17 aligné sur le ProviderBase V28
 
 - Repair canonique [45941195364](https://github.com/niakw/NiakVIO/actions/runs/45941195364), source `640d57bfe793`, échoue avant sélection provider dans `upgrade_provider_search_detail_bridge_v17.py` : `AssertionError: V17 missing const crawled = await _crawlDirectMedia(_uniq(details).slice(0, 8)`. Métadonnées finales : selected=0, candidates=0, validated=0, outcome=failure. **0 réparation**.

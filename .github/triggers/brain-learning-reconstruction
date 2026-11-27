@@ -1,14 +1,14 @@
-Brain Learning V75 — Primewire 3/3 executed terminal fingerprints, require real Qwen escalation.
-source_niakvio_main_pretrigger_sha: 762829b619a3594642a36fb3cd604ae6bc42def6
+Brain Learning V77 — execute the Qwen fingerprint, do not replace it with coded post-exhaustion fallback.
+source_niakvio_main_pretrigger_sha: 9109dc38cfeef3a2af5622b809796433a1eadc2d
 source_brain_main_sha: d705de3daba4b59fc7990618e819276e87df7191
-source_learning_run_id: 45940048236
-published_learning_blob: f2c2451c7cb9fb6b84a0710c25d9286262bae57c
+source_learning_run_id: 45946323839
 requested_at: 2026-11-27
-target_provider:
-target_providers: primewire
+target_provider: corsflix
+target_providers:
 architecture_force: false
 budget_minutes: 90
-chain_terminal_executed_fingerprints: c1c5bdb37b68178d79437c8c245c91346eeb34eb2041773c4ff696f2da3b6d98;9ebbb0c39146df58c94988c2e0876ff7fcc2d4b08bda2f9afe7f6a2650c80d20;a149c7311570e801dfbc4311429aa2897ea20a012cb4946c362763662244ec40
-reason: Published cross-day experiment memory proves three distinct executed/rejected fingerprints for chain_terminal_extractor_v1. The deterministic advisor budget is exhausted for this exact executor.
-proof_goal: Pin Brain d705de3d. Pre-route must select llm_repair with advisor_memory_sources=1 and llm_needed=true. Start local Qwen. Planner must report routing_modes.llm_repair=1 and llm_calls>0. Persist the model-produced experiment fingerprint and execute its selected profile/strategy. Record streams, playable, content identity, candidate/providerProposal bytes and safety verdict. Replaying c1c5, 9ebb or a149 is a failure.
-publication_policy: zero repair absent compiled/applied/rematerialized candidate bytes, exact-byte playable correct-content replay, official NuvioTV decoded video/audio/identity, and non-regression.
+observed_qwen_fingerprint: 91892ede401af15446778155fc6846557876088459e7091e2f0b71dd899726f9
+observed_wrong_executor: chain_terminal_extractor_v1_g4
+causal_bug: Qwen returned a fresh fingerprinted experiment, but plan-repairs selected postExhaustionStrategyProfile first; adaptive runtime therefore blanked llm_experiment/fingerprint and executed the coded g4 strategy instead.
+proof_goal: After base exhaustion, a fresh compatible advisor fingerprint must set llmAdvisorApplied=true and llmAdvisorExplorationRescue=true, leave postExhaustionStrategyProfile empty, reach adaptive runtime with llm_experiment_applied=true and the exact selected fingerprint, then persist that exact fingerprint with executionObserved=true if the child is really retested. If it is rejected, the next plan may fall back to another executor. Record streams/playable/identity and providerProposal/candidate bytes.
+publication_policy: 0 repair absent compiled/applied/rematerialized candidate bytes, exact-byte playable correct-content replay, official NuvioTV decoded video/audio/identity and non-regression.

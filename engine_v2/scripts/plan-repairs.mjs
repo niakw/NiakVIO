@@ -1078,9 +1078,36 @@ function buildPlan(item) {
   const forcePreferredSelectedEarly = (
     forcePreferredEligible && earlyForceHint.profile === forcePreferredProfile
   );
+  // A fresh fingerprinted advisor experiment is executable Brain output, not
+  // decoration. After base exhaustion it must get one bounded attempt before
+  // a generic coded post-exhaustion strategy. Otherwise Qwen can be called
+  // successfully while another executor actually runs, losing causal
+  // attribution and poisoning the learning loop. Strict same-provider positive
+  // replay and an explicit architecture-FORCE preferred profile remain stronger
+  // authorities.
+  const preEscalationLlmAdvisorHint = (
+    explorationMode
+    && experimentExhausted
+    && !positiveProgramReplayHint.profile
+    && !forcePreferredProfile
+  )
+    ? llmAdvisorStrategyHint(
+        providerId,
+        evidence.failureClass,
+        causalFamilyMemoryMatches,
+        rotateEvery,
+        true,
+      )
+    : { profile: "", strategy: "", confidence: 0, experiment: {}, experimentFingerprint: "", guidanceKind: "" };
+  const preEscalationLlmExecutable = Boolean(
+    preEscalationLlmAdvisorHint.profile
+    && /^[0-9a-f]{64}$/.test(
+      stringValue(preEscalationLlmAdvisorHint.experimentFingerprint).toLowerCase(),
+    )
+  );
   const postExhaustionHint = positiveProgramReplayHint.profile
     ? positiveProgramReplayHint
-    : (explorationMode && experimentExhausted)
+    : (explorationMode && experimentExhausted && !preEscalationLlmExecutable)
       ? postExhaustionStrategyHint(
           evidence.failureClass, causalFamilyMemoryMatches, rotateEvery,
           forcePreferredProfile, sourceEligibility,
@@ -1102,19 +1129,21 @@ function buildPlan(item) {
       || canonicalFailureClass(evidence.failureClass) === "unknown_failure"
     )
   );
-  const metaGapAdvisorHint = (
-    explorationMode
-    && (experimentExhausted || architectureGapEscalation)
-    && !strategyEscalated
-  )
-    ? llmAdvisorStrategyHint(
-        providerId,
-        evidence.failureClass,
-        causalFamilyMemoryMatches,
-        rotateEvery,
-        true,
+  const metaGapAdvisorHint = preEscalationLlmExecutable
+    ? preEscalationLlmAdvisorHint
+    : (
+        explorationMode
+        && (experimentExhausted || architectureGapEscalation)
+        && !strategyEscalated
       )
-    : { profile: "", strategy: "", confidence: 0, experiment: {}, experimentFingerprint: "", guidanceKind: "" };
+      ? llmAdvisorStrategyHint(
+          providerId,
+          evidence.failureClass,
+          causalFamilyMemoryMatches,
+          rotateEvery,
+          true,
+        )
+      : { profile: "", strategy: "", confidence: 0, experiment: {}, experimentFingerprint: "", guidanceKind: "" };
   const metaGapEscalated = (
     Boolean(metaGapAdvisorHint.profile)
     && stringValue(metaGapAdvisorHint.guidanceKind).toLowerCase() === "meta-gap-synthesis"
@@ -1171,24 +1200,26 @@ function buildPlan(item) {
   // A strict same-provider positive program is stronger evidence than an
   // advisory hypothesis. Once selected as the production rescue, it owns the
   // bounded attempt and the LLM advisor must not re-open a mixed execution set.
-  const candidateLlmAdvisorHint = metaGapEscalated
-    ? metaGapAdvisorHint
-    : (
-        !providerPositiveProgramProductionRescue
-        // Exhausting deterministic generations must not erase genuinely new
-        // fingerprinted LLM hypotheses in Learning. The advisor selector still
-        // rejects executed negative fingerprints and caps each executor family.
-        // Do not override an eligible evolved executor already selected.
-        && (!experimentExhausted || !learningMode || !strategyEscalated)
-      )
-      ? llmAdvisorStrategyHint(
-          providerId,
-          evidence.failureClass,
-          causalFamilyMemoryMatches,
-          rotateEvery,
-          experimentExhausted,
+  const candidateLlmAdvisorHint = preEscalationLlmExecutable
+    ? preEscalationLlmAdvisorHint
+    : metaGapEscalated
+      ? metaGapAdvisorHint
+      : (
+          !providerPositiveProgramProductionRescue
+          // Before base exhaustion the advisor remains ordinary hypothesis
+          // ordering. After exhaustion, the pre-escalation selector above owns
+          // any fresh fingerprinted experiment; only its absence allows a coded
+          // post-exhaustion executor to take control.
+          && (!experimentExhausted || !learningMode || !strategyEscalated)
         )
-      : { profile: "", strategy: "", confidence: 0, experiment: {}, experimentFingerprint: "", guidanceKind: "" };
+        ? llmAdvisorStrategyHint(
+            providerId,
+            evidence.failureClass,
+            causalFamilyMemoryMatches,
+            rotateEvery,
+            experimentExhausted,
+          )
+        : { profile: "", strategy: "", confidence: 0, experiment: {}, experimentFingerprint: "", guidanceKind: "" };
   const llmAdvisorHint = (
     learningMode && experimentExhausted
     && !/^[0-9a-f]{64}$/.test(stringValue(candidateLlmAdvisorHint.experimentFingerprint).toLowerCase())

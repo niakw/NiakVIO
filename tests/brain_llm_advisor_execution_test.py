@@ -231,67 +231,29 @@ fresh_generated = plan("repair", [
 ], guidance_rows=[], exploration_chain=True)
 assert fresh_generated["postExhaustionStrategyProfile"] == "route_transition_graph_v3", fresh_generated
 
-# Fast Repair exploration must execute a sanitized Learning advisor after the
-# ordinary g2 variants and every coded post-exhaustion strategy are exhausted.
-# It remains sandbox-only: base exhaustion stays visible, while the learned
-# hypothesis itself is non-exhausted until current-byte validation actually runs.
+# After ordinary variants are exhausted, a fresh fingerprinted advisor
+# experiment owns the next bounded attempt BEFORE generic coded post-exhaustion
+# strategies. This is the causal Qwen -> execution bridge: a successful model
+# call must not be silently replaced by another executor.
 exploration_memory=list(exhausted_memory)
-exploration_plan=None
-first_exploration_plan=plan("repair",exploration_memory,rescue_guidance,True)
-# The Brain adds/removes executable strategy Lego dynamically. A fixed
-# range(12) failed immediately after Qwen successfully promoted v3 and
-# the planner grew from 11 to 12 valid profiles (real run 37978457715).
-# Bound the exercise to the actual planner-owned candidate inventory plus
-# one final replan, preserving the hard requirement to converge.
-candidate_profiles=first_exploration_plan["postExhaustionCandidateProfiles"]
-assert isinstance(candidate_profiles,list) and 1<=len(candidate_profiles)<=64,candidate_profiles
-assert len(set(candidate_profiles))==len(candidate_profiles),candidate_profiles
-explored_profiles=set()
-for _attempt in range(len(candidate_profiles)+1):
-    exploration_plan=(first_exploration_plan if _attempt==0 else
-                      plan("repair",exploration_memory,rescue_guidance,True))
-    assert exploration_plan["baseExperimentExhausted"] is True,exploration_plan
-    if not exploration_plan.get("strategyEscalated"):
-        break
-    profile=exploration_plan["postExhaustionStrategyProfile"]
-    implementation_fp=exploration_plan["strategyImplementationFingerprint"]
-    assert profile and implementation_fp,exploration_plan
-    assert profile in candidate_profiles,("unexpected planner strategy",profile,candidate_profiles)
-    assert profile not in explored_profiles,("replayed exhausted strategy",profile)
-    explored_profiles.add(profile)
-    exploration_memory.append({
-        "providerId":"synthetic-llm-advisor",
-        "failureClass":"route_proven_gap",
-        "experimentVariant":4,
-        "experimentGeneration":2,
-        "profile":profile,
-        "strategyImplementationFingerprint":implementation_fp,
-        "failures":1,
-        "consecutiveFailures":1,
-        "successes":0,
-        "executionObserved":True,
-        "lastOutcome":"rejected",
-        "lastReason":"synthetic_post_exhaustion_strategy_failed",
-    })
-else:
-    raise AssertionError(("post-exhaustion strategies did not converge",exploration_plan))
+advisor_first=plan("repair",exploration_memory,rescue_guidance,True)
+assert advisor_first["baseExperimentExhausted"] is True,advisor_first
+assert advisor_first["strategyEscalated"] is False,advisor_first
+assert advisor_first["postExhaustionStrategyProfile"]=="",advisor_first
+assert advisor_first["llmAdvisorApplied"] is True,advisor_first
+assert advisor_first["llmAdvisorRescue"] is False,advisor_first
+assert advisor_first["llmAdvisorExplorationRescue"] is True,advisor_first
+assert advisor_first["llmAdvisorProfile"]=="search_contract_inference_v1",advisor_first
+assert advisor_first["llmAdvisorExperimentFingerprint"]=="a"*64,advisor_first
+assert advisor_first["allowedProfiles"][0]=="search_contract_inference_v1",advisor_first
+assert advisor_first["action"]=="probe-targeted-repair",advisor_first
+assert advisor_first["exitReason"] is None,advisor_first
+assert advisor_first["repairType"]=="synthesized_strategy",advisor_first
+assert advisor_first["learningDisposition"]=="execute_learning_advisor_strategy",advisor_first
 
-assert len(explored_profiles)<=len(candidate_profiles)
-assert exploration_plan is not None
-assert exploration_plan["strategyEscalated"] is False,exploration_plan
-assert exploration_plan["baseExperimentExhausted"] is True,exploration_plan
-assert exploration_plan["experimentExhausted"] is False,exploration_plan
-assert exploration_plan["llmAdvisorApplied"] is True,exploration_plan
-assert exploration_plan["llmAdvisorRescue"] is False,exploration_plan
-assert exploration_plan["llmAdvisorExplorationRescue"] is True,exploration_plan
-assert exploration_plan["llmAdvisorProfile"]=="search_contract_inference_v1",exploration_plan
-assert exploration_plan["allowedProfiles"][0]=="search_contract_inference_v1",exploration_plan
-assert exploration_plan["action"]=="probe-targeted-repair",exploration_plan
-assert exploration_plan["exitReason"] is None,exploration_plan
-assert exploration_plan["repairType"]=="synthesized_strategy",exploration_plan
-assert exploration_plan["learningDisposition"]=="execute_learning_advisor_strategy",exploration_plan
-
-exploration_failed=plan("repair",[
+# Once the exact advisor fingerprint was genuinely executed/rejected, it is
+# filtered and the deterministic post-exhaustion family becomes the fallback.
+advisor_failed_memory=[
     *exploration_memory,
     {
         "providerId":"synthetic-llm-advisor",
@@ -307,10 +269,53 @@ exploration_failed=plan("repair",[
         "lastOutcome":"rejected",
         "lastReason":"executed_candidate_failed_validation",
     },
-],rescue_guidance,True)
-assert exploration_failed["llmAdvisorExplorationRescue"] is False,exploration_failed
-assert exploration_failed["llmAdvisorApplied"] is False,exploration_failed
-assert exploration_failed["experimentExhausted"] is True,exploration_failed
+]
+fallback_first=plan("repair",advisor_failed_memory,rescue_guidance,True)
+assert fallback_first["llmAdvisorApplied"] is False,fallback_first
+assert fallback_first["llmAdvisorExplorationRescue"] is False,fallback_first
+assert fallback_first["strategyEscalated"] is True,fallback_first
+assert fallback_first["postExhaustionStrategyProfile"],fallback_first
+
+# The coded fallback family must still rotate deterministically and converge
+# without replaying an exhausted implementation.
+candidate_profiles=fallback_first["postExhaustionCandidateProfiles"]
+assert isinstance(candidate_profiles,list) and 1<=len(candidate_profiles)<=64,candidate_profiles
+assert len(set(candidate_profiles))==len(candidate_profiles),candidate_profiles
+fallback_memory=list(advisor_failed_memory)
+explored_profiles=set()
+fallback_plan=fallback_first
+for _attempt in range(len(candidate_profiles)+1):
+    if not fallback_plan.get("strategyEscalated"):
+        break
+    profile=fallback_plan["postExhaustionStrategyProfile"]
+    implementation_fp=fallback_plan["strategyImplementationFingerprint"]
+    assert profile and implementation_fp,fallback_plan
+    assert profile in candidate_profiles,("unexpected planner strategy",profile,candidate_profiles)
+    assert profile not in explored_profiles,("replayed exhausted strategy",profile)
+    explored_profiles.add(profile)
+    fallback_memory.append({
+        "providerId":"synthetic-llm-advisor",
+        "failureClass":"route_proven_gap",
+        "experimentVariant":4,
+        "experimentGeneration":2,
+        "profile":profile,
+        "strategyImplementationFingerprint":implementation_fp,
+        "failures":1,
+        "consecutiveFailures":1,
+        "successes":0,
+        "executionObserved":True,
+        "lastOutcome":"rejected",
+        "lastReason":"synthetic_post_exhaustion_strategy_failed",
+    })
+    fallback_plan=plan("repair",fallback_memory,rescue_guidance,True)
+else:
+    raise AssertionError(("post-exhaustion strategies did not converge",fallback_plan))
+
+assert len(explored_profiles)<=len(candidate_profiles)
+assert fallback_plan["strategyEscalated"] is False,fallback_plan
+assert fallback_plan["llmAdvisorApplied"] is False,fallback_plan
+assert fallback_plan["llmAdvisorExplorationRescue"] is False,fallback_plan
+assert fallback_plan["experimentExhausted"] is True,fallback_plan
 
 brain=(ROOT/"scripts/brain_repair_runtime.py").read_text(encoding="utf-8")
 overlay=(ROOT/"scripts/adaptive_runtime/brain_repair_runtime.py").read_text(encoding="utf-8")

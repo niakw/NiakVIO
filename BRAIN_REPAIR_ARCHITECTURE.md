@@ -1,3 +1,7 @@
+## 2026-11-27 — Propriété causale des expériences advisor après épuisement
+
+Après épuisement des variantes de base, une expérience advisor compatible portant un fingerprint SHA-256 valide est un programme Brain exécutable, pas une simple annotation. Ordre d'autorité : programme positif strict du même provider ; replay FORCE explicitement demandé ; expérience advisor fraîche ; stratégie post-exhaustion codée. Le runtime ne doit persister le fingerprint advisor comme exécuté que si ses paramètres ont réellement possédé le programme testé. Après rejet exact, le fingerprint est filtré et le fallback codé peut reprendre la main. Les gates de lecture, identité et non-régression restent inchangées.
+
 ## 2026-11-27 — Escalade modèle après dette exécutée 3/3
 
 Le seuil de trois fingerprints distincts exécutés/rejetés pour `chain_terminal_extractor_v1` est maintenant atteint sur Primewire. La prochaine décision n'a plus le droit de recycler une quatrième recette déterministe du même executor : le Brain-LLM doit passer par `llm_repair`. La preuve attendue comporte séparément le routage, l'appel modèle, la nouvelle hypothèse, son fingerprint, son exécution effective et son verdict de lecture. Aucun de ces stades intermédiaires n'est une réparation provider.
