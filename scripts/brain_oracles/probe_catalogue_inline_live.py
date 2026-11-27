@@ -12,6 +12,7 @@ or granted playback/mutation authority.
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import json
 import re
@@ -421,6 +422,77 @@ def _request_bootstrap_structure(source: str, page_url: str) -> dict[str, int]:
         if not changed:
             break
 
+    def static_expr_value(expr: str, resolved: dict[str, str]) -> str | None:
+        value = str(expr or "").strip()
+        if not value or len(value) > 1000:
+            return None
+        parts: list[str] = []
+        buf = ""
+        quote = ""
+        escaped = False
+        for char in value:
+            if escaped:
+                buf += char
+                escaped = False
+                continue
+            if char == "\\" and quote:
+                buf += char
+                escaped = True
+                continue
+            if quote:
+                buf += char
+                if char == quote:
+                    quote = ""
+                continue
+            if char in {"\"", "'"}:
+                quote = char
+                buf += char
+                continue
+            if char == "+":
+                parts.append(buf.strip())
+                buf = ""
+                continue
+            buf += char
+        if quote:
+            return None
+        parts.append(buf.strip())
+        if not parts or any(not part for part in parts):
+            return None
+        output = ""
+        for part in parts:
+            if (
+                len(part) >= 2
+                and part[0] in {"\"", "'"}
+                and part[-1] == part[0]
+            ):
+                try:
+                    decoded = ast.literal_eval(part)
+                except (ValueError, SyntaxError):
+                    return None
+                if not isinstance(decoded, str):
+                    return None
+                output += decoded
+            elif re.fullmatch(r"[A-Za-z_$][A-Za-z0-9_$]*", part) and part in resolved:
+                output += resolved[part]
+            else:
+                return None
+            if len(output) > 1600:
+                return None
+        return output
+
+    static_values: dict[str, str] = {}
+    for _pass in range(4):
+        changed = False
+        for name, expr in declarations.items():
+            if name in static_values:
+                continue
+            value = static_expr_value(expr, static_values)
+            if value is not None:
+                static_values[name] = value
+                changed = True
+        if not changed:
+            break
+
     literal = dynamic = template = concatenated = 0
     identifier = member = call_expression = other_dynamic = 0
     identifier_static = identifier_unresolved = 0
@@ -433,6 +505,44 @@ def _request_bootstrap_structure(source: str, page_url: str) -> dict[str, int]:
         base.port,
     ) if base.scheme in {"http", "https"} and base.hostname else None
 
+    static_candidate = static_same_origin = static_cross_origin = 0
+    static_media_intent = static_same_origin_media_intent = 0
+
+    def classify_static_candidate(raw_value: str) -> None:
+        nonlocal static_candidate, static_same_origin, static_cross_origin
+        nonlocal static_media_intent, static_same_origin_media_intent
+        if not raw_value or len(raw_value) > 1600 or not base_origin:
+            return
+        try:
+            parsed = urllib.parse.urlsplit(
+                urllib.parse.urljoin(str(page_url or ""), raw_value)
+            )
+        except ValueError:
+            return
+        origin = (
+            parsed.scheme.casefold(),
+            (parsed.hostname or "").casefold(),
+            parsed.port,
+        ) if parsed.scheme in {"http", "https"} and parsed.hostname else None
+        if not origin:
+            return
+        static_candidate += 1
+        is_same = origin == base_origin
+        if is_same:
+            static_same_origin += 1
+        else:
+            static_cross_origin += 1
+        path = (parsed.path + ("?" + parsed.query if parsed.query else "")).casefold()
+        media_intent = bool(re.search(
+            r"(?:api|ajax|source|stream|player|video|link|server|load|resolve|episode|file|media|manifest|playlist)",
+            path,
+            re.I,
+        ))
+        if media_intent:
+            static_media_intent += 1
+            if is_same:
+                static_same_origin_media_intent += 1
+
     for _kind, expr in calls:
         value = expr.strip()
         quote = value[:1]
@@ -444,6 +554,7 @@ def _request_bootstrap_structure(source: str, page_url: str) -> dict[str, int]:
         if is_literal:
             literal += 1
             raw_value = value[1:-1]
+            classify_static_candidate(raw_value)
             try:
                 parsed = urllib.parse.urlsplit(
                     urllib.parse.urljoin(str(page_url or ""), raw_value)
@@ -470,6 +581,8 @@ def _request_bootstrap_structure(source: str, page_url: str) -> dict[str, int]:
                 identifier += 1
                 if value in static_vars:
                     identifier_static += 1
+                    if value in static_values:
+                        classify_static_candidate(static_values[value])
                 else:
                     identifier_unresolved += 1
                     if value in declarations:
@@ -511,6 +624,11 @@ def _request_bootstrap_structure(source: str, page_url: str) -> dict[str, int]:
         "resolvedTargetRequestOtherDynamicUrlCount": min(32, other_dynamic),
         "resolvedTargetRequestSameOriginLiteralCount": min(32, same_origin),
         "resolvedTargetRequestCrossOriginLiteralCount": min(32, cross_origin),
+        "resolvedTargetRequestStaticCandidateCount": min(32, static_candidate),
+        "resolvedTargetRequestStaticSameOriginCount": min(32, static_same_origin),
+        "resolvedTargetRequestStaticCrossOriginCount": min(32, static_cross_origin),
+        "resolvedTargetRequestStaticMediaIntentCount": min(32, static_media_intent),
+        "resolvedTargetRequestStaticSameOriginMediaIntentCount": min(32, static_same_origin_media_intent),
     }
 
 
