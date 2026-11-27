@@ -70,10 +70,11 @@ guidance=[{
     "experimentFingerprint":"a"*64,
 }]
 
-def plan(mode:str,memory:list[dict]|None=None,guidance_rows:list[dict]|None=None,exploration_chain:bool=False):
+def plan(mode:str,memory:list[dict]|None=None,guidance_rows:list[dict]|None=None,exploration_chain:bool=False,causal_failure:str=""):
     payload={
         "mode":mode,
         "explorationChain":exploration_chain,
+        "learningCausalFailureClass":causal_failure,
         "policy":policy,
         "learnedSkills":{},
         "historicalSolutions":[],
@@ -115,6 +116,34 @@ incompatible_guidance=[{**guidance[0],"failureClass":"chain_terminal_gap"}]
 incompatible=plan("repair",guidance_rows=incompatible_guidance)
 assert incompatible["llmAdvisorApplied"] is False,incompatible
 assert incompatible["llmAdvisorFailureCompatibility"]=="",incompatible
+
+player_guidance=[{
+    **guidance[0],
+    "failureClass":"media_extraction_gap",
+    "strategy":"extract_cross_origin_player_terminal_media",
+    "profile":"player_media_extractor_v1",
+    "experimentFingerprint":"c"*64,
+    "experiment":{
+        **guidance[0]["experiment"],
+        "roleOrder":["player","source","api","episode","detail"],
+        "terminalOnly":True,
+        "maxDepth":4,
+    },
+}]
+player_frontier=plan(
+    "learning",
+    guidance_rows=player_guidance,
+    exploration_chain=True,
+    causal_failure="media_extraction_gap",
+)
+assert player_frontier["derivedFailureClass"]=="route_proven_gap",player_frontier
+assert player_frontier["learningCausalFailureRequested"]=="media_extraction_gap",player_frontier
+assert player_frontier["learningCausalFailureApplied"] is True,player_frontier
+assert player_frontier["failureClass"]=="media_extraction_gap",player_frontier
+assert player_frontier["llmAdvisorApplied"] is True,player_frontier
+assert player_frontier["llmAdvisorFailureCompatibility"]=="exact",player_frontier
+assert player_frontier["llmAdvisorProfile"]=="player_media_extractor_v1",player_frontier
+assert player_frontier["allowedProfiles"][0]=="player_media_extractor_v1",player_frontier
 
 # Legacy profile-wide debt cannot suppress a new v2 experiment fingerprint.
 legacy_debt=[{
