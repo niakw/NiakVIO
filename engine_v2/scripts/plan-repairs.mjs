@@ -783,6 +783,24 @@ function buildPlan(item) {
   const state = asRecord(item.state);
   const evidence = applyCensusPrior(deriveEvidence(candidate, result), candidate);
   evidence.failureClass = classifyFailure(evidence);
+  const derivedFailureClass = canonicalFailureClass(evidence.failureClass);
+  const learningCausalFailureClass = learningMode
+    ? canonicalFailureClass(input.learningCausalFailureClass)
+    : "";
+  const learningCausalFailureRefinable = new Set([
+    "unknown_failure",
+    "route_proven_gap",
+    "search_gap",
+    "chain_terminal_gap",
+    "media_extraction_gap",
+  ]);
+  const learningCausalFailureApplied = Boolean(
+    learningCausalFailureClass === "media_extraction_gap"
+    && learningCausalFailureRefinable.has(derivedFailureClass)
+  );
+  if (learningCausalFailureApplied) {
+    evidence.failureClass = learningCausalFailureClass;
+  }
   const rawResultEvidence = asRecord(result.evidence);
   const requiredTargetCategories = [...new Set(
     stringArray(rawResultEvidence.required_fixture_categories)
@@ -1411,6 +1429,9 @@ function buildPlan(item) {
     brainVersion: finiteNumber(plan.brainVersion, BRAIN_CONTROL_PLANE_VERSION),
     providerId,
     failureClass: stringValue(plan.failureClass, "unknown_failure"),
+    derivedFailureClass,
+    learningCausalFailureRequested: learningCausalFailureClass,
+    learningCausalFailureApplied,
     repairScope: effectiveRepairTarget.scope,
     repairType: effectiveRepairTarget.repairType,
     repairEngine: effectiveRepairTarget.engine,
