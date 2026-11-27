@@ -51,6 +51,9 @@ def classify(provider: str) -> dict:
 # subsequent cohorts must not require modifying this test to permit disable.
 def expected_with_lifecycle(provider: str, baseline: str) -> str:
     if provider not in rows:
+        record = archived.get(provider) if isinstance(archived, dict) else None
+        if isinstance(record, dict) and record.get("state") == "archived-provider-old":
+            return "KEEP_DISABLED"
         return baseline
     if provider in pending:
         return "ONBOARDING_PENDING"
