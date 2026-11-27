@@ -1,21 +1,18 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "46077010278",
+  "sourceRunId": "46077018118",
   "sourceTriggerSha": "c9ea5cd669e2a80e8b2284c0dc892bcc27519175",
   "unresolvedProviderCount": 67,
-  "dynamicVariantProviderCount": 7,
+  "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
     "hindmoviez",
     "meowtv",
-    "movish",
     "movix-fr",
     "nakios",
     "papadustream",
     "stigstream"
   ],
-  "lifecycleSuppressedDynamicProviders": [
-    "moviebox"
-  ],
+  "lifecycleSuppressedDynamicProviders": [],
   "dynamicVariantCurrentObservedProviders": [
     "1jour1film0626",
     "4khdhub",
@@ -195,7 +192,6 @@
         "provider-census-status.json:brainCheckRequired"
       ],
       "dynamicVariantProviders": [
-        "movish",
         "movix-fr"
       ],
       "executionPolicy": "batch-first",
@@ -264,7 +260,8 @@
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "chain",
-        "lookup"
+        "lookup",
+        "none"
       ],
       "dominantIssues": [
         "network_zero_result",
