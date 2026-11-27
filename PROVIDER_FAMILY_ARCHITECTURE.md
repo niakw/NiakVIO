@@ -1,3 +1,7 @@
+## Parallel Repair : guards de régression historiques
+
+Le sweep parallèle est limité aux providers actifs de la projection Global+France. Une demande explicite hors de ce scope est invalide et doit échouer. Une garde de régression, en revanche, est un contrôle historique : si son provider a quitté le scope actif, elle devient `staleRegressionGuardProviders` et est omise de la vague sans promouvoir, réactiver ni requalifier le provider. Les guards encore actifs continuent à contourner le skip green pour être réellement retestés.
+
 ## Repair : visibilité diagnostic ≠ autorité static runtime
 
 Le catalogue Global+France peut contenir des providers d'onboarding pending afin qu'ils restent observables et apprenables. Ils ne sont toutefois pas des Provider Objects exécutables. Le finalizer Repair doit donc conserver leurs diagnostics dans les overrides/rapports, tout en limitant `provider-v3-static-knowledge.json` à `projection_runtime_visible_provider_ids()`. Toute identité runtime-visible absente du static est un défaut d'autorité ; toute identité pending présente dans le static est une fuite de scope.

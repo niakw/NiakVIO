@@ -1,3 +1,10 @@
+## 2026-11-27 — V80.1 : Fast Repair ne bloque plus sur des guards historiques désactivés
+
+- Push `970b11b6` : Fast Repair [46011993471](https://github.com/niakw/NiakVIO/actions/runs/46011993471) échoue avant réseau dans `provider_parallel_sweep_plan_v1.py` : `unknown explicit/guard providers: kehflix,streamzo`.
+- Les deux IDs viennent de `automation/provider-fast-trigger.json` (trigger historique du 9 septembre) et sont actuellement **désactivés** dans Global et VF. Le planner est volontairement active-only ; ces guards ne peuvent donc plus être exécutés.
+- Contrat corrigé : un `explicitProvider` hors scope reste une erreur fail-closed ; un `regressionGuardProvider` historique non actif est classé `staleRegressionGuardProviders`, exclu de la sélection et ne bloque plus la vague automatique. Le test de projection calcule les guards stale depuis le trigger réel et vérifie qu'aucun ne fuit dans `selectedProviders`.
+- Ce correctif ne change aucun statut provider et ne transforme aucune ancienne preuve en FULL OK. **0 réparation** supplémentaire.
+
 ## 2026-11-27 — V80 : finalizer Repair séparé du catalogue diagnostic pending
 
 - Repair [46008634490](https://github.com/niakw/NiakVIO/actions/runs/46008634490), source `2d1ea0526a98`, atteint réellement le portfolio Brain. 5 providers sont dans la reprise canonique ; Brain traite AnikotoTV/Anime-Sama sur 6 vagues, **0 accepté**, puis le quick-yield voit Nakios et SadisFlix jouables mais **verified=0**. Donc **0 réparation**.

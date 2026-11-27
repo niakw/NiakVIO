@@ -29,6 +29,22 @@ assert france_only <= planned_set, (
     + ",".join(sorted(france_only))
 )
 
+# Historical regression guards may outlive activation. They must not block the
+# active-only parallel sweep, while explicit unknown operator requests remain
+# fail-closed in the planner.
+plan = planner.plan(24, 4)
+trigger = planner.load(planner.TRIGGER) if planner.TRIGGER.exists() else {}
+requested_guards = {
+    planner.cid(value)
+    for value in trigger.get("regressionGuardProviders") or []
+    if planner.cid(value)
+}
+expected_stale = requested_guards - planned_set
+assert set(plan["staleRegressionGuardProviders"]) == expected_stale, plan
+assert not (set(plan["selectedProviders"]) & expected_stale), plan
+assert "unknown explicit providers:" in (ROOT / "scripts/provider_parallel_sweep_plan_v1.py").read_text(encoding="utf-8")
+assert "unknown explicit/guard providers:" not in (ROOT / "scripts/provider_parallel_sweep_plan_v1.py").read_text(encoding="utf-8")
+
 workflow = (ROOT / ".github" / "workflows" / "provider-repair-parallel-sweep.yml").read_text(encoding="utf-8")
 assert "projection_active_provider_rows" in workflow
 assert "projection_active_provider_ids" in workflow

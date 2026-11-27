@@ -80,11 +80,17 @@ def plan(limit: int, batch_size: int) -> dict[str, Any]:
     recent = {cid(value) for value in recent_cfg.get("recentlySwept") or [] if cid(value)}
     learn_owned = {cid(value) for value in (handoff_cfg.get("providers") or {}).keys() if cid(value)}
     explicit = unique(list(trigger_cfg.get("explicitProviders") or []))
-    guards = unique(list(trigger_cfg.get("regressionGuardProviders") or []))
+    requested_guards = unique(list(trigger_cfg.get("regressionGuardProviders") or []))
 
-    unknown = [provider for provider in unique([*explicit, *guards]) if provider not in ids]
-    if unknown:
-        raise SystemExit("unknown explicit/guard providers: " + ",".join(unknown))
+    # Explicit repair requests are operator intent and remain fail-closed.
+    # Regression guards are historical positive controls: once a provider is
+    # no longer active it cannot be executed by this active-only sweep and
+    # must be retired from this wave without blocking unrelated current work.
+    unknown_explicit = [provider for provider in explicit if provider not in ids]
+    if unknown_explicit:
+        raise SystemExit("unknown explicit providers: " + ",".join(unknown_explicit))
+    stale_guards = [provider for provider in requested_guards if provider not in ids]
+    guards = [provider for provider in requested_guards if provider in ids]
 
     if explicit or guards:
         selected = unique([
@@ -123,7 +129,10 @@ def plan(limit: int, batch_size: int) -> dict[str, Any]:
         "recentSkippedCount": len(recent),
         "learnHandoffSkippedCount": len(learn_owned),
         "learnHandoffProviders": sorted(learn_owned),
+        "requestedRegressionGuardProviders": requested_guards,
         "regressionGuardProviders": guards,
+        "staleRegressionGuardProviders": stale_guards,
+        "staleRegressionGuardCount": len(stale_guards),
         "eligibleCount": len(eligible),
         "selectedCount": len(selected),
         "batchSize": batch_size,
