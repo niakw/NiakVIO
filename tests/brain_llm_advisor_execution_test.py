@@ -235,9 +235,8 @@ rescue_failed=plan("repair",[
 assert rescue_failed["llmAdvisorApplied"] is False,rescue_failed
 assert rescue_failed["experimentExhausted"] is True,rescue_failed
 
-# New Brain v3 MUST be selected after the previously executed v2/html
-# profiles, even when legacy whole-module fingerprints differ after promotion.
-# A changed sibling is not a new implementation of an exhausted parent.
+# Legacy executed negatives without trustworthy scoped provenance remain
+# fail-closed. They block the historical profile IDs and move to the next Bloc.
 legacy_runtime_negatives = [
     {
         "providerId": "synthetic-llm-advisor",
@@ -245,7 +244,7 @@ legacy_runtime_negatives = [
         "experimentVariant": 4,
         "experimentGeneration": 2,
         "profile": profile,
-        "strategyImplementationFingerprint": "1" * 64,
+        "strategyImplementationFingerprint": "",
         "failures": 1,
         "consecutiveFailures": 1,
         "successes": 0,
@@ -255,10 +254,26 @@ legacy_runtime_negatives = [
     }
     for profile in ("html_class_token_exact_v1", "route_transition_graph_v2")
 ]
-fresh_generated = plan("repair", [
+legacy_blocked = plan("repair", [
     *exhausted_memory, *legacy_runtime_negatives,
 ], guidance_rows=[], exploration_chain=True)
-assert fresh_generated["postExhaustionStrategyProfile"] == "route_transition_graph_v3", fresh_generated
+assert legacy_blocked["postExhaustionStrategyProfile"] == "route_transition_graph_v3", legacy_blocked
+
+# A valid different scoped fingerprint means the implementation itself changed.
+# The older rejection remains historical evidence but cannot suppress the new
+# route_transition_graph_v2 bytes.
+scoped_old_impl = [
+    {
+        **row,
+        "strategyImplementationFingerprint": "1" * 64,
+    }
+    for row in legacy_runtime_negatives
+]
+fresh_generated = plan("repair", [
+    *exhausted_memory, *scoped_old_impl,
+], guidance_rows=[], exploration_chain=True)
+assert fresh_generated["postExhaustionStrategyProfile"] == "route_transition_graph_v2", fresh_generated
+assert fresh_generated["strategyImplementationFingerprint"] != "1" * 64, fresh_generated
 
 # After ordinary variants are exhausted, a fresh fingerprinted advisor
 # experiment owns the next bounded attempt BEFORE generic coded post-exhaustion
