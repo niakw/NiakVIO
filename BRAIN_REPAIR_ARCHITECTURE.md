@@ -1,3 +1,7 @@
+## 2026-11-27 — Compatibilité ascendante des migrations ProviderBase
+
+Les migrations anciennes ne doivent pas exiger textuellement une implémentation supersédée lorsqu'une version ultérieure conserve et renforce son invariant. V14 accepte l'ancien crawl direct de huit détails ou le contrat V28 complet : huit détails corrélés maximum, résolution individuelle, crawl du même ensemble borné, déduplication et cap global. Une disparition de l'un de ces éléments reste fail-closed.
+
 ## 2026-11-27 — Seuil de causalité Primewire : 2/3
 
 Pour `chain_terminal_extractor_v1`, seules les hypothèses réellement exécutées avec fingerprint comptent : `c1c5bdb3...` (g2) et `9ebbb0c3...` (g3). Les deux ont produit un stream non jouable et ont été rejetées. Le troisième fingerprint doit être exécuté avant que l'escalade Qwen soit autorisée. Une guidance synthétisée mais non exécutée, comme `5a773898...`, ne débite pas ce budget.

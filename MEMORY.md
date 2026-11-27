@@ -1,3 +1,9 @@
+## 2026-11-27 — V75-prep : Repair canonique débloqué au niveau ProviderBase V14
+
+- Repair canonique [45938902184](https://github.com/niakw/NiakVIO/actions/runs/45938902184), source `4316caba`, n'a pas échoué sur Primewire : le pipeline s'arrête avant sélection avec `upgrade_provider_search_request_plan_v14.py` → `AssertionError: V14 ProviderBase missing: _crawlDirectMedia(_uniq(details).slice(0, 8)`. Métadonnées finales : selected=0, candidates=0, validated=0, outcome=failure, gate=skipped. **0 réparation**.
+- Le ProviderBase courant n'a pas perdu le contrat : `NIAKVIO_PROVIDER_PLAN_STREAM_COVERAGE_V28` borne `boundedDetails = _uniq(details).slice(0, 8)`, résout chaque détail via `_spv4ResolveDetail`, crawle ensuite exactement `boundedDetails` avec profondeur 3, déduplique et plafonne les streams à 40. Le vieux V14 faisait uniquement le crawl direct puis early-return.
+- Le validateur V14 accepte désormais soit l'implémentation historique exacte, soit **l'ensemble complet** des invariants V28 ci-dessus. Le test importe le validateur sur le ProviderBase courant et vérifie qu'une suppression du crawl borné reste rejetée. Ce changement répare le pipeline global ; il ne modifie aucun provider, aucun manifest et n'assouplit pas la preuve média.
+
 ## 2026-11-27 — V74 : deux fingerprints chain-terminal exécutés, troisième essai demandé
 
 - Learning V73 `45939063038`, source `ab4e0560`, Brain `ffa619b0144a0af36b9d6f1cb76b27e77c3ef412`, est vert. Pré-route aligné : `advisor_memory_sources=1`, `advisor_only=true`, `routing_modes={deterministic_advisor:1}`, `llm_needed=false`; téléchargement/modèle Qwen correctement skipped avant le seuil.

@@ -401,10 +401,31 @@ def validate_base(text: str | None = None) -> None:
         "async function _resolveSearchRequestPlan",
         "searchPlanRequest",
         "_spv4HtmlDetails(payload.value, payload.base, meta, mediaType, season)",
-        "_crawlDirectMedia(_uniq(details).slice(0, 8)",
     ):
         if needle not in value:
             raise AssertionError(f"V14 ProviderBase missing: {needle}")
+
+    # V14 originally crawled the first eight details directly and returned the
+    # first media rows. Newer ProviderBase revisions preserve that bounded
+    # search-plan contract while resolving each correlated detail first,
+    # accumulating variants, then crawling the exact same bounded set. Do not
+    # require the obsolete early-return spelling; do require one complete,
+    # bounded implementation.
+    legacy_crawl = "_crawlDirectMedia(_uniq(details).slice(0, 8)"
+    evolved_contract = (
+        "NIAKVIO_PROVIDER_PLAN_STREAM_COVERAGE_V28",
+        "const boundedDetails = _uniq(details).slice(0, 8);",
+        "for (const detailUrl of boundedDetails)",
+        "const detailStreams = await _spv4ResolveDetail(",
+        "_crawlDirectMedia(boundedDetails, payload.base || url, 3)",
+        "return _dedupeStreamRows(planStreams).slice(0, 40);",
+    )
+    if legacy_crawl not in value:
+        missing = [needle for needle in evolved_contract if needle not in value]
+        if missing:
+            raise AssertionError(
+                "V14 ProviderBase bounded detail crawl missing: " + ", ".join(missing)
+            )
 
 
 def main() -> int:
