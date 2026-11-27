@@ -47,6 +47,15 @@ with tempfile.TemporaryDirectory() as td:
            "sourceShape":"unknown_response_shape","resolvedTargetShape":"html_player",
            "resolvedTargetDirectMediaObserved":False,"resolvedTargetPlayerEmbedObserved":True,
            "resolvedTargetSameOrigin":False,"resolvedTargetRedirectObserved":False,
+           "resolvedTargetPlayerStructureClass":"mixed",
+           "resolvedTargetIframeCount":1,"resolvedTargetVideoTagCount":0,
+           "resolvedTargetSourceTagCount":0,"resolvedTargetExternalScriptCount":1,
+           "resolvedTargetInlineScriptCount":1,"resolvedTargetFormCount":1,
+           "resolvedTargetHiddenInputCount":2,"resolvedTargetPostFormObserved":True,
+           "resolvedTargetRequestBootstrapObserved":True,
+           "resolvedTargetPackedScriptObserved":False,
+           "resolvedTargetBase64DecodeObserved":True,
+           "resolvedTargetMetaRefreshObserved":False,
            "redirectTargetHost":"","redirectTargetCurated":False},
           {"originHost":"example.test","routeKind":"catalogue_search","httpStatus":200,"httpStatusClass":"2xx",
            "sourceShape":"script_html_2xx","catalogueSearchLinkCount":1,
@@ -70,6 +79,15 @@ with tempfile.TemporaryDirectory() as td:
         "resolvedTargetStatus":200,"resolvedTargetShape":"html_player",
         "resolvedTargetDirectMediaObserved":False,"resolvedTargetPlayerEmbedObserved":True,
         "resolvedTargetSameOrigin":False,"resolvedTargetRedirectObserved":False,
+        "resolvedTargetPlayerStructureClass":"mixed",
+        "resolvedTargetIframeCount":1,"resolvedTargetVideoTagCount":0,
+        "resolvedTargetSourceTagCount":0,"resolvedTargetExternalScriptCount":1,
+        "resolvedTargetInlineScriptCount":1,"resolvedTargetFormCount":1,
+        "resolvedTargetHiddenInputCount":2,"resolvedTargetPostFormObserved":True,
+        "resolvedTargetRequestBootstrapObserved":True,
+        "resolvedTargetPackedScriptObserved":False,
+        "resolvedTargetBase64DecodeObserved":True,
+        "resolvedTargetMetaRefreshObserved":False,
         "searchStatus":200,"searchLinkCount":1,
         "searchExactSlugPresent":True,"candidateSlugUnverified":"mushoku-tensei",
         "candidateTokenOverlapPercent":100}]
@@ -89,6 +107,14 @@ with tempfile.TemporaryDirectory() as td:
     try:mod.build_row(root,forged,"45323000000","b"*40)
     except ValueError:pass
     else:raise AssertionError("URL-shaped origin persisted")
+    forged=json.loads(json.dumps(result));forged["observations"][4]["resolvedTargetIframeCount"]=99
+    try:mod.build_row(root,forged,"45323000000","b"*40)
+    except ValueError:pass
+    else:raise AssertionError("unbounded player structure persisted")
+    forged=json.loads(json.dumps(result));forged["observations"][4]["resolvedTargetPlayerStructureClass"]="PRIVATE"
+    try:mod.build_row(root,forged,"45323000000","b"*40)
+    except ValueError:pass
+    else:raise AssertionError("unbounded player structure enum persisted")
     provider_file.write_bytes(b"drifted")
     try:mod.build_row(root,result,"45323000000","b"*40)
     except ValueError:pass
