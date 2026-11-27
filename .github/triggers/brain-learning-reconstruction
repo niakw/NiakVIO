@@ -12,7 +12,7 @@ required_target_shape: html_player
 required_player_structure: mixed
 required_request_bootstrap_observed: true
 required_packed_script_observed: true
-required_evidence: historical-v2-negative-46068505333;absolute-network-backfill-46071709590;resolver-composition-af036333;composition-byte-test-83237f21;planner-fingerprint-169f0978;planner-test-3cf18015;sandbox-fingerprint-718284ba;sandbox-gate-68be2c9b
+required_evidence: historical-v2-negative-46068505333;resolver-composition-af036333;planner-fingerprint-169f0978;planner-test-3cf18015;sandbox-fingerprint-718284ba;sandbox-gate-68be2c9b;stale-replay-test-e9f1bb28
 causal_change: Historical V2 remains negative only for its old implementation fingerprint. Current V2 composes the proven resolver plus scripted request mining and now has a distinct scoped fingerprint. Planner and Learning sandbox both treat a valid different fingerprint as materially new executable bytes while same-fingerprint and legacy-unfingerprinted negatives remain blocked. Execute current V2 exactly once; do not erase the historical negative.
 proof_goal: The selected Bloc must be document_request_contract_mining_v2 with resolver and scripted-miner markers present in the exact generated/rematerialized bytes. Replay those bytes on the retained anime fixtures, persist sanitized absolute network telemetry and candidate-minus-parent delta, then either reach identity-matched terminal media or rotate causally from the new delta. Count zero repair until official NuvioTV playback proves the requested episode and language/audio/subtitle contract.
 publication_policy: Learning is non-authoritative. Preserve all four manifests, no-anime variants, ProviderBase generation and 10-version JS retention; never reintroduce native-hub46.
