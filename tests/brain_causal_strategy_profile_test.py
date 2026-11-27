@@ -89,6 +89,25 @@ with tempfile.TemporaryDirectory() as directory:
         assert records[-1]["profile"]=="chain_terminal_extractor_v1",records
         assert records[-1]["strategy"]=="chain_terminal_extractor_v1",records
 
+        player_working={
+            **working,
+            "brain_repair_plan":{
+                "failureClass":"media_extraction_gap",
+                "experimentVariant":1,
+                "experimentGeneration":1,
+            },
+        }
+        player_repaired,player_error=runtime.create_repair_candidate(
+            stage,player_working,"player_media_extractor_v1",1
+        )
+        assert player_error is None,(player_repaired,player_error)
+        assert isinstance(player_repaired,dict),player_repaired
+        assert player_repaired["runtime_repair"]["profile"]=="player_media_extractor_v1",player_repaired
+        assert player_repaired["runtime_repair"]["strategy"]=="player_media_extractor_v1",player_repaired
+        player_records=player_repaired.get("local_patches") or []
+        assert player_records and player_records[-1]["profile"]=="player_media_extractor_v1",player_records
+        assert int(player_repaired.get("bytes") or 0)>len(raw),player_repaired
+
         mismatch,error=runtime.create_repair_candidate(
             stage,working,"chain_terminal_extractor_v1_g3",2
         )
