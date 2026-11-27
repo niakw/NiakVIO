@@ -623,6 +623,7 @@ function sanitizeMemoryEntry(raw) {
   const llmAdvisorMetaGapGeneration = Number.isFinite(llmAdvisorMetaGapGenerationRaw)
     ? Math.max(-1, Math.min(100000, Math.trunc(llmAdvisorMetaGapGenerationRaw)))
     : -1;
+  const networkExecutionSummary = sanitizeNetworkExecutionSummary(raw.networkExecutionSummary);
   return {
     providerId,
     providerVersion: String(raw.providerVersion || '*').trim().slice(0, 64) || '*',
@@ -648,6 +649,7 @@ function sanitizeMemoryEntry(raw) {
     lastSeenAt: raw.lastSeenAt ? String(raw.lastSeenAt).slice(0, 48) : null,
     executionObserved,
     generationAttemptObserved: lastOutcome === 'not_generated' || raw.generationAttemptObserved === true,
+    ...(networkExecutionSummary ? { networkExecutionSummary } : {}),
   };
 }
 function memoryKey(row) {
@@ -664,6 +666,41 @@ function memoryKey(row) {
   ].join('::');
 }
 function providerFromKey(value) { const raw = String(value || '').split('::', 1)[0]; const parts = raw.split(':'); return parts.length > 1 ? parts.slice(1).join(':') : raw; }
+function sanitizeNetworkExecutionSummary(raw) {
+  if (!isRecord(raw)) return null;
+  const bucketNames = ['2xx', '3xx', '4xx', '5xx', 'network'];
+  const rawBuckets = isRecord(raw.statusBuckets) ? raw.statusBuckets : {};
+  const statusBuckets = Object.fromEntries(bucketNames.map((name) => [name, Math.min(10000, nonNegative(rawBuckets[name]))]));
+  const methods = [...new Set((Array.isArray(raw.methods) ? raw.methods : [])
+    .map((value) => String(value || '').toUpperCase())
+    .filter((value) => ['GET', 'POST', 'HEAD'].includes(value)))].sort();
+  const allowedStages = new Set(['search', 'content_lookup', 'detail', 'episode', 'player', 'media', 'provider_fetch', 'other']);
+  const stages = [...new Set((Array.isArray(raw.stages) ? raw.stages : [])
+    .map((value) => String(value || '').trim().toLowerCase())
+    .filter((value) => allowedStages.has(value)))].sort();
+  const allowedKinds = new Set(['html', 'json', 'javascript', 'text', 'binary', 'media']);
+  const responseKinds = [...new Set((Array.isArray(raw.responseKinds) ? raw.responseKinds : [])
+    .map((value) => String(value || '').trim().toLowerCase())
+    .filter((value) => allowedKinds.has(value)))].sort();
+  let deepestStage = String(raw.deepestStage || 'none').trim().toLowerCase();
+  if (!allowedStages.has(deepestStage) && deepestStage !== 'none') deepestStage = 'none';
+  return {
+    schemaVersion: 1,
+    providerRequestCount: Math.min(10000, nonNegative(raw.providerRequestCount)),
+    successfulProviderRequestCount: Math.min(10000, nonNegative(raw.successfulProviderRequestCount)),
+    networkFailureCount: Math.min(10000, nonNegative(raw.networkFailureCount)),
+    statusBuckets,
+    methods,
+    stages,
+    deepestStage,
+    responseKinds,
+    proofAuthority: false,
+    publicationAuthority: false,
+    rawAddressRetained: false,
+    headersRetained: false,
+    bodyRetained: false,
+  };
+}
 function sanitizeReason(value) { return String(value || '').replace(/https?:\/\/\S+/gi, '<url>').replace(/(?:(?:token|authorization|cookie|secret)\s*[:=]\s*)\S+/gi, 'credential=<redacted>').replace(/\s+/g, ' ').trim().slice(0, 240); }
 function nonNegative(value) { const n = Number(value); return Number.isFinite(n) ? Math.max(0, Math.trunc(n)) : 0; }
 function priorityScore(value) { return ({ critical: 4, high: 3, medium: 2, low: 1 })[String(value)] || 0; }
