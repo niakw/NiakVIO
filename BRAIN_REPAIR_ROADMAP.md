@@ -1,3 +1,7 @@
+### 27 novembre — V2 franchi : prochain verrou = terminal après épisode
+
+Le replay 46047131409 démontre que le resolver V2 est désormais réellement sélectionné et exécuté sur Anime-Sama. Résultat : candidat V2 généré, progression jusqu'au frontier épisode, mais 0 stream / 0 playable. La roadmap ne doit plus considérer « V2 jamais exécuté » comme le P0. Le prochain lot causal est la transition épisode/resolver → média terminal, avec rotation autorisée après le négatif V2. Tout fallback avant le premier essai exact reste interdit. **0 réparation**.
+
 ### 27 novembre — P0 actuel : fermer la boucle décision → mutation → replay
 
 Le diagnostic V84 est resserré : le principal verrou n'est ni Qwen 7B ni l'absence de RAG, mais l'intégrité de l'orchestration entre une capacité promue et son exécution réelle. Le lot P0 est désormais : (1) aucune registry Learning dupliquée, (2) `allowedProfiles` autoritaire à la frontière de mutation, (3) handoff préféré exact et fail-closed, (4) test intégré planner → bytes, (5) replay réel sur représentant avant toute généralisation.

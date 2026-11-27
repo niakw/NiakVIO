@@ -1,5 +1,5 @@
 Brain installed resolver replay V2 — execute the promoted opaque-token resolver on the attested representative.
-source_niakvio_main_pretrigger_sha: d63325fa7bb2784f27237dd0b5a54d92f67ebc75
+source_niakvio_main_pretrigger_sha: 7b9952b8547d6c7cae0435aa2d5a742b9b873033
 source_brain_main_sha: d705de3daba4b59fc7990618e819276e87df7191
 requested_at: 2026-11-27
 budget_minutes: 35
@@ -10,7 +10,7 @@ architecture_force: false
 required_strategy_id: catalogue_inline_token_resolver_v2
 required_failure_class: chain_terminal_gap
 required_resolver_contract: same-origin-api-lien-j-l-v1
-required_evidence: resolver-promotion-a77d0d1d;learning-handoff-55b87cee;registry-sync-b32c8b05;mutation-authority-8089cd71;planner-to-mutation-2a9efe36;gate-contract-d63325fa;resolver-probe-46031425328;parent-tv-45321345600;provider-artifact-478cbfbaa246a9ede48db8daf5d876c8e1512c0501387d3b56b8b86321e5f0ef
-causal_change: V2 is promoted and the orchestration path is now fail-closed. Learning must derive the installed registry, select catalogue_inline_token_resolver_v2 for chain_terminal_gap, and the mutation boundary must reject any different profile before bytes change. Do not synthesize V3 or persist resolver token/id/URL material.
-proof_goal: Exact path must be observed: preferred handoff -> planner selects catalogue_inline_token_resolver_v2 -> actual mutation profile equals plan -> candidate bytes differ -> syntax/byte stability -> rematerialization -> exact-byte replay. Count zero repair unless the requested episode is identity-matched and official NuvioTV decodes correct video/audio; then require sibling/non-regression before fanout.
+required_evidence: resolver-promotion-a77d0d1d;learning-handoff-55b87cee;first-real-v2-execution-46047131409;registry-sync-b32c8b05;mutation-authority-8089cd71;planner-to-mutation-2a9efe36;gate-contract-d63325fa;resolver-probe-46031425328;parent-tv-45321345600
+causal_change: V2 has now been observed executing once and reaching the episode frontier with zero playable streams. Preserve the exact first preferred attempt, then allow only planner-authorized causal rotation after its executed negative. Do not force V2 forever, synthesize V3 without new evidence, or persist resolver token/id/URL material.
+proof_goal: Observe first exact V2 attempt -> candidate bytes differ -> episode frontier/requests -> if still zero playable, persist that negative and rotate through the next planner-authorized method without reverting to an unplanned fallback. Count zero repair until identity-matched terminal media and official-client playback are proven.
 publication_policy: Learning remains non-authoritative. No provider publication from source shape or resolver response alone. Preserve four manifests and no-anime variants; never reintroduce native-hub46.

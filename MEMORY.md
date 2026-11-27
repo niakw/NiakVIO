@@ -1,3 +1,11 @@
+## 2026-11-27 — V86 : le replay V2 a réellement exécuté la capacité, puis rotation causale
+
+- Le Learning supersédé 46047131409 sur `ce96e2dc` apporte la preuve qui manquait à V84 : `resolver_installed_replay_required` est reconnu, le handoff demande `catalogue_inline_token_resolver_v2`, et le premier candidat réellement exécuté est `published:anime-sama::repair:r1:catalogue_inline_token_resolver_v2:6e60623b`.
+- Ce premier essai V2 n'est **pas** une réparation : 3 fixtures, 0 stream, 0 playable. Il produit toutefois un gain diagnostic réel (`provider-success`, frontier `episode`, requêtes provider) avant rejet `safety_gate:no_playable_proof`. Le verrou causal se déplace donc après l'application du resolver, vers la résolution/transition terminale et les réponses provider observées.
+- Après ce négatif exécuté, le planner a tourné vers `terminal_transition_graph_v1/v2/v3`, puis d'autres méthodes. Cette rotation est légitime : le contrat préféré signifie « exécuter V2 une fois avant fallback », pas « exécuter V2 éternellement ».
+- La garde introduite en V85 est donc resserrée : si `learningPreferredSelected=true`, le profil muté doit être exactement le préféré ; après négatif observé, `learningPreferredSelected=false` autorise la stratégie suivante uniquement si elle appartient toujours au `allowedProfiles` du nouveau plan. Le test couvre les deux états.
+- Le run 46047131409 a été annulé uniquement parce qu'un replay plus récent a été déclenché ; ses logs restent une preuve diagnostique supersédée, jamais une validation média. **0 réparation**.
+
 ## 2026-11-27 — V85 : intention Brain exécutable de bout en bout
 
 - Relecture du blocage V84 : la panne n'est pas un manque de puissance Qwen. Deux ruptures d'orchestration génériques existaient après la promotion d'un exécuteur : `engine_v2/scripts/learning-lab.mjs` maintenait une copie locale de la registry post-exhaustion qui ne contenait pas `catalogue_inline_token_resolver_v2`, et la frontière de mutation Python ne vérifiait pas que le `profile_name` réellement remis au générateur appartenait au `allowedProfiles` du plan.

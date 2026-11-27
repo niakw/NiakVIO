@@ -1,3 +1,7 @@
+## 2026-11-27 — Handoff préféré = autorité one-shot, pas verrou permanent
+
+Un exécuteur fraîchement installé doit obtenir un essai représentatif exact avant tout fallback. Tant que le planner marque `learningPreferredSelected=true`, la frontière de mutation exige l'identité stricte entre profil préféré, `allowedProfiles` et profil exécuté. Après un négatif réellement exécuté et persisté, le planner peut marquer `learningPreferredSelected=false` et tourner vers un sibling causal ; le nouveau `allowedProfiles` devient alors l'autorité. Conserver `learningPreferredRequested` dans le plan sert à la provenance, pas à interdire l'apprentissage après l'essai initial.
+
 ## 2026-11-27 — Contrat d'intention Brain exécutable
 
 Le plan Brain est une autorité d'exécution, pas une suggestion. La chaîne canonique est : preuve → planner → `allowedProfiles` → matching → générateur → bytes → matérialisation → replay → validation. À la frontière de mutation, le profil réellement demandé doit appartenir au `allowedProfiles` du plan ; un handoff Learning explicitement préféré doit exécuter exactement ce profil. Toute substitution implicite, notamment par `adaptive_runtime_recovery`, échoue avant mutation.

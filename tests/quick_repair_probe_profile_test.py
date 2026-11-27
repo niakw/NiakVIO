@@ -109,6 +109,22 @@ assert len(calls) == calls_before, "mismatched profile reached candidate generat
 right, right_error = bounded_create(ROOT, contract_candidate, "catalogue_inline_token_resolver_v2", 1)
 assert right is not None and right_error is None
 assert calls[-1][1] == "catalogue_inline_token_resolver_v2"
+
+# Once that exact preferred profile has been executed and rejected, the planner
+# is allowed to rotate causally. The old preferred request remains provenance,
+# but it must not veto the newly selected allowed profile.
+brain.PLANS["source:contract"] = {
+    "action": "probe-targeted-repair",
+    "signature": "resolver-contract-after-negative",
+    "failureClass": "chain_terminal_gap",
+    "providerId": "contract-provider",
+    "allowedProfiles": ["terminal_transition_graph_v1"],
+    "learningPreferredRequested": "catalogue_inline_token_resolver_v2",
+    "learningPreferredSelected": False,
+}
+rotated, rotated_error = bounded_create(ROOT, contract_candidate, "terminal_transition_graph_v1", 2)
+assert rotated is not None and rotated_error is None
+assert calls[-1][1] == "terminal_transition_graph_v1"
 brain.reset_runtime_state()
 
 # The Python -> Node planner boundary must survive both Python-only numeric JSON

@@ -1574,9 +1574,14 @@ def wrap_create_repair_candidate(base_create: Callable[..., tuple[dict[str, Any]
         if profile_name not in allowed_profiles:
             return None, "brain_profile_contract_mismatch"
         learning_preferred = str(plan.get("learningPreferredRequested") or "").strip().casefold()
-        if learning_preferred and (
-            plan.get("learningPreferredSelected") is not True
-            or str(profile_name).strip().casefold() != learning_preferred
+        # The installed-executor handoff is a one-shot replay authority. When the
+        # planner says that preferred executor is selected, the mutation must be
+        # exact. After an observed negative execution the planner may rotate to a
+        # sibling; allowedProfiles remains the authority for that later attempt.
+        if (
+            learning_preferred
+            and plan.get("learningPreferredSelected") is True
+            and str(profile_name).strip().casefold() != learning_preferred
         ):
             return None, "brain_learning_preferred_strategy_contract_mismatch"
         error = _budget_error(candidate, plan_key, plan)
