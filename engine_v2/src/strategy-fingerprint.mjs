@@ -13,11 +13,11 @@ export function profileRuntimeFingerprintMaterial(source, profile) {
         '    document_request_mining = new_strategy_id == "document_request_contract_mining_v1" or llm_experiment.get("documentRequestMining") is True\n',
       )
       .replace(
-        '    scripted_request_mining = new_strategy_id == "document_request_contract_mining_v2"\n',
+        /^    scripted_request_mining\s*=.*document_request_contract_mining_v2.*\n/m,
         "",
       )
       .replace(
-        '        "scripted_request_mining": scripted_request_mining,\n',
+        /^        "scripted_request_mining":\s*scripted_request_mining,\n/m,
         "",
       );
   const registryStart = raw.indexOf("POST_EXHAUSTION_STRATEGY_PROFILES = {");
