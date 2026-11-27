@@ -105,9 +105,9 @@
     },
     {
       "provider": "67movies",
-      "status": "HARNESS MISMATCH",
+      "status": "ROUTE PROVEN",
       "underlyingStatus": "",
-      "color": "🟧",
+      "color": "🟪",
       "declaredLanes": [
         "anime",
         "movie",
@@ -151,11 +151,21 @@
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
-      "action": "GitHub-hosted IP/environment differential confirmed by private residential exit; keep provider JS unchanged and reproduce with native transport/playback before any code blame",
+      "action": "replay qualified route fixtures and finish terminal extraction/validation",
       "brainCheckRequired": true,
-      "statusRepairEligible": false,
-      "repairEligible": false,
-      "testedThisRun": false
+      "statusRepairEligible": true,
+      "repairEligible": true,
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "allanime",
@@ -1829,9 +1839,9 @@
     },
     {
       "provider": "french-anime",
-      "status": "HARNESS MISMATCH",
+      "status": "NO PROOF",
       "underlyingStatus": "",
-      "color": "🟧",
+      "color": "🔵",
       "declaredLanes": [
         "anime"
       ],
@@ -1865,11 +1875,19 @@
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
-      "action": "GitHub-hosted IP/environment differential confirmed by private residential exit; keep provider JS unchanged and reproduce with native transport/playback before any code blame",
+      "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
-      "statusRepairEligible": false,
-      "repairEligible": false,
-      "testedThisRun": false
+      "statusRepairEligible": true,
+      "repairEligible": true,
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "french-manga",
@@ -3608,9 +3626,9 @@
     },
     {
       "provider": "shuttletv",
-      "status": "HARNESS MISMATCH",
+      "status": "ROUTE PROVEN",
       "underlyingStatus": "",
-      "color": "🟧",
+      "color": "🟪",
       "declaredLanes": [
         "anime",
         "movie",
@@ -3654,11 +3672,21 @@
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
-      "action": "replay provider-owned route with NuvioTV-like/native transport; do not mutate provider JS unless route/playback still fails causally",
+      "action": "replay qualified route fixtures and finish terminal extraction/validation",
       "brainCheckRequired": true,
-      "statusRepairEligible": false,
-      "repairEligible": false,
-      "testedThisRun": false
+      "statusRepairEligible": true,
+      "repairEligible": true,
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "skstream",
@@ -5295,12 +5323,13 @@
     "CHAIN REACHED": 20,
     "DISABLED": 36,
     "FULL OK": 8,
-    "HARNESS MISMATCH": 7,
+    "HARNESS MISMATCH": 4,
     "HARNESS/ENV BLOCKED": 14,
-    "NO PROOF": 9,
+    "NO PROOF": 10,
     "PROOF REFRESH REQUIRED": 3,
     "PROVIDER NETWORK BLOCKED": 8,
-    "REGRESSION PROVIDER": 5
+    "REGRESSION PROVIDER": 5,
+    "ROUTE PROVEN": 2
   },
   "symptomaticProviders": [
     "1jour1film0626",
@@ -5435,15 +5464,18 @@
     "zone-telechargement"
   ],
   "repairQueue": [
+    "67movies",
     "anikototv",
     "anime-sama",
     "corsflix",
+    "french-anime",
     "french-manga",
     "frenchstream",
     "moiflix",
     "nakios",
     "primewire",
-    "sadisflix"
+    "sadisflix",
+    "shuttletv"
   ],
   "authorityBlockedQueue": [
     "1jour1film0626",
@@ -5623,22 +5655,10 @@
     "zone-streaming",
     "zone-telechargement"
   ],
-  "environmentQueue": [
-    "67movies",
-    "french-anime",
-    "shuttletv"
-  ],
-  "harnessMismatchQueue": [
-    "67movies",
-    "french-anime",
-    "shuttletv"
-  ],
+  "environmentQueue": [],
+  "harnessMismatchQueue": [],
   "environmentBlockedQueue": [],
-  "harnessQueue": [
-    "67movies",
-    "french-anime",
-    "shuttletv"
-  ],
+  "harnessQueue": [],
   "lastRepairAttempt": {
     "runId": "45980456643",
     "sourceCensusRunId": "",
@@ -5658,8 +5678,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "45980495119-sharded-waf",
-  "harnessEvidenceSha": "bdcd1ab21851f6ecc2ef1609af7af5a036d96f81",
+  "harnessEvidenceRunId": "45981330130-waf-transport",
+  "harnessEvidenceSha": "2cfb3ad65b72bc839fd13236d6101b5e2dff90e1",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
@@ -5683,8 +5703,16 @@
   ],
   "networkDifferentialUpdatedProviders": [],
   "residentialProviderReplayPromotedProviders": [],
-  "residentialProviderReplayReclassifiedProviders": [],
-  "residentialProviderReplayRepairableProviders": [],
+  "residentialProviderReplayReclassifiedProviders": [
+    "67movies",
+    "french-anime",
+    "shuttletv"
+  ],
+  "residentialProviderReplayRepairableProviders": [
+    "67movies",
+    "french-anime",
+    "shuttletv"
+  ],
   "residentialExitNodeEvidence": {
     "enabled": true,
     "available": true,
@@ -5860,9 +5888,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "e3150ecb3da538726e5ab05b7ed2448b71ce0675",
+          "sourceNiakvioSha": "2cfb3ad65b72bc839fd13236d6101b5e2dff90e1",
           "providerBundleSha256": "f3e78ead7922f1e21a2f97a5b457098c282bb6c7e2c9cdece5f0825e6f8c9817",
-          "runId": "45941717742",
+          "runId": "45981330130",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -5889,9 +5917,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "e3150ecb3da538726e5ab05b7ed2448b71ce0675",
+          "sourceNiakvioSha": "2cfb3ad65b72bc839fd13236d6101b5e2dff90e1",
           "providerBundleSha256": "f3e78ead7922f1e21a2f97a5b457098c282bb6c7e2c9cdece5f0825e6f8c9817",
-          "runId": "45941717742",
+          "runId": "45981330130",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -5918,9 +5946,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "e3150ecb3da538726e5ab05b7ed2448b71ce0675",
+          "sourceNiakvioSha": "2cfb3ad65b72bc839fd13236d6101b5e2dff90e1",
           "providerBundleSha256": "f3e78ead7922f1e21a2f97a5b457098c282bb6c7e2c9cdece5f0825e6f8c9817",
-          "runId": "45941717742",
+          "runId": "45981330130",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -6888,9 +6916,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "e3150ecb3da538726e5ab05b7ed2448b71ce0675",
+          "sourceNiakvioSha": "2cfb3ad65b72bc839fd13236d6101b5e2dff90e1",
           "providerBundleSha256": "7dbdeb16e2cdb8f46e0e351849e3e731ec08c3dc84c3026a0e7e3de771034a89",
-          "runId": "45941717742",
+          "runId": "45981330130",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7465,9 +7493,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "e3150ecb3da538726e5ab05b7ed2448b71ce0675",
+          "sourceNiakvioSha": "2cfb3ad65b72bc839fd13236d6101b5e2dff90e1",
           "providerBundleSha256": "689bc4f0aa921695be52d872ae1426fdd02287d9942672e9d5a6b925cbabb610",
-          "runId": "45941717742",
+          "runId": "45981330130",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7494,9 +7522,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "e3150ecb3da538726e5ab05b7ed2448b71ce0675",
+          "sourceNiakvioSha": "2cfb3ad65b72bc839fd13236d6101b5e2dff90e1",
           "providerBundleSha256": "689bc4f0aa921695be52d872ae1426fdd02287d9942672e9d5a6b925cbabb610",
-          "runId": "45941717742",
+          "runId": "45981330130",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7523,9 +7551,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "e3150ecb3da538726e5ab05b7ed2448b71ce0675",
+          "sourceNiakvioSha": "2cfb3ad65b72bc839fd13236d6101b5e2dff90e1",
           "providerBundleSha256": "689bc4f0aa921695be52d872ae1426fdd02287d9942672e9d5a6b925cbabb610",
-          "runId": "45941717742",
+          "runId": "45981330130",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7825,25 +7853,28 @@
       "cookiesPersisted": false
     },
     "lastAttempt": {
-      "available": false,
-      "providerCount": 0,
+      "available": true,
+      "providerCount": 3,
       "refreshedProviders": [
-        "1jour1film0626",
         "67movies",
-        "aniflix-uno",
-        "animejlprovider",
-        "animeonsen",
-        "animesalt",
-        "arrowtv",
-        "chillflix",
-        "cinegram"
+        "french-anime",
+        "shuttletv"
       ],
-      "replayedProviders": [],
+      "replayedProviders": [
+        "67movies",
+        "french-anime",
+        "shuttletv"
+      ],
       "rawProviders": [],
       "playableProviders": [],
       "verifiedProviders": [],
-      "sourceNiakvioSha": "",
-      "runId": "",
+      "byteMatchedProviders": [
+        "67movies",
+        "french-anime",
+        "shuttletv"
+      ],
+      "sourceNiakvioSha": "2cfb3ad65b72bc839fd13236d6101b5e2dff90e1",
+      "runId": "45981330130",
       "proofAuthority": false,
       "publicationAuthority": false
     },
