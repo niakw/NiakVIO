@@ -180,6 +180,7 @@ jobs:
                  --input "$RUNNER_TEMP/external-brain-llm-guidance.json" \
                  --output "$RUNNER_TEMP/external-brain-llm-guidance-fast-repair.json" \
                  --current-sha "$GITHUB_SHA" \
+                 --brain-llm-sha "$(python scripts/resolve_validated_brain_pin.py --sha-only)" \
                  --guidance-commit "$guidance_commit" \
                  --negative-memory automation/brain-repair-memory.json; then
               external_count="$(python -c 'import json; d=json.load(open("'"$RUNNER_TEMP"'/external-brain-llm-guidance-fast-repair.json")); print(int(d.get("providerCount") or 0))')"
