@@ -1,3 +1,7 @@
+## 2026-11-27 — Learning multi-step non-publishable exploration
+
+Learning may retain an intermediate sandbox improvement across a bounded three-round attempt by setting the Deep-loop chain flag, but this does **not** set the production planner exploration bit: `brain_repair_runtime._exploration_chain_enabled()` remains false whenever planner mode is `learning`. Provider proposals still require durable promotion eligibility, positive content identity and at least one playable stream. This closes the one-round throwaway loop without granting publication/FORCE authority.
+
 ## 2026-11-27 — Contrats de scope catalogue et budget Learning
 
 Le garde de sortie média est global au produit, donc sa source d'identité provider est `provider_catalog.json` (Global + France), pas le seul manifest Global. Les quatre manifests restent des projections de publication contrôlées séparément. Un filtre ciblé France-only ne doit jamais être classé « provider inconnu » parce qu'il n'appartient pas au catalogue Global.

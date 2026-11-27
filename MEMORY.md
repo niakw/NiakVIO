@@ -1,3 +1,9 @@
+## 2026-11-27 — V79 : Learning conservait les hypothèses mais jetait les progrès intermédiaires
+
+- Learning [46000113439](https://github.com/niakw/NiakVIO/actions/runs/46000113439), source `1880e0c2`, exécute 7 providers ciblés et produit 26 propositions/45 skills, mais `provider_proposals=0`, `strict_lab_playable=0`. Anime-Sama reste 0 stream ; MeowTV/Papadustream épuisent leur slice ; HindMoviez est sain mais la variante Repair reste sans playback vérifié.
+- Cause de capacité : `run_brain_learning_sandbox.py` élargissait les profils mais n'activait pas `NUVIO_BRAIN_EXPLORATION_CHAIN`; `run_adaptive_quick_repair.py` retombait donc à un seul round par défaut et `deep_repair_loop.py` rejetait les améliorations non-production au lieu de les conserver comme progression sandbox. Les retries extérieurs changeaient d'hypothèse sans pouvoir chaîner un progrès intermédiaire.
+- Correctif générique : Learning active uniquement le flag Deep de conservation sandbox et ajoute `--max-rounds 3` quand le caller n'a pas déjà fixé de borne. Le planner production reste explicitement non-exploratoire en mode Learning (`_exploration_chain_enabled() == false`) ; les gates provider proposal restent durable + identité positive + playable. Aucun provider, manifest, ProviderBase ou preuve playback n'est modifié. **0 réparation supplémentaire au moment de cette note.**
+
 ## 2026-11-27 — V78 : route-apply validé, scope France corrigé, fair-share Learning isolé
 
 - Repair [45998183768](https://github.com/niakw/NiakVIO/actions/runs/45998183768), source `3d5ba84f` : le correctif `1410143d` est **exécuté**. Route replay 11 providers, 6 routes courantes prouvées ; merge 75 actifs, 51 lignes `catalogue-presence-only`; application réussie avec `providers=24 preserved_untouched=51`. L'ancien `KeyError preservedUntouchedProviders` est clos.

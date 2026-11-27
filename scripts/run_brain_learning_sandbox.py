@@ -225,6 +225,14 @@ def _arg_value(name: str, default: str = "") -> str:
     return str(args[index + 1])
 
 
+def _learning_quick_argv(argv: list[str]) -> list[str]:
+    """Give Learning a bounded multi-step sandbox without changing production authority."""
+    out = list(argv)
+    if "--max-rounds" not in out:
+        out.extend(["--max-rounds", "3"])
+    return out
+
+
 def main() -> int:
     state = _load_state()
     negative = _negative_entries(state)
@@ -311,7 +319,16 @@ def main() -> int:
         return list(dict.fromkeys(kept))
 
     quick._brain_matching_profiles = learning_matching
+    old_planner_mode = os.environ.get("NUVIO_BRAIN_PLANNER_MODE")
+    old_chain = os.environ.get("NUVIO_BRAIN_EXPLORATION_CHAIN")
+    old_argv = list(sys.argv)
     os.environ["NUVIO_BRAIN_PLANNER_MODE"] = "learning"
+    # This flag is consumed directly by deep_repair_loop to retain sandbox-only
+    # progress between rounds. brain_repair_runtime deliberately reports the
+    # production exploration bit as false while planner mode is "learning", so
+    # this never grants FORCE/publication authority.
+    os.environ["NUVIO_BRAIN_EXPLORATION_CHAIN"] = "1"
+    sys.argv = _learning_quick_argv(sys.argv)
     print(
         "FIELD_BRAIN_LEARNING_MODE "
         f"negative_entries={len(negative)} restored_skills={restored_skills} "
@@ -323,6 +340,15 @@ def main() -> int:
         rc = int(quick.main())
     finally:
         quick._brain_matching_profiles = routine_matcher
+        sys.argv = old_argv
+        if old_chain is None:
+            os.environ.pop("NUVIO_BRAIN_EXPLORATION_CHAIN", None)
+        else:
+            os.environ["NUVIO_BRAIN_EXPLORATION_CHAIN"] = old_chain
+        if old_planner_mode is None:
+            os.environ.pop("NUVIO_BRAIN_PLANNER_MODE", None)
+        else:
+            os.environ["NUVIO_BRAIN_PLANNER_MODE"] = old_planner_mode
     print(
         "FIELD_BRAIN_EXPLORATION "
         f"providers={counters['exploredProviders']} profiles={counters['exploratoryProfiles']} "
