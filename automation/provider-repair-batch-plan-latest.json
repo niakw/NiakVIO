@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "46076996338-post-repair-candidate",
-  "sourceTriggerSha": "c9ea5cd669e2a80e8b2284c0dc892bcc27519175",
+  "sourceRunId": "46082481291",
+  "sourceTriggerSha": "9547b49a9dd9c1176136e3d7875258c509d675d2",
   "unresolvedProviderCount": 67,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -13,13 +13,12 @@
     "stigstream"
   ],
   "lifecycleSuppressedDynamicProviders": [
-    "animevostfr"
+    "moviebox"
   ],
   "dynamicVariantCurrentObservedProviders": [
     "1jour1film0626",
     "4khdhub",
     "67movies",
-    "allanime",
     "allwish",
     "anidb",
     "aniflix-uno",
@@ -32,12 +31,10 @@
     "animesalt",
     "animesama-co",
     "animesultra",
-    "animevost-fr",
     "animevostfr",
     "anisama",
     "arrowtv",
     "boredflix",
-    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -63,15 +60,10 @@
     "fullanime",
     "hexa",
     "hianime",
-    "hindmoviez",
     "ihavenotv",
-    "internet-archive",
     "kehflix",
     "kidraz",
-    "kurage",
     "latestmovies",
-    "mallumv",
-    "meowtv",
     "moiflix",
     "moviebite",
     "moviebox",
@@ -79,10 +71,7 @@
     "moviesmod",
     "movish",
     "movix-fr",
-    "movy",
-    "mugiwarastream",
     "nakios",
-    "neko-sama",
     "neobam",
     "neonflix",
     "overlook",
@@ -97,13 +86,10 @@
     "rivestream-app",
     "rivestream-ru",
     "sadisflix",
-    "sekai",
     "showbox",
     "shuttletv",
     "skstream",
     "stigstream",
-    "streamzo",
-    "topcartoons",
     "uhdmovies",
     "videasy",
     "vidfast",
@@ -119,14 +105,12 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
-    "webflix",
     "wookafr",
-    "yflix",
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": false,
+  "dynamicVariantFallbackUsed": true,
   "groupCount": 9,
   "executionModel": {
     "default": "family/signature batch",
@@ -156,6 +140,7 @@
       ],
       "harnessTransportClasses": [
         "browser-profile-only",
+        "github-all-transports-challenged",
         "native-policy-inconclusive",
         "native-policy-reachable",
         "residential-exit-browser-reachable"
@@ -234,6 +219,7 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
+        "github-all-transports-challenged",
         "native-policy-reachable"
       ],
       "transportSignature": "not-applicable",
@@ -275,8 +261,7 @@
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "chain",
-        "lookup",
-        "none"
+        "lookup"
       ],
       "dominantIssues": [
         "network_zero_result",
@@ -285,19 +270,22 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 5,
+      "providerCount": 6,
       "providers": [
         "67movies",
         "anime-sama",
         "frenchstream",
+        "nakios",
         "sadisflix",
         "shuttletv"
       ],
-      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
+      "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [],
+      "dynamicVariantProviders": [
+        "nakios"
+      ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -317,19 +305,16 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 3,
+      "providerCount": 2,
       "providers": [
         "corsflix",
-        "nakios",
         "primewire"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
-      "dynamicVariantProviders": [
-        "nakios"
-      ],
+      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
