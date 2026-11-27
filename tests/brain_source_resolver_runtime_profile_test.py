@@ -157,7 +157,8 @@ composed_bytes, composed_records = mod._apply_adaptive(
 composed_text = composed_bytes.decode()
 assert composed_bytes != source.encode()
 assert "NIAKVIO_SOURCE_RESOLVER_CONTRACT same-origin-api-lien-j-l-v1" in composed_text
-assert "NUVIO_ADAPTIVE_RUNTIME_CORE_V7" in composed_text
+assert "NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5" in composed_text
+assert "NUVIO_ADAPTIVE_RUNTIME_CORE_V7" not in composed_text
 assert '"scriptedRequestMining":true' in composed_text
 assert '"newStrategyId":"document_request_contract_mining_v2"' in composed_text
 profiles = [str(row.get("profile") or "") for row in composed_records]
