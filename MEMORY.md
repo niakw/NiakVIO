@@ -1,3 +1,9 @@
+## 2026-11-27 — V80.3 : poison RAG `epsN` neutralisé pendant le FORCE courant
+
+- Audit parallèle au FORCE Anime-Sama : `BRAIN_REPAIR_ARCHITECTURE.md` conservait une section historique affirmant l'inverse du contrat actif (« un tableau = un épisode »). Le code actif `build_brain_architecture_proposal.py` et le materializer utilisent déjà la sémantique corrigée : **`epsN` = slot lecteur, index du tableau = épisode**.
+- Documentation corrigée uniquement : section ancienne marquée **SUPERSEDE**, exemple A1/B1 vs A2/B2 et interdiction de compacter les cellules vides ajoutés au document oracle. Aucun code, provider, manifest, preuve source ou gate média modifié ; le FORCE `46014198757` continue sur son checkout `2a0b9ae8`.
+- Cette correction empêche le RAG futur de réinjecter l'oracle transposé. Elle ne compte pas comme réparation provider.
+
 ## 2026-11-27 — V80.2 : source-probe offline défigé, parent TV exact actuel conservé
 
 - Source probe [46013704964](https://github.com/niakw/NiakVIO/actions/runs/46013704964), SHA `a29e6602`, échoue **avant réseau** dans `catalogue_inline_live_test.py` : le test offline appelait encore `attest(ROOT,...)` avec l'ancien artefact `9e917c...` / run 44781039914. Le garde runtime rejette correctement ce digest devenu obsolète.

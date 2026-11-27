@@ -112,9 +112,11 @@ Le contrôle Core des coordonnées contradictoires multiples est central et doit
 
 La validation de TV/anime doit distinguer l'identité du programme de l'identité de l'épisode. Le titre ou la durée, même compatible, ne constituent pas seuls une preuve. La saison 0 est une valeur explicite et non un défaut. Toute contradiction de coordonnées explicitement observées dans un label, filename ou chemin/paramètres d'URL terminale est négative, même si le titre concorde. Les cinq chemins de validation partagent la règle episodicIdentityRequired ; le transport et la durée restent des observations distinctes. Les films conservent leur comportement antérieur. Les assertions synthétiques ne certifient pas les mappings provider ni la lecture officielle : les épisodes adjacents doivent être rejoués sur bytes générés, sans confusion de numérotation canonique/absolue.
 
-## 2026-11-21 — Contrat source `epsN` : chaque tableau est UN épisode, chaque entrée est UN lecteur
+## 2026-11-21 — Contrat source `epsN` — **SUPERSEDE** : axe corrigé le 24/11
 
-L'audit du test indépendant après FORCE `44833212893` a découvert une erreur sémantique dans l'ancien oracle : il sélectionnait la `episode - 1`-ième entrée de **chaque** tableau `eps1`, `eps2`. Cela mélangeait des lecteurs de différents épisodes. L'invariant requis est : sélectionner **un seul** tableau `epsN` correspondant à l'épisode demandé, puis conserver **tous** ses lecteurs indépendants sans les assimiler à des épisodes. Le test Brain-owned, l'oracle indépendant et le prompt Qwen ont été réalignés et un ancien parseur column-first doit désormais échouer. Les contrôles demeurent synthétiques et diagnostic-only : le chemin catalogue/saison/langue réel et le média terminal Android TV nécessitent toujours une preuve séparée.
+Cette section avait initialement conclu à tort que `epsN` désignait l'épisode. **Ne pas utiliser cette hypothèse.** La référence indépendante `yuzono/anime-extensions@414c9bc8c8c2b904232264f279d9b4e814c4bde9`, le compilateur Brain courant et ses tests convergent sur le contrat de référence suivant : **`epsN` désigne un slot lecteur ; l'index dans chaque tableau sélectionne l'épisode demandé.** Les cellules vides doivent être conservées pour ne jamais décaler les épisodes. Cette sémantique reste une hypothèse source jusqu'à preuve sur la source courante ; elle ne constitue ni une identité épisode NuvioTV ni une autorité de publication.
+
+Le test négatif doit donc rejeter l'ancien parseur transposé « un tableau = un épisode ». La validation finale reste : source courante épinglée, résolution opaque bornée, média terminal, identité épisode/langue/audio et lecture décodée NuvioTV.
 
 ## 2026-11-21 — FORCE source-family : algorithme modèle, test généré par le Brain
 

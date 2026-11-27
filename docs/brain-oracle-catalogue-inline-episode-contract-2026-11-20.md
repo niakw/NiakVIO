@@ -4,6 +4,12 @@
 
 Le commit upstream [Anime-Sama FR — Site Redesign & Lib 16 du 13 novembre 2026](https://github.com/yuzono/anime-extensions/commit/414c9bc8c8c2b904232264f279d9b4e814c4bde9) décrit un changement de structure de l'extraction d'épisodes. Une implémentation indépendante actuelle extrait depuis les scripts HTML de la page des tableaux eps1/eps2, un epsJeton, une carte epsMeta, une carte de lecteurs et les langues disponibles. Les valeurs lien: sont des identifiants opaques, résolus par une API distincte du même site. Le choix de la saison/langue doit suivre le chemin publié par le catalogue plutôt qu'inventer systématiquement saison1.
 
+### Correction d'axe (référence actuelle)
+
+La notation `epsN` est ambiguë si on ne regarde que les noms. Le contrat de référence corrigé est : **N identifie un slot lecteur, et la position dans le tableau identifie l'épisode**. Par exemple, avec deux slots lecteurs `eps1=[A1,A2]` et `eps2=[B1,B2]`, l'épisode 1 correspond à `A1+B1` et l'épisode 2 à `A2+B2`. Une cellule vide reste à sa position ; elle ne doit jamais être compactée. L'ancien modèle « `eps1` = épisode 1, toutes ses entrées = lecteurs » est supersédé et doit être traité comme expérience négative.
+
+Cette règle est une **hypothèse de structure** issue d'une implémentation indépendante et des tests Brain ; la source courante doit encore l'attester sans conserver les identifiants opaques, puis NuvioTV doit vérifier l'identité et le décodage du média avant toute réparation certifiée.
+
 Ce dépôt upstream constitue une **référence de contrat**, pas une preuve que le domaine ou le corps HTTP atteint depuis NuvioTV est identique. Les pages de présentation et hubs publics sont contradictoires au sujet des domaines ; ni une page auto-déclarée officielle ni un 200 ne suffisent à valider un domaine. Il est interdit de recopier un jeton, un HTML brut, une URL signée ou d'en tirer automatiquement une réparation de provider.
 
 ## Différence observée dans NiakVIO
