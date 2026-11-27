@@ -101,18 +101,18 @@ jobs:
           node-version: "24"
           package-manager-cache: false
 
-      - name: Resolve exact current Brain LLM advisor revision
+      - name: Resolve validated source-pinned Brain LLM advisor revision
         id: brain_llm_pin
         shell: bash
         run: |
           set -euo pipefail
-          tmp="$(mktemp -d)"
-          git -C "$tmp" init -q
-          git -C "$tmp" remote add origin https://github.com/niakw/NiakVIO-Brain-LLM.git
-          git -C "$tmp" fetch --quiet --depth=1 origin refs/heads/main:refs/remotes/origin/main
-          main_sha="$(git -C "$tmp" rev-parse refs/remotes/origin/main)"
-          echo "sha=$main_sha" >> "$GITHUB_OUTPUT"
-          echo "FIELD_BRAIN_LLM_PIN sha=$main_sha source=main freshness=current-main cache_policy=stale-guidance-ignored"
+          pin_sha="$(python -c 'import json; print(str(json.load(open("automation/brain-pinned-source.json",encoding="utf-8")).get("sha") or ""))')"
+          [[ "$pin_sha" =~ ^[0-9a-f]{40}$ ]] || { echo "validated Brain pin unavailable" >&2; exit 1; }
+          gitlink_sha="$(git ls-tree HEAD -- brain-llm | awk 'NR==1{print $3}')"
+          [[ "$gitlink_sha" =~ ^[0-9a-f]{40}$ ]] || { echo "Brain gitlink unavailable" >&2; exit 1; }
+          test "$pin_sha" = "$gitlink_sha"
+          echo "sha=$pin_sha" >> "$GITHUB_OUTPUT"
+          echo "FIELD_BRAIN_LLM_PIN sha=$pin_sha source=validated-gitlink freshness=source-pinned cache_policy=stale-guidance-ignored"
 
       - name: Checkout pinned NiakVIO Brain LLM advisor
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
