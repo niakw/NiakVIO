@@ -23,7 +23,11 @@ SCRIPTS = Path(__file__).resolve().parent
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
-from run_brain_learning_queue import _phase_experiment_key, merge_phase_learning_state
+from run_brain_learning_queue import (
+    _phase_experiment_key,
+    apply_diagnostic_network_backfill,
+    merge_phase_learning_state,
+)
 
 
 COUNTERS = ("attempts", "successes", "failures", "progresses")
@@ -116,6 +120,27 @@ def experiment_delta(
 
 
 
+def telemetry_backfills(
+    base: dict[str, Any],
+    current: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Return same-experiment telemetry enrichments without inventing attempts."""
+    before = by_key(base)
+    output: list[dict[str, Any]] = []
+    for key, row in by_key(current).items():
+        old = before.get(key)
+        if old is None:
+            continue
+        summary = row.get("networkExecutionSummary")
+        if not isinstance(summary, dict) or "providerRequestCount" not in summary:
+            continue
+        if summary == old.get("networkExecutionSummary"):
+            continue
+        output.append(copy.deepcopy(row))
+    output.sort(key=_phase_experiment_key)
+    return output
+
+
 def generated_ms(payload: dict[str, Any]) -> int:
     raw = str(payload.get("generatedAt") or "").strip()
     if not raw:
@@ -137,6 +162,7 @@ def merge_latest(
     max_entries: int | None = None,
 ) -> dict[str, Any]:
     changes = experiment_delta(base, current)
+    telemetry = telemetry_backfills(base, current)
     merged_state = merge_phase_learning_state(
         {
             "experimentMemory": copy.deepcopy(
@@ -146,6 +172,29 @@ def merge_latest(
         changes,
         max_entries=max_entries,
     )
+    for backfill in telemetry:
+        merged_rows = (
+            merged_state.get("experimentMemory", {}).get("entries", [])
+            if isinstance(merged_state.get("experimentMemory"), dict)
+            else []
+        )
+        key = _phase_experiment_key(backfill)
+        if any(
+            isinstance(row, dict) and _phase_experiment_key(row) == key
+            for row in merged_rows
+        ):
+            merged_state = apply_diagnostic_network_backfill(
+                merged_state,
+                backfill,
+            )
+        else:
+            # A concurrent compaction may have removed the historical row.
+            # Reinsert the exact sanitized current row without recounting it.
+            merged_state = merge_phase_learning_state(
+                merged_state,
+                [backfill],
+                max_entries=max_entries,
+            )
     previous_is_newer = generated_ms(previous) >= generated_ms(current) > 0
     output = copy.deepcopy(previous if previous_is_newer else current)
     output["experimentMemory"] = copy.deepcopy(
@@ -159,6 +208,7 @@ def merge_latest(
         "previousRows": len(entries(previous)),
         "currentRows": len(entries(current)),
         "deltaRows": len(changes),
+        "telemetryDeltaRows": len(telemetry),
         "mergedRows": len(entries(output)),
         "metadataSource": "previous" if previous_is_newer else "current",
         "publicationAuthority": False,
