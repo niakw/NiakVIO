@@ -76,4 +76,9 @@ assert(learningLab.includes("postExhaustionStrategyProfiles("),
   "Learning must derive installed strategies from the authoritative registry");
 assert(!learningLab.includes("const POST_EXHAUSTION_STRATEGY_PROFILES = new Set(["),
   "Learning must not reintroduce a duplicated installed-strategy registry");
+assert(
+  learningLab.indexOf("const root = path.resolve(")
+    < learningLab.indexOf("postExhaustionStrategyProfiles("),
+  "Learning root must be initialized before registry lookup",
+);
 console.log("Brain installed strategy registry synchronization contract passed");
