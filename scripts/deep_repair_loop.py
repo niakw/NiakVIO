@@ -152,6 +152,63 @@ def sanitized_network_execution_summary(result: dict[str, Any]) -> dict[str, Any
     }
 
 
+def sanitized_network_execution_delta(
+    parent_result: dict[str, Any],
+    candidate_result: dict[str, Any],
+) -> dict[str, Any]:
+    """Return candidate-minus-parent causal network aggregates only."""
+    parent = sanitized_network_execution_summary(parent_result)
+    candidate = sanitized_network_execution_summary(candidate_result)
+    parent_buckets = parent.get("statusBuckets") or {}
+    candidate_buckets = candidate.get("statusBuckets") or {}
+    bucket_names = ("2xx", "3xx", "4xx", "5xx", "network")
+    bucket_delta = {
+        name: int(candidate_buckets.get(name) or 0) - int(parent_buckets.get(name) or 0)
+        for name in bucket_names
+    }
+    parent_methods = set(parent.get("methods") or [])
+    candidate_methods = set(candidate.get("methods") or [])
+    parent_stages = set(parent.get("stages") or [])
+    candidate_stages = set(candidate.get("stages") or [])
+    parent_kinds = set(parent.get("responseKinds") or [])
+    candidate_kinds = set(candidate.get("responseKinds") or [])
+    parent_deepest = str(parent.get("deepestStage") or "none")
+    candidate_deepest = str(candidate.get("deepestStage") or "none")
+    parent_rank = _NETWORK_STAGE_ORDER.get(parent_deepest, 0)
+    candidate_rank = _NETWORK_STAGE_ORDER.get(candidate_deepest, 0)
+    return {
+        "schemaVersion": 1,
+        "providerRequestDelta": (
+            int(candidate.get("providerRequestCount") or 0)
+            - int(parent.get("providerRequestCount") or 0)
+        ),
+        "successfulProviderRequestDelta": (
+            int(candidate.get("successfulProviderRequestCount") or 0)
+            - int(parent.get("successfulProviderRequestCount") or 0)
+        ),
+        "networkFailureDelta": (
+            int(candidate.get("networkFailureCount") or 0)
+            - int(parent.get("networkFailureCount") or 0)
+        ),
+        "statusBucketDelta": bucket_delta,
+        "newMethods": sorted(candidate_methods - parent_methods),
+        "newStages": sorted(
+            candidate_stages - parent_stages,
+            key=lambda value: (_NETWORK_STAGE_ORDER.get(value, 0), value),
+        ),
+        "newResponseKinds": sorted(candidate_kinds - parent_kinds),
+        "parentDeepestStage": parent_deepest,
+        "candidateDeepestStage": candidate_deepest,
+        "stageRankDelta": candidate_rank - parent_rank,
+        "stageAdvanced": candidate_rank > parent_rank,
+        "proofAuthority": False,
+        "publicationAuthority": False,
+        "rawAddressRetained": False,
+        "headersRetained": False,
+        "bodyRetained": False,
+    }
+
+
 def durable_promotion_state(result: dict[str, Any], reason: str) -> tuple[bool, str]:
     """Keep quick-only endpoint improvements as Learning evidence, never mutations."""
     identity_ok, proof = automatic_repair_identity_gate(result)
@@ -485,6 +542,7 @@ def main() -> int:
                             "runtime_errors_before": runtime_error_count(parent_result),
                             "runtime_errors_after": runtime_error_count(selected_result),
                             "network_execution": sanitized_network_execution_summary(selected_result),
+                            "network_execution_delta": sanitized_network_execution_delta(parent_result, selected_result),
                         }
                     )
                     history.append(repair_event)
@@ -556,6 +614,7 @@ def main() -> int:
                             "runtime_errors_before": runtime_error_count(parent_result),
                             "runtime_errors_after": runtime_error_count(selected_result),
                             "network_execution": sanitized_network_execution_summary(selected_result),
+                            "network_execution_delta": sanitized_network_execution_delta(parent_result, selected_result),
                         }
                     )
                     exploration_history.append(exploration_event)
@@ -593,6 +652,7 @@ def main() -> int:
                             "runtime_errors_before": runtime_error_count(parent_result),
                             "runtime_errors_after": runtime_error_count(selected_result),
                             "network_execution": sanitized_network_execution_summary(selected_result),
+                            "network_execution_delta": sanitized_network_execution_delta(parent_result, selected_result),
                         }
                     )
                 else:
@@ -613,6 +673,7 @@ def main() -> int:
                             "error_summary": result_error_summary(result_variant),
                             "fixture_status_counts": (result_variant.get("evidence") or {}).get("fixture_status_counts") or {},
                             "network_execution": sanitized_network_execution_summary(result_variant),
+                            "network_execution_delta": sanitized_network_execution_delta(parent_result, result_variant),
                         }
                     )
                     if (
