@@ -262,6 +262,10 @@ with tempfile.TemporaryDirectory() as td:
     assert shaped["resolvedTargetRequestDynamicUrlCount"] == 2
     assert shaped["resolvedTargetRequestTemplateUrlCount"] == 1
     assert shaped["resolvedTargetRequestIdentifierUrlCount"] == 1
+    assert shaped["resolvedTargetRequestIdentifierStaticResolvableCount"] == 0
+    assert shaped["resolvedTargetRequestIdentifierUnresolvedCount"] == 1
+    assert shaped["resolvedTargetRequestIdentifierMissingDefinitionCount"] == 1
+    assert shaped["resolvedTargetRequestIdentifierDynamicDefinitionCount"] == 0
     assert shaped["resolvedTargetRequestMemberUrlCount"] == 0
     assert shaped["resolvedTargetRequestCallExpressionUrlCount"] == 0
     assert shaped["resolvedTargetRequestOtherDynamicUrlCount"] == 1
