@@ -13,12 +13,13 @@
     "stigstream"
   ],
   "lifecycleSuppressedDynamicProviders": [
-    "moviebox"
+    "animevostfr"
   ],
   "dynamicVariantCurrentObservedProviders": [
     "1jour1film0626",
     "4khdhub",
     "67movies",
+    "allanime",
     "allwish",
     "anidb",
     "aniflix-uno",
@@ -31,10 +32,12 @@
     "animesalt",
     "animesama-co",
     "animesultra",
+    "animevost-fr",
     "animevostfr",
     "anisama",
     "arrowtv",
     "boredflix",
+    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -60,10 +63,15 @@
     "fullanime",
     "hexa",
     "hianime",
+    "hindmoviez",
     "ihavenotv",
+    "internet-archive",
     "kehflix",
     "kidraz",
+    "kurage",
     "latestmovies",
+    "mallumv",
+    "meowtv",
     "moiflix",
     "moviebite",
     "moviebox",
@@ -71,7 +79,10 @@
     "moviesmod",
     "movish",
     "movix-fr",
+    "movy",
+    "mugiwarastream",
     "nakios",
+    "neko-sama",
     "neobam",
     "neonflix",
     "overlook",
@@ -86,10 +97,13 @@
     "rivestream-app",
     "rivestream-ru",
     "sadisflix",
+    "sekai",
     "showbox",
     "shuttletv",
     "skstream",
     "stigstream",
+    "streamzo",
+    "topcartoons",
     "uhdmovies",
     "videasy",
     "vidfast",
@@ -105,13 +119,15 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
+    "webflix",
     "wookafr",
+    "yflix",
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": true,
-  "groupCount": 9,
+  "dynamicVariantFallbackUsed": false,
+  "groupCount": 8,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -262,19 +278,24 @@
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "chain",
-        "lookup"
+        "lookup",
+        "none"
       ],
       "dominantIssues": [
         "network_zero_result",
         "provider_returned_streams, timeout",
-        "timeout"
+        "timeout",
+        "waf_challenge"
       ],
-      "harnessTransportClasses": [],
+      "harnessTransportClasses": [
+        "residential-exit-native-reachable"
+      ],
       "transportSignature": "not-applicable",
-      "providerCount": 6,
+      "providerCount": 7,
       "providers": [
         "67movies",
         "anime-sama",
+        "french-anime",
         "frenchstream",
         "nakios",
         "sadisflix",
@@ -340,36 +361,6 @@
         "french-manga"
       ],
       "action": "replay/rematerialize retained candidate knowledge against current bytes before new mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "not-applicable",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "residential-exit-native-reachable"
-      ],
-      "transportSignature": "residential-exit-native-reachable",
-      "providerCount": 1,
-      "providers": [
-        "french-anime"
-      ],
-      "action": "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
