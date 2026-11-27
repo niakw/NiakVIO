@@ -89,12 +89,28 @@ with tempfile.TemporaryDirectory() as directory:
         assert records[-1]["profile"]=="chain_terminal_extractor_v1",records
         assert records[-1]["strategy"]=="chain_terminal_extractor_v1",records
 
+        # Mirror the real planner path: at a fresh media-extraction
+        # experiment the advisor owns the executable profile before the final
+        # v4/g2 deterministic causal fallback is reached.
         player_working={
             **working,
             "brain_repair_plan":{
                 "failureClass":"media_extraction_gap",
-                "experimentVariant":1,
+                "experimentVariant":0,
                 "experimentGeneration":1,
+                "llmAdvisorApplied":True,
+                "llmAdvisorProfile":"player_media_extractor_v1",
+                "allowedProfiles":["player_media_extractor_v1"],
+                "llmAdvisorExperiment":{
+                    "terminalOnly":True,
+                    "routePolicy":"owned_only",
+                    "recipePolicy":"current_plus_provider",
+                    "roleOrder":["player","source","api","episode","detail"],
+                    "maxDepth":4,
+                    "maxPages":12,
+                    "maxEmbeds":16,
+                    "maxRecipePasses":3,
+                },
             },
         }
         player_repaired,player_error=runtime.create_repair_candidate(
