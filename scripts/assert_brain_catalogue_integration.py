@@ -20,6 +20,7 @@ sys.path.insert(0, str(BRAIN / "src"))
 
 from niakvio_brain_llm.niakvio_adapter import request_from_checkout  # noqa:E402
 from niakvio_brain_llm.prompting import build_prompt_payload  # noqa:E402
+from niakvio_brain_llm.priors import build_causal_prior  # noqa:E402
 
 pin = json.loads((ROOT / "automation/brain-pinned-source.json").read_text("utf-8"))
 sha = str(pin.get("sha") or "")
@@ -122,15 +123,15 @@ for secret in (
     assert secret not in body, f"unsafe source material leaked into Brain observations: {secret}"
 
 request.advisor_only = True
+causal_prior = build_causal_prior(request, [])
+assert causal_prior.get("target_layer") == "provider", causal_prior
+assert causal_prior.get("strategy_prior") == "proven_request_program_and_terminal_extraction", causal_prior
+assert float(causal_prior.get("confidence") or 0) >= 0.95, causal_prior
 prompt = build_prompt_payload(
     request,
     experiences=[],
     documents=[],
-    causal_prior={
-        "confidence": 0.91,
-        "target_layer": "unknown",
-        "strategy_prior": "source-contract-diagnose",
-    },
+    causal_prior=causal_prior,
     mutation_policy={"allow_mutations": False, "allowed_scopes": []},
 )
 witness = prompt.get("source_contract_witness") or {}
@@ -154,6 +155,7 @@ print(
     f"native_parents={len(native)} probe_history={len(probes)} "
     f"matched_probes={len(matched)} current_probe={current.get('probeRunId')} "
     f"failure_class={request.failure_class} "
+    f"strategy_prior={causal_prior.get('strategy_prior')} "
     f"resolver={int(current.get('tokenResolverProbeCount') or 0)} "
     f"resolved_target={int(current.get('resolvedTargetProbeCount') or 0)} "
     f"target_shape={witness.get('resolvedTargetShape') or 'none'} "
