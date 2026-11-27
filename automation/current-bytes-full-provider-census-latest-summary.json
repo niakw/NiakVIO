@@ -2,9 +2,11 @@
   "acceptanceBasis": "aggregate-operational-state-including-carried-evidence",
   "acceptanceReached": false,
   "acceptanceTarget": 84,
-  "acceptedPlayableProviderCount": 6,
+  "acceptedPlayableProviderCount": 8,
   "acceptedPlayableProviders": [
+    "cinematheque-de-bretagne",
     "french-manga",
+    "moviebox",
     "papadustream",
     "purstream",
     "sadisflix",
@@ -25,7 +27,6 @@
     "boredflix",
     "cinegram",
     "cinemabz",
-    "cinematheque-de-bretagne",
     "cinetimes",
     "corsflix",
     "documentary-area",
@@ -91,11 +92,11 @@
   ],
   "debugStageCounts": {
     "provider_network_exception": 9,
-    "provider_network_http_error": 32,
-    "provider_network_zero_result": 79,
-    "provider_returned_streams": 9,
-    "provider_waf_challenge": 39,
-    "timeout": 17
+    "provider_network_http_error": 30,
+    "provider_network_zero_result": 77,
+    "provider_returned_streams": 11,
+    "provider_waf_challenge": 40,
+    "timeout": 18
   },
   "debugStageProviders": {
     "provider_network_exception": [
@@ -122,8 +123,7 @@
       "voiranime-rip",
       "watchott",
       "wookafr",
-      "youtitou",
-      "zone-streaming"
+      "youtitou"
     ],
     "provider_network_zero_result": [
       "4khdhub",
@@ -164,7 +164,9 @@
       "zone-telechargement"
     ],
     "provider_returned_streams": [
+      "cinematheque-de-bretagne",
       "french-manga",
+      "moviebox",
       "papadustream",
       "purstream",
       "sadisflix",
@@ -201,7 +203,7 @@
       "anidb",
       "anime-sama",
       "anisama",
-      "cinematheque-de-bretagne",
+      "boredflix",
       "flixhq",
       "hianime",
       "movix-fr",
@@ -248,25 +250,28 @@
   "partialOkCount": 0,
   "partialOkProviders": [],
   "providerCount": 111,
-  "runId": 46065298666,
+  "runId": 46069370576,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 22,
+    "CHAIN REACHED": 20,
     "DISABLED": 36,
     "FULL OK": 8,
-    "HARNESS MISMATCH": 9,
+    "HARNESS MISMATCH": 10,
     "HARNESS/ENV BLOCKED": 7,
     "NO PROOF": 13,
-    "PROOF REFRESH REQUIRED": 2,
+    "PROOF REFRESH REQUIRED": 3,
     "PROVIDER NETWORK BLOCKED": 8,
-    "REGRESSION PROVIDER": 5
+    "REGRESSION PROVIDER": 4,
+    "REGRESSION PROVIDER JS": 1
   },
   "testedProviderCount": 93,
-  "triggerSha": "790ae0b3eb200a49d4f07d3018abc9a59f6c5d5e",
-  "verifiedProviderCount": 0,
-  "verifiedProviders": [],
+  "triggerSha": "7fe28c94776e73ac76abc1db237744e68aad6ce4",
+  "verifiedProviderCount": 1,
+  "verifiedProviders": [
+    "moviebox"
+  ],
   "wrongContentProviderCount": 0,
   "wrongContentProviders": []
 }
