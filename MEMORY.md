@@ -1,3 +1,11 @@
+## 2026-11-27 — V66 : borne causale des exécuteurs évolués et épuisement g5 réel
+
+- État vérifié avant changement : main `47b95a0a0c4c`, census `45913909218` sur `16046dbcee62`, **8 FULL OK / 111**, repairQueue 9. Fast Repair `45911136814` : 0 candidat/0 réparation ; Learning `45911617902`, `45912082668`, `45912320829` verts mais le dernier artefact produit `providerProposalCount=0` et `candidateCount=0`.
+- Preuve mémoire du dernier Learning : Anime-Sama a exécuté v0-v3 puis v4 jusqu'à g5 sur la signature courante ; Papadustream a déjà exécuté et rejeté `terminal_transition_graph_v1` à `v14` sans réparation. Le planner exposait jusqu'à `route_transition_graph_v52`. Le nombre de version pouvait donc servir de faux progrès.
+- Correctif générique : une méthode `brain-evolved-executable-transition` dispose maintenant de **3 implémentations exécutées et rejetées** par famille causale avant rotation vers un autre outil/méthode. `profile_unavailable` et `not_generated` ne consomment pas ce budget d'exécution. Un profil explicitement FORCE-promu conserve son replay représentatif unique.
+- Le détecteur Python `exhausted_repair_providers` est aligné sur le contrat réel : v0..v3 exécutés + toutes les générations finales g2..g5 ; il ne confond plus cinq variantes avec la montée de générations et ignore les non-exécutions. Tests ajoutés pour g2..g4 partiel, g5 complet, unavailable et not_generated.
+- Ce changement ne répare aucun provider par lui-même et n'accorde aucune autorité de publication. Il doit maintenant forcer Papadustream à changer de méthode au lieu d'essayer v15+, et faire passer Anime-Sama du g5 épuisé à sa prochaine stratégie/méta-gap. **0 nouvelle réparation certifiée à ce stade.**
+
 ## 2026-11-26 — V65 : continuité des négatifs Fast Repair à travers les requeues préflight
 
 - Fast Repair [45908626718](https://github.com/niakw/NiakVIO/actions/runs/45908626718) a exécuté 67movies + corsflix : 3 rounds, 0 stream, 0 playable, 0 identity, **0 accepted**, avec progrès exploratoire seulement au premier profil. Il a handoffé ces deux providers puis s'est requeue car son SHA `5e54cf85` était devenu stale.

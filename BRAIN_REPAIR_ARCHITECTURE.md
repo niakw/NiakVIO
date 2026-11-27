@@ -1,3 +1,9 @@
+## 2026-11-27 — Budget de causalité des stratégies évoluées
+
+Une suite de profils versionnés appartenant à la même méthode `brain-evolved-executable-transition` n'est pas une preuve de nouveauté illimitée. Après trois implémentations distinctes réellement exécutées et rejetées dans la même famille causale, le planner doit changer de méthode. Les non-exécutions (`profile_unavailable`, `not_generated`) restent une dette de génération/architecture et ne sont pas débitées comme échecs runtime. Une architecture FORCE fraîche peut toutefois imposer une fois son profil exact sur le représentant afin de tester une nouvelle implémentation validée.
+
+L'épuisement des expériences de base est défini par les variantes de base puis la génération finale complète (g2..g5 selon la policy), pas par cinq numéros de variante seuls.
+
 ## 2026-11-26 — Requeue Fast Repair : continuité de mémoire négative
 
 Toute requeue Fast après détection de SHA obsolète doit préserver le `prior_fast_run_id` reçu. Cette valeur n'accorde aucune mutation : le run suivant n'importe que la mémoire négative après validation same-repo/same-workflow, ancestry et absence de drift des bytes/runtime autorisés. Un requeue préflight ne doit jamais casser cette chaîne.

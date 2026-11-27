@@ -746,32 +746,54 @@ def build_queue(
     return order, by_id, state
 
 def exhausted_repair_providers(memory: dict[str, Any], policy: dict[str, Any]) -> list[str]:
-    """Providers whose current Repair experiment family needs a new strategy."""
+    """Providers whose bounded Repair/Learning experiment family is exhausted.
+
+    Production rotates base variants, then Learning advances the final variant
+    through explicit generations. Count executable negative evidence only:
+    profile_unavailable and not_generated are architecture/generation debt,
+    never successful execution of a repair hypothesis.
+    """
     production = policy.get("production") if isinstance(policy.get("production"), dict) else {}
     negative = production.get("negativeExperimentMemory") if isinstance(production.get("negativeExperimentMemory"), dict) else {}
     max_variants = max(1, int(negative.get("maxVariantsPerSignature") or 5))
     rotate_every = max(1, int(negative.get("rotateExperimentAfterFailures") or 1))
-    groups: dict[tuple[str, str, str, str], set[int]] = {}
+    final_variant = max_variants - 1
+    first_final_generation = max(1, int(negative.get("finalVariantGeneration") or 1))
+    max_learning_generation = max(
+        first_final_generation,
+        int(negative.get("maxLearningGenerationsPerSignature") or first_final_generation),
+    )
+    groups: dict[tuple[str, str, str], dict[str, set[int]]] = {}
     for row in memory.get("entries") or []:
         if not isinstance(row, dict) or int(row.get("successes") or 0) > 0:
             continue
         provider = norm(row.get("providerId"))
         if not provider or int(row.get("consecutiveFailures") or 0) < rotate_every:
             continue
+        outcome = str(row.get("lastOutcome") or "").strip().casefold().replace("-", "_")
+        if outcome in {"profile_unavailable", "not_generated"} or row.get("executionObserved") is False:
+            continue
         key = (
             provider,
             str(row.get("failureClass") or ""),
             str(row.get("signature") or ""),
-            str(row.get("profile") or ""),
         )
-        variant = max(0, min(max_variants - 1, int(row.get("experimentVariant") or 0)))
-        groups.setdefault(key, set()).add(variant)
+        state = groups.setdefault(key, {"baseVariants": set(), "finalGenerations": set()})
+        variant = max(0, min(final_variant, int(row.get("experimentVariant") or 0)))
+        if variant < final_variant:
+            state["baseVariants"].add(variant)
+        else:
+            generation = max(1, int(row.get("experimentGeneration") or 1))
+            if first_final_generation <= generation <= max_learning_generation:
+                state["finalGenerations"].add(generation)
+    expected_base = set(range(final_variant))
+    expected_generations = set(range(first_final_generation, max_learning_generation + 1))
     return sorted({
         key[0]
-        for key, variants in groups.items()
-        if len(variants) >= max_variants
+        for key, state in groups.items()
+        if expected_base.issubset(state["baseVariants"])
+        and expected_generations.issubset(state["finalGenerations"])
     })
-
 
 def current_handoff_rows(
     handoff_rows: dict[str, Any],

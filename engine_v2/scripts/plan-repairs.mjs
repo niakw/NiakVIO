@@ -478,10 +478,40 @@ function historicalStrategyHint(providerId, failureClass, generation, memoryRows
   return { profile: "", caseId: "", solutionClass: "" };
 }
 
+const MAX_EXECUTED_IMPLEMENTATIONS_PER_EVOLVED_METHOD = 3;
+
 function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery, preferredProfile = "", sourceEligibility = {}) {
   const failure = canonicalFailureClass(failureClass);
   const candidates = postExhaustionCandidates(failure);
   const preferred = stringValue(preferredProfile).toLowerCase();
+  const methodByProfile = new Map(candidates.map((row) => [
+    stringValue(row.profile).toLowerCase(),
+    stringValue(row.method).toLowerCase(),
+  ]));
+  const evolvedMethodProfiles = new Set(
+    candidates
+      .filter((row) => stringValue(row.method).toLowerCase() === "brain-evolved-executable-transition")
+      .map((row) => stringValue(row.profile).toLowerCase()),
+  );
+  const executedEvolvedImplementations = new Set(
+    memoryRows
+      .filter((memory) => {
+        const profile = stringValue(memory.profile).toLowerCase();
+        const outcome = stringValue(memory.lastOutcome).toLowerCase();
+        return (
+          evolvedMethodProfiles.has(profile)
+          && methodByProfile.get(profile) === "brain-evolved-executable-transition"
+          && memory.executionObserved === true
+          && outcome !== "profile_unavailable"
+          && outcome !== "not_generated"
+          && Math.max(0, finiteNumber(memory.consecutiveFailures, 0)) >= rotateEvery
+        );
+      })
+      .map((memory) => stringValue(memory.profile).toLowerCase()),
+  );
+  const evolvedMethodExhausted = (
+    executedEvolvedImplementations.size >= MAX_EXECUTED_IMPLEMENTATIONS_PER_EVOLVED_METHOD
+  );
   // A freshly promoted Brain executor must actually be tried on the
   // representative. Never permit arbitrary/provider-specific profiles:
   // preference applies only to an installed, causally eligible candidate.
@@ -491,6 +521,15 @@ function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery, prefe
     : candidates;
   for (let index = 0; index < ordered.length; index += 1) {
     const row = ordered[index];
+    // A new version number is not a new causal method. After three distinct
+    // executed implementations of the generic evolved-transition method fail,
+    // rotate to another tool/strategy family. An explicitly FORCE-promoted
+    // preferred profile still gets its one representative replay.
+    if (
+      row.profile !== preferred
+      && stringValue(row.method).toLowerCase() === "brain-evolved-executable-transition"
+      && evolvedMethodExhausted
+    ) continue;
     // A named HTML parser Lego is not an executable hypothesis unless the
     // exact currently staged source contains its known defect. Historical
     // family memory / causal classification cannot create applicability.

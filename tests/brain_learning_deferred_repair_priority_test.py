@@ -61,6 +61,43 @@ memory2 = {"entries": [
 ]}
 assert mod.exhausted_repair_providers(memory2, policy2) == ["needs-two"]
 
+generation_policy = {
+    "production": {
+        "negativeExperimentMemory": {
+            "rotateExperimentAfterFailures": 1,
+            "maxVariantsPerSignature": 5,
+            "finalVariantGeneration": 2,
+            "maxLearningGenerationsPerSignature": 5,
+        }
+    }
+}
+generation_base = [
+    {**row("generation-a", variant), "experimentGeneration": 1, "executionObserved": True}
+    for variant in range(4)
+]
+generation_partial = [
+    {**row("generation-a", 4), "experimentGeneration": generation, "executionObserved": True}
+    for generation in range(2, 5)
+]
+assert mod.exhausted_repair_providers(
+    {"entries": [*generation_base, *generation_partial]}, generation_policy
+) == []
+generation_complete = {
+    **row("generation-a", 4), "experimentGeneration": 5,
+    "executionObserved": True, "lastOutcome": "rejected",
+}
+assert mod.exhausted_repair_providers(
+    {"entries": [*generation_base, *generation_partial, generation_complete]}, generation_policy
+) == ["generation-a"]
+for non_execution in ("profile_unavailable", "not_generated"):
+    assert mod.exhausted_repair_providers(
+        {"entries": [
+            *generation_base, *generation_partial,
+            {**generation_complete, "lastOutcome": non_execution, "executionObserved": False},
+        ]},
+        generation_policy,
+    ) == []
+
 info = {
     "uhdmovies": {"status": "healthy"},
     "wookafr": {"status": "no_streams"},

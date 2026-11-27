@@ -250,43 +250,50 @@ first_escalation_failed={
     **stale_first_escalation_failed,
     "strategyImplementationFingerprint":terminal_fp,
 }
-# An evolving Brain may install terminal graph v3, v4, ... after v2.
-# Do not hardcode the next fallback to terminal_request_program_inference_v1
-# when an installed, untried sibling has a real executable fingerprint.
-# Replay each installed graph and explicitly mark its execution-observed
-# failure before advancing to the next causal strategy; this stays valid for
-# future model-generated profiles without modifying the test for every vN.
+# An evolving Brain may install materially different siblings, but a sequence
+# of vN labels is not an unlimited causal search. Three executed implementations
+# of the generic evolved-transition method must rotate to another method.
 installed_v2_failed={
     **row(4,5),
     "profile":"terminal_transition_graph_v2",
     "executionObserved":True,
     "strategyImplementationFingerprint":stale_retry["strategyImplementationFingerprint"],
 }
-terminal_graph_failures=[installed_v2_failed]
-seen_graph_profiles={"terminal_transition_graph_v1","terminal_transition_graph_v2"}
-for _graph_generation in range(2,20):
-    next_graph=plan([*base_exhausted,first_escalation_failed,*terminal_graph_failures],"learning")
-    next_profile=str(next_graph.get("postExhaustionStrategyProfile") or "")
-    if not next_profile.startswith("terminal_transition_graph_v"):
-        break
-    graph_number=next_profile.removeprefix("terminal_transition_graph_v")
-    assert graph_number.isdecimal() and int(graph_number)>2, next_graph
-    assert next_profile not in seen_graph_profiles, "already-executed graph incorrectly reselected"
-    fingerprint=str(next_graph.get("strategyImplementationFingerprint") or "")
-    assert len(fingerprint)==64 and next_graph.get("strategyEscalated") is True,next_graph
-    seen_graph_profiles.add(next_profile)
-    terminal_graph_failures.append({
-        **row(4,5),
-        "failureClass":str(next_graph.get("postExhaustionSourceFailureClass") or "chain_terminal_gap"),
-        "profile":next_profile,
-        "executionObserved":True,
-        "strategyImplementationFingerprint":fingerprint,
-    })
-else:
-    raise AssertionError("Brain terminal graph profiles failed to reach next causal family")
+v3=plan([*base_exhausted,first_escalation_failed,installed_v2_failed],"learning")
+assert v3["postExhaustionStrategyProfile"]=="terminal_transition_graph_v3",v3
+v3_failed={
+    **row(4,5),
+    "failureClass":str(v3.get("postExhaustionSourceFailureClass") or "chain_terminal_gap"),
+    "profile":"terminal_transition_graph_v3",
+    "executionObserved":True,
+    "strategyImplementationFingerprint":v3["strategyImplementationFingerprint"],
+}
+v4=plan([*base_exhausted,first_escalation_failed,installed_v2_failed,v3_failed],"learning")
+assert v4["postExhaustionStrategyProfile"]=="terminal_transition_graph_v4",v4
+v4_failed={
+    **row(4,5),
+    "failureClass":str(v4.get("postExhaustionSourceFailureClass") or "chain_terminal_gap"),
+    "profile":"terminal_transition_graph_v4",
+    "executionObserved":True,
+    "strategyImplementationFingerprint":v4["strategyImplementationFingerprint"],
+}
+terminal_graph_failures=[installed_v2_failed,v3_failed,v4_failed]
+seen_graph_profiles={
+    "terminal_transition_graph_v1","terminal_transition_graph_v2",
+    "terminal_transition_graph_v3","terminal_transition_graph_v4",
+}
+# Normal Learning must now switch tools instead of burning v5..v14.
 learning_escalated_2=plan([*base_exhausted,first_escalation_failed,*terminal_graph_failures],"learning")
 assert learning_escalated_2["experimentExhausted"] is False,learning_escalated_2
 assert learning_escalated_2["postExhaustionStrategyProfile"]=="terminal_request_program_inference_v1",learning_escalated_2
+# A newly promoted exact FORCE profile remains entitled to one representative
+# replay even when its broad method family already consumed the normal budget.
+forced_v5=plan(
+    [*base_exhausted,first_escalation_failed,*terminal_graph_failures],
+    "learning","terminal_transition_graph_v5",
+)
+assert forced_v5["postExhaustionStrategyProfile"]=="terminal_transition_graph_v5",forced_v5
+assert forced_v5["forcePreferredRequested"]=="terminal_transition_graph_v5",forced_v5
 assert learning_escalated_2["allowedProfiles"]==["terminal_request_program_inference_v1"],learning_escalated_2
 request_fp=learning_escalated_2["strategyImplementationFingerprint"]
 assert len(request_fp)==64 and request_fp!=terminal_fp,learning_escalated_2
