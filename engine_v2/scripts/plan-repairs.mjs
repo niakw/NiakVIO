@@ -558,9 +558,17 @@ function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery, prefe
         return /^[0-9a-f]{64}$/.test(previous) && previous === implementationFingerprint;
       }
       if (outcome === "profile_unavailable") return false;
-      // A real rejected/retested child remains negative even across legacy
-      // global fingerprint churn; new behavior needs a new strategy identity.
-      return memory.executionObserved === true;
+      if (memory.executionObserved !== true) return false;
+      const previous = stringValue(memory.strategyImplementationFingerprint).toLowerCase();
+      // Executed negatives are implementation-specific now that fingerprints
+      // are profile-scoped. The same exact bytes stay blocked; a materially
+      // evolved implementation may run once without inventing a numeric-clone
+      // strategy id. Legacy executed negatives without a trustworthy scoped
+      // fingerprint remain fail-closed.
+      if (/^[0-9a-f]{64}$/.test(previous) && /^[0-9a-f]{64}$/.test(implementationFingerprint)) {
+        return previous === implementationFingerprint;
+      }
+      return true;
     });
     if (!alreadyFailed) {
       return {
