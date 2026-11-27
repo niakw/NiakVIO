@@ -63,3 +63,41 @@ export function postExhaustionStrategyProfiles(source) {
   }
   return profiles;
 }
+
+
+/**
+ * Keep scripted request-contract V2 provenance isolated from older adaptive
+ * profiles. The V2 parser lives in the shared generator for byte reuse, but
+ * dormant V2 code must not make unrelated executed/not-generated strategies
+ * appear fresh.
+ */
+export function profileGeneratorFingerprintMaterial(source, profile) {
+  const raw = String(source || "").replace(/\r\n/g, "\n");
+  const wanted = String(profile || "").trim().toLowerCase();
+  if (wanted === "document_request_contract_mining_v2") return raw;
+
+  let trimmed = raw.replace(
+    /^\s*"scriptedRequestMining": bool\(cfg\.get\("scripted_request_mining", False\)\),\n/m,
+    "",
+  );
+
+  const helperStart = trimmed.indexOf("function jsCallArgs(");
+  const helperEnd = helperStart < 0
+    ? -1
+    : trimmed.indexOf("function explicitPlayerPayloadUrls(", helperStart);
+  if (helperStart >= 0 && helperEnd >= 0) {
+    trimmed = trimmed.slice(0, helperStart) + trimmed.slice(helperEnd);
+  }
+
+  const scriptedStart = trimmed.indexOf("if(c.scriptedRequestMining&&!out.length){");
+  const legacyStart = scriptedStart < 0
+    ? -1
+    : trimmed.indexOf(
+      "if(c.documentRequestMining&&!out.length){var mined=documentForms(body,page);",
+      scriptedStart,
+    );
+  if (scriptedStart >= 0 && legacyStart >= 0) {
+    trimmed = trimmed.slice(0, scriptedStart) + trimmed.slice(legacyStart);
+  }
+  return trimmed;
+}
