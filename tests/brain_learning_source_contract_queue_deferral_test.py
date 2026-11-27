@@ -27,6 +27,10 @@ deferred,replay,status=mod.source_contract_capability_state(
     ["sample","sibling"], {"sample":{}}, True, {"sample"}, True
 )
 assert deferred==[] and replay==["sample"] and status=="resolver_installed_replay_required"
+deferred,replay,status=mod.source_contract_capability_state(
+    ["sample","sibling"], {"sample":{}}, True, {"sample"}, True, {"sample"}
+)
+assert deferred==[] and replay==["sample"] and status=="player_target_observed"
 assert mod.source_contract_capability_state(["sample"], {}, True, {"sample"}, False)==([],[],"not_attested")
 
 provider="sample"
