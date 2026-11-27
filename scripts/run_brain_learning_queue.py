@@ -25,6 +25,7 @@ from brain_negative_memory_retention import select_bounded_negative_memory
 from repair_promotion_state import durable_accepted_event, provisional_accepted_event
 from fill_brain_learning_guidance_gaps import attested_source_contract_frontier
 from build_provider_execution_plan import build as build_provider_execution_plan
+from brain_source_family_state import source_family_parser_installed
 
 class BudgetExhausted(RuntimeError):
     """The bounded Learning work window ended; persist state and resume later."""
@@ -1576,6 +1577,17 @@ def repair_attempt(
         "validationReason": "",
     }
 
+def source_contract_capability_state(
+    order: list[str], frontier: dict[str, Any], parser_installed: bool,
+) -> tuple[list[str], list[str], str]:
+    observed = [pid for pid in order if pid in frontier]
+    if not observed:
+        return [], [], "not_attested"
+    if parser_installed:
+        return [], observed, "parser_installed_replay_required"
+    return observed, [], "new_family_required"
+
+
 def defer_new_source_contract_family(
     provider_id: str,
     state: dict[str, Any],
@@ -1808,14 +1820,28 @@ def main() -> int:
     )
     queue["fastRepairHandoffMaxAttemptsPerProviderThisPhase"] = 1 if fair_handoff else 0
     queue["fastRepairHandoffMaxEvolvedAttemptsPerProviderThisPhase"] = 3 if fair_handoff else 0
-    source_contract_deferred = [pid for pid in order if pid in source_contract_frontier]
+    source_family_parser_ready = (
+        source_family_parser_installed(ROOT) if source_contract_frontier else False
+    )
+    source_contract_deferred, source_contract_replay, source_contract_status = (
+        source_contract_capability_state(
+            order, source_contract_frontier, source_family_parser_ready
+        )
+    )
     queue["sourceContractFamilyDeferredProviders"] = source_contract_deferred
     queue["sourceContractFamilyDeferredProviderCount"] = len(source_contract_deferred)
+    queue["sourceContractFamilyReplayProviders"] = source_contract_replay
+    queue["sourceContractFamilyReplayProviderCount"] = len(source_contract_replay)
     queue["sourceContractFamilyEvidenceAuthority"] = (
         "native-parent-and-independent-source-exact-current-js-diagnostic-only"
     )
-    queue["sourceContractFamilyExecutableStatus"] = (
-        "new_family_required" if source_contract_deferred else "not_attested"
+    queue["sourceContractFamilyExecutableStatus"] = source_contract_status
+    print(
+        "FIELD_BRAIN_SOURCE_FAMILY_CAPABILITY "
+        f"parser_installed={str(source_family_parser_ready).lower()} "
+        f"deferred={len(source_contract_deferred)} replay={len(source_contract_replay)} "
+        f"status={source_contract_status}",
+        flush=True,
     )
     queue["deferredRepairProviders"] = unique([*repair_deferred, *source_contract_deferred])
     queue["deferredRepairProviderCount"] = len(queue["deferredRepairProviders"])
@@ -1849,7 +1875,7 @@ def main() -> int:
     interrupted_provider = ""
     lab_session = (
         LearningLabSession(work_deadline)
-        if any(pid not in source_contract_frontier for pid in order)
+        if source_family_parser_ready or any(pid not in source_contract_frontier for pid in order)
         else None
     )
     try:
@@ -1865,7 +1891,7 @@ def main() -> int:
             run_dir = output / "providers" / provider_id
             run_dir.mkdir(parents=True, exist_ok=True)
             info = info_by_id.get(provider_id, {"provider": provider_id, "status": "", "needs_route_search": False})
-            if provider_id in source_contract_frontier:
+            if provider_id in source_contract_frontier and not source_family_parser_ready:
                 run_results.append(
                     defer_new_source_contract_family(provider_id, state, info, queue)
                 )
@@ -2238,6 +2264,8 @@ def main() -> int:
         "deferredRepairProviderCount": queue["deferredRepairProviderCount"],
         "sourceContractFamilyDeferredProviders": source_contract_deferred,
         "sourceContractFamilyDeferredProviderCount": len(source_contract_deferred),
+        "sourceContractFamilyReplayProviders": source_contract_replay,
+        "sourceContractFamilyReplayProviderCount": len(source_contract_replay),
         "sourceContractFamilyExecutableStatus": queue["sourceContractFamilyExecutableStatus"],
         "legacyExecutableSeedAllowed": False,
         "processedProviders": processed,

@@ -1,3 +1,7 @@
+## 2026-11-27 — État installé des Lego source-family
+
+Une promotion Architecture FORCE n'est plus assimilée à une dette éternelle. Le runtime vérifie la capacité par son triplet déterministe module + hook classificateur + test et rejoue l'oracle de source-family. Une capacité valide passe de `new_family_required` à `parser_installed_replay_required` et retourne dans Learning. Une capacité absente ou ayant dérivé reste fail-closed et peut demander Architecture FORCE. Le V1 ne possède aucune autorité playback/provider : le resolver réseau et la mutation restent des étages distincts à démontrer.
+
 ## 2026-11-27 — Reader-matrix-v2 : frontière modèle / compilateur
 
 Le modèle choisit une grammaire **typée** dans le contrat source-family, mais ne possède ni fichiers, ni Python, ni hook, ni test. Pour `reader-matrix-v2`, la preuve indépendante et la source observée bornent `slotPrefix=eps`, `matrixAxis=reader-slots`, `slotOrder=numeric`, `valuePrefix=lien:` et exigent la déclaration `var`. Une réponse hors contrat est rejetée avant matérialisation et le programme typé rejeté est fourni à l'unique correction Qwen.

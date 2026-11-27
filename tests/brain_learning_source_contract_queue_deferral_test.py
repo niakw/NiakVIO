@@ -11,6 +11,16 @@ assert spec and spec.loader
 mod=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 
+deferred,replay,status=mod.source_contract_capability_state(
+    ["sample","sibling"], {"sample":{}}, False
+)
+assert deferred==["sample"] and replay==[] and status=="new_family_required"
+deferred,replay,status=mod.source_contract_capability_state(
+    ["sample","sibling"], {"sample":{}}, True
+)
+assert deferred==[] and replay==["sample"] and status=="parser_installed_replay_required"
+assert mod.source_contract_capability_state(["sample"], {}, True)==([],[],"not_attested")
+
 provider="sample"
 state={"attemptCount":11,"lastStatus":"unresolved",
        "fixtureCursor":{"anime":2}}

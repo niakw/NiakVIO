@@ -35,7 +35,9 @@ summary = {
     "sourceContractFamilyDeferredProviders": ["another-sibling", "sample-anime"],
     "sourceContractFamilyDeferredProviderCount": 2,
 }
-blueprint = arch.source_contract_family_blueprint(queue, summary)
+blueprint = arch.source_contract_family_blueprint(
+    queue, summary, installed_source_family=False
+)
 assert blueprint is not None
 assert blueprint["strategyId"] == "catalogue_inline_token_episode_source_family_v1"
 assert blueprint["failureFamily"] == "catalogue_inline_episode_source"
@@ -64,7 +66,8 @@ def rejects(mod: dict, extra_summary: dict | None = None) -> bool:
     data = dict(queue)
     data.update(mod)
     return arch.source_contract_family_blueprint(
-        data, summary if extra_summary is None else extra_summary
+        data, summary if extra_summary is None else extra_summary,
+        installed_source_family=False,
     ) is None
 
 for bad in (
@@ -89,4 +92,7 @@ assert rejects({}, {
     "sourceContractFamilyDeferredProviders": ["another-sibling", "unrelated"],
     "sourceContractFamilyDeferredProviderCount": 2,
 })
-print("Brain architecture source contract: 2-provider reusable family selected over generic, same attestations, zero publication, forged summary rejected")
+assert arch.source_contract_family_blueprint(
+    queue, summary, installed_source_family=True
+) is None
+print("Brain architecture source contract: novel family selected only before install; installed parser suppresses duplicate FORCE")

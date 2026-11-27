@@ -21,6 +21,7 @@ from brain_meta_learning import (
     diagnose_gap,
     synthesize_gap_blueprint,
 )
+from brain_source_family_state import source_family_parser_installed
 
 def load_json(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
@@ -447,6 +448,8 @@ def build_strategy_blueprints(
 def source_contract_family_blueprint(
     queue_state: dict[str, Any],
     queue_summary: dict[str, Any],
+    *,
+    installed_source_family: bool | None = None,
 ) -> dict[str, Any] | None:
     """Architectural handoff for a proved-infrastructure, NOT proved-playback gap.
 
@@ -455,6 +458,10 @@ def source_contract_family_blueprint(
     may ask FORCE to synthesize a new, *Brain-owned* family executor.
     """
     if not isinstance(queue_state, dict) or not isinstance(queue_summary, dict):
+        return None
+    if installed_source_family is None:
+        installed_source_family = source_family_parser_installed(SCRIPTS.parent)
+    if installed_source_family:
         return None
     if (queue_state.get("sourceContractFamilyExecutableStatus") != "new_family_required"
             or queue_state.get("sourceContractFamilyEvidenceAuthority")

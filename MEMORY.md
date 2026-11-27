@@ -1,3 +1,11 @@
+## 2026-11-27 — V81 : parser source-family promu, boucle de régénération supprimée
+
+- Architecture FORCE a effectivement promu `catalogue_inline_token_episode_source_family_v1` sur `0c4bae792080` : module parser, hook du classificateur et test multi-épisode sont présents sur main.
+- Learning [46022174847](https://github.com/niakw/NiakVIO/actions/runs/46022174847) a ensuite échoué parce que la queue continuait d'émettre `new_family_required`. Qwen a produit la bonne grammaire trois fois mais le materializer l'a rejetée correctement avec `create target already exists: scripts/brain_layers/source_catalogue_inline_token_episode_source_fami_d2cf3259.py`. Ce n'est plus une panne de génération : c'est une machine d'état qui ne reconnaissait pas la capacité installée.
+- Nouveau contrat : l'état installé n'est vrai que si les trois artefacts déterministes existent **et** repassent `validate_source_family_implementation` (test généré + oracle indépendant). Une source attestée passe alors à `parser_installed_replay_required`; elle n'est plus retirée de la Learning queue, une session Lab est ouverte et le provider repart dans la boucle normale. Le builder Architecture refuse en défense secondaire de reproposer V1 déjà installé.
+- Le parser V1 reste diagnostic/read-only : cette transition ne prétend pas qu'il résout les jetons ni qu'Anime-Sama est réparé. Le replay doit maintenant produire la prochaine preuve causale; si le resolver/executor manque, ce sera un **nouveau** gap à générer, pas une recréation du parser.
+- Repair [46021630823](https://github.com/niakw/NiakVIO/actions/runs/46021630823) : CorsFlix + FrenchStream, 3 vagues Brain, 0 stream/0 playable/0 identité, budget 600 s épuisé, 0 candidat et **0 réparation**. Le stale prior Brain-LLM externe a été rejeté puis le guidance Learning local a été importé; ce n'est pas le verrou terminal. 
+
 ## 2026-11-27 — V80.4 : FORCE source-family atteint le bon blueprint, puis Qwen répète une grammaire rejetée
 
 - FORCE [46014198757](https://github.com/niakw/NiakVIO/actions/runs/46014198757), source `2a0b9ae8`, atteint réellement `catalogue_inline_token_episode_source_family_v1` / `reader-matrix-v2` pour Anime-Sama après la preuve source exacte. La matérialisation échoue trois fois sur le même oracle : `LEGOTEST_ALPHA_1` absent pour épisode 1. **0 patch, 0 promotion, 0 réparation**.
