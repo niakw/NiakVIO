@@ -115,6 +115,14 @@ def _negative_failure_count(
             profile=profile,
         ):
             continue
+        causal_exercise = row.get("causalExerciseObserved")
+        if not isinstance(causal_exercise, bool):
+            causal_exercise = quick.brain.strategy_causal_exercise_observed(
+                row.get("profile"),
+                row.get("networkExecutionSummary"),
+            )
+        if causal_exercise is False:
+            continue
         if profile == current_profile and trustworthy_current:
             remembered = str(row.get("strategyImplementationFingerprint") or "").strip().casefold()
             # A valid different scoped fingerprint is historical evidence for
