@@ -326,6 +326,79 @@ def fetch_resolved_target(url: str, referer: str) -> tuple[int, str, bool, str, 
         return 0, "", False, "transport_error", ""
 
 
+def _resolved_target_player_structure(body: str) -> dict[str, Any]:
+    """Return bounded player-markup structure only; never raw text, URLs or hosts."""
+    source = str(body or "")[:TARGET_MAX_BODY]
+    lowered = source.casefold()
+    iframe_count = min(8, len(re.findall(r"<iframe\\b", lowered)))
+    video_count = min(8, len(re.findall(r"<video\\b", lowered)))
+    source_count = min(16, len(re.findall(r"<source\\b", lowered)))
+    script_tags = re.findall(r"<script\\b([^>]*)>([\\s\\S]*?)</script\\s*>", source, re.I)
+    external_script_count = min(
+        16, sum(1 for attrs, _body in script_tags if re.search(r"\\bsrc\\s*=", attrs, re.I))
+    )
+    inline_script_count = min(
+        16, sum(1 for attrs, script_body in script_tags
+                if not re.search(r"\\bsrc\\s*=", attrs, re.I) and script_body.strip())
+    )
+    forms = re.findall(r"<form\\b([^>]*)>([\\s\\S]*?)</form\\s*>", source, re.I)
+    form_count = min(8, len(forms))
+    post_form = any(re.search(r"\\bmethod\\s*=\\s*([\"']?)post\\1", attrs, re.I)
+                    for attrs, _form_body in forms)
+    hidden_count = min(
+        32,
+        sum(len(re.findall(r"<input\\b[^>]*\\btype\\s*=\\s*([\"']?)hidden\\1", form_body, re.I))
+            for _attrs, form_body in forms[:8]),
+    )
+    request_bootstrap = bool(re.search(
+        r"\\b(?:fetch\\s*\\(|XMLHttpRequest\\b|\\$\\s*\\.\\s*ajax\\s*\\(|axios\\s*\\.)",
+        source, re.I,
+    ))
+    packed_script = "eval(function(p,a,c,k,e,d)" in source.replace(" ", "")
+    base64_decode = bool(re.search(r"\\b(?:atob|base64_decode)\\s*\\(", source, re.I))
+    meta_refresh = bool(re.search(
+        r"<meta\\b[^>]*http-equiv\\s*=\\s*([\"']?)refresh\\1", source, re.I,
+    ))
+    mechanisms = sum((
+        iframe_count > 0,
+        video_count > 0 or source_count > 0,
+        form_count > 0,
+        request_bootstrap,
+        packed_script,
+    ))
+    if mechanisms > 1:
+        structure_class = "mixed"
+    elif form_count:
+        structure_class = "form_handoff"
+    elif iframe_count:
+        structure_class = "iframe_shell"
+    elif video_count or source_count:
+        structure_class = "video_tag"
+    elif packed_script:
+        structure_class = "packed_script"
+    elif request_bootstrap:
+        structure_class = "request_bootstrap"
+    elif external_script_count or inline_script_count:
+        structure_class = "scripted_player"
+    else:
+        structure_class = "none"
+    return {
+        "resolvedTargetPlayerStructureClass": structure_class,
+        "resolvedTargetIframeCount": iframe_count,
+        "resolvedTargetVideoTagCount": video_count,
+        "resolvedTargetSourceTagCount": source_count,
+        "resolvedTargetExternalScriptCount": external_script_count,
+        "resolvedTargetInlineScriptCount": inline_script_count,
+        "resolvedTargetFormCount": form_count,
+        "resolvedTargetHiddenInputCount": hidden_count,
+        "resolvedTargetPostFormObserved": post_form,
+        "resolvedTargetRequestBootstrapObserved": request_bootstrap,
+        "resolvedTargetPackedScriptObserved": packed_script,
+        "resolvedTargetBase64DecodeObserved": base64_decode,
+        "resolvedTargetMetaRefreshObserved": meta_refresh,
+    }
+
+
 def resolved_target_shape(
     status: int, body: str, oversized: bool, content_type: str,
 ) -> dict[str, Any]:
@@ -364,11 +437,17 @@ def resolved_target_shape(
         shape = "oversized"
     else:
         shape = "text"
+    structure = (
+        _resolved_target_player_structure(raw)
+        if shape in {"html_player", "html_page"} else
+        _resolved_target_player_structure("")
+    )
     return {
         "resolvedTargetShape": shape,
         "resolvedTargetDirectMediaObserved": shape in {"hls_manifest", "dash_manifest", "media_binary"},
         "resolvedTargetPlayerEmbedObserved": shape == "html_player",
         "resolvedTargetRedirectObserved": shape == "redirect",
+        **structure,
     }
 
 
