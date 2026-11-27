@@ -2,6 +2,7 @@
 """The V2 resolver primitive is provider-agnostic and fail-closed."""
 from __future__ import annotations
 import importlib.util
+import json
 import subprocess
 import tempfile
 from pathlib import Path
@@ -49,4 +50,83 @@ with tempfile.NamedTemporaryFile("w",suffix=".js",delete=False) as handle:
 check=subprocess.run(["node","--check",js],capture_output=True,text=True,check=False)
 Path(js).unlink(missing_ok=True)
 assert check.returncode==0,check.stderr
-print("Brain source resolver runtime V2: provider-agnostic mutation, JS syntax and fail-closed anchors passed")
+
+# Cross the real control-plane boundary: Learning planner selection -> adaptive
+# matching -> exact provider-byte mutation. Separate planner/unit tests are not
+# enough because the production failures occurred between these components.
+planner=ROOT/"engine_v2/scripts/plan-repairs.mjs"
+policy={"production":{
+    "negativeExperimentMemory":{"rotateExperimentAfterFailures":1,"maxVariantsPerSignature":5,"finalVariantGeneration":2,"maxLearningGenerationsPerSignature":5},
+    "maxHypotheses":3,"maxMutationsPerProvider":2,"maxRepeatedSignature":2,
+    "maxGeneratedBytesPerProvider":180000,"maxElapsedMsPerProvider":45000,
+},"skillMaturity":{}}
+planner_candidate={
+    "canonical_id":"resolver-representative",
+    "censusPrior":{"status":"CHAIN REACHED","dominantIssue":"provider_network_zero_result","evidenceDepth":["anime=chain_reached"]},
+    "metadata":{"supportedTypes":["anime"]},
+}
+planner_result={
+    "status":"no_streams",
+    "evidence":{"streams_playable":0,"streams_returned":0},
+    "tests":[{
+        "fixture":{"mediaType":"anime","category":"anime","title":"Synthetic"},
+        "failure_class":"content_lookup_completed_no_streams",
+        "status":"no_streams","network_observations":[],
+        "streams_playable":0,"stream_count":0,
+    }],
+}
+payload={
+    "mode":"learning","explorationChain":True,"forcePreferredStrategy":"",
+    "learningPreferredStrategy":"catalogue_inline_token_resolver_v2",
+    "learningPreferredFailureClass":"chain_terminal_gap",
+    "policy":policy,"learnedSkills":{},"negativeMemory":[],
+    "items":[{"key":"published:resolver-representative","candidate":planner_candidate,"result":planner_result,"state":{}}],
+}
+planned=subprocess.run(
+    ["node",str(planner)],cwd=ROOT,input=json.dumps(payload),
+    capture_output=True,text=True,check=True,timeout=20,
+)
+plan=next(iter(json.loads(planned.stdout)["plans"].values()))
+assert plan["learningPreferredSelected"] is True,plan
+assert plan["postExhaustionStrategyProfile"]=="catalogue_inline_token_resolver_v2",plan
+assert plan["allowedProfiles"]==["catalogue_inline_token_resolver_v2"],plan
+
+with tempfile.TemporaryDirectory() as tmp:
+    stage=Path(tmp)
+    provider_path=stage/"providers"/"resolver-representative.js"
+    provider_path.parent.mkdir(parents=True,exist_ok=True)
+    provider_path.write_text(source,encoding="utf-8")
+    candidate={
+        "key":"published:resolver-representative",
+        "canonical_id":"resolver-representative",
+        "source":"synthetic",
+        "local_path":"providers/resolver-representative.js",
+        "bytes":len(source.encode()),
+        "metadata":{
+            "supportedTypes":["anime"],
+            "baseUrl":"https://resolver-representative.example",
+        },
+        "brain_repair_plan":plan,
+    }
+    result={
+        "key":"published:resolver-representative",
+        "status":"no_streams",
+        "evidence":{"streams_playable":0,"streams_returned":0},
+        "tests":planner_result["tests"],
+    }
+    profiles=mod.matching_profiles(candidate,result,source,{})
+    executable=[name for name in profiles if name in set(plan["allowedProfiles"])]
+    assert executable==["catalogue_inline_token_resolver_v2"],(profiles,plan)
+    repaired,error=mod.create_repair_candidate(
+        stage,candidate,"catalogue_inline_token_resolver_v2",1
+    )
+    assert error is None and repaired is not None,error
+    assert repaired["runtime_repair"]["profile"]=="catalogue_inline_token_resolver_v2",repaired
+    assert repaired["runtime_repair"]["strategy"]=="catalogue_inline_token_resolver_v2",repaired
+    final_bytes=(stage/repaired["local_path"]).read_bytes()
+    assert final_bytes!=source.encode()
+    final_text=final_bytes.decode()
+    assert "NIAKVIO_SOURCE_RESOLVER_CONTRACT same-origin-api-lien-j-l-v1" in final_text
+    assert "||/^lien:/i.test(x[1])" in final_text
+
+print("Brain source resolver runtime V2: primitive + planner-to-mutation integration passed")
