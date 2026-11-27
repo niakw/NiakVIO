@@ -60,6 +60,31 @@ assert summary["publicationAuthority"] is False
 for forbidden in ("secret.example", "do-not-keep", "authorization", "private", "api.themoviedb.org"):
     assert forbidden not in repr(summary), (forbidden, summary)
 
+parent_result = {
+    "tests": [{
+        "network_observations": [{
+            "stage": "episode",
+            "method": "GET",
+            "status": 403,
+            "infrastructure": False,
+            "response_structure": {"kind": "html"},
+        }],
+    }],
+}
+expected_delta = deep.sanitized_network_execution_delta(parent_result, raw_result)
+assert expected_delta["providerRequestDelta"] == 1, expected_delta
+assert expected_delta["successfulProviderRequestDelta"] == 1, expected_delta
+assert expected_delta["networkFailureDelta"] == 0, expected_delta
+assert expected_delta["statusBucketDelta"] == {
+    "2xx": 1, "3xx": 0, "4xx": 0, "5xx": 0, "network": 0,
+}, expected_delta
+assert expected_delta["newMethods"] == ["POST"], expected_delta
+assert expected_delta["newStages"] == ["media"], expected_delta
+assert expected_delta["newResponseKinds"] == ["json"], expected_delta
+assert expected_delta["parentDeepestStage"] == "episode", expected_delta
+assert expected_delta["candidateDeepestStage"] == "media", expected_delta
+assert expected_delta["stageAdvanced"] is True, expected_delta
+
 profile = "document_request_contract_mining_v2"
 fingerprint = "a" * 64
 plan = {
@@ -81,6 +106,15 @@ poisoned = {
     "stages": [*summary["stages"], "credential_theft"],
     "responseKinds": [*summary["responseKinds"], "private_blob"],
 }
+poisoned_delta = {
+    **expected_delta,
+    "url": "https://must-not-survive.example/delta",
+    "headers": {"authorization": "secret"},
+    "body": "secret delta body",
+    "newMethods": [*expected_delta["newMethods"], "DELETE"],
+    "newStages": [*expected_delta["newStages"], "credential_theft"],
+    "newResponseKinds": [*expected_delta["newResponseKinds"], "private_blob"],
+}
 repair = {
     "attemptedProfiles": [profile],
     "report": {
@@ -97,6 +131,7 @@ repair = {
                 "brain_plan": plan,
                 "reason": "safety_gate:no_playable_proof",
                 "network_execution": poisoned,
+                "network_execution_delta": poisoned_delta,
             }],
         }],
     },
@@ -115,13 +150,17 @@ assert row["executionObserved"] is True
 assert row["lastOutcome"] == "rejected"
 persisted = row["networkExecutionSummary"]
 assert persisted == summary, (persisted, summary)
+persisted_delta = row["networkExecutionDelta"]
+assert persisted_delta == expected_delta, (persisted_delta, expected_delta)
 for forbidden in ("must-not-survive", "cookie", "secret body", "DELETE", "credential_theft", "private_blob"):
     assert forbidden not in repr(persisted), (forbidden, persisted)
+    assert forbidden not in repr(persisted_delta), (forbidden, persisted_delta)
 
 state = queue.merge_phase_learning_state({}, entries)
 saved = state["experimentMemory"]["entries"][0]
 assert saved["strategyImplementationFingerprint"] == fingerprint
 assert saved["networkExecutionSummary"] == summary
+assert saved["networkExecutionDelta"] == expected_delta
 assert state["publicationAllowed"] is False
 assert state["productionWritesAllowed"] is False
 
@@ -134,7 +173,7 @@ historical_row = {
     "consecutiveFailures": 1,
     "lastSeenAt": "2026-11-27T20:00:00+00:00",
 }
-historical_row.pop("networkExecutionSummary", None)
+historical_row.pop("networkExecutionDelta", None)
 historical = {
     "schemaVersion": 1,
     "publicationAllowed": False,
@@ -163,6 +202,7 @@ backfill = queue.diagnostic_network_backfill_entry(
     diagnostic_target,
     diagnostic_plan,
     summary,
+    expected_delta,
 )
 assert backfill is not None
 assert backfill["attempts"] == 7
@@ -171,10 +211,12 @@ assert backfill["consecutiveFailures"] == 1
 assert backfill["lastOutcome"] == "rejected"
 assert backfill["lastSeenAt"] == "2026-11-27T20:00:00+00:00"
 assert backfill["networkExecutionSummary"] == summary
+assert backfill["networkExecutionDelta"] == expected_delta
 assert queue.diagnostic_network_backfill_entry(
     diagnostic_target,
     {**diagnostic_plan, "strategyImplementationFingerprint": "b" * 64},
     summary,
+    expected_delta,
 ) is None
 
 enriched = queue.apply_diagnostic_network_backfill(historical, backfill)
@@ -184,10 +226,11 @@ assert enriched_row["failures"] == 3
 assert enriched_row["consecutiveFailures"] == 1
 assert enriched_row["lastOutcome"] == "rejected"
 assert enriched_row["networkExecutionSummary"] == summary
+assert enriched_row["networkExecutionDelta"] == expected_delta
 assert queue.missing_network_diagnostic_negative(
     enriched,
     "anime-sama",
     profile,
-) is None, "diagnostic replay must be one-shot once telemetry exists"
+) is None, "diagnostic replay must be one-shot once summary and delta telemetry exist"
 
 print("Brain sanitized network execution memory contract passed")
