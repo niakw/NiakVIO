@@ -24,39 +24,37 @@
         "sourceContractVerifiedOnOfficialTv": false,
         "mediaPlaybackVerified": false,
         "blueprint": {
-          "strategyId": "catalogue_inline_token_episode_source_family_v1",
-          "groupId": "native-attested-independent-source-contract",
+          "strategyId": "catalogue_inline_token_resolver_v2",
+          "evolvesFromStrategyId": "runtime_response_salvage_v1",
+          "groupId": "native-attested-independent-source-resolver-contract",
           "failureFamily": "catalogue_inline_episode_source",
+          "repairScope": "terminal-extraction",
           "targetLayer": "brain",
-          "gapKind": "missing_source_contract_family_executable",
-          "requiresNewExecutableRepairProfile": false,
-          "requiresNewSourceFamilyLego": true,
+          "gapKind": "missing_source_token_resolver_executable",
+          "requiresNewExecutableRepairProfile": true,
+          "requiresNewSourceFamilyLego": false,
           "forcePromotionEligible": true,
           "providers": [
             "anime-sama"
           ],
           "providerCount": 1,
-          "causalTrigger": "Official Android TV observed an episode JavaScript resource missing or replaced by HTML and zero extracted streams; independent runner observed inline epsN arrays, opaque lien identifiers and epsJeton on a separate catalogue path. No domain, episode, media or client playback identity has been verified.",
-          "method": "Create a generic Brain-owned inline catalogue family executor and its regression tests; discover the catalogue slug and season/voice from real current source; reference hypothesis: epsN is a reader slot and the array index selects the episode, not the inverse. Verify this hypothesis on the exact current source; parse opaque identifiers without ever evaluating upstream scripts, resolve an allowlisted same-origin token API only in an isolated client test, and pass the result to existing trusted terminal-media validation. Never hard-code an Anime-Sama URL, slug, token or bypass legacy playback gates. Preserve other provider families, audio and subtitles.",
+          "causalTrigger": "The V1 reader-matrix parser is installed and replayed, but the provider still returns zero streams. Exact-parent independent diagnostics observed opaque lien identifiers plus epsJeton and one same-origin resolver response with HTTP 200, JSON object, URL field and HTTPS output. This is diagnostic source evidence only.",
+          "method": "Generate a reusable typed opaque-token resolver profile. Preserve lien identifiers during episode selection, extract the source-owned token without evaluating scripts, resolve only the same-origin /api/lien.php contract, accept only an HTTPS URL field, then hand it to existing trusted media extraction. Never persist token/id/response URL.",
           "requiredEvidence": [
-            "exact current JS bytes plus native TV run/fixture/source SHA",
-            "independent read-only source shape and selected episode index",
-            "current source-owned token resolver response and output contract",
-            "negative memory for exhausted script/route/adaptive profiles"
+            "installed and revalidated reader-matrix V1 parser",
+            "exact current provider bytes plus official Android TV zero-extraction parent",
+            "sanitized same-origin resolver HTTP/JSON/HTTPS contract"
           ],
           "acceptanceProof": [
-            "Brain-generated bounded family code and unit test compile",
-            "candidate mutation actually generated, applied and rematerialized",
-            "source-pinned episode season, title, voice and player differ correctly",
-            "official NuvioTV decoded correct video and audio with terminal segments",
-            "representative compatible sibling and native client non-regression"
+            "typed Brain resolver program compiled and wired into all Repair selection gates",
+            "candidate bytes actually differ, compile, rematerialize and replay",
+            "official NuvioTV decodes the correct requested episode with audio",
+            "compatible sibling non-regression before family fanout"
           ],
-          "negativeMemorySignature": "source-family:catalogue-inline-token-v2-reader-axis",
-          "sourceContractReference": "independent-implementation-414c9bc8c8c2b904232264f279d9b4e814c4bde9",
-          "episodeAxisHypothesis": "reader-slot-arrays-episode-index-within-slot",
+          "negativeMemorySignature": "source-family:catalogue-inline-token-resolver-v2",
+          "sourceCompilerContract": "opaque-token-resolver-v1",
+          "resolverContract": "same-origin-api-lien-j-l-v1",
           "episodeAxisVerifiedOnOfficialClient": false,
-          "sourceCompilerContract": "reader-matrix-v2",
-          "reentryPolicy": "Brain family synthesis -> isolated compile -> exact current-byte rematerialize -> official NuvioTV episode/media/audio -> sibling non-regression -> Core eligibility; no direct publication",
           "productionWritesAllowed": false,
           "providerPublicationAuthority": false,
           "requiresHumanMerge": true
@@ -140,39 +138,37 @@
         "repeatedSignatureCount": 1,
         "strategyBlueprints": [
           {
-            "strategyId": "catalogue_inline_token_episode_source_family_v1",
-            "groupId": "native-attested-independent-source-contract",
+            "strategyId": "catalogue_inline_token_resolver_v2",
+            "evolvesFromStrategyId": "runtime_response_salvage_v1",
+            "groupId": "native-attested-independent-source-resolver-contract",
             "failureFamily": "catalogue_inline_episode_source",
+            "repairScope": "terminal-extraction",
             "targetLayer": "brain",
-            "gapKind": "missing_source_contract_family_executable",
-            "requiresNewExecutableRepairProfile": false,
-            "requiresNewSourceFamilyLego": true,
+            "gapKind": "missing_source_token_resolver_executable",
+            "requiresNewExecutableRepairProfile": true,
+            "requiresNewSourceFamilyLego": false,
             "forcePromotionEligible": true,
             "providers": [
               "anime-sama"
             ],
             "providerCount": 1,
-            "causalTrigger": "Official Android TV observed an episode JavaScript resource missing or replaced by HTML and zero extracted streams; independent runner observed inline epsN arrays, opaque lien identifiers and epsJeton on a separate catalogue path. No domain, episode, media or client playback identity has been verified.",
-            "method": "Create a generic Brain-owned inline catalogue family executor and its regression tests; discover the catalogue slug and season/voice from real current source; reference hypothesis: epsN is a reader slot and the array index selects the episode, not the inverse. Verify this hypothesis on the exact current source; parse opaque identifiers without ever evaluating upstream scripts, resolve an allowlisted same-origin token API only in an isolated client test, and pass the result to existing trusted terminal-media validation. Never hard-code an Anime-Sama URL, slug, token or bypass legacy playback gates. Preserve other provider families, audio and subtitles.",
+            "causalTrigger": "The V1 reader-matrix parser is installed and replayed, but the provider still returns zero streams. Exact-parent independent diagnostics observed opaque lien identifiers plus epsJeton and one same-origin resolver response with HTTP 200, JSON object, URL field and HTTPS output. This is diagnostic source evidence only.",
+            "method": "Generate a reusable typed opaque-token resolver profile. Preserve lien identifiers during episode selection, extract the source-owned token without evaluating scripts, resolve only the same-origin /api/lien.php contract, accept only an HTTPS URL field, then hand it to existing trusted media extraction. Never persist token/id/response URL.",
             "requiredEvidence": [
-              "exact current JS bytes plus native TV run/fixture/source SHA",
-              "independent read-only source shape and selected episode index",
-              "current source-owned token resolver response and output contract",
-              "negative memory for exhausted script/route/adaptive profiles"
+              "installed and revalidated reader-matrix V1 parser",
+              "exact current provider bytes plus official Android TV zero-extraction parent",
+              "sanitized same-origin resolver HTTP/JSON/HTTPS contract"
             ],
             "acceptanceProof": [
-              "Brain-generated bounded family code and unit test compile",
-              "candidate mutation actually generated, applied and rematerialized",
-              "source-pinned episode season, title, voice and player differ correctly",
-              "official NuvioTV decoded correct video and audio with terminal segments",
-              "representative compatible sibling and native client non-regression"
+              "typed Brain resolver program compiled and wired into all Repair selection gates",
+              "candidate bytes actually differ, compile, rematerialize and replay",
+              "official NuvioTV decodes the correct requested episode with audio",
+              "compatible sibling non-regression before family fanout"
             ],
-            "negativeMemorySignature": "source-family:catalogue-inline-token-v2-reader-axis",
-            "sourceContractReference": "independent-implementation-414c9bc8c8c2b904232264f279d9b4e814c4bde9",
-            "episodeAxisHypothesis": "reader-slot-arrays-episode-index-within-slot",
+            "negativeMemorySignature": "source-family:catalogue-inline-token-resolver-v2",
+            "sourceCompilerContract": "opaque-token-resolver-v1",
+            "resolverContract": "same-origin-api-lien-j-l-v1",
             "episodeAxisVerifiedOnOfficialClient": false,
-            "sourceCompilerContract": "reader-matrix-v2",
-            "reentryPolicy": "Brain family synthesis -> isolated compile -> exact current-byte rematerialize -> official NuvioTV episode/media/audio -> sibling non-regression -> Core eligibility; no direct publication",
             "productionWritesAllowed": false,
             "providerPublicationAuthority": false,
             "requiresHumanMerge": true
@@ -200,10 +196,9 @@
             "transportSignature": "residential-exit-native-reachable",
             "capabilityStrategy": "mixed_embed_resolver",
             "providers": [
-              "67movies",
               "french-anime"
             ],
-            "providerCount": 2,
+            "providerCount": 1,
             "runtimeFamilies": [
               "mixed_embed_resolver"
             ],
@@ -214,46 +209,6 @@
               "residential-exit-native-reachable"
             ],
             "negativeMemorySignature": "strategy:representative_native_transport_alignment_v1|scope:harness-compatibility|capability:mixed_embed_resolver|transport:residential-exit-native-reachable",
-            "reentryPolicy": "proposal -> executable harness contract -> native differential proof -> census refresh",
-            "productionWritesAllowed": false,
-            "requiresHumanMerge": true
-          },
-          {
-            "strategyId": "representative_native_transport_alignment_v1",
-            "causalTrigger": "GitHub Node/browser transport is challenged or diverges before provider-code breakage is established",
-            "method": "use census harnessTransportClass to replay provider-owned safe routes under the closest audited native TV/mobile HTTP policy; classify native-policy-reachable, browser-profile-only, native-policy-inconclusive or all-transports-challenged before any provider mutation",
-            "requiredEvidence": [
-              "sanitized provider-owned route",
-              "GitHub browser/profile matrix",
-              "audited native transport policy result"
-            ],
-            "acceptanceProof": [
-              "harness/client divergence classified",
-              "browser or native transport reachability is not promoted to playback",
-              "provider JS mutation remains forbidden without implementation evidence"
-            ],
-            "groupId": "harness-compatibility|mixed_embed_resolver|harness:native-policy-reachable",
-            "repairScope": "harness-compatibility",
-            "targetLayer": "harness",
-            "forcePromotionEligible": false,
-            "requiresNewExecutableRepairProfile": false,
-            "forcePromotionReason": "diagnostic-only-or-no-exhaustion-proof",
-            "transportSignature": "native-policy-reachable",
-            "capabilityStrategy": "mixed_embed_resolver",
-            "providers": [
-              "shuttletv"
-            ],
-            "providerCount": 1,
-            "runtimeFamilies": [
-              "mixed_embed_resolver"
-            ],
-            "dominantIssues": [
-              "waf_challenge"
-            ],
-            "harnessTransportClasses": [
-              "native-policy-reachable"
-            ],
-            "negativeMemorySignature": "strategy:representative_native_transport_alignment_v1|scope:harness-compatibility|capability:mixed_embed_resolver|transport:native-policy-reachable",
             "reentryPolicy": "proposal -> executable harness contract -> native differential proof -> census refresh",
             "productionWritesAllowed": false,
             "requiresHumanMerge": true
@@ -301,42 +256,40 @@
     "anime-sama"
   ],
   "deferredRepairProviderCount": 1,
-  "strategyBlueprintCount": 3,
+  "strategyBlueprintCount": 2,
   "strategyBlueprints": [
     {
-      "strategyId": "catalogue_inline_token_episode_source_family_v1",
-      "groupId": "native-attested-independent-source-contract",
+      "strategyId": "catalogue_inline_token_resolver_v2",
+      "evolvesFromStrategyId": "runtime_response_salvage_v1",
+      "groupId": "native-attested-independent-source-resolver-contract",
       "failureFamily": "catalogue_inline_episode_source",
+      "repairScope": "terminal-extraction",
       "targetLayer": "brain",
-      "gapKind": "missing_source_contract_family_executable",
-      "requiresNewExecutableRepairProfile": false,
-      "requiresNewSourceFamilyLego": true,
+      "gapKind": "missing_source_token_resolver_executable",
+      "requiresNewExecutableRepairProfile": true,
+      "requiresNewSourceFamilyLego": false,
       "forcePromotionEligible": true,
       "providers": [
         "anime-sama"
       ],
       "providerCount": 1,
-      "causalTrigger": "Official Android TV observed an episode JavaScript resource missing or replaced by HTML and zero extracted streams; independent runner observed inline epsN arrays, opaque lien identifiers and epsJeton on a separate catalogue path. No domain, episode, media or client playback identity has been verified.",
-      "method": "Create a generic Brain-owned inline catalogue family executor and its regression tests; discover the catalogue slug and season/voice from real current source; reference hypothesis: epsN is a reader slot and the array index selects the episode, not the inverse. Verify this hypothesis on the exact current source; parse opaque identifiers without ever evaluating upstream scripts, resolve an allowlisted same-origin token API only in an isolated client test, and pass the result to existing trusted terminal-media validation. Never hard-code an Anime-Sama URL, slug, token or bypass legacy playback gates. Preserve other provider families, audio and subtitles.",
+      "causalTrigger": "The V1 reader-matrix parser is installed and replayed, but the provider still returns zero streams. Exact-parent independent diagnostics observed opaque lien identifiers plus epsJeton and one same-origin resolver response with HTTP 200, JSON object, URL field and HTTPS output. This is diagnostic source evidence only.",
+      "method": "Generate a reusable typed opaque-token resolver profile. Preserve lien identifiers during episode selection, extract the source-owned token without evaluating scripts, resolve only the same-origin /api/lien.php contract, accept only an HTTPS URL field, then hand it to existing trusted media extraction. Never persist token/id/response URL.",
       "requiredEvidence": [
-        "exact current JS bytes plus native TV run/fixture/source SHA",
-        "independent read-only source shape and selected episode index",
-        "current source-owned token resolver response and output contract",
-        "negative memory for exhausted script/route/adaptive profiles"
+        "installed and revalidated reader-matrix V1 parser",
+        "exact current provider bytes plus official Android TV zero-extraction parent",
+        "sanitized same-origin resolver HTTP/JSON/HTTPS contract"
       ],
       "acceptanceProof": [
-        "Brain-generated bounded family code and unit test compile",
-        "candidate mutation actually generated, applied and rematerialized",
-        "source-pinned episode season, title, voice and player differ correctly",
-        "official NuvioTV decoded correct video and audio with terminal segments",
-        "representative compatible sibling and native client non-regression"
+        "typed Brain resolver program compiled and wired into all Repair selection gates",
+        "candidate bytes actually differ, compile, rematerialize and replay",
+        "official NuvioTV decodes the correct requested episode with audio",
+        "compatible sibling non-regression before family fanout"
       ],
-      "negativeMemorySignature": "source-family:catalogue-inline-token-v2-reader-axis",
-      "sourceContractReference": "independent-implementation-414c9bc8c8c2b904232264f279d9b4e814c4bde9",
-      "episodeAxisHypothesis": "reader-slot-arrays-episode-index-within-slot",
+      "negativeMemorySignature": "source-family:catalogue-inline-token-resolver-v2",
+      "sourceCompilerContract": "opaque-token-resolver-v1",
+      "resolverContract": "same-origin-api-lien-j-l-v1",
       "episodeAxisVerifiedOnOfficialClient": false,
-      "sourceCompilerContract": "reader-matrix-v2",
-      "reentryPolicy": "Brain family synthesis -> isolated compile -> exact current-byte rematerialize -> official NuvioTV episode/media/audio -> sibling non-regression -> Core eligibility; no direct publication",
       "productionWritesAllowed": false,
       "providerPublicationAuthority": false,
       "requiresHumanMerge": true
@@ -364,10 +317,9 @@
       "transportSignature": "residential-exit-native-reachable",
       "capabilityStrategy": "mixed_embed_resolver",
       "providers": [
-        "67movies",
         "french-anime"
       ],
-      "providerCount": 2,
+      "providerCount": 1,
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
@@ -378,46 +330,6 @@
         "residential-exit-native-reachable"
       ],
       "negativeMemorySignature": "strategy:representative_native_transport_alignment_v1|scope:harness-compatibility|capability:mixed_embed_resolver|transport:residential-exit-native-reachable",
-      "reentryPolicy": "proposal -> executable harness contract -> native differential proof -> census refresh",
-      "productionWritesAllowed": false,
-      "requiresHumanMerge": true
-    },
-    {
-      "strategyId": "representative_native_transport_alignment_v1",
-      "causalTrigger": "GitHub Node/browser transport is challenged or diverges before provider-code breakage is established",
-      "method": "use census harnessTransportClass to replay provider-owned safe routes under the closest audited native TV/mobile HTTP policy; classify native-policy-reachable, browser-profile-only, native-policy-inconclusive or all-transports-challenged before any provider mutation",
-      "requiredEvidence": [
-        "sanitized provider-owned route",
-        "GitHub browser/profile matrix",
-        "audited native transport policy result"
-      ],
-      "acceptanceProof": [
-        "harness/client divergence classified",
-        "browser or native transport reachability is not promoted to playback",
-        "provider JS mutation remains forbidden without implementation evidence"
-      ],
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:native-policy-reachable",
-      "repairScope": "harness-compatibility",
-      "targetLayer": "harness",
-      "forcePromotionEligible": false,
-      "requiresNewExecutableRepairProfile": false,
-      "forcePromotionReason": "diagnostic-only-or-no-exhaustion-proof",
-      "transportSignature": "native-policy-reachable",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "providers": [
-        "shuttletv"
-      ],
-      "providerCount": 1,
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "native-policy-reachable"
-      ],
-      "negativeMemorySignature": "strategy:representative_native_transport_alignment_v1|scope:harness-compatibility|capability:mixed_embed_resolver|transport:native-policy-reachable",
       "reentryPolicy": "proposal -> executable harness contract -> native differential proof -> census refresh",
       "productionWritesAllowed": false,
       "requiresHumanMerge": true

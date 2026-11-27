@@ -30,29 +30,19 @@ Targets: scripts/brain_repair_runtime.py, scripts/run_brain_learning_queue.py, s
 
 ## New strategy blueprints
 
-### catalogue_inline_token_episode_source_family_v1 — native-attested-independent-source-contract
+### catalogue_inline_token_resolver_v2 — native-attested-independent-source-resolver-contract
 
 Providers: anime-sama
 
-Trigger: Official Android TV observed an episode JavaScript resource missing or replaced by HTML and zero extracted streams; independent runner observed inline epsN arrays, opaque lien identifiers and epsJeton on a separate catalogue path. No domain, episode, media or client playback identity has been verified.
+Trigger: The V1 reader-matrix parser is installed and replayed, but the provider still returns zero streams. Exact-parent independent diagnostics observed opaque lien identifiers plus epsJeton and one same-origin resolver response with HTTP 200, JSON object, URL field and HTTPS output. This is diagnostic source evidence only.
 
-Method: Create a generic Brain-owned inline catalogue family executor and its regression tests; discover the catalogue slug and season/voice from real current source; reference hypothesis: epsN is a reader slot and the array index selects the episode, not the inverse. Verify this hypothesis on the exact current source; parse opaque identifiers without ever evaluating upstream scripts, resolve an allowlisted same-origin token API only in an isolated client test, and pass the result to existing trusted terminal-media validation. Never hard-code an Anime-Sama URL, slug, token or bypass legacy playback gates. Preserve other provider families, audio and subtitles.
+Method: Generate a reusable typed opaque-token resolver profile. Preserve lien identifiers during episode selection, extract the source-owned token without evaluating scripts, resolve only the same-origin /api/lien.php contract, accept only an HTTPS URL field, then hand it to existing trusted media extraction. Never persist token/id/response URL.
 
-Acceptance: Brain-generated bounded family code and unit test compile; candidate mutation actually generated, applied and rematerialized; source-pinned episode season, title, voice and player differ correctly; official NuvioTV decoded correct video and audio with terminal segments; representative compatible sibling and native client non-regression
+Acceptance: typed Brain resolver program compiled and wired into all Repair selection gates; candidate bytes actually differ, compile, rematerialize and replay; official NuvioTV decodes the correct requested episode with audio; compatible sibling non-regression before family fanout
 
 ### representative_native_transport_alignment_v1 — harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable
 
-Providers: 67movies, french-anime
-
-Trigger: GitHub Node/browser transport is challenged or diverges before provider-code breakage is established
-
-Method: use census harnessTransportClass to replay provider-owned safe routes under the closest audited native TV/mobile HTTP policy; classify native-policy-reachable, browser-profile-only, native-policy-inconclusive or all-transports-challenged before any provider mutation
-
-Acceptance: harness/client divergence classified; browser or native transport reachability is not promoted to playback; provider JS mutation remains forbidden without implementation evidence
-
-### representative_native_transport_alignment_v1 — harness-compatibility|mixed_embed_resolver|harness:native-policy-reachable
-
-Providers: shuttletv
+Providers: french-anime
 
 Trigger: GitHub Node/browser transport is challenged or diverges before provider-code breakage is established
 

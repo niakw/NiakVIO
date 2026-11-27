@@ -145,6 +145,7 @@ POST_EXHAUSTION_STRATEGY_PROFILES = {
     "search_response_route_binding_v1",
     "identity_alias_search_traversal_v1",
     "runtime_response_salvage_v1",
+    "catalogue_inline_token_resolver_v2",
     "document_request_contract_mining_v1",
     "provider_session_bootstrap_replay_v1",
     HTML_CLASS_TOKEN_PROFILE,
@@ -2181,6 +2182,12 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             current_request_recipes, provider_request_recipes, positive_request_recipes, limit=40
         )
         second_order_role_preferences = ["api", "source", "player", "detail", "episode", "search", "other"]
+    elif new_strategy_id == "catalogue_inline_token_resolver_v2":
+        search_paths = _unique_routes(learned_search, configured_search, limit=12)
+        direct_paths = _unique_routes(learned_direct, configured_direct, limit=28)
+        request_recipes = _unique_request_recipes(current_request_recipes, provider_request_recipes, limit=32)
+        second_order_role_preferences = ["api", "player", "source", "episode", "detail", "other"]
+        inline_token_resolver_contract = "same-origin-api-lien-j-l-v1"
     elif new_strategy_id == "document_request_contract_mining_v1":
         search_paths = _unique_routes(learned_search, configured_search, limit=12)
         direct_paths = _unique_routes(
