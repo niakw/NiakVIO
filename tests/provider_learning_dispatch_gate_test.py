@@ -290,6 +290,117 @@ progress_v2 = module.select_execution_plan(
 assert progress_v2["eligibleProviders"] == ["learn-only"], progress_v2
 assert progress_v2["eligible"][0]["fingerprint"] != progress_v1["eligible"][0]["fingerprint"]
 
+# A new validated skill identity learned by one sibling re-opens another
+# provider in the same execution-plan family once, even when that sibling's own
+# experiment epoch did not change. Counters/provider membership alone do not.
+family_execution_plan = {
+    "executions": [{
+        "lane": "BRAIN_LEARNING",
+        "owner": "BRAIN_LEARNING",
+        "repairScope": "learning",
+        "capabilityStrategy": "mixed_embed_resolver",
+        "transportSignature": "not-applicable",
+        "dispatchAllowed": True,
+        "providers": ["family-a", "family-b"],
+    }]
+}
+family_baseline = module.select_execution_plan(
+    family_execution_plan,
+    {"providers": {}},
+    lane="BRAIN_LEARNING",
+    requested=["family-b"],
+)
+assert family_baseline["eligibleProviders"] == ["family-b"], family_baseline
+family_ledger = module.mark_dispatched(
+    {"providers": {}}, family_baseline, learning_run_id="family-baseline"
+)
+family_repeat = module.select_execution_plan(
+    family_execution_plan,
+    family_ledger,
+    lane="BRAIN_LEARNING",
+    requested=["family-b"],
+)
+assert family_repeat["eligibleProviders"] == [], family_repeat
+
+family_memory_v1 = {
+    "learnedSkills": {
+        "chain:family-profile": {
+            "id": "chain:family-profile",
+            "failureClass": "chain_terminal_gap",
+            "profile": "chain_terminal_extractor_v1",
+            "validated": True,
+            "providers": ["family-a"],
+            "capabilityStrategies": ["mixed_embed_resolver"],
+            "successCount": 1,
+            "failureCount": 0,
+        }
+    }
+}
+family_progress = module.select_execution_plan(
+    family_execution_plan,
+    family_ledger,
+    lane="BRAIN_LEARNING",
+    requested=["family-b"],
+    learning_memory=family_memory_v1,
+)
+assert family_progress["eligibleProviders"] == ["family-b"], family_progress
+assert family_progress["eligible"][0]["learningExperimentEpochHash"] == ""
+assert family_progress["eligible"][0]["learningFamilyEpochHash"]
+assert (
+    family_progress["eligible"][0]["fingerprint"]
+    != family_baseline["eligible"][0]["fingerprint"]
+)
+family_ledger_v1 = module.mark_dispatched(
+    family_ledger, family_progress, learning_run_id="family-skill-v1"
+)
+
+family_counter_only = json.loads(json.dumps(family_memory_v1))
+family_counter_only["learnedSkills"]["chain:family-profile"]["successCount"] = 99
+family_counter_only["learnedSkills"]["chain:family-profile"]["providers"].append("family-b")
+family_counter_repeat = module.select_execution_plan(
+    family_execution_plan,
+    family_ledger_v1,
+    lane="BRAIN_LEARNING",
+    requested=["family-b"],
+    learning_memory=family_counter_only,
+)
+assert family_counter_repeat["eligibleProviders"] == [], family_counter_repeat
+
+family_memory_v2 = json.loads(json.dumps(family_memory_v1))
+family_memory_v2["learnedSkills"]["chain:new-family-profile"] = {
+    "id": "chain:new-family-profile",
+    "failureClass": "chain_terminal_gap",
+    "profile": "media_response_shape_inference_v1",
+    "validated": True,
+    "providers": ["family-a"],
+    "capabilityStrategies": ["mixed_embed_resolver"],
+    "successCount": 1,
+    "failureCount": 0,
+}
+family_progress_v2 = module.select_execution_plan(
+    family_execution_plan,
+    family_ledger_v1,
+    lane="BRAIN_LEARNING",
+    requested=["family-b"],
+    learning_memory=family_memory_v2,
+)
+assert family_progress_v2["eligibleProviders"] == ["family-b"], family_progress_v2
+assert (
+    family_progress_v2["eligible"][0]["learningFamilyEpochHash"]
+    != family_progress["eligible"][0]["learningFamilyEpochHash"]
+)
+
+wrong_family_memory = json.loads(json.dumps(family_memory_v1))
+wrong_family_memory["learnedSkills"]["chain:family-profile"]["providers"] = ["other-provider"]
+wrong_family = module.select_execution_plan(
+    family_execution_plan,
+    family_ledger,
+    lane="BRAIN_LEARNING",
+    requested=["family-b"],
+    learning_memory=wrong_family_memory,
+)
+assert wrong_family["eligibleProviders"] == [], wrong_family
+
 memory_unavailable = json.loads(json.dumps(memory_v1))
 memory_unavailable["experimentMemory"]["entries"].append({
     "providerId": "learn-only",
