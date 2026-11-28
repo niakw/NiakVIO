@@ -163,6 +163,30 @@ def issue_class(value:str)->str:
     if "network_zero_result" in text: return "network_zero_result"
     return text or "unknown"
 
+def causal_issue_for_row(row:dict[str,Any])->str:
+    """Prefer the causal stage from a full-provider replay that reclassified ownership.
+
+    The census keeps its original lane verdicts as historical observation. Once
+    a residential full-provider replay explicitly moves a row out of transport
+    ownership, however, those old WAF/network labels must not define the next
+    Brain family. Use a replay stage only when the reclassification is explicit
+    and all retained replay lanes agree on one provider-owned stage.
+    """
+    fallback=issue_class(scalar(row.get("dominantIssue")))
+    if row.get("residentialProviderReplayReclassified") is not True:
+        return fallback
+    stages:set[str]=set()
+    for value in row.get("residentialProviderReplayEvidence") or []:
+        text=str(value or "").strip().casefold()
+        for part in text.split(","):
+            part=part.strip()
+            if not part.startswith("stage="):
+                continue
+            stage=part.split("=",1)[1].strip()
+            if stage.startswith("provider_") and len(stage)<=96:
+                stages.add(stage)
+    return next(iter(stages)) if len(stages)==1 else fallback
+
 def main()->int:
     ap=argparse.ArgumentParser()
     ap.add_argument("--status",type=Path,default=STATUS)
@@ -230,7 +254,7 @@ def main()->int:
         family=scalar(patch.get("source_runtime_family") or patch.get("runtime_family") or patch.get("capability") or cap.get("strategy"))
         strategy=scalar(cap.get("strategy") or patch.get("capability"))
         depth=depth_class(list(row.get("evidenceDepth") or []))
-        issue=issue_class(scalar(row.get("dominantIssue")))
+        issue=causal_issue_for_row(row)
         scope,action=causal_scope_for_row(
             pid,row,depth,issue,
             dynamic_debt=dynamic_debt,
