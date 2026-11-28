@@ -3,15 +3,21 @@
 
 This is a scheduling-only layer. provider_learning_dispatch_gate.py remains the
 causal authority deciding which providers have a genuinely new strategy. This
-planner chooses a bounded cohort per current repair family so independent
-families can run in separate Learning workflows. The strongest/least-recent
-oracle is first; siblings follow in the same workflow and consume phase memory.
+planner chooses bounded cohorts per current repair family so independent
+families can run in separate Learning workflows.
+
+Fan-out is progressive: an unproven family dispatches one oracle only; one
+validated family prior opens a small transfer-validation cohort; broad sibling
+fan-out is allowed only after durable Learning marks the exact family prior
+trusted. This prevents an unproven hypothesis from burning the whole family
+budget while preserving fast propagation after a real transferable success.
 
 It never grants mutation, proof, publication, or success authority.
 """
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -78,6 +84,70 @@ def learning_recency(memory: dict[str, Any]) -> tuple[dict[str, float], dict[str
                     if raw:
                         latest_text[provider] = raw
     return latest_epoch, latest_text
+
+
+def family_transfer_state(
+    memory: dict[str, Any],
+    family_key: str,
+    capability_strategy: str,
+) -> dict[str, Any]:
+    """Return bounded fan-out authority from exact durable family skill memory."""
+    skills = memory.get("learnedSkills") if isinstance(memory, dict) else None
+    if not isinstance(skills, dict) or not family_key:
+        return {"mode": "oracle-only", "successCount": 0, "failureCount": 0, "confidence": 0.0}
+
+    family_hash = hashlib.sha256(family_key.encode("utf-8")).hexdigest()[:16]
+    strategy = canon(capability_strategy)
+    matches: list[dict[str, Any]] = []
+    for raw in skills.values():
+        if not isinstance(raw, dict):
+            continue
+        if raw.get("validated") is not True or raw.get("familyPriorOnly") is not True:
+            continue
+        if str(raw.get("familyKeyHash") or "") != family_hash:
+            continue
+        strategies = {
+            canon(value)
+            for value in raw.get("capabilityStrategies") or []
+            if canon(value)
+        }
+        if strategy and strategy not in {"unknown", "provider-local"} and strategy not in strategies:
+            continue
+        successes = max(0, int(raw.get("successCount") or 0))
+        failures = max(0, int(raw.get("failureCount") or 0))
+        if successes <= 0:
+            continue
+        total = successes + failures
+        try:
+            confidence = float(raw.get("confidence"))
+        except (TypeError, ValueError):
+            confidence = successes / max(1, total)
+        matches.append({
+            "successCount": successes,
+            "failureCount": failures,
+            "confidence": max(0.0, min(1.0, confidence)),
+            "maturity": str(raw.get("maturity") or "").strip().casefold(),
+        })
+
+    if not matches:
+        return {"mode": "oracle-only", "successCount": 0, "failureCount": 0, "confidence": 0.0}
+
+    best = max(
+        matches,
+        key=lambda row: (
+            row["maturity"] == "trusted",
+            row["successCount"],
+            row["confidence"],
+            -row["failureCount"],
+        ),
+    )
+    if best["maturity"] == "trusted" and best["confidence"] >= 0.8:
+        mode = "trusted-fanout"
+    elif best["confidence"] >= 0.5:
+        mode = "validation-fanout"
+    else:
+        mode = "oracle-only"
+    return {"mode": mode, **best}
 
 
 def evidence_rank(row: dict[str, Any]) -> int:
@@ -190,7 +260,18 @@ def plan(
                 ),
                 default="",
             )
-        family_limit = max(1, min(int(max_family_providers), 32))
+        max_family_limit = max(1, min(int(max_family_providers), 32))
+        transfer = family_transfer_state(
+            learning_memory or {},
+            key,
+            str(family_meta[key].get("capabilityStrategy") or ""),
+        )
+        if transfer["mode"] == "trusted-fanout":
+            family_limit = max_family_limit
+        elif transfer["mode"] == "validation-fanout":
+            family_limit = min(max_family_limit, 3)
+        else:
+            family_limit = 1
         cohort_members = ranked[:family_limit]
         candidates.append({
             "familyKey": key,
@@ -201,6 +282,10 @@ def plan(
             "cohortProviders": cohort_members,
             "scheduledFamilyProviders": cohort_members[1:],
             "deferredFamilyProviders": ranked[family_limit:],
+            "familyTransferMode": transfer["mode"],
+            "familyTransferSuccessCount": int(transfer["successCount"]),
+            "familyTransferFailureCount": int(transfer["failureCount"]),
+            "familyTransferConfidence": round(float(transfer["confidence"]), 4),
             "providerLastAttemptAt": recent_text.get(oracle, ""),
             "familyLastAttemptAt": family_last_text,
             "familyLastAttemptEpoch": family_last_epoch,
@@ -235,8 +320,11 @@ def plan(
         "maxFamilyProviders": max(1, min(int(max_family_providers), 32)),
         "cohortCount": len(cohorts),
         "cohorts": cohorts,
-        "selectionPolicy": "least-recent-family-then-bounded-family-cohort-oracle-first",
+        "selectionPolicy": "least-recent-family-progressive-fanout-oracle-validation-trusted",
         "learningMemoryUsed": bool(learning_memory),
+        "oracleOnlyCohortCount": sum(1 for row in cohorts if row.get("familyTransferMode") == "oracle-only"),
+        "validationFanoutCohortCount": sum(1 for row in cohorts if row.get("familyTransferMode") == "validation-fanout"),
+        "trustedFanoutCohortCount": sum(1 for row in cohorts if row.get("familyTransferMode") == "trusted-fanout"),
         "selectedProviders": sorted(selected),
         "deferredProviders": deferred,
         "safety": {
@@ -285,7 +373,10 @@ def main() -> int:
         f"selected={len(output['selectedProviders'])} deferred={len(output['deferredProviders'])} "
         f"plan_current={str(output['batchPlanCurrent']).lower()} "
         f"memory_used={str(output['learningMemoryUsed']).lower()} "
-        "policy=least-recent-family authority=scheduling-only"
+        f"oracle_only={output['oracleOnlyCohortCount']} "
+        f"validation_fanout={output['validationFanoutCohortCount']} "
+        f"trusted_fanout={output['trustedFanoutCohortCount']} "
+        "policy=progressive-family-fanout authority=scheduling-only"
     )
     return 0
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 from pathlib import Path
 
@@ -46,12 +47,15 @@ out=mod.plan(providers,plan,status,max_cohorts=8)
 assert out["batchPlanCurrent"] is True,out
 assert out["familyCount"]==3,out
 assert out["cohortCount"]==3,out
-assert set(out["selectedProviders"])=={"a","b","c","d","e","solo"},out
-assert out["deferredProviders"]==[],out
+assert set(out["selectedProviders"])=={"b","e","solo"},out
+assert set(out["deferredProviders"])=={"a","c","d"},out
 assert all(row["providerFilter"].split(",")[0]==row["provider"] for row in out["cohorts"])
 assert all(row["cohortProviderCount"]==len(row["cohortProviders"]) for row in out["cohorts"])
-assert all(row["cohortProviderCount"]<=8 for row in out["cohorts"])
-assert sum(row["cohortProviderCount"] for row in out["cohorts"])==6,out
+assert all(row["cohortProviderCount"]==1 for row in out["cohorts"])
+assert sum(row["cohortProviderCount"] for row in out["cohorts"])==3,out
+assert out["oracleOnlyCohortCount"]==3,out
+assert out["validationFanoutCohortCount"]==0,out
+assert out["trustedFanoutCohortCount"]==0,out
 assert out["safety"]["providerMutationAuthority"] is False
 assert out["safety"]["publicationAuthority"] is False
 
@@ -78,9 +82,9 @@ for family in range(20):
 large_out=mod.plan(large,large_plan,large_status,max_cohorts=8)
 assert large_out["familyCount"]==20,large_out
 assert large_out["cohortCount"]==8,large_out
-assert len(large_out["selectedProviders"])==64,large_out
-assert len(large_out["deferredProviders"])==936,large_out
-assert all(row["cohortProviderCount"]==8 for row in large_out["cohorts"]),large_out
+assert len(large_out["selectedProviders"])==8,large_out
+assert len(large_out["deferredProviders"])==992,large_out
+assert all(row["cohortProviderCount"]==1 for row in large_out["cohorts"]),large_out
 
 # A later wave must not starve untouched families. Mark the first wave's eight
 # oracles as recently executed in durable Learning memory: families 08..15 must
@@ -119,11 +123,83 @@ all_families=mod.plan(
     learning_memory=recent_memory,
 )
 family0=next(row for row in all_families["cohorts"] if row["familyKey"]=="family-00")
-assert family0["provider"]=="p0008",family0
-assert family0["providerFilter"].split(",")[0]=="p0008",family0
-assert len(family0["cohortProviders"])==8,family0
+assert family0["provider"]=="p0001",family0
+assert family0["providerFilter"].split(",")[0]=="p0001",family0
+assert len(family0["cohortProviders"])==1,family0
 assert family0["providerLastAttemptAt"]=="",family0
 assert family0["familyLastAttemptAt"],family0
+
+# Progressive fan-out: one validated success opens only a small transfer-validation
+# cohort for the exact causal family; a trusted prior may use the configured cap.
+family_key="terminal-extraction|mixed|runtime:mixed"
+family_hash=hashlib.sha256(family_key.encode("utf-8")).hexdigest()[:16]
+validation_memory={
+    "learnedSkills":{
+        "synthetic-family-skill":{
+            "validated":True,
+            "familyPriorOnly":True,
+            "familyKeyHash":family_hash,
+            "capabilityStrategies":["mixed_embed_resolver"],
+            "successCount":1,
+            "failureCount":0,
+            "confidence":1.0,
+            "maturity":"experimental",
+        }
+    }
+}
+validation_out=mod.plan(
+    ["a","b","c"],plan,status,max_cohorts=8,max_family_providers=8,
+    learning_memory=validation_memory,
+)
+validation_family=validation_out["cohorts"][0]
+assert validation_family["familyKey"]==family_key,validation_family
+assert validation_family["familyTransferMode"]=="validation-fanout",validation_family
+assert validation_family["cohortProviderCount"]==3,validation_family
+assert validation_out["validationFanoutCohortCount"]==1,validation_out
+
+trusted_memory={
+    "learnedSkills":{
+        "synthetic-family-skill":{
+            **validation_memory["learnedSkills"]["synthetic-family-skill"],
+            "successCount":3,
+            "failureCount":0,
+            "confidence":1.0,
+            "maturity":"trusted",
+        }
+    }
+}
+trusted_large=mod.plan(
+    large[:50],
+    {"sourceRunId":"scale","groups":[large_plan["groups"][0]]},
+    large_status,
+    max_cohorts=8,
+    max_family_providers=8,
+    learning_memory={
+        "learnedSkills":{
+            "trusted-large":{
+                **trusted_memory["learnedSkills"]["synthetic-family-skill"],
+                "familyKeyHash":hashlib.sha256("family-00".encode("utf-8")).hexdigest()[:16],
+            }
+        }
+    },
+)
+trusted_family=trusted_large["cohorts"][0]
+assert trusted_family["familyTransferMode"]=="trusted-fanout",trusted_family
+assert trusted_family["cohortProviderCount"]==8,trusted_family
+assert trusted_large["trustedFanoutCohortCount"]==1,trusted_large
+
+# A skill for the wrong capability strategy cannot authorize sibling fan-out.
+wrong_strategy={
+    "learnedSkills":{
+        "wrong":{
+            **validation_memory["learnedSkills"]["synthetic-family-skill"],
+            "capabilityStrategies":["direct_media"],
+        }
+    }
+}
+wrong_out=mod.plan(["a","b","c"],plan,status,learning_memory=wrong_strategy)
+assert wrong_out["cohorts"][0]["familyTransferMode"]=="oracle-only",wrong_out
+assert wrong_out["cohorts"][0]["cohortProviderCount"]==1,wrong_out
 
 # Stale family plan has no grouping authority: each provider becomes its own
 # isolated cohort instead of inheriting an obsolete sibling relationship.
