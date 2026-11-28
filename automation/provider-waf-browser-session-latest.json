@@ -2333,7 +2333,7 @@
       ],
       "transportDiagnosis": "browser_content_native_unproven",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 11608,
+      "durationMs": 19897,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -2346,7 +2346,7 @@
           },
           {
             "profile": "nuvio-tv-ua-browser",
-            "outcome": "browser_content_reached",
+            "outcome": "browser_timeout",
             "attemptCount": 1
           }
         ],
@@ -2366,21 +2366,20 @@
           "attemptCount": 2
         },
         "contentProfiles": [
-          "github-default-browser",
-          "nuvio-tv-ua-browser"
+          "github-default-browser"
         ]
       },
       "transportReceipt": {
-        "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+        "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
         "providerBundleSha256": "43f50b5bae072c34c544060e8824ab6b2e7319d433b6d3dae904e62e0d4e018c",
-        "runId": "46171813425",
+        "runId": "46173639388",
         "proofAuthority": false,
         "publicationAuthority": false
       },
       "residentialReceipt": {
-        "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+        "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
         "providerBundleSha256": "43f50b5bae072c34c544060e8824ab6b2e7319d433b6d3dae904e62e0d4e018c",
-        "runId": "46171813425",
+        "runId": "46173639388",
         "proofAuthority": false,
         "publicationAuthority": false
       }
@@ -14321,16 +14320,16 @@
       ],
       "transportDiagnosis": "browser_content_native_unproven",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 10810,
+      "durationMs": 20466,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
-        "attemptCount": 2,
+        "attemptCount": 1,
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
             "outcome": "browser_content_reached",
-            "attemptCount": 2
+            "attemptCount": 1
           },
           {
             "profile": "nuvio-tv-ua-browser",
@@ -14359,16 +14358,16 @@
         ]
       },
       "transportReceipt": {
-        "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+        "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
         "providerBundleSha256": "d1c2e726190b41a924185d57aed8f6156b44a0adebc19f6557a3afa8e521c135",
-        "runId": "46171813425",
+        "runId": "46173639388",
         "proofAuthority": false,
         "publicationAuthority": false
       },
       "residentialReceipt": {
-        "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+        "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
         "providerBundleSha256": "d1c2e726190b41a924185d57aed8f6156b44a0adebc19f6557a3afa8e521c135",
-        "runId": "46171813425",
+        "runId": "46173639388",
         "proofAuthority": false,
         "publicationAuthority": false
       }
@@ -14837,7 +14836,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 3,
+    "matchedProviderLanes": 2,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -15255,9 +15254,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "43f50b5bae072c34c544060e8824ab6b2e7319d433b6d3dae904e62e0d4e018c",
-          "runId": "46171813425",
+          "runId": "46173639388",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -17496,9 +17495,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "d1c2e726190b41a924185d57aed8f6156b44a0adebc19f6557a3afa8e521c135",
-          "runId": "46171813425",
+          "runId": "46173639388",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -17589,7 +17588,6 @@
         "fexini",
         "film-a-revoir",
         "flemmix",
-        "flixer",
         "franime",
         "french-anime",
         "fullanime",
@@ -17632,13 +17630,14 @@
     "providerBundleDigestAuthority": "executed-global-vf-published-bytes"
   },
   "lastRefreshProviderFilter": [
-    "flixer"
+    "animeonsen",
+    "waveanime"
   ],
   "residentialExitNodeLastAttempt": {
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 3,
+    "matchedProviderLanes": 2,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -17654,16 +17653,16 @@
     "proofAuthority": false,
     "publicationAuthority": false
   },
-  "currentRefreshProviderCount": 1,
-  "currentRefreshRowCount": 3,
+  "currentRefreshProviderCount": 2,
+  "currentRefreshRowCount": 2,
   "currentRefreshCounts": {
-    "browser_content_reached": 3
+    "browser_content_reached": 2
   },
-  "historicalRetainedRowCount": 87,
+  "historicalRetainedRowCount": 88,
   "historicalRetainedCounts": {
     "browser_challenge_observed": 1,
     "browser_challenge_persisted": 21,
-    "browser_content_reached": 61,
+    "browser_content_reached": 62,
     "browser_inconclusive": 1,
     "browser_timeout": 3
   },

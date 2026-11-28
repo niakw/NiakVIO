@@ -591,11 +591,7 @@
       "testedThisRun": true,
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ]
+      "targetedTransportEvidence": []
     },
     {
       "provider": "animesalt",
@@ -1666,9 +1662,9 @@
     },
     {
       "provider": "flixer",
-      "status": "ROUTE PROVEN",
+      "status": "NO PROOF",
       "underlyingStatus": "",
-      "color": "🟪",
+      "color": "🔵",
       "declaredLanes": [
         "anime",
         "movie",
@@ -1714,22 +1710,22 @@
       "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true,
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
         "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
         "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
         "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
       ],
-      "transportRepairEligible": true,
-      "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayReclassified": true,
       "networkDifferentialClass": "github-native-route-reachable",
       "networkDifferentialEvidence": [
         "anime: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-desktop-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached",
         "movie: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-desktop-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached",
         "tv: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-desktop-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
-      ]
+      ],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "flixhq",
@@ -4446,16 +4442,15 @@
       "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true,
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
         "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
         "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
         "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
-      "transportRepairEligible": true,
-      "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayReclassified": true
+      ]
     },
     {
       "provider": "watchott",
@@ -4570,11 +4565,7 @@
       "testedThisRun": true,
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ]
+      "targetedTransportEvidence": []
     },
     {
       "provider": "wookafr",
@@ -5517,12 +5508,12 @@
     "DISABLED": 37,
     "FULL OK": 6,
     "HARNESS MISMATCH": 5,
-    "NO PROOF": 26,
+    "NO PROOF": 27,
     "PROOF REFRESH REQUIRED": 5,
     "PROVIDER NETWORK BLOCKED": 2,
     "REGRESSION PROVIDER": 2,
     "REGRESSION PROVIDER JS": 1,
-    "ROUTE PROVEN": 6
+    "ROUTE PROVEN": 5
   },
   "symptomaticProviders": [
     "1jour1film0626",
@@ -5854,8 +5845,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "46173654084-waf-transport",
-  "harnessEvidenceSha": "10547469aea6e8cdb0cf5f24095c2d1264993685",
+  "harnessEvidenceRunId": "46173639388-waf-transport",
+  "harnessEvidenceSha": "e42ec2458d5ad86870badf54b9935282f8beca31",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
@@ -5869,7 +5860,6 @@
     "fullanime",
     "hianime",
     "moiflix",
-    "watch-cartoon-online",
     "watchott",
     "youtitou"
   ],
@@ -5892,7 +5882,6 @@
     "flixer",
     "hianime",
     "moiflix",
-    "watch-cartoon-online",
     "watchott",
     "youtitou"
   ],
@@ -5904,7 +5893,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 3,
+    "matchedProviderLanes": 2,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -5917,7 +5906,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 3,
+    "matchedProviderLanes": 2,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -6335,9 +6324,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "43f50b5bae072c34c544060e8824ab6b2e7319d433b6d3dae904e62e0d4e018c",
-          "runId": "46171813425",
+          "runId": "46173639388",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -8576,9 +8565,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "d1c2e726190b41a924185d57aed8f6156b44a0adebc19f6557a3afa8e521c135",
-          "runId": "46171813425",
+          "runId": "46173639388",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -8669,7 +8658,6 @@
         "fexini",
         "film-a-revoir",
         "flemmix",
-        "flixer",
         "franime",
         "french-anime",
         "fullanime",
