@@ -157,3 +157,158 @@ mismatched = module.merge({}, {
 assert mismatched["residentialProviderReplay"]["lastAttempt"]["replayedProviders"] == []
 assert mismatched["residentialProviderReplay"]["lastAttempt"]["verifiedProviders"] == []
 print("WAF latest scoped replay freshness contract passed")
+
+# A source-pinned sharded census may finish after a newer targeted WAF run.
+# Completion order is not evidence authority: unstamped/older current rows must
+# not replace newer exact-byte transport or residential replay receipts.
+stamped_previous = {
+    "schemaVersion": 1,
+    "freshRunReceipt": {
+        "sourceNiakvioSha": "a" * 40,
+        "runId": "200",
+        "providerCount": 1,
+        "proofAuthority": False,
+        "publicationAuthority": False,
+    },
+    "rows": [{
+        "provider": "race",
+        "lane": "anime",
+        "publicUrl": "https://race.invalid/",
+        "outcome": "browser_challenge_persisted",
+        "residentialExitNodeProfile": {
+            "profile": "residential-exit",
+            "outcome": "browser_content_reached",
+        },
+        "transportReceipt": {
+            "sourceNiakvioSha": "a" * 40,
+            "providerBundleSha256": "b" * 64,
+            "runId": "200",
+            "proofAuthority": False,
+            "publicationAuthority": False,
+        },
+        "residentialReceipt": {
+            "sourceNiakvioSha": "a" * 40,
+            "providerBundleSha256": "b" * 64,
+            "runId": "200",
+            "proofAuthority": False,
+            "publicationAuthority": False,
+        },
+    }],
+    "residentialProviderReplay": {
+        "available": True,
+        "rows": [{
+            "provider": "race",
+            "lane": "anime",
+            "status": "no_streams",
+            "raw": 0,
+            "playable": 0,
+            "verified": 0,
+            "contradictions": 0,
+            "identitySafe": True,
+            "residentialReplayReceipt": {
+                "sourceNiakvioSha": "a" * 40,
+                "providerBundleSha256": "b" * 64,
+                "runId": "200",
+                "proofAuthority": False,
+                "publicationAuthority": False,
+            },
+        }],
+    },
+}
+stale_shard = {
+    "schemaVersion": 1,
+    # This old receipt was merely carried by the source checkout.
+    "freshRunReceipt": {
+        "sourceNiakvioSha": "c" * 40,
+        "runId": "100",
+        "providerCount": 1,
+        "proofAuthority": False,
+        "publicationAuthority": False,
+    },
+    "lastRefreshProviderFilter": ["race"],
+    "rows": [{
+        "provider": "race",
+        "lane": "anime",
+        "publicUrl": "https://race.invalid/",
+        "outcome": "browser_challenge_observed",
+    }],
+    "residentialProviderReplay": {
+        "available": True,
+        "rows": [{
+            "provider": "race",
+            "lane": "anime",
+            "status": "no_streams",
+            "raw": 0,
+            "playable": 0,
+            "verified": 0,
+            "contradictions": 0,
+            "identitySafe": True,
+        }],
+    },
+}
+race = module.merge(stamped_previous, stale_shard)
+race_row = next(row for row in race["rows"] if row["provider"] == "race")
+race_replay = next(
+    row for row in race["residentialProviderReplay"]["rows"]
+    if row["provider"] == "race"
+)
+assert race_row["outcome"] == "browser_challenge_persisted", race_row
+assert race_row["transportReceipt"]["runId"] == "200", race_row
+assert race_row["residentialExitNodeProfile"]["outcome"] == "browser_content_reached", race_row
+assert race_replay["residentialReplayReceipt"]["runId"] == "200", race_replay
+assert race["freshRunReceipt"]["runId"] == "200", race
+assert race["residentialProviderReplay"]["lastAttempt"]["runId"] == "200", race
+assert race["staleCurrentRowsSuppressedProviders"] == ["race"], race
+
+newer_current = {
+    **stale_shard,
+    "freshRunReceipt": {
+        "sourceNiakvioSha": "d" * 40,
+        "runId": "201",
+        "providerCount": 1,
+        "proofAuthority": False,
+        "publicationAuthority": False,
+    },
+    "rows": [{
+        "provider": "race",
+        "lane": "anime",
+        "publicUrl": "https://race.invalid/",
+        "outcome": "browser_content_reached",
+        "transportReceipt": {
+            "sourceNiakvioSha": "d" * 40,
+            "providerBundleSha256": "b" * 64,
+            "runId": "201",
+            "proofAuthority": False,
+            "publicationAuthority": False,
+        },
+    }],
+    "residentialProviderReplay": {
+        "available": True,
+        "rows": [{
+            "provider": "race",
+            "lane": "anime",
+            "status": "playable_unverified",
+            "raw": 1,
+            "playable": 1,
+            "verified": 0,
+            "contradictions": 0,
+            "identitySafe": True,
+            "residentialReplayReceipt": {
+                "sourceNiakvioSha": "d" * 40,
+                "providerBundleSha256": "b" * 64,
+                "runId": "201",
+                "proofAuthority": False,
+                "publicationAuthority": False,
+            },
+        }],
+    },
+}
+race2 = module.merge(stamped_previous, newer_current)
+race2_row = next(row for row in race2["rows"] if row["provider"] == "race")
+assert race2_row["outcome"] == "browser_content_reached", race2_row
+assert race2_row["transportReceipt"]["runId"] == "201", race2_row
+assert race2["freshRunReceipt"]["runId"] == "201", race2
+assert race2["residentialProviderReplay"]["lastAttempt"]["runId"] == "201", race2
+assert race2["staleCurrentRowsSuppressedProviders"] == [], race2
+print("WAF latest provenance-monotone race contract passed")
+
