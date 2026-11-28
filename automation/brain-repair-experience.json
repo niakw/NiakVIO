@@ -2975,7 +2975,7 @@
     "anisama": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=chain_reached"
+        "anime=none"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -3002,7 +3002,7 @@
         "/?s={query}",
         "/recherche?q={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "PROVIDER NETWORK BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "arrowtv": {
@@ -4526,7 +4526,7 @@
     "film-a-revoir": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=chain_reached"
+        "movie=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -4551,7 +4551,7 @@
       "routeTemplates": [
         "/search?q={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "HARNESS MISMATCH",
       "strategy": "mixed_embed_resolver"
     },
     "flemmix": {
@@ -6713,14 +6713,14 @@
         "/search/{slug}",
         "/recherche/{slug}"
       ],
-      "status": "NO PROOF",
+      "status": "PROVIDER NETWORK BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "moviebox": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=lookup_only",
-        "tv=lookup_only"
+        "movie=chain_reached",
+        "tv=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -7048,7 +7048,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "PROVIDER JS BROKEN",
+      "status": "CHAIN REACHED",
       "strategy": "mixed_embed_resolver"
     },
     "movy": {
@@ -8066,7 +8066,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "PROVIDER JS BROKEN",
+      "status": "CHAIN REACHED",
       "strategy": "mixed_embed_resolver"
     },
     "neko-sama": {
@@ -10534,7 +10534,7 @@
     "voiranime-homes": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=none"
+        "anime=lookup_only"
       ],
       "hasApiRecipe": true,
       "hasProviderValuePlan": false,
@@ -11169,7 +11169,7 @@
       "domainMemory": true,
       "evidenceDepth": [
         "movie=lookup_only",
-        "tv=lookup_only"
+        "tv=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -12006,8 +12006,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "46137101022",
-  "sourceSha": "cb802b1065d388bdc9b4fe6cb779203587b1a6ca",
+  "sourceRunId": "46139117286",
+  "sourceSha": "b56a41d49bce0b03967155268af68b19f0dbb22b",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -12031,12 +12031,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "search",
           "supportRatio": 0.3333
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "other",
           "supportRatio": 0.3333
         }
       ]
@@ -12051,12 +12051,12 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "detail",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "search",
           "supportRatio": 1.0
         }
       ]
@@ -12071,7 +12071,12 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "player",
+          "role": "detail",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "episode",
           "supportRatio": 1.0
         },
         {
@@ -12081,12 +12086,7 @@
         },
         {
           "providerSupport": 1,
-          "role": "detail",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
-          "role": "episode",
+          "role": "player",
           "supportRatio": 1.0
         }
       ]
