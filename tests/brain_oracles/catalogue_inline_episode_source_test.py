@@ -23,6 +23,8 @@ var languesDispo = ["vostfr", "vf"];
 </script></html>"""
 inline = mod.classify(200, inline_html)
 assert inline["shape"] == "catalogue_inline_token_episode"
+malformed_close = mod.classify(200, inline_html.replace("</script>", "</script \\t data-extra='1'>"))
+assert malformed_close["shape"] == "catalogue_inline_token_episode"
 assert inline["inlineSlotArrayObserved"] and inline["opaqueLinkTokenObserved"]
 assert inline["jetonDeclarationObserved"] and inline["languageListDeclarationObserved"]
 assert inline["readerMapDeclarationObserved"]
