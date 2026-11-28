@@ -114,6 +114,40 @@ assert (
 )
 assert "cp /tmp/provider-repair-batch-plan.json automation/provider-repair-batch-plan-latest.json" not in workflow
 
+# A source-pinned census can finish after newer WAF/residential evidence landed
+# on main. Persistence must rebase that durable transport ledger onto the
+# candidate status before canonical copy and batch-plan reconstruction.
+persist_waf_merge = workflow.index(
+    "python scripts/merge_waf_latest_evidence.py",
+    persist_base,
+)
+transport_rebase = workflow.index(
+    "--waf automation/provider-waf-browser-session-latest.json",
+    persist_waf_merge,
+)
+transport_rebase_output = workflow.index(
+    "--output /tmp/provider-census-status-current-waf.json",
+    transport_rebase,
+)
+transport_rebase_move = workflow.index(
+    "mv /tmp/provider-census-status-current-waf.json /tmp/provider-census-status.json",
+    transport_rebase_output,
+)
+canonical_copy_after_rebase = workflow.index(
+    "cp /tmp/provider-census-status.json automation/provider-census-status.json",
+    transport_rebase_move,
+)
+rebuild_after_rebase = workflow.index(
+    "python scripts/build_provider_repair_batch_plan.py",
+    canonical_copy_after_rebase,
+)
+assert (
+    reset < persist_waf_merge < transport_rebase < transport_rebase_output
+    < transport_rebase_move < canonical_copy_after_rebase < rebuild_after_rebase
+)
+assert "FIELD_SHARDED_CENSUS_TRANSPORT_REBASE" in workflow
+assert "source=current-main-waf-rebased-state" in workflow
+
 merge_start = workflow.index("  merge:")
 merge_steps = workflow.index("    steps:", merge_start)
 merge_header = workflow[merge_start:merge_steps]
