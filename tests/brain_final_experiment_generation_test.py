@@ -94,6 +94,54 @@ def plan(
     parsed=json.loads(completed.stdout)
     return next(iter((parsed.get("plans") or {}).values()))
 
+# A route traversal that issued MORE provider requests without reaching a
+# deeper frontier is causal evidence that more traversal is the wrong next
+# method. Preserve ordinary ordering without that signal, but jump directly to
+# response/contract analysis when the executed negative carries the stall.
+route_candidate = {
+    **candidate,
+    "censusPrior": {
+        "status": "ROUTE PROVEN",
+        "dominantIssue": "provider_network_zero_result",
+        "evidenceDepth": ["anime=lookup_only"],
+    },
+}
+def route_row(variant:int, generation:int=1, reason:str="required_category_playable_proof:anime"):
+    profile="adaptive_runtime_recovery"
+    if variant==4 and generation>=2:
+        profile="proven_route_terminal_traversal_v1" if generation==2 else f"proven_route_terminal_traversal_v1_g{generation}"
+    return {
+        "providerId":"synthetic-generation",
+        "failureClass":"route_proven_gap",
+        "experimentVariant":variant,
+        "experimentGeneration":generation,
+        "profile":profile,
+        "failures":1,
+        "consecutiveFailures":1,
+        "successes":0,
+        "executionObserved":True,
+        "lastOutcome":"rejected",
+        "lastReason":reason,
+    }
+
+route_base=[
+    route_row(0), route_row(1), route_row(2), route_row(3), route_row(4,1),
+    route_row(4,2), route_row(4,3), route_row(4,4), route_row(4,5),
+]
+ordinary_route=plan(route_base, "learning", candidate_override=route_candidate)
+assert ordinary_route["baseExperimentExhausted"] is True, ordinary_route
+assert ordinary_route["postExhaustionStrategyProfile"]=="route_transition_graph_v2", ordinary_route
+
+stalled_route=[
+    *route_base[:-1],
+    route_row(4,5,"exploration_request_amplification_without_frontier"),
+]
+stalled_route_plan=plan(stalled_route, "learning", candidate_override=route_candidate)
+assert stalled_route_plan["baseExperimentExhausted"] is True, stalled_route_plan
+assert stalled_route_plan["postExhaustionStrategyProfile"]=="runtime_response_salvage_v1", stalled_route_plan
+assert stalled_route_plan["postExhaustionStrategyMethod"]=="successful-runtime-response-salvage", stalled_route_plan
+assert stalled_route_plan["allowedProfiles"]==["runtime_response_salvage_v1"], stalled_route_plan
+
 # Reproduce the planner contract against retained, *real* executed-negative
 # run metadata (not a made-up playback fixture). Its plan executed the base
 # runtime, despite the promoter requesting terminal_transition_graph_v9.
