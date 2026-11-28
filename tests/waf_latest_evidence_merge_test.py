@@ -142,8 +142,12 @@ new_run = {
 scoped = module.merge({}, new_run)
 assert scoped["residentialProviderReplay"]["verifiedProviders"] == ["keep"]
 assert scoped["residentialProviderReplay"]["lastAttempt"]["verifiedProviders"] == []
-assert scoped["residentialProviderReplay"]["lastAttempt"]["replayedProviders"] == ["target"]
-assert scoped["residentialProviderReplay"]["lastAttempt"]["providerCount"] == 1
+# A freshRunReceipt alone is not provider replay proof. Without a matching
+# per-provider residentialReplayReceipt, the targeted row remains historical
+# data only and must not be promoted into the fresh lastAttempt.
+assert scoped["residentialProviderReplay"]["lastAttempt"]["replayedProviders"] == []
+assert scoped["residentialProviderReplay"]["lastAttempt"]["providerCount"] == 0
+assert scoped["residentialProviderReplay"]["lastAttempt"]["available"] is False
 assert scoped["lastRefreshProviderFilter"] == ["target"], scoped
 assert scoped["currentRefreshProviderCount"] == 1, scoped
 assert scoped["currentRefreshRowCount"] == 1, scoped
