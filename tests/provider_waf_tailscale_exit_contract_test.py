@@ -133,8 +133,10 @@ assert wf.count("--network-report provider-v3-quick-yield.json") == 2
 temp=(ROOT/".github/workflows/temp-current-bytes-full-provider-census.yml").read_text(encoding="utf-8")
 sharded=(ROOT/".github/workflows/provider-census-sharded.yml").read_text(encoding="utf-8")
 repair=(ROOT/".github/workflows/provider-recognition-repair-v6.yml").read_text(encoding="utf-8")
-assert "group: provider-waf-transport-main" in wf
-assert "cancel-in-progress: true" in wf
+assert "provider-waf-transport-target-{0}" in wf
+assert "github.run_id" in wf
+assert "provider-waf-transport-main" in wf
+assert "cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}" in wf
 assert "group: provider-census-waf-main" in temp
 assert "cancel-in-progress: true" in temp
 assert "group: provider-census-" in sharded
