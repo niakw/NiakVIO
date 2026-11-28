@@ -31,6 +31,17 @@ generic_experimental = {
     "successCount": 2,
     "failureCount": 0,
 }
+family_prior = {
+    "id": "media:family-prior",
+    "validated": True,
+    "maturity": "experimental",
+    "confidence": 1.0,
+    "providers": ["peer-a"],
+    "successCount": 1,
+    "failureCount": 0,
+    "capabilityStrategies": ["mixed_embed_resolver"],
+}
+
 trusted = {
     "id": "route:trusted",
     "validated": True,
@@ -47,6 +58,7 @@ try:
     mod.learned_skills = lambda: {
         positive["id"]: positive,
         generic_experimental["id"]: generic_experimental,
+        family_prior["id"]: family_prior,
         trusted["id"]: trusted,
     }
     mod.policy = lambda: {
@@ -56,6 +68,9 @@ try:
                 "maturity": "trusted",
                 "minimumConfidence": 0.8,
                 "minimumDistinctProviders": 2,
+                "provisionalFamilyPriorEnabled": True,
+                "provisionalMinimumSuccesses": 1,
+                "provisionalMaximumFailures": 0,
             },
         },
         "skillMaturity": {
@@ -73,6 +88,9 @@ try:
                 "maturity": "trusted",
                 "minimumConfidence": 0.8,
                 "minimumDistinctProviders": 2,
+                "provisionalFamilyPriorEnabled": True,
+                "provisionalMinimumSuccesses": 1,
+                "provisionalMaximumFailures": 0,
             },
         },
         "skillMaturity": {
@@ -84,9 +102,11 @@ try:
     assert positive["id"] in opened, opened
     assert trusted["id"] in opened, opened
     assert generic_experimental["id"] not in opened, opened
+    assert family_prior["id"] in opened, opened
+    assert opened[family_prior["id"]]["familyPriorOnly"] is True, opened
 
     learning = mod.planner_learned_skills("learning")
-    assert set(learning) == {positive["id"], generic_experimental["id"], trusted["id"]}, learning
+    assert set(learning) == {positive["id"], generic_experimental["id"], family_prior["id"], trusted["id"]}, learning
 finally:
     mod.learned_skills = old_learned
     mod.policy = old_policy
