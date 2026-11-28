@@ -56,6 +56,20 @@ assert "FIELD_WAF_EXIT_PUBLIC_PROBE" in source
 assert mod.EGRESS_VERIFY_ATTEMPTS == 3
 assert "egress-unchanged" in source
 
+# Neutral phase timing is independent of provider/domain authority and never
+# prints raw curl stderr, egress address, or untrusted diagnostic text.
+timing_trace = io.StringIO()
+with redirect_stdout(timing_trace):
+    mod.emit_probe_timing("curl: secret-address\nNIAKVIO_TIMING_V1 0.012 0.034 0.100 0.210 0.300\n", 1, 0)
+    mod.emit_probe_timing("NIAKVIO_TIMING_V1 nan 0 0 0 0", 2, 28)
+    mod.emit_probe_timing("NIAKVIO_TIMING_V1 1 2 3 4 999", 3, 28)
+    mod.emit_probe_timing("NIAKVIO_TIMING_V1 0.050 0 0 0 6.0", 1, 28)
+assert "time_namelookup_ms=12 time_connect_ms=34 time_appconnect_ms=100 time_starttransfer_ms=210 time_total_ms=300" in timing_trace.getvalue()
+assert "endpoint=2 curl_rc=28 available=false" in timing_trace.getvalue()
+assert "endpoint=3 curl_rc=28 available=false" in timing_trace.getvalue()
+assert "endpoint=1 curl_rc=28 time_namelookup_ms=50" in timing_trace.getvalue()
+assert "secret-address" not in timing_trace.getvalue()
+
 original_which = mod.shutil.which
 original_run = mod.subprocess.run
 try:
@@ -77,7 +91,7 @@ try:
     assert "result=public_ipv4" in safe_trace.getvalue()
     assert "9.9.9.9" not in safe_trace.getvalue()
     assert all(timeout == mod.PUBLIC_IP_COMMAND_TIMEOUT_SECONDS for _, timeout in ip_calls)
-    assert all("--max-time" in args and "--noproxy" in args for args, _ in ip_calls)
+    assert all("--max-time" in args and "--noproxy" in args and "--write-out" in args for args, _ in ip_calls)
 finally:
     mod.subprocess.run = original_run
     mod.shutil.which = original_which
