@@ -2208,15 +2208,14 @@
       "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true,
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
         "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
         "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
-      "transportRepairEligible": true,
-      "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayReclassified": true
+      ]
     },
     {
       "provider": "kehflix",
@@ -4166,9 +4165,9 @@
     },
     {
       "provider": "voirserie",
-      "status": "HARNESS MISMATCH",
+      "status": "NO PROOF",
       "underlyingStatus": "",
-      "color": "🟧",
+      "color": "🔵",
       "declaredLanes": [
         "movie",
         "tv"
@@ -4210,9 +4209,18 @@
       "onboardingRuntimePlanState": "",
       "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
       "brainCheckRequired": true,
-      "statusRepairEligible": false,
+      "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": false
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "vostfree",
@@ -5426,9 +5434,9 @@
     "CHAIN REACHED": 20,
     "DISABLED": 37,
     "FULL OK": 6,
-    "HARNESS MISMATCH": 7,
+    "HARNESS MISMATCH": 6,
     "HARNESS/ENV BLOCKED": 2,
-    "NO PROOF": 22,
+    "NO PROOF": 23,
     "PROOF REFRESH REQUIRED": 4,
     "PROVIDER NETWORK BLOCKED": 3,
     "REGRESSION PROVIDER": 4,
@@ -5767,8 +5775,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "46171819118-waf-transport",
-  "harnessEvidenceSha": "f3f657a47b1b7db933d4cb0657ce554bc576b08f",
+  "harnessEvidenceRunId": "46171824629-waf-transport",
+  "harnessEvidenceSha": "3d9663341ed9e01fb87de81413cf7ddab3c93b9b",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "aniflix-uno",
@@ -5781,7 +5789,6 @@
     "film-a-revoir",
     "franime",
     "fullanime",
-    "ihavenotv",
     "moiflix",
     "voirserie",
     "watch-cartoon-online",
@@ -5801,8 +5808,8 @@
     "anikototv",
     "documentary-area",
     "emnexmovies",
-    "ihavenotv",
     "moiflix",
+    "voirserie",
     "watchott",
     "youtitou"
   ],
@@ -5814,7 +5821,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 2,
+    "matchedProviderLanes": 3,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -5827,7 +5834,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 2,
+    "matchedProviderLanes": 3,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -5839,7 +5846,7 @@
   "residentialProviderReplay": {
     "available": true,
     "profile": "tailscale-residential-exit",
-    "providerCount": 50,
+    "providerCount": 51,
     "providers": [
       "1jour1film0626",
       "67movies",
@@ -5879,6 +5886,7 @@
       "neonflix",
       "primewire",
       "purstream",
+      "rivestream-app",
       "sekai",
       "shuttletv",
       "skstream",
@@ -7714,6 +7722,93 @@
         }
       },
       {
+        "provider": "rivestream-app",
+        "providerArtifactSha256": "4dd2721c83bd0c7962b7ed7aeed592d0ed7da31e4e938da8fc21bb840db00760",
+        "lane": "anime",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_network_http_error"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "providerBundleSha256": "4dd2721c83bd0c7962b7ed7aeed592d0ed7da31e4e938da8fc21bb840db00760",
+          "runId": "46171824629",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
+      },
+      {
+        "provider": "rivestream-app",
+        "providerArtifactSha256": "4dd2721c83bd0c7962b7ed7aeed592d0ed7da31e4e938da8fc21bb840db00760",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_network_http_error"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "providerBundleSha256": "4dd2721c83bd0c7962b7ed7aeed592d0ed7da31e4e938da8fc21bb840db00760",
+          "runId": "46171824629",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
+      },
+      {
+        "provider": "rivestream-app",
+        "providerArtifactSha256": "4dd2721c83bd0c7962b7ed7aeed592d0ed7da31e4e938da8fc21bb840db00760",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_network_http_error"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "providerBundleSha256": "4dd2721c83bd0c7962b7ed7aeed592d0ed7da31e4e938da8fc21bb840db00760",
+          "runId": "46171824629",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
+      },
+      {
         "provider": "sekai",
         "providerArtifactSha256": "2b380ed1d91b6bc505ef9084f012e52b94ac50e3f8bf0756ac232fb6ab51ad49",
         "lane": "anime",
@@ -8326,6 +8421,7 @@
         "movy",
         "primewire",
         "purstream",
+        "rivestream-app",
         "sadisflix",
         "sekai",
         "shuttletv",
