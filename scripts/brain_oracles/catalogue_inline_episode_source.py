@@ -13,8 +13,9 @@ SCRIPTS_ROOT = str(Path(__file__).resolve().parents[1])
 if SCRIPTS_ROOT not in sys.path:
     sys.path.insert(0, SCRIPTS_ROOT)
 
+from html_script_blocks import extract_script_blocks
+
 MAX_BODY_CHARS = 1_048_576
-SCRIPTS = re.compile(r"<script\b[^>]*>([\s\S]*?)</script\s*>", re.I)
 SLOT = re.compile(r"\b(?:var|let|const)\s+eps\d+\s*=\s*\[")
 LINK = re.compile(r"""["']lien:[a-zA-Z0-9_.:-]{1,200}["']""")
 JETON = re.compile(r"\b(?:var|let|const)\s+epsJeton\s*=")
@@ -32,7 +33,7 @@ def classify(status: int, body: str) -> dict:
     if not isinstance(body, str) or len(body) > MAX_BODY_CHARS:
         raise ValueError("invalid or oversized body")
     html = bool(HTML.search(body))
-    text = "\n".join(SCRIPTS.findall(body)) if html else body
+    text = "\n".join(extract_script_blocks(body)) if html else body
     slot, link, jeton = bool(SLOT.search(text)), bool(LINK.search(text)), bool(JETON.search(text))
     if status in {404, 410}:
         shape = "script_http_missing"
