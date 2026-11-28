@@ -1,16 +1,16 @@
 {
   "schemaVersion": 2,
   "scope": "unresolved",
-  "reason": "Exact-current-byte French-Anime targeted census after row-scoped persistence fix; prove a one-provider run updates only its provider row and cannot supersede fleet-wide freshness, authority, or latest-summary.",
+  "reason": "Retry exact French-Anime targeted census after separating immutable targeted run summary state from canonical fleet state.",
   "requestedAt": "2026-11-28",
-  "validation": "french-anime-targeted-row-overlay-fleet-authority",
+  "validation": "french-anime-targeted-row-overlay-fleet-authority-v2",
   "source": "niakvio-causal-transport-persistence",
   "targetProviders": [
     "french-anime"
   ],
   "allowPendingTargets": false,
-  "requiredEvidence": "Execute current published French-Anime bytes only. After persistence: targetedCensusOverlay must identify French-Anime, canonical fleet runId/triggerSha must remain the prior non-targeted census authority, current-bytes-full-provider-census-latest-summary must remain fleet-wide, and French-Anime must remain outside harness/environment unless fresh evidence truly reclassifies it. No playback authority may be inferred.",
-  "retryRevision": 23,
-  "fullRefreshRevision": 23,
-  "requestedSourceParent": "6fc44d84b3d38e993d85b4a978763cb52b6b42c1"
+  "requiredEvidence": "Targeted run must complete successfully. FIELD_TARGETED_CENSUS_STATE_MERGE and row overlay markers must appear; per-run summary must use the targeted snapshot; canonical fleet runId/triggerSha and latest-summary must remain non-targeted fleet authority; only French-Anime row may receive targetedCensusRunId/Sha; environment ownership remains evidence-driven; no playback authority.",
+  "retryRevision": 24,
+  "fullRefreshRevision": 24,
+  "requestedSourceParent": "1074c754c52402976ec2168632310a0fb54b8ed4"
 }
