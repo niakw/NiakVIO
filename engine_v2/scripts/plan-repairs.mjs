@@ -1087,6 +1087,7 @@ function buildPlan(item) {
         transferScore,
         validated: skill.validated === true,
         sameProviderPositiveProgram,
+        familyPriorOnly: skill.familyPriorOnly === true,
         positiveProgramFingerprint: sameProviderPositiveProgram
           ? stringValue(asRecord(skill.positiveProgramFingerprintsByProvider)[providerId]).toLowerCase()
           : "",
@@ -1098,6 +1099,10 @@ function buildPlan(item) {
       learningMode
       || skill.sameProviderPositiveProgram === true
       || learnedSkillTransferEligible(skill)
+      || learnedSkillFamilyPriorEligible(skill, {
+        capabilityStrategy,
+        observedPipelineStage: stringValue(evidence.observedPipelineStage, "unknown"),
+      })
     ))
     .sort((a, b) => b.transferScore - a.transferScore || b.confidence - a.confidence || b.successCount - a.successCount || a.id.localeCompare(b.id));
 
@@ -1757,6 +1762,28 @@ function learnedSkillTransferEligible(skill) {
   const minimumProviders = Math.max(1, finiteNumber(skillTransfer.minimumDistinctProviders, finiteNumber(maturity.trustedProviders, 2)));
   if (finiteNumber(skill.confidence, 0) < minimumConfidence) return false;
   if (stringArray(skill.providers).length < minimumProviders) return false;
+  return true;
+}
+
+function learnedSkillFamilyPriorEligible(skill, { capabilityStrategy, observedPipelineStage }) {
+  if (skillTransfer.provisionalFamilyPriorEnabled !== true) return false;
+  if (skill.familyPriorOnly !== true || skill.validated !== true) return false;
+  const minimumConfidence = finiteNumber(skillTransfer.minimumConfidence, finiteNumber(maturity.minimumConfidence, 0.8));
+  const minimumSuccesses = Math.max(1, finiteNumber(skillTransfer.provisionalMinimumSuccesses, 1));
+  const maximumFailures = Math.max(0, finiteNumber(skillTransfer.provisionalMaximumFailures, 0));
+  if (finiteNumber(skill.confidence, 0) < minimumConfidence) return false;
+  if (finiteNumber(skill.successCount, 0) < minimumSuccesses) return false;
+  if (finiteNumber(skill.failureCount, 0) > maximumFailures) return false;
+  const strategies = stringArray(skill.capabilityStrategies).map((value) => value.toLowerCase());
+  const currentStrategy = stringValue(capabilityStrategy).toLowerCase();
+  if (skillTransfer.provisionalRequireCapabilityStrategy !== false) {
+    if (!currentStrategy || !strategies.includes(currentStrategy)) return false;
+  }
+  const stages = stringArray(skill.observedPipelineStages).map((value) => value.toLowerCase());
+  const currentStage = stringValue(observedPipelineStage).toLowerCase();
+  if (skillTransfer.provisionalRequireObservedStage === true && stages.length) {
+    if (!currentStage || !stages.includes(currentStage)) return false;
+  }
   return true;
 }
 
