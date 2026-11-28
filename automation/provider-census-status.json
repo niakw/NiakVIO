@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "46097348073",
-  "triggerSha": "be4074b8ac41434168136b46a032b0dc83a601ae",
+  "runId": "46097864249",
+  "triggerSha": "5e12b49e53ad9d3e6c242d023f5d23bbda7e5e5b",
   "providers": [
     {
       "provider": "1jour1film0626",
@@ -213,7 +213,7 @@
       ],
       "dominantIssue": "timeout",
       "searchProgress": [
-        "anime: 3 works tested / 0 retained misses / 5 retained chain hits"
+        "anime: 4 works tested / 0 retained misses / 5 retained chain hits"
       ],
       "evidenceDepth": [
         "anime=chain_reached"
@@ -351,7 +351,7 @@
       ],
       "dominantIssue": "timeout",
       "searchProgress": [
-        "anime: 3 works tested / 2 retained misses"
+        "anime: 3 works tested / 1 retained misses"
       ],
       "evidenceDepth": [
         "anime=lookup_only"
@@ -1230,7 +1230,7 @@
       ],
       "dominantIssue": "provider_network_http_error",
       "searchProgress": [
-        "movie: 8 works tested / 19 retained misses"
+        "movie: 8 works tested / 17 retained misses"
       ],
       "evidenceDepth": [
         "movie=lookup_only"
@@ -1474,7 +1474,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "movie: 8 works tested / 9 retained misses"
+        "movie: 8 works tested / 8 retained misses"
       ],
       "evidenceDepth": [
         "movie=chain_reached"
@@ -1611,12 +1611,12 @@
       "routeProof": [],
       "latestLaneVerdicts": [
         "movie=timeout",
-        "tv=timeout"
+        "tv=no_streams/provider_network_zero_result"
       ],
-      "dominantIssue": "timeout×2",
+      "dominantIssue": "timeout, provider_network_zero_result",
       "searchProgress": [
-        "movie: 4 works tested / 3 retained misses",
-        "tv: 7 works tested / 1 retained misses / 5 retained chain hits"
+        "movie: 5 works tested / 4 retained misses",
+        "tv: 8 works tested / 0 retained misses / 8 retained chain hits"
       ],
       "evidenceDepth": [
         "movie=lookup_only",
@@ -2030,9 +2030,9 @@
     },
     {
       "provider": "hianime",
-      "status": "PROVIDER NETWORK BLOCKED",
+      "status": "CHAIN REACHED",
       "underlyingStatus": "",
-      "color": "🟤",
+      "color": "🟣",
       "declaredLanes": [
         "anime"
       ],
@@ -2045,10 +2045,10 @@
       ],
       "dominantIssue": "timeout",
       "searchProgress": [
-        "anime: 2 works tested / 0 retained misses / 3 retained chain hits"
+        "anime: 4 works tested / 0 retained misses / 3 retained chain hits"
       ],
       "evidenceDepth": [
-        "anime=none"
+        "anime=chain_reached"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -2061,7 +2061,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
+        "current_status:CHAIN REACHED"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -2579,14 +2579,14 @@
       "candidateProof": [],
       "routeProof": [],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_zero_result",
-        "movie=no_streams/provider_network_http_error",
+        "anime=no_streams/provider_waf_challenge",
+        "movie=no_streams/provider_waf_challenge",
         "tv=no_streams/provider_waf_challenge"
       ],
-      "dominantIssue": "provider_network_zero_result, provider_network_http_error, provider_waf_challenge",
+      "dominantIssue": "provider_waf_challenge×3",
       "searchProgress": [
-        "anime: 8 works tested / 26 retained misses",
-        "movie: 8 works tested / 16 retained misses",
+        "anime: 8 works tested / 27 retained misses",
+        "movie: 8 works tested / 18 retained misses",
         "tv: 8 works tested / 12 retained misses / 6 retained chain hits"
       ],
       "evidenceDepth": [
@@ -2637,8 +2637,8 @@
       "dominantIssue": "provider_network_zero_result×2, provider_returned_streams",
       "searchProgress": [
         "anime: 8 works tested / 12 retained misses / 7 retained chain hits",
-        "movie: 1 works tested / 0 retained misses / 3 retained chain hits",
-        "tv: 8 works tested / 21 retained misses / 5 retained chain hits"
+        "movie: 2 works tested / 0 retained misses / 3 retained chain hits",
+        "tv: 8 works tested / 20 retained misses / 6 retained chain hits"
       ],
       "evidenceDepth": [
         "anime=chain_reached",
@@ -2685,7 +2685,7 @@
       ],
       "dominantIssue": "provider_returned_streams, provider_network_zero_result",
       "searchProgress": [
-        "movie: 1 works tested / 0 retained misses / 3 retained chain hits",
+        "movie: 2 works tested / 0 retained misses / 3 retained chain hits",
         "tv: 8 works tested / 15 retained misses / 6 retained chain hits"
       ],
       "evidenceDepth": [
@@ -3230,7 +3230,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "movie: 8 works tested / 7 retained misses"
+        "movie: 8 works tested / 6 retained misses / 2 retained chain hits"
       ],
       "evidenceDepth": [
         "movie=chain_reached"
@@ -3269,9 +3269,9 @@
       "candidateProof": [],
       "routeProof": [],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_zero_result"
+        "anime=timeout"
       ],
-      "dominantIssue": "provider_network_zero_result",
+      "dominantIssue": "timeout",
       "searchProgress": [
         "anime: 8 works tested / 0 retained misses / 7 retained chain hits"
       ],
@@ -3403,9 +3403,9 @@
     },
     {
       "provider": "sadisflix",
-      "status": "REGRESSION PROVIDER",
+      "status": "PROOF REFRESH REQUIRED",
       "underlyingStatus": "",
-      "color": "🔴",
+      "color": "🔹",
       "declaredLanes": [
         "movie",
         "tv"
@@ -3418,9 +3418,9 @@
       "routeProof": [],
       "latestLaneVerdicts": [
         "movie=playable_unverified/provider_returned_streams",
-        "tv=timeout"
+        "tv=playable_unverified/provider_returned_streams"
       ],
-      "dominantIssue": "provider_returned_streams, timeout",
+      "dominantIssue": "provider_returned_streams×2",
       "searchProgress": [
         "movie: 1 works tested / 0 retained misses / 1 retained chain hit",
         "tv: 4 works tested / 0 retained misses / 2 retained chain hits"
@@ -3439,14 +3439,14 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:REGRESSION PROVIDER"
+        "current_status:PROOF REFRESH REQUIRED"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
-      "action": "re-run retained proof + verify upstream/provider state",
-      "brainCheckRequired": true,
-      "statusRepairEligible": true,
-      "repairEligible": true,
+      "action": "refresh strict decoded/native playback proof and census authority; do not mutate provider bytes",
+      "brainCheckRequired": false,
+      "statusRepairEligible": false,
+      "repairEligible": false,
       "testedThisRun": true
     },
     {
@@ -3548,9 +3548,9 @@
     },
     {
       "provider": "skstream",
-      "status": "NO PROOF",
+      "status": "PROVIDER NETWORK BLOCKED",
       "underlyingStatus": "",
-      "color": "🔵",
+      "color": "🟤",
       "declaredLanes": [
         "movie",
         "tv"
@@ -3560,12 +3560,12 @@
       "candidateProof": [],
       "routeProof": [],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result",
+        "movie=no_streams/provider_network_http_error",
         "tv=no_streams/provider_network_zero_result"
       ],
-      "dominantIssue": "provider_network_zero_result×2",
+      "dominantIssue": "provider_network_http_error, provider_network_zero_result",
       "searchProgress": [
-        "movie: 8 works tested / 34 retained misses",
+        "movie: 8 works tested / 32 retained misses",
         "tv: 8 works tested / 8 retained misses"
       ],
       "evidenceDepth": [
@@ -3583,7 +3583,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "current_status:PROVIDER NETWORK BLOCKED"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -4166,14 +4166,14 @@
       ],
       "dominantIssue": "timeout×3",
       "searchProgress": [
-        "anime: 6 works tested / 0 retained misses",
-        "movie: 2 works tested / 0 retained misses",
-        "tv: 3 works tested / 0 retained misses"
+        "anime: 4 works tested / 0 retained misses",
+        "movie: 3 works tested / 0 retained misses",
+        "tv: 2 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
         "anime=chain_reached",
-        "movie=none",
-        "tv=chain_reached"
+        "movie=chain_reached",
+        "tv=none"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
@@ -4466,7 +4466,7 @@
       "dominantIssue": "timeout×2, provider_returned_streams",
       "searchProgress": [
         "anime: 8 works tested / 0 retained misses / 7 retained chain hits",
-        "movie: 8 works tested / 10 retained misses / 4 retained chain hits",
+        "movie: 8 works tested / 9 retained misses / 4 retained chain hits",
         "tv: 1 works tested / 0 retained misses / 4 retained chain hits"
       ],
       "evidenceDepth": [
@@ -4713,7 +4713,8 @@
       ],
       "candidateProof": [
         "run 46082469963-post-repair",
-        "run 46096499678-post-repair"
+        "run 46096499678-post-repair",
+        "run 46096974071-post-repair"
       ],
       "routeProof": [],
       "latestLaneVerdicts": [
@@ -5264,16 +5265,16 @@
   ],
   "counts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 19,
+    "CHAIN REACHED": 20,
     "DISABLED": 36,
     "FULL OK": 6,
     "HARNESS MISMATCH": 8,
     "HARNESS/ENV BLOCKED": 7,
-    "NO PROOF": 14,
-    "PROOF REFRESH REQUIRED": 4,
+    "NO PROOF": 13,
+    "PROOF REFRESH REQUIRED": 5,
     "PROVIDER JS BROKEN": 2,
     "PROVIDER NETWORK BLOCKED": 8,
-    "REGRESSION PROVIDER": 6
+    "REGRESSION PROVIDER": 5
   },
   "symptomaticProviders": [
     "1jour1film0626",
@@ -5326,7 +5327,6 @@
     "reanime-to",
     "rivestream-app",
     "rivestream-ru",
-    "sadisflix",
     "showbox",
     "shuttletv",
     "skstream",
@@ -5393,7 +5393,6 @@
     "reanime-to",
     "rivestream-app",
     "rivestream-ru",
-    "sadisflix",
     "showbox",
     "shuttletv",
     "skstream",
@@ -5421,7 +5420,6 @@
     "moiflix",
     "nakios",
     "primewire",
-    "sadisflix",
     "shuttletv"
   ],
   "authorityBlockedQueue": [
