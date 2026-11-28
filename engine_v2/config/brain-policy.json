@@ -32,7 +32,12 @@
       "providerPriorBonus": 10,
       "genericFailureClassBase": 15,
       "failedSkillPenalty": 12,
-      "rule": "learned skills may influence hypothesis ordering only; every transfer must pass the ordinary sandbox/retest/non-regression gates"
+      "rule": "trusted learned skills transfer normally; a validated zero-failure single-provider skill may only reorder hypotheses for an exact capability-family sibling and must still pass ordinary sandbox/retest/non-regression gates",
+      "provisionalFamilyPriorEnabled": true,
+      "provisionalMinimumSuccesses": 1,
+      "provisionalMaximumFailures": 0,
+      "provisionalRequireCapabilityStrategy": true,
+      "provisionalRequireObservedStage": false
     },
     "validatedRepairLearning": {
       "enabled": true,
