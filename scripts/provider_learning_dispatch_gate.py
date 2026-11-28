@@ -154,6 +154,68 @@ def learning_experiment_epoch(memory: dict[str, Any], provider: str) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
+def learning_family_epoch(memory: dict[str, Any], execution: dict[str, Any]) -> str:
+    """Hash stable validated skill identities learned inside this causal family.
+
+    Provider lists, success counters, timestamps and retry ordinals are excluded,
+    so one new family mechanism opens one bounded replay rather than O(n²) churn.
+    """
+    skills = memory.get("learnedSkills") if isinstance(memory, dict) else {}
+    if not isinstance(skills, dict):
+        return ""
+    family_providers = {
+        safe_provider(value)
+        for value in execution.get("providers") or []
+        if safe_provider(value)
+    }
+    if not family_providers:
+        return ""
+    execution_strategy = _stable_text(execution.get("capabilityStrategy"), 120)
+    identities: dict[str, dict[str, Any]] = {}
+    for key, raw in skills.items():
+        if not isinstance(raw, dict) or raw.get("validated") is not True:
+            continue
+        if _safe_int(raw.get("successCount"), 0) <= 0:
+            continue
+        providers = {
+            safe_provider(value)
+            for value in raw.get("providers") or []
+            if safe_provider(value)
+        }
+        if not providers.intersection(family_providers):
+            continue
+        strategies = sorted({
+            _stable_text(value, 120)
+            for value in raw.get("capabilityStrategies") or []
+            if _stable_text(value, 120)
+        })
+        if execution_strategy and strategies and execution_strategy not in strategies:
+            continue
+        identity = {
+            "id": _stable_text(raw.get("id") or key, 192),
+            "failureClass": _stable_text(
+                raw.get("failureClass") or raw.get("failure_class"), 96
+            ),
+            "profile": _stable_text(raw.get("profile"), 96),
+            "capabilityStrategies": strategies,
+        }
+        if not identity["id"] or not identity["profile"]:
+            continue
+        encoded = json.dumps(
+            identity, ensure_ascii=True, sort_keys=True, separators=(",", ":")
+        )
+        identities[encoded] = identity
+    if not identities:
+        return ""
+    raw = json.dumps(
+        [identities[key] for key in sorted(identities)],
+        ensure_ascii=True,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
 def _safe_int(value: object, default: int = 0) -> int:
     try:
         return int(value or default)
@@ -264,6 +326,7 @@ def _execution_plan_payload(
     provider: str,
     row: dict[str, Any],
     learning_epoch: str = "",
+    family_epoch: str = "",
 ) -> dict[str, Any]:
     lane = _stable_text(row.get("lane"), 64)
     strategy = _stable_text(row.get("strategyBlueprint"), 160)
@@ -280,10 +343,15 @@ def _execution_plan_payload(
         "strategyBlueprint": strategy,
         "fallbackLane": _stable_text(row.get("fallbackLane"), 64),
     }
-    if lane == "brain_learning" and FINGERPRINT.fullmatch(
-        str(learning_epoch or "").strip().casefold()
-    ):
-        payload["learningExperimentEpoch"] = str(learning_epoch).strip().casefold()
+    if lane == "brain_learning":
+        # Version the orchestration mechanism itself once. This permits one
+        # controlled replay after the family-propagation architecture lands,
+        # then durable fingerprint history closes it again.
+        payload["learningFamilyProtocol"] = "family-hypothesis-propagation-v1"
+        if FINGERPRINT.fullmatch(str(learning_epoch or "").strip().casefold()):
+            payload["learningExperimentEpoch"] = str(learning_epoch).strip().casefold()
+        if FINGERPRINT.fullmatch(str(family_epoch or "").strip().casefold()):
+            payload["learningFamilyEpoch"] = str(family_epoch).strip().casefold()
     return payload
 
 
@@ -297,7 +365,12 @@ def execution_plan_fingerprint(
         if _stable_text(row.get("lane"), 64) == "brain_learning"
         else ""
     )
-    payload = _execution_plan_payload(provider, row, learning_epoch)
+    family_epoch = (
+        learning_family_epoch(learning_memory or {}, row)
+        if _stable_text(row.get("lane"), 64) == "brain_learning"
+        else ""
+    )
+    payload = _execution_plan_payload(provider, row, learning_epoch, family_epoch)
     if payload["lane"] not in {"brain_learning", "core_client_learning"}:
         return ""
     has_cause = bool(
@@ -371,7 +444,14 @@ def select_execution_plan(
             if fingerprint in dispatched_fingerprints(prior):
                 repeats.append(provider)
                 continue
-            payload = _execution_plan_payload(provider, execution, learning_epoch)
+            family_epoch = (
+                learning_family_epoch(learning_memory or {}, execution)
+                if lane == "BRAIN_LEARNING"
+                else ""
+            )
+            payload = _execution_plan_payload(
+                provider, execution, learning_epoch, family_epoch
+            )
             eligible.append({
                 "provider": provider,
                 "fingerprint": fingerprint,
@@ -384,6 +464,7 @@ def select_execution_plan(
                     ).encode("utf-8")
                 ).hexdigest()[:20],
                 "learningExperimentEpochHash": learning_epoch[:20],
+                "learningFamilyEpochHash": family_epoch[:20],
             })
 
     # A provider can belong to only one causal lane by execution-plan contract,
@@ -411,8 +492,8 @@ def select_execution_plan(
         "harnessDifferentialExcludedProviders": [],
         "policy": (
             "autopilot Learning requires a new stable execution-plan cause/method fingerprint; "
-            "BRAIN_LEARNING may advance only when durable executed experiment identity changes; "
-            "the newest fully exhausted causal group is suppressed; historically dispatched fingerprints are suppressed"
+            "BRAIN_LEARNING may advance only when durable executed experiment identity or a stable validated family-skill identity changes; "
+            "retry counters/provider-count churn are excluded; the newest fully exhausted causal group is suppressed; historically dispatched fingerprints are suppressed"
         ),
     }
 
