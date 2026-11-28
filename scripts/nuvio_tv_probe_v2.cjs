@@ -3,7 +3,7 @@
 
 const path = require('node:path');
 const { webcrypto } = require('node:crypto');
-const { streamIdentity, episodicIdentityRequired } = require('./nuvio_client_lab.cjs');
+const { streamIdentity, episodicIdentityRequired, WINDOWS_UA } = require('./nuvio_client_lab.cjs');
 
 const ASSET_EXT = /\.(?:woff2?|ttf|otf|eot|css|js|mjs|map|png|jpe?g|gif|svg|ico|webmanifest|json|xml|vtt|srt)(?:[?#]|$)/i;
 const REJECT_HOSTS = /(?:^|\.)(?:twitter\.com|x\.com|twimg\.com|google\.com|googleusercontent\.com|gitlab\.com|github\.com|facebook\.com|instagram\.com)$/i;
@@ -134,7 +134,7 @@ function installRuntime(settings = {}) {
   define('SCRAPER_SETTINGS', Object.freeze({ ...settings }));
   define('__NUVIO_PROVIDER_SETTINGS__', Object.freeze({ ...settings }));
   define('navigator', {
-    userAgent: 'Mozilla/5.0 (Linux; Android 14; Android TV) AppleWebKit/537.36 Chrome/131 Safari/537.36 NuvioTV',
+    userAgent: WINDOWS_UA,
     language: 'fr-FR', languages: ['fr-FR', 'fr', 'en'], platform: 'android', product: 'ReactNative', onLine: true,
   });
   if (!globalThis.window) define('window', globalThis);
