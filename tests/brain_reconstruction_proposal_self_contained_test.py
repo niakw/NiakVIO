@@ -84,11 +84,19 @@ with tempfile.TemporaryDirectory() as directory:
         raise AssertionError("mismatched provenance base sha was not rejected")
 
 workflow=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
+memory_publisher=(SCRIPTS/"publish_brain_learning_memory.sh").read_text(encoding="utf-8")
 assert "brain-learning-output/provider-bases/" in workflow
 assert "cp PROVENANCE.json brain-learning-input/source-provenance.json" in workflow
 assert "--provenance brain-learning-input/source-provenance.json" in workflow
-assert workflow.count('git fetch origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH" || true') >= 3
+# Proposal/reconstruction jobs retain their explicit remote ref refreshes. The
+# memory publisher now owns its own retryable force-refetch transaction, so the
+# old implementation-level requirement of three identical YAML fetch lines is
+# no longer the contract.
+assert workflow.count('git fetch origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH" || true') >= 2
+assert 'git fetch --force origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH"' in memory_publisher
+assert "bash scripts/publish_brain_learning_memory.sh" in workflow
 assert 'git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH" || true' not in workflow
+assert 'git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH" || true' not in memory_publisher
 source=(SCRIPTS/"materialize_clean_provider_reconstruction.py").read_text(encoding="utf-8")
 assert "supportingBaseCount" in source
 assert "proposal provenance is not self-contained" in source
