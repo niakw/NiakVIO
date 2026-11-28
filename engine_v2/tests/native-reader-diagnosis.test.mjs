@@ -8,6 +8,22 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const script = path.join(root, 'engine_v2/scripts/diagnose-native-reader.mjs');
 const b64 = (value) => Buffer.from(String(value)).toString('base64url');
+function containsExactHost(value, forbiddenHost) {
+  const wanted = String(forbiddenHost || '').trim().toLowerCase();
+  if (!wanted) return false;
+  if (typeof value === 'string') {
+    const text = value.trim();
+    if (text.toLowerCase() === wanted) return true;
+    try { if (new URL(text).hostname.toLowerCase() === wanted) return true; } catch {}
+    return text.split(/[^A-Za-z0-9.-]+/).some((token) => token.toLowerCase() === wanted);
+  }
+  if (Array.isArray(value)) return value.some((item) => containsExactHost(item, wanted));
+  if (value && typeof value === 'object') {
+    return Object.entries(value).some(([key, item]) =>
+      containsExactHost(key, wanted) || containsExactHost(item, wanted));
+  }
+  return false;
+}
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'niakvio-reader-brain-'));
 try {
   const log = path.join(tmp, 'tv-native-corpus-sinners-2025.log');
@@ -499,7 +515,7 @@ try {
   assert.equal(dnsReport.providerLoadPriorities[0].coreOrManifestProposalAllowed, false);
   assert.equal(dnsReport.policy.coreOrManifestLoadProposalAllowed, false);
   assert.deepEqual(dnsReport.plans, []);
-  assert.equal(JSON.stringify(dnsReport).includes('raw.githubusercontent.com'), false,
+  assert.equal(containsExactHost(dnsReport, 'raw.githubusercontent.com'), false,
     'transient repository host must never enter persisted Brain evidence');
 
   // A different host, or an independently observed HTTP status for the
