@@ -19,7 +19,7 @@ const require = createRequire(import.meta.url);
 const { inferSupportedTypes, isAnimeFocusedCatalogue, roundRobin } = require('./provider_semantics.cjs');
 const { shouldRetryNoRequest } = require('./availability_fallback_policy.cjs');
 const { guardedFetch } = require('./network_guard.cjs');
-const { streamIdentity, episodicIdentityRequired } = require('./nuvio_client_lab.cjs');
+const { streamIdentity, episodicIdentityRequired, WINDOWS_UA } = require('./nuvio_client_lab.cjs');
 const { safeMediaFacts } = require('./media_observation.cjs');
 const { safeHttpFacts } = require('./http_response_observation.cjs');
 const { safeReaderProbe } = require('./reader_user_agent_probe.cjs');
@@ -404,7 +404,7 @@ function cleanHeaders(input = {}, rangeBytes = 262143) {
     if (!blocked.has(String(key).toLowerCase()) && value != null) headers[key] = String(value);
   }
   headers.Range = headers.Range || `bytes=0-${Math.max(1023, rangeBytes)}`;
-  headers['User-Agent'] = headers['User-Agent'] || 'Mozilla/5.0 Nuvio-Health-Check/5.12';
+  headers['User-Agent'] = headers['User-Agent'] || String(executionConfig.default_user_agent || WINDOWS_UA);
   return headers;
 }
 
@@ -1245,6 +1245,7 @@ function executionContextForCandidate(candidate) {
     locale,
     languages: [...new Set([locale, language])],
     platform: String(executionConfig.default_platform || 'android'),
+    userAgent: String(executionConfig.default_user_agent || WINDOWS_UA),
     injectAcceptLanguage: executionConfig.inject_accept_language !== false,
     settings: {},
     storage: {
