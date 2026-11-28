@@ -190,12 +190,12 @@ assert "cancel-in-progress: true" not in autopilot
 assert "FIELD_PROVIDER_AUTOPILOT_INFLIGHT_QUERY_ERROR" in autopilot
 assert "python tests/provider_brain_autopilot_workflow_test.py" in autopilot
 for lane in (
-    "domain-refresh.yml",
     "provider-remat-test.yml",
     "provider-fast-repair.yml",
     "provider-waf-browser-session.yml",
 ):
     assert f"if lane_busy {lane}; then" in autopilot, lane
+assert "if lane_busy domain-refresh.yml; then" not in autopilot
 assert "if lane_busy brain-learning-lab.yml; then" not in autopilot
 
 # Execute only the extracted shell guard with a stubbed GitHub CLI. No real
