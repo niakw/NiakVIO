@@ -322,23 +322,41 @@ function mergeLearnedSkills(previousSkills, currentSkills) {
         out[id] = skill;
         continue;
       }
-      const maturityRank = { experimental: 0, candidate: 1, trusted: 2 };
-      const maturity = (maturityRank[skill.maturity] ?? 0) > (maturityRank[existing.maturity] ?? 0)
-        ? skill.maturity : existing.maturity;
+      const providers = [...new Set([...(existing.providers || []), ...(skill.providers || [])])].slice(0, 96);
+      const signatures = [...new Set([...(existing.signatures || []), ...(skill.signatures || [])])].slice(0, 96);
+      const capabilityStrategies = [...new Set([...(existing.capabilityStrategies || []), ...(skill.capabilityStrategies || [])])].slice(0, 24);
+      const observedPipelineStages = [...new Set([...(existing.observedPipelineStages || []), ...(skill.observedPipelineStages || [])])].slice(0, 24);
+      const successCount = Math.max(nonNegative(existing.successCount), nonNegative(skill.successCount));
+      const failureCount = Math.max(nonNegative(existing.failureCount), nonNegative(skill.failureCount));
+      const confidence = successCount / Math.max(1, successCount + failureCount);
+      const maturityPolicy = recordValue(policy.skillMaturity);
+      const trusted = (
+        successCount >= nonNegative(maturityPolicy.trustedSuccesses || 3)
+        && providers.length >= nonNegative(maturityPolicy.trustedProviders || 2)
+        && confidence >= Number(maturityPolicy.minimumConfidence || 0.8)
+      );
+      const maturity = trusted
+        ? 'trusted'
+        : successCount >= nonNegative(maturityPolicy.candidateSuccesses || 2)
+          ? 'candidate'
+          : 'experimental';
       out[id] = {
         ...existing,
         ...skill,
-        providers: [...new Set([...(existing.providers || []), ...(skill.providers || [])])].slice(0, 96),
+        providers,
+        signatures,
+        capabilityStrategies,
+        observedPipelineStages,
         sameProviderPositiveProgram: existing.sameProviderPositiveProgram === true || skill.sameProviderPositiveProgram === true,
         positiveProgramFingerprintsByProvider: {
           ...recordValue(existing.positiveProgramFingerprintsByProvider),
           ...recordValue(skill.positiveProgramFingerprintsByProvider),
         },
-        successCount: Math.max(nonNegative(existing.successCount), nonNegative(skill.successCount)),
-        failureCount: Math.max(nonNegative(existing.failureCount), nonNegative(skill.failureCount)),
-        confidence: Math.max(Number(existing.confidence || 0), Number(skill.confidence || 0)),
+        successCount,
+        failureCount,
+        confidence,
         maturity,
-        autoApply: maturity === 'trusted' && (existing.autoApply === true || skill.autoApply === true),
+        autoApply: false,
       };
     }
   }
@@ -361,6 +379,9 @@ function sanitizeLearnedSkill(raw) {
     actions: (Array.isArray(raw.actions) ? raw.actions : []).map((v) => sanitizeReason(v).slice(0, 240)).filter(Boolean).slice(0, 12),
     capabilities: [...new Set((Array.isArray(raw.capabilities) ? raw.capabilities : []).map((v) => sanitizeReason(v).slice(0, 64)).filter(Boolean))].slice(0, 24),
     providers: [...new Set((Array.isArray(raw.providers) ? raw.providers : []).map((v) => String(v || '').trim().toLowerCase().slice(0, 128)).filter(Boolean))].slice(0, 96),
+    signatures: [...new Set((Array.isArray(raw.signatures) ? raw.signatures : []).map((v) => sanitizeReason(v).slice(0, 160)).filter(Boolean))].slice(0, 96),
+    capabilityStrategies: [...new Set((Array.isArray(raw.capabilityStrategies) ? raw.capabilityStrategies : []).map((v) => sanitizeReason(v).toLowerCase().slice(0, 96)).filter(Boolean))].slice(0, 24),
+    observedPipelineStages: [...new Set((Array.isArray(raw.observedPipelineStages) ? raw.observedPipelineStages : []).map((v) => sanitizeReason(v).toLowerCase().slice(0, 64)).filter(Boolean))].slice(0, 24),
     sameProviderPositiveProgram: raw.sameProviderPositiveProgram === true,
     positiveProgramFingerprintsByProvider: Object.fromEntries(
       Object.entries(recordValue(raw.positiveProgramFingerprintsByProvider))
