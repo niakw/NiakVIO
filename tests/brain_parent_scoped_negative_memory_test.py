@@ -118,6 +118,7 @@ assert "parentArtifactSha256" in learning_lab
 assert "parentAuthority" in learning_lab
 assert "row.parentArtifactSha256 || ''" in learning_lab
 assert "row.parentAuthority || ''" in learning_lab
+assert "causalExerciseObserved" in learning_lab
 
 # The canonical Python Learning ledger key must also distinguish parent bytes.
 spec = importlib.util.spec_from_file_location(
