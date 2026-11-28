@@ -8,7 +8,9 @@ mod=importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
 with tempfile.TemporaryDirectory() as td:
     root=Path(td); (root/"providers").mkdir()
     for name in ("active-a.js","active-b.js","retained-old.js"): (root/"providers"/name).write_text("// fixture\n",encoding="utf-8")
-    manifests={"manifest.json":["providers/active-a.js"],"vf/manifest.json":["providers/active-b.js"],"no-anime/manifest.json":["providers/active-a.js"],"vf-no-anime/manifest.json":["providers/active-b.js"]}
+    (root/"provider-disabled").mkdir()
+    (root/"provider-disabled"/"disabled.js").write_text("// retained disabled fixture\n",encoding="utf-8")
+    manifests={"manifest.json":["providers/active-a.js","provider-disabled/disabled.js"],"vf/manifest.json":["providers/active-b.js"],"no-anime/manifest.json":["providers/active-a.js"],"vf-no-anime/manifest.json":["providers/active-b.js"]}
     for relative,names in manifests.items():
         path=root/relative; path.parent.mkdir(parents=True,exist_ok=True)
         path.write_text(json.dumps({"scrapers":[{"id":str(i),"filename":name} for i,name in enumerate(names)]}),encoding="utf-8")
