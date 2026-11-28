@@ -46,9 +46,12 @@ out=mod.plan(providers,plan,status,max_cohorts=8)
 assert out["batchPlanCurrent"] is True,out
 assert out["familyCount"]==3,out
 assert out["cohortCount"]==3,out
-assert set(out["selectedProviders"])=={"b","e","solo"},out
-assert set(out["deferredProviders"])=={"a","c","d"},out
-assert all(row["providerFilter"]==row["provider"] for row in out["cohorts"])
+assert set(out["selectedProviders"])=={"a","b","c","d","e","solo"},out
+assert out["deferredProviders"]==[],out
+assert all(row["providerFilter"].split(",")[0]==row["provider"] for row in out["cohorts"])
+assert all(row["cohortProviderCount"]==len(row["cohortProviders"]) for row in out["cohorts"])
+assert all(row["cohortProviderCount"]<=8 for row in out["cohorts"])
+assert sum(row["cohortProviderCount"] for row in out["cohorts"])==6,out
 assert out["safety"]["providerMutationAuthority"] is False
 assert out["safety"]["publicationAuthority"] is False
 
@@ -75,8 +78,9 @@ for family in range(20):
 large_out=mod.plan(large,large_plan,large_status,max_cohorts=8)
 assert large_out["familyCount"]==20,large_out
 assert large_out["cohortCount"]==8,large_out
-assert len(large_out["selectedProviders"])==8,large_out
-assert len(large_out["deferredProviders"])==992,large_out
+assert len(large_out["selectedProviders"])==64,large_out
+assert len(large_out["deferredProviders"])==936,large_out
+assert all(row["cohortProviderCount"]==8 for row in large_out["cohorts"]),large_out
 
 # A later wave must not starve untouched families. Mark the first wave's eight
 # oracles as recently executed in durable Learning memory: families 08..15 must
@@ -116,6 +120,8 @@ all_families=mod.plan(
 )
 family0=next(row for row in all_families["cohorts"] if row["familyKey"]=="family-00")
 assert family0["provider"]=="p0001",family0
+assert family0["providerFilter"].split(",")[0]=="p0001",family0
+assert len(family0["cohortProviders"])==8,family0
 assert family0["providerLastAttemptAt"]=="",family0
 assert family0["familyLastAttemptAt"],family0
 
