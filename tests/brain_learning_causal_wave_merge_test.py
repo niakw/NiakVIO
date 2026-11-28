@@ -82,8 +82,8 @@ assert "repair_learning_scope(" in source
 assert 'queue["brainOwnedCurrentRepairProviders"] = brain_owned_repair' in source
 assert "fair_handoff = bool(learning_scope) and not bool(args.provider)" in source
 assert "bool(handoff_priority) and not bool(args.provider)" not in source
-assert "order = family_frontier" in source
-assert "family_deferred = []" not in source
+assert "order = unique([*family_frontier, *family_deferred])" in source
+assert 'queue["fastRepairHandoffScheduledFamilySiblings"] = family_deferred' in source
 assert "scoped_order, batch_plan, info_by_id" in source
 assert "causal_family_frontier(order, batch_plan, by_id)" not in source
 assert 'queue["repairLearningDeferredPortfolioProviders"] = portfolio_deferred' in source
@@ -157,5 +157,49 @@ assert any(r["providerId"] == "uhdmovies" for r in survivors), (
 assert mod._learning_memory_capacity() == 16000, (
     "Learning and production must use the same persisted bounded capacity"
 )
+
+# A validated first-family success is immediately visible to later siblings in
+# the same Learning phase, without granting auto-apply/publication authority.
+phase_success = {
+    **row("oracle-a", "chain_terminal_extractor_v1", "accepted"),
+    "failureClass": "chain_terminal_gap",
+    "signature": "sig-family",
+    "capabilityStrategy": "mixed_embed_resolver",
+    "observedPipelineStage": "player",
+    "successes": 1,
+    "failures": 0,
+    "consecutiveFailures": 0,
+    "lastOutcome": "accepted",
+    "executionObserved": True,
+    "causalExerciseObserved": True,
+}
+phase_state = mod.merge_phase_family_skill_priors(base, [phase_success])
+family_key = "chain_terminal_gap:chain_terminal_extractor_v1:family:mixed_embed_resolver"
+skill = phase_state["learnedSkills"][family_key]
+assert skill["providers"] == ["oracle-a"], skill
+assert skill["successCount"] == 1 and skill["failureCount"] == 0, skill
+assert skill["confidence"] == 1.0, skill
+assert skill["autoApply"] is False, skill
+assert phase_state["publicationAllowed"] is False
+assert phase_state["productionWritesAllowed"] is False
+
+# A later sibling failure updates the same family prior instead of creating a
+# cross-family negative; a failure alone never invents a new learned skill.
+phase_failure = {
+    **phase_success,
+    "providerId": "sibling-a",
+    "successes": 0,
+    "failures": 1,
+    "consecutiveFailures": 1,
+    "lastOutcome": "rejected",
+}
+phase_state = mod.merge_phase_family_skill_priors(phase_state, [phase_failure])
+skill = phase_state["learnedSkills"][family_key]
+assert skill["providers"] == ["oracle-a", "sibling-a"], skill
+assert skill["successCount"] == 1 and skill["failureCount"] == 1, skill
+assert skill["confidence"] == 0.5, skill
+foreign_failure = {**phase_failure, "capabilityStrategy": "direct_media"}
+unchanged = mod.merge_phase_family_skill_priors(base, [foreign_failure])
+assert unchanged.get("learnedSkills") == {}, unchanged
 
 print("Brain Learning causal-wave memory merge tests passed")
