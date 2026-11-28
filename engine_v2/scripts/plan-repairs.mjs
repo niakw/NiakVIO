@@ -810,6 +810,21 @@ function providerPositiveProgramReplayHint(reusableSkills, memoryRows, rotateEve
   };
 }
 
+function memoryAppliesToParent(row, candidate) {
+  const currentSha = stringValue(candidate.parentArtifactSha256).toLowerCase();
+  const currentAuthority = stringValue(candidate.parentAuthority).toLowerCase();
+  const rememberedSha = stringValue(row.parentArtifactSha256).toLowerCase();
+  const shaOk = (value) => /^[0-9a-f]{64}$/.test(value);
+  if (currentAuthority === "published-exact-current-bytes" && shaOk(currentSha)) {
+    return shaOk(rememberedSha) && rememberedSha === currentSha;
+  }
+  if (shaOk(currentSha) && shaOk(rememberedSha)) {
+    return currentSha === rememberedSha;
+  }
+  return true;
+}
+
+
 function buildPlan(item) {
   const candidate = asRecord(item.candidate);
   const result = asRecord(item.result);
@@ -866,6 +881,7 @@ function buildPlan(item) {
   );
   const allMemoryMatches = negativeMemory.filter((row) => {
     if (stringValue(row.providerId).toLowerCase() !== providerId) return false;
+    if (!memoryAppliesToParent(row, candidate)) return false;
     const failure = stringValue(row.failureClass);
     if (failure && failure !== evidence.failureClass) return false;
     const rowSignature = stringValue(row.signature);
@@ -883,6 +899,7 @@ function buildPlan(item) {
   const currentFailureFamily = LLM_FAILURE_FAMILIES[canonicalFailureClass(evidence.failureClass)] ?? canonicalFailureClass(evidence.failureClass);
   const causalFamilyMemoryMatches = negativeMemory.filter((row) => {
     if (stringValue(row.providerId).toLowerCase() !== providerId) return false;
+    if (!memoryAppliesToParent(row, candidate)) return false;
     const rowFailure = canonicalFailureClass(row.failureClass);
     const rowFamily = LLM_FAILURE_FAMILIES[rowFailure] ?? rowFailure;
     if (rowFailure && rowFamily !== currentFailureFamily) return false;
@@ -1467,6 +1484,8 @@ function buildPlan(item) {
   return {
     brainVersion: finiteNumber(plan.brainVersion, BRAIN_CONTROL_PLANE_VERSION),
     providerId,
+    parentArtifactSha256: stringValue(candidate.parentArtifactSha256).toLowerCase(),
+    parentAuthority: stringValue(candidate.parentAuthority).toLowerCase(),
     failureClass: stringValue(plan.failureClass, "unknown_failure"),
     derivedFailureClass,
     learningCausalFailureRequested: learningCausalFailureClass,
