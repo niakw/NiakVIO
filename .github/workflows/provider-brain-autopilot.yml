@@ -241,9 +241,9 @@ jobs:
             fi
           fi
 
-          # Learning debt must not wait for the nightly slot. Dispatch the exact
-          # bounded cohort immediately; Learning remains globally serialized and
-          # persists sanitized state/proposals before the next census.
+          # Learning debt must not wait for the nightly slot. Split exact current
+          # debt by causal family; targeted workflow concurrency isolates families
+          # while the Learning publisher deterministically merges sanitized memory.
           if [ -n "$LEARNING" ]; then
             # Split current Learning debt into one oracle per causal family.
             # Distinct targeted workflow concurrency groups may execute in
