@@ -2,8 +2,13 @@
 
 function challengeKind({ body = '', contentType = '', server = '', cfRay = '', cfMitigated = '' } = {}) {
   const type = String(contentType || '').toLowerCase();
-  const html = /text\/html/.test(type);
-  const script = /(?:application|text)\/(?:javascript|x-javascript|ecmascript)/.test(type);
+  const mime = type.split(';', 1)[0].trim();
+  const html = mime === 'text/html' || mime === 'application/xhtml+xml';
+  const script = new Set([
+    'application/javascript', 'text/javascript',
+    'application/x-javascript', 'text/x-javascript',
+    'application/ecmascript', 'text/ecmascript',
+  ]).has(mime);
   if (!html && !script) return '';
 
   const source = String(body || '').slice(0, 65536);
