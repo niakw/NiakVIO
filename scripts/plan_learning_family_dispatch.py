@@ -3,8 +3,9 @@
 
 This is a scheduling-only layer. provider_learning_dispatch_gate.py remains the
 causal authority deciding which providers have a genuinely new strategy. This
-planner only chooses at most one oracle per current repair family so independent
-families can run in separate Learning workflows.
+planner chooses a bounded cohort per current repair family so independent
+families can run in separate Learning workflows. The strongest/least-recent
+oracle is first; siblings follow in the same workflow and consume phase memory.
 
 It never grants mutation, proof, publication, or success authority.
 """
@@ -110,6 +111,7 @@ def plan(
     status: dict[str, Any],
     *,
     max_cohorts: int = 8,
+    max_family_providers: int = 8,
     learning_memory: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     eligible = []
@@ -188,12 +190,17 @@ def plan(
                 ),
                 default="",
             )
+        family_limit = max(1, min(int(max_family_providers), 32))
+        cohort_members = ranked[:family_limit]
         candidates.append({
             "familyKey": key,
             "provider": oracle,
-            "providerFilter": oracle,
+            "providerFilter": ",".join(cohort_members),
             "familyProviderCount": len(ranked),
-            "deferredFamilyProviders": ranked[1:],
+            "cohortProviderCount": len(cohort_members),
+            "cohortProviders": cohort_members,
+            "scheduledFamilyProviders": cohort_members[1:],
+            "deferredFamilyProviders": ranked[family_limit:],
             "providerLastAttemptAt": recent_text.get(oracle, ""),
             "familyLastAttemptAt": family_last_text,
             "familyLastAttemptEpoch": family_last_epoch,
@@ -209,7 +216,12 @@ def plan(
     )
     limit = max(1, min(int(max_cohorts), 16))
     cohorts = candidates[:limit]
-    selected = {str(row["provider"]) for row in cohorts}
+    selected = {
+        str(provider)
+        for row in cohorts
+        for provider in row.get("cohortProviders") or []
+        if str(provider)
+    }
     deferred = sorted(set(eligible) - selected)
 
     return {
@@ -220,9 +232,10 @@ def plan(
         "eligibleProviderCount": len(eligible),
         "familyCount": len(candidates),
         "maxCohorts": limit,
+        "maxFamilyProviders": max(1, min(int(max_family_providers), 32)),
         "cohortCount": len(cohorts),
         "cohorts": cohorts,
-        "selectionPolicy": "least-recent-family-then-least-recent-member-then-status-depth",
+        "selectionPolicy": "least-recent-family-then-bounded-family-cohort-oracle-first",
         "learningMemoryUsed": bool(learning_memory),
         "selectedProviders": sorted(selected),
         "deferredProviders": deferred,
@@ -242,6 +255,7 @@ def main() -> int:
     parser.add_argument("--batch-plan", type=Path, required=True)
     parser.add_argument("--status", type=Path, required=True)
     parser.add_argument("--max-cohorts", type=int, default=8)
+    parser.add_argument("--max-family-providers", type=int, default=8)
     parser.add_argument("--learning-memory", type=Path, default=None)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
@@ -252,6 +266,7 @@ def main() -> int:
         load(args.batch_plan),
         load(args.status),
         max_cohorts=args.max_cohorts,
+        max_family_providers=args.max_family_providers,
         learning_memory=(
             load(args.learning_memory)
             if args.learning_memory is not None and args.learning_memory.is_file()
@@ -267,7 +282,7 @@ def main() -> int:
         "FIELD_BRAIN_LEARNING_FAMILY_DISPATCH "
         f"eligible={output['eligibleProviderCount']} "
         f"families={output['familyCount']} cohorts={output['cohortCount']} "
-        f"deferred={len(output['deferredProviders'])} "
+        f"selected={len(output['selectedProviders'])} deferred={len(output['deferredProviders'])} "
         f"plan_current={str(output['batchPlanCurrent']).lower()} "
         f"memory_used={str(output['learningMemoryUsed']).lower()} "
         "policy=least-recent-family authority=scheduling-only"
