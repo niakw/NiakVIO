@@ -32,6 +32,7 @@ required = [
     "cached['rows']=filtered_rows",
     "cached['providerCount']=len({",
     'if [ -n "$TARGET_PROVIDER" ]; then args+=(--provider "$TARGET_PROVIDER"); fi',
+    'args+=(--batch-plan /tmp/current-learning-repair-batch-plan.json)',
 ]
 for needle in required:
     assert needle in workflow, needle
