@@ -4,31 +4,24 @@
   "acceptedRepairCount": 0,
   "acceptedRepairs": [],
   "advisorDynamicWaveCeiling": 6,
-  "advisorHypothesisWaveBudget": 1,
+  "advisorHypothesisWaveBudget": 2,
   "batchSize": 48,
   "deferredLearningProviders": [
-    "67movies",
-    "anikototv",
-    "anime-sama",
-    "moiflix",
-    "nakios",
-    "sadisflix"
+    "corsflix",
+    "primewire"
   ],
-  "effectiveWaves": 1,
-  "elapsedSeconds": 341.985,
+  "effectiveWaves": 2,
+  "elapsedSeconds": 560.576,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
-    "operationalProviderCount": 7,
+    "operationalProviderCount": 6,
     "providerCount": 142,
     "schemaVersion": 2,
-    "sourceRunId": "46085706985-pre-repair",
-    "sourceSha": "e78fa8397efaa43e00f5bb5eada8e749f6c3afe0",
+    "sourceRunId": "46097864249",
+    "sourceSha": "5e12b49e53ad9d3e6c242d023f5d23bbda7e5e5b",
     "strategyCount": 4
   },
-  "familyFrontierPendingProviders": [
-    "frenchstream",
-    "shuttletv"
-  ],
+  "familyFrontierPendingProviders": [],
   "familyFrontierScheduling": {
     "enabled": true,
     "policy": "one-oracle-per-causal-family-until-transferable-trust-then-fanout",
@@ -41,50 +34,32 @@
   "healthConcurrency": 0,
   "healthConcurrencyMode": "auto-per-batch",
   "initialStatuses": {
-    "67movies": "NO PROOF",
-    "anikototv": "REGRESSION PROVIDER",
-    "anime-sama": "REGRESSION PROVIDER",
-    "frenchstream": "NO PROOF",
-    "moiflix": "PROVIDER NETWORK BLOCKED",
-    "nakios": "CHAIN REACHED",
-    "sadisflix": "REGRESSION PROVIDER",
-    "shuttletv": "NO PROOF"
+    "corsflix": "CHAIN REACHED",
+    "primewire": "CHAIN REACHED"
   },
   "labOnlyWithoutCompiledRepairProviders": [],
   "learningHandoffProviders": [
-    "67movies",
-    "anikototv",
-    "anime-sama",
-    "moiflix",
-    "nakios",
-    "sadisflix"
+    "corsflix",
+    "primewire"
   ],
-  "maxRoundsPerBatch": 1,
-  "maxWaves": 1,
+  "maxRoundsPerBatch": 3,
+  "maxWaves": 2,
   "noProgressReason": "experiment_variants_exhausted",
   "positiveProgramRecovery": {
     "durableProviders": [],
     "durableRecordCount": 0,
     "recoveredRecordCount": 0,
-    "reportCount": 124
+    "reportCount": 125
   },
-  "processedProviderCount": 6,
+  "processedProviderCount": 2,
   "processedProviders": [
-    "67movies",
-    "anikototv",
-    "anime-sama",
-    "moiflix",
-    "nakios",
-    "sadisflix"
+    "corsflix",
+    "primewire"
   ],
   "providerSpecificRules": false,
   "rawLabAcceptedCount": 0,
   "rawLabAcceptedRepairs": [],
-  "remainingProviders": [
-    "anikototv",
-    "frenchstream",
-    "shuttletv"
-  ],
+  "remainingProviders": [],
   "requestedWaves": 1,
   "resumeRecommended": false,
   "safety": {
@@ -100,28 +75,19 @@
     "wafEnvironmentExcludedByDefault": true
   },
   "schemaVersion": 1,
-  "selectedProviderCount": 8,
+  "selectedProviderCount": 2,
   "selectedProviders": [
-    "67movies",
-    "anikototv",
-    "anime-sama",
-    "frenchstream",
-    "moiflix",
-    "nakios",
-    "sadisflix",
-    "shuttletv"
+    "corsflix",
+    "primewire"
   ],
   "selectionSource": "automation/provider-census-status.json:repairQueue",
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "46085706985-pre-repair",
+  "sourceCensusRunId": "46097864249",
   "timeBudgetExhausted": false,
-  "timeBudgetSeconds": 600,
-  "unvisitedProviders": [
-    "frenchstream",
-    "shuttletv"
-  ],
+  "timeBudgetSeconds": 1200,
+  "unvisitedProviders": [],
   "waves": [
     {
       "acceptedCount": 0,
@@ -138,362 +104,73 @@
           "brain": {
             "attemptDiagnostics": [
               {
-                "parentSha256": "e8f238a08293d42a5792b5bdbde67f06898e2e3de18cff479295547a59f02636",
+                "parentSha256": "81ee0287ce650b13b19434df9509b2264489a65560cfe96fec3b3351dea3e602",
                 "phase": "attempts",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "67movies",
+                "profile": "terminal_transition_graph_v1",
+                "provider": "primewire",
                 "reasonCode": "",
-                "repairSha256": "10b79bf220e2f01998f5a1df4397fd62bc5002512487266e5570086a5423b58a",
+                "repairSha256": "ef0bda8da53575e6f707e7ceedb1e456349bf17bf9e18e8ac91282a3a9a36e72",
                 "round": 1,
                 "status": "generated"
-              },
-              {
-                "parentSha256": "fe3a4c845dca37dad14126bbbf6672e7dc15184e0bebe2d7c0d5df54e40e4ea2",
-                "phase": "attempts",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "moiflix",
-                "reasonCode": "",
-                "repairSha256": "1e63cd4dcc3e1454c10c95963cae74ba968a8428bd03a148f20bc1e073256492",
-                "round": 1,
-                "status": "generated"
-              },
-              {
-                "parentSha256": "81006ca09e564acf8125a36e485cc4e2073223f483ba97ade1631dd732dff962",
-                "phase": "attempts",
-                "profile": "player_protocol_family_replay_v1",
-                "provider": "nakios",
-                "reasonCode": "",
-                "repairSha256": "0ffeb5da31528423886a0b81bbfa7220d305f1da7af5ac7c3789ab6ee060bb25",
-                "round": 1,
-                "status": "generated"
-              },
-              {
-                "parentSha256": "6fba795eeee3a5922e02c841edb46fd9d0d207cc55c329d57a028e6a58d892fc",
-                "phase": "attempts",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "sadisflix",
-                "reasonCode": "",
-                "repairSha256": "9fae9e256d651bf448d317547f647268dd0c34500372d1ea10b1f42b4436a09f",
-                "round": 1,
-                "status": "generated"
-              },
-              {
-                "parentSha256": "",
-                "phase": "rejected",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "moiflix",
-                "reasonCode": "required_category_playable_proof",
-                "repairSha256": "",
-                "round": 1,
-                "status": "no_streams"
-              },
-              {
-                "parentSha256": "",
-                "phase": "rejected",
-                "profile": "player_protocol_family_replay_v1",
-                "provider": "nakios",
-                "reasonCode": "required_category_playable_proof",
-                "repairSha256": "",
-                "round": 1,
-                "status": "no_streams"
-              },
-              {
-                "parentSha256": "",
-                "phase": "rejected",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "sadisflix",
-                "reasonCode": "required_category_playable_proof",
-                "repairSha256": "",
-                "round": 1,
-                "status": "healthy"
               },
               {
                 "parentSha256": "",
                 "phase": "exploration_progress",
-                "profile": "adaptive_runtime_recovery",
-                "provider": "67movies",
+                "profile": "terminal_transition_graph_v1",
+                "provider": "primewire",
                 "reasonCode": "sandbox_diagnostic_progress",
-                "repairSha256": "10b79bf220e2f01998f5a1df4397fd62bc5002512487266e5570086a5423b58a",
+                "repairSha256": "ef0bda8da53575e6f707e7ceedb1e456349bf17bf9e18e8ac91282a3a9a36e72",
                 "round": 1,
                 "status": ""
+              },
+              {
+                "parentSha256": "ef0bda8da53575e6f707e7ceedb1e456349bf17bf9e18e8ac91282a3a9a36e72",
+                "phase": "attempts",
+                "profile": "player_protocol_family_replay_v1",
+                "provider": "primewire",
+                "reasonCode": "",
+                "repairSha256": "0828e6af20d49d4f7a20a94a5db8caf4055a493ab4dd1ee686bbaf725b71413b",
+                "round": 2,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "player_protocol_family_replay_v1",
+                "provider": "primewire",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 2,
+                "status": "no_streams"
+              },
+              {
+                "parentSha256": "ef0bda8da53575e6f707e7ceedb1e456349bf17bf9e18e8ac91282a3a9a36e72",
+                "phase": "attempts",
+                "profile": "media_response_shape_inference_v1",
+                "provider": "primewire",
+                "reasonCode": "",
+                "repairSha256": "23ad7852b32de98093758f184174aaddc8d9225d6171f53b474d3ade7a4f9dea",
+                "round": 3,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "media_response_shape_inference_v1",
+                "provider": "primewire",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 3,
+                "status": "degraded"
               }
             ],
             "harnessDifferentialProviders": [],
             "learnedEvents": 0,
             "plans": {
-              "published:67movies": {
+              "published:primewire": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "adaptive_runtime_recovery"
-                ],
-                "baseExperimentExhausted": false,
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 1,
-                "experimentVariant": 0,
-                "experimentVariantCount": 5,
-                "explorationChainEnabled": true,
-                "explorationModeEnabled": true,
-                "failureClass": "search_gap",
-                "forcePreferredRequested": "",
-                "forcePreferredSelected": false,
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "rediscover-search-route",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "repair-search-parser",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "core_repair_only",
-                "llmAdvisorApplied": false,
-                "llmAdvisorConfidence": 0,
-                "llmAdvisorExperiment": {},
-                "llmAdvisorExperimentFingerprint": "",
-                "llmAdvisorExplorationRescue": false,
-                "llmAdvisorFailureCompatibility": "",
-                "llmAdvisorGuidanceKind": "",
-                "llmAdvisorProfile": "",
-                "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "",
-                "llmAdvisorStrategy": "",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 0,
-                "positiveProgramFingerprint": "",
-                "postExhaustionCandidateProfiles": [
-                  "route_transition_graph_v2",
-                  "search_contract_inference_v1",
-                  "search_response_route_binding_v1",
-                  "identity_alias_search_traversal_v1",
-                  "runtime_response_salvage_v1",
-                  "document_request_contract_mining_v1",
-                  "transport_request_differential_v1",
-                  "transport_request_differential_v2",
-                  "provider_session_bootstrap_replay_v1",
-                  "route_transition_graph_v3",
-                  "route_transition_graph_v4",
-                  "route_transition_graph_v5",
-                  "route_transition_graph_v6",
-                  "route_transition_graph_v7",
-                  "route_transition_graph_v8",
-                  "route_transition_graph_v9",
-                  "route_transition_graph_v10",
-                  "route_transition_graph_v11",
-                  "route_transition_graph_v12",
-                  "route_transition_graph_v13",
-                  "route_transition_graph_v14",
-                  "route_transition_graph_v15",
-                  "route_transition_graph_v16",
-                  "route_transition_graph_v17"
-                ],
-                "postExhaustionSourceFailureClass": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "67movies",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "catalogue_search_resolution",
-                "signature": "a5acf1ae6fc3078e15bcfc89",
-                "strategyEscalated": false,
-                "targetCategories": []
-              },
-              "published:anikototv": {
-                "action": "collect-more-evidence",
-                "allowedProfiles": [],
-                "baseExperimentExhausted": false,
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 1,
-                "experimentVariant": 3,
-                "experimentVariantCount": 5,
-                "explorationChainEnabled": true,
-                "explorationModeEnabled": true,
-                "failureClass": "unknown_failure",
-                "forcePreferredRequested": "",
-                "forcePreferredSelected": false,
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "collect-missing-evidence",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "queue_for_independent_learning",
-                "llmAdvisorApplied": false,
-                "llmAdvisorConfidence": 0,
-                "llmAdvisorExperiment": {},
-                "llmAdvisorExperimentFingerprint": "",
-                "llmAdvisorExplorationRescue": false,
-                "llmAdvisorFailureCompatibility": "",
-                "llmAdvisorGuidanceKind": "",
-                "llmAdvisorProfile": "",
-                "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "",
-                "llmAdvisorStrategy": "",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 3,
-                "positiveProgramFingerprint": "",
-                "postExhaustionCandidateProfiles": [],
-                "postExhaustionSourceFailureClass": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "anikototv",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "deferred",
-                "repairType": "architecture_gap",
-                "signature": "5483782c3b851d5d525648d5",
-                "strategyEscalated": false,
-                "targetCategories": []
-              },
-              "published:anime-sama": {
-                "action": "collect-more-evidence",
-                "allowedProfiles": [],
-                "baseExperimentExhausted": true,
-                "exitReason": "learning_generations_exhausted",
-                "experimentExhausted": true,
-                "experimentGeneration": 2,
-                "experimentVariant": 4,
-                "experimentVariantCount": 5,
-                "explorationChainEnabled": true,
-                "explorationModeEnabled": true,
-                "failureClass": "unknown_failure",
-                "forcePreferredRequested": "",
-                "forcePreferredSelected": false,
-                "hypotheses": [],
-                "learningDisposition": "propose_new_or_evolved_core_type",
-                "llmAdvisorApplied": false,
-                "llmAdvisorConfidence": 0,
-                "llmAdvisorExperiment": {},
-                "llmAdvisorExperimentFingerprint": "",
-                "llmAdvisorExplorationRescue": false,
-                "llmAdvisorFailureCompatibility": "",
-                "llmAdvisorGuidanceKind": "",
-                "llmAdvisorProfile": "",
-                "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "",
-                "llmAdvisorStrategy": "",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 9,
-                "positiveProgramFingerprint": "",
-                "postExhaustionCandidateProfiles": [],
-                "postExhaustionSourceFailureClass": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "anime-sama",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "learning",
-                "repairType": "architecture_gap",
-                "signature": "5483782c3b851d5d525648d5",
-                "strategyEscalated": false,
-                "targetCategories": []
-              },
-              "published:moiflix": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "adaptive_runtime_recovery"
-                ],
-                "baseExperimentExhausted": false,
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 1,
-                "experimentVariant": 2,
-                "experimentVariantCount": 5,
-                "explorationChainEnabled": true,
-                "explorationModeEnabled": true,
-                "failureClass": "transport_blocked",
-                "forcePreferredRequested": "",
-                "forcePreferredSelected": false,
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "bootstrap-session",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "alternate-official-route",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "core_repair_only",
-                "llmAdvisorApplied": false,
-                "llmAdvisorConfidence": 0,
-                "llmAdvisorExperiment": {},
-                "llmAdvisorExperimentFingerprint": "",
-                "llmAdvisorExplorationRescue": false,
-                "llmAdvisorFailureCompatibility": "",
-                "llmAdvisorGuidanceKind": "",
-                "llmAdvisorProfile": "",
-                "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "",
-                "llmAdvisorStrategy": "",
-                "metaGapEscalated": false,
-                "negativeMemoryMatches": 2,
-                "positiveProgramFingerprint": "",
-                "postExhaustionCandidateProfiles": [
-                  "transport_request_differential_v1",
-                  "provider_session_bootstrap_replay_v1",
-                  "runtime_response_salvage_v1",
-                  "transport_request_differential_v2",
-                  "route_transition_graph_v2",
-                  "route_transition_graph_v3",
-                  "route_transition_graph_v4",
-                  "route_transition_graph_v5",
-                  "route_transition_graph_v6",
-                  "route_transition_graph_v7",
-                  "route_transition_graph_v8",
-                  "route_transition_graph_v9",
-                  "route_transition_graph_v10",
-                  "route_transition_graph_v11",
-                  "route_transition_graph_v12",
-                  "route_transition_graph_v13",
-                  "route_transition_graph_v14",
-                  "route_transition_graph_v15",
-                  "route_transition_graph_v16",
-                  "route_transition_graph_v17",
-                  "route_transition_graph_v18",
-                  "route_transition_graph_v19",
-                  "route_transition_graph_v20",
-                  "route_transition_graph_v21"
-                ],
-                "postExhaustionSourceFailureClass": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "moiflix",
-                "providerPositiveProgramProductionRescue": false,
-                "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "session_transport",
-                "signature": "9408dea970ee2148302affa4",
-                "strategyEscalated": false,
-                "targetCategories": []
-              },
-              "published:nakios": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "player_protocol_family_replay_v1"
+                  "media_response_shape_inference_v1"
                 ],
                 "baseExperimentExhausted": true,
                 "exitReason": null,
@@ -503,13 +180,13 @@
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
-                "failureClass": "variant_coverage_gap",
+                "failureClass": "media_extraction_gap",
                 "forcePreferredRequested": "",
                 "forcePreferredSelected": false,
                 "hypotheses": [
                   {
                     "confidence": 0,
-                    "id": "enumerate-announced-player-variants",
+                    "id": "capture-media-network",
                     "learned": false,
                     "maturity": null,
                     "profile": null,
@@ -517,7 +194,7 @@
                   },
                   {
                     "confidence": 0,
-                    "id": "remove-premature-variant-short-circuit",
+                    "id": "inspect-player-javascript",
                     "learned": false,
                     "maturity": null,
                     "profile": null,
@@ -537,9 +214,11 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 28,
+                "negativeMemoryMatches": 31,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
+                  "document_request_contract_mining_v2",
+                  "provider_session_bootstrap_replay_v1",
                   "player_protocol_family_replay_v1",
                   "media_response_shape_inference_v1",
                   "runtime_response_salvage_v1",
@@ -559,32 +238,177 @@
                   "terminal_transition_graph_v13",
                   "terminal_transition_graph_v14",
                   "terminal_request_program_inference_v1",
-                  "catalogue_inline_token_resolver_v2",
-                  "document_request_contract_mining_v2",
-                  "provider_session_bootstrap_replay_v1"
+                  "catalogue_inline_token_resolver_v2"
                 ],
-                "postExhaustionSourceFailureClass": "variant_coverage_gap",
-                "postExhaustionStrategyMethod": "multi-player-variant-enumeration",
-                "postExhaustionStrategyProfile": "player_protocol_family_replay_v1",
-                "providerId": "nakios",
+                "postExhaustionSourceFailureClass": "media_extraction_gap",
+                "postExhaustionStrategyMethod": "media-response-shape-inference",
+                "postExhaustionStrategyProfile": "media_response_shape_inference_v1",
+                "providerId": "primewire",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
                 "repairScope": "learning",
                 "repairType": "evolved_strategy",
-                "signature": "9c5dc8cd7f63b9fd3ee69aad",
+                "signature": "c92d106e5a46a2b33459e485",
                 "strategyEscalated": true,
                 "targetCategories": []
+              }
+            },
+            "queuedForLearning": [
+              "primewire"
+            ],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "mixed_embed_resolver",
+          "causalProgressCount": 1,
+          "causalProgressObserved": true,
+          "crossWaveExplorationCarryoverApplied": [],
+          "crossWaveExplorationCarryoverCaptured": [
+            "primewire"
+          ],
+          "deferredToLearning": [
+            "primewire"
+          ],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_zero_result|depth:chain",
+              "providers": [
+                "primewire"
+              ],
+              "repairScope": "terminal-extraction"
+            }
+          ],
+          "fixedInLab": [],
+          "genericLearningHandoff": [],
+          "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_zero_result|depth:chain",
+          "harnessDifferentialProviders": [],
+          "healthConcurrency": 1,
+          "providerCount": 1,
+          "providers": [
+            "primewire"
+          ],
+          "repairScope": "terminal-extraction",
+          "unexecutableLlmHandoff": []
+        }
+      ],
+      "causalProgressCount": 1,
+      "causalProgressObserved": true,
+      "compileRejectedToLearning": [],
+      "deferredToLearning": [
+        "primewire"
+      ],
+      "deferredToLearningCount": 1,
+      "durableMaterializeTargets": [],
+      "experimentMemoryAdvanced": true,
+      "familyFrontierDeferredProviders": [
+        "corsflix"
+      ],
+      "familyFrontierGroups": [
+        "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_zero_result|depth:chain"
+      ],
+      "familyFrontierSelectedProviders": [
+        "primewire"
+      ],
+      "fixedInLab": [],
+      "fixedInLabCount": 0,
+      "inputProviderCount": 1,
+      "labOnlyWithoutCompiledRepair": [],
+      "pinnedAdvisorFamilyGroups": [],
+      "rawFixedInLab": [],
+      "rawLabAcceptedCount": 0,
+      "remainingProviderCount": 1,
+      "timeBudgetExhausted": false,
+      "trustedFamilyFanoutGroups": [],
+      "wave": 1
+    },
+    {
+      "acceptedCount": 0,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [],
+      "advisorRotationPending": [],
+      "batches": [
+        {
+          "accepted": [],
+          "acceptedCount": 0,
+          "advisorRemainingFingerprintCounts": {},
+          "advisorRotationPending": [],
+          "batch": 1,
+          "brain": {
+            "attemptDiagnostics": [
+              {
+                "parentSha256": "8a061633312e36c1b5091a3eed839aa6aa65eb16b7a155ae9b430022b1078f1f",
+                "phase": "attempts",
+                "profile": "player_media_extractor_v1",
+                "provider": "corsflix",
+                "reasonCode": "",
+                "repairSha256": "d01caee173a04c5b2735296241274a66b5acc22004f2121e3a983d82eb197dd1",
+                "round": 1,
+                "status": "generated"
               },
-              "published:sadisflix": {
+              {
+                "parentSha256": "",
+                "phase": "exploration_progress",
+                "profile": "player_media_extractor_v1",
+                "provider": "corsflix",
+                "reasonCode": "sandbox_diagnostic_progress",
+                "repairSha256": "d01caee173a04c5b2735296241274a66b5acc22004f2121e3a983d82eb197dd1",
+                "round": 1,
+                "status": ""
+              },
+              {
+                "parentSha256": "d01caee173a04c5b2735296241274a66b5acc22004f2121e3a983d82eb197dd1",
+                "phase": "attempts",
+                "profile": "runtime_response_salvage_v1",
+                "provider": "corsflix",
+                "reasonCode": "",
+                "repairSha256": "e775a7690fe490b0cca88de61489031c8b8ec896a70a3f004e3efa805b955c33",
+                "round": 2,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "runtime_response_salvage_v1",
+                "provider": "corsflix",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 2,
+                "status": "no_streams"
+              },
+              {
+                "parentSha256": "d01caee173a04c5b2735296241274a66b5acc22004f2121e3a983d82eb197dd1",
+                "phase": "attempts",
+                "profile": "route_transition_graph_v2",
+                "provider": "corsflix",
+                "reasonCode": "",
+                "repairSha256": "4c5e42eb45839849cd240eed3b121e988d191577d290ed983cb01c01bd9f18fb",
+                "round": 3,
+                "status": "generated"
+              },
+              {
+                "parentSha256": "",
+                "phase": "rejected",
+                "profile": "route_transition_graph_v2",
+                "provider": "corsflix",
+                "reasonCode": "required_category_playable_proof",
+                "repairSha256": "",
+                "round": 3,
+                "status": "no_streams"
+              }
+            ],
+            "harnessDifferentialProviders": [],
+            "learnedEvents": 0,
+            "plans": {
+              "published:corsflix": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "adaptive_runtime_recovery"
+                  "route_transition_graph_v2"
                 ],
-                "baseExperimentExhausted": false,
+                "baseExperimentExhausted": true,
                 "exitReason": null,
                 "experimentExhausted": false,
-                "experimentGeneration": 1,
-                "experimentVariant": 1,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
@@ -609,7 +433,7 @@
                     "transferScore": 0
                   }
                 ],
-                "learningDisposition": "core_repair_only",
+                "learningDisposition": "execute_bounded_evolved_strategy",
                 "llmAdvisorApplied": false,
                 "llmAdvisorConfidence": 0,
                 "llmAdvisorExperiment": {},
@@ -622,7 +446,7 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 1,
+                "negativeMemoryMatches": 35,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
                   "transport_request_differential_v1",
@@ -650,109 +474,54 @@
                   "route_transition_graph_v20",
                   "route_transition_graph_v21"
                 ],
-                "postExhaustionSourceFailureClass": "",
-                "postExhaustionStrategyMethod": "",
-                "postExhaustionStrategyProfile": "",
-                "providerId": "sadisflix",
+                "postExhaustionSourceFailureClass": "route_proven_gap",
+                "postExhaustionStrategyMethod": "same-provider-observed-transition-salvage",
+                "postExhaustionStrategyProfile": "route_transition_graph_v2",
+                "providerId": "corsflix",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
-                "repairScope": "capability",
-                "repairType": "session_transport",
-                "signature": "9c5002c2f25fce9cea8338b6",
-                "strategyEscalated": false,
+                "repairScope": "learning",
+                "repairType": "evolved_strategy",
+                "signature": "407798151f15452ec1ccd098",
+                "strategyEscalated": true,
                 "targetCategories": []
               }
             },
             "queuedForLearning": [
-              "anikototv",
-              "anime-sama",
-              "nakios"
+              "corsflix"
             ],
             "validatedRepairLearningExecuted": true
           },
-          "capabilityStrategy": "mixed",
+          "capabilityStrategy": "mixed_embed_resolver",
           "causalProgressCount": 1,
           "causalProgressObserved": true,
           "crossWaveExplorationCarryoverApplied": [],
           "crossWaveExplorationCarryoverCaptured": [
-            "67movies"
+            "corsflix"
           ],
           "deferredToLearning": [
-            "67movies",
-            "anime-sama",
-            "moiflix",
-            "nakios",
-            "sadisflix"
+            "corsflix"
           ],
           "familyGroups": [
             {
               "capabilityStrategy": "mixed_embed_resolver",
-              "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_zero_result|depth:lookup",
-              "providers": [
-                "67movies"
-              ],
-              "repairScope": "learning"
-            },
-            {
-              "capabilityStrategy": "mixed_embed_resolver",
-              "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:provider_returned_streams, timeout|depth:chain",
-              "providers": [
-                "sadisflix"
-              ],
-              "repairScope": "learning"
-            },
-            {
-              "capabilityStrategy": "mixed_embed_resolver",
-              "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_http_error|depth:lookup",
-              "providers": [
-                "moiflix"
-              ],
-              "repairScope": "transport"
-            },
-            {
-              "capabilityStrategy": "mixed_embed_resolver",
-              "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_http_error|depth:none",
-              "providers": [
-                "anikototv"
-              ],
-              "repairScope": "transport"
-            },
-            {
-              "capabilityStrategy": "mixed_embed_resolver",
-              "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:timeout|depth:lookup",
-              "providers": [
-                "anime-sama"
-              ],
-              "repairScope": "learning"
-            },
-            {
-              "capabilityStrategy": "mixed_embed_resolver",
               "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_zero_result|depth:chain",
               "providers": [
-                "nakios"
+                "corsflix"
               ],
               "repairScope": "terminal-extraction"
             }
           ],
           "fixedInLab": [],
-          "genericLearningHandoff": [
-            "67movies",
-            "moiflix",
-            "sadisflix"
-          ],
-          "groupId": "packed",
+          "genericLearningHandoff": [],
+          "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_zero_result|depth:chain",
           "harnessDifferentialProviders": [],
-          "healthConcurrency": 6,
-          "providerCount": 6,
+          "healthConcurrency": 1,
+          "providerCount": 1,
           "providers": [
-            "67movies",
-            "sadisflix",
-            "moiflix",
-            "anikototv",
-            "anime-sama",
-            "nakios"
+            "corsflix"
           ],
-          "repairScope": "mixed",
+          "repairScope": "terminal-extraction",
           "unexecutableLlmHandoff": []
         }
       ],
@@ -760,46 +529,29 @@
       "causalProgressObserved": true,
       "compileRejectedToLearning": [],
       "deferredToLearning": [
-        "67movies",
-        "anime-sama",
-        "moiflix",
-        "nakios",
-        "sadisflix"
+        "corsflix"
       ],
-      "deferredToLearningCount": 5,
+      "deferredToLearningCount": 1,
       "durableMaterializeTargets": [],
       "experimentMemoryAdvanced": true,
-      "familyFrontierDeferredProviders": [
-        "frenchstream",
-        "shuttletv"
-      ],
+      "familyFrontierDeferredProviders": [],
       "familyFrontierGroups": [
-        "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_zero_result|depth:chain",
-        "learning|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:provider_returned_streams, timeout|depth:chain",
-        "learning|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:timeout|depth:lookup",
-        "transport|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_http_error|depth:none",
-        "learning|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_zero_result|depth:lookup",
-        "transport|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_http_error|depth:lookup"
+        "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_zero_result|depth:chain"
       ],
       "familyFrontierSelectedProviders": [
-        "nakios",
-        "sadisflix",
-        "anime-sama",
-        "anikototv",
-        "67movies",
-        "moiflix"
+        "corsflix"
       ],
       "fixedInLab": [],
       "fixedInLabCount": 0,
-      "inputProviderCount": 6,
+      "inputProviderCount": 1,
       "labOnlyWithoutCompiledRepair": [],
       "pinnedAdvisorFamilyGroups": [],
       "rawFixedInLab": [],
       "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 3,
+      "remainingProviderCount": 0,
       "timeBudgetExhausted": false,
       "trustedFamilyFanoutGroups": [],
-      "wave": 1
+      "wave": 2
     }
   ]
 }
