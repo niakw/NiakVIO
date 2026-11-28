@@ -1,5 +1,5 @@
 from brain_layers.source_catalogue_inline_token_episode_source_fami_d2cf3259 import parse_episode_source
-html = '<html><script>var eps1 = ["lien:LEGOTEST_ALPHA_1","lien:LEGOTEST_BETA_1"];var eps2 = ["lien:LEGOTEST_ALPHA_2","lien:LEGOTEST_BETA_2"];var epsJeton = "PRIVATE_TEST_JETON";</script></html>'
+html = '<html><script data-x="1">var eps1 = ["lien:LEGOTEST_ALPHA_1","lien:LEGOTEST_BETA_1"];var eps2 = ["lien:LEGOTEST_ALPHA_2","lien:LEGOTEST_BETA_2"];var epsJeton = "PRIVATE_TEST_JETON";</script data-extra="1"></html>'
 first = repr(parse_episode_source(html, 1))
 second = repr(parse_episode_source(html, 2))
 for token in ('LEGOTEST_ALPHA_1', 'LEGOTEST_ALPHA_2'):
