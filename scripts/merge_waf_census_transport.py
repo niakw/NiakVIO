@@ -136,7 +136,23 @@ def network_differential(
         if expected_digest and bundle_sha != expected_digest:
             continue
         receipted.append(row)
-    if receipted:
+    global_receipt = waf.get("freshRunReceipt") if isinstance(waf.get("freshRunReceipt"), dict) else {}
+    global_run = _receipt_run_id(global_receipt)
+    global_sha = str(global_receipt.get("sourceNiakvioSha") or "").strip().casefold()
+    global_scope = {
+        str(value or "").strip().casefold()
+        for value in waf.get("lastRefreshProviderFilter") or []
+        if str(value or "").strip()
+    }
+    if global_run and wanted in global_scope:
+        # This provider was explicitly targeted by the latest run. Do not let
+        # an older durable receipt masquerade as that run's fresh result.
+        rows = [
+            row for row in receipted
+            if _receipt_run_id(row.get("transportReceipt")) == global_run
+            and str((row.get("transportReceipt") or {}).get("sourceNiakvioSha") or "").strip().casefold() == global_sha
+        ]
+    elif receipted:
         newest = max(_receipt_run_id(row.get("transportReceipt")) for row in receipted)
         rows = [
             row for row in receipted
@@ -520,7 +536,21 @@ def merge_transport(
             if expected_bundle_digest and bundle_sha != expected_bundle_digest:
                 continue
             receipted_replays.append(observation)
-        if receipted_replays:
+        global_receipt = waf.get("freshRunReceipt") if isinstance(waf.get("freshRunReceipt"), dict) else {}
+        global_run = _receipt_run_id(global_receipt)
+        global_sha = str(global_receipt.get("sourceNiakvioSha") or "").strip().casefold()
+        global_scope = {
+            str(value or "").strip().casefold()
+            for value in waf.get("lastRefreshProviderFilter") or []
+            if str(value or "").strip()
+        }
+        if global_run and provider in global_scope:
+            provider_replay_rows = [
+                observation for observation in receipted_replays
+                if _receipt_run_id(observation.get("residentialReplayReceipt")) == global_run
+                and str((observation.get("residentialReplayReceipt") or {}).get("sourceNiakvioSha") or "").strip().casefold() == global_sha
+            ]
+        elif receipted_replays:
             newest_replay_run = max(
                 _receipt_run_id(observation.get("residentialReplayReceipt"))
                 for observation in receipted_replays
