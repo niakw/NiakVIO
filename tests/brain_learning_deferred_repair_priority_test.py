@@ -218,7 +218,7 @@ scope = mod.repair_learning_scope(
     scope_info,
     scope_stage,
 )
-assert scope == ["fast-owner", "wookafr", "transport-brain"], scope
+# CORE_CLIENT_TRANSPORT keeps exclusive ownership until its differential completes;\n# ordinary Brain Learning must not duplicate that provider in the same phase.\nassert scope == ["fast-owner", "wookafr"], scope
 
 explicit_scope = mod.repair_learning_scope(
     ["fast-owner", "wookafr", "transport-brain", "remat-owner"],
