@@ -330,6 +330,36 @@ assert queue.should_continue_evolved_frontier(next_evolved, 1) is True
 assert queue.should_continue_evolved_frontier(next_evolved, 2) is True
 assert queue.should_continue_evolved_frontier(next_evolved, 3) is False
 
+# Progressive family dispatch isolates an unproven oracle in its own workflow.
+# That oracle may use the same bounded slice for up to three distinct
+# phase-memory-advanced hypotheses; sibling/fanout work still rotates after one.
+ordinary_oracle = {
+    **executed_g5,
+    "repairType": "provider_runtime",
+    "experimentVariant": 2,
+    "experimentGeneration": 1,
+    "experimentGenerationLimit": 5,
+    "experimentExhausted": False,
+}
+assert queue.should_continue_evolved_frontier(ordinary_oracle, 1) is False
+assert queue.should_continue_bounded_oracle(
+    ordinary_oracle, 1, isolated_oracle=True
+) is True
+assert queue.should_continue_bounded_oracle(
+    ordinary_oracle, 2, isolated_oracle=True
+) is True
+assert queue.should_continue_bounded_oracle(
+    ordinary_oracle, 3, isolated_oracle=True
+) is False
+assert queue.should_continue_bounded_oracle(
+    ordinary_oracle, 1, isolated_oracle=False
+) is False
+assert queue.should_continue_bounded_oracle(
+    {**ordinary_oracle, "experimentExhausted": True},
+    1,
+    isolated_oracle=True,
+) is False
+
 # The first attempt may still report the exact final g5 strategy it just ran.
 # That boundary must receive one continuation so phase memory can expose and
 # execute the newly unlocked evolved strategy in the next sandbox process.
@@ -354,6 +384,7 @@ assert queue.should_continue_evolved_frontier(
 source = SCRIPT.read_text(encoding="utf-8")
 assert "phase_learning_state_path" in source
 assert "merge_phase_learning_state(" in source
+assert "fastRepairHandoffMaxOracleAttemptsPerProviderThisPhase" in source
 assert "fastRepairHandoffMaxEvolvedAttemptsPerProviderThisPhase" in source
 assert "incomplete_entries = phase_experiment_entries(" in source
 assert "strict_lab_not_completed_due_fair_share_budget" in source

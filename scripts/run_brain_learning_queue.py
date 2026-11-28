@@ -1272,6 +1272,39 @@ def should_continue_evolved_frontier(
     )
 
 
+def should_continue_bounded_oracle(
+    plan: dict[str, Any],
+    attempts_this_phase: int,
+    *,
+    isolated_oracle: bool,
+    max_attempts: int = 3,
+) -> bool:
+    """Spend an isolated family's oracle slice on bounded distinct hypotheses.
+
+    Multi-provider/fanout phases still rotate after one ordinary experiment.
+    An isolated oracle may consume up to three attempts while current phase
+    memory advances variants/generations. Exact evolved-frontier continuation
+    remains available under the existing stricter rules.
+    """
+    if should_continue_evolved_frontier(
+        plan,
+        attempts_this_phase,
+        max_attempts=max_attempts,
+    ):
+        return True
+    if not isolated_oracle:
+        return False
+    if not (
+        1 <= int(attempts_this_phase) < max(2, int(max_attempts))
+        and isinstance(plan, dict)
+        and str(plan.get("action") or "") == "probe-targeted-repair"
+        and bool([value for value in plan.get("allowedProfiles") or [] if str(value).strip()])
+        and plan.get("experimentExhausted") is not True
+    ):
+        return False
+    return True
+
+
 def interleave(retries: list[str], pending: list[str]) -> list[str]:
     """Retry unresolved work without starving unseen providers."""
     retries = list(retries)
@@ -2736,6 +2769,7 @@ def main() -> int:
         "strongest-representatives-first-then-siblings-with-phase-memory"
     )
     queue["fastRepairHandoffMaxAttemptsPerProviderThisPhase"] = 1 if fair_handoff else 0
+    queue["fastRepairHandoffMaxOracleAttemptsPerProviderThisPhase"] = 3 if fair_handoff else 0
     queue["fastRepairHandoffMaxEvolvedAttemptsPerProviderThisPhase"] = 3 if fair_handoff else 0
     source_family_parser_ready = (
         source_family_parser_installed(ROOT) if source_contract_frontier else False
@@ -2870,6 +2904,12 @@ def main() -> int:
                 )
                 continue
             provider_deadline = work_deadline
+            isolated_family_oracle = bool(
+                fair_handoff
+                and len(order) == 1
+                and provider_id in set(family_frontier)
+            )
+            oracle_max_attempts = 3 if isolated_family_oracle else 1
             if fair_handoff:
                 remaining_providers = max(1, len(order) - len(processed))
                 # The strongest representative is the family's causal oracle.
@@ -2890,7 +2930,8 @@ def main() -> int:
                 provider_deadline = min(work_deadline, time.time() + fair_seconds)
                 print(
                     "FIELD_BRAIN_HANDOFF_FAIR_SHARE "
-                    f"provider={provider_id} max_attempts=1 evolved_max_attempts=3 "
+                    f"provider={provider_id} max_attempts={oracle_max_attempts} "
+                    f"evolved_max_attempts=3 isolated_oracle={str(isolated_family_oracle).lower()} "
                     f"slice_seconds={fair_seconds} "
                     f"remaining_providers={remaining_providers}"
                 )
@@ -3340,18 +3381,19 @@ def main() -> int:
                     )
                     if route_refresh.get("ok") is False:
                         break
-                    if fair_handoff and attempts_this_phase >= 1 and not should_continue_evolved_frontier(
+                    if fair_handoff and attempts_this_phase >= 1 and not should_continue_bounded_oracle(
                         provider_plan,
                         attempts_this_phase,
+                        isolated_oracle=isolated_family_oracle,
                     ):
                         break
                     continue
 
-                # Ordinary Fast-Handoff still rotates after one complete
-                # experiment. The only exception is a bounded post-g5 evolved
-                # frontier: its newly planned strategy is fed the exact outcome
-                # above and may execute immediately while this provider's
-                # existing fair-share deadline still has budget.
+                # Multi-provider Fast-Handoff still rotates after one complete
+                # ordinary experiment. An isolated family oracle may spend the
+                # rest of its 120 s slice on at most three phase-memory-advanced
+                # hypotheses; evolved post-g5 continuation stays bounded by the
+                # same limit.
                 if fair_handoff and attempts_this_phase >= 1 and not should_continue_evolved_frontier(
                     provider_plan,
                     attempts_this_phase,
@@ -3507,6 +3549,7 @@ def main() -> int:
         "fastRepairHandoffDeferredFamilySiblingCount": len(family_deferred),
         "fastRepairHandoffFamilyFrontierPolicy": "one-representative-per-causal-family-then-return-to-repair",
         "fastRepairHandoffMaxAttemptsPerProviderThisPhase": 1 if fair_handoff else 0,
+        "fastRepairHandoffMaxOracleAttemptsPerProviderThisPhase": 3 if fair_handoff else 0,
         "fastRepairHandoffMaxEvolvedAttemptsPerProviderThisPhase": 3 if fair_handoff else 0,
         "cleanReconstructionRequiredProviders": reconstruction_required,
         "cleanReconstructionRequiredCount": len(reconstruction_required),
