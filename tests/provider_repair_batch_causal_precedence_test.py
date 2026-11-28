@@ -40,6 +40,7 @@ not_reclassified={**reclassified,"residentialProviderReplayReclassified":False}
 assert mod.action_for_row(not_reclassified,"none","waf_challenge")[0]=="learning"
 missing_flag={k:v for k,v in reclassified.items() if k!="residentialProviderReplayReclassified"}
 assert mod.action_for_row(missing_flag,"none","waf_challenge")[0]=="learning"
+assert mod.causal_issue_for_row(missing_flag)=="provider_zero_before_provider_network"
 no_replay={**missing_flag,"residentialProviderReplayEvidence":[]}
 assert mod.action_for_row(no_replay,"none","waf_challenge")[0]=="learning"
 assert mod.causal_issue_for_row(no_replay)=="unknown"
