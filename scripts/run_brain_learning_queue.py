@@ -549,7 +549,11 @@ def phase_experiment_entries(
             if isinstance(parent_contradiction, dict) and parent_contradiction
             else None
         )
-        if harness_contradiction is not None and success_count == 0:
+        if harness_contradiction is not None:
+            # A contradictory parent invalidates both negative and positive
+            # deltas. A candidate that merely climbs from the harness's false
+            # zero back to the already-playable published level is not a repair.
+            success_count = 0
             failures = 0
             progresses = 0
             outcome = "executed_inconclusive"
