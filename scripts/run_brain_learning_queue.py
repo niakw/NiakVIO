@@ -2525,6 +2525,7 @@ def main() -> int:
     p.add_argument("--output-dir", type=Path, required=True)
     p.add_argument("--provider", default="")
     p.add_argument("--provider-filter", default="", help="Explicit, comma-separated Learning cohort from the caller; never silently narrow it to family representatives.")
+    p.add_argument("--batch-plan", type=Path, default=ROOT / "automation" / "provider-repair-batch-plan-latest.json", help="Exact current causal family plan; targeted workflows should pass their freshly rebuilt same-census plan.")
     p.add_argument("--budget-minutes", type=int, default=60)
     p.add_argument("--reserve-minutes", type=int, default=5)
     p.add_argument("--stream-safety-cap", type=int, default=40)
@@ -2656,7 +2657,7 @@ def main() -> int:
             staged_candidates,
         )
 
-    batch_plan = load_json(ROOT / "automation" / "provider-repair-batch-plan-latest.json", {})
+    batch_plan = load_json(args.batch_plan.resolve(), {})
     family_context = causal_family_context(batch_plan)
     brain_owned_repair, brain_owner_authority = brain_owned_current_repair_providers(
         batch_plan, census_authority
