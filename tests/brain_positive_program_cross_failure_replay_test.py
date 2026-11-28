@@ -22,6 +22,16 @@ policy = {
         "maxRepeatedSignature": 2,
         "maxGeneratedBytesPerProvider": 180000,
         "maxElapsedMsPerProvider": 45000,
+        "learnedSkillTransferPolicy": {
+            "maturity": "trusted",
+            "minimumConfidence": 0.8,
+            "minimumDistinctProviders": 2,
+            "provisionalFamilyPriorEnabled": True,
+            "provisionalMinimumSuccesses": 1,
+            "provisionalMaximumFailures": 0,
+            "provisionalRequireCapabilityStrategy": True,
+            "provisionalRequireObservedStage": False,
+        },
     },
     "skillMaturity": {},
 }
@@ -257,6 +267,60 @@ other_production = plan_for("other-provider", mode="repair")
 assert all(row["id"] != positive["id"] for row in other["hypotheses"]), other
 assert other["hypotheses"][0]["id"] == generic["id"], other
 assert all(row["id"] != positive["id"] for row in other_production["hypotheses"]), other_production
+
+# A first validated sibling success may accelerate only the exact capability
+# family by reordering a hypothesis; it never becomes trusted or auto-applied.
+family_prior = {
+    "id": "chain_terminal_gap:chain_terminal_extractor_v1:family-prior",
+    "failureClass": "chain_terminal_gap",
+    "profile": "chain_terminal_extractor_v1",
+    "validated": True,
+    "maturity": "experimental",
+    "confidence": 1.0,
+    "providers": ["nakios"],
+    "successCount": 1,
+    "failureCount": 0,
+    "capabilityStrategies": ["mixed_embed_resolver"],
+    "observedPipelineStages": [],
+    "familyPriorOnly": True,
+    "actions": ["replay validated family hypothesis under current-byte gates"],
+}
+family_candidate = copy.deepcopy(candidate)
+family_candidate["canonical_id"] = "corsflix"
+family_payload = {
+    "mode": "repair",
+    "policy": policy,
+    "learnedSkills": {family_prior["id"]: family_prior},
+    "historicalSolutions": [],
+    "llmGuidance": [],
+    "negativeMemory": [],
+    "items": [{
+        "key": "published:corsflix",
+        "candidate": family_candidate,
+        "result": result,
+        "state": {},
+    }],
+}
+family_run = subprocess.run(
+    ["node", str(PLANNER)], cwd=ROOT, input=json.dumps(family_payload),
+    capture_output=True, text=True, check=True, timeout=20,
+)
+family_plan = next(iter(json.loads(family_run.stdout)["plans"].values()))
+assert family_plan["failureClass"] == "chain_terminal_gap", family_plan
+assert family_plan["hypotheses"][0]["id"] == family_prior["id"], family_plan
+assert family_plan["hypotheses"][0]["profile"] == "chain_terminal_extractor_v1", family_plan
+
+mismatch_candidate = copy.deepcopy(family_candidate)
+mismatch_candidate["canonical_id"] = "hindmoviez"
+mismatch_payload = copy.deepcopy(family_payload)
+mismatch_payload["items"][0]["key"] = "published:hindmoviez"
+mismatch_payload["items"][0]["candidate"] = mismatch_candidate
+mismatch_run = subprocess.run(
+    ["node", str(PLANNER)], cwd=ROOT, input=json.dumps(mismatch_payload),
+    capture_output=True, text=True, check=True, timeout=20,
+)
+mismatch_plan = next(iter(json.loads(mismatch_run.stdout)["plans"].values()))
+assert all(row["id"] != family_prior["id"] for row in mismatch_plan["hypotheses"]), mismatch_plan
 
 planner_source = PLANNER.read_text(encoding="utf-8")
 assert "sameProviderPositiveProgram" in planner_source
