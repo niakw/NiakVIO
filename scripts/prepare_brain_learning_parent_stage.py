@@ -120,7 +120,16 @@ def prepare(
         destination.write_bytes(exact)
 
         row["sha256"] = digest
+        row["patched_sha256"] = digest
+        row["upstream_sha256"] = digest
         row["bytes"] = len(exact)
+        # This isolated Learning stage copies an already-published immutable
+        # parent; it does not re-apply the production override pipeline. Keep
+        # structured provider authority from reconstruction, but clear
+        # stage-local patch/repair history so provenance cannot falsely claim a
+        # mutation where the exact parent SHA is unchanged.
+        row["local_patches"] = []
+        row["repair_history"] = []
         row["learning_parent_authority"] = "published-exact-current-bytes"
         row["learning_parent_overlay_applied"] = True
         row["learning_parent_published_exact_bytes"] = True
