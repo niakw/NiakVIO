@@ -182,5 +182,7 @@ assert workflow.count('--brain-llm-sha "${{ steps.brain_llm_pin.outputs.sha }}"'
 assert "stale-guidance-ignored" in workflow
 
 assert 'FIELD_BRAIN_LLM_TARGETED_BUDGET' in workflow
-assert 'model_timeout=180' in workflow
-assert 'model_workers=1' in workflow
+assert 'model_timeout=90' in workflow
+targeted_budget = workflow[workflow.index('elif [ "${FAST_HANDOFF:-false}" = "true" ] && [ -n "${FAST_MISSING_PROVIDERS:-}" ]; then'):workflow.index("          fi", workflow.index('elif [ "${FAST_HANDOFF:-false}" = "true" ] && [ -n "${FAST_MISSING_PROVIDERS:-}" ]; then'))]
+assert 'model_workers=2' in targeted_budget
+assert 'model_timeout=90' in targeted_budget
