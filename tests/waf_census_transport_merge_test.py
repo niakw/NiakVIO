@@ -346,6 +346,106 @@ assert network_merged["repairQueue"] == ["net"], network_merged
 assert network_merged["environmentQueue"] == [], network_merged
 assert network_merged["networkDifferentialUpdatedProviders"] == ["net"], network_merged
 
+# An explicitly targeted metadata/search seed is also valid transport evidence
+# when it carries the exact fresh-run transport receipt. Repair/domain authority
+# must not suppress this diagnosis: native-like reachability can transfer causal
+# ownership back to provider Learning while publication remains gated.
+explicit_network_baseline = {
+    "runId": "repair-authority",
+    "triggerSha": "repair-sha",
+    "repairQueue": [],
+    "environmentQueue": [],
+    "harnessQueue": [],
+    "authorityRediscoveryQueue": ["blocked-net"],
+    "authorityBlockedQueue": ["blocked-net"],
+    "symptomaticProviders": ["blocked-net"],
+    "brainQueue": ["blocked-net"],
+    "providers": [{
+        "provider": "blocked-net",
+        "status": "PROVIDER NETWORK BLOCKED",
+        "color": "🟤",
+        "declaredLanes": ["movie"],
+        "evidenceDepth": ["movie=lookup_only"],
+        "authorityRepairEligible": False,
+        "authorityAction": "REDISCOVER_SEARCH",
+        "authorityClass": "unproven-direct-candidate",
+        "authorityConfidence": "low",
+        "authorityReasons": ["search_supplement_only"],
+        "statusRepairEligible": False,
+        "repairEligible": False,
+        "brainCheckRequired": True,
+    }],
+}
+explicit_sha = "a" * 40
+explicit_run = "46165105980"
+explicit_network_waf = {
+    "freshRunReceipt": {
+        "sourceNiakvioSha": explicit_sha,
+        "runId": explicit_run,
+        "providerCount": 1,
+        "proofAuthority": False,
+        "publicationAuthority": False,
+    },
+    "lastRefreshProviderFilter": ["blocked-net"],
+    "rows": [{
+        "provider": "blocked-net",
+        "lane": "movie",
+        "seedKind": "metadata-search",
+        "outcome": "browser_timeout",
+        "directHttpProfile": {"outcome": "direct_http_content_reached"},
+        "okHttpJvmProfile": {"outcome": "okhttp_jvm_content_reached"},
+        "desktopOkHttpJvmProfile": {"outcome": "okhttp_jvm_content_reached"},
+        "transportReceipt": {
+            "sourceNiakvioSha": explicit_sha,
+            "runId": explicit_run,
+            "providerBundleSha256": "b" * 64,
+            "proofAuthority": False,
+            "publicationAuthority": False,
+        },
+    }],
+    "residentialProviderReplay": {
+        "available": True,
+        "rows": [{
+            "provider": "blocked-net",
+            "lane": "movie",
+            "status": "no_streams",
+            "debugStage": "provider_network_http_error",
+            "raw": 0,
+            "playable": 0,
+            "verified": 0,
+            "identitySafe": True,
+            "providerArtifactSha256": "b" * 64,
+            "residentialReplayReceipt": {
+                "sourceNiakvioSha": explicit_sha,
+                "runId": explicit_run,
+                "providerBundleSha256": "b" * 64,
+                "proofAuthority": False,
+                "publicationAuthority": False,
+            },
+        }],
+        "lastAttempt": {
+            "available": True,
+            "providerCount": 1,
+            "replayedProviders": ["blocked-net"],
+            "sourceNiakvioSha": explicit_sha,
+            "runId": explicit_run,
+            "proofAuthority": False,
+            "publicationAuthority": False,
+        },
+    },
+}
+explicit_network = mod.merge_transport(explicit_network_baseline, explicit_network_waf)
+explicit_row = explicit_network["providers"][0]
+assert explicit_row["networkDifferentialClass"] == "github-native-route-reachable", explicit_row
+assert explicit_row["status"] == "ROUTE PROVEN", explicit_row
+assert explicit_row["statusRepairEligible"] is True, explicit_row
+assert explicit_row["authorityRepairEligible"] is False, explicit_row
+assert explicit_row["repairEligible"] is False, explicit_row
+assert explicit_row["residentialProviderReplayReclassified"] is True, explicit_row
+assert explicit_network["networkDifferentialUpdatedProviders"] == ["blocked-net"], explicit_network
+assert explicit_network["repairQueue"] == [], explicit_network
+assert explicit_network["authorityRediscoveryQueue"] == ["blocked-net"], explicit_network
+
 
 
 # A full residential provider replay is stronger than the narrow transport
