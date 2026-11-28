@@ -95,6 +95,19 @@ def network_differential_cell(row: dict[str, Any]) -> str:
     return value or "not compared"
 
 
+def transport_status_notice(providers):
+    transport_states = {"HARNESS MISMATCH", "CLIENT TRANSPORT GAP", "HARNESS/ENV BLOCKED", "PROVIDER NETWORK BLOCKED"}
+    rows = [row for row in providers if row.get("status") in transport_states]
+    tested = sum(row.get("testedThisRun") is True for row in rows)
+    blocked = sum(row.get("authorityRepairEligible") is False for row in rows)
+    return (
+        f"Transport-status rows (not dispatch queues): **{len(rows)}** · "
+        f"census-tested: **{tested}** · carried: **{len(rows) - tested}** · "
+        f"authority-blocked: **{blocked}**. "
+        "Queue counts exclude authority-blocked providers; carried rows are not fresh transport tests."
+    )
+
+
 def render(state: dict[str, Any]) -> str:
     counts = state.get("counts") if isinstance(state.get("counts"), dict) else {}
     providers = [row for row in state.get("providers") or [] if isinstance(row, dict)]
@@ -186,7 +199,8 @@ def render(state: dict[str, Any]) -> str:
         evidence_line + ".",
         freshness_line,
         *([attempt_notice] if attempt_notice else []),
-        f"Symptomatic providers: **{len(state.get('symptomaticProviders') or [])}** · automated repair queue: **{len(state.get('repairQueue') or [])}** · lifecycle disabled: **{len(state.get('lifecycleDisabledQueue') or [])}** · authority rediscovery: **{len(state.get('authorityRediscoveryQueue') or [])}** · harness mismatch: **{len(harness_mismatch_queue)}** · client transport gap: **{len(client_transport_gap_queue)}** · environment blocked: **{len(environment_blocked_queue)}**.",
+        f"Symptomatic providers: **{len(state.get('symptomaticProviders') or [])}** · automated repair queue: **{len(state.get('repairQueue') or [])}** · lifecycle disabled: **{len(state.get('lifecycleDisabledQueue') or [])}** · authority rediscovery: **{len(state.get('authorityRediscoveryQueue') or [])}** · harness/environment queue: **{len(set(harness_mismatch_queue + client_transport_gap_queue + environment_blocked_queue))}** · harness mismatch: **{len(harness_mismatch_queue)}** · client transport gap: **{len(client_transport_gap_queue)}** · environment blocked: **{len(environment_blocked_queue)}**.",
+        transport_status_notice(providers),
         *([residential_notice] if residential_notice else []),
         "",
         "## Status semantics",
