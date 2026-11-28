@@ -260,12 +260,17 @@ fast_workflow = (ROOT / ".github/workflows/provider-fast-repair.yml").read_text(
 assert 'if [ "$force_mode" != "true" ]; then' in fast_workflow
 assert "provider_learning_dispatch_gate.py select" in fast_workflow
 assert '--brain automation/provider-brain-repair-latest.json' in fast_workflow
-assert '--ledger automation/provider-learning-dispatch-ledger.json' in fast_workflow
+assert '--ledger "$ledger"' in fast_workflow
+assert "brain-learning/proposals:engine_v2/learning/dispatch-ledger.json" in fast_workflow
+assert "main-migration-fallback" in fast_workflow
 assert '--providers "$learn_handoff_csv"' in fast_workflow
 assert 'if [ -z "$eligible_csv" ]; then' in fast_workflow
 assert 'ELIGIBLE_CSV="$eligible_csv"' in fast_workflow
+assert 'LEARNING_SELECTION="${selection:-}"' in fast_workflow
 family_dispatch = (ROOT / "scripts/dispatch_learning_family_cohorts.sh").read_text(encoding="utf-8")
 assert '-f target_providers="$cohort_filter"' in family_dispatch
+assert 'LEARNING_SELECTION="${LEARNING_SELECTION:-}"' in family_dispatch
+assert 'args+=(-f dispatch_fingerprint="$dispatch_fingerprint")' in family_dispatch
 assert 'gh workflow run brain-learning-lab.yml "${args[@]}"' in family_dispatch
 assert 'MAX_COHORTS="${MAX_COHORTS:-8}"' in family_dispatch
 assert 'brain-learning/proposals:engine_v2/learning/latest.json' in family_dispatch
