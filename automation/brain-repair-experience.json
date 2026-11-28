@@ -4526,7 +4526,7 @@
     "film-a-revoir": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=lookup_only"
+        "movie=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -4551,7 +4551,7 @@
       "routeTemplates": [
         "/search?q={query}"
       ],
-      "status": "HARNESS MISMATCH",
+      "status": "CHAIN REACHED",
       "strategy": "mixed_embed_resolver"
     },
     "flemmix": {
@@ -7048,7 +7048,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "PROVIDER JS BROKEN",
       "strategy": "mixed_embed_resolver"
     },
     "movy": {
@@ -10965,9 +10965,9 @@
     "vuflix": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=chain_reached",
+        "anime=none",
         "movie=none",
-        "tv=none"
+        "tv=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -12006,8 +12006,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "46105880660",
-  "sourceSha": "d3fc018767002992e07eaac4340082fc2b4a0074",
+  "sourceRunId": "46125826622",
+  "sourceSha": "e0dc46cf4f7843cd1b2f7d516a3dddb80d747a77",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -12031,12 +12031,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "search",
           "supportRatio": 0.3333
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "other",
           "supportRatio": 0.3333
         }
       ]
@@ -12051,12 +12051,12 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "detail",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "search",
           "supportRatio": 1.0
         }
       ]
@@ -12071,7 +12071,7 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "detail",
           "supportRatio": 1.0
         },
         {
@@ -12081,12 +12081,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "player",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "player",
+          "role": "search",
           "supportRatio": 1.0
         }
       ]
@@ -12101,12 +12101,12 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "source",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "source",
+          "role": "other",
           "supportRatio": 1.0
         }
       ]
