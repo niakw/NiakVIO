@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "requestVersion": 20,
-  "requestedAt": "2026-11-28T17:18:00+01:00",
+  "requestVersion": 21,
+  "requestedAt": "2026-11-28T17:27:00+01:00",
   "targetProviders": [
     "documentary-area",
     "watchott",
     "youtitou"
   ],
   "reuseExistingEvidence": false,
-  "reason": "Retry representative provider_transport_gap cohort after fixing stale fresh-replay provenance regression. Execute browser + NuvioTV-policy OkHttp + direct HTTP differential on current bytes; persist diagnostic transport evidence only, no playback/publication authority.",
-  "cohort": "provider-transport-gap-client-differential-retry-2026-11-28"
+  "reason": "Re-run the same provider_transport_gap cohort after decoupling explicit transport diagnosis from authorityRepairEligible. Require browser, direct HTTP and NuvioTV-policy OkHttp observations where provider metadata exposes a target; residential full-provider replay remains diagnostic only.",
+  "cohort": "authority-independent-client-transport-differential-2026-11-28"
 }
