@@ -27,19 +27,28 @@ baseline = {"schemaVersion": 1, "entries": [row("4khdhub", "rejected", 2)]}
 incoming = {"schemaVersion": 1, "entries": [
     row("4khdhub", "rejected", 3),
     row("animevostfr", "rejected", 4),
+    {
+        **row("primewire", "exploration_progress_nonpublishable", 2),
+        "progresses": 1,
+        "lastReason": "sandbox_diagnostic_progress:provider-frontier:player,provider-requests",
+    },
     row("animekai", "accepted", 99),
     row("animesama-co", "rejected", 99, observed=False),
     row("unrelated", "rejected", 12),
 ]}
 out, stats = module.merge_memory(
-    baseline, incoming, {"4khdhub", "animevostfr", "animekai", "animesama-co"}
+    baseline, incoming, {"4khdhub", "animevostfr", "primewire", "animekai", "animesama-co"}
 )
-assert stats == {"inspected": 5, "accepted": 2, "inserted": 1}, stats
-assert len(out["entries"]) == 2, out
+assert stats == {"inspected": 6, "accepted": 3, "inserted": 2}, stats
+assert len(out["entries"]) == 3, out
 old = next(item for item in out["entries"] if item["providerId"] == "4khdhub")
 assert old["failures"] == 3 and old["lastOutcome"] == "rejected"
 new = next(item for item in out["entries"] if item["providerId"] == "animevostfr")
 assert new["failures"] == 4
+progress = next(item for item in out["entries"] if item["providerId"] == "primewire")
+assert progress["lastOutcome"] == "exploration_progress_nonpublishable", progress
+assert progress["executionObserved"] is True and progress["progresses"] == 1, progress
+assert progress["successes"] == 0, progress
 
 # An accepted current-byte result must never regress to a stale negative.
 positive = {"schemaVersion": 1, "entries": [row("4khdhub", "accepted", 1)]}

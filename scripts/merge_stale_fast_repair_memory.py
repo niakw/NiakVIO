@@ -20,9 +20,18 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 from brain_negative_memory_retention import select_bounded_negative_memory
 
-# Only retested child outcomes can cross a stale-SHA boundary. A profile
-# that was unavailable or failed before code generation was never executed.
-NEGATIVE = {"rejected", "failed", "no_progress"}
+# Only retested child outcomes can cross a stale-SHA boundary. A non-publishable
+# exploration progression is still an executed experiment below the strict
+# playable gate, so carrying it forward prevents an exact causal strategy from
+# being replayed after a safe requeue. It never grants success/publication.
+# A profile unavailable before generation, or a not_generated attempt, did not
+# cross the execution boundary and therefore stays excluded here.
+NEGATIVE = {
+    "rejected",
+    "failed",
+    "no_progress",
+    "exploration_progress_nonpublishable",
+}
 POLICY_PATH = SCRIPTS.parent / "engine_v2" / "config" / "brain-policy.json"
 
 
