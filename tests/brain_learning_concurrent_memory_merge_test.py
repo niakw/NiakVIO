@@ -299,6 +299,93 @@ same_by_provider = {
 assert same_by_provider["base"]["attempts"] == 3, same_by_provider["base"]
 assert same["concurrentMemoryMerge"]["deltaRows"] == 0
 
+
+# Queue metadata is provider-local under parallel family publication. A provider
+# re-observed without a hidden failure must clear only its own stale hidden flag
+# while preserving siblings already published by another family.
+queue_base = {
+    "learningQueue": {
+        "hiddenFailureProviders": ["meowtv", "other"],
+        "pendingProviders": ["meowtv", "other"],
+        "retryProviders": ["meowtv", "other"],
+        "completedInCycle": ["old"],
+        "processedThisRun": ["old"],
+        "providerState": {
+            "meowtv": {"attemptCount": 1, "lastStatus": "unresolved"},
+            "other": {"attemptCount": 3, "lastStatus": "unresolved"},
+        },
+    },
+    "experimentMemory": {"entries": []},
+}
+queue_previous = {
+    "generatedAt": "2026-11-19T00:10:00+00:00",
+    "learningQueue": {
+        "hiddenFailureProviders": ["meowtv", "other", "parallel-a"],
+        "pendingProviders": ["meowtv", "other", "parallel-a"],
+        "retryProviders": ["meowtv", "other", "parallel-a"],
+        "completedInCycle": ["old", "parallel-a"],
+        "processedThisRun": ["parallel-a"],
+        "providerState": {
+            "meowtv": {"attemptCount": 1, "lastStatus": "unresolved"},
+            "other": {"attemptCount": 3, "lastStatus": "unresolved"},
+            "parallel-a": {"attemptCount": 2, "lastStatus": "blocked"},
+        },
+    },
+    "experimentMemory": {"entries": []},
+}
+queue_current = {
+    "generatedAt": "2026-11-19T00:09:00+00:00",
+    "learningQueue": {
+        "hiddenFailureProviders": [],
+        "pendingProviders": ["meowtv"],
+        "retryProviders": ["meowtv"],
+        "completedInCycle": ["old", "meowtv"],
+        "processedThisRun": ["meowtv"],
+        "providerState": {
+            "meowtv": {
+                "attemptCount": 2,
+                "lastStatus": "not_executed_no_mutation",
+            },
+        },
+        "timeBudgetExhausted": False,
+        "remainingProviderCount": 1,
+        "retryProviderCount": 1,
+        "budgetMinutes": 90,
+    },
+    "experimentMemory": {"entries": []},
+}
+queue_merged = mod.merge_latest(
+    queue_base, queue_previous, queue_current, max_entries=100
+)
+queue = queue_merged["learningQueue"]
+assert "meowtv" not in queue["hiddenFailureProviders"], queue
+assert set(queue["hiddenFailureProviders"]) == {"other", "parallel-a"}, queue
+assert set(queue["pendingProviders"]) == {"meowtv", "other", "parallel-a"}, queue
+assert set(queue["retryProviders"]) == {"meowtv", "other", "parallel-a"}, queue
+assert set(queue["completedInCycle"]) == {"old", "parallel-a", "meowtv"}, queue
+assert queue["providerState"]["meowtv"]["lastStatus"] == "not_executed_no_mutation", queue
+assert queue["providerState"]["parallel-a"]["lastStatus"] == "blocked", queue
+assert queue_merged["concurrentMemoryMerge"]["queueProcessedProviders"] == ["meowtv"]
+assert queue_merged["concurrentMemoryMerge"]["queueHiddenClearedProviders"] == ["meowtv"]
+assert queue_merged["concurrentMemoryMerge"]["queueHiddenAddedProviders"] == []
+
+# A current hidden failure for a processed sibling is authoritative for that
+# provider only and must coexist with concurrent clean sibling state.
+queue_current_hidden = {
+    **queue_current,
+    "learningQueue": {
+        **queue_current["learningQueue"],
+        "hiddenFailureProviders": ["meowtv"],
+    },
+}
+queue_rehidden = mod.merge_latest(
+    queue_base, queue_previous, queue_current_hidden, max_entries=100
+)
+assert set(queue_rehidden["learningQueue"]["hiddenFailureProviders"]) == {
+    "meowtv", "other", "parallel-a"
+}
+assert queue_rehidden["concurrentMemoryMerge"]["queueHiddenAddedProviders"] == []
+
 print(
     "Brain Learning concurrent three-way experiment-memory merge "
     "contract passed"
