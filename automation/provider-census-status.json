@@ -1444,7 +1444,7 @@
       "targetedTransportEvidence": [],
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true",
+        "anime: status=no_streams, stage=provider_network_exception, raw=0, playable=0, verified=0, identitySafe=true",
         "movie: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true",
         "tv: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true"
       ],
@@ -1613,7 +1613,11 @@
       "testedThisRun": true,
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": []
+      "targetedTransportEvidence": [],
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "flemmix",
@@ -2069,9 +2073,9 @@
     },
     {
       "provider": "fullanime",
-      "status": "HARNESS MISMATCH",
+      "status": "NO PROOF",
       "underlyingStatus": "",
-      "color": "🟧",
+      "color": "🔵",
       "declaredLanes": [
         "anime"
       ],
@@ -2108,9 +2112,17 @@
       "onboardingRuntimePlanState": "",
       "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
       "brainCheckRequired": true,
-      "statusRepairEligible": false,
+      "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": false
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "hexa",
@@ -4285,7 +4297,12 @@
       "testedThisRun": true,
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": []
+      "targetedTransportEvidence": [],
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "vostfree",
@@ -5502,8 +5519,8 @@
     "CHAIN REACHED": 20,
     "DISABLED": 37,
     "FULL OK": 6,
-    "HARNESS MISMATCH": 5,
-    "NO PROOF": 27,
+    "HARNESS MISMATCH": 4,
+    "NO PROOF": 28,
     "PROOF REFRESH REQUIRED": 5,
     "PROVIDER NETWORK BLOCKED": 2,
     "REGRESSION PROVIDER": 2,
@@ -5840,8 +5857,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "46173647231-waf-transport",
-  "harnessEvidenceSha": "cb15a51a9c3101e9caea3aa423bd78e09c9bce2f",
+  "harnessEvidenceRunId": "46173656304-waf-transport",
+  "harnessEvidenceSha": "6f874f847928d5bbc2330d80f45d2bba82ca0666",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
@@ -5875,6 +5892,7 @@
     "documentary-area",
     "emnexmovies",
     "flixer",
+    "fullanime",
     "hianime",
     "moiflix",
     "watchott",
@@ -5888,7 +5906,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 4,
+    "matchedProviderLanes": 3,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -5901,7 +5919,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 4,
+    "matchedProviderLanes": 3,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -6963,9 +6981,10 @@
         "providerArtifactSha256": "cb7434dff716bfe36cd6df58ac914edb89dba07954dcf8e215dfc1f6c84eee30",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_network_http_error",
+        "debugStage": "provider_network_exception",
         "sampleCount": 4,
         "sampleDebugStages": [
+          "provider_network_exception",
           "provider_network_http_error"
         ],
         "sampleStatuses": [
@@ -6980,9 +6999,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "cb7434dff716bfe36cd6df58ac914edb89dba07954dcf8e215dfc1f6c84eee30",
-          "runId": "46171830596",
+          "runId": "46173656304",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -6995,6 +7014,7 @@
         "debugStage": "provider_network_http_error",
         "sampleCount": 4,
         "sampleDebugStages": [
+          "provider_network_exception",
           "provider_network_http_error"
         ],
         "sampleStatuses": [
@@ -7009,9 +7029,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "cb7434dff716bfe36cd6df58ac914edb89dba07954dcf8e215dfc1f6c84eee30",
-          "runId": "46171830596",
+          "runId": "46173656304",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7024,6 +7044,7 @@
         "debugStage": "provider_network_http_error",
         "sampleCount": 4,
         "sampleDebugStages": [
+          "provider_network_exception",
           "provider_network_http_error"
         ],
         "sampleStatuses": [
@@ -7038,9 +7059,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "cb7434dff716bfe36cd6df58ac914edb89dba07954dcf8e215dfc1f6c84eee30",
-          "runId": "46171830596",
+          "runId": "46173656304",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -8680,13 +8701,13 @@
         "youtitou"
       ],
       "replayedProviders": [
-        "flixer"
+        "emnexmovies"
       ],
       "rawProviders": [],
       "playableProviders": [],
       "verifiedProviders": [],
       "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
-      "runId": "46173654084",
+      "runId": "46173656304",
       "proofAuthority": false,
       "publicationAuthority": false
     },
