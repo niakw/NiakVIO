@@ -672,6 +672,10 @@ jobs:
             echo "FIELD_SHARDED_CENSUS_TRANSPORT_REBASE source=${SOURCE_SHA:0:12} base=${persist_base:0:12} authority=current-merged-waf"
 
             if [ -n "$TARGET_PROVIDERS" ]; then
+              # Preserve the run-specific targeted state for its immutable
+              # per-run summary before overlaying only target rows onto the
+              # canonical fleet state.
+              cp /tmp/provider-census-status.json /tmp/provider-census-status-targeted-run-state.json
               # Targeted active-provider census owns only executed provider rows.
               # Preserve fleet-wide freshness/provenance from current main.
               python scripts/merge_targeted_provider_census_status.py \
@@ -721,9 +725,14 @@ jobs:
             # all-provider FULL claim: summary keeps testedProviderCount and scope.
             # Pending onboarding probes must never become production authority.
             cp /tmp/provider-census-sharded.json "automation/current-bytes-full-provider-census-${run_id}.json"
+            summary_state="automation/provider-census-status.json"
+            if [ -n "$TARGET_PROVIDERS" ]; then
+              summary_state="/tmp/provider-census-status-targeted-run-state.json"
+              echo "FIELD_SHARDED_TARGETED_RUN_SUMMARY_STATE providers=$TARGET_PROVIDERS authority=run-specific"
+            fi
             python scripts/summarize_current_census.py \
               --report "automation/current-bytes-full-provider-census-${run_id}.json" \
-              --state automation/provider-census-status.json \
+              --state "$summary_state" \
               --output "automation/current-bytes-full-provider-census-${run_id}-summary.json" \
               --run-id "$run_id" --sha "$SOURCE_SHA"
             if [ -n "$TARGET_PROVIDERS" ]; then
