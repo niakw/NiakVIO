@@ -144,9 +144,11 @@ def network_differential(
         for value in waf.get("lastRefreshProviderFilter") or []
         if str(value or "").strip()
     }
-    if global_run and wanted in global_scope:
-        # This provider was explicitly targeted by the latest run. Do not let
-        # an older durable receipt masquerade as that run's fresh result.
+    if global_run and (not global_scope or wanted in global_scope):
+        # This provider was explicitly targeted by the latest run. Legacy
+        # ledgers may predate lastRefreshProviderFilter; in that case the global
+        # receipt remains fail-closed authority for every receipted row.
+        # Never let an older durable receipt masquerade as the current result.
         rows = [
             row for row in receipted
             if _receipt_run_id(row.get("transportReceipt")) == global_run
@@ -544,7 +546,7 @@ def merge_transport(
             for value in waf.get("lastRefreshProviderFilter") or []
             if str(value or "").strip()
         }
-        if global_run and provider in global_scope:
+        if global_run and (not global_scope or provider in global_scope):
             provider_replay_rows = [
                 observation for observation in receipted_replays
                 if _receipt_run_id(observation.get("residentialReplayReceipt")) == global_run
