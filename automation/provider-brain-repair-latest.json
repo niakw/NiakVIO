@@ -7,21 +7,22 @@
   "advisorHypothesisWaveBudget": 1,
   "batchSize": 48,
   "deferredLearningProviders": [
-    "primewire"
+    "nakios"
   ],
   "effectiveWaves": 1,
-  "elapsedSeconds": 55.21,
+  "elapsedSeconds": 187.527,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 6,
     "providerCount": 142,
     "schemaVersion": 2,
-    "sourceRunId": "46131278381",
-    "sourceSha": "5cb571d49b84d9c8dc7be825114b1562fb27423a",
+    "sourceRunId": "46135507418",
+    "sourceSha": "9724c9a4523d20432457fe0ea0d7422024d432ae",
     "strategyCount": 4
   },
   "familyFrontierPendingProviders": [
-    "corsflix"
+    "corsflix",
+    "primewire"
   ],
   "familyFrontierScheduling": {
     "enabled": true,
@@ -36,11 +37,12 @@
   "healthConcurrencyMode": "auto-per-batch",
   "initialStatuses": {
     "corsflix": "CHAIN REACHED",
+    "nakios": "CHAIN REACHED",
     "primewire": "CHAIN REACHED"
   },
   "labOnlyWithoutCompiledRepairProviders": [],
   "learningHandoffProviders": [
-    "primewire"
+    "nakios"
   ],
   "maxRoundsPerBatch": 3,
   "maxWaves": 1,
@@ -53,13 +55,14 @@
   },
   "processedProviderCount": 1,
   "processedProviders": [
-    "primewire"
+    "nakios"
   ],
   "providerSpecificRules": false,
   "rawLabAcceptedCount": 0,
   "rawLabAcceptedRepairs": [],
   "remainingProviders": [
-    "corsflix"
+    "corsflix",
+    "primewire"
   ],
   "requestedWaves": 1,
   "resumeRecommended": false,
@@ -76,20 +79,22 @@
     "wafEnvironmentExcludedByDefault": true
   },
   "schemaVersion": 1,
-  "selectedProviderCount": 2,
+  "selectedProviderCount": 3,
   "selectedProviders": [
     "corsflix",
+    "nakios",
     "primewire"
   ],
   "selectionSource": "automation/provider-census-status.json:repairQueue",
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "46131278381",
+  "sourceCensusRunId": "46135507418",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [
-    "corsflix"
+    "corsflix",
+    "primewire"
   ],
   "waves": [
     {
@@ -107,12 +112,12 @@
           "brain": {
             "attemptDiagnostics": [
               {
-                "parentSha256": "81ee0287ce650b13b19434df9509b2264489a65560cfe96fec3b3351dea3e602",
+                "parentSha256": "a7a36147b0fb40130c900396b01c5068de8b0ca11123481b4a250013f23e1542",
                 "phase": "attempts",
                 "profile": "terminal_request_program_inference_v1",
-                "provider": "primewire",
+                "provider": "nakios",
                 "reasonCode": "",
-                "repairSha256": "0a0ad47eb9ba9c8596bb0befe6bd4a8791aab76f4f79f0a76e3ed69b8fc8bd10",
+                "repairSha256": "4ffa306f5060c48181e9247a76002ea9454155c587d1b6134b69ef6d8044940b",
                 "round": 1,
                 "status": "generated"
               },
@@ -120,7 +125,7 @@
                 "parentSha256": "",
                 "phase": "rejected",
                 "profile": "terminal_request_program_inference_v1",
-                "provider": "primewire",
+                "provider": "nakios",
                 "reasonCode": "required_category_playable_proof",
                 "repairSha256": "",
                 "round": 1,
@@ -130,7 +135,7 @@
             "harnessDifferentialProviders": [],
             "learnedEvents": 0,
             "plans": {
-              "published:primewire": {
+              "published:nakios": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
                   "terminal_request_program_inference_v1"
@@ -143,13 +148,13 @@
                 "experimentVariantCount": 5,
                 "explorationChainEnabled": true,
                 "explorationModeEnabled": true,
-                "failureClass": "chain_terminal_gap",
+                "failureClass": "variant_coverage_gap",
                 "forcePreferredRequested": "",
                 "forcePreferredSelected": false,
                 "hypotheses": [
                   {
                     "confidence": 0,
-                    "id": "finish-reached-terminal-chain",
+                    "id": "enumerate-announced-player-variants",
                     "learned": false,
                     "maturity": null,
                     "profile": null,
@@ -157,7 +162,7 @@
                   },
                   {
                     "confidence": 0,
-                    "id": "resolve-terminal-wrapper",
+                    "id": "remove-premature-variant-short-circuit",
                     "learned": false,
                     "maturity": null,
                     "profile": null,
@@ -177,9 +182,13 @@
                 "llmAdvisorSourceFailureClass": "",
                 "llmAdvisorStrategy": "",
                 "metaGapEscalated": false,
-                "negativeMemoryMatches": 11,
+                "negativeMemoryMatches": 33,
                 "positiveProgramFingerprint": "",
                 "postExhaustionCandidateProfiles": [
+                  "player_protocol_family_replay_v1",
+                  "media_response_shape_inference_v1",
+                  "runtime_response_salvage_v1",
+                  "document_request_contract_mining_v1",
                   "terminal_transition_graph_v1",
                   "terminal_transition_graph_v2",
                   "terminal_transition_graph_v3",
@@ -196,29 +205,25 @@
                   "terminal_transition_graph_v14",
                   "search_response_route_binding_v1",
                   "terminal_request_program_inference_v1",
-                  "runtime_response_salvage_v1",
                   "catalogue_inline_token_resolver_v2",
-                  "document_request_contract_mining_v1",
                   "document_request_contract_mining_v2",
-                  "provider_session_bootstrap_replay_v1",
-                  "player_protocol_family_replay_v1",
-                  "media_response_shape_inference_v1"
+                  "provider_session_bootstrap_replay_v1"
                 ],
                 "postExhaustionSourceFailureClass": "chain_terminal_gap",
                 "postExhaustionStrategyMethod": "terminal-request-program-inference",
                 "postExhaustionStrategyProfile": "terminal_request_program_inference_v1",
-                "providerId": "primewire",
+                "providerId": "nakios",
                 "providerPositiveProgramProductionRescue": false,
                 "providerPositiveProgramReplay": false,
                 "repairScope": "learning",
                 "repairType": "evolved_strategy",
-                "signature": "4e8d92b8a8961450d87b63b2",
+                "signature": "9c5dc8cd7f63b9fd3ee69aad",
                 "strategyEscalated": true,
                 "targetCategories": []
               }
             },
             "queuedForLearning": [
-              "primewire"
+              "nakios"
             ],
             "validatedRepairLearningExecuted": true
           },
@@ -228,14 +233,14 @@
           "crossWaveExplorationCarryoverApplied": [],
           "crossWaveExplorationCarryoverCaptured": [],
           "deferredToLearning": [
-            "primewire"
+            "nakios"
           ],
           "familyGroups": [
             {
               "capabilityStrategy": "mixed_embed_resolver",
               "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_zero_result|depth:chain",
               "providers": [
-                "primewire"
+                "nakios"
               ],
               "repairScope": "terminal-extraction"
             }
@@ -247,7 +252,7 @@
           "healthConcurrency": 1,
           "providerCount": 1,
           "providers": [
-            "primewire"
+            "nakios"
           ],
           "repairScope": "terminal-extraction",
           "unexecutableLlmHandoff": []
@@ -257,19 +262,20 @@
       "causalProgressObserved": true,
       "compileRejectedToLearning": [],
       "deferredToLearning": [
-        "primewire"
+        "nakios"
       ],
       "deferredToLearningCount": 1,
       "durableMaterializeTargets": [],
       "experimentMemoryAdvanced": true,
       "familyFrontierDeferredProviders": [
-        "corsflix"
+        "corsflix",
+        "primewire"
       ],
       "familyFrontierGroups": [
         "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_zero_result|depth:chain"
       ],
       "familyFrontierSelectedProviders": [
-        "primewire"
+        "nakios"
       ],
       "fixedInLab": [],
       "fixedInLabCount": 0,
@@ -278,7 +284,7 @@
       "pinnedAdvisorFamilyGroups": [],
       "rawFixedInLab": [],
       "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 1,
+      "remainingProviderCount": 2,
       "timeBudgetExhausted": false,
       "trustedFamilyFanoutGroups": [],
       "wave": 1

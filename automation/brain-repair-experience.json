@@ -4272,7 +4272,7 @@
       "routeTemplates": [
         "/results.php?search={query}"
       ],
-      "status": "NO PROOF",
+      "status": "PROVIDER NETWORK BLOCKED",
       "strategy": "html_scraper"
     },
     "dotriv": {
@@ -8066,7 +8066,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "PROVIDER JS BROKEN",
+      "status": "CHAIN REACHED",
       "strategy": "mixed_embed_resolver"
     },
     "neko-sama": {
@@ -10966,7 +10966,7 @@
       "domainMemory": true,
       "evidenceDepth": [
         "anime=chain_reached",
-        "movie=none",
+        "movie=chain_reached",
         "tv=chain_reached"
       ],
       "hasApiRecipe": false,
@@ -12006,8 +12006,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "46131278381",
-  "sourceSha": "5cb571d49b84d9c8dc7be825114b1562fb27423a",
+  "sourceRunId": "46135507418",
+  "sourceSha": "9724c9a4523d20432457fe0ea0d7422024d432ae",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -12051,12 +12051,12 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "detail",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "search",
           "supportRatio": 1.0
         }
       ]
@@ -12071,11 +12071,6 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
           "role": "episode",
           "supportRatio": 1.0
         },
@@ -12087,6 +12082,11 @@
         {
           "providerSupport": 1,
           "role": "detail",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "search",
           "supportRatio": 1.0
         }
       ]
