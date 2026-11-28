@@ -2975,7 +2975,7 @@
     "anisama": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=none"
+        "anime=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -3002,7 +3002,7 @@
         "/?s={query}",
         "/recherche?q={query}"
       ],
-      "status": "PROVIDER NETWORK BLOCKED",
+      "status": "CHAIN REACHED",
       "strategy": "mixed_embed_resolver"
     },
     "arrowtv": {
@@ -4272,7 +4272,7 @@
       "routeTemplates": [
         "/results.php?search={query}"
       ],
-      "status": "PROVIDER NETWORK BLOCKED",
+      "status": "NO PROOF",
       "strategy": "html_scraper"
     },
     "dotriv": {
@@ -6713,7 +6713,7 @@
         "/search/{slug}",
         "/recherche/{slug}"
       ],
-      "status": "NO PROOF",
+      "status": "PROVIDER NETWORK BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "moviebox": {
@@ -7048,7 +7048,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "PROVIDER JS BROKEN",
+      "status": "CHAIN REACHED",
       "strategy": "mixed_embed_resolver"
     },
     "movy": {
@@ -8066,7 +8066,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "PROVIDER JS BROKEN",
       "strategy": "mixed_embed_resolver"
     },
     "neko-sama": {
@@ -9483,7 +9483,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "PROVIDER NETWORK BLOCKED",
+      "status": "NO PROOF",
       "strategy": "mixed_embed_resolver"
     },
     "stigstream": {
@@ -11169,7 +11169,7 @@
       "domainMemory": true,
       "evidenceDepth": [
         "movie=lookup_only",
-        "tv=chain_reached"
+        "tv=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -12006,8 +12006,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "46129658051-post-repair-candidate",
-  "sourceSha": "ed7b2e8e3675a39f7ce004d1fd2c55b74e613552",
+  "sourceRunId": "46131278381",
+  "sourceSha": "5cb571d49b84d9c8dc7be825114b1562fb27423a",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
