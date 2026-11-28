@@ -150,7 +150,9 @@ assert 'FIELD_BRAIN_LLM_TARGETED_BUDGET' in workflow
 assert 'model_timeout=45' in workflow
 targeted_budget = workflow[workflow.index('elif [ "${FAST_HANDOFF:-false}" = "true" ] && [ -n "${FAST_MISSING_PROVIDERS:-}" ]; then'):workflow.index("          fi", workflow.index('elif [ "${FAST_HANDOFF:-false}" = "true" ] && [ -n "${FAST_MISSING_PROVIDERS:-}" ]; then'))]
 assert 'model_workers=2' in targeted_budget
-assert 'model_timeout=45' in targeted_budget\nassert 'max_tokens=160' in targeted_budget\nassert 'max_tokens=256' not in targeted_budget
+assert 'model_timeout=45' in targeted_budget
+assert 'max_tokens=160' in targeted_budget
+assert 'max_tokens=256' not in targeted_budget
 
 # Fast-Handoff advisor work must reduce to repair-family oracles before LLM calls.
 pre_route_call=workflow.split("args=(python brain-llm/scripts/route_batch_from_checkout.py",1)[1].split('"${args[@]}"',1)[0]
