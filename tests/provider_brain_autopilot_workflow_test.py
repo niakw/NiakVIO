@@ -19,16 +19,17 @@ for required in (
     "domain-refresh.yml",
     "CORE_CLIENT_LEARNING",
     "provider-waf-browser-session.yml",
-    "brain-learning-lab.yml",
+    "scripts/dispatch_learning_family_cohorts.sh",
     "Provider Census - Sharded",
 ):
     assert required in autopilot, required
 
-# Learning debt is dispatched immediately as a bounded targeted cohort.
-assert "gh workflow run brain-learning-lab.yml" in autopilot
-assert '-f publish_proposal="$publish_proposal"' in autopilot
-assert '-f target_providers="$LEARNING"' in autopilot
-assert '-f slot_remaining_minutes=360' in autopilot
+# Learning debt is dispatched immediately as one oracle per causal family.
+assert "bash scripts/dispatch_learning_family_cohorts.sh" in autopilot
+assert 'ELIGIBLE_CSV="$LEARNING"' in autopilot
+assert 'PUBLISH_PROPOSAL="$publish_proposal"' in autopilot
+assert 'MAX_COHORTS=8' in autopilot
+assert "budget_minutes=90" in autopilot
 assert 'FORCE_MODE: ${{ steps.plan.outputs.force }}' in autopilot
 assert 'publish_proposal="true"' not in autopilot
 assert 'publish_proposal="false"' in autopilot
@@ -93,13 +94,17 @@ harness_block = autopilot[harness_start:autopilot.index("      - uses: actions/u
 assert "provider-waf-browser-session.yml" in harness_block
 assert "architecture_learning=false" in harness_block
 
-learning_start = autopilot.index('if [ -n "$LEARNING" ]; then')
+learning_start = autopilot.index('if [ -n "$LEARNING" ]; then', autopilot.index("# Learning debt"))
 learning_block = autopilot[learning_start:harness_start]
-assert "brain-learning-lab.yml" in learning_block
+assert "dispatch_learning_family_cohorts.sh" in learning_block
 assert 'publish_proposal="false"' in learning_block
-assert '-f publish_proposal="$publish_proposal"' in learning_block
+assert 'ELIGIBLE_CSV="$LEARNING"' in learning_block
+assert 'PUBLISH_PROPOSAL="$publish_proposal"' in learning_block
+assert "MAX_COHORTS=8" in learning_block
 assert "immediate=true" in learning_block
-assert "budget_minutes=360" in learning_block
+assert "budget_minutes=90" in learning_block
+assert "owner=parallel-family-learning" in learning_block
+assert "if lane_busy brain-learning-lab.yml; then" not in learning_block
 
 # A current causal plan is mandatory.
 for required in (
@@ -148,6 +153,7 @@ assert 'ELIGIBLE_CSV="$eligible_csv"' in fast
 dispatch = (ROOT / "scripts/dispatch_learning_family_cohorts.sh").read_text(encoding="utf-8")
 assert 'gh workflow run brain-learning-lab.yml "${args[@]}"' in dispatch
 assert '-f target_providers="$cohort_filter"' in dispatch
+assert '-f slot_remaining_minutes=90' in dispatch
 assert 'PUBLISH_PROPOSAL="${PUBLISH_PROPOSAL:-false}"' in dispatch
 assert 'MAX_COHORTS="${MAX_COHORTS:-8}"' in dispatch
 assert 'family_deferred=' in dispatch
@@ -181,10 +187,10 @@ for lane in (
     "domain-refresh.yml",
     "provider-remat-test.yml",
     "provider-fast-repair.yml",
-    "brain-learning-lab.yml",
     "provider-waf-browser-session.yml",
 ):
     assert f"if lane_busy {lane}; then" in autopilot, lane
+assert "if lane_busy brain-learning-lab.yml; then" not in autopilot
 
 # Execute only the extracted shell guard with a stubbed GitHub CLI. No real
 # GitHub API call or provider workflow is made by this regression test.
