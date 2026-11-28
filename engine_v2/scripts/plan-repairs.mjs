@@ -1466,6 +1466,7 @@ function buildPlan(item) {
   );
   const structuralAlreadyFailed = structurallyEligible && negativeMemory.some((row) => (
     stringValue(row.providerId).toLowerCase() === providerId
+    && memoryAppliesToParent(row, candidate)
     && stringValue(row.profile).toLowerCase() === staticProfile
     && row.executionObserved === true
     && (
