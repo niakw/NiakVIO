@@ -322,6 +322,24 @@ Deux providers de runtimes totalement différents peuvent appartenir à la même
 
 Inversement, deux providers de la même famille runtime peuvent casser pour des causes différentes.
 
+### Identité canonique d'une famille causale provider-owned
+
+Le runtime/protocole ne suffit donc pas à former une famille d'exécution. Pour Repair/Learning, la clé canonique provider-owned combine désormais :
+
+```text
+repair scope
++ capability strategy
++ runtime/protocol family
++ causal issue signature
++ evidence-depth signature
+```
+
+Par exemple, trois providers `mixed_embed_resolver` ne partagent pas le même oracle si l'un est `network_zero_result` après `lookup`, le second `timeout` avant preuve de chaîne, et le troisième `network_zero_result` après `chain`. Ils restent des familles causales distinctes même si leur renderer/runtime est identique.
+
+Les pannes harness/client suivent une clé différente : leur partition est pilotée par la **signature transport** observée. Une famille de transport ne doit jamais être fusionnée avec une famille provider-owned uniquement parce que le provider utilise le même runtime.
+
+Le `provider-repair-batch-plan` est l'autorité de cette partition. Le plan d'exécution conserve explicitement `runtimeFamilySignature`, `causalIssueSignature` et `evidenceDepthSignature`; Learning sélectionne ensuite un seul oracle evidence-ranked par `groupId` et garde les siblings compatibles en attente. Un changement de cause ou de profondeur crée une nouvelle famille au lieu de réutiliser silencieusement un oracle voisin.
+
 ---
 
 ## 8. Ce que le Brain partage réellement
