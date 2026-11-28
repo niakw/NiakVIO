@@ -648,11 +648,32 @@ jobs:
             cp /tmp/provider-census-proof-history.json automation/provider-census-proof-history.json
             echo "FIELD_PENDING_ONBOARDING_PROOF_ISOLATED run=$run_id providers=$TARGET_PROVIDERS canonical_status_preserved=true"
           else
+            # The census was measured on SOURCE_SHA but persistence now runs on
+            # current main. Merge current durable WAF/residential evidence first,
+            # then re-apply that transport overlay to the source-measured census.
+            # Without this step, a slower census can overwrite a newer harness
+            # reclassification that landed while its shards were still running.
+            if [ -s automation/provider-waf-browser-session-latest.json ]; then
+              python scripts/merge_waf_latest_evidence.py \
+                --previous automation/provider-waf-browser-session-latest.json \
+                --current /tmp/provider-waf-browser-session-sharded.json \
+                --output /tmp/provider-waf-browser-session-latest-merged.json
+              mv /tmp/provider-waf-browser-session-latest-merged.json automation/provider-waf-browser-session-latest.json
+            else
+              cp /tmp/provider-waf-browser-session-sharded.json automation/provider-waf-browser-session-latest.json
+            fi
+            python scripts/merge_waf_census_transport.py \
+              --status /tmp/provider-census-status.json \
+              --waf automation/provider-waf-browser-session-latest.json \
+              --authority-status /tmp/provider-authority-status.json \
+              --output /tmp/provider-census-status-current-waf.json
+            mv /tmp/provider-census-status-current-waf.json /tmp/provider-census-status.json
+            echo "FIELD_SHARDED_CENSUS_TRANSPORT_REBASE source=${SOURCE_SHA:0:12} base=${persist_base:0:12} authority=current-merged-waf"
+
             cp /tmp/provider-census-status.json automation/provider-census-status.json
-            # Rebuild the durable batch plan after syncing to current main so the
-            # latest Brain control-plane consumes the exact sharded evidence just
-            # measured, including dynamic completeness debt from otherwise-green
-            # providers. The pre-reset plan remains an artifact only.
+            # Rebuild the durable batch plan only after the current-main WAF
+            # evidence has been projected onto the candidate census. The batch
+            # plan and canonical status therefore share one causal state.
             batch_args=(python scripts/build_provider_repair_batch_plan.py
               --status /tmp/provider-census-status.json
               --sharded-census /tmp/provider-census-sharded.json
@@ -666,19 +687,10 @@ jobs:
           fi
           cp /tmp/provider-waf-browser-session-sharded.json "automation/provider-waf-browser-session-${run_id}.json"
           if [ "$ALLOW_PENDING_TARGETS" != "true" ]; then
-            if [ -s automation/provider-waf-browser-session-latest.json ]; then
-              python scripts/merge_waf_latest_evidence.py \
-                --previous automation/provider-waf-browser-session-latest.json \
-                --current /tmp/provider-waf-browser-session-sharded.json \
-                --output /tmp/provider-waf-browser-session-latest-merged.json
-              mv /tmp/provider-waf-browser-session-latest-merged.json automation/provider-waf-browser-session-latest.json
-            else
-              cp /tmp/provider-waf-browser-session-sharded.json automation/provider-waf-browser-session-latest.json
-            fi
             python scripts/render_provider_census_status_from_state.py \
               --status automation/provider-census-status.json \
               --output PROVIDER_CENSUS_STATUS.md
-            echo "FIELD_SHARDED_CENSUS_STATUS_RENDER source=canonical-merged-state"
+            echo "FIELD_SHARDED_CENSUS_STATUS_RENDER source=current-main-waf-rebased-state"
             # Sharded merged rows are a complete schema-v6 record of this run's
             # selected provider/lane probes. Persist raw + matching summary in
             # the SAME commit as canonical status so lifecycle does not consume
