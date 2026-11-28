@@ -22,7 +22,7 @@ batch={
         {"groupId":"tls","repairScope":"harness-compatibility","providers":["tls"],"capabilityStrategy":"mixed_embed_resolver","transportSignature":"browser-profile-only-both-networks"},
         {"groupId":"challenge","repairScope":"harness-compatibility","providers":["challenge"],"capabilityStrategy":"html_scraper","transportSignature":"residential-exit-all-challenged"},
         {"groupId":"variant","repairScope":"variant-coverage","providers":["green"],"capabilityStrategy":"html_scraper","selectionAuthorities":["provider-census-sharded-latest.json:dynamic-variant-debt"],"dynamicVariantProviders":["green"]},
-        {"groupId":"learn","repairScope":"learning","providers":["unknown"],"capabilityStrategy":"unknown"},
+        {"groupId":"learn","repairScope":"learning","providers":["unknown"],"capabilityStrategy":"unknown","runtimeFamilySignature":"mixed-embed","causalIssueSignature":"timeout","evidenceDepthSignature":"lookup"},
     ],
 }
 status={
@@ -58,6 +58,9 @@ assert by["variant"]["lane"]=="BRAIN_LEARNING"
 assert by["variant"]["dispatchAllowed"] is True
 assert by["variant"]["mutatesProduction"] is False
 assert by["learn"]["lane"]=="BRAIN_LEARNING"
+assert by["learn"]["runtimeFamilySignature"]=="mixed-embed"
+assert by["learn"]["causalIssueSignature"]=="timeout"
+assert by["learn"]["evidenceDepthSignature"]=="lookup"
 assert out["providerCount"]==9
 assert out["blockedExecutionCount"]==0
 
