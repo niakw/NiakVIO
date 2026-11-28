@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-BRAIN = ROOT / "brain-replay"
+BRAIN = ROOT / "brain-llm"
 sys.path.insert(0, str(BRAIN / "src"))
 
 from niakvio_brain_llm.niakvio_adapter import request_from_checkout  # noqa:E402
