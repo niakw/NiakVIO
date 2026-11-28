@@ -27,6 +27,9 @@ const { explicitYears, releaseIdentityGuard } = require('../scripts/native_fixtu
 const repositoryRoot = path.resolve(__dirname, '..');
 const packageJson = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'package.json'), 'utf8'));
 const labTrigger = JSON.parse(fs.readFileSync(path.join(repositoryRoot, '.github/triggers/nuvio-client-lab.json'), 'utf8'));
+const healthConfig = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'health-config.json'), 'utf8'));
+assert.equal(healthConfig.execution_context.default_user_agent, WINDOWS_UA);
+assert.equal(healthConfig.execution_context.inject_accept_language, false);
 const npmTestLifecycle = `${packageJson.scripts.pretest || ''} ${packageJson.scripts.test || ''}`;
 assert.match(npmTestLifecycle, /node tests\/nuvio_client_lab\.test\.cjs/);
 assert.match(packageJson.scripts.posttest || '', /python3 scripts\/validate_release_integrity\.py/);
