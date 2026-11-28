@@ -106,6 +106,10 @@ assert "provider-waf-transport-target-{0}" in waf
 assert "github.run_id" in waf
 assert "github.event_name != 'workflow_dispatch'" in waf
 assert 'targeted WAF cohort is capped at 12' in waf
+assert "provider-waf-cohort-evidence.json" in waf
+assert "--previous /tmp/provider-waf-durable-latest.json" in waf
+assert "--current /tmp/provider-waf-cohort-evidence.json" in waf
+assert "merge_waf_latest_evidence.py" in waf
 
 learning_start = autopilot.index('if [ -n "$LEARNING" ]; then', autopilot.index("# Learning debt"))
 learning_block = autopilot[learning_start:harness_start]
