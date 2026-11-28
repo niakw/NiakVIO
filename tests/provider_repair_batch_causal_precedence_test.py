@@ -65,14 +65,14 @@ network_only={**allwish_like,"dominantIssue":"provider_network_exception"}
 assert mod.action_for_row(network_only,"none","network_exception")[0]=="learning"
 
 
-# Explicit current census causal queues outrank semantic depth. A provider can
-# reach CHAIN and still be owned by authority rediscovery; that must not leak
-# into provider mutation. Environment ownership is equally explicit.
+# Environment ownership still outranks semantic depth. Domain/backend authority
+# rediscovery is advisory for read-only Brain diagnosis and must not monopolize
+# the causal owner lane; publication/mutation gates remain separate.
 chain_row={"status":"CHAIN REACHED","repairEligible":False}
 assert mod.causal_scope_for_row(
     "authority",chain_row,"chain","network_zero_result",dynamic_debt=None,brain_required=True,
     authority_rediscovery={"authority"},environment_owned=set(),
-)[0]=="transport"
+)[0]=="learning"
 assert mod.causal_scope_for_row(
     "environment",chain_row,"chain","waf_challenge",dynamic_debt=None,brain_required=True,
     authority_rediscovery=set(),environment_owned={"environment"},
