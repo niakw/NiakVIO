@@ -105,12 +105,64 @@ def dispatched_fingerprints(prior: dict[str, Any]) -> list[str]:
     return values
 
 
-def _execution_plan_payload(provider: str, row: dict[str, Any]) -> dict[str, Any]:
+def learning_experiment_epoch(memory: dict[str, Any], provider: str) -> str:
+    """Hash distinct executable Learning methods, never retry counters."""
+    provider = safe_provider(provider)
+    experiment = memory.get("experimentMemory") if isinstance(memory, dict) else {}
+    entries = (
+        experiment.get("entries") or []
+        if isinstance(experiment, dict)
+        else (memory.get("entries") or [] if isinstance(memory, dict) else [])
+    )
+    identities: dict[str, dict[str, Any]] = {}
+    for row in entries:
+        if not isinstance(row, dict) or safe_provider(row.get("providerId")) != provider:
+            continue
+        if row.get("executionObserved") is not True:
+            continue
+        outcome = _stable_text(row.get("lastOutcome"), 64).replace("-", "_")
+        if outcome in {"profile_unavailable", "not_generated"}:
+            continue
+        profile = _stable_text(row.get("profile"), 96)
+        implementation = _stable_text(row.get("strategyImplementationFingerprint"), 128)
+        positive = _stable_text(row.get("positiveProgramFingerprint"), 128)
+        if not (profile or implementation or positive):
+            continue
+        identity = {
+            "failureClass": _stable_text(row.get("failureClass"), 96),
+            "signature": _stable_text(row.get("signature"), 160),
+            "profile": profile,
+            "experimentVariant": max(0, int(row.get("experimentVariant") or 0)),
+            "experimentGeneration": max(1, int(row.get("experimentGeneration") or 1)),
+            "capabilityStrategy": _stable_text(row.get("capabilityStrategy"), 120),
+            "strategyImplementationFingerprint": implementation,
+            "positiveProgramFingerprint": positive,
+        }
+        encoded = json.dumps(
+            identity, ensure_ascii=True, sort_keys=True, separators=(",", ":")
+        )
+        identities[encoded] = identity
+    if not identities:
+        return ""
+    raw = json.dumps(
+        [identities[key] for key in sorted(identities)],
+        ensure_ascii=True,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _execution_plan_payload(
+    provider: str,
+    row: dict[str, Any],
+    learning_epoch: str = "",
+) -> dict[str, Any]:
     lane = _stable_text(row.get("lane"), 64)
     strategy = _stable_text(row.get("strategyBlueprint"), 160)
     if not strategy and lane == "brain_learning":
         strategy = "brain_learning_strategy_discovery_v1"
-    return {
+    payload = {
         "source": "execution-plan",
         "provider": provider,
         "lane": lane,
@@ -121,10 +173,24 @@ def _execution_plan_payload(provider: str, row: dict[str, Any]) -> dict[str, Any
         "strategyBlueprint": strategy,
         "fallbackLane": _stable_text(row.get("fallbackLane"), 64),
     }
+    if lane == "brain_learning" and FINGERPRINT.fullmatch(
+        str(learning_epoch or "").strip().casefold()
+    ):
+        payload["learningExperimentEpoch"] = str(learning_epoch).strip().casefold()
+    return payload
 
 
-def execution_plan_fingerprint(provider: str, row: dict[str, Any]) -> str:
-    payload = _execution_plan_payload(provider, row)
+def execution_plan_fingerprint(
+    provider: str,
+    row: dict[str, Any],
+    learning_memory: dict[str, Any] | None = None,
+) -> str:
+    learning_epoch = (
+        learning_experiment_epoch(learning_memory or {}, provider)
+        if _stable_text(row.get("lane"), 64) == "brain_learning"
+        else ""
+    )
+    payload = _execution_plan_payload(provider, row, learning_epoch)
     if payload["lane"] not in {"brain_learning", "core_client_learning"}:
         return ""
     has_cause = bool(
@@ -147,6 +213,7 @@ def select_execution_plan(
     *,
     lane: str,
     requested: list[str] | None = None,
+    learning_memory: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     wanted = {
         safe_provider(value)
@@ -172,7 +239,14 @@ def select_execution_plan(
             provider = safe_provider(raw_provider)
             if not provider or (restrict_to_requested and provider not in wanted):
                 continue
-            fingerprint = execution_plan_fingerprint(provider, execution)
+            learning_epoch = (
+                learning_experiment_epoch(learning_memory or {}, provider)
+                if lane == "BRAIN_LEARNING"
+                else ""
+            )
+            fingerprint = execution_plan_fingerprint(
+                provider, execution, learning_memory=learning_memory
+            )
             if not fingerprint:
                 missing.append(provider)
                 continue
@@ -180,17 +254,19 @@ def select_execution_plan(
             if fingerprint in dispatched_fingerprints(prior):
                 repeats.append(provider)
                 continue
+            payload = _execution_plan_payload(provider, execution, learning_epoch)
             eligible.append({
                 "provider": provider,
                 "fingerprint": fingerprint,
                 "signatureHash": hashlib.sha256(
                     json.dumps(
-                        _execution_plan_payload(provider, execution),
+                        payload,
                         ensure_ascii=True,
                         sort_keys=True,
                         separators=(",", ":"),
                     ).encode("utf-8")
                 ).hexdigest()[:20],
+                "learningExperimentEpochHash": learning_epoch[:20],
             })
 
     # A provider can belong to only one causal lane by execution-plan contract,
@@ -217,6 +293,7 @@ def select_execution_plan(
         "harnessDifferentialExcludedProviders": [],
         "policy": (
             "autopilot Learning requires a new stable execution-plan cause/method fingerprint; "
+            "BRAIN_LEARNING may advance only when durable executed experiment identity changes; "
             "historically dispatched fingerprints are suppressed"
         ),
     }
@@ -379,6 +456,7 @@ def main() -> int:
         required=True,
     )
     choose_plan.add_argument("--providers", default="")
+    choose_plan.add_argument("--learning-memory", type=Path, default=None)
     choose_plan.add_argument("--output", type=Path, required=True)
 
     mark = sub.add_parser("mark")
@@ -414,6 +492,11 @@ def main() -> int:
             load(args.ledger, {"schemaVersion": 2, "providers": {}}),
             lane=args.lane,
             requested=[value for value in requested if value] if raw_requested.strip() else None,
+            learning_memory=(
+                load(args.learning_memory)
+                if args.learning_memory is not None and args.learning_memory.is_file()
+                else {}
+            ),
         )
         write(args.output, payload)
         print(
