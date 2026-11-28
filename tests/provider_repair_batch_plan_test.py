@@ -10,6 +10,7 @@ script=ROOT/"scripts/build_provider_repair_batch_plan.py"
 status={
   "runId":123,
   "triggerSha":"abc",
+  "authorityRediscoveryQueue":["e"],
   "providers":[
     {"provider":"a","status":"CHAIN REACHED","brainCheckRequired":True,"declaredLanes":["movie"],"currentVerifiedLanes":[],"dominantIssue":"provider_network_zero_result","evidenceDepth":["movie=chain_reached"]},
     {"provider":"b","status":"CHAIN REACHED","brainCheckRequired":True,"declaredLanes":["movie"],"currentVerifiedLanes":[],"dominantIssue":"provider_network_zero_result","evidenceDepth":["movie=chain_reached"]},
