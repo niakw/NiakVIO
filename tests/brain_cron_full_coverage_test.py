@@ -178,6 +178,11 @@ def main() -> int:
     assert "- name: Assert exact Learning SHA" in workflow
     assert 'test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"' in workflow
     assert "FIELD_BRAIN_LEARNING_SHA" in workflow
+    assert "FIELD_BRAIN_TARGETED_BASELINE_PROFILE" in workflow
+    assert 'deep["fallback_fixture_limit_per_category"]=0' in workflow
+    assert 'deep["max_settings_profiles"]=1' in workflow
+    assert 'deep["provider_timeout_ms"]=min(45000' in workflow
+    assert 'deep["stream_probe_timeout_ms"]=min(10000' in workflow
     assert "niakvio-brain-learning-lab-v2" in workflow
     assert "niakvio-brain-learning-target-" in workflow
     assert "niakvio-brain-learning-force-" in workflow
