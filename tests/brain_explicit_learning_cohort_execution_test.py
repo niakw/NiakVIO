@@ -29,7 +29,8 @@ assert "FAIR_HANDOFF_SINGLE_ORACLE_SECONDS = 120" in source
 assert "FAIR_HANDOFF_MIN_SECONDS" in snippet
 assert "FAIR_HANDOFF_MULTI_MAX_SECONDS" in snippet
 assert "FAIR_HANDOFF_SINGLE_ORACLE_SECONDS" in snippet
-assert "if len(order) == 1" in snippet
+assert "if len(order) == 1 or provider_id in set(family_frontier)" in snippet
+assert "strongest representative is the family's causal oracle" in snippet
 workflow = (root / ".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
 assert 'args+=(--provider-filter "$TARGET_PROVIDER_COHORT")' in workflow
 print("Brain explicit Learning multi-provider cohort contract passed")
