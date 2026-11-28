@@ -83,6 +83,18 @@ def main() -> int:
     # disabled providers which still need repair/re-evaluation evidence.
     assert "schedule:" in workflow and "cron:" in workflow, "Brain learning cron disappeared"
     assert "python scripts/run_brain_learning_queue.py" in workflow, "canonical adaptive Learning queue disappeared"
+    assert 'FAST_HANDOFF: ${{ steps.learning-slot.outputs.fast_handoff }}' in workflow
+    assert 'FIELD_BRAIN_TARGETED_PREFLIGHT mode=fast-handoff scope=causal-safety' in workflow
+    targeted_preflight = workflow.split('if [ "${FAST_HANDOFF:-false}" = "true" ]; then', 1)[1].split("          else", 1)[0]
+    for required in (
+        "brain_learning_published_parent_stage_test.py",
+        "brain_learning_queue_experiment_ledger_test.py",
+        "brain_causal_exercise_memory_test.py",
+        "fast_learning_targeted_health_test.py",
+        "provider_clean_reconstruction_contract_test.py",
+    ):
+        assert required in targeted_preflight, required
+    assert "brain_cron_full_coverage_test.py" not in targeted_preflight, "targeted family hot path must not recurse through the global coverage suite"
     assert "python scripts/materialize_provider_base_v3_store.py" in workflow, "Learning sandbox must rematerialize the canonical common ProviderBase before reconstruction contracts"
     assert "python scripts/provider_base_store.py validate" in workflow, "Learning sandbox ProviderBase validation disappeared"
     assert "python scripts/select_brain_learning_target.py" not in workflow, "obsolete single-target selector is executing again"
