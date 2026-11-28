@@ -2,23 +2,18 @@
   "acceptanceBasis": "aggregate-operational-state-including-carried-evidence",
   "acceptanceReached": false,
   "acceptanceTarget": 84,
-  "acceptedPlayableProviderCount": 16,
+  "acceptedPlayableProviderCount": 11,
   "acceptedPlayableProviders": [
-    "castle",
     "cinematheque-de-bretagne",
     "french-manga",
-    "hindmoviez",
-    "internet-archive",
-    "meowtv",
+    "moviebox",
     "movix-fr",
-    "mugiwarastream",
     "nakios",
     "neko-sama",
     "papadustream",
     "purstream",
     "sadisflix",
     "voiranime-homes",
-    "webflix",
     "zone-streaming"
   ],
   "brainQueue": [
@@ -88,15 +83,22 @@
     "zone-streaming",
     "zone-telechargement"
   ],
-  "carriedOperationalProviderCount": 0,
-  "carriedOperationalProviders": [],
+  "carriedOperationalProviderCount": 6,
+  "carriedOperationalProviders": [
+    "castle",
+    "hindmoviez",
+    "internet-archive",
+    "meowtv",
+    "mugiwarastream",
+    "webflix"
+  ],
   "debugStageCounts": {
     "provider_network_exception": 9,
     "provider_network_http_error": 30,
-    "provider_network_zero_result": 78,
-    "provider_returned_streams": 23,
-    "provider_waf_challenge": 42,
-    "timeout": 15
+    "provider_network_zero_result": 76,
+    "provider_returned_streams": 15,
+    "provider_waf_challenge": 43,
+    "timeout": 14
   },
   "debugStageProviders": {
     "provider_network_exception": [
@@ -118,6 +120,7 @@
       "persianstremio",
       "rivestream-app",
       "showbox",
+      "skstream",
       "vidfast",
       "voiranime-rip",
       "watchott",
@@ -143,8 +146,6 @@
       "kurage",
       "latestmovies",
       "moviebite",
-      "moviebox",
-      "movish",
       "movix-fr",
       "nakios",
       "neobam",
@@ -154,6 +155,7 @@
       "primewire",
       "pstream",
       "rarefilmm",
+      "reanime-to",
       "shuttletv",
       "skstream",
       "uhdmovies",
@@ -163,21 +165,16 @@
       "zone-telechargement"
     ],
     "provider_returned_streams": [
-      "castle",
       "cinematheque-de-bretagne",
       "french-manga",
-      "hindmoviez",
-      "internet-archive",
-      "meowtv",
+      "moviebox",
       "movix-fr",
-      "mugiwarastream",
       "nakios",
       "neko-sama",
       "papadustream",
       "purstream",
       "sadisflix",
       "voiranime-homes",
-      "webflix",
       "zone-streaming"
     ],
     "provider_waf_challenge": [
@@ -211,11 +208,11 @@
       "anidb",
       "anime-sama",
       "anisama",
-      "boredflix",
       "flixhq",
       "hianime",
-      "reanime-to",
+      "movish",
       "sadisflix",
+      "showbox",
       "vuflix",
       "zone-streaming"
     ]
@@ -238,12 +235,19 @@
     "mugiwarastream",
     "webflix"
   ],
-  "operationalWithoutCurrentVerifiedCount": 0,
-  "operationalWithoutCurrentVerifiedProviders": [],
+  "operationalWithoutCurrentVerifiedCount": 6,
+  "operationalWithoutCurrentVerifiedProviders": [
+    "castle",
+    "hindmoviez",
+    "internet-archive",
+    "meowtv",
+    "mugiwarastream",
+    "webflix"
+  ],
   "partialOkCount": 0,
   "partialOkProviders": [],
   "providerCount": 111,
-  "runId": 46090144343,
+  "runId": 46090856893,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
@@ -253,23 +257,16 @@
     "FULL OK": 6,
     "HARNESS MISMATCH": 9,
     "HARNESS/ENV BLOCKED": 7,
-    "NO PROOF": 14,
+    "NO PROOF": 13,
     "PROOF REFRESH REQUIRED": 4,
     "PROVIDER JS BROKEN": 2,
-    "PROVIDER NETWORK BLOCKED": 7,
+    "PROVIDER NETWORK BLOCKED": 8,
     "REGRESSION PROVIDER": 6
   },
-  "testedProviderCount": 101,
-  "triggerSha": "a8b16c4ad5442ab317cd984c066f0f30af0a065f",
-  "verifiedProviderCount": 6,
-  "verifiedProviders": [
-    "castle",
-    "hindmoviez",
-    "internet-archive",
-    "meowtv",
-    "mugiwarastream",
-    "webflix"
-  ],
+  "testedProviderCount": 95,
+  "triggerSha": "0e174ddc5c7102e066182cac32f03ad075039533",
+  "verifiedProviderCount": 0,
+  "verifiedProviders": [],
   "wrongContentProviderCount": 0,
   "wrongContentProviders": []
 }
