@@ -15,12 +15,27 @@ if [ "$FORCE_MODE" = "true" ]; then
   cohort_filters=("$ELIGIBLE_CSV")
 else
   family_plan="${RUNNER_TEMP:-/tmp}/fast-learning-family-dispatch.json"
-  python scripts/plan_learning_family_dispatch.py \
-    --providers "$ELIGIBLE_CSV" \
-    --batch-plan "$BATCH_PLAN" \
-    --status "$STATUS" \
-    --max-cohorts "$MAX_COHORTS" \
+  learning_memory="${RUNNER_TEMP:-/tmp}/fast-learning-family-memory.json"
+  rm -f "$learning_memory"
+  if git fetch --quiet origin "+refs/heads/brain-learning/proposals:refs/remotes/origin/brain-learning/proposals" 2>/dev/null \
+     && git show "refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json" > "$learning_memory" 2>/dev/null; then
+    echo "FIELD_BRAIN_LEARNING_FAMILY_MEMORY available=true source=brain-learning/proposals"
+  else
+    rm -f "$learning_memory"
+    echo "FIELD_BRAIN_LEARNING_FAMILY_MEMORY available=false source=none"
+  fi
+  planner_args=(
+    python scripts/plan_learning_family_dispatch.py
+    --providers "$ELIGIBLE_CSV"
+    --batch-plan "$BATCH_PLAN"
+    --status "$STATUS"
+    --max-cohorts "$MAX_COHORTS"
     --output "$family_plan"
+  )
+  if [ -s "$learning_memory" ]; then
+    planner_args+=(--learning-memory "$learning_memory")
+  fi
+  "${planner_args[@]}"
   readarray -t cohort_filters < <(jq -r '.cohorts[]?.providerFilter // empty' "$family_plan")
   family_deferred="$(jq -r '(.deferredProviders // []) | length' "$family_plan")"
 fi
