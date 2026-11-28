@@ -35,9 +35,9 @@
       ],
       "harnessTransportClass": "native-policy-reachable",
       "harnessTransportEvidence": [
-        "anime: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_content_reached, desktop-okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached",
-        "movie: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_content_reached, desktop-okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached",
-        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_content_reached, desktop-okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
+        "anime: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_content_reached, desktop-okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached",
+        "movie: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_content_reached, desktop-okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_error",
+        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_content_reached, desktop-okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
       ],
       "authorityRepairEligible": false,
       "authorityAction": "REDISCOVER_SEARCH",
@@ -56,13 +56,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": false,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_waf_challenge, raw=0, playable=0, verified=0, identitySafe=true",
-        "movie: status=no_streams, stage=provider_waf_challenge, raw=0, playable=0, verified=0, identitySafe=true",
-        "tv: status=no_streams, stage=provider_waf_challenge, raw=0, playable=0, verified=0, identitySafe=true"
-      ]
+      "testedThisRun": false
     },
     {
       "provider": "4khdhub",
@@ -297,7 +291,11 @@
       "testedThisRun": true,
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": []
+      "targetedTransportEvidence": [],
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "anikototv",
@@ -492,7 +490,11 @@
       "testedThisRun": true,
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": []
+      "targetedTransportEvidence": [],
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "animekai",
@@ -860,13 +862,7 @@
       "testedThisRun": true,
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true",
-        "movie: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true",
-        "tv: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
-      ]
+      "targetedTransportEvidence": []
     },
     {
       "provider": "boredflix",
@@ -989,7 +985,7 @@
       ],
       "harnessTransportClass": "native-policy-reachable",
       "harnessTransportEvidence": [
-        "movie: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_content_reached, desktop-okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
+        "movie: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_content_reached, desktop-okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
       ],
       "authorityRepairEligible": false,
       "authorityAction": "REDISCOVER_SEARCH",
@@ -1008,11 +1004,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": false,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "movie: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true"
-      ]
+      "testedThisRun": false
     },
     {
       "provider": "cinemabz",
@@ -1136,8 +1128,8 @@
       ],
       "harnessTransportClass": "native-policy-reachable",
       "harnessTransportEvidence": [
-        "movie: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_content_reached, desktop-okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached",
-        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_content_reached, desktop-okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
+        "movie: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_content_reached, desktop-okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached",
+        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_content_reached, desktop-okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
       ],
       "authorityRepairEligible": false,
       "authorityAction": "REDISCOVER_SEARCH",
@@ -1156,12 +1148,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": false,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "movie: status=no_streams, stage=provider_waf_challenge, raw=0, playable=0, verified=0, identitySafe=true",
-        "tv: status=no_streams, stage=provider_waf_challenge, raw=0, playable=0, verified=0, identitySafe=true"
-      ]
+      "testedThisRun": false
     },
     {
       "provider": "coflix",
@@ -1374,12 +1361,7 @@
       "testedThisRun": true,
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
-        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ]
+      "targetedTransportEvidence": []
     },
     {
       "provider": "emnexmovies",
@@ -1551,13 +1533,7 @@
       "testedThisRun": true,
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true",
-        "movie: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true",
-        "tv: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
-      ]
+      "targetedTransportEvidence": []
     },
     {
       "provider": "film-a-revoir",
@@ -1794,7 +1770,7 @@
       ],
       "harnessTransportClass": "native-policy-reachable",
       "harnessTransportEvidence": [
-        "anime: browser=browser_content_reached, tv-browser=browser_timeout, okhttp=okhttp_jvm_content_reached, desktop-okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
+        "anime: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_content_reached, desktop-okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
       ],
       "authorityRepairEligible": false,
       "authorityAction": "REDISCOVER_SEARCH",
@@ -1813,11 +1789,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": false,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_waf_challenge, raw=0, playable=0, verified=0, identitySafe=true"
-      ]
+      "testedThisRun": false
     },
     {
       "provider": "frembed",
@@ -2272,7 +2244,12 @@
       "testedThisRun": true,
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": []
+      "targetedTransportEvidence": [],
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "kehflix",
@@ -3575,16 +3552,15 @@
       "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true,
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
         "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
         "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
         "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
       ],
-      "transportRepairEligible": true,
-      "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayReclassified": true,
       "networkDifferentialClass": "network-route-inconclusive",
       "networkDifferentialEvidence": [
         "anime: github-browser=browser_inconclusive, github-okhttp=okhttp_jvm_error, github-desktop-okhttp=okhttp_jvm_error, github-direct=direct_http_error, residential-browser=browser_inconclusive, residential-okhttp=okhttp_jvm_error, residential-desktop-okhttp=okhttp_jvm_error, residential-direct=direct_http_error",
@@ -5869,8 +5845,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "46173637587-waf-transport",
-  "harnessEvidenceSha": "7e544c248ba2a35175025713a3bc9c68c7871de9",
+  "harnessEvidenceRunId": "46173644523-waf-transport",
+  "harnessEvidenceSha": "b6df9175fe6cff338a0a6e101c8ca7f705127ceb",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
@@ -5883,7 +5859,6 @@
     "franime",
     "hianime",
     "moiflix",
-    "rivestream-ru",
     "watchott",
     "youtitou"
   ],
@@ -5908,7 +5883,6 @@
     "flixer",
     "hianime",
     "moiflix",
-    "rivestream-ru",
     "watchott",
     "youtitou"
   ],
@@ -5920,7 +5894,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 4,
+    "matchedProviderLanes": 15,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -5933,7 +5907,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 4,
+    "matchedProviderLanes": 15,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -6022,16 +5996,16 @@
         "providerArtifactSha256": "07b08d31035a01ec11c4b49652575bb11ad319e6a7366a3935bb6c314ac75a57",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_waf_challenge",
+        "debugStage": "provider_zero_before_provider_network",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_waf_challenge"
+          "provider_zero_before_provider_network"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
-          "lookup_only"
+          "none"
         ],
         "raw": 0,
         "playable": 0,
@@ -6039,9 +6013,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "07b08d31035a01ec11c4b49652575bb11ad319e6a7366a3935bb6c314ac75a57",
-          "runId": "46171817255",
+          "runId": "46173644523",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -6051,16 +6025,16 @@
         "providerArtifactSha256": "07b08d31035a01ec11c4b49652575bb11ad319e6a7366a3935bb6c314ac75a57",
         "lane": "movie",
         "status": "no_streams",
-        "debugStage": "provider_waf_challenge",
+        "debugStage": "provider_zero_before_provider_network",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_waf_challenge"
+          "provider_zero_before_provider_network"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
-          "lookup_only"
+          "none"
         ],
         "raw": 0,
         "playable": 0,
@@ -6068,9 +6042,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "07b08d31035a01ec11c4b49652575bb11ad319e6a7366a3935bb6c314ac75a57",
-          "runId": "46171817255",
+          "runId": "46173644523",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -6080,16 +6054,16 @@
         "providerArtifactSha256": "07b08d31035a01ec11c4b49652575bb11ad319e6a7366a3935bb6c314ac75a57",
         "lane": "tv",
         "status": "no_streams",
-        "debugStage": "provider_waf_challenge",
+        "debugStage": "provider_zero_before_provider_network",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_waf_challenge"
+          "provider_zero_before_provider_network"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
-          "lookup_only"
+          "none"
         ],
         "raw": 0,
         "playable": 0,
@@ -6097,9 +6071,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "07b08d31035a01ec11c4b49652575bb11ad319e6a7366a3935bb6c314ac75a57",
-          "runId": "46171817255",
+          "runId": "46173644523",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -6425,9 +6399,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "e880008d62b0f2d9f06a1970477773470db80eb78a8d8166bd751bb33b57ddce",
-          "runId": "46171817255",
+          "runId": "46173644523",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -6454,9 +6428,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "e880008d62b0f2d9f06a1970477773470db80eb78a8d8166bd751bb33b57ddce",
-          "runId": "46171817255",
+          "runId": "46173644523",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -6483,9 +6457,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "e880008d62b0f2d9f06a1970477773470db80eb78a8d8166bd751bb33b57ddce",
-          "runId": "46171817255",
+          "runId": "46173644523",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -6625,18 +6599,16 @@
         "providerArtifactSha256": "40a30a726147a83db3052cebef39543741ed319ae1e8e5c7c4c97cf51ca0ac89",
         "lane": "movie",
         "status": "no_streams",
-        "debugStage": "provider_network_http_error",
+        "debugStage": "provider_zero_before_provider_network",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_network_http_error",
-          "provider_waf_challenge"
+          "provider_zero_before_provider_network"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
-          "chain_reached",
-          "lookup_only"
+          "none"
         ],
         "raw": 0,
         "playable": 0,
@@ -6644,9 +6616,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "40a30a726147a83db3052cebef39543741ed319ae1e8e5c7c4c97cf51ca0ac89",
-          "runId": "46171817255",
+          "runId": "46173644523",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -6720,16 +6692,16 @@
         "providerArtifactSha256": "cd69539d612c26e540be66ae4398fe98102167beacd93de65e759e0e8575fab9",
         "lane": "movie",
         "status": "no_streams",
-        "debugStage": "provider_waf_challenge",
+        "debugStage": "provider_zero_before_provider_network",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_waf_challenge"
+          "provider_zero_before_provider_network"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
-          "lookup_only"
+          "none"
         ],
         "raw": 0,
         "playable": 0,
@@ -6737,9 +6709,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "cd69539d612c26e540be66ae4398fe98102167beacd93de65e759e0e8575fab9",
-          "runId": "46171817255",
+          "runId": "46173644523",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -6749,16 +6721,16 @@
         "providerArtifactSha256": "cd69539d612c26e540be66ae4398fe98102167beacd93de65e759e0e8575fab9",
         "lane": "tv",
         "status": "no_streams",
-        "debugStage": "provider_waf_challenge",
+        "debugStage": "provider_zero_before_provider_network",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_waf_challenge"
+          "provider_zero_before_provider_network"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
-          "lookup_only"
+          "none"
         ],
         "raw": 0,
         "playable": 0,
@@ -6766,9 +6738,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "cd69539d612c26e540be66ae4398fe98102167beacd93de65e759e0e8575fab9",
-          "runId": "46171817255",
+          "runId": "46173644523",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -6956,9 +6928,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "3b1f6291c389b77e839bebb8c5197af5a6e6314b96e20b1b28e58e6c7dcc76fb",
-          "runId": "46171820830",
+          "runId": "46173644523",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -6985,9 +6957,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "3b1f6291c389b77e839bebb8c5197af5a6e6314b96e20b1b28e58e6c7dcc76fb",
-          "runId": "46171820830",
+          "runId": "46173644523",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7104,9 +7076,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "d4180ab67b4c395cf5ed23f1db46d6e695e7f37fe350420693c272463c9c499a",
-          "runId": "46171820830",
+          "runId": "46173644523",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7133,9 +7105,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "d4180ab67b4c395cf5ed23f1db46d6e695e7f37fe350420693c272463c9c499a",
-          "runId": "46171820830",
+          "runId": "46173644523",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7162,9 +7134,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "d4180ab67b4c395cf5ed23f1db46d6e695e7f37fe350420693c272463c9c499a",
-          "runId": "46171820830",
+          "runId": "46173644523",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7332,16 +7304,16 @@
         "providerArtifactSha256": "4e50b58baf04b404603cd109107bca61e4dd8fc92a5152458bf9524d7bb2345c",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_waf_challenge",
+        "debugStage": "provider_zero_before_provider_network",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_waf_challenge"
+          "provider_zero_before_provider_network"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
-          "lookup_only"
+          "none"
         ],
         "raw": 0,
         "playable": 0,
@@ -7349,9 +7321,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "4e50b58baf04b404603cd109107bca61e4dd8fc92a5152458bf9524d7bb2345c",
-          "runId": "46171817255",
+          "runId": "46173644523",
           "proofAuthority": false,
           "publicationAuthority": false
         }
