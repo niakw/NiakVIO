@@ -1,13 +1,13 @@
-Brain exact-parent harness replay — MeowTV regression oracle.
+Brain exact-parent + parent-scoped memory replay — MeowTV oracle.
 requested_at: 2026-11-28
 budget_minutes: 20
-execution_mode: exact-published-parent-regression
+execution_mode: exact-published-parent-parent-aware-memory
 target_provider:
 target_providers: meowtv
 architecture_force: false
-causal_frontier: published_exact_parent_vs_clean_reconstruction
+causal_frontier: published_exact_parent_and_parent_scoped_negative_memory
 required_scope: targeted-learning
-required_evidence: learning-run-46091684570;published-parent-healthy;reconstruction-parent-no-streams;exact-parent-overlay-f18b2dbb
-causal_change: Execute the Brain mutation loop from the exact current published MeowTV bytes when clean ProviderBase reconstruction is not required. Keep the clean reconstruction as an independent ProviderBase oracle only. A reconstruction-only failure must not become provider negative memory.
-proof_goal: Confirm FIELD_BRAIN_LEARNING_PARENT_STAGE published_exact=1, exact parent health remains healthy/playable before mutation, no false hiddenFailure from reconstruction, and any negative experiment is relative to exact published parent bytes. No provider publication from Learning.
-publication_policy: Learning remains non-authoritative. Preserve all four manifests, ProviderBase generation, 10-version JS retention and no native-hub46.
+required_evidence: learning-run-46091684570;published-parent-healthy;reconstruction-parent-no-streams;exact-parent-stage;parent-aware-memory
+causal_change: Execute from exact current published MeowTV bytes because clean reconstruction is not required. Ignore historical negative experiments without matching parent SHA when the current parent authority is published-exact-current-bytes. Persist any new experiment with exact parent SHA and authority through immutable attempt snapshot, sanitized plan, Learning ledger and cross-day memory.
+proof_goal: FIELD_BRAIN_LEARNING_PARENT_STAGE published_exact=1; queue parent healthy/playable before mutation; old reconstruction negative does not contribute negativeMemoryMatches; any new memory row carries parentArtifactSha256 + parentAuthority. No production publication.
+publication_policy: Learning is non-authoritative. Preserve four manifests, ProviderBase generation, 10-version JS retention and no native-hub46.
