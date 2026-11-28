@@ -521,6 +521,8 @@ function mergeExperimentMemory(previousMemory, runtimeMemory, report, planMap, l
       const key = memoryKey({
         providerId,
         providerVersion: '*',
+        parentArtifactSha256: String(plan.parentArtifactSha256 || '').trim().toLowerCase().slice(0, 64),
+        parentAuthority: String(plan.parentAuthority || '').trim().toLowerCase().slice(0, 80),
         signature,
         profile,
         positiveProgramFingerprint: String(plan.positiveProgramFingerprint || '').trim().toLowerCase().slice(0, 256),
@@ -532,6 +534,8 @@ function mergeExperimentMemory(previousMemory, runtimeMemory, report, planMap, l
       const next = map.get(key) || {
         providerId,
         providerVersion: '*',
+        parentArtifactSha256: String(plan.parentArtifactSha256 || '').trim().toLowerCase().slice(0, 64),
+        parentAuthority: String(plan.parentAuthority || '').trim().toLowerCase().slice(0, 80),
         signature,
         failureClass: String(plan.failureClass || 'unknown_failure'),
         profile,
@@ -625,9 +629,17 @@ function sanitizeMemoryEntry(raw) {
     : -1;
   const networkExecutionSummary = sanitizeNetworkExecutionSummary(raw.networkExecutionSummary);
   const networkExecutionDelta = sanitizeNetworkExecutionDelta(raw.networkExecutionDelta);
+  const parentArtifactSha256Raw = String(raw.parentArtifactSha256 || '').trim().toLowerCase();
+  const parentArtifactSha256 = /^[0-9a-f]{64}$/.test(parentArtifactSha256Raw)
+    ? parentArtifactSha256Raw
+    : '';
+  const parentAuthority = String(raw.parentAuthority || '')
+    .trim().toLowerCase().replace(/[^a-z0-9._-]+/g, '').slice(0, 80);
   return {
     providerId,
     providerVersion: String(raw.providerVersion || '*').trim().slice(0, 64) || '*',
+    parentArtifactSha256,
+    parentAuthority,
     signature,
     failureClass: String(raw.failureClass || 'unknown_failure').trim().slice(0, 96),
     profile,
@@ -658,6 +670,8 @@ function memoryKey(row) {
   return [
     row.providerId,
     row.providerVersion || '*',
+    row.parentArtifactSha256 || '',
+    row.parentAuthority || '',
     row.signature,
     row.profile,
     row.positiveProgramFingerprint || '',
