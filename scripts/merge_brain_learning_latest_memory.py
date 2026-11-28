@@ -150,6 +150,101 @@ def telemetry_backfills(
     return output
 
 
+
+def _queue_ids(value: Any) -> list[str]:
+    rows = value if isinstance(value, list) else []
+    output: list[str] = []
+    seen: set[str] = set()
+    for raw in rows:
+        provider = str(raw or "").strip().casefold().replace("_", "-")[:128]
+        if provider and provider not in seen:
+            seen.add(provider)
+            output.append(provider)
+    return output[:256]
+
+
+def merge_learning_queue_delta(
+    base: dict[str, Any],
+    previous: dict[str, Any],
+    current: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Apply only the current cohort's provider-local queue delta.
+
+    Parallel family runs may start from the same queue snapshot. The latest
+    publisher must preserve sibling updates already on the durable branch while
+    allowing a freshly re-observed provider to clear its own stale hidden state.
+    """
+    base_queue = base.get("learningQueue") if isinstance(base.get("learningQueue"), dict) else {}
+    previous_queue = previous.get("learningQueue") if isinstance(previous.get("learningQueue"), dict) else {}
+    current_queue = current.get("learningQueue") if isinstance(current.get("learningQueue"), dict) else {}
+    if not previous_queue and not current_queue:
+        return {}, {
+            "processedProviders": [],
+            "hiddenClearedProviders": [],
+            "hiddenAddedProviders": [],
+        }
+
+    output = copy.deepcopy(previous_queue or base_queue or current_queue)
+    processed = _queue_ids(current_queue.get("processedThisRun"))
+    processed_set = set(processed)
+
+    previous_hidden = _queue_ids(output.get("hiddenFailureProviders"))
+    current_hidden = _queue_ids(current_queue.get("hiddenFailureProviders"))
+    current_hidden_set = set(current_hidden)
+    hidden_cleared = [
+        provider for provider in processed
+        if provider in set(previous_hidden) and provider not in current_hidden_set
+    ]
+    hidden_added = [
+        provider for provider in processed
+        if provider in current_hidden_set and provider not in set(previous_hidden)
+    ]
+    output["hiddenFailureProviders"] = _queue_ids([
+        *[provider for provider in previous_hidden if provider not in processed_set],
+        *current_hidden,
+    ])
+
+    for field in ("pendingProviders", "retryProviders", "completedInCycle"):
+        existing = _queue_ids(output.get(field))
+        current_ids = _queue_ids(current_queue.get(field))
+        current_set = set(current_ids)
+        next_rows = [provider for provider in existing if provider not in processed_set]
+        next_rows.extend(
+            provider for provider in processed
+            if provider in current_set
+        )
+        output[field] = _queue_ids(next_rows)
+
+    previous_state = output.get("providerState") if isinstance(output.get("providerState"), dict) else {}
+    current_state = current_queue.get("providerState") if isinstance(current_queue.get("providerState"), dict) else {}
+    merged_provider_state = copy.deepcopy(previous_state)
+    for provider in processed:
+        if isinstance(current_state.get(provider), dict):
+            merged_provider_state[provider] = copy.deepcopy(current_state[provider])
+    output["providerState"] = merged_provider_state
+    output["processedThisRun"] = processed
+
+    for field in (
+        "schemaVersion",
+        "cycle",
+        "resumeAcrossDays",
+        "coreEvidenceAuthority",
+        "timeBudgetExhausted",
+        "remainingProviderCount",
+        "retryProviderCount",
+        "budgetMinutes",
+        "generatedAt",
+    ):
+        if field in current_queue:
+            output[field] = copy.deepcopy(current_queue[field])
+
+    return output, {
+        "processedProviders": processed,
+        "hiddenClearedProviders": hidden_cleared,
+        "hiddenAddedProviders": hidden_added,
+    }
+
+
 def generated_ms(payload: dict[str, Any]) -> int:
     raw = str(payload.get("generatedAt") or "").strip()
     if not raw:
@@ -209,6 +304,11 @@ def merge_latest(
     output["experimentMemory"] = copy.deepcopy(
         merged_state.get("experimentMemory") or {}
     )
+    merged_queue, queue_delta = merge_learning_queue_delta(
+        base, previous, current
+    )
+    if merged_queue:
+        output["learningQueue"] = merged_queue
     output["publicationAllowed"] = False
     output["productionWritesAllowed"] = False
     output["concurrentMemoryMerge"] = {
@@ -220,6 +320,9 @@ def merge_latest(
         "telemetryDeltaRows": len(telemetry),
         "mergedRows": len(entries(output)),
         "metadataSource": "previous" if previous_is_newer else "current",
+        "queueProcessedProviders": queue_delta["processedProviders"],
+        "queueHiddenClearedProviders": queue_delta["hiddenClearedProviders"],
+        "queueHiddenAddedProviders": queue_delta["hiddenAddedProviders"],
         "publicationAuthority": False,
         "providerMutationAuthority": False,
     }
@@ -249,7 +352,10 @@ def main() -> int:
         "FIELD_BRAIN_LEARNING_CONCURRENT_MEMORY_MERGE "
         f"base={meta['baseRows']} previous={meta['previousRows']} "
         f"current={meta['currentRows']} delta={meta['deltaRows']} "
-        f"merged={meta['mergedRows']} publication_authority=false"
+        f"merged={meta['mergedRows']} "
+        f"queue_processed={len(meta['queueProcessedProviders'])} "
+        f"queue_hidden_cleared={len(meta['queueHiddenClearedProviders'])} "
+        f"publication_authority=false"
     )
     return 0
 
