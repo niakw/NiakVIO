@@ -2964,6 +2964,12 @@ def main() -> int:
                     state["attemptCount"] = attempt_no
                     state["lastAttemptAt"] = datetime.now(timezone.utc).isoformat()
                     state["lastStatus"] = "not_executed_no_mutation"
+                    # No client Lab ran for this attempt. Clear stale per-client
+                    # evidence from an older phase so persistent Learning state
+                    # cannot visually or semantically imply a fresh runtime-empty
+                    # observation that never happened.
+                    state["lastFixture"] = ""
+                    state["lastClients"] = {}
                     attempts_this_phase += 1
                     if provider_plan:
                         no_mutation_entries = phase_experiment_entries(
