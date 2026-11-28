@@ -1,12 +1,13 @@
 {
   "schemaVersion": 1,
-  "requestVersion": 19,
-  "requestedAt": "2026-11-28",
+  "requestVersion": 20,
+  "requestedAt": "2026-11-28T17:18:00+01:00",
   "targetProviders": [
-    "french-anime"
+    "documentary-area",
+    "watchott",
+    "youtitou"
   ],
   "reuseExistingEvidence": false,
-  "reason": "Reproject French-Anime after fixing concurrent census/WAF persistence: prove the latest residential/native transport evidence survives canonical census publication and routes back to provider/identity Brain without playback authority.",
-  "cohort": "concurrent-census-transport-rebase-verification-2026-11-28",
-  "sourceSha": "0e69735fb9d222386fd161b28d438f9bf692d2a3"
+  "reason": "Retry representative provider_transport_gap cohort after fixing stale fresh-replay provenance regression. Execute browser + NuvioTV-policy OkHttp + direct HTTP differential on current bytes; persist diagnostic transport evidence only, no playback/publication authority.",
+  "cohort": "provider-transport-gap-client-differential-retry-2026-11-28"
 }
