@@ -225,16 +225,12 @@ jobs:
             return 1
           }
 
-          # Exact unresolved-domain owners are provider-scoped. They may run beside
-          # observational Learning/REMAT for disjoint providers; production Repair
-          # waits for fresh post-domain authority.
+          # Domain rediscovery is no longer on the Brain critical path. It remains
+          # an explicit/manual product maintenance lane, but Autopilot must not
+          # rescan the fleet or requeue it merely because main advanced while
+          # read-only Brain diagnosis can continue safely.
           if [ -n "$DOMAIN" ]; then
-            if lane_busy domain-refresh.yml; then
-              echo "FIELD_PROVIDER_AUTOPILOT deferred=DOMAIN_REFRESH providers=$DOMAIN reason=lane-in-flight-or-query-unavailable"
-            else
-              gh workflow run domain-refresh.yml --repo "$GITHUB_REPOSITORY" --ref main -f mode=quick -f target_providers="$DOMAIN"
-              echo "FIELD_PROVIDER_AUTOPILOT dispatch=DOMAIN_REFRESH providers=$DOMAIN targeted=true"
-            fi
+            echo "FIELD_PROVIDER_AUTOPILOT deferred=DOMAIN_REFRESH providers=$DOMAIN reason=manual-low-priority-not-brain-critical"
           fi
 
           # REMAT diagnostics and provider-local repair are disjoint cohorts and
