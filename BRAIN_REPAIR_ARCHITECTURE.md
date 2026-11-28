@@ -1,3 +1,17 @@
+## 2026-11-28 — Rotation obligatoire d'un executor advisor causalement épuisé
+
+Le mode `llm_repair` signifie une nouvelle hypothèse causale, pas un nouveau texte autour du même executor. Pour un advisor provider-only, un profil devient causalement épuisé uniquement lorsque la mémoire exacte contient au moins trois `llmAdvisorExperimentFingerprint` distincts, réellement exécutés, négatifs et appartenant au même profil installé. Les propositions non exécutées, `not_generated`, `profile_unavailable` ou simples historiques ne peuvent pas épuiser un executor.
+
+Cette dette est partagée entre routing, prompt, schéma et validation finale :
+- le routeur peut demander un nouveau raisonnement modèle ;
+- le prompt compact conserve `exhausted_advisor_profiles` même sous forte réduction CPU ;
+- le layer causal à haute confiance reste contraint ;
+- le `strategy_prior` dont l'executor est épuisé est déverrouillé pour cette décision seulement ;
+- le schéma restreint alors la stratégie aux executors installés non épuisés ;
+- si le backend ignore encore le contrat et répète un executor épuisé, le plan devient une abstention diagnostic-only. L'expérience proposée peut être conservée pour mémoire, mais elle ne reçoit ni mutation, ni exécution, ni publication.
+
+Cette rotation ne constitue jamais une preuve de réparation et ne propage rien aux siblings. Une nouvelle stratégie doit encore traverser génération, compilation, matérialisation, replay exact-parent, média terminal, identité, lecture stricte/client officiel et non-régression avant tout succès produit.
+
 ## 2026-11-28 — Fan-out familial progressif et budget d'oracle isolé
 
 Le scheduler Learning ne doit plus propager une stratégie familiale avant qu'elle ait produit un signal positif validé. Le contrat d'exécution est désormais progressif :
