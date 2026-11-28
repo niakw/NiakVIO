@@ -90,17 +90,17 @@
     "webflix"
   ],
   "debugStageCounts": {
-    "provider_network_exception": 11,
+    "provider_network_exception": 9,
     "provider_network_http_error": 29,
-    "provider_network_zero_result": 73,
+    "provider_network_zero_result": 75,
     "provider_returned_streams": 14,
-    "provider_waf_challenge": 41,
-    "timeout": 19
+    "provider_returned_wrong_content": 1,
+    "provider_waf_challenge": 42,
+    "timeout": 17
   },
   "debugStageProviders": {
     "provider_network_exception": [
       "animekai",
-      "moviebite",
       "rivestream-ru",
       "videasy",
       "vidlove",
@@ -115,11 +115,11 @@
       "kehflix",
       "moiflix",
       "movieshunt",
-      "movish",
       "persianstremio",
       "rivestream-app",
       "showbox",
       "vidfast",
+      "voiranime-rip",
       "watchott",
       "wookafr",
       "youtitou"
@@ -133,7 +133,9 @@
       "cinemabz",
       "corsflix",
       "fawesome",
+      "film-a-revoir",
       "flixer",
+      "flixhq",
       "frembed",
       "frenchstream",
       "fsharetv",
@@ -156,7 +158,6 @@
       "uhdmovies",
       "vidlink",
       "vidrock",
-      "voiranime-rip",
       "watchott",
       "zone-telechargement"
     ],
@@ -172,6 +173,9 @@
       "voiranime-homes",
       "zone-streaming"
     ],
+    "provider_returned_wrong_content": [
+      "sadisflix"
+    ],
     "provider_waf_challenge": [
       "1jour1film0626",
       "aniflix-uno",
@@ -185,13 +189,13 @@
       "cinetimes",
       "dulourd",
       "fexini",
-      "film-a-revoir",
       "flemmix",
       "franime",
       "french-anime",
       "fullanime",
       "ihavenotv",
       "moviesmod",
+      "movish",
       "stigstream",
       "voirserie",
       "vostfree",
@@ -208,7 +212,6 @@
       "movix-fr",
       "nakios",
       "reanime-to",
-      "sadisflix",
       "showbox",
       "vuflix",
       "zone-streaming"
@@ -244,7 +247,7 @@
   "partialOkCount": 0,
   "partialOkProviders": [],
   "providerCount": 111,
-  "runId": 46139117286,
+  "runId": 46140324116,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
@@ -252,19 +255,21 @@
     "CHAIN REACHED": 20,
     "DISABLED": 37,
     "FULL OK": 6,
-    "HARNESS MISMATCH": 9,
+    "HARNESS MISMATCH": 8,
     "HARNESS/ENV BLOCKED": 7,
-    "NO PROOF": 13,
+    "NO PROOF": 15,
     "PROOF REFRESH REQUIRED": 5,
-    "PROVIDER NETWORK BLOCKED": 9,
+    "PROVIDER NETWORK BLOCKED": 8,
     "REGRESSION PROVIDER": 4
   },
   "testedProviderCount": 95,
-  "triggerSha": "b56a41d49bce0b03967155268af68b19f0dbb22b",
+  "triggerSha": "42eed426d8fbb0767f2b843b23143f0874872265",
   "verifiedProviderCount": 1,
   "verifiedProviders": [
     "moviebox"
   ],
-  "wrongContentProviderCount": 0,
-  "wrongContentProviders": []
+  "wrongContentProviderCount": 1,
+  "wrongContentProviders": [
+    "sadisflix"
+  ]
 }
