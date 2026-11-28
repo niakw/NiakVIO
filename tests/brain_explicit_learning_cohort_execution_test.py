@@ -23,6 +23,10 @@ assert '"explicit-cohort-one-representative-per-causal-family-siblings-pending"'
 assert "if provider_id not in staged_candidates or provider_id not in info_by_id" in snippet
 assert "fastRepairHandoffParallelExecutionEnabled" in snippet
 assert "if fair_handoff and attempts_this_phase >= 1" in snippet
+assert "FAIR_HANDOFF_MIN_SECONDS = 30" in source
+assert "FAIR_HANDOFF_MAX_SECONDS = 60" in source
+assert "FAIR_HANDOFF_MIN_SECONDS" in snippet
+assert "FAIR_HANDOFF_MAX_SECONDS" in snippet
 workflow = (root / ".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
 assert 'args+=(--provider-filter "$TARGET_PROVIDER_COHORT")' in workflow
 print("Brain explicit Learning multi-provider cohort contract passed")
