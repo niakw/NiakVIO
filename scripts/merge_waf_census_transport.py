@@ -423,7 +423,26 @@ def merge_transport(
         and str(row.get("status") or "") == "PROVIDER NETWORK BLOCKED"
         and str(row.get("provider") or "").strip()
     }
-    network_allowed = baseline_network & waf_providers
+    # Transport overlays must be idempotent. A previous fresh replay may have
+    # moved a provider from NETWORK BLOCKED to ROUTE PROVEN/CHAIN REACHED while
+    # its current dominant failure is still provider_network_* or timeout. The
+    # next explicitly targeted transport run must still be allowed to replace
+    # the old transport annotation with same-run browser/direct/OkHttp evidence.
+    # Restrict this to symptomatic Brain-owned rows; healthy/disabled rows are
+    # never pulled back into transport causality by an overlay.
+    semantic_network = {
+        str(row.get("provider") or "").strip().casefold()
+        for row in providers
+        if isinstance(row, dict)
+        and row.get("brainCheckRequired") is True
+        and str(row.get("status") or "") not in (census.HEALTHY_STATES | {"DISABLED"})
+        and any(
+            stage in str(row.get("dominantIssue") or "").casefold()
+            for stage in census.NETWORK_BROKEN_STAGES
+        )
+        and str(row.get("provider") or "").strip()
+    }
+    network_allowed = (baseline_network | semantic_network) & waf_providers
 
     changed: list[str] = []
     network_changed: list[str] = []
