@@ -136,6 +136,12 @@ def causal_scope_for_row(
             "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
         )
     if provider in authority_rediscovery:
+        observed_scope, _observed_reason = action_for_row(row, depth, issue)
+        if observed_scope in {"transport", "harness-compatibility"}:
+            return (
+                observed_scope,
+                "domain/backend authority is unresolved, but current transport evidence must be reproduced through browser/native/residential clients before any Domain or provider mutation",
+            )
         return (
             "learning",
             "domain/backend authority is unresolved but is not a prerequisite for read-only Brain diagnosis; learn from current runtime evidence while keeping production mutation gated",
