@@ -1,5 +1,5 @@
 Brain isolated causal-family oracle deepening validation — Stigstream.
-requested_at: 2026-11-28T18:29:00+01:00
+requested_at: 2026-11-28T18:32:00+01:00
 budget_minutes: 30
 execution_mode: progressive-family-isolated-oracle-three-attempt-validation
 target_provider: stigstream
@@ -8,6 +8,6 @@ architecture_force: false
 causal_frontier: variant_coverage_gap_with_persisted_negative_experiments
 required_scope: targeted-learning
 required_evidence: exact-current-census;published-exact-parent;durable-negative-memory;family-oracle-only;phase-memory-progression
-causal_change: Reuse durable Stigstream experiment debt and validate 6a0c6148: both continuation paths use the bounded isolated-oracle gate, and anti-loop identity is exact experiment identity rather than stable profile/method names. Execute up to three distinct phase-memory-advanced hypotheses; do not fan out to siblings or replay an exact experiment identity.
-proof_goal: Demonstrate FIELD_BRAIN_HANDOFF_FAIR_SHARE isolated_oracle=true max_attempts=3 on 6a0c6148, then at least two distinct executed experiment identities when the first remains non-playable and budget permits; stop only on playable, exact repeat, exhaustion, three-attempt cap, or deadline. Persist real executions. Zero playable means 0 repair.
+causal_change: Validate 99b91fc8 on Stigstream only. Reuse durable negative/generation memory; an executable rejection or a not_generated generation miss must both feed the next bounded planner decision in the same isolated-oracle slice. Exact experiment identities prevent replay; siblings remain deferred.
+proof_goal: On 99b91fc8 descendant, prove isolated_oracle=true max_attempts=3 and, when the first hypothesis is non-playable and budget remains, a second distinct planner identity in the same workflow. If the first produces no child bytes, require FIELD_BRAIN_GENERATION_FALLBACK before replan. Stop only on playable, exact repeat, exhaustion, three-attempt cap, or deadline. Zero playable means 0 repair.
 publication_policy: Learning is non-authoritative. Preserve four manifests, ProviderBase generation, 10-version JS retention and no native-hub46.
