@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Gate automatic Repair -> Learning dispatches on materially new causal methods.
 
-The gate is deliberately independent from Learning's experiment memory. Its job is
-cheaper and earlier: do not start a Learning workflow at all when Repair is asking
-to replay the same provider/signature/strategy tuple that was already dispatched.
+The gate is deliberately cheaper and earlier than Learning execution. It reads only
+sanitized durable experiment identity so it can advance a provider after a genuinely
+new executed method, while refusing retry-counter churn and exhausted method families.
 
 Only sanitized provider ids and deterministic hashes are persisted. No routes,
 URLs, headers, bodies, source code, credentials, titles or private notes enter the
@@ -18,6 +18,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+ROOT = Path(__file__).resolve().parents[1]
 PROVIDER_ID = re.compile(r"^[a-z0-9][a-z0-9-]{0,95}$")
 FINGERPRINT = re.compile(r"^[0-9a-f]{64}$")
 
@@ -153,6 +154,112 @@ def learning_experiment_epoch(memory: dict[str, Any], provider: str) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
+def _safe_int(value: object, default: int = 0) -> int:
+    try:
+        return int(value or default)
+    except (TypeError, ValueError):
+        return default
+
+
+def exhausted_learning_providers(
+    memory: dict[str, Any],
+    policy: dict[str, Any],
+) -> set[str]:
+    """Return providers whose newest executed causal group exhausted bounded variants."""
+    production = policy.get("production") if isinstance(policy.get("production"), dict) else {}
+    negative = (
+        production.get("negativeExperimentMemory")
+        if isinstance(production.get("negativeExperimentMemory"), dict)
+        else {}
+    )
+    max_variants = max(1, _safe_int(negative.get("maxVariantsPerSignature"), 5))
+    rotate_every = max(1, _safe_int(negative.get("rotateExperimentAfterFailures"), 1))
+    final_variant = max_variants - 1
+    first_final_generation = max(
+        1, _safe_int(negative.get("finalVariantGeneration"), 1)
+    )
+    max_learning_generation = max(
+        first_final_generation,
+        _safe_int(
+            negative.get("maxLearningGenerationsPerSignature"),
+            first_final_generation,
+        ),
+    )
+    experiment = memory.get("experimentMemory") if isinstance(memory, dict) else {}
+    entries = (
+        experiment.get("entries") or []
+        if isinstance(experiment, dict)
+        else (memory.get("entries") or [] if isinstance(memory, dict) else [])
+    )
+    groups: dict[tuple[str, str, str], dict[str, Any]] = {}
+    for index, row in enumerate(entries):
+        if not isinstance(row, dict):
+            continue
+        provider = safe_provider(row.get("providerId"))
+        if not provider or _safe_int(row.get("successes"), 0) > 0:
+            continue
+        if _safe_int(row.get("consecutiveFailures"), 0) < rotate_every:
+            continue
+        outcome = _stable_text(row.get("lastOutcome"), 64).replace("-", "_")
+        if outcome in {"profile_unavailable", "not_generated", "executed_inconclusive"}:
+            continue
+        if row.get("executionObserved") is not True:
+            continue
+        if row.get("causalExerciseObserved") is False:
+            continue
+        key = (
+            provider,
+            _stable_text(row.get("failureClass"), 96),
+            _stable_text(row.get("signature"), 160),
+        )
+        state = groups.setdefault(
+            key,
+            {
+                "baseVariants": set(),
+                "finalGenerations": set(),
+                "latestSeen": "",
+                "latestIndex": -1,
+            },
+        )
+        variant = max(0, min(final_variant, _safe_int(row.get("experimentVariant"), 0)))
+        if variant < final_variant:
+            state["baseVariants"].add(variant)
+        else:
+            generation = max(1, _safe_int(row.get("experimentGeneration"), 1))
+            if first_final_generation <= generation <= max_learning_generation:
+                state["finalGenerations"].add(generation)
+        seen = str(row.get("lastSeenAt") or "").strip()
+        if seen > str(state["latestSeen"]) or (
+            seen == str(state["latestSeen"]) and index > int(state["latestIndex"])
+        ):
+            state["latestSeen"] = seen
+            state["latestIndex"] = index
+
+    expected_base = set(range(final_variant))
+    expected_generations = set(
+        range(first_final_generation, max_learning_generation + 1)
+    )
+    newest_by_provider: dict[str, tuple[tuple[str, str, str], dict[str, Any]]] = {}
+    for key, state in groups.items():
+        provider = key[0]
+        prior = newest_by_provider.get(provider)
+        rank = (str(state["latestSeen"]), int(state["latestIndex"]))
+        if prior is None:
+            newest_by_provider[provider] = (key, state)
+            continue
+        prior_state = prior[1]
+        prior_rank = (str(prior_state["latestSeen"]), int(prior_state["latestIndex"]))
+        if rank >= prior_rank:
+            newest_by_provider[provider] = (key, state)
+
+    return {
+        provider
+        for provider, (_key, state) in newest_by_provider.items()
+        if expected_base.issubset(state["baseVariants"])
+        and expected_generations.issubset(state["finalGenerations"])
+    }
+
+
 def _execution_plan_payload(
     provider: str,
     row: dict[str, Any],
@@ -214,6 +321,7 @@ def select_execution_plan(
     lane: str,
     requested: list[str] | None = None,
     learning_memory: dict[str, Any] | None = None,
+    learning_policy: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     wanted = {
         safe_provider(value)
@@ -227,6 +335,12 @@ def select_execution_plan(
     eligible: list[dict[str, str]] = []
     repeats: list[str] = []
     missing: list[str] = []
+    exhausted = (
+        exhausted_learning_providers(learning_memory or {}, learning_policy or {})
+        if lane == "BRAIN_LEARNING"
+        else set()
+    )
+    exhausted_rows: list[str] = []
 
     for execution in plan.get("executions") or []:
         if not isinstance(execution, dict):
@@ -238,6 +352,9 @@ def select_execution_plan(
         for raw_provider in execution.get("providers") or []:
             provider = safe_provider(raw_provider)
             if not provider or (restrict_to_requested and provider not in wanted):
+                continue
+            if provider in exhausted:
+                exhausted_rows.append(provider)
                 continue
             learning_epoch = (
                 learning_experiment_epoch(learning_memory or {}, provider)
@@ -290,11 +407,12 @@ def select_execution_plan(
         "eligible": deduped,
         "suppressedRepeatProviders": sorted(set(repeats)),
         "suppressedMissingFingerprintProviders": sorted(set(missing)),
+        "suppressedExhaustedProviders": sorted(set(exhausted_rows)),
         "harnessDifferentialExcludedProviders": [],
         "policy": (
             "autopilot Learning requires a new stable execution-plan cause/method fingerprint; "
             "BRAIN_LEARNING may advance only when durable executed experiment identity changes; "
-            "historically dispatched fingerprints are suppressed"
+            "the newest fully exhausted causal group is suppressed; historically dispatched fingerprints are suppressed"
         ),
     }
 
@@ -457,6 +575,11 @@ def main() -> int:
     )
     choose_plan.add_argument("--providers", default="")
     choose_plan.add_argument("--learning-memory", type=Path, default=None)
+    choose_plan.add_argument(
+        "--brain-policy",
+        type=Path,
+        default=ROOT / "engine_v2" / "config" / "brain-policy.json",
+    )
     choose_plan.add_argument("--output", type=Path, required=True)
 
     mark = sub.add_parser("mark")
@@ -497,6 +620,7 @@ def main() -> int:
                 if args.learning_memory is not None and args.learning_memory.is_file()
                 else {}
             ),
+            learning_policy=load(args.brain_policy, {}),
         )
         write(args.output, payload)
         print(
@@ -504,6 +628,7 @@ def main() -> int:
             f"lane={args.lane} eligible={payload['eligibleProviderCount']} "
             f"repeat={len(payload['suppressedRepeatProviders'])} "
             f"missing={len(payload['suppressedMissingFingerprintProviders'])} "
+            f"exhausted={len(payload['suppressedExhaustedProviders'])} "
             f"providers={payload['providerFilter'] or 'none'}"
         )
         return 0
