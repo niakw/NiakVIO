@@ -251,6 +251,7 @@ jobs:
             # Learning publisher performs the deterministic memory merge.
             publish_proposal="false"
             ELIGIBLE_CSV="$LEARNING" \
+              LEARNING_SELECTION="$RUNNER_TEMP/autopilot-learning-selection.json" \
               FORCE_MODE="$FORCE_MODE" \
               PUBLISH_PROPOSAL="$publish_proposal" \
               MAX_COHORTS=8 \
