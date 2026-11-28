@@ -168,6 +168,7 @@ const POST_EXHAUSTION_STRATEGIES = {
     { profile: "terminal_transition_graph_v12", method: "brain-evolved-executable-transition" },
     { profile: "terminal_transition_graph_v13", method: "brain-evolved-executable-transition" },
     { profile: "terminal_transition_graph_v14", method: "brain-evolved-executable-transition" },
+    { profile: "search_response_route_binding_v1", method: "search-response-route-binding" },
     { profile: "terminal_request_program_inference_v1", method: "terminal-request-program-inference" },
     { profile: "runtime_response_salvage_v1", method: "successful-runtime-response-salvage" },
     { profile: "catalogue_inline_token_resolver_v2", method: "brain-evolved-executable-transition" },
@@ -547,6 +548,8 @@ function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery, prefe
     // Other already-installed strategies may still be tried normally.
     if (row.profile === "html_class_token_exact_v1"
         && sourceEligibility.exactHtmlTokenSource !== true) continue;
+    if (row.profile === "search_response_route_binding_v1"
+        && sourceEligibility.structuredSearchResponseBinding !== true) continue;
     const implementationFingerprint = strategyImplementationFingerprint(row.profile);
     const attemptedWithoutCausalExercise = attemptRows.some((memory) => {
       if (
@@ -876,7 +879,7 @@ function buildPlan(item) {
     && experiencePrior.proofAuthority === false
     && experiencePrior.executionAuthority === false
   );
-  const structuredSearchTerminalInferenceEligible = (
+  const structuredSearchTransitionGapEligible = (
     structuredExperiencePriorPresent
     && canonicalFailureClass(evidence.failureClass) === "chain_terminal_gap"
     && experiencePrior.structuredSearchRecipePresent === true
@@ -1138,7 +1141,10 @@ function buildPlan(item) {
     && structuralEvidence.proofAuthority === false
     && /^[0-9a-f]{64}$/.test(stringValue(structuralEvidence.sourceSha256))
   );
-  const sourceEligibility = { exactHtmlTokenSource };
+  const sourceEligibility = {
+    exactHtmlTokenSource,
+    structuredSearchResponseBinding: structuredSearchTransitionGapEligible,
+  };
   const postExhaustionCandidateProfiles = postExhaustionCandidates(evidence.failureClass)
     .map((row) => stringValue(row.profile))
     .filter((profile) => profile && (profile !== "html_class_token_exact_v1" || exactHtmlTokenSource));
@@ -1195,34 +1201,70 @@ function buildPlan(item) {
     forcePreferredEligible && earlyForceHint.profile === forcePreferredProfile
   );
   // A structured JSON search contract without any known terminal request/value
-  // program is already a causal diagnosis. Exercise the installed generic
-  // request-program inference Bloc before spending an LLM call. The selector
-  // still checks exact implementation negative memory, so an executed rejection
-  // immediately returns ownership to the advisor/next strategy.
-  const structuredExperiencePreferredProfile = structuredSearchTerminalInferenceEligible
-    ? "terminal_request_program_inference_v1"
+  // program is already a causal diagnosis. First bind response values to the
+  // next route/id, then infer the terminal request program. Only after both
+  // exact implementations are executed-negative does the LLM regain ownership.
+  const structuredSearchBindingProfile = structuredSearchTransitionGapEligible
+    ? "search_response_route_binding_v1"
     : "";
-  const structuredExperienceHint = (
+  const structuredSearchBindingHint = (
     explorationMode
     && experimentExhausted
     && !positiveProgramReplayHint.profile
     && !forcePreferredProfile
     && !learningPreferredProfile
-    && Boolean(structuredExperiencePreferredProfile)
+    && Boolean(structuredSearchBindingProfile)
   )
     ? postExhaustionStrategyHint(
         evidence.failureClass,
         causalFamilyMemoryMatches,
         rotateEvery,
-        structuredExperiencePreferredProfile,
+        structuredSearchBindingProfile,
         sourceEligibility,
         attemptMemory,
       )
     : { profile: "", method: "", index: -1 };
-  const structuredExperiencePreferredSelected = Boolean(
-    structuredExperiencePreferredProfile
-    && structuredExperienceHint.profile === structuredExperiencePreferredProfile
+  const structuredSearchBindingSelected = Boolean(
+    structuredSearchBindingProfile
+    && structuredSearchBindingHint.profile === structuredSearchBindingProfile
   );
+  const structuredRequestProgramProfile = (
+    structuredSearchTransitionGapEligible && !structuredSearchBindingSelected
+  )
+    ? "terminal_request_program_inference_v1"
+    : "";
+  const structuredRequestProgramHint = (
+    explorationMode
+    && experimentExhausted
+    && !positiveProgramReplayHint.profile
+    && !forcePreferredProfile
+    && !learningPreferredProfile
+    && Boolean(structuredRequestProgramProfile)
+  )
+    ? postExhaustionStrategyHint(
+        evidence.failureClass,
+        causalFamilyMemoryMatches,
+        rotateEvery,
+        structuredRequestProgramProfile,
+        sourceEligibility,
+        attemptMemory,
+      )
+    : { profile: "", method: "", index: -1 };
+  const structuredRequestProgramSelected = Boolean(
+    structuredRequestProgramProfile
+    && structuredRequestProgramHint.profile === structuredRequestProgramProfile
+  );
+  const structuredExperiencePreferredProfile = structuredSearchBindingSelected
+    ? structuredSearchBindingProfile
+    : structuredRequestProgramSelected
+      ? structuredRequestProgramProfile
+      : "";
+  const structuredExperienceHint = structuredSearchBindingSelected
+    ? structuredSearchBindingHint
+    : structuredRequestProgramSelected
+      ? structuredRequestProgramHint
+      : { profile: "", method: "", index: -1 };
+  const structuredExperiencePreferredSelected = Boolean(structuredExperiencePreferredProfile);
   // A fresh fingerprinted advisor experiment is executable Brain output, not
   // decoration. After base exhaustion it must get one bounded attempt before
   // a generic coded post-exhaustion strategy. Otherwise Qwen can be called
@@ -1562,7 +1604,7 @@ function buildPlan(item) {
     learningPreferredFailureClass,
     learningPreferredSelected,
     structuredExperiencePriorPresent,
-    structuredSearchTerminalInferenceEligible,
+    structuredSearchTransitionGapEligible,
     structuredExperiencePreferredProfile,
     structuredExperiencePreferredSelected,
     metaGapEscalated,

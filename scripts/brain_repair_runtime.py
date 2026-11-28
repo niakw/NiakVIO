@@ -1709,7 +1709,7 @@ def _plan_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
         "learningPreferredFailureClass": str(plan.get("learningPreferredFailureClass") or ""),
         "learningPreferredSelected": plan.get("learningPreferredSelected") is True,
         "structuredExperiencePriorPresent": plan.get("structuredExperiencePriorPresent") is True,
-        "structuredSearchTerminalInferenceEligible": plan.get("structuredSearchTerminalInferenceEligible") is True,
+        "structuredSearchTransitionGapEligible": plan.get("structuredSearchTransitionGapEligible") is True,
         "structuredExperiencePreferredProfile": str(plan.get("structuredExperiencePreferredProfile") or ""),
         "structuredExperiencePreferredSelected": plan.get("structuredExperiencePreferredSelected") is True,
         "derivedFailureClass": str(plan.get("derivedFailureClass") or ""),

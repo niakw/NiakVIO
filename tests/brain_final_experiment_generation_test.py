@@ -509,13 +509,13 @@ structured_first=plan(
     llm_guidance=advisor,
 )
 assert structured_first["structuredExperiencePriorPresent"] is True,structured_first
-assert structured_first["structuredSearchTerminalInferenceEligible"] is True,structured_first
+assert structured_first["structuredSearchTransitionGapEligible"] is True,structured_first
 assert structured_first["structuredExperiencePreferredSelected"] is True,structured_first
-assert structured_first["postExhaustionStrategyProfile"]=="terminal_request_program_inference_v1",structured_first
-assert structured_first["allowedProfiles"]==["terminal_request_program_inference_v1"],structured_first
+assert structured_first["postExhaustionStrategyProfile"]=="search_response_route_binding_v1",structured_first
+assert structured_first["allowedProfiles"]==["search_response_route_binding_v1"],structured_first
 assert structured_first["llmAdvisorApplied"] is False,structured_first
-structured_fp=structured_first["strategyImplementationFingerprint"]
-assert len(structured_fp)==64,structured_first
+binding_fp=structured_first["strategyImplementationFingerprint"]
+assert len(binding_fp)==64,structured_first
 
 without_prior=plan(
     base_exhausted,
@@ -527,24 +527,46 @@ assert without_prior["structuredExperiencePreferredSelected"] is False,without_p
 assert without_prior["llmAdvisorApplied"] is True,without_prior
 assert without_prior["allowedProfiles"]==["chain_terminal_extractor_v1"],without_prior
 
-structured_negative={
+binding_negative={
     **row(4,5),
-    "profile":"terminal_request_program_inference_v1",
+    "profile":"search_response_route_binding_v1",
     "executionObserved":True,
     "causalExerciseObserved":True,
-    "strategyImplementationFingerprint":structured_fp,
+    "strategyImplementationFingerprint":binding_fp,
     "lastOutcome":"rejected",
 }
-after_structured_negative=plan(
-    [*base_exhausted,structured_negative],
+after_binding_negative=plan(
+    [*base_exhausted,binding_negative],
     "learning",
     candidate_override=structured_candidate,
     llm_guidance=advisor,
 )
-assert after_structured_negative["structuredExperiencePreferredSelected"] is False,after_structured_negative
-assert after_structured_negative["postExhaustionStrategyProfile"]!="terminal_request_program_inference_v1",after_structured_negative
-assert after_structured_negative["llmAdvisorApplied"] is True,after_structured_negative
-assert after_structured_negative["allowedProfiles"]==["chain_terminal_extractor_v1"],after_structured_negative
+assert after_binding_negative["structuredExperiencePreferredSelected"] is True,after_binding_negative
+assert after_binding_negative["postExhaustionStrategyProfile"]=="terminal_request_program_inference_v1",after_binding_negative
+assert after_binding_negative["allowedProfiles"]==["terminal_request_program_inference_v1"],after_binding_negative
+assert after_binding_negative["llmAdvisorApplied"] is False,after_binding_negative
+request_fp=after_binding_negative["strategyImplementationFingerprint"]
+assert len(request_fp)==64 and request_fp!=binding_fp,after_binding_negative
+
+request_negative={
+    **row(4,5),
+    "profile":"terminal_request_program_inference_v1",
+    "executionObserved":True,
+    "causalExerciseObserved":True,
+    "strategyImplementationFingerprint":request_fp,
+    "lastOutcome":"rejected",
+}
+after_structured_negatives=plan(
+    [*base_exhausted,binding_negative,request_negative],
+    "learning",
+    candidate_override=structured_candidate,
+    llm_guidance=advisor,
+)
+assert after_structured_negatives["structuredExperiencePreferredSelected"] is False,after_structured_negatives
+assert after_structured_negatives["postExhaustionStrategyProfile"]!="terminal_request_program_inference_v1",after_structured_negatives
+assert after_structured_negatives["postExhaustionStrategyProfile"]!="search_response_route_binding_v1",after_structured_negatives
+assert after_structured_negatives["llmAdvisorApplied"] is True,after_structured_negatives
+assert after_structured_negatives["allowedProfiles"]==["chain_terminal_extractor_v1"],after_structured_negatives
 
 # Orchestrator exhaustion must use the same generation rule.
 spec2=importlib.util.spec_from_file_location("brain_orchestrator",ROOT/"scripts/run_provider_brain_repair.py")
