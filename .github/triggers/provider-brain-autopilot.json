@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-11-28T17:12:00+01:00",
-  "reason": "Retry client-owned transport proof after splitting CORE_CLIENT_LEARNING into exact causal WAF cohorts capped at 12 with isolated targeted concurrency. Previous run failed before network requests solely because 26 providers exceeded the workflow cohort cap.",
+  "requestedAt": "2026-11-28T17:18:00+01:00",
+  "reason": "Retry bounded causal client transport cohorts after aligning the Autopilot in-flight contract: targeted WAF runs are independently concurrent and no longer globally lane-serialized.",
   "sourceCensusRunId": "46160030156",
   "sourceCensusSha": "23196859e366bd47357118ce6477b16c2d72a389",
   "expectedRepairQueue": [
@@ -74,7 +74,7 @@
     "zone-telechargement"
   ],
   "expectedTargetedTransportBlockedQueue": [],
-  "retry": 33,
+  "retry": 34,
   "mode": "auto",
   "expectedDynamicVariantProviders": [
     "hindmoviez",
