@@ -2,11 +2,13 @@
   "acceptanceBasis": "aggregate-operational-state-including-carried-evidence",
   "acceptanceReached": false,
   "acceptanceTarget": 84,
-  "acceptedPlayableProviderCount": 10,
+  "acceptedPlayableProviderCount": 12,
   "acceptedPlayableProviders": [
     "cinematheque-de-bretagne",
     "french-manga",
     "kurage",
+    "moviebox",
+    "movix-fr",
     "nakios",
     "neko-sama",
     "papadustream",
@@ -91,11 +93,11 @@
   ],
   "debugStageCounts": {
     "provider_network_exception": 9,
-    "provider_network_http_error": 30,
-    "provider_network_zero_result": 78,
-    "provider_returned_streams": 13,
+    "provider_network_http_error": 31,
+    "provider_network_zero_result": 77,
+    "provider_returned_streams": 16,
     "provider_waf_challenge": 43,
-    "timeout": 14
+    "timeout": 11
   },
   "debugStageProviders": {
     "provider_network_exception": [
@@ -114,6 +116,7 @@
       "kehflix",
       "moiflix",
       "movieshunt",
+      "movish",
       "persianstremio",
       "rivestream-app",
       "showbox",
@@ -121,8 +124,7 @@
       "voiranime-rip",
       "watchott",
       "wookafr",
-      "youtitou",
-      "zone-streaming"
+      "youtitou"
     ],
     "provider_network_zero_result": [
       "4khdhub",
@@ -134,6 +136,7 @@
       "cinemabz",
       "corsflix",
       "fawesome",
+      "film-a-revoir",
       "flixer",
       "frembed",
       "frenchstream",
@@ -142,8 +145,6 @@
       "kidraz",
       "latestmovies",
       "moviebite",
-      "moviebox",
-      "movish",
       "movix-fr",
       "nakios",
       "neobam",
@@ -166,6 +167,8 @@
       "cinematheque-de-bretagne",
       "french-manga",
       "kurage",
+      "moviebox",
+      "movix-fr",
       "nakios",
       "neko-sama",
       "papadustream",
@@ -187,7 +190,6 @@
       "cinetimes",
       "dulourd",
       "fexini",
-      "film-a-revoir",
       "flemmix",
       "franime",
       "french-anime",
@@ -195,6 +197,7 @@
       "ihavenotv",
       "moviesmod",
       "movish",
+      "reanime-to",
       "stigstream",
       "voirserie",
       "vostfree",
@@ -205,14 +208,11 @@
       "anidb",
       "anime-sama",
       "anisama",
-      "boredflix",
       "flixhq",
       "hianime",
-      "movix-fr",
-      "reanime-to",
       "sadisflix",
-      "showbox",
-      "vuflix"
+      "vuflix",
+      "zone-streaming"
     ]
   },
   "fullOkCount": 6,
@@ -245,26 +245,28 @@
   "partialOkCount": 0,
   "partialOkProviders": [],
   "providerCount": 111,
-  "runId": 46105207563,
+  "runId": 46105483666,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 20,
+    "CHAIN REACHED": 18,
     "DISABLED": 37,
     "FULL OK": 6,
-    "HARNESS MISMATCH": 9,
+    "HARNESS MISMATCH": 8,
     "HARNESS/ENV BLOCKED": 7,
-    "NO PROOF": 14,
+    "NO PROOF": 15,
     "PROOF REFRESH REQUIRED": 5,
-    "PROVIDER JS BROKEN": 1,
-    "PROVIDER NETWORK BLOCKED": 7,
+    "PROVIDER JS BROKEN": 2,
+    "PROVIDER NETWORK BLOCKED": 8,
     "REGRESSION PROVIDER": 4
   },
   "testedProviderCount": 95,
   "triggerSha": "f8fdea729e837655f53d8a151366ea367675abe9",
-  "verifiedProviderCount": 0,
-  "verifiedProviders": [],
+  "verifiedProviderCount": 1,
+  "verifiedProviders": [
+    "moviebox"
+  ],
   "wrongContentProviderCount": 0,
   "wrongContentProviders": []
 }
