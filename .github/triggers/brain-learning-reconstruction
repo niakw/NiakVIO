@@ -7,7 +7,7 @@ target_providers: meowtv
 architecture_force: false
 causal_frontier: published_exact_parent_and_parent_scoped_negative_memory
 required_scope: targeted-learning
-required_evidence: learning-run-46091684570;published-parent-healthy;reconstruction-parent-no-streams;exact-parent-stage;parent-aware-memory
-causal_change: Execute from exact current published MeowTV bytes because clean reconstruction is not required. Ignore historical negative experiments without matching parent SHA when the current parent authority is published-exact-current-bytes. Persist any new experiment with exact parent SHA and authority through immutable attempt snapshot, sanitized plan, Learning ledger and cross-day memory.
-proof_goal: FIELD_BRAIN_LEARNING_PARENT_STAGE published_exact=1; queue parent healthy/playable before mutation; old reconstruction negative does not contribute negativeMemoryMatches; any new memory row carries parentArtifactSha256 + parentAuthority. No production publication.
+required_evidence: core-46094217748;parent-scope-green;published-parent-stage-green;concurrent-memory-merge-green;learning-run-46091684570
+causal_change: Execute from exact current published MeowTV bytes because clean reconstruction is not required. Historical negative experiments without matching parent SHA cannot veto current published-exact bytes. Persist any new experiment with parent SHA and authority through immutable attempt snapshot, sanitized plan, phase ledger and cross-day memory.
+proof_goal: FIELD_BRAIN_LEARNING_PARENT_STAGE published_exact=1; exact parent health remains healthy/playable before mutation; stale reconstruction negative contributes zero parent-applicable matches; any new experiment row carries parentArtifactSha256 + parentAuthority. No production publication.
 publication_policy: Learning is non-authoritative. Preserve four manifests, ProviderBase generation, 10-version JS retention and no native-hub46.
