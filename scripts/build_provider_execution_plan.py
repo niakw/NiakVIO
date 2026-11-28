@@ -145,27 +145,25 @@ def lane_for(group:dict[str,Any], *, authority_qualified:bool=False)->dict[str,A
             "decision":"repair only at/after the deepest current semantic proof",
         }
     if scope=="transport":
-        if authority_qualified:
-            return {
-                "owner":"CORE_CLIENT_TRANSPORT",
-                "lane":"CORE_CLIENT_LEARNING",
-                "workflow":"provider-waf-browser-session.yml",
-                "dispatchAllowed":True,
-                "mutatesProduction":False,
-                "fallbackLane":"BRAIN_LEARNING",
-                "strategyBlueprint":"qualified_authority_transport_differential_v2",
-                "decision":"address/backend authority is already qualified; reproduce browser/direct/TV-OkHttp/Desktop-OkHttp/residential transport before any provider mutation",
-                "applicationValidated":False,
-                "applicationBlocker":"transport evidence may reclassify ownership; provider/Core publication still requires ordinary current-byte client validation",
-            }
         return {
-            "owner":"DOMAIN_TRANSPORT",
-            "lane":"DOMAIN_REFRESH",
-            "workflow":"domain-refresh.yml",
+            "owner":"CORE_CLIENT_TRANSPORT",
+            "lane":"CORE_CLIENT_LEARNING",
+            "workflow":"provider-waf-browser-session.yml",
             "dispatchAllowed":True,
-            "mutatesProduction":"validated-domain-transaction-only",
-            "fallbackLane":"WAF_TRANSPORT",
-            "decision":"address authority is unresolved; refresh only the exact provider-owned domain before provider mutation",
+            "mutatesProduction":False,
+            "fallbackLane":"BRAIN_LEARNING" if authority_qualified else "DOMAIN_REFRESH",
+            "strategyBlueprint":(
+                "qualified_authority_transport_differential_v2"
+                if authority_qualified
+                else "unresolved_authority_transport_differential_v1"
+            ),
+            "decision":(
+                "address/backend authority is already qualified; reproduce browser/direct/TV-OkHttp/Desktop-OkHttp/residential transport before any provider mutation"
+                if authority_qualified
+                else "address authority is unresolved; reproduce browser/direct/TV-OkHttp/Desktop-OkHttp/residential transport first and refresh Domain only if the differential proves address/backend ownership"
+            ),
+            "applicationValidated":False,
+            "applicationBlocker":"transport evidence may reclassify ownership; provider/Core/Domain publication still requires ordinary current-byte validation",
         }
     if scope=="harness-compatibility":
         strategy={
@@ -269,7 +267,9 @@ def build(batch:dict[str,Any],status:dict[str,Any],dynamic_repair:set[str] | Non
             elif row["lane"]=="CORE_CLIENT_LEARNING":
                 unexpected=[
                     p for p in partition_providers
-                    if p not in current_environment and p not in current_repair
+                    if p not in current_environment
+                    and p not in current_repair
+                    and p not in current_authority
                 ]
             elif row["repairScope"]=="variant-coverage":
                 unexpected=[p for p in partition_providers if p not in current_dynamic]
