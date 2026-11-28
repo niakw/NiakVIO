@@ -268,6 +268,9 @@ family_dispatch = (ROOT / "scripts/dispatch_learning_family_cohorts.sh").read_te
 assert '-f target_providers="$cohort_filter"' in family_dispatch
 assert 'gh workflow run brain-learning-lab.yml "${args[@]}"' in family_dispatch
 assert 'MAX_COHORTS="${MAX_COHORTS:-8}"' in family_dispatch
+assert 'brain-learning/proposals:engine_v2/learning/latest.json' in family_dispatch
+assert '--learning-memory "$learning_memory"' in family_dispatch
+assert 'FIELD_BRAIN_LEARNING_FAMILY_MEMORY' in family_dispatch
 assert 'reason=no-new-causal-strategy' in fast_workflow
 assert 'reason=causal-gate-error persisted=true' in fast_workflow
 assert 'reason=invalid-causal-selection persisted=true' in fast_workflow
