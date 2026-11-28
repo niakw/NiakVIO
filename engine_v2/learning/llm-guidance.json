@@ -1,0 +1,312 @@
+{
+  "brainLlmSha": "85ca93f3c6a989f8661f1a2f921a1e8819dfda43",
+  "directMutationAuthority": false,
+  "minConfidence": 0.8,
+  "proofAuthority": false,
+  "providerCount": 9,
+  "publicationAuthority": false,
+  "rawMutationContentRetained": false,
+  "rows": [
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": false,
+        "maxDepth": 3,
+        "maxEmbeds": 10,
+        "maxPages": 10,
+        "maxRecipePasses": 1,
+        "recipePolicy": "current_only",
+        "responseSalvage": false,
+        "roleOrder": [
+          "player"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": false,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "8120cc17980309a8ab9f1a2ab6786f54c8655b2a9fbd62b8d303a7ed828d1bd2",
+      "failureClass": "media-extraction-gap",
+      "priorOnly": true,
+      "profile": "retained_candidate_replay_v1",
+      "providerId": "corsflix",
+      "strategy": "same-provider-candidate-program-replay",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.86,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": true,
+        "maxDepth": 6,
+        "maxEmbeds": 34,
+        "maxPages": 24,
+        "maxRecipePasses": 6,
+        "recipePolicy": "current_plus_provider",
+        "responseSalvage": true,
+        "roleOrder": [
+          "player",
+          "source",
+          "api",
+          "episode",
+          "detail",
+          "search",
+          "other"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": true,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "6b7526c302dab86b0d78897cdcb63a469f8e7144f33a82d5112e4e499a1fa295",
+      "failureClass": "chain_terminal_gap",
+      "priorOnly": true,
+      "profile": "proven_route_terminal_traversal_v1",
+      "providerId": "corsflix",
+      "strategy": "meta-gap-route-terminal-fallback",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": true,
+        "documentRequestMining": true,
+        "maxDepth": 3,
+        "maxEmbeds": 10,
+        "maxPages": 20,
+        "maxRecipePasses": 5,
+        "recipePolicy": "current_only",
+        "responseSalvage": true,
+        "roleOrder": [
+          "search",
+          "detail",
+          "player"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": true,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "11f6ff9cd7b7eeae7164ef6daead355e9690b77083502dbc6eb96a705d1d1952",
+      "failureClass": "route-proven-gap",
+      "priorOnly": true,
+      "profile": "player_media_extractor_v1",
+      "providerId": "moiflix",
+      "strategy": "proven-request-program-and-terminal-extraction",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": true,
+        "documentRequestMining": true,
+        "maxDepth": 2,
+        "maxEmbeds": 10,
+        "maxPages": 10,
+        "maxRecipePasses": 3,
+        "recipePolicy": "current_only",
+        "responseSalvage": true,
+        "roleOrder": [
+          "api",
+          "player"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": true,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "cf418bb20f47574a7d46b19f0d0edddf07b618a518c5ebadf76539ba26189670",
+      "failureClass": "chain-terminal-gap",
+      "priorOnly": true,
+      "profile": "search_contract_inference_v1",
+      "providerId": "vidlink",
+      "strategy": "discover-api-from-current-page-and-bundles",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.86,
+      "experiment": {
+        "aliasSearch": true,
+        "documentRequestMining": true,
+        "maxDepth": 5,
+        "maxEmbeds": 20,
+        "maxPages": 32,
+        "maxRecipePasses": 5,
+        "recipePolicy": "current_plus_provider",
+        "responseSalvage": true,
+        "roleOrder": [
+          "search",
+          "api",
+          "detail",
+          "player",
+          "source",
+          "episode",
+          "other"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": false,
+        "terminalOnly": false
+      },
+      "experimentFingerprint": "4b8b663bc6eeeb212099214612b1e18fce905aeb75003288d548eeeb17a8594f",
+      "failureClass": "search_gap",
+      "priorOnly": true,
+      "profile": "search_contract_inference_v1",
+      "providerId": "67movies",
+      "strategy": "meta-gap-search-contract-composition",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": true,
+        "maxDepth": 5,
+        "maxEmbeds": 30,
+        "maxPages": 24,
+        "maxRecipePasses": 5,
+        "recipePolicy": "current_plus_provider_peer",
+        "responseSalvage": true,
+        "roleOrder": [
+          "player",
+          "source",
+          "api",
+          "episode",
+          "detail",
+          "search",
+          "other"
+        ],
+        "routePolicy": "owned_plus_peer",
+        "sessionBootstrap": false,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "1970267cefbd427198afb833d39d4082f6a40b32b3d16d08c9033c90443e3bd4",
+      "failureClass": "route-proven-gap",
+      "priorOnly": true,
+      "profile": "proven_route_terminal_traversal_v1",
+      "providerId": "documentary-area",
+      "strategy": "search-detail-player-terminal-traversal",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": true,
+        "maxDepth": 5,
+        "maxEmbeds": 34,
+        "maxPages": 20,
+        "maxRecipePasses": 5,
+        "recipePolicy": "current_plus_provider_peer",
+        "responseSalvage": true,
+        "roleOrder": [
+          "player",
+          "source",
+          "api",
+          "episode",
+          "detail",
+          "search",
+          "other"
+        ],
+        "routePolicy": "owned_plus_peer",
+        "sessionBootstrap": false,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "a149c7311570e801dfbc4311429aa2897ea20a012cb4946c362763662244ec40",
+      "failureClass": "chain-terminal-gap",
+      "priorOnly": true,
+      "profile": "chain_terminal_extractor_v1",
+      "providerId": "flixhq",
+      "strategy": "terminal-media-extractor-with-playback-validation",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": true,
+        "documentRequestMining": true,
+        "maxDepth": 5,
+        "maxEmbeds": 28,
+        "maxPages": 28,
+        "maxRecipePasses": 4,
+        "recipePolicy": "current_plus_provider_peer",
+        "responseSalvage": true,
+        "roleOrder": [
+          "player",
+          "source",
+          "api",
+          "episode",
+          "detail",
+          "other"
+        ],
+        "routePolicy": "owned_plus_peer_generic",
+        "sessionBootstrap": false,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "7e83f036fc71d4e352905d0d1d54ba8b2921fa13699ba23781f1fe519839c79e",
+      "failureClass": "chain-terminal-gap",
+      "priorOnly": true,
+      "profile": "chain_terminal_extractor_v1",
+      "providerId": "movix-fr",
+      "strategy": "terminal-media-extractor-with-playback-validation",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": false,
+        "documentRequestMining": true,
+        "maxDepth": 5,
+        "maxEmbeds": 34,
+        "maxPages": 20,
+        "maxRecipePasses": 5,
+        "recipePolicy": "current_plus_provider_peer",
+        "responseSalvage": true,
+        "roleOrder": [
+          "player",
+          "source",
+          "api",
+          "episode",
+          "detail",
+          "search",
+          "other"
+        ],
+        "routePolicy": "owned_plus_peer",
+        "sessionBootstrap": false,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "a149c7311570e801dfbc4311429aa2897ea20a012cb4946c362763662244ec40",
+      "failureClass": "chain-terminal-gap",
+      "priorOnly": true,
+      "profile": "chain_terminal_extractor_v1",
+      "providerId": "boredflix",
+      "strategy": "terminal-media-extractor-with-playback-validation",
+      "targetLayer": "provider"
+    },
+    {
+      "confidence": 0.96,
+      "experiment": {
+        "aliasSearch": true,
+        "documentRequestMining": true,
+        "maxDepth": 2,
+        "maxEmbeds": 10,
+        "maxPages": 10,
+        "maxRecipePasses": 3,
+        "recipePolicy": "current_only",
+        "responseSalvage": true,
+        "roleOrder": [
+          "api",
+          "player"
+        ],
+        "routePolicy": "owned_only",
+        "sessionBootstrap": true,
+        "terminalOnly": true
+      },
+      "experimentFingerprint": "cf418bb20f47574a7d46b19f0d0edddf07b618a518c5ebadf76539ba26189670",
+      "failureClass": "chain-terminal-gap",
+      "priorOnly": true,
+      "profile": "search_contract_inference_v1",
+      "providerId": "stigstream",
+      "strategy": "discover-api-from-current-page-and-bundles",
+      "targetLayer": "provider"
+    }
+  ],
+  "schemaVersion": 2,
+  "sourceSha": "352c01ecf90cb9bb28407f0f390f7e6bc39241eb"
+}
