@@ -1212,6 +1212,9 @@ jobs:
             --stream-safety-cap 40)
           if [ -n "$TARGET_PROVIDER" ]; then args+=(--provider "$TARGET_PROVIDER"); fi
           if [ -n "$TARGET_PROVIDER_COHORT" ]; then args+=(--provider-filter "$TARGET_PROVIDER_COHORT"); fi
+          if { [ -n "$TARGET_PROVIDER" ] || [ -n "$TARGET_PROVIDER_COHORT" ]; } && [ -s /tmp/current-learning-repair-batch-plan.json ]; then
+            args+=(--batch-plan /tmp/current-learning-repair-batch-plan.json)
+          fi
           budget_minutes="${{ steps.learning-slot.outputs.budget_minutes }}"
           hard_seconds=$((budget_minutes * 60 + 120))
           set +e
