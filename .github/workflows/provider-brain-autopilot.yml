@@ -108,9 +108,17 @@ jobs:
           PLANNED_HARNESS: ${{ steps.plan.outputs.harness }}
         run: |
           set -euo pipefail
-          ledger=automation/provider-learning-dispatch-ledger.json
+          ledger="$RUNNER_TEMP/provider-learning-dispatch-ledger.json"
           plan="$RUNNER_TEMP/provider-execution-plan.json"
-          # Missing history must fail closed rather than replay old methods.
+          rm -f "$ledger"
+          if git fetch --quiet origin "+refs/heads/brain-learning/proposals:refs/remotes/origin/brain-learning/proposals" 2>/dev/null \
+             && git show "refs/remotes/origin/brain-learning/proposals:engine_v2/learning/dispatch-ledger.json" > "$ledger" 2>/dev/null; then
+            echo "FIELD_PROVIDER_AUTOPILOT_DISPATCH_LEDGER source=brain-learning/proposals"
+          else
+            cp automation/provider-learning-dispatch-ledger.json "$ledger"
+            echo "FIELD_PROVIDER_AUTOPILOT_DISPATCH_LEDGER source=main-migration-fallback"
+          fi
+          # Missing/corrupt durable history must fail closed rather than replay old methods.
           test -s "$ledger"
           learning=""
           harness=""
