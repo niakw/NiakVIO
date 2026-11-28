@@ -27,6 +27,7 @@ for required in (
 # Learning debt is dispatched immediately as one oracle per causal family.
 assert "bash scripts/dispatch_learning_family_cohorts.sh" in autopilot
 assert 'ELIGIBLE_CSV="$LEARNING"' in autopilot
+assert 'LEARNING_SELECTION="$RUNNER_TEMP/autopilot-learning-selection.json"' in autopilot
 assert 'PUBLISH_PROPOSAL="$publish_proposal"' in autopilot
 assert 'MAX_COHORTS=8' in autopilot
 assert "budget_minutes=90" in autopilot
@@ -56,6 +57,9 @@ assert 'stale_force_ignored=trigger_mode=="force" and event_name!="push"' in aut
 assert 'print("suppress=false")' in autopilot
 assert 'print("stale_force_ignored="+("true" if stale_force_ignored else "false"))' in autopilot
 assert "FIELD_PROVIDER_AUTOPILOT_STALE_FORCE" in autopilot
+assert "brain-learning/proposals:engine_v2/learning/dispatch-ledger.json" in autopilot
+assert "FIELD_PROVIDER_AUTOPILOT_DISPATCH_LEDGER source=brain-learning/proposals" in autopilot
+assert "main-migration-fallback" in autopilot
 assert "force-is-explicit-event-scoped" in autopilot
 assert "contents: write" not in autopilot
 assert "git add " not in autopilot
@@ -99,6 +103,7 @@ learning_block = autopilot[learning_start:harness_start]
 assert "dispatch_learning_family_cohorts.sh" in learning_block
 assert 'publish_proposal="false"' in learning_block
 assert 'ELIGIBLE_CSV="$LEARNING"' in learning_block
+assert 'LEARNING_SELECTION="$RUNNER_TEMP/autopilot-learning-selection.json"' in learning_block
 assert 'PUBLISH_PROPOSAL="$publish_proposal"' in learning_block
 assert "MAX_COHORTS=8" in learning_block
 assert "immediate=true" in learning_block
