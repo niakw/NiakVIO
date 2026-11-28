@@ -109,24 +109,38 @@ jobs:
         run: |
           set -euo pipefail
           ledger="$RUNNER_TEMP/provider-learning-dispatch-ledger.json"
+          learning_memory="$RUNNER_TEMP/provider-learning-latest.json"
           plan="$RUNNER_TEMP/provider-execution-plan.json"
-          rm -f "$ledger"
+          rm -f "$ledger" "$learning_memory"
           if git fetch --quiet origin "+refs/heads/brain-learning/proposals:refs/remotes/origin/brain-learning/proposals" 2>/dev/null \
              && git show "refs/remotes/origin/brain-learning/proposals:engine_v2/learning/dispatch-ledger.json" > "$ledger" 2>/dev/null; then
             echo "FIELD_PROVIDER_AUTOPILOT_DISPATCH_LEDGER source=brain-learning/proposals"
+            if git show "refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json" > "$learning_memory" 2>/dev/null; then
+              echo "FIELD_PROVIDER_AUTOPILOT_LEARNING_MEMORY available=true source=brain-learning/proposals"
+            else
+              rm -f "$learning_memory"
+              echo "FIELD_PROVIDER_AUTOPILOT_LEARNING_MEMORY available=false source=none"
+            fi
           else
             cp automation/provider-learning-dispatch-ledger.json "$ledger"
             echo "FIELD_PROVIDER_AUTOPILOT_DISPATCH_LEDGER source=main-migration-fallback"
+            echo "FIELD_PROVIDER_AUTOPILOT_LEARNING_MEMORY available=false source=none"
           fi
           # Missing/corrupt durable history must fail closed rather than replay old methods.
           test -s "$ledger"
           learning=""
           harness=""
           if [ -n "$PLANNED_LEARNING" ]; then
-            python scripts/provider_learning_dispatch_gate.py select-plan \
-              --plan "$plan" --ledger "$ledger" --lane BRAIN_LEARNING \
-              --providers "$PLANNED_LEARNING" \
+            learning_args=(
+              python scripts/provider_learning_dispatch_gate.py select-plan
+              --plan "$plan" --ledger "$ledger" --lane BRAIN_LEARNING
+              --providers "$PLANNED_LEARNING"
               --output "$RUNNER_TEMP/autopilot-learning-selection.json"
+            )
+            if [ -s "$learning_memory" ]; then
+              learning_args+=(--learning-memory "$learning_memory")
+            fi
+            "${learning_args[@]}"
             learning="$(python -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["providerFilter"])' "$RUNNER_TEMP/autopilot-learning-selection.json")"
           fi
           if [ -n "$PLANNED_HARNESS" ]; then
