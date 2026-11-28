@@ -1855,6 +1855,16 @@ def wrap_create_repair_candidate(base_create: Callable[..., tuple[dict[str, Any]
     return _create
 
 
+def learned_skill_id(plan: dict[str, Any], profile: str) -> str:
+    """Scope newly learned skills to the causal capability family when known."""
+    failure_class = _clip_text(plan.get("failureClass") or "unknown_failure", 96)
+    profile_name = _clip_text(profile, 96)
+    strategy = _clip_text(plan.get("capabilityStrategy"), 96).casefold()
+    if strategy and strategy not in {"unknown", "none", "not-applicable"}:
+        return f"{failure_class}:{profile_name}:family:{strategy}"
+    return f"{failure_class}:{profile_name}"
+
+
 def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
     report_path = output_dir / "repair-report.json"
     report = _load_json(report_path, {})
@@ -1979,7 +1989,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                 failure_class = str(plan.get("failureClass") or "unknown_failure")
                 if not profile or failure_class in {"healthy", "identity_mismatch"}:
                     continue
-                skill_id = f"{failure_class}:{profile}"
+                skill_id = learned_skill_id(plan, profile)
                 skill = skills.setdefault(skill_id, {
                     "id": skill_id,
                     "failureClass": failure_class,
@@ -2177,7 +2187,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                     mem["lastReason"] = _clip_text(rejected.get("reason"), 160)
                     mem["executionObserved"] = True
                     negative_experiment_events += 1
-                skill_id = f"{failure_class}:{profile}"
+                skill_id = learned_skill_id(plan, profile)
                 skill = skills.get(skill_id)
                 if not isinstance(skill, dict) or not profile:
                     continue
