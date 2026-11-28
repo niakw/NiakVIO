@@ -236,7 +236,7 @@ assert queue.missing_network_diagnostic_negative(
 # Executed network evidence must change the next causal action. A scripted
 # request miner that emitted real requests, received some 2xx responses, but
 # hit a 4xx-heavy HTML-only surface should try the existing session-bootstrap
-# Lego exactly once before inventing another request-contract generation.
+# Bloc exactly once before inventing another request-contract generation.
 session_summary = {
     "schemaVersion": 1,
     "providerRequestCount": 57,
@@ -295,6 +295,93 @@ assert followup["fourXxCount"] == "42"
 assert followup["providerRequestDelta"] == "24"
 assert followup["successfulProviderRequestDelta"] == "6"
 assert followup["fourXxDelta"] == "17"
+
+# A separate family-level transition covers successful search mutations that
+# causally reach a JSON/HTML player surface without terminal media. That evidence
+# disproves search as the deepest missing capability and should route the next
+# bounded attempt to response-shape inference.
+player_progress = {
+    **v2_negative,
+    "providerId": "lookup-family-representative",
+    "failureClass": "search_gap",
+    "profile": "adaptive_runtime_recovery",
+    "lastOutcome": "exploration_progress_nonpublishable",
+    "lastReason": "sandbox_diagnostic_progress:provider-frontier:player,provider-requests",
+    "causalExerciseObserved": True,
+    "networkExecutionSummary": {
+        "schemaVersion": 1,
+        "providerRequestCount": 54,
+        "successfulProviderRequestCount": 54,
+        "networkFailureCount": 0,
+        "statusBuckets": {"2xx": 54, "3xx": 0, "4xx": 0, "5xx": 0, "network": 0},
+        "methods": ["GET"],
+        "stages": ["search", "content_lookup", "episode", "player"],
+        "deepestStage": "player",
+        "responseKinds": ["html", "json"],
+        "proofAuthority": False,
+        "publicationAuthority": False,
+        "rawAddressRetained": False,
+        "headersRetained": False,
+        "bodyRetained": False,
+    },
+    "networkExecutionDelta": {
+        "schemaVersion": 1,
+        "providerRequestDelta": 30,
+        "successfulProviderRequestDelta": 30,
+        "networkFailureDelta": 0,
+        "statusBucketDelta": {"2xx": 30, "3xx": 0, "4xx": 0, "5xx": 0, "network": 0},
+        "newMethods": [],
+        "newStages": ["content_lookup", "episode", "player"],
+        "newResponseKinds": ["json"],
+        "parentDeepestStage": "search",
+        "candidateDeepestStage": "player",
+        "stageRankDelta": 3,
+        "stageAdvanced": True,
+        "proofAuthority": False,
+        "publicationAuthority": False,
+        "rawAddressRetained": False,
+        "headersRetained": False,
+        "bodyRetained": False,
+    },
+}
+player_followup = queue.player_response_causal_followup(
+    {"experimentMemory": {"schemaVersion": 1, "entries": [player_progress]}},
+    "lookup-family-representative",
+)
+assert player_followup is not None
+assert player_followup["profile"] == queue.PLAYER_RESPONSE_FOLLOWUP_PROFILE
+assert player_followup["failureClass"] == "media_extraction_gap"
+assert player_followup["sourceProfile"] == "adaptive_runtime_recovery"
+assert player_followup["providerRequestCount"] == "54"
+assert player_followup["successfulProviderRequestCount"] == "54"
+assert player_followup["deepestStage"] == "player"
+
+# A player-shaped aggregate that the candidate did not causally advance to is
+# not enough, nor is a response set that already contains terminal media.
+not_advanced = {
+    **player_progress,
+    "networkExecutionDelta": {
+        **player_progress["networkExecutionDelta"],
+        "stageAdvanced": False,
+        "stageRankDelta": 0,
+        "parentDeepestStage": "player",
+    },
+}
+assert queue.player_response_causal_followup(
+    {"experimentMemory": {"entries": [not_advanced]}},
+    "lookup-family-representative",
+) is None
+already_media = {
+    **player_progress,
+    "networkExecutionSummary": {
+        **player_progress["networkExecutionSummary"],
+        "responseKinds": ["html", "json", "media"],
+    },
+}
+assert queue.player_response_causal_followup(
+    {"experimentMemory": {"entries": [already_media]}},
+    "lookup-family-representative",
+) is None
 
 # Aggregate 4xx pressure that already belonged to the parent is not enough.
 parent_owned_pressure = {
