@@ -151,6 +151,10 @@ assert "FIELD_PROVIDER_FAST_REPAIR_LEARNING_PARALLEL" in dispatcher
 assert "target_providers=\"$cohort_filter\"" in dispatcher
 assert "dispatch_learning_family_cohorts.sh" in workflow
 assert "MAX_COHORTS=8" in workflow
+assert 'LEARNING_SELECTION="${selection:-}"' in workflow
+assert "brain-learning/proposals:engine_v2/learning/dispatch-ledger.json" in workflow
+assert "FIELD_PROVIDER_FAST_REPAIR_DISPATCH_LEDGER source=brain-learning/proposals" in workflow
+assert "main-migration-fallback" in workflow
 # A stale result has only negative experiment-memory authority. Requeued runs
 # can import it solely from a same-repo, same-workflow, unchanged runtime and
 # provider byte lineage; this never imports or publishes stale provider bytes.
