@@ -167,13 +167,14 @@ def causal_issue_for_row(row:dict[str,Any])->str:
     """Prefer the causal stage from a full-provider replay that reclassified ownership.
 
     The census keeps its original lane verdicts as historical observation. Once
-    a residential full-provider replay explicitly moves a row out of transport
-    ownership, however, those old WAF/network labels must not define the next
-    Brain family. Use a replay stage only when the reclassification is explicit
-    and all retained replay lanes agree on one provider-owned stage.
+    a residential full-provider replay leaves a repairable NO PROOF row with
+    sanitized replay evidence, those old WAF/network labels must not define the
+    next Brain family. The replay evidence is durable while a derived
+    reclassification flag may be dropped by a later census render. Use its stage
+    only when all retained replay lanes agree on one provider-owned stage.
     """
     fallback=issue_class(scalar(row.get("dominantIssue")))
-    if row.get("residentialProviderReplayReclassified") is not True:
+    if str(row.get("status") or "").strip().upper()!="NO PROOF" or row.get("repairEligible") is not True:
         return fallback
     stages:set[str]=set()
     for value in row.get("residentialProviderReplayEvidence") or []:
