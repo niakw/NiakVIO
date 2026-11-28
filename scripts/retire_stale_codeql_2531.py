@@ -241,7 +241,7 @@ def main() -> None:
         if severity not in ("high","critical"):
             continue
         recent=row.get("most_recent_instance") or {}
-        category=str(recent.get("analysis_key") or "").lower()
+        category=str(recent.get("category") or recent.get("analysis_key") or "").lower()
         if "scope:core" in category and row.get("number")!=LEGACY_ALERT:
             raise RuntimeError("Unresolved current JS Core High/Critical alerts remain")
     # This is a historical *test-only* alert, not a live provider finding.
