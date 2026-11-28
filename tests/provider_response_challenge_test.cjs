@@ -41,4 +41,14 @@ assert.equal(challengeKind({
   body: '{"message":"security check"}',
 }), '');
 
-console.log('Provider response challenge classifier: prose ignored, structural/title/header gates preserved');
+assert.equal(challengeKind({
+  contentType: 'text/html; charset=utf-8',
+  body: '<html><body><form id="challenge-form"></form></body></html>',
+}), 'cloudflare');
+
+assert.equal(challengeKind({
+  contentType: 'application/json; note=text/javascript',
+  body: 'window.turnstile.render("#gate", {sitekey:"redacted"});',
+}), '');
+
+console.log('Provider response challenge classifier: exact MIME, prose ignored, structural/title/header gates preserved');
