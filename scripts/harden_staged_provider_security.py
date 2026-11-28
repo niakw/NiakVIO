@@ -14,7 +14,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from provider_patches.global_provider_security_hardening_v1 import harden_bundle
+from provider_patches.global_provider_security_hardening_v1 import validate_bundle
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -56,11 +56,12 @@ def harden_stage(stage: Path) -> dict[str, Any]:
             raise ValueError(f"candidate hash mismatch before security hardening: {row.get('key')}")
 
         current_text = current.decode("utf-8", errors="strict")
-        hardened_text, report = harden_bundle(current_text)
-        if hardened_text != current_text:
+        try:
+            report = validate_bundle(current_text)
+        except ValueError as exc:
             raise ValueError(
-                f"staged candidate is not security-normalized before validation: {row.get('key')}"
-            )
+                f"staged candidate is not security-normalized before validation: {row.get('key')}: {exc}"
+            ) from exc
         already += 1
 
         structured += int(report.get("structuredParseChanges") or 0)
