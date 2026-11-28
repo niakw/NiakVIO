@@ -1032,9 +1032,14 @@ function buildPlan(item) {
     .filter((skill) => {
       const providers = stringArray(skill.providers ?? skill.provenOnProviders).map((value) => value.toLowerCase());
       const sameProviderPositiveProgram = skill.sameProviderPositiveProgram === true && providers.includes(providerId);
+      const familyEligibleProviders = stringArray(skill.familyEligibleProviders).map((value) => value.toLowerCase());
+      const familyStrategies = stringArray(skill.capabilityStrategies ?? skill.capabilityStrategy).map((value) => value.toLowerCase());
+      if (skill.familyPriorOnly === true) {
+        if (familyEligibleProviders.length && !familyEligibleProviders.includes(providerId)) return false;
+        if (familyStrategies.length && capabilityStrategy && !familyStrategies.includes(capabilityStrategy)) return false;
+      }
       // Strict same-provider positive programs are allowed to survive diagnostic
-      // label drift. They remain priors only: the generated candidate still has
-      // to pass current-byte playback, identity and non-regression gates.
+      // label drift. Family priors remain bounded to their causal cohort/strategy.
       return sameProviderPositiveProgram
         || !skill.failureClass
         || skill.failureClass === evidence.failureClass
@@ -1088,6 +1093,7 @@ function buildPlan(item) {
         validated: skill.validated === true,
         sameProviderPositiveProgram,
         familyPriorOnly: skill.familyPriorOnly === true,
+        familyEligibleProviders: stringArray(skill.familyEligibleProviders).map((value) => value.toLowerCase()),
         positiveProgramFingerprint: sameProviderPositiveProgram
           ? stringValue(asRecord(skill.positiveProgramFingerprintsByProvider)[providerId]).toLowerCase()
           : "",
