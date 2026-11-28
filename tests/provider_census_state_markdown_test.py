@@ -92,4 +92,19 @@ assert "| **waf** | 🟧 **HARNESS MISMATCH** | carried |" in text, text
 assert "native-policy-reachable" in text, text
 assert "transport evidence only" in text, text
 
+# Authority-gated dispatch counts are not network-health counts.
+transport_rows = (
+    [{"status": "HARNESS MISMATCH", "authorityRepairEligible": False, "testedThisRun": False}] * 8
+    + [{"status": "HARNESS/ENV BLOCKED", "authorityRepairEligible": False, "testedThisRun": False}] * 7
+    + [{"status": "PROVIDER NETWORK BLOCKED", "authorityRepairEligible": False, "testedThisRun": True}] * 7
+    + [{"status": "PROVIDER NETWORK BLOCKED", "authorityRepairEligible": True, "testedThisRun": True}]
+    + [{"status": "FULL OK", "authorityRepairEligible": False, "testedThisRun": True}]
+)
+notice = mod.transport_status_notice(transport_rows)
+assert "rows (not dispatch queues): **23**" in notice, notice
+assert "census-tested: **8** · carried: **15** · authority-blocked: **22**" in notice, notice
+assert "rows (not dispatch queues): **0**" in mod.transport_status_notice([])
+assert "census-tested: **0** · carried: **1** · authority-blocked: **0**" in mod.transport_status_notice([{"status": "CLIENT TRANSPORT GAP"}])
+assert "Transport-status rows (not dispatch queues): **1**" in text, text
+
 print("provider census authoritative-state markdown contract passed")
