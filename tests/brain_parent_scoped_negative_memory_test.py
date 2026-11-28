@@ -139,6 +139,27 @@ a = {**base, "parentArtifactSha256": PARENT, "parentAuthority": "published-exact
 b = {**base, "parentArtifactSha256": OTHER, "parentAuthority": "published-exact-current-bytes"}
 assert queue._phase_experiment_key(a) != queue._phase_experiment_key(b)
 
+runtime_spec = importlib.util.spec_from_file_location(
+    "brain_runtime_parent_scope", ROOT / "scripts/brain_repair_runtime.py"
+)
+assert runtime_spec and runtime_spec.loader
+runtime = importlib.util.module_from_spec(runtime_spec)
+runtime_spec.loader.exec_module(runtime)
+snapshot = runtime._plan_snapshot({
+    "providerId": "parent-scoped-demo",
+    "parentArtifactSha256": PARENT,
+    "parentAuthority": "published-exact-current-bytes",
+    "failureClass": "chain_terminal_gap",
+    "signature": "sig",
+})
+assert snapshot["parentArtifactSha256"] == PARENT
+assert snapshot["parentAuthority"] == "published-exact-current-bytes"
+
+runtime_source = (ROOT / "scripts/brain_repair_runtime.py").read_text(encoding="utf-8")
+sanitized_plans = runtime_source[runtime_source.index("sanitized_plans = {"):]
+assert '"parentArtifactSha256": row.get("parentArtifactSha256")' in sanitized_plans
+assert '"parentAuthority": row.get("parentAuthority")' in sanitized_plans
+
 print(
     "FIELD_BRAIN_PARENT_SCOPED_NEGATIVE_MEMORY "
     "legacy_exact_parent_veto=false wrong_parent_veto=false same_parent_veto=true "
