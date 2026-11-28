@@ -1851,7 +1851,7 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS MISMATCH"
+        "current_status:NO PROOF"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -1863,7 +1863,8 @@
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
       "targetedTransportEvidence": [],
-      "providerArtifactSha256": "7dbdeb16e2cdb8f46e0e351849e3e731ec08c3dc84c3026a0e7e3de771034a89",
+      "targetedCensusRunId": "46089886928",
+      "targetedCensusSha": "88a67aeff61ccfeb7584d8d13f3833cf594ae1b1",
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
         "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
@@ -5691,7 +5692,9 @@
   "clientTransportGapQueue": [],
   "harnessEvidenceRunId": "",
   "harnessEvidenceSha": "",
-  "authorityRefreshedProviders": [],
+  "authorityRefreshedProviders": [
+    "french-anime"
+  ],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
     "aniflix-uno",
@@ -7848,12 +7851,12 @@
         "aniflix-uno",
         "animejlprovider",
         "animeonsen",
-        "animesalt",
-        "animesultra",
         "arrowtv",
-        "chillflix",
         "cinegram",
-        "cinetimes"
+        "cinetimes",
+        "dulourd",
+        "fexini",
+        "french-anime"
       ],
       "replayedProviders": [
         "french-anime"
@@ -7869,5 +7872,17 @@
     "providerBundleDigestAuthority": "executed-global-vf-published-bytes"
   },
   "artifactHashSchemaVersion": 2,
-  "activeArtifactHashCount": 75
+  "activeArtifactHashCount": 75,
+  "targetedCensusOverlay": {
+    "schemaVersion": 1,
+    "runId": "46089886928",
+    "triggerSha": "88a67aeff61ccfeb7584d8d13f3833cf594ae1b1",
+    "providers": [
+      "french-anime"
+    ],
+    "baseRunId": "46088759880",
+    "baseTriggerSha": "daab271df08554c490beabeb08d15a34a0c21d42",
+    "fleetAuthorityPreserved": true,
+    "providerRowAuthorityOnly": true
+  }
 }

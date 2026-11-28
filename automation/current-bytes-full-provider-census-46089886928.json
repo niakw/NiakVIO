@@ -1,0 +1,623 @@
+{
+  "schema_version": 6,
+  "requested_scope": "sharded",
+  "resolved_scope": "merged-shards",
+  "selected_providers": [
+    "french-anime"
+  ],
+  "environment": "node-adaptive-provider-targeted-first-real-stream-census-with-tmdb-runtime-context",
+  "fixture_selection_policy": "retained-proof-first-then-provider-targeted-then-representative-then-three-corpus-rotated",
+  "provider_count": 1,
+  "task_count": 1,
+  "probe_count": 8,
+  "rotated_task_count": 1,
+  "max_samples_per_lane": 8,
+  "raw_provider_count": 0,
+  "playable_provider_count": 0,
+  "accepted_playable_provider_count": 0,
+  "verified_provider_count": 0,
+  "wrong_content_provider_count": 0,
+  "raw_providers": [],
+  "playable_providers": [],
+  "accepted_playable_providers": [],
+  "verified_providers": [],
+  "wrong_content_providers": [],
+  "type_summary": {
+    "movie": {
+      "tasks": 0,
+      "raw": 0,
+      "playable": 0,
+      "accepted_playable": 0,
+      "verified": 0,
+      "wrong_content": 0
+    },
+    "tv": {
+      "tasks": 0,
+      "raw": 0,
+      "playable": 0,
+      "accepted_playable": 0,
+      "verified": 0,
+      "wrong_content": 0
+    },
+    "anime": {
+      "tasks": 1,
+      "raw": 0,
+      "playable": 0,
+      "accepted_playable": 0,
+      "verified": 0,
+      "wrong_content": 0
+    }
+  },
+  "status_counts": {
+    "no_streams": 1
+  },
+  "debug_stage_counts": {
+    "provider_waf_challenge": 1
+  },
+  "debug_stage_providers": {
+    "provider_waf_challenge": [
+      "french-anime"
+    ]
+  },
+  "shards": [
+    {
+      "file": "provider-census-shard-0.json",
+      "shardCount": 1,
+      "shardIndex": 0,
+      "providerCount": 1
+    }
+  ],
+  "rows": [
+    {
+      "provider_id": "french-anime",
+      "provider_name": "🌸 French Anime",
+      "semantic_type": "anime",
+      "fixture_title": "Steins;Gate",
+      "fixture": {
+        "slug": "steins-gate-2011-s01e01",
+        "tmdbId": "42509",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Steins;Gate",
+        "year": 2011,
+        "season": 1,
+        "episode": 1
+      },
+      "streams_returned": 0,
+      "announced_player_candidates": 0,
+      "announced_variant_candidates": 0,
+      "announced_player_hosts": [],
+      "announced_quality_heights": [],
+      "explored_player_requests": 0,
+      "explored_player_hosts": [],
+      "variant_fanout_state": "not-observed",
+      "status": "no_streams",
+      "debug_stage": "provider_waf_challenge",
+      "debug_model": {
+        "strategy": "mixed_embed_resolver",
+        "source_runtime_family": "catalogue-html-embed",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "supported_types": [
+          "anime"
+        ],
+        "route_count": 2,
+        "route_kinds": [
+          "search"
+        ],
+        "has_api_recipe": false,
+        "official_site": "http://french-anime.com",
+        "official_hub": null,
+        "official_api": null
+      },
+      "debug_fetch_count": 4,
+      "debug_provider_fetch_count": 3,
+      "debug_progress_stage": "none",
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/tv/42509?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/42509?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "request_headers": {
+            "accept": "application/json"
+          },
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "adult",
+              "backdrop_path",
+              "created_by",
+              "episode_run_time",
+              "first_air_date",
+              "genres",
+              "homepage",
+              "id",
+              "in_production",
+              "languages",
+              "last_air_date",
+              "last_episode_to_air",
+              "name",
+              "next_episode_to_air",
+              "networks",
+              "number_of_episodes"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 65
+        },
+        {
+          "url": "http://french-anime.com/?s=Steins%3BGate",
+          "response_url": "https://french-anime.com/?s=Steins%3BGate",
+          "method": "GET",
+          "request_headers": {
+            "accept": "application/json,text/html,application/xhtml+xml,text/plain,*/*",
+            "user-agent": "Mozilla/5.0 NiakVIO/3"
+          },
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 5566,
+            "forms": 0,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 1,
+            "anchors": 0,
+            "classTokens": [
+              "h2",
+              "main-content",
+              "main-wrapper"
+            ],
+            "idTokens": [
+              "challenge-error-text"
+            ],
+            "classFacts": [
+              {
+                "token": "h2",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "main-content",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "main-wrapper",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              }
+            ],
+            "markers": []
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 88
+        },
+        {
+          "url": "http://french-anime.com/?q=Steins%3BGate",
+          "response_url": "https://french-anime.com/?q=Steins%3BGate",
+          "method": "GET",
+          "request_headers": {
+            "accept": "application/json,text/html,application/xhtml+xml,text/plain,*/*",
+            "user-agent": "Mozilla/5.0 NiakVIO/3"
+          },
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 5566,
+            "forms": 0,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 1,
+            "anchors": 0,
+            "classTokens": [
+              "h2",
+              "main-content",
+              "main-wrapper"
+            ],
+            "idTokens": [
+              "challenge-error-text"
+            ],
+            "classFacts": [
+              {
+                "token": "h2",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "main-content",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "main-wrapper",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              }
+            ],
+            "markers": []
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 67
+        },
+        {
+          "url": "http://french-anime.com/?s=%E5%91%BD%E8%BF%90%E7%9F%B3%E4%B9%8B%E9%97%A8",
+          "response_url": "https://french-anime.com/?s=%E5%91%BD%E8%BF%90%E7%9F%B3%E4%B9%8B%E9%97%A8",
+          "method": "GET",
+          "request_headers": {
+            "accept": "application/json,text/html,application/xhtml+xml,text/plain,*/*",
+            "user-agent": "Mozilla/5.0 NiakVIO/3"
+          },
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "response_shape": {
+            "kind": "html",
+            "sampleBytes": 5704,
+            "forms": 0,
+            "iframes": 0,
+            "videos": 0,
+            "sources": 0,
+            "scripts": 1,
+            "anchors": 0,
+            "classTokens": [
+              "h2",
+              "main-content",
+              "main-wrapper"
+            ],
+            "idTokens": [
+              "challenge-error-text"
+            ],
+            "classFacts": [
+              {
+                "token": "h2",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "main-content",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              },
+              {
+                "token": "main-wrapper",
+                "count": 1,
+                "tags": [
+                  "div"
+                ],
+                "selfHref": 0,
+                "nestedAnchors": 0,
+                "signals": []
+              }
+            ],
+            "markers": []
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 59
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "debug_provider_runtime_dispatch_error_v1": null,
+      "debug_identity_reasons": [],
+      "stderr_tail": "FIELD_TMDB_PROBE_CONTEXT state=core_ready credential_visible=false metadata_hydrated=false dynamic=true core_capability=true\n",
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 3085,
+      "sample_count": 8,
+      "fanout_fixture_title": "Jujutsu Kaisen",
+      "sample_titles": [
+        "Jujutsu Kaisen",
+        "KONOSUBA - God's blessing on this wonderful world!",
+        "High School DxD",
+        "Death Note",
+        "Dragon Ball Super",
+        "One Piece",
+        "Naruto",
+        "Steins;Gate"
+      ],
+      "adaptive_rotated": true,
+      "samples": [
+        {
+          "fixture_title": "Jujutsu Kaisen",
+          "fixture": {
+            "tmdbId": "95479",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Jujutsu Kaisen",
+            "year": 2020,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 662,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "KONOSUBA - God's blessing on this wonderful world!",
+          "fixture": {
+            "slug": "konosuba-god-s-blessing-on-this-wonderful-world-2016-s01e01",
+            "tmdbId": "65844",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "KONOSUBA - God's blessing on this wonderful world!",
+            "year": 2016,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 286,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "High School DxD",
+          "fixture": {
+            "slug": "high-school-dxd-2012-s01e01",
+            "tmdbId": "45950",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "High School DxD",
+            "year": 2012,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 316,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Death Note",
+          "fixture": {
+            "slug": "health-anime-13916-s1e1",
+            "tmdbId": "13916",
+            "mediaType": "anime",
+            "title": "Death Note",
+            "year": 2006,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 282,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Dragon Ball Super",
+          "fixture": {
+            "slug": "dragon-ball-super-2015-s01e01",
+            "tmdbId": "62715",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Dragon Ball Super",
+            "year": 2015,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 295,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "One Piece",
+          "fixture": {
+            "slug": "health-anime-37854-s1e1",
+            "tmdbId": "37854",
+            "mediaType": "anime",
+            "title": "One Piece",
+            "year": 1999,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 273,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Naruto",
+          "fixture": {
+            "slug": "health-anime-46260-s1e1",
+            "tmdbId": "46260",
+            "mediaType": "anime",
+            "title": "Naruto",
+            "year": 2002,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 281,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        },
+        {
+          "fixture_title": "Steins;Gate",
+          "fixture": {
+            "slug": "steins-gate-2011-s01e01",
+            "tmdbId": "42509",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Steins;Gate",
+            "year": 2011,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 288,
+          "streams_returned": 0,
+          "announced_player_candidates": 0,
+          "announced_variant_candidates": 0,
+          "announced_player_hosts": [],
+          "announced_quality_heights": [],
+          "explored_player_requests": 0,
+          "explored_player_hosts": [],
+          "variant_fanout_state": "not-observed"
+        }
+      ],
+      "provider_budget_seconds": 90,
+      "provider_budget_exhausted": false
+    }
+  ]
+}
