@@ -220,8 +220,13 @@ def main() -> int:
     assert 'tmp_branch="brain-learning-memory-$GITHUB_RUN_ID-$attempt"' in memory_publisher
     assert 'git switch --orphan "$tmp_branch"' in memory_publisher
     assert '--force-with-lease="$BRANCH:$expected_sha"' in memory_publisher
-    assert 'FIELD_BRAIN_MEMORY_PUBLISH mode=orphan-memory-only files=3' in memory_publisher
+    assert 'FIELD_BRAIN_MEMORY_PUBLISH mode=orphan-memory-only files=4' in memory_publisher
     assert "engine_v2/learning/llm-guidance.json" in memory_publisher
+    assert "engine_v2/learning/dispatch-ledger.json" in memory_publisher
+    assert "provider_learning_dispatch_gate.py mark" in memory_publisher
+    assert "FIELD_BRAIN_DISPATCH_LEDGER_MARK" in memory_publisher
+    assert "LEARNING_DISPATCH_FINGERPRINT" in memory_publish
+    assert "dispatch_fingerprint:" in workflow
     assert "brain-sandbox/brain-llm/guidance.json" in workflow
     assert "FIELD_BRAIN_MEMORY_PUBLISH skipped=stale" in memory_publisher
     assert "candidate_ms=" in memory_publisher and "existing_ms=" in memory_publisher
