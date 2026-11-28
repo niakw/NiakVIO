@@ -268,6 +268,13 @@ def build(batch:dict[str,Any],status:dict[str,Any],dynamic_repair:set[str] | Non
                 unexpected=[p for p in partition_providers if p not in current_environment]
             elif row["repairScope"]=="variant-coverage":
                 unexpected=[p for p in partition_providers if p not in current_dynamic]
+            elif row["lane"]=="BRAIN_LEARNING":
+                # Read-only Brain diagnosis may consume current authority-
+                # rediscovery debt; authority still gates publication/mutation.
+                unexpected=[
+                    p for p in partition_providers
+                    if p not in current_repair and p not in current_authority
+                ]
             else:
                 unexpected=[p for p in partition_providers if p not in current_repair]
             row["queueConsistent"]=not unexpected
