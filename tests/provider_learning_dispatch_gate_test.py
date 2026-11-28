@@ -345,6 +345,9 @@ assert "--lane CORE_CLIENT_LEARNING" in autopilot
 assert "LEARNING: ${{ steps.learning-gate.outputs.learning }}" in autopilot
 assert "HARNESS: ${{ steps.learning-gate.outputs.harness }}" in autopilot
 assert 'test -s "$ledger"' in autopilot
+assert "brain-learning/proposals:engine_v2/learning/latest.json" in autopilot
+assert 'learning_args+=(--learning-memory "$learning_memory")' in autopilot
+assert "FIELD_PROVIDER_AUTOPILOT_LEARNING_MEMORY" in autopilot
 
 # Fast Repair must not launch an unchanged unresolved cohort directly into
 # routine Learning. FORCE is an explicit exception and is still independently
