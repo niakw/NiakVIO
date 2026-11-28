@@ -166,6 +166,12 @@ def diagnostic(row: dict[str, Any]) -> dict[str, Any]:
     score = int(ANOMALY_SCORES.get(status, 40 if status else 20))
     if status in {"blocked", "runtime_error", "no_streams"} and server_ok:
         score = max(1, score - 35)
+    returned = sum(
+        max(0, int(test.get("streams_returned") or test.get("stream_count") or 0))
+        for test in row.get("tests") or []
+        if isinstance(test, dict)
+    )
+    playable = max(0, int(evidence.get("streams_playable") or 0))
     return {
         "provider": provider_id,
         "status": status,
@@ -178,6 +184,8 @@ def diagnostic(row: dict[str, Any]) -> dict[str, Any]:
         "server_accessible": server_accessible,
         "server_successful_response": server_ok,
         "host_count": len(hosts),
+        "published_streams_returned": returned,
+        "published_streams_playable": playable,
     }
 
 def unique(values: list[str]) -> list[str]:
@@ -306,11 +314,74 @@ def sanitize_network_execution_delta(value: Any) -> dict[str, Any]:
     }
 
 
+
+def repair_parent_baseline_contradiction(
+    published_info: dict[str, Any],
+    repair: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Detect a child baseline that contradicts exact published parent evidence."""
+    info = published_info if isinstance(published_info, dict) else {}
+    published_status = str(info.get("status") or "").strip().casefold()
+    published_playable = max(0, int(info.get("published_streams_playable") or 0))
+    published_returned = max(0, int(info.get("published_streams_returned") or 0))
+    if published_status != "healthy" and published_playable <= 0:
+        return None
+
+    report = repair.get("report") if isinstance(repair.get("report"), dict) else {}
+    baselines: list[dict[str, Any]] = []
+    for round_row in report.get("rounds") or []:
+        if not isinstance(round_row, dict):
+            continue
+        for attempt in round_row.get("attempts") or []:
+            if not isinstance(attempt, dict):
+                continue
+            if "baseline_status" not in attempt and "baseline_streams_playable" not in attempt:
+                continue
+            baselines.append(attempt)
+    if not baselines:
+        return None
+
+    baseline_playable = max(
+        max(0, int(row.get("baseline_streams_playable") or 0))
+        for row in baselines
+    )
+    baseline_returned = max(
+        max(0, int(row.get("baseline_streams_returned") or 0))
+        for row in baselines
+    )
+    baseline_statuses = sorted({
+        str(row.get("baseline_status") or "").strip().casefold()
+        for row in baselines
+        if str(row.get("baseline_status") or "").strip()
+    })
+    baseline_healthy = "healthy" in baseline_statuses or baseline_playable > 0
+    contradiction = (
+        published_playable > 0 and baseline_playable == 0
+    ) or (
+        published_status == "healthy"
+        and not baseline_healthy
+        and baseline_returned == 0
+    )
+    if not contradiction:
+        return None
+    return {
+        "publishedStatus": published_status or "unknown",
+        "publishedStreamsReturned": published_returned,
+        "publishedStreamsPlayable": published_playable,
+        "baselineStatuses": baseline_statuses[:8],
+        "baselineStreamsReturned": baseline_returned,
+        "baselineStreamsPlayable": baseline_playable,
+        "proofAuthority": False,
+        "publicationAuthority": False,
+    }
+
+
 def phase_experiment_entries(
     provider_id: str,
     plan: dict[str, Any],
     repair: dict[str, Any],
     final_lab: dict[str, Any] | None = None,
+    parent_contradiction: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     """Materialize the exact fair-share experiment identity and outcome.
 
@@ -473,6 +544,18 @@ def phase_experiment_entries(
             outcome = "executed_inconclusive"
             reason = "causal_capability_not_exercised"
 
+        harness_contradiction = (
+            copy.deepcopy(parent_contradiction)
+            if isinstance(parent_contradiction, dict) and parent_contradiction
+            else None
+        )
+        if harness_contradiction is not None and success_count == 0:
+            failures = 0
+            progresses = 0
+            outcome = "executed_inconclusive"
+            reason = "harness_parent_contradiction"
+            causal_exercise = False
+
         entries.append({
             "providerId": norm(provider_id),
             "providerVersion": "*",
@@ -526,6 +609,8 @@ def phase_experiment_entries(
             "generationAttemptObserved": bool(not_generated),
             "networkExecutionSummary": network_execution,
             "networkExecutionDelta": network_execution_delta,
+            "harnessParentContradiction": harness_contradiction is not None,
+            "harnessParentContradictionEvidence": harness_contradiction or {},
         })
     return entries
 
@@ -2580,6 +2665,7 @@ def main() -> int:
                 attempt_no = int(state.get("attemptCount") or 0) + 1
                 attempt_dir = run_dir / f"attempt-{attempt_no}"
                 attempt_dir.mkdir(parents=True, exist_ok=True)
+                parent_contradiction: dict[str, Any] | None = None
                 try:
                     provider_source_contract_status = str(
                         source_contract_provider_states_map.get(provider_id) or source_contract_status
@@ -2763,6 +2849,18 @@ def main() -> int:
                         preferred_failure_class=preferred_failure_class,
                         causal_failure_class=causal_failure_class,
                     )
+                    parent_contradiction = repair_parent_baseline_contradiction(info, repair)
+                    if parent_contradiction is not None:
+                        print(
+                            "FIELD_BRAIN_HARNESS_PARENT_CONTRADICTION "
+                            f"provider={provider_id} "
+                            f"published_status={parent_contradiction['publishedStatus']} "
+                            f"published_playable={parent_contradiction['publishedStreamsPlayable']} "
+                            f"baseline_statuses={','.join(parent_contradiction['baselineStatuses']) or 'none'} "
+                            f"baseline_playable={parent_contradiction['baselineStreamsPlayable']} "
+                            "negative_memory=false proof_authority=false publication=false",
+                            flush=True,
+                        )
                 except BudgetExhausted as error:
                     state["lastStatus"] = "fair_share_slice_exhausted"
                     state["lastAttemptAt"] = datetime.now(timezone.utc).isoformat()
@@ -2850,6 +2948,7 @@ def main() -> int:
                             provider_plan,
                             repair,
                             incomplete_lab,
+                            parent_contradiction,
                         )
                         phase_experiment_ledger.extend(incomplete_entries)
                         if incomplete_entries:
@@ -2884,6 +2983,7 @@ def main() -> int:
                         provider_plan,
                         repair,
                         final_lab,
+                        parent_contradiction,
                     )
                     phase_experiment_ledger.extend(attempt_entries)
                     if attempt_entries:
