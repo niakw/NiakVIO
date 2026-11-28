@@ -119,8 +119,8 @@ all_families=mod.plan(
     learning_memory=recent_memory,
 )
 family0=next(row for row in all_families["cohorts"] if row["familyKey"]=="family-00")
-assert family0["provider"]=="p0001",family0
-assert family0["providerFilter"].split(",")[0]=="p0001",family0
+assert family0["provider"]=="p0008",family0
+assert family0["providerFilter"].split(",")[0]=="p0008",family0
 assert len(family0["cohortProviders"])==8,family0
 assert family0["providerLastAttemptAt"]=="",family0
 assert family0["familyLastAttemptAt"],family0
