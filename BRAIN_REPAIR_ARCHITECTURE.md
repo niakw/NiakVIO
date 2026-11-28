@@ -1,3 +1,16 @@
+## 2026-11-28 — Fan-out familial progressif et budget d'oracle isolé
+
+Le scheduler Learning ne doit plus propager une stratégie familiale avant qu'elle ait produit un signal positif validé. Le contrat d'exécution est désormais progressif :
+
+1. Une famille causale exacte sans prior positif validé exécute **un seul oracle**. Le reste des siblings est différé, pas abandonné.
+2. Un prior familial validé portant le même `familyKeyHash` et une stratégie de capacité compatible, avec confiance >= 0,50, autorise une cohorte de transfert bornée à **3 providers**.
+3. Seul un prior de maturité `trusted`, confiance >= 0,80, autorise le fan-out large, toujours borné par `max_family_providers` (8 dans l'Autopilot courant).
+4. Une même apparence de panne n'est jamais une autorité de transfert. Scope, capacité, runtime/protocole, signature causale et profondeur de preuve restent des dimensions de famille.
+
+Le budget interne suit la même logique. Un workflow `oracle-only` avec un unique représentant peut exécuter au maximum **3 hypothèses distinctes** dans son slice de 120 s lorsque le premier essai n'est pas playable, que le plan reste `probe-targeted-repair`, qu'un profil exécutable existe et que l'expérience n'est pas épuisée. Chaque verdict est fusionné dans la mémoire de phase avant le choix suivant, afin que la deuxième hypothèse ne rejoue pas silencieusement la première. Le plafond temporel reste autoritaire. Les cohortes multi-provider conservent un essai ordinaire par provider avant rotation ; les continuations evolved/post-g5 restent soumises à leurs gardes existants.
+
+Aucun de ces mécanismes n'accorde une autorité de publication. Un succès familial, un stream retourné ou une progression de frontière ne certifie pas un provider : il faut toujours bytes générés et appliqués, rematérialisation, identité correcte, média terminal, lecture stricte/cliente officielle selon le niveau de preuve et non-régression. Tant que ces preuves manquent, le résultat reste Learning et le compteur de réparations reste zéro.
+
 ## 2026-11-27 — Frontier resolver → player HTML cross-origin
 
 Le contrat source-family possède désormais trois étages distincts : (1) matrice épisode inline, (2) resolver opaque same-origin `/api/lien.php`, (3) cible résolue. Une cible HTTPS résolue qui répond `html_player` et n'est pas same-origin déplace la causalité vers la famille de traversée/extraction player ; elle ne justifie ni une nouvelle version du resolver ni une mutation transport générique sans preuve supplémentaire.
