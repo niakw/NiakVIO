@@ -2184,6 +2184,29 @@ def repair_attempt(
         "validationReason": "",
     }
 
+
+def repair_executable_mutation_observed(repair: dict[str, Any]) -> bool:
+    """True only when the validated child produced bytes that were actually retested."""
+    if str(repair.get("validationStatus") or "") != "validated":
+        return False
+    report = repair.get("report") if isinstance(repair.get("report"), dict) else {}
+    for round_row in report.get("rounds") or []:
+        if not isinstance(round_row, dict):
+            continue
+        if any(
+            isinstance(row, dict)
+            for key in ("accepted", "rejected", "exploration_progress")
+            for row in round_row.get(key) or []
+        ):
+            return True
+        if any(
+            isinstance(row, dict) and str(row.get("status") or "") == "generated"
+            for row in round_row.get("attempts") or []
+        ):
+            return True
+    return False
+
+
 def source_contract_provider_states(
     order: list[str],
     frontier: set[str] | dict[str, Any],
@@ -2925,6 +2948,47 @@ def main() -> int:
                         tagged["providerId"] = provider_id
                         combined_rounds.append(tagged)
     
+                method_set = tuple(repair["attemptedMethods"])
+                if not repair_executable_mutation_observed(repair):
+                    no_mutation_lab = {
+                        "status": "not_executed_no_mutation",
+                        "reason": "no_executable_mutation",
+                    }
+                    provider_attempts.append({
+                        "attempt": attempt_no,
+                        "repairAccepted": repair["accepted"],
+                        "attemptedProfiles": repair["attemptedProfiles"],
+                        "attemptedMethods": repair["attemptedMethods"],
+                        "lab": no_mutation_lab,
+                    })
+                    state["attemptCount"] = attempt_no
+                    state["lastAttemptAt"] = datetime.now(timezone.utc).isoformat()
+                    state["lastStatus"] = "not_executed_no_mutation"
+                    attempts_this_phase += 1
+                    if provider_plan:
+                        no_mutation_entries = phase_experiment_entries(
+                            provider_id,
+                            provider_plan,
+                            repair,
+                            no_mutation_lab,
+                            parent_contradiction,
+                        )
+                        phase_experiment_ledger.extend(no_mutation_entries)
+                        if no_mutation_entries:
+                            phase_learning_state = merge_phase_learning_state(
+                                phase_learning_state,
+                                no_mutation_entries,
+                            )
+                            write_json(phase_learning_state_path, phase_learning_state)
+                    print(
+                        "FIELD_BRAIN_LAB_SKIPPED "
+                        f"provider={provider_id} reason=no_executable_mutation "
+                        "client_replay=false proof_authority=false",
+                        flush=True,
+                    )
+                    final_lab = no_mutation_lab
+                    break
+
                 full_registry = load_json(full_registry_path, {})
                 candidate = candidate_map(full_registry).get(provider_id) or {}
                 media_type = declared_type(
@@ -2982,7 +3046,6 @@ def main() -> int:
                         f"provider={provider_id} stage=lab reason={error}"
                     )
                     break
-                method_set = tuple(repair["attemptedMethods"])
                 provider_attempts.append({
                     "attempt": attempt_no,
                     "repairAccepted": repair["accepted"],
@@ -3140,7 +3203,7 @@ def main() -> int:
         for row in run_results
         if isinstance(row, dict)
         and isinstance(row.get("finalLab"), dict)
-        and row["finalLab"].get("status") != "playable"
+        and row["finalLab"].get("status") not in {"playable", "not_executed_no_mutation"}
         and str((row.get("coreHypothesis") or {}).get("status") or "") in {"healthy", "reachable"}
     ]
     fixture_updates = {
