@@ -454,6 +454,34 @@ except AssertionError:
 else:
     raise AssertionError("template URL must fail closed")
 
+# Reject an ambiguous historical rollback before mutating registry/provider DATA.
+preflight_item = {
+    "status": "site_authoritative",
+    "official_site": "https://demo-old.example",
+    "selected_source_type": "hub",
+    "site_candidates": [{
+        "url": "https://demo-old.example",
+        "label": "Visit",
+        "source_type": "hub",
+    }],
+}
+preflight_patch = {"official_site": "https://demo-new.example"}
+preflight_history = copy.deepcopy(before_history["providers"]["demo"])
+assert module.reject_unproven_historical_rollback(
+    preflight_item, preflight_patch, preflight_history
+) is True
+assert preflight_item["status"] == "hub_unresolved"
+assert preflight_item["reason"] == "historical_terminal_requires_fresh_authoritative_evidence"
+assert preflight_patch["official_site"] == "https://demo-new.example"
+
+fresh_preflight = copy.deepcopy(preflight_item)
+fresh_preflight["status"] = "site_authoritative"
+fresh_preflight["reason"] = ""
+fresh_preflight["site_candidates"][0]["label"] = "Nouvelle adresse officielle"
+assert module.reject_unproven_historical_rollback(
+    fresh_preflight, preflight_patch, preflight_history
+) is False
+
 # A historical rollback advertised ambiguously by a hub must not replace current.
 after_overrides = copy.deepcopy(before_overrides)
 after_hubs = copy.deepcopy(before_hubs)
