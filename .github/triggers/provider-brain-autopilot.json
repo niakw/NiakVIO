@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-11-28T17:18:00+01:00",
-  "reason": "Retry bounded causal client transport cohorts after aligning the Autopilot in-flight contract: targeted WAF runs are independently concurrent and no longer globally lane-serialized.",
+  "requestedAt": "2026-11-28T17:24:00+01:00",
+  "reason": "Retry bounded concurrent client transport cohorts after updating the WAF/Tailscale contract test for targeted per-run concurrency. Prior cohorts stopped before provider network probes.",
   "sourceCensusRunId": "46160030156",
   "sourceCensusSha": "23196859e366bd47357118ce6477b16c2d72a389",
   "expectedRepairQueue": [
@@ -74,7 +74,7 @@
     "zone-telechargement"
   ],
   "expectedTargetedTransportBlockedQueue": [],
-  "retry": 34,
+  "retry": 35,
   "mode": "auto",
   "expectedDynamicVariantProviders": [
     "hindmoviez",
