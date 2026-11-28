@@ -487,6 +487,132 @@ assert idempotent_row["networkDifferentialClass"] == "github-native-route-reacha
 assert idempotent_row["networkDifferentialEvidence"], idempotent_row
 assert idempotent["networkDifferentialUpdatedProviders"] == ["route-net"], idempotent
 
+# Concurrent targeted cohorts have one global "latest run", but freshness is
+# provider-local outside that run's explicit scope. Alpha's run 200 must remain
+# usable when beta's later run 201 becomes the global receipt.
+concurrent_baseline = {
+    "runId": "repair-authority",
+    "triggerSha": "repair-sha",
+    "repairQueue": [],
+    "environmentQueue": [],
+    "harnessQueue": [],
+    "authorityRediscoveryQueue": ["alpha", "beta"],
+    "authorityBlockedQueue": ["alpha", "beta"],
+    "symptomaticProviders": ["alpha", "beta"],
+    "brainQueue": ["alpha", "beta"],
+    "providers": [
+        {
+            "provider": "alpha",
+            "status": "ROUTE PROVEN",
+            "color": "🟪",
+            "declaredLanes": ["movie"],
+            "evidenceDepth": ["movie=lookup_only"],
+            "dominantIssue": "provider_network_http_error",
+            "providerArtifactSha256": "a" * 64,
+            "brainCheckRequired": True,
+            "statusRepairEligible": True,
+            "authorityRepairEligible": False,
+            "repairEligible": False,
+        },
+        {
+            "provider": "beta",
+            "status": "ROUTE PROVEN",
+            "color": "🟪",
+            "declaredLanes": ["movie"],
+            "evidenceDepth": ["movie=lookup_only"],
+            "dominantIssue": "provider_network_http_error",
+            "providerArtifactSha256": "b" * 64,
+            "brainCheckRequired": True,
+            "statusRepairEligible": True,
+            "authorityRepairEligible": False,
+            "repairEligible": False,
+        },
+    ],
+}
+def concurrent_row(provider, run_id, source_sha, bundle):
+    return {
+        "provider": provider,
+        "lane": "movie",
+        "seedKind": "metadata-search",
+        "outcome": "browser_content_reached",
+        "directHttpProfile": {"outcome": "direct_http_content_reached"},
+        "okHttpJvmProfile": {"outcome": "okhttp_jvm_content_reached"},
+        "desktopOkHttpJvmProfile": {"outcome": "okhttp_jvm_content_reached"},
+        "transportReceipt": {
+            "sourceNiakvioSha": source_sha,
+            "runId": run_id,
+            "providerBundleSha256": bundle,
+            "proofAuthority": False,
+            "publicationAuthority": False,
+        },
+    }
+def concurrent_replay(provider, run_id, source_sha, bundle):
+    return {
+        "provider": provider,
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "identitySafe": True,
+        "providerArtifactSha256": bundle,
+        "residentialReplayReceipt": {
+            "sourceNiakvioSha": source_sha,
+            "runId": run_id,
+            "providerBundleSha256": bundle,
+            "proofAuthority": False,
+            "publicationAuthority": False,
+        },
+    }
+concurrent_waf = {
+    "freshRunReceipt": {
+        "sourceNiakvioSha": "2" * 40,
+        "runId": "201",
+        "providerCount": 1,
+        "proofAuthority": False,
+        "publicationAuthority": False,
+    },
+    "lastRefreshProviderFilter": ["beta"],
+    "rows": [
+        concurrent_row("alpha", "200", "1" * 40, "a" * 64),
+        concurrent_row("beta", "201", "2" * 40, "b" * 64),
+    ],
+    "residentialProviderReplay": {
+        "available": True,
+        "rows": [
+            concurrent_replay("alpha", "200", "1" * 40, "a" * 64),
+            concurrent_replay("beta", "201", "2" * 40, "b" * 64),
+        ],
+        "lastAttempt": {
+            "available": True,
+            "providerCount": 1,
+            "refreshedProviders": ["beta"],
+            "replayedProviders": ["beta"],
+            "sourceNiakvioSha": "2" * 40,
+            "runId": "201",
+            "proofAuthority": False,
+            "publicationAuthority": False,
+        },
+    },
+}
+concurrent_result = mod.merge_transport(concurrent_baseline, concurrent_waf)
+concurrent_rows = {row["provider"]: row for row in concurrent_result["providers"]}
+for provider in ("alpha", "beta"):
+    assert concurrent_rows[provider]["status"] == "ROUTE PROVEN", concurrent_rows[provider]
+    assert concurrent_rows[provider]["networkDifferentialClass"] == "github-native-route-reachable", concurrent_rows[provider]
+    assert concurrent_rows[provider]["networkDifferentialEvidence"], concurrent_rows[provider]
+assert concurrent_result["networkDifferentialUpdatedProviders"] == ["alpha", "beta"], concurrent_result
+
+# But if alpha is explicitly targeted by global run 201, its run-200 receipt
+# becomes historical and must not masquerade as fresh current-run evidence.
+targeted_miss = copy.deepcopy(concurrent_waf)
+targeted_miss["lastRefreshProviderFilter"] = ["alpha", "beta"]
+targeted_miss_result = mod.merge_transport(concurrent_baseline, targeted_miss)
+targeted_miss_rows = {row["provider"]: row for row in targeted_miss_result["providers"]}
+assert "networkDifferentialClass" not in targeted_miss_rows["alpha"], targeted_miss_rows["alpha"]
+assert targeted_miss_rows["beta"]["networkDifferentialClass"] == "github-native-route-reachable", targeted_miss_rows["beta"]
+
 # A full residential provider replay is stronger than the narrow transport
 # overlay, but only strict current playable + identity-safe proof may promote.
 functional_baseline = {
