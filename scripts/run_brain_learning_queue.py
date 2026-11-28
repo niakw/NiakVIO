@@ -475,6 +475,12 @@ def phase_experiment_entries(
         entries.append({
             "providerId": norm(provider_id),
             "providerVersion": "*",
+            "parentArtifactSha256": str(
+                effective_plan.get("parentArtifactSha256") or ""
+            ).strip().casefold(),
+            "parentAuthority": str(
+                effective_plan.get("parentAuthority") or ""
+            ).strip().casefold(),
             "failureClass": failure_class,
             "signature": signature,
             "profile": profile,
@@ -764,17 +770,18 @@ def diagnostic_network_backfill_entry(
     return row
 
 
-def _phase_experiment_key(row: dict[str, Any]) -> tuple[str, str, str, str, str, str, str, str, int, int]:
-    """Match the production Brain memory identity, including LLM experiment bytes.
+def _phase_experiment_key(row: dict[str, Any]) -> tuple[Any, ...]:
+    """Match exact experiment identity, including parent bytes and LLM program.
 
-    A meta-gap fingerprint is part of the executable hypothesis. Dropping it
-    collapses distinct Qwen experiments into the same profile/generation row
-    and makes failedFingerprint() unable to rotate away from an executed
-    negative hypothesis.
+    A negative belongs to the parent bytes it actually mutated. Without that
+    boundary, a reconstruction/harness experiment can poison later execution
+    against different production bytes.
     """
     return (
         norm(row.get("providerId")),
         str(row.get("providerVersion") or "*").strip() or "*",
+        str(row.get("parentArtifactSha256") or "").strip().casefold(),
+        str(row.get("parentAuthority") or "").strip().casefold(),
         str(row.get("failureClass") or "").strip(),
         str(row.get("signature") or "").strip(),
         str(row.get("profile") or "").strip(),
