@@ -1215,9 +1215,9 @@
     },
     {
       "provider": "documentary-area",
-      "status": "PROVIDER NETWORK BLOCKED",
+      "status": "ROUTE PROVEN",
       "underlyingStatus": "",
-      "color": "🟤",
+      "color": "🟪",
       "declaredLanes": [
         "movie"
       ],
@@ -1257,8 +1257,12 @@
       "testedThisRun": true,
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
-        "movie: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true"
-      ]
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "dulourd",
@@ -1779,7 +1783,7 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:HARNESS MISMATCH"
+        "current_status:NO PROOF"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -4437,7 +4441,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER NETWORK BLOCKED"
+        "current_status:ROUTE PROVEN"
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
@@ -4446,14 +4450,13 @@
       "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
       "targetedTransportEvidence": [],
-      "residentialProviderReplayReclassified": true
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "zone-streaming",
@@ -5288,9 +5291,9 @@
     "HARNESS/ENV BLOCKED": 7,
     "NO PROOF": 14,
     "PROOF REFRESH REQUIRED": 4,
-    "PROVIDER NETWORK BLOCKED": 7,
+    "PROVIDER NETWORK BLOCKED": 6,
     "REGRESSION PROVIDER": 5,
-    "ROUTE PROVEN": 1
+    "ROUTE PROVEN": 2
   },
   "symptomaticProviders": [
     "1jour1film0626",
@@ -5625,9 +5628,12 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "",
-  "harnessEvidenceSha": "",
-  "authorityRefreshedProviders": [],
+  "harnessEvidenceRunId": "46165105980-waf-transport",
+  "harnessEvidenceSha": "11e6b973922e3efe3f5260e0564299ab8843ea41",
+  "authorityRefreshedProviders": [
+    "french-anime",
+    "youtitou"
+  ],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
     "aniflix-uno",
@@ -5636,6 +5642,7 @@
     "arrowtv",
     "cinegram",
     "cinetimes",
+    "documentary-area",
     "dulourd",
     "fexini",
     "film-a-revoir",
@@ -5644,22 +5651,21 @@
     "ihavenotv",
     "voirserie",
     "watch-cartoon-online",
-    "waveanime",
-    "youtitou"
+    "waveanime"
   ],
   "networkDifferentialUpdatedProviders": [
     "moiflix"
   ],
   "residentialProviderReplayPromotedProviders": [],
   "residentialProviderReplayReclassifiedProviders": [
-    "youtitou"
+    "documentary-area"
   ],
   "residentialProviderReplayRepairableProviders": [],
   "residentialExitNodeEvidence": {
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 0,
+    "matchedProviderLanes": 5,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -5672,7 +5678,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 0,
+    "matchedProviderLanes": 5,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -6523,17 +6529,15 @@
         "providerArtifactSha256": "e0d1a2cb7e7a451968b83b8184e51520c830ebcc4f50539356eab42feac1f381",
         "lane": "movie",
         "status": "no_streams",
-        "debugStage": "provider_network_http_error",
+        "debugStage": "provider_zero_before_provider_network",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_network_http_error",
-          "provider_network_zero_result"
+          "provider_zero_before_provider_network"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
-          "lookup_only",
           "none"
         ],
         "raw": 0,
@@ -6542,9 +6546,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "7cb878dca17f2e1320f58c3f1949815419ecd877",
+          "sourceNiakvioSha": "bc3ac678fd4858c59ae6ec59bf0647b0afccb0f5",
           "providerBundleSha256": "e0d1a2cb7e7a451968b83b8184e51520c830ebcc4f50539356eab42feac1f381",
-          "runId": "46164709912",
+          "runId": "46165105980",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7785,9 +7789,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "7cb878dca17f2e1320f58c3f1949815419ecd877",
+          "sourceNiakvioSha": "bc3ac678fd4858c59ae6ec59bf0647b0afccb0f5",
           "providerBundleSha256": "695076a5b462ed5ed40a04c61f9920e162f89fe6c062e566ddb1d5cdcd1516b9",
-          "runId": "46164709912",
+          "runId": "46165105980",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7806,7 +7810,6 @@
           "no_streams"
         ],
         "sampleProgressStages": [
-          "lookup_only",
           "none"
         ],
         "raw": 0,
@@ -7815,9 +7818,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "7cb878dca17f2e1320f58c3f1949815419ecd877",
+          "sourceNiakvioSha": "bc3ac678fd4858c59ae6ec59bf0647b0afccb0f5",
           "providerBundleSha256": "695076a5b462ed5ed40a04c61f9920e162f89fe6c062e566ddb1d5cdcd1516b9",
-          "runId": "46164709912",
+          "runId": "46165105980",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7836,7 +7839,6 @@
           "no_streams"
         ],
         "sampleProgressStages": [
-          "lookup_only",
           "none"
         ],
         "raw": 0,
@@ -7845,9 +7847,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "7cb878dca17f2e1320f58c3f1949815419ecd877",
+          "sourceNiakvioSha": "bc3ac678fd4858c59ae6ec59bf0647b0afccb0f5",
           "providerBundleSha256": "695076a5b462ed5ed40a04c61f9920e162f89fe6c062e566ddb1d5cdcd1516b9",
-          "runId": "46164709912",
+          "runId": "46165105980",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7900,17 +7902,15 @@
         "providerArtifactSha256": "974b6549cf6002b2216d0ed1c5a699ce80927a01c336a4ddea0d884feed83e80",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
+        "debugStage": "provider_zero_before_provider_network",
         "sampleCount": 2,
         "sampleDebugStages": [
-          "provider_network_zero_result",
           "provider_zero_before_provider_network"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
-          "lookup_only",
           "none"
         ],
         "raw": 0,
@@ -7919,9 +7919,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "7cb878dca17f2e1320f58c3f1949815419ecd877",
+          "sourceNiakvioSha": "bc3ac678fd4858c59ae6ec59bf0647b0afccb0f5",
           "providerBundleSha256": "974b6549cf6002b2216d0ed1c5a699ce80927a01c336a4ddea0d884feed83e80",
-          "runId": "46164709912",
+          "runId": "46165105980",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7939,15 +7939,50 @@
       "providerCount": 3,
       "refreshedProviders": [
         "1jour1film0626",
+        "67movies",
+        "allwish",
         "aniflix-uno",
         "animejlprovider",
         "animeonsen",
         "animesalt",
         "animesultra",
+        "animevost-fr",
         "arrowtv",
         "chillflix",
         "cinegram",
-        "cinetimes"
+        "cinetimes",
+        "coflix",
+        "corsflix",
+        "documentary-area",
+        "dulourd",
+        "fexini",
+        "film-a-revoir",
+        "flemmix",
+        "franime",
+        "french-anime",
+        "fullanime",
+        "ihavenotv",
+        "kehflix",
+        "mallumv",
+        "moiflix",
+        "moviebox",
+        "moviesmod",
+        "movy",
+        "primewire",
+        "purstream",
+        "sadisflix",
+        "sekai",
+        "shuttletv",
+        "skstream",
+        "vidfast",
+        "vidrock",
+        "voirserie",
+        "vostfree",
+        "watch-cartoon-online",
+        "watchott",
+        "waveanime",
+        "yflix",
+        "youtitou"
       ],
       "replayedProviders": [
         "documentary-area",
@@ -7957,8 +7992,8 @@
       "rawProviders": [],
       "playableProviders": [],
       "verifiedProviders": [],
-      "sourceNiakvioSha": "7cb878dca17f2e1320f58c3f1949815419ecd877",
-      "runId": "46164709912",
+      "sourceNiakvioSha": "bc3ac678fd4858c59ae6ec59bf0647b0afccb0f5",
+      "runId": "46165105980",
       "proofAuthority": false,
       "publicationAuthority": false
     },
