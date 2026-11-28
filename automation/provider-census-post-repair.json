@@ -158,7 +158,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 69
+          "duration_ms": 91
         },
         {
           "url": "https://api.meowtv.ru/subs/tv/95479/1/1",
@@ -189,7 +189,7 @@
             "rezesubs.com"
           ],
           "declared_quality_heights": [],
-          "duration_ms": 176
+          "duration_ms": 166
         },
         {
           "url": "https://api.meowtv.ru/altcha/challenge",
@@ -249,11 +249,217 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 138
+          "duration_ms": 130
         },
         {
           "url": "https://api.meowtv.ru/streams/tv/95479/1/1?s=dcloud",
           "response_url": "https://api.meowtv.ru/streams/tv/95479/1/1?s=dcloud",
+          "method": "GET",
+          "request_headers": {
+            "accept": "application/json,*/*",
+            "origin": "https://meowtv.ru",
+            "referer": "https://meowtv.ru/",
+            "user-agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36"
+          },
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "n",
+              "d"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 140
+        },
+        {
+          "url": "https://enc-dec.app/api/dec-meowtv",
+          "response_url": "https://enc-dec.app/api/dec-meowtv",
+          "method": "POST",
+          "request_headers": {
+            "accept": "application/json,*/*",
+            "content-type": "application/json",
+            "origin": "https://meowtv.ru",
+            "referer": "https://meowtv.ru/",
+            "user-agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36"
+          },
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "status",
+              "result"
+            ],
+            "resultType": "object",
+            "resultKeys": [
+              "language",
+              "url",
+              "headers"
+            ]
+          },
+          "declared_player_candidate_count": 1,
+          "declared_url_player_candidate_count": 1,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [
+            "cdn2.ngcloud.app"
+          ],
+          "declared_quality_heights": [],
+          "duration_ms": 173
+        },
+        {
+          "url": "https://api.meowtv.ru/altcha/challenge",
+          "response_url": "https://api.meowtv.ru/altcha/challenge",
+          "method": "GET",
+          "request_headers": {
+            "accept": "application/json,*/*",
+            "origin": "https://meowtv.ru",
+            "referer": "https://meowtv.ru/",
+            "user-agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36"
+          },
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "algorithm",
+              "challenge",
+              "maxnumber",
+              "salt",
+              "signature"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 119
+        },
+        {
+          "url": "https://api.meowtv.ru/streams/ticket",
+          "response_url": "https://api.meowtv.ru/streams/ticket",
+          "method": "POST",
+          "request_headers": {
+            "accept": "application/json,*/*",
+            "content-type": "application/json",
+            "origin": "https://meowtv.ru",
+            "referer": "https://meowtv.ru/",
+            "user-agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36"
+          },
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "ticket",
+              "exp"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 125
+        },
+        {
+          "url": "https://api.meowtv.ru/streams/tv/95479/1/1?s=acme",
+          "response_url": "https://api.meowtv.ru/streams/tv/95479/1/1?s=acme",
+          "method": "GET",
+          "request_headers": {
+            "accept": "application/json,*/*",
+            "origin": "https://meowtv.ru",
+            "referer": "https://meowtv.ru/",
+            "user-agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36"
+          },
+          "status": 404,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": null,
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 232
+        },
+        {
+          "url": "https://api.meowtv.ru/altcha/challenge",
+          "response_url": "https://api.meowtv.ru/altcha/challenge",
+          "method": "GET",
+          "request_headers": {
+            "accept": "application/json,*/*",
+            "origin": "https://meowtv.ru",
+            "referer": "https://meowtv.ru/",
+            "user-agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36"
+          },
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "algorithm",
+              "challenge",
+              "maxnumber",
+              "salt",
+              "signature"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 239
+        },
+        {
+          "url": "https://api.meowtv.ru/streams/ticket",
+          "response_url": "https://api.meowtv.ru/streams/ticket",
+          "method": "POST",
+          "request_headers": {
+            "accept": "application/json,*/*",
+            "content-type": "application/json",
+            "origin": "https://meowtv.ru",
+            "referer": "https://meowtv.ru/",
+            "user-agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36"
+          },
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "response_shape": {
+            "kind": "json",
+            "top": "object",
+            "keys": [
+              "ticket",
+              "exp"
+            ]
+          },
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 157
+        },
+        {
+          "url": "https://api.meowtv.ru/streams/tv/95479/1/1?s=tik",
+          "response_url": "https://api.meowtv.ru/streams/tv/95479/1/1?s=tik",
           "method": "GET",
           "request_headers": {
             "accept": "application/json,*/*",
@@ -311,216 +517,10 @@
           "declared_url_player_candidate_count": 1,
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [
-            "cdn2.ngcloud.app"
-          ],
-          "declared_quality_heights": [],
-          "duration_ms": 183
-        },
-        {
-          "url": "https://api.meowtv.ru/altcha/challenge",
-          "response_url": "https://api.meowtv.ru/altcha/challenge",
-          "method": "GET",
-          "request_headers": {
-            "accept": "application/json,*/*",
-            "origin": "https://meowtv.ru",
-            "referer": "https://meowtv.ru/",
-            "user-agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36"
-          },
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "algorithm",
-              "challenge",
-              "maxnumber",
-              "salt",
-              "signature"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 141
-        },
-        {
-          "url": "https://api.meowtv.ru/streams/ticket",
-          "response_url": "https://api.meowtv.ru/streams/ticket",
-          "method": "POST",
-          "request_headers": {
-            "accept": "application/json,*/*",
-            "content-type": "application/json",
-            "origin": "https://meowtv.ru",
-            "referer": "https://meowtv.ru/",
-            "user-agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36"
-          },
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "ticket",
-              "exp"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 125
-        },
-        {
-          "url": "https://api.meowtv.ru/streams/tv/95479/1/1?s=acme",
-          "response_url": "https://api.meowtv.ru/streams/tv/95479/1/1?s=acme",
-          "method": "GET",
-          "request_headers": {
-            "accept": "application/json,*/*",
-            "origin": "https://meowtv.ru",
-            "referer": "https://meowtv.ru/",
-            "user-agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36"
-          },
-          "status": 404,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 417
-        },
-        {
-          "url": "https://api.meowtv.ru/altcha/challenge",
-          "response_url": "https://api.meowtv.ru/altcha/challenge",
-          "method": "GET",
-          "request_headers": {
-            "accept": "application/json,*/*",
-            "origin": "https://meowtv.ru",
-            "referer": "https://meowtv.ru/",
-            "user-agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36"
-          },
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "algorithm",
-              "challenge",
-              "maxnumber",
-              "salt",
-              "signature"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 172
-        },
-        {
-          "url": "https://api.meowtv.ru/streams/ticket",
-          "response_url": "https://api.meowtv.ru/streams/ticket",
-          "method": "POST",
-          "request_headers": {
-            "accept": "application/json,*/*",
-            "content-type": "application/json",
-            "origin": "https://meowtv.ru",
-            "referer": "https://meowtv.ru/",
-            "user-agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36"
-          },
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "ticket",
-              "exp"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 140
-        },
-        {
-          "url": "https://api.meowtv.ru/streams/tv/95479/1/1?s=tik",
-          "response_url": "https://api.meowtv.ru/streams/tv/95479/1/1?s=tik",
-          "method": "GET",
-          "request_headers": {
-            "accept": "application/json,*/*",
-            "origin": "https://meowtv.ru",
-            "referer": "https://meowtv.ru/",
-            "user-agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36"
-          },
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "n",
-              "d"
-            ]
-          },
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 160
-        },
-        {
-          "url": "https://enc-dec.app/api/dec-meowtv",
-          "response_url": "https://enc-dec.app/api/dec-meowtv",
-          "method": "POST",
-          "request_headers": {
-            "accept": "application/json,*/*",
-            "content-type": "application/json",
-            "origin": "https://meowtv.ru",
-            "referer": "https://meowtv.ru/",
-            "user-agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36"
-          },
-          "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "response_shape": {
-            "kind": "json",
-            "top": "object",
-            "keys": [
-              "status",
-              "result"
-            ],
-            "resultType": "object",
-            "resultKeys": [
-              "language",
-              "url",
-              "headers"
-            ]
-          },
-          "declared_player_candidate_count": 1,
-          "declared_url_player_candidate_count": 1,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [
             "cdn.ngcloud.app"
           ],
           "declared_quality_heights": [],
-          "duration_ms": 169
+          "duration_ms": 149
         },
         {
           "url": "https://api.meowtv.ru/altcha/challenge",
@@ -551,7 +551,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 148
+          "duration_ms": 124
         },
         {
           "url": "https://api.meowtv.ru/streams/ticket",
@@ -580,7 +580,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 129
+          "duration_ms": 128
         },
         {
           "url": "https://api.meowtv.ru/streams/tv/95479/1/1?s=ipcloud",
@@ -601,7 +601,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 136
+          "duration_ms": 123
         },
         {
           "url": "https://api.meowtv.ru/altcha/challenge",
@@ -632,7 +632,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 151
+          "duration_ms": 130
         },
         {
           "url": "https://api.meowtv.ru/streams/ticket",
@@ -661,7 +661,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 129
+          "duration_ms": 127
         },
         {
           "url": "https://api.meowtv.ru/streams/tv/95479/1/1?s=hindiv3",
@@ -682,7 +682,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 139
+          "duration_ms": 124
         },
         {
           "url": "https://cdn2.ngcloud.app/tv/dVFoBX6JRjRGQnDR-qrKofcWQQCUTVLfv8eIV1RnQv8.wPRXoJgm/bigtits.m3u8",
@@ -703,7 +703,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 174
+          "duration_ms": 147
         },
         {
           "url": "https://cdn.ngcloud.app/tv/dVFoBX6JRjRGQnDR-qrKoQnrZEWxmzesACUd1S2hmCk.RyWl0ugI/bigtits.m3u8",
@@ -724,7 +724,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 274
+          "duration_ms": 232
         },
         {
           "url": "https://api.themoviedb.org/3/tv/95479/season/1/episode/1?language=fr-FR&api_key=%3Credacted%3E",
@@ -761,7 +761,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 15
+          "duration_ms": 17
         },
         {
           "url": "https://cdn.ngcloud.app/tv/dVFoBX6JRjRGQnDR-qrKoQnrZEWxmzesACUd1S2hmCk.RyWl0ugI/bigtits.m3u8",
@@ -782,7 +782,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 134
+          "duration_ms": 119
         },
         {
           "url": "https://cdn.ngcloud.app/tv/dVFoBX6JRjRGQnDR-qrKoQnrZEWxmzesACUd1S2hmCk.RyWl0ugI/bigtits.m3u8",
@@ -803,7 +803,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 132
+          "duration_ms": 110
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -832,7 +832,7 @@
       "verified": 1,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 4035,
+      "duration_ms": 4465,
       "sample_count": 1,
       "fanout_fixture_title": "Jujutsu Kaisen",
       "sample_titles": [
@@ -858,7 +858,7 @@
           "playable": 1,
           "verified": 1,
           "contradictions": 0,
-          "duration_ms": 3993,
+          "duration_ms": 4382,
           "streams_returned": 1,
           "announced_player_candidates": 55,
           "announced_variant_candidates": 55,
@@ -960,7 +960,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 101
+          "duration_ms": 121
         },
         {
           "url": "https://api.meowtv.ru/subs/movie/19995",
@@ -991,7 +991,7 @@
             "rezesubs.com"
           ],
           "declared_quality_heights": [],
-          "duration_ms": 175
+          "duration_ms": 162
         },
         {
           "url": "https://api.meowtv.ru/altcha/challenge",
@@ -1022,7 +1022,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 146
+          "duration_ms": 127
         },
         {
           "url": "https://api.meowtv.ru/streams/ticket",
@@ -1051,7 +1051,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 149
+          "duration_ms": 129
         },
         {
           "url": "https://api.meowtv.ru/streams/movie/19995?s=dcloud",
@@ -1079,7 +1079,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 237
+          "duration_ms": 121
         },
         {
           "url": "https://enc-dec.app/api/dec-meowtv",
@@ -1116,7 +1116,7 @@
             "cdn2.ngcloud.app"
           ],
           "declared_quality_heights": [],
-          "duration_ms": 161
+          "duration_ms": 710
         },
         {
           "url": "https://api.meowtv.ru/altcha/challenge",
@@ -1147,7 +1147,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 138
+          "duration_ms": 115
         },
         {
           "url": "https://api.meowtv.ru/streams/ticket",
@@ -1176,7 +1176,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 154
+          "duration_ms": 115
         },
         {
           "url": "https://api.meowtv.ru/streams/movie/19995?s=acme",
@@ -1204,7 +1204,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 160
+          "duration_ms": 254
         },
         {
           "url": "https://enc-dec.app/api/dec-meowtv",
@@ -1242,7 +1242,7 @@
             "i-arch-400.wetki450sit.com"
           ],
           "declared_quality_heights": [],
-          "duration_ms": 128
+          "duration_ms": 159
         },
         {
           "url": "https://api.meowtv.ru/altcha/challenge",
@@ -1273,7 +1273,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 128
+          "duration_ms": 124
         },
         {
           "url": "https://api.meowtv.ru/streams/ticket",
@@ -1302,7 +1302,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 133
+          "duration_ms": 119
         },
         {
           "url": "https://api.meowtv.ru/streams/movie/19995?s=tik",
@@ -1330,7 +1330,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 135
+          "duration_ms": 138
         },
         {
           "url": "https://enc-dec.app/api/dec-meowtv",
@@ -1367,7 +1367,7 @@
             "cdn.ngcloud.app"
           ],
           "declared_quality_heights": [],
-          "duration_ms": 130
+          "duration_ms": 155
         },
         {
           "url": "https://api.meowtv.ru/altcha/challenge",
@@ -1398,7 +1398,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 136
+          "duration_ms": 121
         },
         {
           "url": "https://api.meowtv.ru/streams/ticket",
@@ -1427,7 +1427,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 133
+          "duration_ms": 118
         },
         {
           "url": "https://api.meowtv.ru/streams/movie/19995?s=ipcloud",
@@ -1448,7 +1448,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 124
+          "duration_ms": 113
         },
         {
           "url": "https://api.meowtv.ru/altcha/challenge",
@@ -1479,7 +1479,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 155
+          "duration_ms": 175
         },
         {
           "url": "https://api.meowtv.ru/streams/ticket",
@@ -1508,7 +1508,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 128
+          "duration_ms": 120
         },
         {
           "url": "https://api.meowtv.ru/streams/movie/19995?s=turkce",
@@ -1529,7 +1529,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 138
+          "duration_ms": 135
         },
         {
           "url": "https://api.meowtv.ru/altcha/challenge",
@@ -1560,7 +1560,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 143
+          "duration_ms": 129
         },
         {
           "url": "https://api.meowtv.ru/streams/ticket",
@@ -1589,7 +1589,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 130
+          "duration_ms": 140
         },
         {
           "url": "https://api.meowtv.ru/streams/movie/19995?s=hindiv3",
@@ -1610,28 +1610,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 125
-        },
-        {
-          "url": "https://cdn.ngcloud.app/movie/uAC7CcSjNzS4C8UyYL-y58NGWeddyC6HSO769DuvTnw.geJkp7RE/bigtits.m3u8",
-          "response_url": "https://cdn.ngcloud.app/movie/uAC7CcSjNzS4C8UyYL-y58NGWeddyC6HSO769DuvTnw.geJkp7RE/bigtits.m3u8",
-          "method": "GET",
-          "request_headers": {
-            "accept": "application/json,*/*",
-            "origin": "https://meowtv.ru",
-            "referer": "https://meowtv.ru/",
-            "user-agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36"
-          },
-          "status": 206,
-          "content_type": "application/vnd.apple.mpegurl",
-          "challenge": "",
-          "response_shape": null,
-          "declared_player_candidate_count": 0,
-          "declared_url_player_candidate_count": 0,
-          "declared_indexed_player_candidate_count": 0,
-          "declared_player_hosts": [],
-          "declared_quality_heights": [],
-          "duration_ms": 148
+          "duration_ms": 116
         },
         {
           "url": "https://cdn2.ngcloud.app/movie/uAC7CcSjNzS4C8UyYL-y5xZTZPlTgApBtmjN5xNittY.t77XoLKJ/bigtits.m3u8",
@@ -1652,7 +1631,28 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 213
+          "duration_ms": 164
+        },
+        {
+          "url": "https://cdn.ngcloud.app/movie/uAC7CcSjNzS4C8UyYL-y58NGWeddyC6HSO769DuvTnw.geJkp7RE/bigtits.m3u8",
+          "response_url": "https://cdn.ngcloud.app/movie/uAC7CcSjNzS4C8UyYL-y58NGWeddyC6HSO769DuvTnw.geJkp7RE/bigtits.m3u8",
+          "method": "GET",
+          "request_headers": {
+            "accept": "application/json,*/*",
+            "origin": "https://meowtv.ru",
+            "referer": "https://meowtv.ru/",
+            "user-agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36"
+          },
+          "status": 206,
+          "content_type": "application/vnd.apple.mpegurl",
+          "challenge": "",
+          "response_shape": null,
+          "declared_player_candidate_count": 0,
+          "declared_url_player_candidate_count": 0,
+          "declared_indexed_player_candidate_count": 0,
+          "declared_player_hosts": [],
+          "declared_quality_heights": [],
+          "duration_ms": 280
         },
         {
           "url": "https://i-arch-400.wetki450sit.com/stream2/i-arch-400/9143db85005f3133466d68b562d91e20/MJTMsp1RshGTygnMNRUR2N2MSlnWXZEdMNDZzQWe5MDZzMmdZJTO1R2RWVHZDljekhkSsl1VwYnWtx2cihVT25kajFTW6p0aZpmVt1ERRBzTH1kMORUSw4EVrNzTElUeZpnQr5kestmTUlVP:1795832812:190.142.116.191:0aa538b75a22be4380a7a07ec1316fab1f17f363fec66cf506ae1d25d936b1e5:=0EVrdHTqVEMNlGN41EVZVXTUtGe/index.m3u8",
@@ -1673,7 +1673,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 701
+          "duration_ms": 585
         },
         {
           "url": "https://cdn.ngcloud.app/movie/uAC7CcSjNzS4C8UyYL-y58NGWeddyC6HSO769DuvTnw.geJkp7RE/bigtits.m3u8",
@@ -1694,7 +1694,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 130
+          "duration_ms": 132
         },
         {
           "url": "https://cdn.ngcloud.app/movie/uAC7CcSjNzS4C8UyYL-y58NGWeddyC6HSO769DuvTnw.geJkp7RE/bigtits.m3u8",
@@ -1715,7 +1715,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 133
+          "duration_ms": 140
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -1744,7 +1744,7 @@
       "verified": 1,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 5447,
+      "duration_ms": 6037,
       "sample_count": 1,
       "fanout_fixture_title": "Avatar",
       "sample_titles": [
@@ -1768,7 +1768,7 @@
           "playable": 1,
           "verified": 1,
           "contradictions": 0,
-          "duration_ms": 5392,
+          "duration_ms": 5954,
           "streams_returned": 1,
           "announced_player_candidates": 128,
           "announced_variant_candidates": 128,
@@ -1873,7 +1873,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 97
+          "duration_ms": 111
         },
         {
           "url": "https://api.meowtv.ru/subs/tv/105214/1/1",
@@ -1904,7 +1904,7 @@
             "rezesubs.com"
           ],
           "declared_quality_heights": [],
-          "duration_ms": 168
+          "duration_ms": 230
         },
         {
           "url": "https://api.meowtv.ru/altcha/challenge",
@@ -1935,7 +1935,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 135
+          "duration_ms": 136
         },
         {
           "url": "https://api.meowtv.ru/streams/ticket",
@@ -1964,7 +1964,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 148
+          "duration_ms": 174
         },
         {
           "url": "https://api.meowtv.ru/streams/tv/105214/1/1?s=dcloud",
@@ -1992,7 +1992,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 243
+          "duration_ms": 142
         },
         {
           "url": "https://enc-dec.app/api/dec-meowtv",
@@ -2029,7 +2029,7 @@
             "cdn2.ngcloud.app"
           ],
           "declared_quality_heights": [],
-          "duration_ms": 149
+          "duration_ms": 473
         },
         {
           "url": "https://api.meowtv.ru/altcha/challenge",
@@ -2060,7 +2060,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 132
+          "duration_ms": 150
         },
         {
           "url": "https://api.meowtv.ru/streams/ticket",
@@ -2089,7 +2089,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 129
+          "duration_ms": 162
         },
         {
           "url": "https://api.meowtv.ru/streams/tv/105214/1/1?s=acme",
@@ -2110,7 +2110,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 245
+          "duration_ms": 230
         },
         {
           "url": "https://api.meowtv.ru/altcha/challenge",
@@ -2141,7 +2141,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 166
+          "duration_ms": 205
         },
         {
           "url": "https://api.meowtv.ru/streams/ticket",
@@ -2170,7 +2170,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 133
+          "duration_ms": 135
         },
         {
           "url": "https://api.meowtv.ru/streams/tv/105214/1/1?s=tik",
@@ -2198,7 +2198,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 163
+          "duration_ms": 137
         },
         {
           "url": "https://enc-dec.app/api/dec-meowtv",
@@ -2235,7 +2235,7 @@
             "cdn.ngcloud.app"
           ],
           "declared_quality_heights": [],
-          "duration_ms": 130
+          "duration_ms": 140
         },
         {
           "url": "https://api.meowtv.ru/altcha/challenge",
@@ -2266,7 +2266,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 138
+          "duration_ms": 169
         },
         {
           "url": "https://api.meowtv.ru/streams/ticket",
@@ -2295,7 +2295,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 134
+          "duration_ms": 173
         },
         {
           "url": "https://api.meowtv.ru/streams/tv/105214/1/1?s=ipcloud",
@@ -2316,7 +2316,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 147
+          "duration_ms": 142
         },
         {
           "url": "https://api.meowtv.ru/altcha/challenge",
@@ -2347,7 +2347,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 147
+          "duration_ms": 175
         },
         {
           "url": "https://api.meowtv.ru/streams/ticket",
@@ -2376,7 +2376,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 133
+          "duration_ms": 160
         },
         {
           "url": "https://api.meowtv.ru/streams/tv/105214/1/1?s=hindiv3",
@@ -2397,7 +2397,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 133
+          "duration_ms": 152
         },
         {
           "url": "https://cdn2.ngcloud.app/tv/JQkIryTaty6IJeLuDzGjBNEozXqrR84a1Yfk7csT93U.EvpZ2W9o/bigtits.m3u8",
@@ -2418,7 +2418,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 182
+          "duration_ms": 197
         },
         {
           "url": "https://cdn.ngcloud.app/tv/JQkIryTaty6IJeLuDzGjBFsD3wviwDkmq3a0GBhQ5Rg.v2LO2P3L/bigtits.m3u8",
@@ -2439,7 +2439,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 246
+          "duration_ms": 235
         },
         {
           "url": "https://api.themoviedb.org/3/tv/105214/season/1/episode/1?language=fr-FR&api_key=%3Credacted%3E",
@@ -2476,7 +2476,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 25
+          "duration_ms": 15
         },
         {
           "url": "https://cdn.ngcloud.app/tv/JQkIryTaty6IJeLuDzGjBFsD3wviwDkmq3a0GBhQ5Rg.v2LO2P3L/bigtits.m3u8",
@@ -2497,7 +2497,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 129
+          "duration_ms": 126
         },
         {
           "url": "https://cdn.ngcloud.app/tv/JQkIryTaty6IJeLuDzGjBFsD3wviwDkmq3a0GBhQ5Rg.v2LO2P3L/bigtits.m3u8",
@@ -2518,7 +2518,7 @@
           "declared_indexed_player_candidate_count": 0,
           "declared_player_hosts": [],
           "declared_quality_heights": [],
-          "duration_ms": 133
+          "duration_ms": 122
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -2547,7 +2547,7 @@
       "verified": 1,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 4401,
+      "duration_ms": 5028,
       "sample_count": 1,
       "fanout_fixture_title": "Dark Desire",
       "sample_titles": [
@@ -2574,7 +2574,7 @@
           "playable": 1,
           "verified": 1,
           "contradictions": 0,
-          "duration_ms": 4348,
+          "duration_ms": 4962,
           "streams_returned": 1,
           "announced_player_candidates": 77,
           "announced_variant_candidates": 77,
