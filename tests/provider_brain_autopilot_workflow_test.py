@@ -204,7 +204,7 @@ import os
 import subprocess
 
 start = autopilot.index("          lane_busy() {")
-end = autopilot.index("          # Exact unresolved-domain", start)
+end = autopilot.index("          # Domain rediscovery is no longer on the Brain critical path.", start)
 function = "\n".join(line[10:] for line in autopilot[start:end].splitlines())
 stub = r'''
 gh() {
