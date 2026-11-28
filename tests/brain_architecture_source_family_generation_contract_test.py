@@ -271,6 +271,12 @@ with tempfile.TemporaryDirectory() as td:
     real = root / mod.SOURCE_MATRIX_RUNTIME_PATH
     real.parent.mkdir(parents=True)
     real.write_text((ROOT / mod.SOURCE_MATRIX_RUNTIME_PATH).read_text(encoding="utf-8"), encoding="utf-8")
+    parser_primitive = root / "scripts/html_script_blocks.py"
+    parser_primitive.parent.mkdir(parents=True, exist_ok=True)
+    parser_primitive.write_text(
+        (ROOT / "scripts/html_script_blocks.py").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
     config = root / "engine_v2/config/brain-self-evolution.json"
     config.parent.mkdir(parents=True)
     config.write_text((ROOT / "engine_v2/config/brain-self-evolution.json").read_text(encoding="utf-8"), encoding="utf-8")
