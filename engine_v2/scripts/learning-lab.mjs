@@ -429,6 +429,13 @@ function mergeLearningQueue(previousQueue, currentQueue) {
     };
   }
 
+  const processedThisRun = sanitizeIds(currentValue.processedThisRun);
+  const processedSet = new Set(processedThisRun);
+  const currentHidden = sanitizeIds(currentValue.hiddenFailureProviders);
+  const currentHiddenSet = new Set(currentHidden);
+  const retainedPreviousHidden = sanitizeIds(previousValue.hiddenFailureProviders)
+    .filter((provider) => !processedSet.has(provider) || currentHiddenSet.has(provider));
+
   return {
     schemaVersion: 2,
     cycle: nonNegative(currentValue.cycle || previousValue.cycle || 1),
@@ -437,10 +444,10 @@ function mergeLearningQueue(previousQueue, currentQueue) {
     pendingProviders: sanitizeIds(currentValue.pendingProviders ?? previousValue.pendingProviders),
     retryProviders: sanitizeIds(currentValue.retryProviders ?? previousValue.retryProviders),
     completedInCycle: sanitizeIds(currentValue.completedInCycle ?? previousValue.completedInCycle),
-    processedThisRun: sanitizeIds(currentValue.processedThisRun),
+    processedThisRun,
     hiddenFailureProviders: sanitizeIds([
-      ...(previousValue.hiddenFailureProviders || []),
-      ...(currentValue.hiddenFailureProviders || []),
+      ...retainedPreviousHidden,
+      ...currentHidden,
     ]),
     providerState,
     timeBudgetExhausted: currentValue.timeBudgetExhausted === true,
