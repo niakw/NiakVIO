@@ -53,6 +53,24 @@ for cohort_filter in "${cohort_filters[@]}"; do
       exit 1
     fi
   fi
+  if [ -n "$dispatch_fingerprint" ]; then
+    queued_titles=""
+    running_titles=""
+    if ! queued_titles="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow brain-learning-lab.yml --status queued --limit 100 --json displayTitle --jq '.[].displayTitle' 2>/dev/null)"; then
+      dispatch_failed=$((dispatch_failed + 1))
+      echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_FAMILY cohort=$cohort_filter dispatch=false reason=inflight-query-unavailable state=queued fingerprint=${dispatch_fingerprint:0:12}"
+      continue
+    fi
+    if ! running_titles="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow brain-learning-lab.yml --status in_progress --limit 100 --json displayTitle --jq '.[].displayTitle' 2>/dev/null)"; then
+      dispatch_failed=$((dispatch_failed + 1))
+      echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_FAMILY cohort=$cohort_filter dispatch=false reason=inflight-query-unavailable state=in_progress fingerprint=${dispatch_fingerprint:0:12}"
+      continue
+    fi
+    if printf '%s\n%s\n' "$queued_titles" "$running_titles" | grep -Fq "$dispatch_fingerprint"; then
+      echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_FAMILY cohort=$cohort_filter dispatch=false reason=fingerprint-in-flight fingerprint=${dispatch_fingerprint:0:12}"
+      continue
+    fi
+  fi
   args=(
     --repo "$GITHUB_REPOSITORY" --ref main
     -f publish_proposal="$PUBLISH_PROPOSAL"
