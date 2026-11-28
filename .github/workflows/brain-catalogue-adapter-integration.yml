@@ -26,26 +26,23 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 1
+          submodules: true
           persist-credentials: false
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
         with:
           python-version: '3.12'
-      - name: Select pinned external Brain SHA from this exact NiakVIO commit
-        id: pinned
+      - name: Verify exact pinned Brain gitlink from trusted NiakVIO commit
         shell: bash
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
-          sha="$(python -c 'import json; print(json.load(open("automation/brain-pinned-source.json"))["sha"])')"
-          [[ "$sha" =~ ^[0-9a-f]{40}$ ]]
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          repository: niakw/NiakVIO-Brain-LLM
-          ref: ${{ steps.pinned.outputs.sha }}
-          path: brain-replay
-          fetch-depth: 1
-          persist-credentials: false
+          pin="$(python -c 'import json; print(json.load(open("automation/brain-pinned-source.json"))["sha"])')"
+          gitlink="$(git ls-files -s brain-llm | awk '{print $2}')"
+          checked="$(git -C brain-llm rev-parse HEAD)"
+          [[ "$pin" =~ ^[0-9a-f]{40}$ ]]
+          test "$pin" = "$gitlink"
+          test "$pin" = "$checked"
+          echo "FIELD_BRAIN_CATALOGUE_GITLINK sha=${pin:0:12} trusted_main=true"
       - name: Prove source memory reaches the real Brain request with no authority
         run: |
           set -euo pipefail
