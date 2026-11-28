@@ -91,7 +91,7 @@ recent_memory={
         "entries":[
             {
                 "providerId": provider,
-                "lastSeenAt": f"2026-11-28T02:{10+index:02d}:00+00:00",
+                "lastSeenAt": f"2026-11-28T{2 + index // 60:02d}:{index % 60:02d}:00+00:00",
             }
             for index,provider in enumerate(large_out["selectedProviders"])
         ]
