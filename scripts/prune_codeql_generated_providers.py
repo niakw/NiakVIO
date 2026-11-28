@@ -15,8 +15,12 @@ def published_provider_paths(root:Path)->set[str]:
             filename=str(row.get("filename") or "").strip().replace("\\","/")
             if not filename: continue
             path=Path(filename)
-            if path.is_absolute() or ".." in path.parts or len(path.parts)!=2 or path.parts[0]!="providers" or path.suffix!=".js":
+            if path.is_absolute() or ".." in path.parts or path.suffix!=".js":
                 raise ValueError(f"{relative}: invalid provider filename {filename!r}")
+            if len(path.parts)==2 and path.parts[0] in {"provider-disabled","provider-old"}:
+                continue
+            if len(path.parts)!=2 or path.parts[0]!="providers":
+                raise ValueError(f"{relative}: unexpected published-provider path {filename!r}")
             active.add(path.as_posix())
     if not active: raise ValueError("production manifests expose no provider JS")
     missing=sorted(path for path in active if not (root/path).is_file())
