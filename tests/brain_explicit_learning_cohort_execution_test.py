@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Explicit Brain Learning cohorts execute family oracles without losing siblings."""
+"""Explicit Brain Learning cohorts execute strongest family oracles then their siblings."""
 from __future__ import annotations
 import ast
 from pathlib import Path
@@ -14,12 +14,12 @@ assert 'p.add_argument("--provider-filter", default=""' in snippet
 assert "brain_owned_repair, brain_owner_authority = brain_owned_current_repair_providers(" in snippet
 assert "learning_scope = repair_learning_scope(" in snippet
 assert "family_deferred = []" not in snippet
-assert "order = family_frontier" in snippet
+assert "order = unique([*family_frontier, *family_deferred])" in snippet
 assert "fair_handoff = bool(learning_scope) and not bool(args.provider)" in snippet
 assert 'queue["brainOwnedCurrentRepairProviders"] = brain_owned_repair' in snippet
 assert 'queue["repairLearningScopeProviders"] = learning_scope' in snippet
 assert 'queue["repairLearningDeferredPortfolioProviders"] = portfolio_deferred' in snippet
-assert '"explicit-cohort-one-representative-per-causal-family-siblings-pending"' in snippet
+assert '"strongest-representatives-first-then-siblings-with-phase-memory"' in snippet
 assert "if provider_id not in staged_candidates or provider_id not in info_by_id" in snippet
 assert "fastRepairHandoffParallelExecutionEnabled" in snippet
 assert "if fair_handoff and attempts_this_phase >= 1" in snippet
