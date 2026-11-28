@@ -256,10 +256,11 @@ canonical_push = workflow.index("git push origin HEAD:main", canonical_stage)
 assert canonical_status_copy < full_evidence_copy < current_summary < latest_summary < canonical_stage < canonical_push
 guard = workflow.rfind('if [ "$ALLOW_PENDING_TARGETS" != "true" ]; then', 0, full_evidence_copy)
 assert guard > canonical_status_copy, "pending/onboarding observations must not become canonical current-byte proof"
+summary_setup = workflow[full_evidence_copy:current_summary]
 summary_block = workflow[current_summary:latest_summary]
+assert 'summary_state="automation/provider-census-status.json"' in summary_setup
+assert 'summary_state="/tmp/provider-census-status-targeted-run-state.json"' in summary_setup
 assert '--report "automation/current-bytes-full-provider-census-${run_id}.json"' in summary_block
-assert 'summary_state="automation/provider-census-status.json"' in summary_block
-assert 'summary_state="/tmp/provider-census-status-targeted-run-state.json"' in summary_block
 assert '--state "$summary_state"' in summary_block
 assert '--run-id "$run_id" --sha "$SOURCE_SHA"' in summary_block
 assert "FIELD_SHARDED_CURRENT_BYTES_EVIDENCE_PUBLISHED" in workflow
