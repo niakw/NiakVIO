@@ -609,6 +609,17 @@ def merge_transport(
                 replay_reclassified.add(provider)
                 if row["repairEligible"]:
                     replay_repairable.add(provider)
+                # Preserve the fresh client-transport proof even when the full
+                # residential provider replay already reclassified the row.
+                # Otherwise downstream Brain causality sees ROUTE PROVEN but
+                # loses the evidence that browser/direct/OkHttp transport was
+                # healthy on the exact same run/bytes.
+                if provider in network_allowed:
+                    differential = network_differential(waf, provider)
+                    if differential["classification"] != "no-network-differential-evidence":
+                        row["networkDifferentialClass"] = differential["classification"]
+                        row["networkDifferentialEvidence"] = list(differential["evidence"])
+                        network_changed.append(provider)
                 changed.append(provider)
                 continue
 
