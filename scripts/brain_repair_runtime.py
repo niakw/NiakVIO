@@ -448,6 +448,69 @@ def _candidate_parent_identity(candidate: dict[str, Any]) -> tuple[str, str]:
     return sha, authority[:80]
 
 
+
+def _provider_experience_prior(
+    provider_id: str,
+    payload: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Expose sanitized provider-experience shape to the planner.
+
+    This is diagnostic prior only: no origin, route, headers, body, token or
+    other raw request material crosses the planner boundary. The adaptive
+    runtime still owns executable recipes and strict current-byte validation.
+    """
+    if payload is None:
+        payload = _load_json(EXPERIENCE_PATH, {})
+    if not isinstance(payload, dict):
+        return {}
+    providers = payload.get("providers") if isinstance(payload.get("providers"), dict) else {}
+    wanted = str(provider_id or "").strip().casefold().replace("_", "-")
+    raw = next(
+        (
+            value
+            for key, value in providers.items()
+            if str(key or "").strip().casefold().replace("_", "-") == wanted
+            and isinstance(value, dict)
+        ),
+        {},
+    )
+    if not raw:
+        return {}
+
+    safe_roles = {"search", "detail", "episode", "player", "source", "api", "media", "other"}
+    safe_responses = {"json", "html", "javascript", "text", "media", "binary"}
+    roles: set[str] = set()
+    responses: set[str] = set()
+    structured_search = False
+    terminal_recipe = False
+    for recipe in (raw.get("requestRecipes") or [])[:32]:
+        if not isinstance(recipe, dict) or recipe.get("executable") is not True:
+            continue
+        role = str(recipe.get("role") or "").strip().casefold()
+        response = str(recipe.get("response") or "").strip().casefold()
+        if role in safe_roles:
+            roles.add(role)
+        if response in safe_responses:
+            responses.add(response)
+        if role == "search" and response == "json":
+            structured_search = True
+        if recipe.get("streamProof") is True or role in {"detail", "episode", "player", "source", "api", "media"}:
+            terminal_recipe = True
+
+    return {
+        "role": "provider-repair-experience-prior",
+        "proofAuthority": False,
+        "executionAuthority": False,
+        "structuredSearchRecipePresent": structured_search,
+        "terminalRecipePresent": terminal_recipe,
+        "providerValuePlanPresent": raw.get("hasProviderValuePlan") is True,
+        "apiRecipePresent": raw.get("hasApiRecipe") is True,
+        "searchRequestPlanPresent": raw.get("hasSearchRequestPlan") is True,
+        "requestRecipeRoles": sorted(roles)[:8],
+        "requestRecipeResponses": sorted(responses)[:8],
+    }
+
+
 def _planner_candidate(candidate: dict[str, Any]) -> dict[str, Any]:
     metadata = candidate.get("metadata") if isinstance(candidate.get("metadata"), dict) else {}
     supported = metadata.get("supportedTypes")
@@ -473,12 +536,15 @@ def _planner_candidate(candidate: dict[str, Any]) -> dict[str, Any]:
         "legacyCodeExecuted": False,
     }
     parent_sha, parent_authority = _candidate_parent_identity(candidate)
+    provider_id = str(candidate.get("canonical_id") or candidate.get("upstream_id") or "")
+    experience_prior = _provider_experience_prior(provider_id)
     return {
         "canonical_id": _clip_text(candidate.get("canonical_id"), 160),
         "upstream_id": _clip_text(candidate.get("upstream_id"), 160),
         "parentArtifactSha256": parent_sha,
         "parentAuthority": parent_authority,
         "metadata": {"supportedTypes": supported_types},
+        **({"experiencePrior": experience_prior} if experience_prior else {}),
         "provider_base_reconstruction_required": candidate.get("provider_base_reconstruction_required") is True,
         "clean_reconstruction_mode": candidate.get("clean_reconstruction_mode") is True,
         "candidate_code_origin": _clip_text(candidate.get("candidate_code_origin"), 120),
@@ -1642,6 +1708,10 @@ def _plan_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
         "learningPreferredRequested": str(plan.get("learningPreferredRequested") or ""),
         "learningPreferredFailureClass": str(plan.get("learningPreferredFailureClass") or ""),
         "learningPreferredSelected": plan.get("learningPreferredSelected") is True,
+        "structuredExperiencePriorPresent": plan.get("structuredExperiencePriorPresent") is True,
+        "structuredSearchTerminalInferenceEligible": plan.get("structuredSearchTerminalInferenceEligible") is True,
+        "structuredExperiencePreferredProfile": str(plan.get("structuredExperiencePreferredProfile") or ""),
+        "structuredExperiencePreferredSelected": plan.get("structuredExperiencePreferredSelected") is True,
         "derivedFailureClass": str(plan.get("derivedFailureClass") or ""),
         "learningCausalFailureRequested": str(plan.get("learningCausalFailureRequested") or ""),
         "learningCausalFailureApplied": plan.get("learningCausalFailureApplied") is True,

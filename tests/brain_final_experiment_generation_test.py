@@ -68,15 +68,24 @@ def row(variant:int,generation:int=1):
         "lastReason":"required_category_playable_proof:anime",
     }
 
-def plan(memory, mode="repair", preferred_profile="", exploration_chain=False):
+def plan(
+    memory,
+    mode="repair",
+    preferred_profile="",
+    exploration_chain=False,
+    *,
+    candidate_override=None,
+    llm_guidance=None,
+):
     payload={
         "mode":mode,
         "explorationChain":exploration_chain,
         "forcePreferredStrategy":preferred_profile,
         "policy":policy,
         "learnedSkills":{},
+        "llmGuidance":list(llm_guidance or []),
         "negativeMemory":memory,
-        "items":[{"key":"published:synthetic-generation","candidate":candidate,"result":result,"state":{}}],
+        "items":[{"key":"published:synthetic-generation","candidate":candidate_override or candidate,"result":result,"state":{}}],
     }
     completed=subprocess.run(
         ["node",str(PLANNER)],cwd=ROOT,input=json.dumps(payload),
@@ -422,6 +431,120 @@ with tempfile.TemporaryDirectory() as td:
     assert [x["experimentGeneration"] for x in unexecuted_filtered]==[1],unexecuted_filtered
     assert [x["experimentGeneration"] for x in generation_learning]==[1,2],generation_learning
     assert generation_learning[1]["generationAttemptObserved"] is True,generation_learning
+
+# Provider experience may expose only bounded causal shape to the planner.
+# A proven executable JSON search recipe with no terminal recipe/value plan
+# must exercise the installed request-program inference Bloc before a fresh LLM
+# hypothesis. Once that exact implementation is executed-negative, the advisor
+# may take ownership; the deterministic Bloc must not loop.
+with tempfile.TemporaryDirectory() as td:
+    td=Path(td)
+    experience=td/"experience.json"
+    experience.write_text(json.dumps({
+        "providers":{
+            "synthetic-generation":{
+                "requestRecipes":[{
+                    "executable":True,
+                    "role":"search",
+                    "response":"json",
+                    "origin":"https://secret.example",
+                    "route":"/api/search?token=secret",
+                    "headerNames":["authorization","cookie"],
+                    "body":{"token":"secret"},
+                    "streamProof":False,
+                }],
+                "hasProviderValuePlan":False,
+                "hasApiRecipe":False,
+                "hasSearchRequestPlan":False,
+            }
+        }
+    }),encoding="utf-8")
+    original_experience=brain.EXPERIENCE_PATH
+    brain.EXPERIENCE_PATH=experience
+    try:
+        experience_prior=brain._provider_experience_prior("synthetic-generation")
+        planner_candidate=brain._planner_candidate({
+            "canonical_id":"synthetic-generation",
+            "metadata":{"supportedTypes":["anime"]},
+            "clean_provider_model":{},
+        })
+    finally:
+        brain.EXPERIENCE_PATH=original_experience
+
+assert experience_prior=={
+    "role":"provider-repair-experience-prior",
+    "proofAuthority":False,
+    "executionAuthority":False,
+    "structuredSearchRecipePresent":True,
+    "terminalRecipePresent":False,
+    "providerValuePlanPresent":False,
+    "apiRecipePresent":False,
+    "searchRequestPlanPresent":False,
+    "requestRecipeRoles":["search"],
+    "requestRecipeResponses":["json"],
+},experience_prior
+assert planner_candidate["experiencePrior"]==experience_prior,planner_candidate
+serialized_prior=json.dumps(experience_prior,sort_keys=True).lower()
+assert "https://" not in serialized_prior and "/api/" not in serialized_prior
+assert "authorization" not in serialized_prior and "cookie" not in serialized_prior
+assert "secret" not in serialized_prior
+
+advisor=[{
+    "providerId":"synthetic-generation",
+    "failureClass":"chain_terminal_gap",
+    "targetLayer":"provider",
+    "strategy":"fresh-terminal-advisor",
+    "profile":"chain_terminal_extractor_v1",
+    "confidence":0.97,
+    "priorOnly":True,
+    "experiment":{"routePolicy":"owned_only"},
+    "experimentFingerprint":"a"*64,
+    "guidanceKind":"persistent-learning",
+}]
+structured_candidate={**candidate,"experiencePrior":experience_prior}
+structured_first=plan(
+    base_exhausted,
+    "learning",
+    candidate_override=structured_candidate,
+    llm_guidance=advisor,
+)
+assert structured_first["structuredExperiencePriorPresent"] is True,structured_first
+assert structured_first["structuredSearchTerminalInferenceEligible"] is True,structured_first
+assert structured_first["structuredExperiencePreferredSelected"] is True,structured_first
+assert structured_first["postExhaustionStrategyProfile"]=="terminal_request_program_inference_v1",structured_first
+assert structured_first["allowedProfiles"]==["terminal_request_program_inference_v1"],structured_first
+assert structured_first["llmAdvisorApplied"] is False,structured_first
+structured_fp=structured_first["strategyImplementationFingerprint"]
+assert len(structured_fp)==64,structured_first
+
+without_prior=plan(
+    base_exhausted,
+    "learning",
+    candidate_override=candidate,
+    llm_guidance=advisor,
+)
+assert without_prior["structuredExperiencePreferredSelected"] is False,without_prior
+assert without_prior["llmAdvisorApplied"] is True,without_prior
+assert without_prior["allowedProfiles"]==["chain_terminal_extractor_v1"],without_prior
+
+structured_negative={
+    **row(4,5),
+    "profile":"terminal_request_program_inference_v1",
+    "executionObserved":True,
+    "causalExerciseObserved":True,
+    "strategyImplementationFingerprint":structured_fp,
+    "lastOutcome":"rejected",
+}
+after_structured_negative=plan(
+    [*base_exhausted,structured_negative],
+    "learning",
+    candidate_override=structured_candidate,
+    llm_guidance=advisor,
+)
+assert after_structured_negative["structuredExperiencePreferredSelected"] is False,after_structured_negative
+assert after_structured_negative["postExhaustionStrategyProfile"]!="terminal_request_program_inference_v1",after_structured_negative
+assert after_structured_negative["llmAdvisorApplied"] is True,after_structured_negative
+assert after_structured_negative["allowedProfiles"]==["chain_terminal_extractor_v1"],after_structured_negative
 
 # Orchestrator exhaustion must use the same generation rule.
 spec2=importlib.util.spec_from_file_location("brain_orchestrator",ROOT/"scripts/run_provider_brain_repair.py")

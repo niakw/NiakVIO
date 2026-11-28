@@ -870,6 +870,19 @@ function buildPlan(item) {
   );
   const signature = evidenceSignature(evidence);
   const providerId = stringValue(candidate.canonical_id ?? candidate.upstream_id).toLowerCase();
+  const experiencePrior = asRecord(candidate.experiencePrior);
+  const structuredExperiencePriorPresent = (
+    experiencePrior.role === "provider-repair-experience-prior"
+    && experiencePrior.proofAuthority === false
+    && experiencePrior.executionAuthority === false
+  );
+  const structuredSearchTerminalInferenceEligible = (
+    structuredExperiencePriorPresent
+    && canonicalFailureClass(evidence.failureClass) === "chain_terminal_gap"
+    && experiencePrior.structuredSearchRecipePresent === true
+    && experiencePrior.terminalRecipePresent !== true
+    && experiencePrior.providerValuePlanPresent !== true
+  );
   const capabilityStrategy = stringValue(asRecord(asRecord(providerOverrides.provider_capabilities)[providerId]).strategy, "unknown").toLowerCase();
   const rotateEvery = Math.max(1, finiteNumber(negativeMemoryPolicy.rotateExperimentAfterFailures, 1));
   const maxVariants = Math.max(1, finiteNumber(negativeMemoryPolicy.maxVariantsPerSignature, 5));
@@ -1181,6 +1194,35 @@ function buildPlan(item) {
   const forcePreferredSelectedEarly = (
     forcePreferredEligible && earlyForceHint.profile === forcePreferredProfile
   );
+  // A structured JSON search contract without any known terminal request/value
+  // program is already a causal diagnosis. Exercise the installed generic
+  // request-program inference Bloc before spending an LLM call. The selector
+  // still checks exact implementation negative memory, so an executed rejection
+  // immediately returns ownership to the advisor/next strategy.
+  const structuredExperiencePreferredProfile = structuredSearchTerminalInferenceEligible
+    ? "terminal_request_program_inference_v1"
+    : "";
+  const structuredExperienceHint = (
+    explorationMode
+    && experimentExhausted
+    && !positiveProgramReplayHint.profile
+    && !forcePreferredProfile
+    && !learningPreferredProfile
+    && Boolean(structuredExperiencePreferredProfile)
+  )
+    ? postExhaustionStrategyHint(
+        evidence.failureClass,
+        causalFamilyMemoryMatches,
+        rotateEvery,
+        structuredExperiencePreferredProfile,
+        sourceEligibility,
+        attemptMemory,
+      )
+    : { profile: "", method: "", index: -1 };
+  const structuredExperiencePreferredSelected = Boolean(
+    structuredExperiencePreferredProfile
+    && structuredExperienceHint.profile === structuredExperiencePreferredProfile
+  );
   // A fresh fingerprinted advisor experiment is executable Brain output, not
   // decoration. After base exhaustion it must get one bounded attempt before
   // a generic coded post-exhaustion strategy. Otherwise Qwen can be called
@@ -1194,6 +1236,7 @@ function buildPlan(item) {
     && !positiveProgramReplayHint.profile
     && !forcePreferredProfile
     && !learningPreferredProfile
+    && !structuredExperiencePreferredSelected
   )
     ? llmAdvisorStrategyHint(
         providerId,
@@ -1211,7 +1254,9 @@ function buildPlan(item) {
   );
   const postExhaustionHint = positiveProgramReplayHint.profile
     ? positiveProgramReplayHint
-    : (explorationMode && experimentExhausted && !preEscalationLlmExecutable)
+    : structuredExperiencePreferredSelected
+      ? structuredExperienceHint
+      : (explorationMode && experimentExhausted && !preEscalationLlmExecutable)
       ? postExhaustionStrategyHint(
           learningPreferredProfile ? learningPreferredFailureClass : evidence.failureClass,
           causalFamilyMemoryMatches,
@@ -1516,6 +1561,10 @@ function buildPlan(item) {
     learningPreferredRequested: learningPreferredProfile,
     learningPreferredFailureClass,
     learningPreferredSelected,
+    structuredExperiencePriorPresent,
+    structuredSearchTerminalInferenceEligible,
+    structuredExperiencePreferredProfile,
+    structuredExperiencePreferredSelected,
     metaGapEscalated,
     architectureGapEscalation,
     providerPositiveProgramReplay: postExhaustionHint.profile === "provider_positive_program_replay_v1",
