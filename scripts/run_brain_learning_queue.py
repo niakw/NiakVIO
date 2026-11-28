@@ -3233,7 +3233,7 @@ def main() -> int:
         if isinstance(row, dict)
         and str((row.get("coreHypothesis") or {}).get("status") or "") in {"healthy", "reachable"}
         and isinstance(row.get("finalLab"), dict)
-        and str((row.get("finalLab") or {}).get("status") or "") != "playable"
+        and str((row.get("finalLab") or {}).get("status") or "") not in {"playable", "not_executed_no_mutation"}
         and str(row.get("provider") or "")
     })
     previous_hidden = [
