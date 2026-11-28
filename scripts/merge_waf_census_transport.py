@@ -99,45 +99,54 @@ def _refresh_authority_rows(
 
 
 
-def network_differential(waf: dict[str, Any], provider: str) -> dict[str, Any]:
+def _receipt_run_id(value: object) -> int:
+    if not isinstance(value, dict):
+        return 0
+    raw = str(value.get("runId") or "").strip()
+    return int(raw) if raw.isdigit() else 0
+
+
+def network_differential(
+    waf: dict[str, Any],
+    provider: str,
+    expected_bundle_digest: str = "",
+) -> dict[str, Any]:
+    """Select the newest exact-byte transport evidence for this provider.
+
+    Concurrent targeted cohorts finish independently, so one global
+    freshRunReceipt/lastRefreshProviderFilter cannot be freshness authority for
+    the whole durable ledger. Receipts are provider-local; legacy unreceipted
+    network-failure-replay rows remain supported for old fixtures only.
+    """
     wanted = str(provider or "").strip().casefold()
-    receipt = waf.get("freshRunReceipt") if isinstance(waf.get("freshRunReceipt"), dict) else {}
-    receipt_sha = str(receipt.get("sourceNiakvioSha") or "")
-    receipt_run = str(receipt.get("runId") or "")
-    refreshed = {
-        str(value or "").strip().casefold()
-        for value in waf.get("lastRefreshProviderFilter") or []
-        if str(value or "").strip()
-    }
-
-    def current_transport_row(row: dict[str, Any]) -> bool:
-        seed = str(row.get("seedKind") or "")
-        transport_receipt = (
-            row.get("transportReceipt")
-            if isinstance(row.get("transportReceipt"), dict)
-            else {}
-        )
-        # Durable latest WAF evidence retains older rows. Once a fresh run
-        # receipt exists, accept only rows stamped by that exact run and, when
-        # present, inside its explicit refresh cohort. This lets an
-        # authority-independent metadata seed prove transport without allowing
-        # historical content reachability to rewrite current census causality.
-        if receipt_sha and receipt_run:
-            if refreshed and wanted not in refreshed:
-                return False
-            return (
-                str(transport_receipt.get("sourceNiakvioSha") or "") == receipt_sha
-                and str(transport_receipt.get("runId") or "") == receipt_run
-            )
-        # Legacy direct merge fixtures predate per-row transport receipts.
-        return seed == "network-failure-replay"
-
-    rows = [
+    expected_digest = str(expected_bundle_digest or "").strip().casefold()
+    provider_rows = [
         row for row in waf.get("rows") or []
         if isinstance(row, dict)
         and str(row.get("provider") or "").strip().casefold() == wanted
-        and current_transport_row(row)
     ]
+    receipted: list[dict[str, Any]] = []
+    for row in provider_rows:
+        receipt = row.get("transportReceipt") if isinstance(row.get("transportReceipt"), dict) else {}
+        run_id = _receipt_run_id(receipt)
+        source_sha = str(receipt.get("sourceNiakvioSha") or "").strip().casefold()
+        bundle_sha = str(receipt.get("providerBundleSha256") or "").strip().casefold()
+        if run_id <= 0 or len(source_sha) != 40:
+            continue
+        if expected_digest and bundle_sha != expected_digest:
+            continue
+        receipted.append(row)
+    if receipted:
+        newest = max(_receipt_run_id(row.get("transportReceipt")) for row in receipted)
+        rows = [
+            row for row in receipted
+            if _receipt_run_id(row.get("transportReceipt")) == newest
+        ]
+    else:
+        rows = [
+            row for row in provider_rows
+            if str(row.get("seedKind") or "") == "network-failure-replay"
+        ]
     if not rows:
         return {"classification": "no-network-differential-evidence", "evidence": []}
 
@@ -490,41 +499,48 @@ def merge_transport(
         # applying the evidence collected now.
         for field in census.TRANSPORT_OVERLAY_ROW_FIELDS:
             row.pop(field, None)
-        provider_replay_rows = (
-            replay_by_provider.get(provider) or []
-            if provider in fresh_replay_providers
-            else []
-        )
-        # A targeted ledger carries old rows alongside this-run rows. A
-        # current-run summary alone is insufficient when the same provider has
-        # a historical verified replay. Match each row to this run AND its
-        # executed JS bytes before allowing any census status mutation.
-        current_receipt = waf.get("freshRunReceipt")
-        if isinstance(current_receipt, dict):
-            source_sha = str(current_receipt.get("sourceNiakvioSha") or "")
-            run_id = str(current_receipt.get("runId") or "")
-            provider_replay_rows = [
-                observation for observation in provider_replay_rows
-                if isinstance(observation.get("residentialReplayReceipt"), dict)
-                and source_sha and run_id
-                and str(observation["residentialReplayReceipt"].get("sourceNiakvioSha") or "") == source_sha
-                and str(observation["residentialReplayReceipt"].get("runId") or "") == run_id
-                and str(observation.get("providerArtifactSha256") or "")
-                and str(observation.get("providerArtifactSha256") or "")
-                == str(observation["residentialReplayReceipt"].get("providerBundleSha256") or "")
-            ]
-        # Replays can complete while other provider generations are published.
-        # A fresh *run ID* does not prove this census row used the same JS.
-        # If the census knows its exact bundle digest, require a matching digest
-        # from the bytes staged/executed in the residential replay. Legacy rows
-        # without a digest remain historical context only, never publication.
+        # Freshness is provider-local because targeted WAF cohorts are
+        # intentionally concurrent. Prefer the newest receipted replay for the
+        # exact current bundle; fall back to legacy lastAttempt semantics only
+        # when no per-provider receipt exists.
         expected_bundle_digest = str(row.get("providerArtifactSha256") or "").strip().casefold()
-        if expected_bundle_digest:
+        all_provider_replays = replay_by_provider.get(provider) or []
+        receipted_replays: list[dict[str, Any]] = []
+        for observation in all_provider_replays:
+            receipt = (
+                observation.get("residentialReplayReceipt")
+                if isinstance(observation.get("residentialReplayReceipt"), dict)
+                else {}
+            )
+            run_id = _receipt_run_id(receipt)
+            bundle_sha = str(receipt.get("providerBundleSha256") or "").strip().casefold()
+            observed_sha = str(observation.get("providerArtifactSha256") or "").strip().casefold()
+            if run_id <= 0 or not bundle_sha or observed_sha != bundle_sha:
+                continue
+            if expected_bundle_digest and bundle_sha != expected_bundle_digest:
+                continue
+            receipted_replays.append(observation)
+        if receipted_replays:
+            newest_replay_run = max(
+                _receipt_run_id(observation.get("residentialReplayReceipt"))
+                for observation in receipted_replays
+            )
             provider_replay_rows = [
-                observation for observation in provider_replay_rows
-                if str(observation.get("providerArtifactSha256") or "").strip().casefold()
-                == expected_bundle_digest
+                observation for observation in receipted_replays
+                if _receipt_run_id(observation.get("residentialReplayReceipt")) == newest_replay_run
             ]
+        else:
+            provider_replay_rows = (
+                all_provider_replays
+                if provider in fresh_replay_providers
+                else []
+            )
+            if expected_bundle_digest:
+                provider_replay_rows = [
+                    observation for observation in provider_replay_rows
+                    if str(observation.get("providerArtifactSha256") or "").strip().casefold()
+                    == expected_bundle_digest
+                ]
         if row.get("authorityRepairEligible") is False and census._lifecycle_disabled(row):
             row["status"] = "DISABLED"
             row["color"] = census.STATUS_META["DISABLED"][0]
@@ -634,7 +650,7 @@ def merge_transport(
                 # loses the evidence that browser/direct/OkHttp transport was
                 # healthy on the exact same run/bytes.
                 if provider in network_allowed:
-                    differential = network_differential(waf, provider)
+                    differential = network_differential(waf, provider, expected_bundle_digest)
                     if differential["classification"] != "no-network-differential-evidence":
                         row["networkDifferentialClass"] = differential["classification"]
                         row["networkDifferentialEvidence"] = list(differential["evidence"])
@@ -643,7 +659,7 @@ def merge_transport(
                 continue
 
         if provider in network_allowed:
-            differential = network_differential(waf, provider)
+            differential = network_differential(waf, provider, expected_bundle_digest)
             if differential["classification"] != "no-network-differential-evidence":
                 row["networkDifferentialClass"] = differential["classification"]
                 row["networkDifferentialEvidence"] = list(differential["evidence"])
