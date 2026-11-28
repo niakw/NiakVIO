@@ -443,6 +443,7 @@ jobs:
           python tests/automatic_repair_attempt_delta_test.py
           python tests/brain_learning_causal_wave_merge_test.py
           python tests/brain_explicit_learning_cohort_execution_test.py
+          python tests/brain_learning_published_parent_stage_test.py
           python tests/brain_learning_push_target_workflow_test.py
           python tests/brain_learning_lab_session_recovery_test.py
           python tests/brain_learning_variant_stream_coverage_test.py
@@ -464,6 +465,7 @@ jobs:
           python -m py_compile \
             scripts/run_brain_learning_sandbox.py \
             scripts/run_brain_learning_queue.py \
+            scripts/prepare_brain_learning_parent_stage.py \
             scripts/select_fast_learning_handoff.py \
             scripts/validate_fast_learning_health_scope.py \
             scripts/brain_positive_program_memory.py \
@@ -731,6 +733,30 @@ jobs:
             ' fast_handoff='+fast
           );
           NODE
+
+      - name: Prepare exact published parent stage for targeted Learning
+        shell: bash
+        env:
+          FAST_HANDOFF: ${{ steps.learning-slot.outputs.fast_handoff }}
+          FAST_HANDOFF_PROVIDER_FILTER: ${{ steps.learning-slot.outputs.provider_filter }}
+        run: |
+          set -euo pipefail
+          execution_stage="staging-reconstruction"
+          if [ "$FAST_HANDOFF" = "true" ] && [ -n "${FAST_HANDOFF_PROVIDER_FILTER:-}" ]; then
+            args=(python scripts/prepare_brain_learning_parent_stage.py
+              --published-stage staging
+              --reconstruction-stage staging-reconstruction
+              --output-stage staging-learning)
+            IFS=',' read -r -a providers <<< "$FAST_HANDOFF_PROVIDER_FILTER"
+            for provider in "${providers[@]}"; do
+              [ -z "$provider" ] || args+=(--provider "$provider")
+            done
+            "${args[@]}"
+            python scripts/validate_override_pipeline.py --stage staging-learning
+            execution_stage="staging-learning"
+          fi
+          echo "NIAKVIO_LEARNING_EXECUTION_STAGE=$execution_stage" >> "$GITHUB_ENV"
+          echo "FIELD_BRAIN_LEARNING_EXECUTION_STAGE stage=$execution_stage exact_parent=$([ "$execution_stage" = "staging-learning" ] && echo true || echo false)"
 
       - name: Build bounded Brain LLM public and private memory
         shell: bash
@@ -1097,7 +1123,7 @@ jobs:
         run: |
           set -euo pipefail
           args=(python scripts/run_brain_learning_queue.py
-            --stage staging-reconstruction
+            --stage "${NIAKVIO_LEARNING_EXECUTION_STAGE:-staging-reconstruction}"
             --health brain-sandbox/full-health/health-results.json
             --previous-state brain-learning-input/previous.json
             --output-dir brain-sandbox/health-output
@@ -1207,7 +1233,7 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/build_brain_repair_proposal.py \
-            --stage staging-reconstruction/candidates.json \
+            --stage "${NIAKVIO_LEARNING_EXECUTION_STAGE:-staging-reconstruction}/candidates.json" \
             --repair-report brain-sandbox/health-output/repair-report.json \
             --overrides provider-overrides.json \
             --output brain-learning-output/provider-overrides.proposed.json \
@@ -1215,7 +1241,7 @@ jobs:
           node -e "const x=require('./brain-learning-output/repair-proposal.json'); if(x.policy?.publicationAllowed!==false||x.policy?.productionWritesAllowed!==false||x.policy?.pullRequestOnly!==true||x.policy?.requiresHumanMerge!==true) process.exit(1)"
           mkdir -p brain-learning-output/provider-bases
           python scripts/materialize_clean_provider_reconstruction.py \
-            --stage staging-reconstruction/candidates.json \
+            --stage "${NIAKVIO_LEARNING_EXECUTION_STAGE:-staging-reconstruction}/candidates.json" \
             --queue-summary brain-sandbox/health-output/learning-queue-summary.json \
             --overrides brain-learning-output/provider-overrides.proposed.json \
             --provenance brain-learning-input/source-provenance.json \
