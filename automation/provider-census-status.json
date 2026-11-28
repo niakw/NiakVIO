@@ -1254,7 +1254,11 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "dulourd",
@@ -1786,11 +1790,7 @@
       "testedThisRun": true,
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ]
+      "targetedTransportEvidence": []
     },
     {
       "provider": "french-manga",
@@ -4299,7 +4299,13 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true",
+        "movie: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "waveanime",
@@ -4400,9 +4406,9 @@
     },
     {
       "provider": "youtitou",
-      "status": "PROVIDER NETWORK BLOCKED",
+      "status": "ROUTE PROVEN",
       "underlyingStatus": "",
-      "color": "🟤",
+      "color": "🟪",
       "declaredLanes": [
         "anime"
       ],
@@ -4439,7 +4445,15 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "zone-streaming",
@@ -5274,8 +5288,9 @@
     "HARNESS/ENV BLOCKED": 7,
     "NO PROOF": 14,
     "PROOF REFRESH REQUIRED": 4,
-    "PROVIDER NETWORK BLOCKED": 8,
-    "REGRESSION PROVIDER": 5
+    "PROVIDER NETWORK BLOCKED": 7,
+    "REGRESSION PROVIDER": 5,
+    "ROUTE PROVEN": 1
   },
   "symptomaticProviders": [
     "1jour1film0626",
@@ -5610,8 +5625,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "",
-  "harnessEvidenceSha": "",
+  "harnessEvidenceRunId": "46164709912-waf-transport",
+  "harnessEvidenceSha": "8ed98aead57cb14e0c7f686494100d30f6da50b1",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
@@ -5629,19 +5644,22 @@
     "ihavenotv",
     "voirserie",
     "watch-cartoon-online",
-    "waveanime"
+    "waveanime",
+    "youtitou"
   ],
   "networkDifferentialUpdatedProviders": [
     "moiflix"
   ],
   "residentialProviderReplayPromotedProviders": [],
-  "residentialProviderReplayReclassifiedProviders": [],
+  "residentialProviderReplayReclassifiedProviders": [
+    "youtitou"
+  ],
   "residentialProviderReplayRepairableProviders": [],
   "residentialExitNodeEvidence": {
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 1,
+    "matchedProviderLanes": 0,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -5654,7 +5672,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 1,
+    "matchedProviderLanes": 0,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -5666,7 +5684,7 @@
   "residentialProviderReplay": {
     "available": true,
     "profile": "tailscale-residential-exit",
-    "providerCount": 45,
+    "providerCount": 48,
     "providers": [
       "1jour1film0626",
       "67movies",
@@ -5684,6 +5702,7 @@
       "cinetimes",
       "coflix",
       "corsflix",
+      "documentary-area",
       "dulourd",
       "emnexmovies",
       "fexini",
@@ -5711,8 +5730,10 @@
       "vostfree",
       "vuflix",
       "watch-cartoon-online",
+      "watchott",
       "waveanime",
-      "yflix"
+      "yflix",
+      "youtitou"
     ],
     "rawProviders": [
       "purstream",
@@ -6496,6 +6517,37 @@
         "verified": 0,
         "contradictions": 0,
         "identitySafe": true
+      },
+      {
+        "provider": "documentary-area",
+        "providerArtifactSha256": "e0d1a2cb7e7a451968b83b8184e51520c830ebcc4f50539356eab42feac1f381",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_network_http_error",
+          "provider_network_zero_result"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "lookup_only",
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "7cb878dca17f2e1320f58c3f1949815419ecd877",
+          "providerBundleSha256": "e0d1a2cb7e7a451968b83b8184e51520c830ebcc4f50539356eab42feac1f381",
+          "runId": "46164709912",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
       },
       {
         "provider": "dulourd",
@@ -7712,6 +7764,95 @@
         "identitySafe": true
       },
       {
+        "provider": "watchott",
+        "providerArtifactSha256": "695076a5b462ed5ed40a04c61f9920e162f89fe6c062e566ddb1d5cdcd1516b9",
+        "lane": "anime",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "sampleCount": 1,
+        "sampleDebugStages": [
+          "provider_network_http_error"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "7cb878dca17f2e1320f58c3f1949815419ecd877",
+          "providerBundleSha256": "695076a5b462ed5ed40a04c61f9920e162f89fe6c062e566ddb1d5cdcd1516b9",
+          "runId": "46164709912",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
+      },
+      {
+        "provider": "watchott",
+        "providerArtifactSha256": "695076a5b462ed5ed40a04c61f9920e162f89fe6c062e566ddb1d5cdcd1516b9",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_network_http_error"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "lookup_only",
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "7cb878dca17f2e1320f58c3f1949815419ecd877",
+          "providerBundleSha256": "695076a5b462ed5ed40a04c61f9920e162f89fe6c062e566ddb1d5cdcd1516b9",
+          "runId": "46164709912",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
+      },
+      {
+        "provider": "watchott",
+        "providerArtifactSha256": "695076a5b462ed5ed40a04c61f9920e162f89fe6c062e566ddb1d5cdcd1516b9",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_network_http_error"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "lookup_only",
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "7cb878dca17f2e1320f58c3f1949815419ecd877",
+          "providerBundleSha256": "695076a5b462ed5ed40a04c61f9920e162f89fe6c062e566ddb1d5cdcd1516b9",
+          "runId": "46164709912",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
+      },
+      {
         "provider": "waveanime",
         "lane": "anime",
         "status": "no_streams",
@@ -7753,6 +7894,37 @@
         "verified": 0,
         "contradictions": 0,
         "identitySafe": true
+      },
+      {
+        "provider": "youtitou",
+        "providerArtifactSha256": "974b6549cf6002b2216d0ed1c5a699ce80927a01c336a4ddea0d884feed83e80",
+        "lane": "anime",
+        "status": "no_streams",
+        "debugStage": "provider_network_zero_result",
+        "sampleCount": 2,
+        "sampleDebugStages": [
+          "provider_network_zero_result",
+          "provider_zero_before_provider_network"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "lookup_only",
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "7cb878dca17f2e1320f58c3f1949815419ecd877",
+          "providerBundleSha256": "974b6549cf6002b2216d0ed1c5a699ce80927a01c336a4ddea0d884feed83e80",
+          "runId": "46164709912",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
       }
     ],
     "privacy": {
@@ -7764,27 +7936,61 @@
     },
     "lastAttempt": {
       "available": true,
-      "providerCount": 1,
+      "providerCount": 3,
       "refreshedProviders": [
         "1jour1film0626",
+        "67movies",
+        "allwish",
         "aniflix-uno",
         "animejlprovider",
         "animeonsen",
         "animesalt",
         "animesultra",
+        "animevost-fr",
         "arrowtv",
         "chillflix",
         "cinegram",
-        "cinetimes"
+        "cinetimes",
+        "coflix",
+        "corsflix",
+        "dulourd",
+        "fexini",
+        "film-a-revoir",
+        "flemmix",
+        "franime",
+        "french-anime",
+        "fullanime",
+        "ihavenotv",
+        "kehflix",
+        "mallumv",
+        "moiflix",
+        "moviebox",
+        "moviesmod",
+        "movy",
+        "primewire",
+        "purstream",
+        "sadisflix",
+        "sekai",
+        "shuttletv",
+        "skstream",
+        "vidfast",
+        "vidrock",
+        "voirserie",
+        "vostfree",
+        "watch-cartoon-online",
+        "waveanime",
+        "yflix"
       ],
       "replayedProviders": [
-        "french-anime"
+        "documentary-area",
+        "watchott",
+        "youtitou"
       ],
       "rawProviders": [],
       "playableProviders": [],
       "verifiedProviders": [],
-      "sourceNiakvioSha": "10c814e87c892fa79aa4c66a12786e31f0815820",
-      "runId": "46086351883",
+      "sourceNiakvioSha": "7cb878dca17f2e1320f58c3f1949815419ecd877",
+      "runId": "46164709912",
       "proofAuthority": false,
       "publicationAuthority": false
     },

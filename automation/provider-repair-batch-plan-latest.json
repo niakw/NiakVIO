@@ -12,9 +12,7 @@
     "papadustream",
     "stigstream"
   ],
-  "lifecycleSuppressedDynamicProviders": [
-    "moviebox"
-  ],
+  "lifecycleSuppressedDynamicProviders": [],
   "dynamicVariantCurrentObservedProviders": [
     "1jour1film0626",
     "4khdhub",
@@ -35,6 +33,7 @@
     "anisama",
     "arrowtv",
     "boredflix",
+    "castle",
     "chillflix",
     "cinegram",
     "cinemabz",
@@ -60,11 +59,14 @@
     "fullanime",
     "hexa",
     "hianime",
+    "hindmoviez",
     "ihavenotv",
+    "internet-archive",
     "kehflix",
     "kidraz",
     "kurage",
     "latestmovies",
+    "meowtv",
     "moiflix",
     "moviebite",
     "moviebox",
@@ -72,6 +74,7 @@
     "moviesmod",
     "movish",
     "movix-fr",
+    "mugiwarastream",
     "nakios",
     "neko-sama",
     "neobam",
@@ -107,13 +110,14 @@
     "watch-cartoon-online",
     "watchott",
     "waveanime",
+    "webflix",
     "wookafr",
     "youtitou",
     "zone-streaming",
     "zone-telechargement"
   ],
-  "dynamicVariantFallbackUsed": true,
-  "groupCount": 30,
+  "dynamicVariantFallbackUsed": false,
+  "groupCount": 31,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -530,37 +534,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_http_error|depth:lookup",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
-      "causalIssueSignature": "network_http_error",
-      "evidenceDepthSignature": "lookup",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "network_http_error"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 2,
-      "providers": [
-        "moiflix",
-        "youtitou"
-      ],
-      "action": "refresh domain/upstream transport and residential/native evidence before provider-local code changes",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_http_error|depth:none",
       "repairScope": "transport",
       "runtimeFamilies": [
@@ -842,30 +815,28 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:provider_zero_before_provider_network|depth:none",
+      "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_http_error|depth:lookup",
       "repairScope": "learning",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
       "runtimeFamilySignature": "mixed_embed_resolver",
-      "causalIssueSignature": "provider_zero_before_provider_network",
-      "evidenceDepthSignature": "none",
+      "causalIssueSignature": "network_http_error",
+      "evidenceDepthSignature": "lookup",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "none"
+        "lookup"
       ],
       "dominantIssues": [
-        "provider_zero_before_provider_network"
+        "network_http_error"
       ],
-      "harnessTransportClasses": [
-        "residential-exit-native-reachable"
-      ],
+      "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
       "providerCount": 1,
       "providers": [
-        "french-anime"
+        "youtitou"
       ],
-      "action": "residential full-provider replay disproved transport ownership; learn a provider-side request/route strategy before mutation",
+      "action": "domain/backend authority is unresolved but is not a prerequisite for read-only Brain diagnosis; learn from current runtime evidence while keeping production mutation gated",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -934,6 +905,38 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
+      "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:waf_challenge|depth:none",
+      "repairScope": "learning",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "mixed_embed_resolver",
+      "causalIssueSignature": "waf_challenge",
+      "evidenceDepthSignature": "none",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-native-reachable"
+      ],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "french-anime"
+      ],
+      "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
       "groupId": "transport|html_scraper|runtime:html_scraper|issue:network_http_error|depth:none",
       "repairScope": "transport",
       "runtimeFamilies": [
@@ -956,6 +959,36 @@
         "rivestream-app"
       ],
       "action": "domain/backend authority is unresolved, but current transport evidence must be reproduced through browser/native/residential clients before any Domain or provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_http_error|depth:lookup",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "mixed_embed_resolver",
+      "causalIssueSignature": "network_http_error",
+      "evidenceDepthSignature": "lookup",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "network_http_error"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "moiflix"
+      ],
+      "action": "refresh domain/upstream transport and residential/native evidence before provider-local code changes",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
