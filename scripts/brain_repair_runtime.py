@@ -418,6 +418,11 @@ def _census_prior(provider_id: str) -> dict[str, Any]:
             continue
         dynamic_variant = _dynamic_variant_coverage_prior(provider_id)
         current_structure = _current_structure_evidence(provider_id)
+        network_differential_class = _clip_text(row.get("networkDifferentialClass"), 80)
+        transport_causality_disproved = network_differential_class in {
+            "github-native-route-reachable",
+            "residential-native-route-reachable",
+        }
         return {
             "status": _clip_text(row.get("status"), 80),
             "dominantIssue": _clip_text(row.get("dominantIssue"), 240),
@@ -426,6 +431,12 @@ def _census_prior(provider_id: str) -> dict[str, Any]:
             "routeProof": [_clip_text(value, 180) for value in (row.get("routeProof") or [])[:8]],
             "candidateProof": [_clip_text(value, 180) for value in (row.get("candidateProof") or [])[:8]],
             "currentVerifiedLanes": [_clip_text(value, 48) for value in (row.get("currentVerifiedLanes") or [])[:8]],
+            "networkDifferentialClass": network_differential_class,
+            # This is causal routing evidence only. It means a current, exact-byte
+            # direct/OkHttp profile reached provider content after the transport
+            # merge stamped the census row. It does NOT prove playback, identity,
+            # native Android TLS, provider correctness, or publication safety.
+            "transportCausalityDisproved": transport_causality_disproved,
             "repairEligible": row.get("repairEligible") is True,
             "knowledgeRole": "monotonic-diagnostic-prior-only",
             **({"dynamicVariantCoverage": dynamic_variant} if dynamic_variant else {}),
