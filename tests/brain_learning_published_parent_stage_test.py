@@ -39,7 +39,17 @@ with tempfile.TemporaryDirectory() as directory:
 
     published_registry = {
         "candidates": [
-            {"key": "published-v3:alpha", "canonical_id": "alpha", "local_path": "providers/alpha.js", "sha256": sha(exact_alpha), "published_exact_bytes": True},
+            {
+                "key": "published-v3:alpha",
+                "source": "published-v3",
+                "canonical_id": "alpha",
+                "local_path": "providers/alpha.js",
+                "sha256": sha(exact_alpha),
+                "published_exact_bytes": True,
+                "metadata": {"formats": ["movie"], "runtimeToken": "published"},
+                "canonical_metadata": {"contentLanguage": ["fr"]},
+                "repair_allowed": False,
+            },
             {"key": "published-v3:beta", "canonical_id": "beta", "local_path": "providers/beta.js", "sha256": sha(exact_beta), "published_exact_bytes": True},
         ]
     }
@@ -56,6 +66,9 @@ with tempfile.TemporaryDirectory() as directory:
                 "repair_history": [{"accepted": True, "profile": "synthetic"}],
                 "provider_base_reconstruction_required": False,
                 "candidate_code_origin": "existing-niakvio-provider-base-v2",
+                "metadata": {"formats": ["anime"], "runtimeToken": "reconstruction"},
+                "canonical_metadata": {"contentLanguage": ["en"]},
+                "repair_allowed": True,
             },
             {"key": "local:beta", "canonical_id": "beta", "local_path": "providers/beta.js", "sha256": sha(clean_beta), "provider_base_reconstruction_required": True, "candidate_code_origin": "new-niakvio-clean-seed"},
         ]
@@ -68,10 +81,18 @@ with tempfile.TemporaryDirectory() as directory:
 
     assert (output / "providers" / "alpha.js").read_bytes() == exact_alpha
     assert rows["alpha"]["sha256"] == sha(exact_alpha)
-    assert rows["alpha"]["learning_parent_authority"] == "published-exact-current-bytes"
+    assert rows["alpha"]["learning_parent_authority"] == "published-exact-current-candidate"
     assert rows["alpha"]["learning_parent_overlay_applied"] is True
     assert rows["alpha"]["learning_reconstruction_sha256"] == sha(clean_alpha)
     assert rows["alpha"]["provider_base_reconstruction_required"] is False
+    assert rows["alpha"]["key"] == "published-v3:alpha"
+    assert rows["alpha"]["source"] == "published-v3"
+    assert rows["alpha"]["metadata"] == {"formats": ["movie"], "runtimeToken": "published"}
+    assert rows["alpha"]["canonical_metadata"] == {"contentLanguage": ["fr"]}
+    assert rows["alpha"]["repair_allowed"] is True
+    assert rows["alpha"]["learning_parent_published_exact_metadata"] is True
+    assert rows["alpha"]["learning_reconstruction_key"] == "local:alpha"
+    assert rows["alpha"]["learning_reconstruction_candidate_code_origin"] == "existing-niakvio-provider-base-v2"
     assert rows["alpha"]["upstream_sha256"] == sha(exact_alpha)
     assert rows["alpha"]["patched_sha256"] == sha(exact_alpha)
     assert rows["alpha"]["local_patches"] == []
