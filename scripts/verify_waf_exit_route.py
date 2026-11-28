@@ -202,6 +202,30 @@ def exit_route_health(status: dict) -> tuple[bool, bool, bool]:
     return backend_running, exit_present, exit_online
 
 
+def exit_path_hint(status: dict) -> str:
+    """Classify the selected active peer snapshot, not a measured packet path."""
+    selected = status.get("ExitNodeStatus")
+    peers = status.get("Peer")
+    if not isinstance(selected, dict) or not isinstance(peers, dict):
+        return "unknown"
+    node_id = selected.get("ID")
+    if not node_id:
+        return "unknown"
+    matched = [p for p in peers.values() if isinstance(p, dict) and p.get("ID") == node_id]
+    if len(matched) != 1:
+        return "unknown"
+    peer = matched[0]
+    if peer.get("Online") is not True or peer.get("Active") is not True:
+        return "unknown"
+    if peer.get("CurAddr"):
+        return "direct-hint"
+    if peer.get("PeerRelay"):
+        return "peer-relay-hint"
+    if peer.get("Relay"):
+        return "derp-hint"
+    return "unknown"
+
+
 def attest(before: str, after: str, status: dict) -> None:
     if not ipaddress.IPv4Address(before).is_global or not ipaddress.IPv4Address(after).is_global:
         raise RuntimeError("public egress is not globally routable")
@@ -238,6 +262,11 @@ def verify_converged_exit(before: str, attempts: int = EGRESS_VERIFY_ATTEMPTS) -
         else:
             if after != before:
                 attest(before, after, status)
+                try:
+                    path_hint = exit_path_hint(exit_status())
+                except (RuntimeError, OSError, subprocess.TimeoutExpired):
+                    path_hint = "unknown"
+                print(f"FIELD_WAF_EXIT_PATH snapshot={path_hint} packet_path_verified=false")
                 print(f"FIELD_WAF_EXIT_PUBLIC_PROBE attempt={attempt} reached=true changed=true")
                 return after
             last_error = "public egress is unchanged"
