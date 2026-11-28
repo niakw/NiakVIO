@@ -236,12 +236,28 @@ def _plan_quick_results(registry_path: Path, report: dict[str, Any]) -> None:
     )
 
 
+def _learning_parent_parity_mode() -> str:
+    requested = str(
+        os.environ.get("NUVIO_BRAIN_LEARNING_PARENT_PARITY_MODE") or ""
+    ).strip().casefold()
+    if _planner_mode() == "learning" and requested == "deep":
+        return "deep"
+    return "quick"
+
+
 def _quick_run_health(*, stage: Path, registry_path: Path, output_dir: Path, mode: str, health_check: Path = loop.HEALTH_CHECK) -> dict[str, Any]:
+    health_mode = _learning_parent_parity_mode()
+    if health_mode == "deep":
+        print(
+            "FIELD_BRAIN_LEARNING_PARENT_PARITY health_mode=deep "
+            "reason=published-parent-playable comparison=same-profile",
+            file=sys.stderr,
+        )
     report = _base_run_health(
         stage=stage,
         registry_path=registry_path,
         output_dir=output_dir,
-        mode="quick",
+        mode=health_mode,
         health_check=health_check,
     )
     _plan_quick_results(registry_path, report)
