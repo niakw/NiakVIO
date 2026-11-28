@@ -527,10 +527,33 @@ function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery, prefe
   // A freshly promoted Brain executor must actually be tried on the
   // representative. Never permit arbitrary/provider-specific profiles:
   // preference applies only to an installed, causally eligible candidate.
-  const ordered = candidates.some((row) => row.profile === preferred)
+  const preferredInstalled = candidates.some((row) => row.profile === preferred);
+  const requestAmplificationStall = (
+    ["route_proven_gap", "search_gap"].includes(failure)
+    && memoryRows.some((memory) => (
+      memory.executionObserved === true
+      && canonicalFailureClass(memory.failureClass) === failure
+      && stringValue(memory.lastReason).toLowerCase()
+        === "exploration_request_amplification_without_frontier"
+    ))
+  );
+  const stallPriority = new Map([
+    ["runtime_response_salvage_v1", 0],
+    ["document_request_contract_mining_v1", 1],
+  ]);
+  const ordered = preferredInstalled
     ? [...candidates.filter((row) => row.profile === preferred),
        ...candidates.filter((row) => row.profile !== preferred)]
-    : candidates;
+    : requestAmplificationStall
+      ? candidates
+        .map((row, originalIndex) => ({ row, originalIndex }))
+        .sort((left, right) => (
+          (stallPriority.get(left.row.profile) ?? 100)
+          - (stallPriority.get(right.row.profile) ?? 100)
+          || left.originalIndex - right.originalIndex
+        ))
+        .map(({ row }) => row)
+      : candidates;
   for (let index = 0; index < ordered.length; index += 1) {
     const row = ordered[index];
     // A new version number is not a new causal method. After three distinct
