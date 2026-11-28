@@ -258,7 +258,9 @@ guard = workflow.rfind('if [ "$ALLOW_PENDING_TARGETS" != "true" ]; then', 0, ful
 assert guard > canonical_status_copy, "pending/onboarding observations must not become canonical current-byte proof"
 summary_block = workflow[current_summary:latest_summary]
 assert '--report "automation/current-bytes-full-provider-census-${run_id}.json"' in summary_block
-assert "--state automation/provider-census-status.json" in summary_block
+assert 'summary_state="automation/provider-census-status.json"' in summary_block
+assert 'summary_state="/tmp/provider-census-status-targeted-run-state.json"' in summary_block
+assert '--state "$summary_state"' in summary_block
 assert '--run-id "$run_id" --sha "$SOURCE_SHA"' in summary_block
 assert "FIELD_SHARDED_CURRENT_BYTES_EVIDENCE_PUBLISHED" in workflow
 
