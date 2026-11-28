@@ -57,9 +57,16 @@ function hasCaptchaResource(source) {
 }
 
 function challengeKind({ body = '', contentType = '', server = '', cfRay = '', cfMitigated = '' } = {}) {
-  const type = String(contentType || '').toLowerCase();
-  const html = /text\/html/.test(type);
-  const script = /(?:application|text)\/(?:javascript|x-javascript|ecmascript)/.test(type);
+  const mime = String(contentType || '').split(';', 1)[0].trim().toLowerCase();
+  const html = mime === 'text/html';
+  const script = new Set([
+    'application/javascript',
+    'application/x-javascript',
+    'application/ecmascript',
+    'text/javascript',
+    'text/x-javascript',
+    'text/ecmascript',
+  ]).has(mime);
   if (!html && !script) return '';
 
   const source = String(body || '').slice(0, 65536);
