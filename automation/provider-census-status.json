@@ -2395,20 +2395,9 @@
       "statusRepairEligible": true,
       "repairEligible": true,
       "testedThisRun": true,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
-        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayReclassified": true,
-      "networkDifferentialClass": "github-native-route-reachable",
-      "networkDifferentialEvidence": [
-        "movie: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-desktop-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached",
-        "tv: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-desktop-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
-      ]
+      "targetedTransportEvidence": []
     },
     {
       "provider": "moviebite",
@@ -3388,9 +3377,9 @@
     },
     {
       "provider": "rivestream-ru",
-      "status": "PROVIDER NETWORK BLOCKED",
+      "status": "NO PROOF",
       "underlyingStatus": "",
-      "color": "🟤",
+      "color": "🔵",
       "declaredLanes": [
         "anime",
         "movie",
@@ -3435,7 +3424,23 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
+      "residentialProviderReplayReclassified": true,
+      "networkDifferentialClass": "network-route-inconclusive",
+      "networkDifferentialEvidence": [
+        "anime: github-browser=browser_inconclusive, github-okhttp=okhttp_jvm_error, github-desktop-okhttp=okhttp_jvm_error, github-direct=direct_http_error, residential-browser=browser_inconclusive, residential-okhttp=okhttp_jvm_error, residential-desktop-okhttp=okhttp_jvm_error, residential-direct=direct_http_error",
+        "movie: github-browser=browser_inconclusive, github-okhttp=okhttp_jvm_error, github-desktop-okhttp=okhttp_jvm_error, github-direct=direct_http_error, residential-browser=browser_inconclusive, residential-okhttp=okhttp_jvm_error, residential-desktop-okhttp=okhttp_jvm_error, residential-direct=direct_http_error",
+        "tv: github-browser=browser_inconclusive, github-okhttp=okhttp_jvm_error, github-desktop-okhttp=okhttp_jvm_error, github-direct=direct_http_error, residential-browser=browser_inconclusive, residential-okhttp=okhttp_jvm_error, residential-desktop-okhttp=okhttp_jvm_error, residential-direct=direct_http_error"
+      ]
     },
     {
       "provider": "sadisflix",
@@ -3768,7 +3773,17 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_network_exception, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_network_exception, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "networkDifferentialClass": "network-route-inconclusive",
+      "networkDifferentialEvidence": [
+        "movie: github-browser=browser_inconclusive, github-okhttp=okhttp_jvm_error, github-desktop-okhttp=okhttp_jvm_error, github-direct=direct_http_error, residential-browser=browser_inconclusive, residential-okhttp=okhttp_jvm_error, residential-desktop-okhttp=okhttp_jvm_error, residential-direct=direct_http_error",
+        "tv: github-browser=browser_inconclusive, github-okhttp=okhttp_jvm_error, github-desktop-okhttp=okhttp_jvm_error, github-direct=direct_http_error, residential-browser=browser_inconclusive, residential-okhttp=okhttp_jvm_error, residential-desktop-okhttp=okhttp_jvm_error, residential-direct=direct_http_error"
+      ]
     },
     {
       "provider": "vidfast",
@@ -5312,9 +5327,9 @@
     "FULL OK": 6,
     "HARNESS MISMATCH": 4,
     "HARNESS/ENV BLOCKED": 5,
-    "NO PROOF": 21,
+    "NO PROOF": 22,
     "PROOF REFRESH REQUIRED": 4,
-    "PROVIDER NETWORK BLOCKED": 4,
+    "PROVIDER NETWORK BLOCKED": 3,
     "REGRESSION PROVIDER": 4,
     "ROUTE PROVEN": 5
   },
@@ -5651,8 +5666,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "46167059107-waf-transport",
-  "harnessEvidenceSha": "60b8a5db9470bbf1fd8befb66aa0d2291d4b8af3",
+  "harnessEvidenceRunId": "46167054905-waf-transport",
+  "harnessEvidenceSha": "adada8160f05f5785135f48c4d5ccd248eaa5ff8",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
@@ -5661,26 +5676,25 @@
     "cinegram",
     "cinetimes",
     "dulourd",
-    "moiflix",
+    "rivestream-ru",
     "voirserie",
     "watch-cartoon-online",
     "waveanime"
   ],
   "networkDifferentialUpdatedProviders": [
-    "moiflix"
+    "rivestream-ru",
+    "videasy"
   ],
   "residentialProviderReplayPromotedProviders": [],
   "residentialProviderReplayReclassifiedProviders": [
-    "moiflix"
+    "rivestream-ru"
   ],
-  "residentialProviderReplayRepairableProviders": [
-    "moiflix"
-  ],
+  "residentialProviderReplayRepairableProviders": [],
   "residentialExitNodeEvidence": {
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 2,
+    "matchedProviderLanes": 5,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -5693,7 +5707,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 2,
+    "matchedProviderLanes": 5,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -5705,7 +5719,7 @@
   "residentialProviderReplay": {
     "available": true,
     "profile": "tailscale-residential-exit",
-    "providerCount": 48,
+    "providerCount": 50,
     "providers": [
       "1jour1film0626",
       "67movies",
@@ -5743,9 +5757,11 @@
       "neonflix",
       "primewire",
       "purstream",
+      "rivestream-ru",
       "sekai",
       "shuttletv",
       "skstream",
+      "videasy",
       "vidfast",
       "voirserie",
       "vostfree",
@@ -7046,14 +7062,7 @@
         "playable": 0,
         "verified": 0,
         "contradictions": 0,
-        "identitySafe": true,
-        "residentialReplayReceipt": {
-          "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
-          "providerBundleSha256": "4facc83345873e17afab1b3d9d6ddb4b902b8caf5e2df9c8fa85d57ac691970f",
-          "runId": "46167059107",
-          "proofAuthority": false,
-          "publicationAuthority": false
-        }
+        "identitySafe": true
       },
       {
         "provider": "moiflix",
@@ -7075,39 +7084,393 @@
         "playable": 0,
         "verified": 0,
         "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "moviebox",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "moviebox",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "moviesmod",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_zero_before_provider_network"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "moviesmod",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_zero_before_provider_network"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "movish",
+        "lane": "anime",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_network_http_error"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "lookup_only"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "movish",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_network_http_error"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "lookup_only"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "movish",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_network_http_error"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "lookup_only"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "movy",
+        "lane": "anime",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_zero_before_provider_network"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "movy",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_zero_before_provider_network"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "movy",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_zero_before_provider_network"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "neonflix",
+        "lane": "anime",
+        "status": "no_streams",
+        "debugStage": "provider_network_zero_result",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_network_zero_result"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "chain_reached"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "neonflix",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_network_zero_result",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_network_zero_result"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "chain_reached"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "neonflix",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_network_zero_result",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_network_zero_result"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "chain_reached"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "primewire",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_network_zero_result",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_network_zero_result"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "chain_reached"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "primewire",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_network_zero_result",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_network_zero_result"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "chain_reached"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "purstream",
+        "providerArtifactSha256": "e6879dd8a031e1b8abf0fcf43cc3cd08f1a3190ed321568ce3f8006049841ed0",
+        "lane": "movie",
+        "status": "playable_unverified",
+        "debugStage": "provider_returned_streams",
+        "sampleCount": 1,
+        "sampleDebugStages": [
+          "provider_returned_streams"
+        ],
+        "sampleStatuses": [
+          "playable_unverified"
+        ],
+        "sampleProgressStages": [
+          "chain_reached"
+        ],
+        "raw": 1,
+        "playable": 1,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "12895e85a9e1daab9ca378adcddb6029cabe822e",
+          "providerBundleSha256": "e6879dd8a031e1b8abf0fcf43cc3cd08f1a3190ed321568ce3f8006049841ed0",
+          "runId": "44494433206",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
+      },
+      {
+        "provider": "purstream",
+        "providerArtifactSha256": "e6879dd8a031e1b8abf0fcf43cc3cd08f1a3190ed321568ce3f8006049841ed0",
+        "lane": "tv",
+        "status": "playable_unverified",
+        "debugStage": "provider_returned_streams",
+        "sampleCount": 1,
+        "sampleDebugStages": [
+          "provider_returned_streams"
+        ],
+        "sampleStatuses": [
+          "playable_unverified"
+        ],
+        "sampleProgressStages": [
+          "chain_reached"
+        ],
+        "raw": 1,
+        "playable": 1,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "12895e85a9e1daab9ca378adcddb6029cabe822e",
+          "providerBundleSha256": "e6879dd8a031e1b8abf0fcf43cc3cd08f1a3190ed321568ce3f8006049841ed0",
+          "runId": "44494433206",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
+      },
+      {
+        "provider": "rivestream-ru",
+        "providerArtifactSha256": "bf6ceaac652c0fbbd2cd01c38fab3f452468d7d0bea081f26fc8d0e916538ce9",
+        "lane": "anime",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_zero_before_provider_network"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
           "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
-          "providerBundleSha256": "4facc83345873e17afab1b3d9d6ddb4b902b8caf5e2df9c8fa85d57ac691970f",
-          "runId": "46167059107",
+          "providerBundleSha256": "bf6ceaac652c0fbbd2cd01c38fab3f452468d7d0bea081f26fc8d0e916538ce9",
+          "runId": "46167054905",
           "proofAuthority": false,
           "publicationAuthority": false
         }
       },
       {
-        "provider": "moviebox",
-        "lane": "movie",
-        "status": "no_streams",
-        "debugStage": "provider_network_http_error",
-        "raw": 0,
-        "playable": 0,
-        "verified": 0,
-        "contradictions": 0,
-        "identitySafe": true
-      },
-      {
-        "provider": "moviebox",
-        "lane": "tv",
-        "status": "no_streams",
-        "debugStage": "provider_network_http_error",
-        "raw": 0,
-        "playable": 0,
-        "verified": 0,
-        "contradictions": 0,
-        "identitySafe": true
-      },
-      {
-        "provider": "moviesmod",
+        "provider": "rivestream-ru",
+        "providerArtifactSha256": "bf6ceaac652c0fbbd2cd01c38fab3f452468d7d0bea081f26fc8d0e916538ce9",
         "lane": "movie",
         "status": "no_streams",
         "debugStage": "provider_zero_before_provider_network",
@@ -7123,316 +7486,42 @@
         ],
         "raw": 0,
         "playable": 0,
-        "verified": 0,
-        "contradictions": 0,
-        "identitySafe": true
-      },
-      {
-        "provider": "moviesmod",
-        "lane": "tv",
-        "status": "no_streams",
-        "debugStage": "provider_zero_before_provider_network",
-        "sampleCount": 4,
-        "sampleDebugStages": [
-          "provider_zero_before_provider_network"
-        ],
-        "sampleStatuses": [
-          "no_streams"
-        ],
-        "sampleProgressStages": [
-          "none"
-        ],
-        "raw": 0,
-        "playable": 0,
-        "verified": 0,
-        "contradictions": 0,
-        "identitySafe": true
-      },
-      {
-        "provider": "movish",
-        "lane": "anime",
-        "status": "no_streams",
-        "debugStage": "provider_network_http_error",
-        "sampleCount": 4,
-        "sampleDebugStages": [
-          "provider_network_http_error"
-        ],
-        "sampleStatuses": [
-          "no_streams"
-        ],
-        "sampleProgressStages": [
-          "lookup_only"
-        ],
-        "raw": 0,
-        "playable": 0,
-        "verified": 0,
-        "contradictions": 0,
-        "identitySafe": true
-      },
-      {
-        "provider": "movish",
-        "lane": "movie",
-        "status": "no_streams",
-        "debugStage": "provider_network_http_error",
-        "sampleCount": 4,
-        "sampleDebugStages": [
-          "provider_network_http_error"
-        ],
-        "sampleStatuses": [
-          "no_streams"
-        ],
-        "sampleProgressStages": [
-          "lookup_only"
-        ],
-        "raw": 0,
-        "playable": 0,
-        "verified": 0,
-        "contradictions": 0,
-        "identitySafe": true
-      },
-      {
-        "provider": "movish",
-        "lane": "tv",
-        "status": "no_streams",
-        "debugStage": "provider_network_http_error",
-        "sampleCount": 4,
-        "sampleDebugStages": [
-          "provider_network_http_error"
-        ],
-        "sampleStatuses": [
-          "no_streams"
-        ],
-        "sampleProgressStages": [
-          "lookup_only"
-        ],
-        "raw": 0,
-        "playable": 0,
-        "verified": 0,
-        "contradictions": 0,
-        "identitySafe": true
-      },
-      {
-        "provider": "movy",
-        "lane": "anime",
-        "status": "no_streams",
-        "debugStage": "provider_zero_before_provider_network",
-        "sampleCount": 4,
-        "sampleDebugStages": [
-          "provider_zero_before_provider_network"
-        ],
-        "sampleStatuses": [
-          "no_streams"
-        ],
-        "sampleProgressStages": [
-          "none"
-        ],
-        "raw": 0,
-        "playable": 0,
-        "verified": 0,
-        "contradictions": 0,
-        "identitySafe": true
-      },
-      {
-        "provider": "movy",
-        "lane": "movie",
-        "status": "no_streams",
-        "debugStage": "provider_zero_before_provider_network",
-        "sampleCount": 4,
-        "sampleDebugStages": [
-          "provider_zero_before_provider_network"
-        ],
-        "sampleStatuses": [
-          "no_streams"
-        ],
-        "sampleProgressStages": [
-          "none"
-        ],
-        "raw": 0,
-        "playable": 0,
-        "verified": 0,
-        "contradictions": 0,
-        "identitySafe": true
-      },
-      {
-        "provider": "movy",
-        "lane": "tv",
-        "status": "no_streams",
-        "debugStage": "provider_zero_before_provider_network",
-        "sampleCount": 4,
-        "sampleDebugStages": [
-          "provider_zero_before_provider_network"
-        ],
-        "sampleStatuses": [
-          "no_streams"
-        ],
-        "sampleProgressStages": [
-          "none"
-        ],
-        "raw": 0,
-        "playable": 0,
-        "verified": 0,
-        "contradictions": 0,
-        "identitySafe": true
-      },
-      {
-        "provider": "neonflix",
-        "lane": "anime",
-        "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
-        "sampleCount": 4,
-        "sampleDebugStages": [
-          "provider_network_zero_result"
-        ],
-        "sampleStatuses": [
-          "no_streams"
-        ],
-        "sampleProgressStages": [
-          "chain_reached"
-        ],
-        "raw": 0,
-        "playable": 0,
-        "verified": 0,
-        "contradictions": 0,
-        "identitySafe": true
-      },
-      {
-        "provider": "neonflix",
-        "lane": "movie",
-        "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
-        "sampleCount": 4,
-        "sampleDebugStages": [
-          "provider_network_zero_result"
-        ],
-        "sampleStatuses": [
-          "no_streams"
-        ],
-        "sampleProgressStages": [
-          "chain_reached"
-        ],
-        "raw": 0,
-        "playable": 0,
-        "verified": 0,
-        "contradictions": 0,
-        "identitySafe": true
-      },
-      {
-        "provider": "neonflix",
-        "lane": "tv",
-        "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
-        "sampleCount": 4,
-        "sampleDebugStages": [
-          "provider_network_zero_result"
-        ],
-        "sampleStatuses": [
-          "no_streams"
-        ],
-        "sampleProgressStages": [
-          "chain_reached"
-        ],
-        "raw": 0,
-        "playable": 0,
-        "verified": 0,
-        "contradictions": 0,
-        "identitySafe": true
-      },
-      {
-        "provider": "primewire",
-        "lane": "movie",
-        "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
-        "sampleCount": 4,
-        "sampleDebugStages": [
-          "provider_network_zero_result"
-        ],
-        "sampleStatuses": [
-          "no_streams"
-        ],
-        "sampleProgressStages": [
-          "chain_reached"
-        ],
-        "raw": 0,
-        "playable": 0,
-        "verified": 0,
-        "contradictions": 0,
-        "identitySafe": true
-      },
-      {
-        "provider": "primewire",
-        "lane": "tv",
-        "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
-        "sampleCount": 4,
-        "sampleDebugStages": [
-          "provider_network_zero_result"
-        ],
-        "sampleStatuses": [
-          "no_streams"
-        ],
-        "sampleProgressStages": [
-          "chain_reached"
-        ],
-        "raw": 0,
-        "playable": 0,
-        "verified": 0,
-        "contradictions": 0,
-        "identitySafe": true
-      },
-      {
-        "provider": "purstream",
-        "providerArtifactSha256": "e6879dd8a031e1b8abf0fcf43cc3cd08f1a3190ed321568ce3f8006049841ed0",
-        "lane": "movie",
-        "status": "playable_unverified",
-        "debugStage": "provider_returned_streams",
-        "sampleCount": 1,
-        "sampleDebugStages": [
-          "provider_returned_streams"
-        ],
-        "sampleStatuses": [
-          "playable_unverified"
-        ],
-        "sampleProgressStages": [
-          "chain_reached"
-        ],
-        "raw": 1,
-        "playable": 1,
         "verified": 0,
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "12895e85a9e1daab9ca378adcddb6029cabe822e",
-          "providerBundleSha256": "e6879dd8a031e1b8abf0fcf43cc3cd08f1a3190ed321568ce3f8006049841ed0",
-          "runId": "44494433206",
+          "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
+          "providerBundleSha256": "bf6ceaac652c0fbbd2cd01c38fab3f452468d7d0bea081f26fc8d0e916538ce9",
+          "runId": "46167054905",
           "proofAuthority": false,
           "publicationAuthority": false
         }
       },
       {
-        "provider": "purstream",
-        "providerArtifactSha256": "e6879dd8a031e1b8abf0fcf43cc3cd08f1a3190ed321568ce3f8006049841ed0",
+        "provider": "rivestream-ru",
+        "providerArtifactSha256": "bf6ceaac652c0fbbd2cd01c38fab3f452468d7d0bea081f26fc8d0e916538ce9",
         "lane": "tv",
-        "status": "playable_unverified",
-        "debugStage": "provider_returned_streams",
-        "sampleCount": 1,
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_returned_streams"
+          "provider_zero_before_provider_network"
         ],
         "sampleStatuses": [
-          "playable_unverified"
+          "no_streams"
         ],
         "sampleProgressStages": [
-          "chain_reached"
+          "none"
         ],
-        "raw": 1,
-        "playable": 1,
+        "raw": 0,
+        "playable": 0,
         "verified": 0,
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "12895e85a9e1daab9ca378adcddb6029cabe822e",
-          "providerBundleSha256": "e6879dd8a031e1b8abf0fcf43cc3cd08f1a3190ed321568ce3f8006049841ed0",
-          "runId": "44494433206",
+          "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
+          "providerBundleSha256": "bf6ceaac652c0fbbd2cd01c38fab3f452468d7d0bea081f26fc8d0e916538ce9",
+          "runId": "46167054905",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7596,6 +7685,64 @@
         "verified": 0,
         "contradictions": 0,
         "identitySafe": true
+      },
+      {
+        "provider": "videasy",
+        "providerArtifactSha256": "1645390ea47e21c10a648ee699a8fb2fa56483fc7af6b60f69703941dc6ee224",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_network_exception",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_network_exception"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
+          "providerBundleSha256": "1645390ea47e21c10a648ee699a8fb2fa56483fc7af6b60f69703941dc6ee224",
+          "runId": "46167054905",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
+      },
+      {
+        "provider": "videasy",
+        "providerArtifactSha256": "1645390ea47e21c10a648ee699a8fb2fa56483fc7af6b60f69703941dc6ee224",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_network_exception",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_network_exception"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
+          "providerBundleSha256": "1645390ea47e21c10a648ee699a8fb2fa56483fc7af6b60f69703941dc6ee224",
+          "runId": "46167054905",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
       },
       {
         "provider": "vidfast",
@@ -7968,7 +8115,7 @@
     },
     "lastAttempt": {
       "available": true,
-      "providerCount": 1,
+      "providerCount": 2,
       "refreshedProviders": [
         "1jour1film0626",
         "67movies",
@@ -8002,10 +8149,12 @@
         "movy",
         "primewire",
         "purstream",
+        "rivestream-ru",
         "sadisflix",
         "sekai",
         "shuttletv",
         "skstream",
+        "videasy",
         "vidfast",
         "vidrock",
         "voirserie",
@@ -8017,13 +8166,14 @@
         "youtitou"
       ],
       "replayedProviders": [
-        "moiflix"
+        "rivestream-ru",
+        "videasy"
       ],
       "rawProviders": [],
       "playableProviders": [],
       "verifiedProviders": [],
       "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
-      "runId": "46167059107",
+      "runId": "46167054905",
       "proofAuthority": false,
       "publicationAuthority": false
     },
