@@ -217,6 +217,99 @@ plan_repeat = module.select_execution_plan(
 assert plan_repeat["eligibleProviders"] == [], plan_repeat
 assert plan_repeat["suppressedRepeatProviders"] == ["learn-only"], plan_repeat
 
+memory_v1 = {
+    "experimentMemory": {
+        "entries": [{
+            "providerId": "learn-only",
+            "failureClass": "search_gap",
+            "signature": "search-gap-v1",
+            "profile": "adaptive_runtime_recovery",
+            "experimentVariant": 1,
+            "experimentGeneration": 1,
+            "strategyImplementationFingerprint": "a" * 64,
+            "executionObserved": True,
+            "lastOutcome": "rejected",
+            "attempts": 1,
+            "failures": 1,
+        }]
+    }
+}
+progress_v1 = module.select_execution_plan(
+    execution_plan,
+    plan_ledger,
+    lane="BRAIN_LEARNING",
+    requested=["learn-only"],
+    learning_memory=memory_v1,
+)
+assert progress_v1["eligibleProviders"] == ["learn-only"], progress_v1
+assert progress_v1["eligible"][0]["fingerprint"] != plan_first["eligible"][0]["fingerprint"]
+assert progress_v1["eligible"][0]["learningExperimentEpochHash"]
+ledger_v1 = module.mark_dispatched(plan_ledger, progress_v1, learning_run_id="learn-v1")
+
+repeat_v1 = module.select_execution_plan(
+    execution_plan,
+    ledger_v1,
+    lane="BRAIN_LEARNING",
+    requested=["learn-only"],
+    learning_memory=memory_v1,
+)
+assert repeat_v1["eligibleProviders"] == [], repeat_v1
+assert repeat_v1["suppressedRepeatProviders"] == ["learn-only"], repeat_v1
+
+memory_counter_only = json.loads(json.dumps(memory_v1))
+memory_counter_only["experimentMemory"]["entries"][0]["attempts"] = 99
+memory_counter_only["experimentMemory"]["entries"][0]["failures"] = 99
+counter_repeat = module.select_execution_plan(
+    execution_plan,
+    ledger_v1,
+    lane="BRAIN_LEARNING",
+    requested=["learn-only"],
+    learning_memory=memory_counter_only,
+)
+assert counter_repeat["eligibleProviders"] == [], counter_repeat
+
+memory_v2 = json.loads(json.dumps(memory_v1))
+memory_v2["experimentMemory"]["entries"].append({
+    "providerId": "learn-only",
+    "failureClass": "search_gap",
+    "signature": "search-gap-v1",
+    "profile": "adaptive_runtime_recovery",
+    "experimentVariant": 2,
+    "experimentGeneration": 2,
+    "strategyImplementationFingerprint": "b" * 64,
+    "executionObserved": True,
+    "lastOutcome": "rejected",
+})
+progress_v2 = module.select_execution_plan(
+    execution_plan,
+    ledger_v1,
+    lane="BRAIN_LEARNING",
+    requested=["learn-only"],
+    learning_memory=memory_v2,
+)
+assert progress_v2["eligibleProviders"] == ["learn-only"], progress_v2
+assert progress_v2["eligible"][0]["fingerprint"] != progress_v1["eligible"][0]["fingerprint"]
+
+memory_unavailable = json.loads(json.dumps(memory_v1))
+memory_unavailable["experimentMemory"]["entries"].append({
+    "providerId": "learn-only",
+    "failureClass": "search_gap",
+    "signature": "search-gap-v1",
+    "profile": "future_profile_v9",
+    "experimentVariant": 9,
+    "experimentGeneration": 9,
+    "executionObserved": False,
+    "lastOutcome": "profile_unavailable",
+})
+unavailable_repeat = module.select_execution_plan(
+    execution_plan,
+    ledger_v1,
+    lane="BRAIN_LEARNING",
+    requested=["learn-only"],
+    learning_memory=memory_unavailable,
+)
+assert unavailable_repeat["eligibleProviders"] == [], unavailable_repeat
+
 harness_plan = module.select_execution_plan(
     execution_plan,
     {"providers": {}},
