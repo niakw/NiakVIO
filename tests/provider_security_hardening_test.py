@@ -12,7 +12,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from provider_security_hardening import MARKER, harden_text, known_unsafe_findings
 from harden_staged_provider_security import harden_stage
-from provider_patches.global_provider_security_hardening_v1 import harden_bundle
+from provider_patches.global_provider_security_hardening_v1 import harden_bundle, validate_bundle
 from current_provider_scope import projection_active_provider_ids
 
 
@@ -270,6 +270,37 @@ with tempfile.TemporaryDirectory() as raw:
     assert updated["sha256"] == hashlib.sha256(secured).hexdigest()
     assert updated["local_patches"] == []
     assert known_unsafe_findings(secured_text) == []
+
+    # Published provider bytes may be monoline/minified. Validation must inspect
+    # the owned security contract, not demand the formatter used by harden_bundle.
+    compact_text = " ".join(line.strip() for line in secured_text.splitlines() if line.strip())
+    compact = compact_text.encode("utf-8")
+    source.write_bytes(compact)
+    registry["candidates"][0]["sha256"] = hashlib.sha256(compact).hexdigest()
+    registry["candidates"][0]["bytes"] = len(compact)
+    registry_path.write_text(json.dumps(registry), encoding="utf-8")
+    before_compact = source.read_bytes()
+    compact_summary = harden_stage(stage)
+    assert compact_summary["already_hardened_count"] == 1, compact_summary
+    assert source.read_bytes() == before_compact
+    assert validate_bundle(compact_text)["changed"] is False
+
+    stale_text = compact_text.replace("preventive-core-security-v4", "preventive-core-security-v3")
+    # The revision is encoded in FIXDATA, so altering visible prose alone cannot
+    # forge a stale managed contract. Re-render one stale block instead.
+    from provider_patch_blocks import replace_managed_fix
+    stale_text = replace_managed_fix(
+        compact_text,
+        "CORE.PROVIDER_SECURITY_BOUNDARY.V1",
+        "/* NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1 */\nglobalThis.__nuvioGlobalProviderSecurityBoundaryV1=true;",
+        data={"revision":"preventive-core-security-v3","providerMutation":False,"postBuildMutation":False},
+    )
+    try:
+        validate_bundle(stale_text)
+    except ValueError as exc:
+        assert "metadata is stale" in str(exc), exc
+    else:
+        raise AssertionError("stale security boundary metadata accepted")
 print("staged provider security validation-only tests passed")
 
 # Provider-owned Lego JavaScript is injected after the base security normalization.
