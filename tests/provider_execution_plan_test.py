@@ -50,7 +50,10 @@ assert network_row["workflow"]=="provider-waf-browser-session.yml"
 assert network_row["strategyBlueprint"]=="qualified_authority_transport_differential_v2"
 assert network_row["mutatesProduction"] is False
 assert network_row["applicationValidated"] is False
-assert domain_row["lane"]=="DOMAIN_REFRESH" and domain_row["authorityQualified"] is False
+assert domain_row["lane"]=="CORE_CLIENT_LEARNING" and domain_row["authorityQualified"] is False
+assert domain_row["workflow"]=="provider-waf-browser-session.yml"
+assert domain_row["strategyBlueprint"]=="unresolved_authority_transport_differential_v1"
+assert domain_row["fallbackLane"]=="DOMAIN_REFRESH"
 assert by["tls"]["lane"]=="CORE_CLIENT_LEARNING"
 assert by["tls"]["strategyBlueprint"]=="native_tls_browser_differential_v1"
 assert by["tls"]["dispatchAllowed"] is True
