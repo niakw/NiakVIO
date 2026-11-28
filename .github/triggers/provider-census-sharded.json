@@ -1,16 +1,16 @@
 {
   "schemaVersion": 2,
   "scope": "unresolved",
-  "reason": "Final French-Anime targeted row-overlay proof after updating the persistence contract test for split fleet/run-specific summary state.",
+  "reason": "Final French-Anime targeted row-overlay proof after fixing the persistence test slice around split summary state setup.",
   "requestedAt": "2026-11-28",
-  "validation": "french-anime-targeted-row-overlay-fleet-authority-v4",
+  "validation": "french-anime-targeted-row-overlay-fleet-authority-v5",
   "source": "niakvio-causal-transport-persistence",
   "targetProviders": [
     "french-anime"
   ],
   "allowPendingTargets": false,
   "requiredEvidence": "Run must complete successfully with FIELD_TARGETED_CENSUS_STATE_MERGE, FIELD_SHARDED_TARGETED_CENSUS_OVERLAY, FIELD_SHARDED_TARGETED_RUN_SUMMARY_STATE, FIELD_SHARDED_TARGETED_AUTHORITY_PRESERVED and FIELD_SHARDED_TARGETED_LATEST_SUMMARY_PRESERVED. Canonical fleet runId/triggerSha and fleet latest-summary remain non-targeted authority; only French-Anime row receives targeted provenance; no playback authority.",
-  "retryRevision": 26,
-  "fullRefreshRevision": 26,
-  "requestedSourceParent": "e785a64080d5b36f8c07b68a11457fcd74b4acc6"
+  "retryRevision": 27,
+  "fullRefreshRevision": 27,
+  "requestedSourceParent": "ba551d0e919ebbd3126077e3d8931f8fde95a751"
 }
