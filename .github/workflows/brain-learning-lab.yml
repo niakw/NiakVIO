@@ -626,9 +626,32 @@ jobs:
           NUVIO_HEALTH_RESULTS_FILENAME: health-results.json
           NUVIO_WORKER_MEMORY_MB: "1024"
           NUVIO_HEALTH_PROVIDER_FILTER: ${{ steps.learning-slot.outputs.provider_filter }}
+          FAST_HANDOFF: ${{ steps.learning-slot.outputs.fast_handoff }}
         run: |
           set -euo pipefail
           mkdir -p brain-sandbox/full-health brain-sandbox/health-output
+          if [ "${FAST_HANDOFF:-false}" = "true" ] && [ -n "${NUVIO_HEALTH_PROVIDER_FILTER:-}" ]; then
+            python - <<'PY'
+          import json
+          from pathlib import Path
+          source=Path("health-config.json")
+          target=Path("brain-sandbox/targeted-learning-health-config.json")
+          cfg=json.loads(source.read_text(encoding="utf-8"))
+          deep=dict((cfg.get("modes") or {}).get("deep") or {})
+          deep["fixture_limit"]=1
+          deep["fixture_limit_per_category"]=True
+          deep["fallback_fixture_limit_per_category"]=0
+          deep["fallback_only_when_all_primary_no_streams"]=False
+          deep["max_settings_profiles"]=1
+          deep["provider_timeout_ms"]=min(45000, int(deep.get("provider_timeout_ms") or 45000))
+          deep["stream_probe_timeout_ms"]=min(10000, int(deep.get("stream_probe_timeout_ms") or 10000))
+          deep["max_streams_to_probe"]=min(2, max(1, int(deep.get("max_streams_to_probe") or 1)))
+          cfg.setdefault("modes", {})["deep"]=deep
+          target.write_text(json.dumps(cfg,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+          PY
+            export NUVIO_HEALTH_CONFIG="$GITHUB_WORKSPACE/brain-sandbox/targeted-learning-health-config.json"
+            echo "FIELD_BRAIN_TARGETED_BASELINE_PROFILE fixture_per_category=1 fallback_per_category=0 settings_profiles=1 provider_timeout_ms=45000 stream_timeout_ms=10000 proof_authority=false"
+          fi
           node scripts/health_check.mjs --deep
           test -s brain-sandbox/full-health/health-results.json
           cp brain-sandbox/full-health/health-results.json brain-sandbox/health-output/health-results.json
