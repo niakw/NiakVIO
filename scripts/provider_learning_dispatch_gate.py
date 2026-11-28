@@ -426,7 +426,14 @@ def select_execution_plan(
             provider = safe_provider(raw_provider)
             if not provider or (restrict_to_requested and provider not in wanted):
                 continue
-            if provider in exhausted:
+            family_epoch = (
+                learning_family_epoch(learning_memory or {}, execution)
+                if lane == "BRAIN_LEARNING"
+                else ""
+            )
+            # Exhaustion closes the provider's own bounded strategy family, not
+            # a genuinely new skill identity learned later by a causal sibling.
+            if provider in exhausted and not family_epoch:
                 exhausted_rows.append(provider)
                 continue
             learning_epoch = (
@@ -444,11 +451,6 @@ def select_execution_plan(
             if fingerprint in dispatched_fingerprints(prior):
                 repeats.append(provider)
                 continue
-            family_epoch = (
-                learning_family_epoch(learning_memory or {}, execution)
-                if lane == "BRAIN_LEARNING"
-                else ""
-            )
             payload = _execution_plan_payload(
                 provider, execution, learning_epoch, family_epoch
             )
