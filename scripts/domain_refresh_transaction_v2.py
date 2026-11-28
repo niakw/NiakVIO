@@ -31,6 +31,7 @@ import refresh_authoritative_hub_domains as refresh
 import resolve_provider_hubs as resolver
 from current_provider_scope import projection_active_provider_ids
 from provider_materialization_generation import materialization_generation
+from validate_domain_refresh_transaction import has_fresh_rollback_evidence
 from provider_patch_blocks import (
     decode_managed_data,
     owned_span,
@@ -382,6 +383,37 @@ def _rewrite_domain_url_list(values: object, rewrites: dict[str, str]) -> tuple[
         seen.add(key)
         output.append(rewritten)
     return output, changed
+
+
+def reject_unproven_historical_rollback(
+    item: dict[str, Any],
+    patch: dict[str, Any],
+    history_row: dict[str, Any],
+) -> bool:
+    """Reject historical terminal rollback before any structured DATA mutation.
+
+    The final transaction validator already enforces this policy. Repeating the
+    same bounded predicate here prevents a known-stale terminal from being
+    written/rematerialized for minutes only to be rejected at the final gate.
+    """
+    terminal = str(item.get("official_site") or "").strip().rstrip("/")
+    current = str(patch.get("official_site") or "").strip().rstrip("/")
+    if not terminal or not current or terminal.casefold() == current.casefold():
+        return False
+    historical = {
+        str(row.get("url") or "").strip().rstrip("/").casefold()
+        for row in history_row.get("previous") or []
+        if isinstance(row, dict) and str(row.get("url") or "").strip()
+    }
+    if terminal.casefold() not in historical:
+        return False
+    if has_fresh_rollback_evidence(item, terminal):
+        return False
+    item["status"] = "hub_unresolved"
+    item["reason"] = "historical_terminal_requires_fresh_authoritative_evidence"
+    item["historical_rollback_rejected"] = True
+    item["publication_authority"] = False
+    return True
 
 
 def sync_patch_domain_authority(
@@ -1063,6 +1095,15 @@ def main() -> int:
                 if not isinstance(patch, dict):
                     item["status"] = "hub_unresolved"
                     item["reason"] = "missing_provider_patch_domain_refresh_may_not_add_provider"
+                elif reject_unproven_historical_rollback(item, patch, history_row):
+                    item["applied_patch_fields"] = []
+                    item["registry_synced"] = False
+                    print(
+                        "FIELD_DOMAIN_HISTORICAL_ROLLBACK_REJECTED "
+                        f"provider={provider_id} terminal={str(item.get('official_site') or '')} "
+                        "stage=pre-mutation publication=false",
+                        flush=True,
+                    )
                 else:
                     terminal = str(item.get("official_site") or "").strip().rstrip("/")
                     # Guard registry authority before mutating any provider patch DATA.
