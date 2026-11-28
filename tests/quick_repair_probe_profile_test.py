@@ -54,7 +54,9 @@ assert config["modes"]["deep"]["max_streams_to_probe"] == 10
 assert config["modes"]["deep"]["fallback_fixture_limit_per_category"] == 3
 
 source = path.read_text(encoding="utf-8")
-assert 'mode="quick"' in source
+assert "health_mode = _learning_parent_parity_mode()" in source
+assert "mode=health_mode" in source
+assert 'os.environ.get("NUVIO_BRAIN_LEARNING_PARENT_PARITY_MODE")' in source
 assert 'modes["deep"] = copy.deepcopy(quick)' not in source
 
 # Brain mutation/loop budgets are executable and shared by canonical family,
