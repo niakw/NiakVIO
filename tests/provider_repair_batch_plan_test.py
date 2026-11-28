@@ -120,3 +120,53 @@ with tempfile.TemporaryDirectory() as td:
     assert result["unresolvedProviderCount"]==1,result
     assert result["groups"][0]["providers"]==["still-live"],result
 print("Disabled lifecycle overrides retained variant debt")
+
+
+# Causal family identity must include issue/depth, not only runtime topology.
+# Otherwise zero-result, timeout and different evidence frontiers collapse into
+# one oracle and unrelated siblings are incorrectly deferred.
+with tempfile.TemporaryDirectory() as td:
+    td=Path(td)
+    sp=td/"status.json"; cp=td/"sharded.json"; op=td/"overrides.json"; out=td/"plan.json"
+    causal_status={
+      "runId":125,
+      "triggerSha":"ghi",
+      "providers":[
+        {"provider":"zero-lookup","status":"NO PROOF","brainCheckRequired":True,"repairEligible":True,
+         "declaredLanes":["movie"],"currentVerifiedLanes":[],"dominantIssue":"provider_network_zero_result",
+         "evidenceDepth":["movie=lookup_only"]},
+        {"provider":"timeout-lookup","status":"NO PROOF","brainCheckRequired":True,"repairEligible":True,
+         "declaredLanes":["movie"],"currentVerifiedLanes":[],"dominantIssue":"timeout",
+         "evidenceDepth":["movie=lookup_only"]},
+        {"provider":"zero-chain","status":"NO PROOF","brainCheckRequired":True,"repairEligible":True,
+         "declaredLanes":["movie"],"currentVerifiedLanes":[],"dominantIssue":"provider_network_zero_result",
+         "evidenceDepth":["movie=chain_reached"]},
+      ],
+    }
+    causal_overrides={
+      "provider_patches":{
+        provider:{"source_runtime_family":"mixed-embed-family"}
+        for provider in ("zero-lookup","timeout-lookup","zero-chain")
+      },
+      "provider_capabilities":{
+        provider:{"strategy":"mixed_embed_resolver"}
+        for provider in ("zero-lookup","timeout-lookup","zero-chain")
+      },
+    }
+    sp.write_text(json.dumps(causal_status)); cp.write_text('{"rows":[]}'); op.write_text(json.dumps(causal_overrides))
+    subprocess.run([
+        "python",str(script),"--status",str(sp),"--sharded-census",str(cp),
+        "--overrides",str(op),"--output",str(out)
+    ],check=True)
+    causal_plan=json.loads(out.read_text())
+    assert causal_plan["groupCount"]==3,causal_plan
+    by_provider={row["providers"][0]:row for row in causal_plan["groups"]}
+    assert by_provider["zero-lookup"]["causalIssueSignature"]=="network_zero_result",by_provider
+    assert by_provider["zero-lookup"]["evidenceDepthSignature"]=="lookup",by_provider
+    assert by_provider["timeout-lookup"]["causalIssueSignature"]=="timeout",by_provider
+    assert by_provider["timeout-lookup"]["evidenceDepthSignature"]=="lookup",by_provider
+    assert by_provider["zero-chain"]["causalIssueSignature"]=="network_zero_result",by_provider
+    assert by_provider["zero-chain"]["evidenceDepthSignature"]=="chain",by_provider
+    assert all("runtime:mixed-embed-family" in row["groupId"] for row in causal_plan["groups"])
+    assert len({row["groupId"] for row in causal_plan["groups"]})==3
+print("Provider causal family signature split passed")
