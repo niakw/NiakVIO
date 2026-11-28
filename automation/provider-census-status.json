@@ -2118,9 +2118,9 @@
     },
     {
       "provider": "hianime",
-      "status": "PROVIDER NETWORK BLOCKED",
+      "status": "NO PROOF",
       "underlyingStatus": "",
-      "color": "🟤",
+      "color": "🔵",
       "declaredLanes": [
         "anime"
       ],
@@ -2157,7 +2157,19 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
+      "residentialProviderReplayReclassified": true,
+      "networkDifferentialClass": "github-native-route-reachable",
+      "networkDifferentialEvidence": [
+        "anime: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-desktop-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
+      ]
     },
     {
       "provider": "ihavenotv",
@@ -3454,7 +3466,19 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true",
+        "movie: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "networkDifferentialClass": "residential-route-still-blocked",
+      "networkDifferentialEvidence": [
+        "anime: github-browser=browser_timeout, github-okhttp=okhttp_jvm_http_error, github-desktop-okhttp=okhttp_jvm_http_error, github-direct=direct_http_http_error, residential-browser=browser_timeout, residential-okhttp=okhttp_jvm_http_error, residential-desktop-okhttp=okhttp_jvm_http_error, residential-direct=direct_http_http_error",
+        "movie: github-browser=browser_timeout, github-okhttp=okhttp_jvm_http_error, github-desktop-okhttp=okhttp_jvm_http_error, github-direct=direct_http_http_error, residential-browser=browser_timeout, residential-okhttp=okhttp_jvm_http_error, residential-desktop-okhttp=okhttp_jvm_http_error, residential-direct=direct_http_http_error",
+        "tv: github-browser=browser_timeout, github-okhttp=okhttp_jvm_http_error, github-desktop-okhttp=okhttp_jvm_http_error, github-direct=direct_http_http_error, residential-browser=browser_timeout, residential-okhttp=okhttp_jvm_http_error, residential-desktop-okhttp=okhttp_jvm_http_error, residential-direct=direct_http_http_error"
+      ]
     },
     {
       "provider": "rivestream-ru",
@@ -4212,15 +4236,14 @@
       "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true,
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
         "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
         "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
-      "transportRepairEligible": true,
-      "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayReclassified": true
+      ]
     },
     {
       "provider": "vostfree",
@@ -5436,9 +5459,9 @@
     "FULL OK": 6,
     "HARNESS MISMATCH": 6,
     "HARNESS/ENV BLOCKED": 2,
-    "NO PROOF": 23,
+    "NO PROOF": 24,
     "PROOF REFRESH REQUIRED": 4,
-    "PROVIDER NETWORK BLOCKED": 3,
+    "PROVIDER NETWORK BLOCKED": 2,
     "REGRESSION PROVIDER": 4,
     "ROUTE PROVEN": 5
   },
@@ -5775,8 +5798,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "46171824629-waf-transport",
-  "harnessEvidenceSha": "3d9663341ed9e01fb87de81413cf7ddab3c93b9b",
+  "harnessEvidenceRunId": "46171832445-waf-transport",
+  "harnessEvidenceSha": "a55955ac0b76ed68f050cee0e72fd9dfe5a7d717",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "aniflix-uno",
@@ -5789,8 +5812,8 @@
     "film-a-revoir",
     "franime",
     "fullanime",
+    "hianime",
     "moiflix",
-    "voirserie",
     "watch-cartoon-online",
     "watchott",
     "youtitou"
@@ -5799,7 +5822,9 @@
     "anikototv",
     "documentary-area",
     "emnexmovies",
+    "hianime",
     "moiflix",
+    "rivestream-app",
     "watchott",
     "youtitou"
   ],
@@ -5808,8 +5833,8 @@
     "anikototv",
     "documentary-area",
     "emnexmovies",
+    "hianime",
     "moiflix",
-    "voirserie",
     "watchott",
     "youtitou"
   ],
@@ -5821,7 +5846,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 3,
+    "matchedProviderLanes": 1,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -5834,7 +5859,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 3,
+    "matchedProviderLanes": 1,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -5846,7 +5871,7 @@
   "residentialProviderReplay": {
     "available": true,
     "profile": "tailscale-residential-exit",
-    "providerCount": 51,
+    "providerCount": 52,
     "providers": [
       "1jour1film0626",
       "67movies",
@@ -5875,6 +5900,7 @@
       "franime",
       "french-anime",
       "fullanime",
+      "hianime",
       "ihavenotv",
       "latestmovies",
       "mallumv",
@@ -7167,6 +7193,35 @@
         "identitySafe": true
       },
       {
+        "provider": "hianime",
+        "providerArtifactSha256": "4e1655adc5fdd144682e832fef6fc5f214a9191340238c03f42728cb7a3f1a9f",
+        "lane": "anime",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_zero_before_provider_network"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "providerBundleSha256": "4e1655adc5fdd144682e832fef6fc5f214a9191340238c03f42728cb7a3f1a9f",
+          "runId": "46171832445",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
+      },
+      {
         "provider": "ihavenotv",
         "providerArtifactSha256": "718a7a758f899cf508f4ae164d054cbb546c3089ef63737c132cda943c4eecb7",
         "lane": "movie",
@@ -8412,6 +8467,7 @@
         "franime",
         "french-anime",
         "fullanime",
+        "hianime",
         "ihavenotv",
         "kehflix",
         "mallumv",
@@ -8421,7 +8477,6 @@
         "movy",
         "primewire",
         "purstream",
-        "rivestream-app",
         "sadisflix",
         "sekai",
         "shuttletv",
@@ -8437,13 +8492,13 @@
         "youtitou"
       ],
       "replayedProviders": [
-        "emnexmovies"
+        "hianime"
       ],
       "rawProviders": [],
       "playableProviders": [],
       "verifiedProviders": [],
       "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
-      "runId": "46171830596",
+      "runId": "46171832445",
       "proofAuthority": false,
       "publicationAuthority": false
     },
