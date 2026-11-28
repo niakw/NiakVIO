@@ -504,6 +504,46 @@ assert stored_contradiction["consecutiveFailures"] == 0, stored_contradiction
 assert stored_contradiction["harnessParentContradiction"] is True, stored_contradiction
 assert stored_contradiction["lastOutcome"] == "executed_inconclusive", stored_contradiction
 
+# A false-zero child parent may make a candidate look like a strict playable
+# improvement. That is still inconclusive: it only recovered the already
+# playable published level and must not become positive repair memory.
+contradictory_accepted = {
+    "attemptedProfiles": ["chain_terminal_extractor_v1_g3"],
+    "report": {
+        "rounds": [{
+            "attempts": [{
+                "profile": "chain_terminal_extractor_v1_g3",
+                "status": "generated",
+                "baseline_status": "no_streams",
+                "baseline_streams_returned": 0,
+                "baseline_streams_playable": 0,
+                "brain_plan": plan,
+            }],
+            "accepted": [{
+                "profile": "chain_terminal_extractor_v1_g3",
+                "reason": "strict_playable_stream_improvement",
+                "brain_plan": plan,
+            }],
+            "exploration_progress": [],
+            "rejected": [],
+        }]
+    },
+}
+false_positive_rows = queue.phase_experiment_entries(
+    "healthy-parent",
+    plan,
+    contradictory_accepted,
+    {"status": "playable"},
+    contradiction,
+)
+assert len(false_positive_rows) == 1, false_positive_rows
+false_positive = false_positive_rows[0]
+assert false_positive["successes"] == 0, false_positive
+assert false_positive["failures"] == 0, false_positive
+assert false_positive["lastOutcome"] == "executed_inconclusive", false_positive
+assert false_positive["lastReason"] == "harness_parent_contradiction", false_positive
+assert false_positive["harnessParentContradiction"] is True, false_positive
+
 # No contradiction when the internal baseline preserves the published playable
 # parent; this protects genuine negative experiments from being hidden.
 matching_parent = {
