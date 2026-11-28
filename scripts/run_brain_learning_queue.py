@@ -1305,6 +1305,47 @@ def should_continue_bounded_oracle(
     return True
 
 
+def learning_attempt_identity(
+    plan: dict[str, Any],
+    repair: dict[str, Any],
+) -> tuple[str, ...]:
+    """Exact bounded-loop identity; profile/method names alone are not enough."""
+    if not isinstance(plan, dict):
+        return ()
+    profiles = tuple(
+        sorted(
+            str(value).strip().casefold()
+            for value in (repair.get("attemptedProfiles") or plan.get("allowedProfiles") or [])
+            if str(value).strip()
+        )
+    )
+    methods = tuple(
+        sorted(
+            str(value).strip().casefold()
+            for value in repair.get("attemptedMethods") or []
+            if str(value).strip()
+        )
+    )
+    signature = str(plan.get("signature") or "").strip().casefold()
+    variant = str(max(0, int(plan.get("experimentVariant") or 0)))
+    generation = str(max(1, int(plan.get("experimentGeneration") or 1)))
+    strategy_fp = str(plan.get("strategyImplementationFingerprint") or "").strip().casefold()
+    llm_fp = str(plan.get("llmAdvisorExperimentFingerprint") or "").strip().casefold()
+    positive_fp = str(plan.get("positiveProgramFingerprint") or "").strip().casefold()
+    if not profiles and not methods:
+        return ()
+    return (
+        signature,
+        variant,
+        generation,
+        "|".join(profiles),
+        "|".join(methods),
+        strategy_fp,
+        llm_fp,
+        positive_fp,
+    )
+
+
 def interleave(retries: list[str], pending: list[str]) -> list[str]:
     """Retry unresolved work without starving unseen providers."""
     retries = list(retries)
@@ -2949,7 +2990,7 @@ def main() -> int:
                 )
     
             provider_attempts: list[dict[str, Any]] = []
-            seen_method_sets: set[tuple[str, ...]] = set()
+            seen_experiment_identities: set[tuple[str, ...]] = set()
             final_lab: dict[str, Any] | None = None
             resolved = False
             attempts_this_phase = 0
@@ -3213,7 +3254,7 @@ def main() -> int:
                         tagged["providerId"] = provider_id
                         combined_rounds.append(tagged)
     
-                method_set = tuple(repair["attemptedMethods"])
+                experiment_identity = learning_attempt_identity(provider_plan, repair)
                 if not repair_executable_mutation_observed(repair):
                     no_mutation_lab = {
                         "status": "not_executed_no_mutation",
@@ -3381,6 +3422,15 @@ def main() -> int:
                     )
                     if route_refresh.get("ok") is False:
                         break
+                    if not experiment_identity or experiment_identity in seen_experiment_identities:
+                        print(
+                            "FIELD_BRAIN_EXPERIMENT_REPEAT_GUARD "
+                            f"provider={provider_id} repeated={str(bool(experiment_identity)).lower()} "
+                            "action=stop proof_authority=false",
+                            flush=True,
+                        )
+                        break
+                    seen_experiment_identities.add(experiment_identity)
                     if fair_handoff and attempts_this_phase >= 1 and not should_continue_bounded_oracle(
                         provider_plan,
                         attempts_this_phase,
@@ -3394,20 +3444,26 @@ def main() -> int:
                 # rest of its 120 s slice on at most three phase-memory-advanced
                 # hypotheses; evolved post-g5 continuation stays bounded by the
                 # same limit.
-                if fair_handoff and attempts_this_phase >= 1 and not should_continue_evolved_frontier(
+                if fair_handoff and attempts_this_phase >= 1 and not should_continue_bounded_oracle(
                     provider_plan,
                     attempts_this_phase,
+                    isolated_oracle=isolated_family_oracle,
                 ):
                     break
     
-                # Learning is allowed to turn a failed experiment into the next
-                # planner variant/generation in the same run. The adaptive profile
-                # name is intentionally stable, so the causal fingerprint includes
-                # signature + experiment generation + variant. Stop only when the
-                # Brain repeats that exact method (or produced no method at all).
-                if method_set in seen_method_sets or not method_set:
+                # Profile/method names are intentionally stable across base
+                # variants and generations. Anti-loop identity must therefore
+                # include the exact experiment coordinates/fingerprints; otherwise
+                # a valid variant-2 plan is mistaken for a replay of variant-1.
+                if not experiment_identity or experiment_identity in seen_experiment_identities:
+                    print(
+                        "FIELD_BRAIN_EXPERIMENT_REPEAT_GUARD "
+                        f"provider={provider_id} repeated={str(bool(experiment_identity)).lower()} "
+                        "action=stop proof_authority=false",
+                        flush=True,
+                    )
                     break
-                seen_method_sets.add(method_set)
+                seen_experiment_identities.add(experiment_identity)
                 if repair["accepted"] == 0:
                     continue
     

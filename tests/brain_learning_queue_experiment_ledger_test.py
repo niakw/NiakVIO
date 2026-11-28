@@ -360,6 +360,38 @@ assert queue.should_continue_bounded_oracle(
     isolated_oracle=True,
 ) is False
 
+# Stable profile/method names across variants are not duplicate experiments.
+identity_repair = {
+    "attemptedProfiles": ["chain_terminal_extractor_v1"],
+    "attemptedMethods": ["branch_body_edit"],
+}
+identity_v1 = queue.learning_attempt_identity(
+    {**ordinary_oracle, "signature": "sig-a", "experimentVariant": 1},
+    identity_repair,
+)
+identity_v2 = queue.learning_attempt_identity(
+    {**ordinary_oracle, "signature": "sig-a", "experimentVariant": 2},
+    identity_repair,
+)
+identity_v2_repeat = queue.learning_attempt_identity(
+    {**ordinary_oracle, "signature": "sig-a", "experimentVariant": 2},
+    identity_repair,
+)
+assert identity_v1 and identity_v2
+assert identity_v1 != identity_v2
+assert identity_v2 == identity_v2_repeat
+assert queue.learning_attempt_identity({}, {"attemptedProfiles": [], "attemptedMethods": []}) == ()
+
+# The executable loop must use the bounded-oracle continuation in both normal
+# and route-refresh paths; the old evolved-only gate silently limited ordinary
+# isolated oracles to one attempt.
+source = (ROOT / "scripts/run_brain_learning_queue.py").read_text(encoding="utf-8")
+loop_tail = source[source.index("# Multi-provider Fast-Handoff still rotates"):]
+assert "not should_continue_bounded_oracle(" in loop_tail
+assert "not should_continue_evolved_frontier(" not in loop_tail.split("if isinstance(route_refresh",1)[0]
+assert "seen_experiment_identities" in loop_tail
+assert "FIELD_BRAIN_EXPERIMENT_REPEAT_GUARD" in loop_tail
+
 # The first attempt may still report the exact final g5 strategy it just ran.
 # That boundary must receive one continuation so phase memory can expose and
 # execute the newly unlocked evolved strategy in the next sandbox process.
