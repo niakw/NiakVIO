@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "46168115772",
-  "sourceTriggerSha": "4e62ad08af8868fbbdab9107678be54f69c79134",
+  "sourceRunId": "46169520079",
+  "sourceTriggerSha": "4f54338e20efe0245b9f8182b332e050c2751140",
   "unresolvedProviderCount": 67,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -113,7 +113,7 @@
     "zone-telechargement"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 31,
+  "groupCount": 30,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -181,11 +181,11 @@
       "transportSignature": "not-applicable",
       "providerCount": 8,
       "providers": [
-        "anisama",
         "boredflix",
         "cinemabz",
         "frembed",
         "latestmovies",
+        "movish",
         "movix-fr",
         "nakios",
         "neonflix"
@@ -239,29 +239,29 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "learning|html_scraper|runtime:html_scraper|issue:network_zero_result|depth:chain",
+      "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:timeout|depth:chain",
       "repairScope": "learning",
       "runtimeFamilies": [
-        "html_scraper"
+        "mixed_embed_resolver"
       ],
-      "runtimeFamilySignature": "html_scraper",
-      "causalIssueSignature": "network_zero_result",
+      "runtimeFamilySignature": "mixed_embed_resolver",
+      "causalIssueSignature": "timeout",
       "evidenceDepthSignature": "chain",
-      "capabilityStrategy": "html_scraper",
+      "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "chain"
       ],
       "dominantIssues": [
-        "network_zero_result"
+        "timeout"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
       "providerCount": 4,
       "providers": [
-        "flixhq",
-        "fsharetv",
-        "rarefilmm",
-        "vidlink"
+        "anisama",
+        "hianime",
+        "vuflix",
+        "zone-streaming"
       ],
       "action": "domain/backend authority is unresolved but is not a prerequisite for read-only Brain diagnosis; learn from current runtime evidence while keeping production mutation gated",
       "selectionAuthorities": [
@@ -282,7 +282,6 @@
       "evidenceDepthSignature": "not-applicable",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "lookup",
         "none"
       ],
       "dominantIssues": [
@@ -299,6 +298,38 @@
         "film-a-revoir"
       ],
       "action": "domain/backend authority is unresolved, but current transport evidence must be reproduced through browser/native/residential clients before any Domain or provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "learning|html_scraper|runtime:html_scraper|issue:network_zero_result|depth:chain",
+      "repairScope": "learning",
+      "runtimeFamilies": [
+        "html_scraper"
+      ],
+      "runtimeFamilySignature": "html_scraper",
+      "causalIssueSignature": "network_zero_result",
+      "evidenceDepthSignature": "chain",
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 3,
+      "providers": [
+        "fsharetv",
+        "reanime-to",
+        "vidlink"
+      ],
+      "action": "domain/backend authority is unresolved but is not a prerequisite for read-only Brain diagnosis; learn from current runtime evidence while keeping production mutation gated",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -424,7 +455,7 @@
       "providerCount": 2,
       "providers": [
         "anidb",
-        "reanime-to"
+        "flixhq"
       ],
       "action": "domain/backend authority is unresolved but is not a prerequisite for read-only Brain diagnosis; learn from current runtime evidence while keeping production mutation gated",
       "selectionAuthorities": [
@@ -458,37 +489,6 @@
         "shuttletv"
       ],
       "action": "final census NO PROOF remains repair/Learning-owned; issue-only WAF/network text cannot recreate harness or transport ownership",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:timeout|depth:chain",
-      "repairScope": "learning",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
-      "causalIssueSignature": "timeout",
-      "evidenceDepthSignature": "chain",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "timeout"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 2,
-      "providers": [
-        "hianime",
-        "vuflix"
-      ],
-      "action": "domain/backend authority is unresolved but is not a prerequisite for read-only Brain diagnosis; learn from current runtime evidence while keeping production mutation gated",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -716,6 +716,36 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
+      "groupId": "learning|html_scraper|runtime:html_scraper|issue:network_http_error|depth:chain",
+      "repairScope": "learning",
+      "runtimeFamilies": [
+        "html_scraper"
+      ],
+      "runtimeFamilySignature": "html_scraper",
+      "causalIssueSignature": "network_http_error",
+      "evidenceDepthSignature": "chain",
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_http_error"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "rarefilmm"
+      ],
+      "action": "domain/backend authority is unresolved but is not a prerequisite for read-only Brain diagnosis; learn from current runtime evidence while keeping production mutation gated",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
       "groupId": "learning|html_scraper|runtime:html_scraper|issue:network_zero_result|depth:lookup",
       "repairScope": "learning",
       "runtimeFamilies": [
@@ -900,36 +930,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:waf_challenge|depth:chain",
-      "repairScope": "learning",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
-      "causalIssueSignature": "waf_challenge",
-      "evidenceDepthSignature": "chain",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "movish"
-      ],
-      "action": "domain/backend authority is unresolved but is not a prerequisite for read-only Brain diagnosis; learn from current runtime evidence while keeping production mutation gated",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "transport|html_scraper|runtime:html_scraper|issue:network_http_error|depth:none",
       "repairScope": "transport",
       "runtimeFamilies": [
@@ -950,36 +950,6 @@
       "providerCount": 1,
       "providers": [
         "rivestream-app"
-      ],
-      "action": "domain/backend authority is unresolved, but current transport evidence must be reproduced through browser/native/residential clients before any Domain or provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_http_error|depth:chain",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
-      "causalIssueSignature": "network_http_error",
-      "evidenceDepthSignature": "chain",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_http_error"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "zone-streaming"
       ],
       "action": "domain/backend authority is unresolved, but current transport evidence must be reproduced through browser/native/residential clients before any Domain or provider mutation",
       "selectionAuthorities": [
