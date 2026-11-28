@@ -21,10 +21,14 @@ def row(
     attempts: int,
     failures: int,
     outcome: str = "rejected",
+    parent_sha: str = "",
+    parent_authority: str = "",
 ):
     return {
         "providerId": provider,
         "providerVersion": "*",
+        "parentArtifactSha256": parent_sha,
+        "parentAuthority": parent_authority,
         "failureClass": "media_extraction_gap",
         "signature": "sig-" + provider,
         "profile": "player_media_extractor_v1",
@@ -216,6 +220,75 @@ assert got4["networkExecutionSummary"] == telemetry, got4
 assert got4["networkExecutionDelta"] == delta_only, got4
 assert merged4["concurrentMemoryMerge"]["deltaRows"] == 0
 assert merged4["concurrentMemoryMerge"]["telemetryDeltaRows"] == 1
+
+# Same provider/profile/signature on different parent bytes are distinct
+# experiments and must never coalesce during concurrent family publication.
+parent_a = "a" * 64
+parent_b = "b" * 64
+parent_base = {
+    "experimentMemory": {
+        "schemaVersion": 1,
+        "entries": [
+            row(
+                "same-provider",
+                attempts=1,
+                failures=1,
+                parent_sha=parent_a,
+                parent_authority="published-exact-current-bytes",
+            )
+        ],
+    }
+}
+parent_previous = {
+    "generatedAt": "2026-11-19T00:05:00+00:00",
+    "experimentMemory": {
+        "schemaVersion": 1,
+        "entries": [
+            row(
+                "same-provider",
+                attempts=1,
+                failures=1,
+                parent_sha=parent_a,
+                parent_authority="published-exact-current-bytes",
+            )
+        ],
+    },
+}
+parent_current = {
+    "generatedAt": "2026-11-19T00:05:01+00:00",
+    "publicationAllowed": False,
+    "productionWritesAllowed": False,
+    "experimentMemory": {
+        "schemaVersion": 1,
+        "entries": [
+            row(
+                "same-provider",
+                attempts=1,
+                failures=1,
+                parent_sha=parent_a,
+                parent_authority="published-exact-current-bytes",
+            ),
+            row(
+                "same-provider",
+                attempts=1,
+                failures=1,
+                parent_sha=parent_b,
+                parent_authority="published-exact-current-bytes",
+            ),
+        ],
+    },
+}
+parent_merged = mod.merge_latest(
+    parent_base, parent_previous, parent_current, max_entries=100
+)
+parent_rows = [
+    item
+    for item in parent_merged["experimentMemory"]["entries"]
+    if item["providerId"] == "same-provider"
+]
+assert len(parent_rows) == 2, parent_rows
+assert {row["parentArtifactSha256"] for row in parent_rows} == {parent_a, parent_b}
+assert parent_merged["concurrentMemoryMerge"]["deltaRows"] == 1
 
 # No delta means identity merge: historical counters cannot amplify.
 same = mod.merge_latest(base, previous, base, max_entries=100)
