@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "46097314058",
-  "sourceTriggerSha": "150490548775abd897980365a70c79b9931d78d3",
+  "sourceRunId": "46097348073",
+  "sourceTriggerSha": "be4074b8ac41434168136b46a032b0dc83a601ae",
   "unresolvedProviderCount": 68,
   "dynamicVariantProviderCount": 6,
   "dynamicVariantProviders": [
@@ -187,10 +187,9 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 11,
+      "providerCount": 10,
       "providers": [
         "fawesome",
-        "film-a-revoir",
         "flixer",
         "hexa",
         "kidraz",
@@ -227,16 +226,15 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 8,
+      "providerCount": 7,
       "providers": [
         "boredflix",
         "cinemabz",
+        "film-a-revoir",
         "frembed",
-        "hianime",
         "latestmovies",
         "movix-fr",
-        "neonflix",
-        "zone-streaming"
+        "neonflix"
       ],
       "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
       "selectionAuthorities": [
@@ -245,6 +243,39 @@
       "dynamicVariantProviders": [
         "movix-fr"
       ],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "transport|html_scraper|runtime:html_scraper|issue:network_zero_result|depth:chain",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "html_scraper"
+      ],
+      "runtimeFamilySignature": "html_scraper",
+      "causalIssueSignature": "network_zero_result",
+      "evidenceDepthSignature": "chain",
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 4,
+      "providers": [
+        "fsharetv",
+        "rarefilmm",
+        "reanime-to",
+        "vidlink"
+      ],
+      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -281,38 +312,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "transport|html_scraper|runtime:html_scraper|issue:network_zero_result|depth:chain",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "html_scraper"
-      ],
-      "runtimeFamilySignature": "html_scraper",
-      "causalIssueSignature": "network_zero_result",
-      "evidenceDepthSignature": "chain",
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_zero_result"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 3,
-      "providers": [
-        "fsharetv",
-        "reanime-to",
-        "vidlink"
-      ],
-      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "transport|html_scraper|runtime:html_scraper|issue:waf_challenge|depth:none",
       "repairScope": "transport",
       "runtimeFamilies": [
@@ -338,6 +337,38 @@
         "aniflix-uno",
         "animejlprovider",
         "ihavenotv"
+      ],
+      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:timeout|depth:chain",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "mixed_embed_resolver",
+      "causalIssueSignature": "timeout",
+      "evidenceDepthSignature": "chain",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "timeout"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 3,
+      "providers": [
+        "anisama",
+        "vuflix",
+        "zone-streaming"
       ],
       "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
       "selectionAuthorities": [
@@ -534,37 +565,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:timeout|depth:chain",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
-      "causalIssueSignature": "timeout",
-      "evidenceDepthSignature": "chain",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "timeout"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 2,
-      "providers": [
-        "anisama",
-        "vuflix"
-      ],
-      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "candidate-replay|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:provider_returned_streams|depth:lookup",
       "repairScope": "candidate-replay",
       "runtimeFamilies": [
@@ -749,36 +749,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "transport|html_scraper|runtime:html_scraper|issue:network_http_error|depth:chain",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "html_scraper"
-      ],
-      "runtimeFamilySignature": "html_scraper",
-      "causalIssueSignature": "network_http_error",
-      "evidenceDepthSignature": "chain",
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_http_error"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "rarefilmm"
-      ],
-      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "transport|html_scraper|runtime:html_scraper|issue:network_http_error|depth:none",
       "repairScope": "transport",
       "runtimeFamilies": [
@@ -861,6 +831,36 @@
       "providerCount": 1,
       "providers": [
         "showbox"
+      ],
+      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:timeout|depth:none",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "mixed_embed_resolver",
+      "causalIssueSignature": "timeout",
+      "evidenceDepthSignature": "none",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "timeout"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "hianime"
       ],
       "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
       "selectionAuthorities": [
