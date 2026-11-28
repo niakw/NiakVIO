@@ -194,6 +194,13 @@ jobs:
           # SEC - Retire verified stale CodeQL category deletes that obsolete
           # configuration after an exact-SHA scope:core scan succeeds.
 
+          - check_name: "CodeQL · JS Active Providers"
+            language: javascript-typescript
+            config: |
+              paths:
+                - providers/**
+            category: "/language:javascript-typescript/scope:active-providers"
+
           - check_name: "CodeQL · JS ProviderBase"
             language: javascript-typescript
             config: |
@@ -256,6 +263,14 @@ jobs:
               'generated_providers_excluded=true cardinality_policy=data'
           )
           PY
+
+      - name: Project exact published provider bytes for CodeQL
+        if: ${{ matrix.check_name == 'CodeQL · JS Active Providers' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/prune_codeql_generated_providers.py --root .
+          python3 tests/codeql_active_provider_scope_test.py
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370
