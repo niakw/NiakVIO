@@ -417,4 +417,119 @@ merged = queue.merge_phase_learning_state(legacy_state, generation_rows)
 assert merged["experimentMemory"]["entries"][0]["executionObserved"] is False, merged
 assert merged["experimentMemory"]["entries"][0]["lastOutcome"] == "not_generated", merged
 
+
+# A healthy exact published parent must never become negative provider memory
+# merely because the internal repair child observes a contradictory zero-stream
+# baseline before mutation.
+published_row = {
+    "id": "healthy-parent",
+    "status": "healthy",
+    "evidence": {
+        "streams_playable": 2,
+        "provider_server_accessible": True,
+        "provider_server_successful_response": True,
+    },
+    "tests": [
+        {"streams_returned": 2, "streams_playable": 2},
+    ],
+}
+published_info = queue.diagnostic(published_row)
+assert published_info["published_streams_playable"] == 2, published_info
+assert published_info["published_streams_returned"] == 2, published_info
+
+contradictory_repair = {
+    "attemptedProfiles": ["chain_terminal_extractor_v1_g3"],
+    "report": {
+        "rounds": [{
+            "attempts": [{
+                "profile": "chain_terminal_extractor_v1_g3",
+                "status": "generated",
+                "baseline_status": "no_streams",
+                "baseline_streams_returned": 0,
+                "baseline_streams_playable": 0,
+                "brain_plan": plan,
+            }],
+            "accepted": [],
+            "exploration_progress": [],
+            "rejected": [{
+                "profile": "chain_terminal_extractor_v1_g3",
+                "reason": "safety_gate:no_playable_proof",
+                "brain_plan": plan,
+            }],
+        }]
+    },
+}
+contradiction = queue.repair_parent_baseline_contradiction(
+    published_info,
+    contradictory_repair,
+)
+assert contradiction is not None, contradiction
+assert contradiction["publishedStreamsPlayable"] == 2, contradiction
+assert contradiction["baselineStreamsPlayable"] == 0, contradiction
+assert contradiction["proofAuthority"] is False, contradiction
+
+contradiction_rows = queue.phase_experiment_entries(
+    "healthy-parent",
+    plan,
+    contradictory_repair,
+    {"status": "no_streams"},
+    contradiction,
+)
+assert len(contradiction_rows) == 1, contradiction_rows
+contradiction_row = contradiction_rows[0]
+assert contradiction_row["executionObserved"] is True, contradiction_row
+assert contradiction_row["lastOutcome"] == "executed_inconclusive", contradiction_row
+assert contradiction_row["lastReason"] == "harness_parent_contradiction", contradiction_row
+assert contradiction_row["failures"] == 0, contradiction_row
+assert contradiction_row["consecutiveFailures"] == 0, contradiction_row
+assert contradiction_row["causalExerciseObserved"] is False, contradiction_row
+assert contradiction_row["harnessParentContradiction"] is True, contradiction_row
+assert contradiction_row["harnessParentContradictionEvidence"]["publishedStreamsPlayable"] == 2
+
+contradiction_state = {
+    "publicationAllowed": False,
+    "productionWritesAllowed": False,
+    "experimentMemory": {"schemaVersion": 1, "entries": []},
+}
+contradiction_state = queue.merge_phase_learning_state(
+    contradiction_state, contradiction_rows
+)
+contradiction_state = queue.merge_phase_learning_state(
+    contradiction_state, contradiction_rows
+)
+stored_contradiction = contradiction_state["experimentMemory"]["entries"][0]
+assert stored_contradiction["attempts"] == 2, stored_contradiction
+assert stored_contradiction["failures"] == 0, stored_contradiction
+assert stored_contradiction["consecutiveFailures"] == 0, stored_contradiction
+assert stored_contradiction["harnessParentContradiction"] is True, stored_contradiction
+assert stored_contradiction["lastOutcome"] == "executed_inconclusive", stored_contradiction
+
+# No contradiction when the internal baseline preserves the published playable
+# parent; this protects genuine negative experiments from being hidden.
+matching_parent = {
+    **contradictory_repair,
+    "report": {
+        "rounds": [{
+            "attempts": [{
+                "profile": "chain_terminal_extractor_v1_g3",
+                "status": "generated",
+                "baseline_status": "healthy",
+                "baseline_streams_returned": 2,
+                "baseline_streams_playable": 2,
+                "brain_plan": plan,
+            }],
+            "accepted": [],
+            "exploration_progress": [],
+            "rejected": [{
+                "profile": "chain_terminal_extractor_v1_g3",
+                "reason": "safety_gate:no_playable_proof",
+                "brain_plan": plan,
+            }],
+        }]
+    },
+}
+assert queue.repair_parent_baseline_contradiction(
+    published_info, matching_parent
+) is None
+
 print("Brain fair-share exact experiment ledger contract passed")
