@@ -132,6 +132,19 @@ ordinary_route=plan(route_base, "learning", candidate_override=route_candidate)
 assert ordinary_route["baseExperimentExhausted"] is True, ordinary_route
 assert ordinary_route["postExhaustionStrategyProfile"]=="route_transition_graph_v2", ordinary_route
 
+# The same causal signal must switch methods immediately, before the remaining
+# base variants are spent. This is the production path observed on
+# Documentary-Area/Youtitou: one executed traversal amplified requests without
+# advancing the frontier.
+early_stall=plan([
+    route_row(0,1,"exploration_request_amplification_without_frontier"),
+], "learning", candidate_override=route_candidate)
+assert early_stall["baseExperimentExhausted"] is False, early_stall
+assert early_stall["strategyEscalated"] is True, early_stall
+assert early_stall["postExhaustionStrategyProfile"]=="runtime_response_salvage_v1", early_stall
+assert early_stall["postExhaustionStrategyMethod"]=="successful-runtime-response-salvage", early_stall
+assert early_stall["allowedProfiles"]==["runtime_response_salvage_v1"], early_stall
+
 stalled_route=[
     *route_base[:-1],
     route_row(4,5,"exploration_request_amplification_without_frontier"),
