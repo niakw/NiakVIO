@@ -992,6 +992,8 @@ def merge_phase_learning_state(
             "causalExerciseObserved",
             "networkExecutionSummary",
             "networkExecutionDelta",
+            "harnessParentContradiction",
+            "harnessParentContradictionEvidence",
         ):
             if field in row and (incoming_executed or not prior_executed or field not in {"lastOutcome", "lastReason"}):
                 current[field] = row[field]
