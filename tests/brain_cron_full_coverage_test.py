@@ -233,6 +233,14 @@ def main() -> int:
     assert '"--max-rounds", "0"' in queue_source, "queue must let the sandbox explore until its global deadline"
     assert "while time.time() < work_deadline and not (" in queue_source, "provider repair loop is no longer deadline-driven"
     assert 'route_refresh.get("ok") is False' in queue_source, "provider-local refresh blocker no longer bounds the repair loop"
+    assert "Prepare exact published parent stage for targeted Learning" in workflow
+    assert "scripts/prepare_brain_learning_parent_stage.py" in workflow
+    assert 'NIAKVIO_LEARNING_EXECUTION_STAGE' in workflow
+    assert '--published-stage staging' in workflow
+    assert '--reconstruction-stage staging-reconstruction' in workflow
+    assert '--output-stage staging-learning' in workflow
+    assert '--stage "${NIAKVIO_LEARNING_EXECUTION_STAGE:-staging-reconstruction}"' in workflow
+    assert "brain_learning_published_parent_stage_test.py" in workflow
     assert "seen_method_sets" in queue_source, "Learning must stop repeating an exhausted method set"
     assert "retryProviders" in queue_source and "pendingProviders" in queue_source, "cross-day queue persistence disappeared"
     assert "interleave(" in queue_source, "retry work must not starve unseen providers"
