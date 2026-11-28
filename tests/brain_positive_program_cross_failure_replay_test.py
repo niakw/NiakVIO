@@ -284,6 +284,7 @@ family_prior = {
     "capabilityStrategies": ["mixed_embed_resolver"],
     "observedPipelineStages": [],
     "familyPriorOnly": True,
+    "familyEligibleProviders": ["nakios", "corsflix"],
     "actions": ["replay validated family hypothesis under current-byte gates"],
 }
 family_candidate = copy.deepcopy(candidate)
@@ -310,6 +311,18 @@ family_plan = next(iter(json.loads(family_run.stdout)["plans"].values()))
 assert family_plan["failureClass"] == "chain_terminal_gap", family_plan
 assert family_plan["hypotheses"][0]["id"] == family_prior["id"], family_plan
 assert family_plan["hypotheses"][0]["profile"] == "chain_terminal_extractor_v1", family_plan
+
+same_strategy_outsider = copy.deepcopy(family_candidate)
+same_strategy_outsider["canonical_id"] = "frenchstream"
+outsider_payload = copy.deepcopy(family_payload)
+outsider_payload["items"][0]["key"] = "published:frenchstream"
+outsider_payload["items"][0]["candidate"] = same_strategy_outsider
+outsider_run = subprocess.run(
+    ["node", str(PLANNER)], cwd=ROOT, input=json.dumps(outsider_payload),
+    capture_output=True, text=True, check=True, timeout=20,
+)
+outsider_plan = next(iter(json.loads(outsider_run.stdout)["plans"].values()))
+assert all(row["id"] != family_prior["id"] for row in outsider_plan["hypotheses"]), outsider_plan
 
 mismatch_candidate = copy.deepcopy(family_candidate)
 mismatch_candidate["canonical_id"] = "hindmoviez"
