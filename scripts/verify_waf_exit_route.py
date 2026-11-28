@@ -30,6 +30,40 @@ EGRESS_VERIFY_ATTEMPTS = 3
 EGRESS_VERIFY_BACKOFF_SECONDS = (2, 4)
 
 
+# curl write-out goes to stderr, leaving the IP response body unchanged.
+TIMING_MARKER = "NIAKVIO_TIMING_V1"
+TIMING_FIELDS = (
+    "time_namelookup", "time_connect", "time_appconnect",
+    "time_starttransfer", "time_total",
+)
+TIMING_FORMAT = "%{stderr}\n" + TIMING_MARKER + " " + " ".join(
+    "%{" + field + "}" for field in TIMING_FIELDS
+) + "\n"
+
+
+def emit_probe_timing(stderr: str, index: int, returncode: int) -> None:
+    """Emit bounded cumulative milliseconds only; never log raw stderr or addresses."""
+    for line in reversed(str(stderr or "").splitlines()):
+        if not line.startswith(TIMING_MARKER + " "):
+            continue
+        fields = line.split()[1:]
+        if len(fields) != len(TIMING_FIELDS):
+            continue
+        try:
+            values = [float(value) for value in fields]
+            if not all(0 <= value <= PUBLIC_IP_COMMAND_TIMEOUT_SECONDS + 1 for value in values):
+                continue
+            millis = [round(value * 1000) for value in values]
+        except (ValueError, OverflowError):
+            continue
+        print(
+            f"FIELD_WAF_EXIT_TIMING endpoint={index} curl_rc={returncode} "
+            + " ".join(f"{key}_ms={value}" for key, value in zip(TIMING_FIELDS, millis))
+        )
+        return
+    print(f"FIELD_WAF_EXIT_TIMING endpoint={index} curl_rc={returncode} available=false")
+
+
 def _set_exit_route(*args: str, timeout: int) -> bool:
     try:
         proc = subprocess.run(
@@ -110,6 +144,7 @@ def observed_public_ipv4() -> str:
                     "--silent",
                     "--show-error",
                     "--user-agent", "NiakVIO-egress-attestation/3",
+                    "--write-out", TIMING_FORMAT,
                     url,
                 ],
                 capture_output=True,
@@ -117,6 +152,7 @@ def observed_public_ipv4() -> str:
                 timeout=PUBLIC_IP_COMMAND_TIMEOUT_SECONDS,
                 check=False,
             )
+            emit_probe_timing(proc.stderr, index, proc.returncode)
             if proc.returncode != 0:
                 failure = {
                     6: "dns",
