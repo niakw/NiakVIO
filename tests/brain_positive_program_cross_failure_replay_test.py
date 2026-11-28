@@ -22,6 +22,7 @@ policy = {
         "maxRepeatedSignature": 2,
         "maxGeneratedBytesPerProvider": 180000,
         "maxElapsedMsPerProvider": 45000,
+        "learnedSkillInputAllowed": True,
         "learnedSkillTransferPolicy": {
             "maturity": "trusted",
             "minimumConfidence": 0.8,
