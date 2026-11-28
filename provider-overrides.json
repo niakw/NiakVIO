@@ -12508,11 +12508,36 @@
         "tv"
       ],
       "manifest_overrides": {
-        "disabledPlatforms": []
+        "disabledPlatforms": [],
+        "enabled": false
       },
       "learned_routes": [
         "/search?q={query}"
-      ]
+      ],
+      "route_data_state": "off",
+      "activation_eligible": false,
+      "wrong_content_disable_proof": {
+        "provider": "sadisflix",
+        "scope": "france",
+        "proofAuthority": "current-census-exact-byte-wrong-content-v1",
+        "sourceKind": "current-bytes-census",
+        "sourceRunId": "46104028235",
+        "sourceSha": "a826e9fa952ed7901a6523f95a070299948862b9",
+        "providerArtifactSha256": "80121809ed3d3735919c6152c497e59bad9bf865342766c54a02a419464e36bd",
+        "declaredLanes": [
+          "movie",
+          "tv"
+        ],
+        "contradictoryLanes": [
+          "tv"
+        ],
+        "identityContradictionCount": 1,
+        "wrongContent": true,
+        "testedThisRun": true,
+        "disableReason": "auto_off_current_wrong_content",
+        "repairRequired": true,
+        "directProviderMutationAuthority": false
+      }
     },
     "skstream": {
       "notes": [
