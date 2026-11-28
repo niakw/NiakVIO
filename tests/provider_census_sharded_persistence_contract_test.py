@@ -277,3 +277,18 @@ assert "python tests/targeted_provider_census_state_merge_test.py" in workflow
 global_guard = 'if [ "$CENSUS_SCOPE" = "all" ] && [ -z "$TARGET_PROVIDERS" ]; then'
 assert workflow.count(global_guard) >= 2
 print("targeted active-provider census preserves fleet authority")
+
+
+# Targeted run-specific evidence summary must use the target run's own state,
+# while canonical fleet state/latest-summary stay row-scoped and fleet-owned.
+target_state_copy = workflow.index(
+    "cp /tmp/provider-census-status.json /tmp/provider-census-status-targeted-run-state.json"
+)
+target_summary_marker = workflow.index("FIELD_SHARDED_TARGETED_RUN_SUMMARY_STATE")
+target_summary_state = workflow.index(
+    'summary_state="/tmp/provider-census-status-targeted-run-state.json"',
+    target_state_copy,
+)
+summary_call = workflow.index("python scripts/summarize_current_census.py", target_summary_state)
+assert target_state_copy < target_summary_state < target_summary_marker < summary_call
+assert '--state "$summary_state"' in workflow[summary_call:summary_call + 600]
