@@ -121,6 +121,9 @@ def ensure_learning_lab_session(
     return factory(deadline)
 
 
+FAIR_HANDOFF_MIN_SECONDS = 30
+FAIR_HANDOFF_MAX_SECONDS = 60
+
 ANOMALY_SCORES = {
     "provider_unreachable": 120,
     "unavailable": 110,
@@ -2522,9 +2525,9 @@ def main() -> int:
             if fair_handoff:
                 remaining_providers = max(1, len(order) - len(processed))
                 fair_seconds = max(
-                    45,
+                    FAIR_HANDOFF_MIN_SECONDS,
                     min(
-                        120,
+                        FAIR_HANDOFF_MAX_SECONDS,
                         int(max(1.0, work_deadline - time.time()) / remaining_providers),
                     ),
                 )
