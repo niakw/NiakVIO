@@ -122,7 +122,8 @@ def ensure_learning_lab_session(
 
 
 FAIR_HANDOFF_MIN_SECONDS = 30
-FAIR_HANDOFF_MAX_SECONDS = 60
+FAIR_HANDOFF_MULTI_MAX_SECONDS = 60
+FAIR_HANDOFF_SINGLE_ORACLE_SECONDS = 120
 
 ANOMALY_SCORES = {
     "provider_unreachable": 120,
@@ -2531,10 +2532,15 @@ def main() -> int:
             provider_deadline = work_deadline
             if fair_handoff:
                 remaining_providers = max(1, len(order) - len(processed))
+                fair_cap = (
+                    FAIR_HANDOFF_SINGLE_ORACLE_SECONDS
+                    if len(order) == 1
+                    else FAIR_HANDOFF_MULTI_MAX_SECONDS
+                )
                 fair_seconds = max(
                     FAIR_HANDOFF_MIN_SECONDS,
                     min(
-                        FAIR_HANDOFF_MAX_SECONDS,
+                        fair_cap,
                         int(max(1.0, work_deadline - time.time()) / remaining_providers),
                     ),
                 )
