@@ -272,6 +272,14 @@ jobs:
           python3 scripts/prune_codeql_generated_providers.py --root .
           python3 tests/codeql_active_provider_scope_test.py
 
+      - name: Allow analysis of exact published minified provider bundles
+        if: ${{ matrix.check_name == 'CodeQL · JS Active Providers' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'CODEQL_EXTRACTOR_JAVASCRIPT_ALLOW_MINIFIED_FILES=true' >> "$GITHUB_ENV"
+          echo 'FIELD_CODEQL_ACTIVE_PROVIDER_MINIFIED_ANALYSIS enabled=true'
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370
         with:
