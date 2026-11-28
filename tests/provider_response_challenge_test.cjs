@@ -32,6 +32,26 @@ assert.equal(challengeKind({
 
 assert.equal(challengeKind({
   contentType: 'text/html',
+  body: '<html><title>Normal page</title><script src="https://www.google.com/recaptcha/api.js"></script></html>',
+}), 'generic');
+
+assert.equal(challengeKind({
+  contentType: 'text/html',
+  body: '<html><title>Normal page</title><script src="https://www.google.com.evil.invalid/recaptcha/api.js"></script></html>',
+}), '');
+
+assert.equal(challengeKind({
+  contentType: 'text/html',
+  body: '<html><title>Normal page</title><script src="https://evil.invalid/?next=https://www.google.com/recaptcha/api.js"></script></html>',
+}), '');
+
+assert.equal(challengeKind({
+  contentType: 'text/html',
+  body: '<html><title>Security Check</title foo><body>Please continue</body></html>',
+}), 'generic');
+
+assert.equal(challengeKind({
+  contentType: 'text/html',
   body: '<html><title>Normal page</title><p>checking your browser compatibility is optional</p></html>',
   cfMitigated: 'challenge',
 }), 'cloudflare');
