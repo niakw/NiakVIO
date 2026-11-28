@@ -63,7 +63,7 @@ for required in (
     "guidance.cached.json",
     "guidance.generated.json",
     "FIELD_BRAIN_LLM_GUIDANCE_FINAL",
-    "scripts/merge_brain_llm_guidance_memory.py",
+    "scripts/publish_brain_learning_memory.sh",
     "scripts/filter_brain_learning_guidance.py",
     "scripts/fill_brain_learning_guidance_gaps.py",
     '--providers "$PROVIDER_FILTER"',
