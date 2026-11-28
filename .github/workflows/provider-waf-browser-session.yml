@@ -20,10 +20,10 @@ permissions:
   id-token: write
 
 concurrency:
-  group: provider-waf-transport-main
-  # Only the newest explicit transport qualification matters. Full census no
-  # longer owns canonical WAF evidence, so it must not block this lane.
-  cancel-in-progress: true
+  # Targeted causal cohorts are independent and may run in parallel. The
+  # push-triggered maintenance lane remains singleton/cancellable.
+  group: ${{ github.event_name == 'workflow_dispatch' && format('provider-waf-transport-target-{0}', github.run_id) || 'provider-waf-transport-main' }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
   browser-session:
