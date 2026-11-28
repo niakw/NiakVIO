@@ -2,17 +2,24 @@
   "acceptanceBasis": "aggregate-operational-state-including-carried-evidence",
   "acceptanceReached": false,
   "acceptanceTarget": 84,
-  "acceptedPlayableProviderCount": 10,
+  "acceptedPlayableProviderCount": 17,
   "acceptedPlayableProviders": [
+    "castle",
     "cinematheque-de-bretagne",
     "french-manga",
+    "hindmoviez",
+    "internet-archive",
     "kurage",
-    "moviebox",
+    "meowtv",
+    "mugiwarastream",
+    "nakios",
     "neko-sama",
     "papadustream",
     "purstream",
     "sadisflix",
     "voiranime-homes",
+    "webflix",
+    "wookafr",
     "zone-streaming"
   ],
   "brainQueue": [
@@ -81,23 +88,15 @@
     "zone-streaming",
     "zone-telechargement"
   ],
-  "carriedOperationalProviderCount": 6,
-  "carriedOperationalProviders": [
-    "castle",
-    "hindmoviez",
-    "internet-archive",
-    "meowtv",
-    "mugiwarastream",
-    "webflix"
-  ],
+  "carriedOperationalProviderCount": 0,
+  "carriedOperationalProviders": [],
   "debugStageCounts": {
     "provider_network_exception": 9,
-    "provider_network_http_error": 33,
-    "provider_network_zero_result": 71,
-    "provider_returned_streams": 14,
-    "provider_waf_challenge": 42,
-    "provider_zero_before_provider_network": 1,
-    "timeout": 17
+    "provider_network_http_error": 29,
+    "provider_network_zero_result": 79,
+    "provider_returned_streams": 24,
+    "provider_waf_challenge": 43,
+    "timeout": 13
   },
   "debugStageProviders": {
     "provider_network_exception": [
@@ -113,11 +112,9 @@
       "coflix",
       "documentary-area",
       "emnexmovies",
-      "film-a-revoir",
       "kehflix",
       "moiflix",
       "movieshunt",
-      "movish",
       "persianstremio",
       "rivestream-app",
       "showbox",
@@ -125,8 +122,7 @@
       "voiranime-rip",
       "watchott",
       "wookafr",
-      "youtitou",
-      "zone-streaming"
+      "youtitou"
     ],
     "provider_network_zero_result": [
       "4khdhub",
@@ -134,9 +130,11 @@
       "allwish",
       "animesama-co",
       "animevostfr",
+      "boredflix",
       "cinemabz",
       "corsflix",
       "fawesome",
+      "film-a-revoir",
       "flixer",
       "frembed",
       "frenchstream",
@@ -145,6 +143,7 @@
       "kidraz",
       "latestmovies",
       "moviebite",
+      "moviebox",
       "movix-fr",
       "nakios",
       "neobam",
@@ -154,24 +153,33 @@
       "primewire",
       "pstream",
       "rarefilmm",
+      "reanime-to",
       "shuttletv",
       "skstream",
       "uhdmovies",
       "vidlink",
       "vidrock",
       "watchott",
+      "zone-streaming",
       "zone-telechargement"
     ],
     "provider_returned_streams": [
+      "castle",
       "cinematheque-de-bretagne",
       "french-manga",
+      "hindmoviez",
+      "internet-archive",
       "kurage",
-      "moviebox",
+      "meowtv",
+      "mugiwarastream",
+      "nakios",
       "neko-sama",
       "papadustream",
       "purstream",
       "sadisflix",
       "voiranime-homes",
+      "webflix",
+      "wookafr",
       "zone-streaming"
     ],
     "provider_waf_challenge": [
@@ -200,9 +208,6 @@
       "watch-cartoon-online",
       "waveanime"
     ],
-    "provider_zero_before_provider_network": [
-      "vidrock"
-    ],
     "timeout": [
       "anidb",
       "anime-sama",
@@ -211,11 +216,8 @@
       "flixhq",
       "hianime",
       "movix-fr",
-      "nakios",
-      "reanime-to",
       "sadisflix",
-      "vuflix",
-      "zone-streaming"
+      "vuflix"
     ]
   },
   "fullOkCount": 6,
@@ -236,19 +238,12 @@
     "mugiwarastream",
     "webflix"
   ],
-  "operationalWithoutCurrentVerifiedCount": 6,
-  "operationalWithoutCurrentVerifiedProviders": [
-    "castle",
-    "hindmoviez",
-    "internet-archive",
-    "meowtv",
-    "mugiwarastream",
-    "webflix"
-  ],
+  "operationalWithoutCurrentVerifiedCount": 0,
+  "operationalWithoutCurrentVerifiedProviders": [],
   "partialOkCount": 0,
   "partialOkProviders": [],
   "providerCount": 111,
-  "runId": 46088314541,
+  "runId": 46088759880,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
@@ -260,14 +255,21 @@
     "HARNESS/ENV BLOCKED": 7,
     "NO PROOF": 14,
     "PROOF REFRESH REQUIRED": 5,
-    "PROVIDER NETWORK BLOCKED": 9,
-    "REGRESSION PROVIDER": 5
+    "PROVIDER JS BROKEN": 1,
+    "PROVIDER NETWORK BLOCKED": 8,
+    "REGRESSION PROVIDER": 4,
+    "REGRESSION PROVIDER JS": 1
   },
-  "testedProviderCount": 95,
-  "triggerSha": "6fc44d84b3d38e993d85b4a978763cb52b6b42c1",
-  "verifiedProviderCount": 1,
+  "testedProviderCount": 101,
+  "triggerSha": "daab271df08554c490beabeb08d15a34a0c21d42",
+  "verifiedProviderCount": 6,
   "verifiedProviders": [
-    "moviebox"
+    "castle",
+    "hindmoviez",
+    "internet-archive",
+    "meowtv",
+    "mugiwarastream",
+    "webflix"
   ],
   "wrongContentProviderCount": 0,
   "wrongContentProviders": []
