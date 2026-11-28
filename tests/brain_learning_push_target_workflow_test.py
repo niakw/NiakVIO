@@ -13,6 +13,7 @@ required = [
     "automation/provider-repair-learn-handoff-v1.json",
     "target provider is not eligible for current Learning/FORCE scope",
     "environmentQueue",
+    "authorityRediscoveryQueue",
     "dynamicVariantProviders",
     "automation/provider-repair-batch-plan-latest.json",
     "targeted Learning cohort escaped",
@@ -63,13 +64,15 @@ multi_start = workflow.index('if [ -n "$target_providers" ]; then', handoff_sele
 multi_end = workflow.index('elif [ -n "$target_provider" ]; then', multi_start)
 multi_block = workflow[multi_start:multi_end]
 assert 'environmentQueue' in multi_block, multi_block
-assert 'eligible=(repair|environment|dynamic|current) if force else (repair|environment|dynamic)' in multi_block, multi_block
+assert 'eligible=(repair|environment|authority|dynamic|current) if force else (repair|environment|authority|dynamic)' in multi_block, multi_block
 assert 'completeness_targets=' in multi_block, multi_block
 assert 'explicit-force-completeness-learning' in multi_block, multi_block
 assert 'provider-fast-repair.json' not in multi_block, multi_block
 assert 'Routine Learning remains exact current census debt scoped' in multi_block, multi_block
-assert 'scope="current non-disabled providers under explicit architecture FORCE" if force else "current repair/environment/dynamic-completeness queues"' in multi_block, multi_block
+assert 'scope="current non-disabled providers under explicit architecture FORCE" if force else "current repair/environment/authority-rediscovery/dynamic-completeness queues"' in multi_block, multi_block
 assert 'autopilot-targeted-core-learning' in multi_block, multi_block
+assert 'autopilot-targeted-authority-learning' in multi_block, multi_block
+assert 'authorityRediscoveryProviders' in multi_block, multi_block
 assert 'autopilot-targeted-completeness-learning' in multi_block, multi_block
 assert 'same_run=str(plan.get("sourceRunId") or "")==str(census.get("runId") or "")' in multi_block, multi_block
 assert "current-learning-repair-batch-plan.json" in multi_block
@@ -131,12 +134,14 @@ with tempfile.TemporaryDirectory() as directory:
     tmp=Path(directory); plan=tmp/"plan.json"; state=tmp/"census.json"; result=tmp/"handoff.json"
     source=source.replace("/tmp/current-learning-repair-batch-plan.json",str(plan))
     plan.write_text(json.dumps({"sourceRunId":"run","sourceTriggerSha":"sha","dynamicVariantProviders":["healthy","off"]}))
-    state.write_text(json.dumps({"runId":"run","triggerSha":"sha","repairQueue":["pending","off"],"environmentQueue":[],"lifecycleDisabledQueue":["off"],"providers":[{"provider":"pending","status":"NO PROOF"},{"provider":"healthy","status":"FULL OK"},{"provider":"off","status":"DISABLED"}]}))
+    state.write_text(json.dumps({"runId":"run","triggerSha":"sha","repairQueue":["pending","off"],"environmentQueue":[],"authorityRediscoveryQueue":["authority"],"lifecycleDisabledQueue":["off"],"providers":[{"provider":"pending","status":"NO PROOF"},{"provider":"authority","status":"NO PROOF"},{"provider":"healthy","status":"FULL OK"},{"provider":"off","status":"DISABLED"}]}))
     def run_scope(request,force="false"):
         return subprocess.run([sys.executable,"-c",source,request,str(state),str(result),force],capture_output=True,text=True)
-    good=run_scope("pending,off,healthy")
+    good=run_scope("pending,authority,off,healthy")
     assert good.returncode==0,(good.stdout,good.stderr)
-    assert json.loads(result.read_text())["providers"]==["pending","healthy"]
+    payload=json.loads(result.read_text())
+    assert payload["providers"]==["pending","authority","healthy"],payload
+    assert payload["authorityRediscoveryProviders"]==["authority"],payload
     assert "LIFECYCLE_SUPPRESSED" in good.stdout
     assert run_scope("off").returncode!=0
     assert run_scope("pending,unknown").returncode!=0
