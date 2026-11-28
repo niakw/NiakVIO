@@ -1605,6 +1605,8 @@ def _plan_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
     """Freeze the causal planner decision attached to one concrete experiment."""
     return {
         "providerId": str(plan.get("providerId") or ""),
+        "parentArtifactSha256": str(plan.get("parentArtifactSha256") or "").casefold(),
+        "parentAuthority": str(plan.get("parentAuthority") or "").casefold(),
         "failureClass": str(plan.get("failureClass") or ""),
         "signature": str(plan.get("signature") or ""),
         "experimentVariant": max(0, int(plan.get("experimentVariant") or 0)),
