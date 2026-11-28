@@ -1306,6 +1306,30 @@ function buildPlan(item) {
   // attribution and poisoning the learning loop. Strict same-provider positive
   // replay and an explicit architecture-FORCE preferred profile remain stronger
   // authorities.
+  const immediateRequestAmplificationStall = (
+    explorationMode
+    && learningMode
+    && !experimentExhausted
+    && !forcePreferredProfile
+    && !learningPreferredProfile
+    && ["route_proven_gap", "search_gap"].includes(canonicalFailureClass(evidence.failureClass))
+    && causalFamilyMemoryMatches.some((memory) => (
+      memory.executionObserved === true
+      && stringValue(memory.lastReason).toLowerCase()
+        === "exploration_request_amplification_without_frontier"
+    ))
+  );
+  const immediateCausalMethodHint = immediateRequestAmplificationStall
+    ? postExhaustionStrategyHint(
+        evidence.failureClass,
+        causalFamilyMemoryMatches,
+        rotateEvery,
+        "",
+        sourceEligibility,
+        attemptMemory,
+      )
+    : { profile: "", method: "", index: -1 };
+
   const preEscalationLlmAdvisorHint = (
     explorationMode
     && experimentExhausted
@@ -1332,20 +1356,22 @@ function buildPlan(item) {
     ? positiveProgramReplayHint
     : structuredExperiencePreferredSelected
       ? structuredExperienceHint
-      : (explorationMode && experimentExhausted && !preEscalationLlmExecutable)
-      ? postExhaustionStrategyHint(
-          learningPreferredProfile ? learningPreferredFailureClass : evidence.failureClass,
-          causalFamilyMemoryMatches,
-          rotateEvery,
-          forcePreferredProfile || learningPreferredProfile,
-          sourceEligibility,
-          attemptMemory,
-        )
       : forcePreferredSelectedEarly
         ? earlyForceHint
         : learningPreferredSelectedEarly
           ? earlyLearningHint
-          : { profile: "", method: "", index: -1 };
+          : immediateCausalMethodHint.profile
+            ? immediateCausalMethodHint
+            : (explorationMode && experimentExhausted && !preEscalationLlmExecutable)
+              ? postExhaustionStrategyHint(
+                  learningPreferredProfile ? learningPreferredFailureClass : evidence.failureClass,
+                  causalFamilyMemoryMatches,
+                  rotateEvery,
+                  forcePreferredProfile || learningPreferredProfile,
+                  sourceEligibility,
+                  attemptMemory,
+                )
+              : { profile: "", method: "", index: -1 };
   // The requested executor can also be selected AFTER base exhaustion.
   // Record the exact final selection, not just the pre-exhaustion branch.
   const forcePreferredSelected = Boolean(
@@ -1391,7 +1417,11 @@ function buildPlan(item) {
     && /^[0-9a-f]{64}$/.test(stringValue(postExhaustionHint.positiveProgramFingerprint).toLowerCase())
   );
   const repairTarget = (
-    experimentExhausted || metaGapEscalated || forcePreferredSelected || learningPreferredSelected
+    experimentExhausted
+    || strategyEscalated
+    || metaGapEscalated
+    || forcePreferredSelected
+    || learningPreferredSelected
   )
     ? (
         (strategyEscalated || metaGapEscalated)
