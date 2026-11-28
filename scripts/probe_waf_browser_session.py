@@ -301,11 +301,11 @@ def extract_status_targets(
         explicit_target = provider in explicit
         if status_name not in transport_statuses and not explicit_target:
             continue
-        # Explicit transport qualification may inspect a nominally green
-        # provider, but never resurrect a provider whose current address/backend
-        # authority is explicitly blocked.
-        if explicit_target and row.get("authorityRepairEligible") is False:
-            continue
+        # Explicit transport qualification is diagnostic-only and deliberately
+        # independent from provider repair/publication authority. A blocked or
+        # stale provider address may still be probed to determine whether the
+        # observed failure belongs to GitHub/browser/OkHttp/residential transport.
+        # This never grants provider mutation, playback or publication authority.
         patch = patches.get(provider) if isinstance(patches.get(provider), dict) else {}
         base_url = str(
             patch.get("official_site")
