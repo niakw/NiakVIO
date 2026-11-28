@@ -1811,7 +1811,7 @@ def _compile_source_matrix_program(program: Any, payload: dict[str, Any]) -> lis
     # The model controls only grammar data within the attested v2 contract;
     # Brain owns executable code, paths, hooks and tests.
     header = (
-        "import json\nimport re\n"
+        "import json\nimport re\nfrom html_script_blocks import extract_script_blocks\n"
         f"SLOT_PREFIX = {prefix!r}\nVALUE_PREFIX = {tag!r}\n"
         f"DECLARATIONS = {tuple(declarations)!r}\nAXIS = {axis!r}\nORDER = {order!r}\n"
     )
@@ -1821,7 +1821,7 @@ def parse_episode_source(html, episode):
         return []
     if not isinstance(html, str) or len(html) > 1048576:
         return []
-    chunks = re.findall(r"<script\b[^>]*>([\s\S]*?)</script\s*>", html, re.I)
+    chunks = extract_script_blocks(html)
     pattern = re.compile(r"\b(?:" + "|".join(DECLARATIONS) + r")\s+" +
                          re.escape(SLOT_PREFIX) + r"([1-9][0-9]{0,3})\s*=\s*")
     rows = {}
