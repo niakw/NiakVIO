@@ -434,6 +434,20 @@ def _census_prior(provider_id: str) -> dict[str, Any]:
     return {}
 
 
+def _candidate_parent_identity(candidate: dict[str, Any]) -> tuple[str, str]:
+    sha = str(
+        candidate.get("learning_parent_published_sha256")
+        or candidate.get("sha256")
+        or ""
+    ).strip().casefold()
+    if not re.fullmatch(r"[0-9a-f]{64}", sha):
+        sha = ""
+    authority = str(candidate.get("learning_parent_authority") or "").strip().casefold()
+    if not authority and candidate.get("published_exact_bytes") is True:
+        authority = "published-exact-current-bytes"
+    return sha, authority[:80]
+
+
 def _planner_candidate(candidate: dict[str, Any]) -> dict[str, Any]:
     metadata = candidate.get("metadata") if isinstance(candidate.get("metadata"), dict) else {}
     supported = metadata.get("supportedTypes")
@@ -458,9 +472,12 @@ def _planner_candidate(candidate: dict[str, Any]) -> dict[str, Any]:
         "knowledgeRole": "structured-observation-only",
         "legacyCodeExecuted": False,
     }
+    parent_sha, parent_authority = _candidate_parent_identity(candidate)
     return {
         "canonical_id": _clip_text(candidate.get("canonical_id"), 160),
         "upstream_id": _clip_text(candidate.get("upstream_id"), 160),
+        "parentArtifactSha256": parent_sha,
+        "parentAuthority": parent_authority,
         "metadata": {"supportedTypes": supported_types},
         "provider_base_reconstruction_required": candidate.get("provider_base_reconstruction_required") is True,
         "clean_reconstruction_mode": candidate.get("clean_reconstruction_mode") is True,
@@ -734,10 +751,12 @@ def planner_learned_skills(mode: str) -> dict[str, Any]:
     return out
 
 
-def _memory_entry_key(row: dict[str, Any]) -> tuple[str, str, str, str, str, str, str, str, int, int]:
+def _memory_entry_key(row: dict[str, Any]) -> tuple[Any, ...]:
     return (
         _clip_text(row.get("providerId"), 160).casefold(),
         _clip_text(row.get("providerVersion") or "*", 64),
+        _clip_text(row.get("parentArtifactSha256"), 64).casefold(),
+        _clip_text(row.get("parentAuthority"), 80).casefold(),
         _clip_text(row.get("failureClass"), 96),
         _clip_text(row.get("signature"), 160),
         _clip_text(row.get("profile"), 96),
@@ -808,6 +827,8 @@ def _learning_experiment_entries() -> list[dict[str, Any]]:
         out.append({
             "providerId": provider,
             "providerVersion": _clip_text(raw.get("providerVersion") or "*", 64),
+            "parentArtifactSha256": _clip_text(raw.get("parentArtifactSha256"), 64).casefold(),
+            "parentAuthority": _clip_text(raw.get("parentAuthority"), 80).casefold(),
             "failureClass": _clip_text(raw.get("failureClass"), 96),
             "signature": signature,
             "profile": profile,
@@ -849,7 +870,7 @@ def repair_memory() -> dict[str, Any]:
     # Only the isolated Learning planner may overlay the read-only sanitized
     # experiment memory published by the previous Learning phase.
     if str(os.environ.get("NUVIO_BRAIN_PLANNER_MODE") or "").strip().casefold() == "learning":
-        merged: dict[tuple[str, str, str, str, str, str, str, str, int, int], dict[str, Any]] = {
+        merged: dict[tuple[Any, ...], dict[str, Any]] = {
             _memory_entry_key(row): copy.deepcopy(row)
             for row in entries
         }
@@ -1119,6 +1140,8 @@ def planner_negative_memory(_mode: str) -> list[dict[str, Any]]:
         rows.append({
             "providerId": _clip_text(raw.get("providerId"), 160).casefold(),
             "providerVersion": _clip_text(raw.get("providerVersion") or "*", 64),
+            "parentArtifactSha256": _clip_text(raw.get("parentArtifactSha256"), 64).casefold(),
+            "parentAuthority": _clip_text(raw.get("parentAuthority"), 80).casefold(),
             "failureClass": _clip_text(raw.get("failureClass"), 96),
             "signature": _clip_text(raw.get("signature"), 96),
             "profile": _clip_text(raw.get("profile"), 96),
@@ -1165,6 +1188,8 @@ def planner_transient_negative_memory(candidate: dict[str, Any]) -> list[dict[st
         out.append({
             "providerId": provider_id,
             "providerVersion": "*",
+            "parentArtifactSha256": _candidate_parent_identity(candidate)[0],
+            "parentAuthority": _candidate_parent_identity(candidate)[1],
             "failureClass": _clip_text(raw.get("failureClass"), 96),
             "signature": _clip_text(raw.get("signature"), 96),
             "profile": profile,
@@ -1752,6 +1777,8 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                 continue
             if (
                 str(row.get("providerId") or "").casefold() == provider_id
+                and str(row.get("parentArtifactSha256") or "").casefold() == str(plan.get("parentArtifactSha256") or "").casefold()
+                and str(row.get("parentAuthority") or "").casefold() == str(plan.get("parentAuthority") or "").casefold()
                 and str(row.get("signature") or "") == signature
                 and str(row.get("profile") or "") == profile
                 and str(row.get("positiveProgramFingerprint") or "").casefold() == positive_program_fingerprint
@@ -1764,6 +1791,8 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
         row = {
             "providerId": provider_id,
             "providerVersion": "*",
+            "parentArtifactSha256": str(plan.get("parentArtifactSha256") or "").casefold(),
+            "parentAuthority": str(plan.get("parentAuthority") or "").casefold(),
             "failureClass": failure_class,
             "signature": signature,
             "profile": profile,
