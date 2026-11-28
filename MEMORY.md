@@ -1,3 +1,11 @@
+## 2026-11-28 — Neutral network instrumentation, independent of provider authority
+
+- User requests network diagnosis without domain/backend authority as prerequisite. Existing provider publication, lifecycle and mutation gates remain unchanged; network infrastructure diagnosis is independent.
+- 34aab7c7 / f4135e0f: existing neutral public-IP probe emits bounded cumulative curl DNS/connect/TLS/first-byte/total milliseconds and return code to sanitized logs. Raw stderr, IP, tokens, peer identifiers and URLs are not emitted by the new telemetry. Existing endpoints, route selection, deadlines, DNS configuration and attestation rules are unchanged.
+- 333cd4e5 / bdec086e: selected-peer status snapshot after a successful neutral probe emits only direct-hint, peer-relay-hint, derp-hint or unknown; never claims packet-path verification. Unknown or unavailable telemetry is not a route failure.
+- Local isolated checks on copied helper logic passed; actual local curl against a loopback HTTP fixture confirmed stdout IP body and stderr timing remain separate; malformed/nonfinite timing values are rejected. This is not a live external DNS/TLS or Tailscale measurement. Full repository tests not executed locally because GitHub DNS fails.
+- 0894c7f3 adds Network Neutral Baseline workflow: read-only, no secrets, no provider filter or access, offline route/timing contract then neutral GitHub egress reference, temporary state removed. Existing Tailscale workflow consumes the same instrumented script on its next execution. No workflow result confirmed yet; no independent Mac or WireGuard result, no provider repair certified, no production manifests or provider bytes changed.
+
 ## 2026-11-28 — Transport audit: distinguish blocked authority from transport health
 
 - Census 46141926005 (source 0cce90ee0bff, scope unresolved) retains 6/111 FULL OK, 0 fresh FULL, 63 Brain queue, 11 repair queue. Canonical status has 23 transport-related rows: 8 HARNESS MISMATCH + 7 HARNESS/ENV BLOCKED + 8 PROVIDER NETWORK BLOCKED. Of these, 22 are authority-blocked, 15 carried and 8 census-tested; the three authority-gated harness/transport dispatch queues are empty, NOT evidence that the network is healthy. Do not grant route/backend authority or mutate provider JS solely because of a transport result.
