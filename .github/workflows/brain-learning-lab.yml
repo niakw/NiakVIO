@@ -1,4 +1,5 @@
 name: LEARN - Brain Repair Lab
+run-name: LEARN | ${{ inputs.target_providers || inputs.target_provider || 'global' }} | ${{ inputs.dispatch_fingerprint || 'untracked' }}
 
 on:
   workflow_dispatch:
