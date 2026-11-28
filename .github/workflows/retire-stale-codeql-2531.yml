@@ -17,11 +17,17 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - name: Fail-closed source drift contract regression
-        run: python3 tests/retire_stale_codeql_2531_test.py
+      - name: Fail-closed stale-analysis cleanup regressions
+        run: |
+          python3 tests/retire_stale_codeql_2531_test.py
+          python3 tests/codeql_one_shot_cleanup_test.py
       - name: Execute positive-origin security regression
         run: node tests/response_structure_test.cjs
-      - name: Delete only the obsolete CodeQL configuration that owns finding 2531
+      - name: Delete superseded one-shot CodeQL analysis sets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/delete_stale_codeql_one_shot_configurations.py
+      - name: Delete only the obsolete legacy CodeQL configuration that owns finding 2531
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 scripts/delete_stale_codeql_2531_configuration.py
