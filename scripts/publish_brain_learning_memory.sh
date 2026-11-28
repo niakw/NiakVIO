@@ -15,16 +15,29 @@ if [ "$MAX_ATTEMPTS" -lt 1 ]; then MAX_ATTEMPTS=1; fi
 if [ "$MAX_ATTEMPTS" -gt 12 ]; then MAX_ATTEMPTS=12; fi
 
 dispatch_fingerprint="$(printf '%s' "${LEARNING_DISPATCH_FINGERPRINT:-}" | tr '[:upper:]' '[:lower:]' | xargs)"
-dispatch_provider="$(printf '%s' "${LEARNING_DISPATCH_PROVIDER:-}" | tr '[:upper:]_' '[:lower:]-' | xargs)"
+dispatch_cohort="$(printf '%s' "${LEARNING_DISPATCH_PROVIDER:-}" | tr '[:upper:]_' '[:lower:]-' | tr -d '[:space:]')"
+dispatch_provider=""
 if [ -n "$dispatch_fingerprint" ]; then
   [[ "$dispatch_fingerprint" =~ ^[0-9a-f]{64}$ ]] || {
     echo "invalid persisted Learning dispatch fingerprint" >&2
     exit 1
   }
-  [[ "$dispatch_provider" =~ ^[a-z0-9][a-z0-9-]{0,95}$ ]] || {
-    echo "Learning dispatch fingerprint requires exactly one safe provider id" >&2
+  IFS=',' read -r -a dispatch_providers <<< "$dispatch_cohort"
+  [ "${#dispatch_providers[@]}" -gt 0 ] || {
+    echo "Learning dispatch fingerprint requires a safe provider cohort" >&2
     exit 1
   }
+  for provider in "${dispatch_providers[@]}"; do
+    [[ "$provider" =~ ^[a-z0-9][a-z0-9-]{0,95}$ ]] || {
+      echo "Learning dispatch fingerprint contains an unsafe provider id" >&2
+      exit 1
+    }
+  done
+  # The family dispatcher intentionally fingerprints the cohort oracle (first
+  # provider). Siblings are executed in the same sandbox and contribute durable
+  # experiment/family memory, but this dispatch receipt marks only the exact
+  # oracle fingerprint supplied by the parent gate.
+  dispatch_provider="${dispatch_providers[0]}"
 fi
 
 candidate_root="$RUNNER_TEMP/brain-learning-memory-candidate-$GITHUB_RUN_ID"
@@ -91,7 +104,7 @@ PY
       --ledger "$RUNNER_TEMP/brain-learning-dispatch-ledger.json" \
       --selection "$RUNNER_TEMP/brain-learning-dispatch-selection.json" \
       --learning-run-id "$GITHUB_RUN_ID"
-    echo "FIELD_BRAIN_DISPATCH_LEDGER_MARK provider=$dispatch_provider fingerprint=${dispatch_fingerprint:0:12} execution=successful-sandbox"
+    echo "FIELD_BRAIN_DISPATCH_LEDGER_MARK provider=$dispatch_provider cohort=${dispatch_cohort:-none} fingerprint=${dispatch_fingerprint:0:12} execution=successful-sandbox"
   fi
 
   if [ -n "$existing_guidance_source" ] && [ "$candidate_guidance_source" != "$existing_guidance_source" ]; then
