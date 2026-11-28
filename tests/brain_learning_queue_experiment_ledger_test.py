@@ -610,6 +610,8 @@ source = SCRIPT.read_text(encoding="utf-8")
 assert "FIELD_BRAIN_LAB_SKIPPED" in source
 assert '"status": "not_executed_no_mutation"' in source
 assert 'repair_executable_mutation_observed(repair)' in source
+assert 'state["lastFixture"] = ""' in source
+assert 'state["lastClients"] = {}' in source
 assert 'not in {"playable", "not_executed_no_mutation"}' in source
 
 print("Brain fair-share exact experiment ledger contract passed")
