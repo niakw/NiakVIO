@@ -273,6 +273,15 @@ assert 'LEARNING_SELECTION="${LEARNING_SELECTION:-}"' in family_dispatch
 assert 'args+=(-f dispatch_fingerprint="$dispatch_fingerprint")' in family_dispatch
 assert 'gh workflow run brain-learning-lab.yml "${args[@]}"' in family_dispatch
 assert 'MAX_COHORTS="${MAX_COHORTS:-8}"' in family_dispatch
+assert '--status queued' in family_dispatch
+assert '--status in_progress' in family_dispatch
+assert '--json displayTitle' in family_dispatch
+assert 'grep -Fq "$dispatch_fingerprint"' in family_dispatch
+assert 'reason=fingerprint-in-flight' in family_dispatch
+assert 'reason=inflight-query-unavailable' in family_dispatch
+learning_workflow = (ROOT / ".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
+assert "run-name: LEARN |" in learning_workflow
+assert "inputs.dispatch_fingerprint || 'untracked'" in learning_workflow
 assert 'brain-learning/proposals:engine_v2/learning/latest.json' in family_dispatch
 assert '--learning-memory "$learning_memory"' in family_dispatch
 assert 'FIELD_BRAIN_LEARNING_FAMILY_MEMORY' in family_dispatch
