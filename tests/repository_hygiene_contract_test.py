@@ -165,7 +165,8 @@ assert "needs.experiment.outputs.architecture_force != 'true'" in architecture_p
 assert "needs.experiment.outputs.architecture_force == 'true'" in architecture_proposal_block
 assert "pull-requests: write" in brain
 assert "gh pr create" in brain
-assert 'BRANCH="brain-learning/proposals"' in brain
+memory_publisher = (ROOT / "scripts/publish_brain_learning_memory.sh").read_text(encoding="utf-8")
+assert 'BRANCH="brain-learning/proposals"' in memory_publisher
 brain_branch_maintenance = (ROOT / ".github/workflows/brain-branch-maintenance.yml").read_text(encoding="utf-8")
 assert 'BRANCH="brain-learning/proposals"' in brain_branch_maintenance
 assert "mapfile -t branches" in brain_branch_maintenance
