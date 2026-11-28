@@ -57,7 +57,7 @@ for required_trigger_guard in (
 # must never erase the last all-provider fan-out authority used by Brain.
 assert workflow.count('CENSUS_SCOPE: ${{ needs.prepare.outputs.census_scope }}') >= 2
 for marker in (
-    'if [ "$CENSUS_SCOPE" = "all" ]; then',
+    'if [ "$CENSUS_SCOPE" = "all" ] && [ -z "$TARGET_PROVIDERS" ]; then',
     'FIELD_SHARDED_GLOBAL_FANOUT retained=true replaced=false',
     'FIELD_SHARDED_GLOBAL_FANOUT retained=false replaced=true scope=all',
     'd=json.load(open("/tmp/provider-census-sharded-summary.json"))',
@@ -65,7 +65,7 @@ for marker in (
     assert marker in workflow, f"missing global fan-out persistence guard: {marker}"
 
 latest_copy = workflow.index("cp /tmp/provider-census-sharded.json automation/provider-census-sharded-latest.json")
-scope_guard = workflow.rfind('if [ "$CENSUS_SCOPE" = "all" ]; then', 0, latest_copy)
+scope_guard = workflow.rfind('if [ "$CENSUS_SCOPE" = "all" ] && [ -z "$TARGET_PROVIDERS" ]; then', 0, latest_copy)
 assert scope_guard >= 0 and scope_guard < latest_copy
 
 for required_stale_requeue in (
@@ -261,3 +261,19 @@ assert '--report "automation/current-bytes-full-provider-census-${run_id}.json"'
 assert "--state automation/provider-census-status.json" in summary_block
 assert '--run-id "$run_id" --sha "$SOURCE_SHA"' in summary_block
 assert "FIELD_SHARDED_CURRENT_BYTES_EVIDENCE_PUBLISHED" in workflow
+
+
+# Targeted active-provider census is a row overlay, never a new fleet-wide
+# freshness authority.
+target_merge = workflow.index("python scripts/merge_targeted_provider_census_status.py")
+target_base = workflow.index("--base automation/provider-census-status.json", target_merge)
+target_candidate = workflow.index("--candidate /tmp/provider-census-status.json", target_merge)
+target_marker = workflow.index("FIELD_SHARDED_TARGETED_CENSUS_OVERLAY", target_merge)
+target_copy = workflow.index("cp /tmp/provider-census-status.json automation/provider-census-status.json", target_marker)
+assert transport_rebase_move < target_merge < target_base < target_candidate < target_marker < target_copy
+assert "FIELD_SHARDED_TARGETED_AUTHORITY_PRESERVED" in workflow
+assert "FIELD_SHARDED_TARGETED_LATEST_SUMMARY_PRESERVED" in workflow
+assert "python tests/targeted_provider_census_state_merge_test.py" in workflow
+global_guard = 'if [ "$CENSUS_SCOPE" = "all" ] && [ -z "$TARGET_PROVIDERS" ]; then'
+assert workflow.count(global_guard) >= 2
+print("targeted active-provider census preserves fleet authority")

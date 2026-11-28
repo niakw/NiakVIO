@@ -99,6 +99,7 @@ jobs:
       - name: Validate sharded census persistence contract
         run: |
           python tests/provider_census_sharded_persistence_contract_test.py
+          python tests/targeted_provider_census_state_merge_test.py
           python tests/provider_quick_yield_provider_budget_test.py
 
       - id: pin
@@ -616,14 +617,14 @@ jobs:
           PY
           mkdir -p automation
           cp /tmp/provider-census-sharded.json "automation/provider-census-sharded-${run_id}.json"
-          if [ "$CENSUS_SCOPE" = "all" ]; then
+          if [ "$CENSUS_SCOPE" = "all" ] && [ -z "$TARGET_PROVIDERS" ]; then
             cp /tmp/provider-census-sharded.json automation/provider-census-sharded-latest.json
             cp /tmp/provider-census-sharded-summary.json automation/provider-census-sharded-latest-summary.json
             echo "FIELD_SHARDED_GLOBAL_FANOUT retained=false replaced=true scope=all run=$run_id"
           else
             echo "FIELD_SHARDED_GLOBAL_FANOUT retained=true replaced=false scope=$CENSUS_SCOPE run=$run_id"
           fi
-          if [ "$CENSUS_SCOPE" = "all" ] && [ "$ALLOW_PENDING_TARGETS" != "true" ]; then
+          if [ "$CENSUS_SCOPE" = "all" ] && [ -z "$TARGET_PROVIDERS" ] && [ "$ALLOW_PENDING_TARGETS" != "true" ]; then
             if ! python scripts/stamp_provider_census_artifact_hashes.py \
               --status /tmp/provider-census-status.json \
               --manifest manifest.json \
@@ -670,6 +671,24 @@ jobs:
             mv /tmp/provider-census-status-current-waf.json /tmp/provider-census-status.json
             echo "FIELD_SHARDED_CENSUS_TRANSPORT_REBASE source=${SOURCE_SHA:0:12} base=${persist_base:0:12} authority=current-merged-waf"
 
+            if [ -n "$TARGET_PROVIDERS" ]; then
+              # Targeted active-provider census owns only executed provider rows.
+              # Preserve fleet-wide freshness/provenance from current main.
+              python scripts/merge_targeted_provider_census_status.py \
+                --base automation/provider-census-status.json \
+                --candidate /tmp/provider-census-status.json \
+                --providers "$TARGET_PROVIDERS" \
+                --output /tmp/provider-census-status-targeted-merged.json
+              mv /tmp/provider-census-status-targeted-merged.json /tmp/provider-census-status.json
+              python scripts/merge_waf_census_transport.py \
+                --status /tmp/provider-census-status.json \
+                --waf automation/provider-waf-browser-session-latest.json \
+                --authority-status automation/provider-authority-status.json \
+                --output /tmp/provider-census-status-targeted-current-waf.json
+              mv /tmp/provider-census-status-targeted-current-waf.json /tmp/provider-census-status.json
+              echo "FIELD_SHARDED_TARGETED_CENSUS_OVERLAY providers=$TARGET_PROVIDERS fleet_authority_preserved=true"
+            fi
+
             cp /tmp/provider-census-status.json automation/provider-census-status.json
             # Rebuild the durable batch plan only after the current-main WAF
             # evidence has been projected onto the candidate census. The batch
@@ -683,7 +702,11 @@ jobs:
               batch_args+=(--fallback-sharded-census automation/provider-census-sharded-latest.json)
             fi
             "${batch_args[@]}"
-            cp /tmp/provider-authority-status.json automation/provider-authority-status.json
+            if [ -z "$TARGET_PROVIDERS" ]; then
+              cp /tmp/provider-authority-status.json automation/provider-authority-status.json
+            else
+              echo "FIELD_SHARDED_TARGETED_AUTHORITY_PRESERVED providers=$TARGET_PROVIDERS source=current-main"
+            fi
           fi
           cp /tmp/provider-waf-browser-session-sharded.json "automation/provider-waf-browser-session-${run_id}.json"
           if [ "$ALLOW_PENDING_TARGETS" != "true" ]; then
@@ -703,7 +726,11 @@ jobs:
               --state automation/provider-census-status.json \
               --output "automation/current-bytes-full-provider-census-${run_id}-summary.json" \
               --run-id "$run_id" --sha "$SOURCE_SHA"
-            cp "automation/current-bytes-full-provider-census-${run_id}-summary.json" automation/current-bytes-full-provider-census-latest-summary.json
+            if [ -n "$TARGET_PROVIDERS" ]; then
+              echo "FIELD_SHARDED_TARGETED_LATEST_SUMMARY_PRESERVED providers=$TARGET_PROVIDERS fleet_latest_unchanged=true"
+            else
+              cp "automation/current-bytes-full-provider-census-${run_id}-summary.json" automation/current-bytes-full-provider-census-latest-summary.json
+            fi
             echo "FIELD_SHARDED_CURRENT_BYTES_EVIDENCE_PUBLISHED run=$run_id source=$SOURCE_SHA scope=$CENSUS_SCOPE pending=false"
           fi
           verified="$(python - <<'PY'
@@ -737,7 +764,7 @@ jobs:
               automation/provider-waf-browser-session-latest.json \
               PROVIDER_CENSUS_STATUS.md
           fi
-          if [ "$CENSUS_SCOPE" = "all" ]; then
+          if [ "$CENSUS_SCOPE" = "all" ] && [ -z "$TARGET_PROVIDERS" ]; then
             git add \
               automation/provider-census-sharded-latest.json \
               automation/provider-census-sharded-latest-summary.json
