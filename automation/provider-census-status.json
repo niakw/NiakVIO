@@ -297,11 +297,7 @@
       "testedThisRun": true,
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ]
+      "targetedTransportEvidence": []
     },
     {
       "provider": "anikototv",
@@ -496,11 +492,7 @@
       "testedThisRun": true,
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ]
+      "targetedTransportEvidence": []
     },
     {
       "provider": "animekai",
@@ -2280,12 +2272,7 @@
       "testedThisRun": true,
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
-        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ]
+      "targetedTransportEvidence": []
     },
     {
       "provider": "kehflix",
@@ -3540,9 +3527,9 @@
     },
     {
       "provider": "rivestream-ru",
-      "status": "PROVIDER NETWORK BLOCKED",
+      "status": "NO PROOF",
       "underlyingStatus": "",
-      "color": "🟤",
+      "color": "🔵",
       "declaredLanes": [
         "anime",
         "movie",
@@ -3587,7 +3574,23 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
+      "residentialProviderReplayReclassified": true,
+      "networkDifferentialClass": "network-route-inconclusive",
+      "networkDifferentialEvidence": [
+        "anime: github-browser=browser_inconclusive, github-okhttp=okhttp_jvm_error, github-desktop-okhttp=okhttp_jvm_error, github-direct=direct_http_error, residential-browser=browser_inconclusive, residential-okhttp=okhttp_jvm_error, residential-desktop-okhttp=okhttp_jvm_error, residential-direct=direct_http_error",
+        "movie: github-browser=browser_inconclusive, github-okhttp=okhttp_jvm_error, github-desktop-okhttp=okhttp_jvm_error, github-direct=direct_http_error, residential-browser=browser_inconclusive, residential-okhttp=okhttp_jvm_error, residential-desktop-okhttp=okhttp_jvm_error, residential-direct=direct_http_error",
+        "tv: github-browser=browser_inconclusive, github-okhttp=okhttp_jvm_error, github-desktop-okhttp=okhttp_jvm_error, github-direct=direct_http_error, residential-browser=browser_inconclusive, residential-okhttp=okhttp_jvm_error, residential-desktop-okhttp=okhttp_jvm_error, residential-direct=direct_http_error"
+      ]
     },
     {
       "provider": "sadisflix",
@@ -3926,7 +3929,17 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_network_exception, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_network_exception, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "networkDifferentialClass": "network-route-inconclusive",
+      "networkDifferentialEvidence": [
+        "movie: github-browser=browser_inconclusive, github-okhttp=okhttp_jvm_error, github-desktop-okhttp=okhttp_jvm_error, github-direct=direct_http_error, residential-browser=browser_inconclusive, residential-okhttp=okhttp_jvm_error, residential-desktop-okhttp=okhttp_jvm_error, residential-direct=direct_http_error",
+        "tv: github-browser=browser_inconclusive, github-okhttp=okhttp_jvm_error, github-desktop-okhttp=okhttp_jvm_error, github-direct=direct_http_error, residential-browser=browser_inconclusive, residential-okhttp=okhttp_jvm_error, residential-desktop-okhttp=okhttp_jvm_error, residential-direct=direct_http_error"
+      ]
     },
     {
       "provider": "vidfast",
@@ -5519,9 +5532,9 @@
     "DISABLED": 37,
     "FULL OK": 6,
     "HARNESS MISMATCH": 4,
-    "NO PROOF": 28,
+    "NO PROOF": 29,
     "PROOF REFRESH REQUIRED": 5,
-    "PROVIDER NETWORK BLOCKED": 2,
+    "PROVIDER NETWORK BLOCKED": 1,
     "REGRESSION PROVIDER": 2,
     "REGRESSION PROVIDER JS": 1,
     "ROUTE PROVEN": 5
@@ -5856,8 +5869,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "46173649321-waf-transport",
-  "harnessEvidenceSha": "15fec065beafb8965473ebcb052f17d37feedde9",
+  "harnessEvidenceRunId": "46173637587-waf-transport",
+  "harnessEvidenceSha": "7e544c248ba2a35175025713a3bc9c68c7871de9",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
@@ -5870,6 +5883,7 @@
     "franime",
     "hianime",
     "moiflix",
+    "rivestream-ru",
     "watchott",
     "youtitou"
   ],
@@ -5881,6 +5895,8 @@
     "hianime",
     "moiflix",
     "rivestream-app",
+    "rivestream-ru",
+    "videasy",
     "watchott",
     "youtitou"
   ],
@@ -5892,6 +5908,7 @@
     "flixer",
     "hianime",
     "moiflix",
+    "rivestream-ru",
     "watchott",
     "youtitou"
   ],
@@ -5903,7 +5920,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 5,
+    "matchedProviderLanes": 4,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -5916,7 +5933,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 5,
+    "matchedProviderLanes": 4,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -6238,9 +6255,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "0d77ee877bf91cd7657b574e13709de97b4eadd4a463647b73b9abd76623a4da",
-          "runId": "46171810048",
+          "runId": "46173637587",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -6307,9 +6324,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "4267c5a78b8fe22840ebd2a1395c38c52cbe6ec639c5c9e2c91048bafc6e798e",
-          "runId": "46171810048",
+          "runId": "46173637587",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7448,9 +7465,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "718a7a758f899cf508f4ae164d054cbb546c3089ef63737c132cda943c4eecb7",
-          "runId": "46171811680",
+          "runId": "46173637587",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -7477,9 +7494,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "718a7a758f899cf508f4ae164d054cbb546c3089ef63737c132cda943c4eecb7",
-          "runId": "46171811680",
+          "runId": "46173637587",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -8830,12 +8847,10 @@
         "primewire",
         "purstream",
         "rivestream-app",
-        "rivestream-ru",
         "sadisflix",
         "sekai",
         "shuttletv",
         "skstream",
-        "videasy",
         "vidfast",
         "vidrock",
         "voirserie",

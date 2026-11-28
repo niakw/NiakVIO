@@ -1650,13 +1650,12 @@
         {
           "profile": "nuvio-tv-ua-browser",
           "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-          "outcome": "browser_content_reached",
+          "outcome": "browser_timeout",
           "attemptCount": 1,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_content_reached",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             }
           ],
           "ordinarySessionReused": false
@@ -1723,10 +1722,16 @@
           "safeRequestHeaderCount": 0
         },
         "outcome": "okhttp_jvm_content_reached",
-        "attemptCount": 1,
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
+            "outcome": "okhttp_jvm_timeout",
+            "status": 0,
+            "error": "SocketTimeoutException"
+          },
+          {
+            "attempt": 2,
             "outcome": "okhttp_jvm_content_reached",
             "status": 200
           }
@@ -1734,14 +1739,13 @@
         "exitCode": 0
       },
       "contentProfiles": [
-        "nuvio-tv-ua-browser",
         "nuvio-tv-direct-http-approx",
         "nuvio-tv-okhttp-jvm",
         "nuvio-desktop-okhttp-jvm"
       ],
-      "transportDiagnosis": "content_reached_cross_transport",
+      "transportDiagnosis": "okhttp_content_browser_unproven",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 21545,
+      "durationMs": 62696,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -1766,7 +1770,7 @@
         "okHttpJvmProfile": {
           "profile": "nuvio-tv-okhttp-jvm",
           "outcome": "okhttp_jvm_content_reached",
-          "attemptCount": 1
+          "attemptCount": 2
         },
         "desktopOkHttpJvmProfile": {
           "profile": "nuvio-desktop-okhttp-jvm",
@@ -1780,16 +1784,16 @@
         ]
       },
       "transportReceipt": {
-        "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+        "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
         "providerBundleSha256": "0d77ee877bf91cd7657b574e13709de97b4eadd4a463647b73b9abd76623a4da",
-        "runId": "46171810048",
+        "runId": "46173637587",
         "proofAuthority": false,
         "publicationAuthority": false
       },
       "residentialReceipt": {
-        "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+        "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
         "providerBundleSha256": "0d77ee877bf91cd7657b574e13709de97b4eadd4a463647b73b9abd76623a4da",
-        "runId": "46171810048",
+        "runId": "46173637587",
         "proofAuthority": false,
         "publicationAuthority": false
       }
@@ -2125,7 +2129,7 @@
       ],
       "transportDiagnosis": "content_reached_cross_transport",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 21682,
+      "durationMs": 15637,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -2165,16 +2169,16 @@
         ]
       },
       "transportReceipt": {
-        "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+        "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
         "providerBundleSha256": "4267c5a78b8fe22840ebd2a1395c38c52cbe6ec639c5c9e2c91048bafc6e798e",
-        "runId": "46171810048",
+        "runId": "46173637587",
         "proofAuthority": false,
         "publicationAuthority": false
       },
       "residentialReceipt": {
-        "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+        "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
         "providerBundleSha256": "4267c5a78b8fe22840ebd2a1395c38c52cbe6ec639c5c9e2c91048bafc6e798e",
-        "runId": "46171810048",
+        "runId": "46173637587",
         "proofAuthority": false,
         "publicationAuthority": false
       }
@@ -8292,7 +8296,7 @@
       ],
       "transportDiagnosis": "content_reached_cross_transport",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 10760,
+      "durationMs": 11958,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -8333,16 +8337,16 @@
         ]
       },
       "transportReceipt": {
-        "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+        "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
         "providerBundleSha256": "718a7a758f899cf508f4ae164d054cbb546c3089ef63737c132cda943c4eecb7",
-        "runId": "46171811680",
+        "runId": "46173637587",
         "proofAuthority": false,
         "publicationAuthority": false
       },
       "residentialReceipt": {
-        "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+        "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
         "providerBundleSha256": "718a7a758f899cf508f4ae164d054cbb546c3089ef63737c132cda943c4eecb7",
-        "runId": "46171811680",
+        "runId": "46173637587",
         "proofAuthority": false,
         "publicationAuthority": false
       }
@@ -8488,7 +8492,7 @@
       ],
       "transportDiagnosis": "content_reached_cross_transport",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 10758,
+      "durationMs": 11930,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -8529,16 +8533,16 @@
         ]
       },
       "transportReceipt": {
-        "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+        "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
         "providerBundleSha256": "718a7a758f899cf508f4ae164d054cbb546c3089ef63737c132cda943c4eecb7",
-        "runId": "46171811680",
+        "runId": "46173637587",
         "proofAuthority": false,
         "publicationAuthority": false
       },
       "residentialReceipt": {
-        "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+        "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
         "providerBundleSha256": "718a7a758f899cf508f4ae164d054cbb546c3089ef63737c132cda943c4eecb7",
-        "runId": "46171811680",
+        "runId": "46173637587",
         "proofAuthority": false,
         "publicationAuthority": false
       }
@@ -15830,7 +15834,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 5,
+    "matchedProviderLanes": 4,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -16152,9 +16156,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "0d77ee877bf91cd7657b574e13709de97b4eadd4a463647b73b9abd76623a4da",
-          "runId": "46171810048",
+          "runId": "46173637587",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -16221,9 +16225,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "4267c5a78b8fe22840ebd2a1395c38c52cbe6ec639c5c9e2c91048bafc6e798e",
-          "runId": "46171810048",
+          "runId": "46173637587",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -17362,9 +17366,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "718a7a758f899cf508f4ae164d054cbb546c3089ef63737c132cda943c4eecb7",
-          "runId": "46171811680",
+          "runId": "46173637587",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -17391,9 +17395,9 @@
         "contradictions": 0,
         "identitySafe": true,
         "residentialReplayReceipt": {
-          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "sourceNiakvioSha": "b2c4ef5a3b93898330060253ba9f30d2cd0195f3",
           "providerBundleSha256": "718a7a758f899cf508f4ae164d054cbb546c3089ef63737c132cda943c4eecb7",
-          "runId": "46171811680",
+          "runId": "46173637587",
           "proofAuthority": false,
           "publicationAuthority": false
         }
@@ -18744,12 +18748,10 @@
         "primewire",
         "purstream",
         "rivestream-app",
-        "rivestream-ru",
         "sadisflix",
         "sekai",
         "shuttletv",
         "skstream",
-        "videasy",
         "vidfast",
         "vidrock",
         "voirserie",
@@ -18774,14 +18776,15 @@
     "providerBundleDigestAuthority": "executed-global-vf-published-bytes"
   },
   "lastRefreshProviderFilter": [
-    "rivestream-ru",
-    "videasy"
+    "aniflix-uno",
+    "animejlprovider",
+    "ihavenotv"
   ],
   "residentialExitNodeLastAttempt": {
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 5,
+    "matchedProviderLanes": 4,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -18797,17 +18800,17 @@
     "proofAuthority": false,
     "publicationAuthority": false
   },
-  "currentRefreshProviderCount": 2,
-  "currentRefreshRowCount": 5,
+  "currentRefreshProviderCount": 3,
+  "currentRefreshRowCount": 4,
   "currentRefreshCounts": {
-    "browser_inconclusive": 5
+    "browser_content_reached": 4
   },
-  "historicalRetainedRowCount": 90,
+  "historicalRetainedRowCount": 91,
   "historicalRetainedCounts": {
     "browser_challenge_observed": 1,
     "browser_challenge_persisted": 20,
-    "browser_content_reached": 65,
-    "browser_inconclusive": 1,
+    "browser_content_reached": 61,
+    "browser_inconclusive": 6,
     "browser_timeout": 3
   },
   "staleCurrentRowsSuppressedProviders": [
