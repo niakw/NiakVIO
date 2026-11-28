@@ -768,7 +768,15 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=timeout, stage=timeout, raw=0, playable=0, verified=0, identitySafe=false"
+      ],
+      "networkDifferentialClass": "github-native-route-reachable",
+      "networkDifferentialEvidence": [
+        "anime: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-desktop-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
+      ]
     },
     {
       "provider": "arrowtv",
@@ -1695,14 +1703,9 @@
       "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayReclassified": true
+      "targetedTransportEvidence": []
     },
     {
       "provider": "frembed",
@@ -1988,14 +1991,9 @@
       "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayReclassified": true
+      "targetedTransportEvidence": []
     },
     {
       "provider": "hexa",
@@ -5633,8 +5631,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "46167048641-waf-transport",
-  "harnessEvidenceSha": "07f7182d5855cc8ca1cc40fc2f9f218da2ff8259",
+  "harnessEvidenceRunId": "46167064891-waf-transport",
+  "harnessEvidenceSha": "f91e6cf8bfd94f6862b0a3ae15a8a52e885dfc68",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
@@ -5647,24 +5645,21 @@
     "dulourd",
     "fexini",
     "film-a-revoir",
-    "franime",
-    "fullanime",
     "voirserie",
     "watch-cartoon-online",
     "waveanime"
   ],
-  "networkDifferentialUpdatedProviders": [],
-  "residentialProviderReplayPromotedProviders": [],
-  "residentialProviderReplayReclassifiedProviders": [
-    "franime",
-    "fullanime"
+  "networkDifferentialUpdatedProviders": [
+    "anisama"
   ],
+  "residentialProviderReplayPromotedProviders": [],
+  "residentialProviderReplayReclassifiedProviders": [],
   "residentialProviderReplayRepairableProviders": [],
   "residentialExitNodeEvidence": {
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 2,
+    "matchedProviderLanes": 1,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -5677,7 +5672,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 2,
+    "matchedProviderLanes": 1,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -5689,7 +5684,7 @@
   "residentialProviderReplay": {
     "available": true,
     "profile": "tailscale-residential-exit",
-    "providerCount": 48,
+    "providerCount": 49,
     "providers": [
       "1jour1film0626",
       "67movies",
@@ -5699,6 +5694,7 @@
       "animesalt",
       "animesultra",
       "animevost-fr",
+      "anisama",
       "arrowtv",
       "boredflix",
       "chillflix",
@@ -6027,6 +6023,37 @@
         "verified": 0,
         "contradictions": 0,
         "identitySafe": true
+      },
+      {
+        "provider": "anisama",
+        "providerArtifactSha256": "2f1cc40ad5d59301eefb70aab7dfb32af085ce04f2e2210ff49c4efeb389b9ee",
+        "lane": "anime",
+        "status": "timeout",
+        "debugStage": "timeout",
+        "sampleCount": 3,
+        "sampleDebugStages": [
+          "provider_zero_before_provider_network",
+          "timeout"
+        ],
+        "sampleStatuses": [
+          "no_streams",
+          "timeout"
+        ],
+        "sampleProgressStages": [
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": false,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
+          "providerBundleSha256": "2f1cc40ad5d59301eefb70aab7dfb32af085ce04f2e2210ff49c4efeb389b9ee",
+          "runId": "46167064891",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
       },
       {
         "provider": "arrowtv",
@@ -6856,32 +6883,24 @@
       },
       {
         "provider": "franime",
-        "providerArtifactSha256": "4e50b58baf04b404603cd109107bca61e4dd8fc92a5152458bf9524d7bb2345c",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_zero_before_provider_network",
+        "debugStage": "provider_waf_challenge",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_zero_before_provider_network"
+          "provider_waf_challenge"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
-          "none"
+          "lookup_only"
         ],
         "raw": 0,
         "playable": 0,
         "verified": 0,
         "contradictions": 0,
-        "identitySafe": true,
-        "residentialReplayReceipt": {
-          "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
-          "providerBundleSha256": "4e50b58baf04b404603cd109107bca61e4dd8fc92a5152458bf9524d7bb2345c",
-          "runId": "46167048641",
-          "proofAuthority": false,
-          "publicationAuthority": false
-        }
+        "identitySafe": true
       },
       {
         "provider": "french-anime",
@@ -6914,32 +6933,25 @@
       },
       {
         "provider": "fullanime",
-        "providerArtifactSha256": "c1a3490a1f334515d3d1aa063735380ea0a0ce7afc40c218131a9d6123c07038",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_zero_before_provider_network",
+        "debugStage": "provider_waf_challenge",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_zero_before_provider_network"
+          "provider_waf_challenge"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
-          "none"
+          "chain_reached",
+          "lookup_only"
         ],
         "raw": 0,
         "playable": 0,
         "verified": 0,
         "contradictions": 0,
-        "identitySafe": true,
-        "residentialReplayReceipt": {
-          "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
-          "providerBundleSha256": "c1a3490a1f334515d3d1aa063735380ea0a0ce7afc40c218131a9d6123c07038",
-          "runId": "46167048641",
-          "proofAuthority": false,
-          "publicationAuthority": false
-        }
+        "identitySafe": true
       },
       {
         "provider": "latestmovies",
@@ -7953,7 +7965,7 @@
     },
     "lastAttempt": {
       "available": true,
-      "providerCount": 2,
+      "providerCount": 1,
       "refreshedProviders": [
         "1jour1film0626",
         "67movies",
@@ -7964,6 +7976,7 @@
         "animesalt",
         "animesultra",
         "animevost-fr",
+        "anisama",
         "arrowtv",
         "chillflix",
         "cinegram",
@@ -8002,14 +8015,13 @@
         "youtitou"
       ],
       "replayedProviders": [
-        "franime",
-        "fullanime"
+        "anisama"
       ],
       "rawProviders": [],
       "playableProviders": [],
       "verifiedProviders": [],
       "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
-      "runId": "46167048641",
+      "runId": "46167064891",
       "proofAuthority": false,
       "publicationAuthority": false
     },
