@@ -16,7 +16,6 @@ for required in (
     "scripts/build_provider_execution_plan.py",
     "provider-remat-test.yml",
     "provider-fast-repair.yml",
-    "domain-refresh.yml",
     "CORE_CLIENT_LEARNING",
     "provider-waf-browser-session.yml",
     "scripts/dispatch_learning_family_cohorts.sh",
@@ -64,6 +63,8 @@ assert "force-is-explicit-event-scoped" in autopilot
 assert "contents: write" not in autopilot
 assert "git add " not in autopilot
 assert "git push origin HEAD:main" not in autopilot
+assert "manual-low-priority-not-brain-critical" in autopilot
+assert "gh workflow run domain-refresh.yml" not in autopilot
 
 assert phase.get("phase") in {"brain_repair_pilot", "brain_group_repair"}, phase
 if phase.get("phase") == "brain_group_repair":
