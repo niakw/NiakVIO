@@ -78,6 +78,47 @@ assert large_out["cohortCount"]==8,large_out
 assert len(large_out["selectedProviders"])==8,large_out
 assert len(large_out["deferredProviders"])==992,large_out
 
+# A later wave must not starve untouched families. Mark the first wave's eight
+# oracles as recently executed in durable Learning memory: families 08..15 must
+# now outrank families 00..07 even though those earlier families contain
+# untested siblings. Family recency, not just member recency, owns wave fairness.
+recent_memory={
+    "experimentMemory":{
+        "entries":[
+            {
+                "providerId": provider,
+                "lastSeenAt": f"2026-11-28T02:{10+index:02d}:00+00:00",
+            }
+            for index,provider in enumerate(large_out["selectedProviders"])
+        ]
+    }
+}
+second_wave=mod.plan(
+    large,
+    large_plan,
+    large_status,
+    max_cohorts=8,
+    learning_memory=recent_memory,
+)
+second_families={row["familyKey"] for row in second_wave["cohorts"]}
+assert second_families=={f"family-{family:02d}" for family in range(8,16)},second_wave
+assert second_wave["learningMemoryUsed"] is True,second_wave
+assert second_wave["selectionPolicy"].startswith("least-recent-family"),second_wave
+
+# When an already-visited family cycles back, rotate its representative instead
+# of replaying the same provider forever.
+all_families=mod.plan(
+    large,
+    large_plan,
+    large_status,
+    max_cohorts=16,
+    learning_memory=recent_memory,
+)
+family0=next(row for row in all_families["cohorts"] if row["familyKey"]=="family-00")
+assert family0["provider"]=="p0001",family0
+assert family0["providerLastAttemptAt"]=="",family0
+assert family0["familyLastAttemptAt"],family0
+
 # Stale family plan has no grouping authority: each provider becomes its own
 # isolated cohort instead of inheriting an obsolete sibling relationship.
 stale=mod.plan(
