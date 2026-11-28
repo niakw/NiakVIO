@@ -3304,6 +3304,33 @@ def main() -> int:
                         flush=True,
                     )
                     final_lab = no_mutation_lab
+                    # A generation failure is useful phase memory, not an
+                    # executed provider failure. For an isolated family oracle,
+                    # register this exact generation identity and immediately
+                    # let the planner choose another variant/profile while the
+                    # same bounded slice still has budget. Multi-provider
+                    # cohorts retain one ordinary attempt before rotation.
+                    if not experiment_identity or experiment_identity in seen_experiment_identities:
+                        print(
+                            "FIELD_BRAIN_EXPERIMENT_REPEAT_GUARD "
+                            f"provider={provider_id} repeated={str(bool(experiment_identity)).lower()} "
+                            "stage=generation action=stop proof_authority=false",
+                            flush=True,
+                        )
+                        break
+                    seen_experiment_identities.add(experiment_identity)
+                    if fair_handoff and attempts_this_phase >= 1 and should_continue_bounded_oracle(
+                        provider_plan,
+                        attempts_this_phase,
+                        isolated_oracle=isolated_family_oracle,
+                    ):
+                        print(
+                            "FIELD_BRAIN_GENERATION_FALLBACK "
+                            f"provider={provider_id} attempt={attempts_this_phase} "
+                            "action=replan-from-generation-memory proof_authority=false",
+                            flush=True,
+                        )
+                        continue
                     break
 
                 full_registry = load_json(full_registry_path, {})

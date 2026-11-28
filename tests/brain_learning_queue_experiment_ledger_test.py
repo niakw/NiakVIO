@@ -392,6 +392,18 @@ assert "not should_continue_evolved_frontier(" not in loop_tail.split("if isinst
 assert "seen_experiment_identities" in loop_tail
 assert "FIELD_BRAIN_EXPERIMENT_REPEAT_GUARD" in loop_tail
 
+# A no-byte generation attempt must be able to feed the next bounded oracle
+# hypothesis instead of unconditionally terminating the single-provider slice.
+source = (ROOT / "scripts/run_brain_learning_queue.py").read_text(encoding="utf-8")
+no_mut_start = source.index('"FIELD_BRAIN_LAB_SKIPPED "')
+no_mut_end = source.index("full_registry = load_json(full_registry_path, {})", no_mut_start)
+no_mut_block = source[no_mut_start:no_mut_end]
+assert "FIELD_BRAIN_GENERATION_FALLBACK" in no_mut_block
+assert "seen_experiment_identities.add(experiment_identity)" in no_mut_block
+assert "should_continue_bounded_oracle(" in no_mut_block
+assert "continue" in no_mut_block
+assert "generationAttemptObserved" in source
+
 # The first attempt may still report the exact final g5 strategy it just ran.
 # That boundary must receive one continuation so phase memory can expose and
 # execute the newly unlocked evolved strategy in the next sandbox process.
