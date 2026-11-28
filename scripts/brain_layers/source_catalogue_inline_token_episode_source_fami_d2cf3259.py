@@ -1,5 +1,6 @@
 import json
 import re
+from html_script_blocks import extract_script_blocks
 SLOT_PREFIX = 'eps'
 VALUE_PREFIX = 'lien:'
 DECLARATIONS = ('const', 'let', 'var')
@@ -11,7 +12,7 @@ def parse_episode_source(html, episode):
         return []
     if not isinstance(html, str) or len(html) > 1048576:
         return []
-    chunks = re.findall(r"<script\b[^>]*>([\s\S]*?)</script\s*>", html, re.I)
+    chunks = extract_script_blocks(html)
     pattern = re.compile(r"\b(?:" + "|".join(DECLARATIONS) + r")\s+" +
                          re.escape(SLOT_PREFIX) + r"([1-9][0-9]{0,3})\s*=\s*")
     rows = {}
