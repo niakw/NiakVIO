@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
 import os
 import re
@@ -1110,6 +1111,7 @@ def merge_phase_learning_state(
 def merge_phase_family_skill_priors(
     state: dict[str, Any],
     entries: list[dict[str, Any]],
+    family_context: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Feed a validated family success to later siblings in the same phase.
 
@@ -1139,7 +1141,15 @@ def merge_phase_family_skill_priors(
             or strategy in {"unknown", "none", "not-applicable"}
         ):
             continue
-        key = f"{failure}:{profile}:family:{strategy}"
+        context = (family_context or {}).get(provider) or {}
+        group_id = str(context.get("groupId") or f"provider-local:{provider}").strip()
+        group_hash = hashlib.sha256(group_id.encode("utf-8")).hexdigest()[:16]
+        family_members = unique([
+            norm(value)
+            for value in context.get("members") or [provider]
+            if norm(value)
+        ])
+        key = f"{failure}:{profile}:family:{group_hash}"
         current = skills.get(key)
         if not isinstance(current, dict):
             if successes <= 0:
@@ -1156,6 +1166,9 @@ def merge_phase_family_skill_priors(
                 "signatures": [],
                 "capabilityStrategies": [strategy],
                 "observedPipelineStages": [],
+                "familyPriorOnly": True,
+                "familyKeyHash": group_hash,
+                "familyEligibleProviders": family_members[:96],
                 "successCount": 0,
                 "failureCount": 0,
                 "validated": True,
@@ -1171,6 +1184,9 @@ def merge_phase_family_skill_priors(
         }
         providers.add(provider)
         current["providers"] = sorted(providers)[:96]
+        current["familyPriorOnly"] = True
+        current["familyKeyHash"] = group_hash
+        current["familyEligibleProviders"] = family_members[:96]
         signature = str(row.get("signature") or "").strip()
         if signature:
             current["signatures"] = sorted({
@@ -1313,6 +1329,25 @@ def causal_batch_round_robin(
         if not progressed:
             break
     return unique(out), group_order
+
+def causal_family_context(batch_plan: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Map each provider to its exact current causal group and siblings."""
+    out: dict[str, dict[str, Any]] = {}
+    groups = batch_plan.get("groups") if isinstance(batch_plan.get("groups"), list) else []
+    for row in groups:
+        if not isinstance(row, dict):
+            continue
+        group_id = str(row.get("groupId") or "").strip()
+        members = unique([
+            norm(value) for value in row.get("providers") or [] if norm(value)
+        ])
+        if not group_id or not members:
+            continue
+        context = {"groupId": group_id, "members": members}
+        for provider in members:
+            out.setdefault(provider, context)
+    return out
+
 
 def causal_family_waves(
     order: list[str],
@@ -2622,6 +2657,7 @@ def main() -> int:
         )
 
     batch_plan = load_json(ROOT / "automation" / "provider-repair-batch-plan-latest.json", {})
+    family_context = causal_family_context(batch_plan)
     brain_owned_repair, brain_owner_authority = brain_owned_current_repair_providers(
         batch_plan, census_authority
     )
@@ -3172,6 +3208,7 @@ def main() -> int:
                             phase_learning_state = merge_phase_family_skill_priors(
                                 phase_learning_state,
                                 no_mutation_entries,
+                                family_context,
                             )
                             write_json(phase_learning_state_path, phase_learning_state)
                     print(
@@ -3237,6 +3274,7 @@ def main() -> int:
                             phase_learning_state = merge_phase_family_skill_priors(
                                 phase_learning_state,
                                 incomplete_entries,
+                                family_context,
                             )
                             write_json(phase_learning_state_path, phase_learning_state)
                     print(
@@ -3275,6 +3313,7 @@ def main() -> int:
                         phase_learning_state = merge_phase_family_skill_priors(
                             phase_learning_state,
                             attempt_entries,
+                            family_context,
                         )
                         write_json(phase_learning_state_path, phase_learning_state)
     
