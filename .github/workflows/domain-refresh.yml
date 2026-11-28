@@ -397,11 +397,10 @@ jobs:
           CURRENT_SHA="$(git rev-parse origin/main)"
           if [ "$CURRENT_SHA" != "$BASE_SHA" ]; then
             echo "FIELD_DOMAIN_PUBLICATION_SKIPPED reason=main_advanced observed=$BASE_SHA current=$CURRENT_SHA final=$FINAL_SHA publication=false"
-            requeue=(gh workflow run domain-refresh.yml --repo "$GITHUB_REPOSITORY" --ref main -f mode=quick)
-            if [ -n "$TARGET_PROVIDERS" ]; then requeue+=(-f target_providers="$TARGET_PROVIDERS"); fi
-            "${requeue[@]}" || true
-            echo "FIELD_DOMAIN_PUBLICATION_REQUEUED current=$CURRENT_SHA reason=main_advanced targets=${TARGET_PROVIDERS:-all}" >&2
+            echo "FIELD_DOMAIN_PUBLICATION_NOT_REQUEUED current=$CURRENT_SHA reason=main_advanced targets=${TARGET_PROVIDERS:-all} policy=manual-low-priority" >&2
             # No false SUCCESS when discovered, tested domains never reached main.
+            # The obsolete run stops here; Brain work must not create a self-
+            # sustaining domain-refresh loop merely by advancing main.
             exit 1
           fi
 
@@ -409,10 +408,7 @@ jobs:
           if ! git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:main; then
             git fetch origin main
             CURRENT_SHA="$(git rev-parse origin/main)"
-            requeue=(gh workflow run domain-refresh.yml --repo "$GITHUB_REPOSITORY" --ref main -f mode=quick)
-            if [ -n "$TARGET_PROVIDERS" ]; then requeue+=(-f target_providers="$TARGET_PROVIDERS"); fi
-            "${requeue[@]}" || true
-            echo "FIELD_DOMAIN_PUBLICATION_REQUEUED current=$CURRENT_SHA reason=push_race targets=${TARGET_PROVIDERS:-all}" >&2
+            echo "FIELD_DOMAIN_PUBLICATION_NOT_REQUEUED current=$CURRENT_SHA reason=push_race targets=${TARGET_PROVIDERS:-all} policy=manual-low-priority" >&2
             exit 1
           fi
           FINAL_SHA="$(git rev-parse HEAD)"
