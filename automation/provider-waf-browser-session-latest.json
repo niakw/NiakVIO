@@ -3,7 +3,7 @@
   "mode": "ordinary-headless-browser-session-no-challenge-solver",
   "browserAvailable": true,
   "browserExecutable": "google-chrome",
-  "targetCount": 77,
+  "targetCount": 78,
   "providerFilter": [],
   "attemptsPerTarget": 2,
   "clientProfileMatrixEnabled": true,
@@ -58,7 +58,7 @@
   "counts": {
     "browser_challenge_observed": 1,
     "browser_challenge_persisted": 25,
-    "browser_content_reached": 50,
+    "browser_content_reached": 51,
     "browser_inconclusive": 1
   },
   "rows": [
@@ -1650,6 +1650,196 @@
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
       "durationMs": 4538
+    },
+    {
+      "provider": "anikototv",
+      "lane": "anime",
+      "publicUrl": "https://anikototv.bz/search",
+      "host": "anikototv.bz",
+      "path": "/search",
+      "method": "GET",
+      "fetchStatus": 0,
+      "challenge": "metadata-search-seed",
+      "seedKind": "metadata-search",
+      "seedRoute": "/search?keyword={query}",
+      "outcome": "browser_content_reached",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_timeout"
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_timeout"
+        }
+      ],
+      "ordinarySessionReused": true,
+      "browserAttemptTimeoutSeconds": 13,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_timeout",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_timeout"
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_timeout"
+            }
+          ],
+          "ordinarySessionReused": true
+        },
+        {
+          "profile": "nuvio-tv-ua-browser",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          "outcome": "browser_timeout",
+          "attemptCount": 1,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_timeout"
+            }
+          ],
+          "ordinarySessionReused": false
+        }
+      ],
+      "directHttpProfile": {
+        "profile": "nuvio-tv-direct-http-approx",
+        "transportApproximation": "GitHub libcurl IPv4+NO_PROXY+redirects with audited NuvioTV request headers",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "requestHeaderNames": [],
+        "nativeContractApproximation": {
+          "ipv4First": true,
+          "proxyPolicy": "NO_PROXY",
+          "redirects": "enabled",
+          "httpStack": "libcurl-not-OkHttp"
+        },
+        "outcome": "direct_http_content_reached",
+        "attemptCount": 1,
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "direct_http_content_reached",
+            "status": 200,
+            "exitCode": 0
+          }
+        ],
+        "ordinarySessionReused": true
+      },
+      "okHttpJvmProfile": {
+        "profile": "nuvio-tv-okhttp-jvm",
+        "transportApproximation": "GitHub JVM OkHttp 4.12.0 audited Nuvio client transport profile",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "requestHeaderNames": [],
+        "nativeContractApproximation": {
+          "httpStack": "OkHttp 4.12.0",
+          "proxyPolicy": "Proxy.NO_PROXY",
+          "dnsPolicy": "IPv4FirstDns",
+          "redirects": "HTTP+SSL enabled",
+          "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS",
+          "safeRequestHeaderCount": 0
+        },
+        "outcome": "okhttp_jvm_content_reached",
+        "attemptCount": 1,
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "okhttp_jvm_content_reached",
+            "status": 200
+          }
+        ],
+        "exitCode": 0
+      },
+      "desktopOkHttpJvmProfile": {
+        "profile": "nuvio-desktop-okhttp-jvm",
+        "transportApproximation": "GitHub JVM OkHttp 4.12.0 audited Nuvio client transport profile",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "requestHeaderNames": [],
+        "nativeContractApproximation": {
+          "httpStack": "OkHttp 4.12.0",
+          "proxyPolicy": "JVM/system default",
+          "dnsPolicy": "IPv4FirstDns",
+          "redirects": "HTTP+SSL enabled",
+          "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS",
+          "safeRequestHeaderCount": 0
+        },
+        "outcome": "okhttp_jvm_content_reached",
+        "attemptCount": 1,
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "okhttp_jvm_content_reached",
+            "status": 200
+          }
+        ],
+        "exitCode": 0
+      },
+      "contentProfiles": [
+        "nuvio-tv-direct-http-approx",
+        "nuvio-tv-okhttp-jvm",
+        "nuvio-desktop-okhttp-jvm"
+      ],
+      "transportDiagnosis": "okhttp_content_browser_unproven",
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 40943,
+      "residentialExitNodeProfile": {
+        "profile": "tailscale-residential-exit",
+        "outcome": "browser_content_reached",
+        "attemptCount": 1,
+        "clientProfileMatrix": [
+          {
+            "profile": "github-default-browser",
+            "outcome": "browser_content_reached",
+            "attemptCount": 1
+          },
+          {
+            "profile": "nuvio-tv-ua-browser",
+            "outcome": "browser_content_reached",
+            "attemptCount": 1
+          }
+        ],
+        "directHttpProfile": {
+          "profile": "nuvio-tv-direct-http-approx",
+          "outcome": "direct_http_content_reached",
+          "attemptCount": 1
+        },
+        "okHttpJvmProfile": {
+          "profile": "nuvio-tv-okhttp-jvm",
+          "outcome": "okhttp_jvm_content_reached",
+          "attemptCount": 1
+        },
+        "desktopOkHttpJvmProfile": {
+          "profile": "nuvio-desktop-okhttp-jvm",
+          "outcome": "okhttp_jvm_content_reached",
+          "attemptCount": 1
+        },
+        "contentProfiles": [
+          "github-default-browser",
+          "nuvio-tv-ua-browser",
+          "nuvio-tv-direct-http-approx",
+          "nuvio-tv-okhttp-jvm",
+          "nuvio-desktop-okhttp-jvm"
+        ]
+      },
+      "transportReceipt": {
+        "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+        "providerBundleSha256": "08e339d4ac0cf330973177bab694bca4bab57a3971d5c2a30ff5e6219ab277de",
+        "runId": "46171828719",
+        "proofAuthority": false,
+        "publicationAuthority": false
+      },
+      "residentialReceipt": {
+        "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+        "providerBundleSha256": "08e339d4ac0cf330973177bab694bca4bab57a3971d5c2a30ff5e6219ab277de",
+        "runId": "46171828719",
+        "proofAuthority": false,
+        "publicationAuthority": false
+      }
     },
     {
       "provider": "animejlprovider",
@@ -11495,7 +11685,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 3,
+    "matchedProviderLanes": 1,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -11507,11 +11697,12 @@
   "residentialProviderReplay": {
     "available": true,
     "profile": "tailscale-residential-exit",
-    "providerCount": 48,
+    "providerCount": 49,
     "providers": [
       "1jour1film0626",
       "67movies",
       "allwish",
+      "anikototv",
       "anime-ultime",
       "animeonsen",
       "animesalt",
@@ -11786,6 +11977,35 @@
         "verified": 0,
         "contradictions": 0,
         "identitySafe": true
+      },
+      {
+        "provider": "anikototv",
+        "providerArtifactSha256": "08e339d4ac0cf330973177bab694bca4bab57a3971d5c2a30ff5e6219ab277de",
+        "lane": "anime",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_network_http_error"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
+          "providerBundleSha256": "08e339d4ac0cf330973177bab694bca4bab57a3971d5c2a30ff5e6219ab277de",
+          "runId": "46171828719",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
       },
       {
         "provider": "anime-ultime",
@@ -13829,6 +14049,7 @@
         "67movies",
         "allwish",
         "aniflix-uno",
+        "anikototv",
         "animejlprovider",
         "animeonsen",
         "animesalt",
@@ -13872,26 +14093,26 @@
         "youtitou"
       ],
       "replayedProviders": [
-        "moiflix"
+        "anikototv"
       ],
       "rawProviders": [],
       "playableProviders": [],
       "verifiedProviders": [],
       "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
-      "runId": "46171826619",
+      "runId": "46171828719",
       "proofAuthority": false,
       "publicationAuthority": false
     },
     "providerBundleDigestAuthority": "executed-global-vf-published-bytes"
   },
   "lastRefreshProviderFilter": [
-    "watch-cartoon-online"
+    "anikototv"
   ],
   "residentialExitNodeLastAttempt": {
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 3,
+    "matchedProviderLanes": 1,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -13902,24 +14123,25 @@
   },
   "freshRunReceipt": {
     "sourceNiakvioSha": "24009cb89f7090231ece1e50881ec5e9b0a7b049",
-    "runId": "46171826619",
+    "runId": "46171828719",
     "providerCount": 1,
     "proofAuthority": false,
     "publicationAuthority": false
   },
   "currentRefreshProviderCount": 1,
-  "currentRefreshRowCount": 3,
+  "currentRefreshRowCount": 1,
   "currentRefreshCounts": {
-    "browser_challenge_persisted": 3
+    "browser_content_reached": 1
   },
-  "historicalRetainedRowCount": 74,
+  "historicalRetainedRowCount": 77,
   "historicalRetainedCounts": {
     "browser_challenge_observed": 1,
-    "browser_challenge_persisted": 22,
+    "browser_challenge_persisted": 25,
     "browser_content_reached": 50,
     "browser_inconclusive": 1
   },
   "staleCurrentRowsSuppressedProviders": [
-    "moiflix"
+    "moiflix",
+    "watch-cartoon-online"
   ]
 }
