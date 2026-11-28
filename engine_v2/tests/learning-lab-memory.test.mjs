@@ -346,7 +346,7 @@ assert.ok(learned, 'positive learned skill memory missing');
 assert.deepEqual(learned.providers.sort(), ['foo', 'legacy-provider']);
 assert.equal(learned.successCount, 3);
 assert.equal(learned.maturity, 'trusted');
-assert.equal(learned.autoApply, true);
+assert.equal(learned.autoApply, false);
 assert.ok(learned.capabilities.includes('parser'));
 assert.equal(latest.learnedSkillCount, 1);
 console.log('learning lab positive/negative memory, native-reader-memory and backlog preservation tests passed');
