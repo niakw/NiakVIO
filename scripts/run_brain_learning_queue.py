@@ -1107,6 +1107,96 @@ def merge_phase_learning_state(
     return output
 
 
+def merge_phase_family_skill_priors(
+    state: dict[str, Any],
+    entries: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Feed a validated family success to later siblings in the same phase.
+
+    This is hypothesis ordering only. It grants neither publication nor
+    provider-mutation authority and is consumed through the same ordinary
+    current-byte planner/Lab gates as durable learned skills.
+    """
+    output = copy.deepcopy(state) if isinstance(state, dict) else {}
+    output["publicationAllowed"] = False
+    output["productionWritesAllowed"] = False
+    skills = output.get("learnedSkills")
+    if not isinstance(skills, dict):
+        skills = {}
+        output["learnedSkills"] = skills
+
+    for row in entries:
+        if not isinstance(row, dict):
+            continue
+        failure = str(row.get("failureClass") or "").strip()
+        profile = str(row.get("profile") or "").strip()
+        strategy = str(row.get("capabilityStrategy") or "").strip().casefold()
+        provider = norm(row.get("providerId"))
+        successes = max(0, int(row.get("successes") or 0))
+        failures = max(0, int(row.get("failures") or 0))
+        if (
+            not failure or not profile or not strategy or not provider
+            or strategy in {"unknown", "none", "not-applicable"}
+        ):
+            continue
+        key = f"{failure}:{profile}:family:{strategy}"
+        current = skills.get(key)
+        if not isinstance(current, dict):
+            if successes <= 0:
+                continue
+            current = {
+                "id": key,
+                "failureClass": failure,
+                "profile": profile,
+                "actions": [
+                    f"replay validated {profile} family hypothesis under current-byte gates"
+                ],
+                "capabilities": [],
+                "providers": [],
+                "signatures": [],
+                "capabilityStrategies": [strategy],
+                "observedPipelineStages": [],
+                "successCount": 0,
+                "failureCount": 0,
+                "validated": True,
+                "confidence": 0.0,
+                "maturity": "experimental",
+                "autoApply": False,
+                "source": "phase-family-prior",
+            }
+            skills[key] = current
+
+        providers = {
+            norm(value) for value in current.get("providers") or [] if norm(value)
+        }
+        providers.add(provider)
+        current["providers"] = sorted(providers)[:96]
+        signature = str(row.get("signature") or "").strip()
+        if signature:
+            current["signatures"] = sorted({
+                *[str(value) for value in current.get("signatures") or [] if str(value)],
+                signature,
+            })[:96]
+        stage = str(row.get("observedPipelineStage") or "").strip().casefold()
+        if stage:
+            current["observedPipelineStages"] = sorted({
+                *[str(value).casefold() for value in current.get("observedPipelineStages") or [] if str(value)],
+                stage,
+            })[:24]
+        current["capabilityStrategies"] = [strategy]
+        current["successCount"] = max(0, int(current.get("successCount") or 0)) + successes
+        current["failureCount"] = max(0, int(current.get("failureCount") or 0)) + failures
+        total = int(current["successCount"]) + int(current["failureCount"])
+        current["confidence"] = round(int(current["successCount"]) / max(1, total), 4)
+        # Phase-local maturity is intentionally conservative; durable Learning
+        # recomputes policy maturity again before cross-run transfer.
+        current["maturity"] = (
+            "candidate" if int(current["successCount"]) >= 2 else "experimental"
+        )
+        current["autoApply"] = False
+    return output
+
+
 def merge_wave_experiment_entries(
     state: dict[str, Any],
     provider_entries: list[list[dict[str, Any]]],
@@ -2562,10 +2652,11 @@ def main() -> int:
         family_frontier, family_deferred = causal_family_frontier(
             scoped_order, batch_plan, info_by_id
         )
-        # Execute one independently chosen oracle per current repair family.
-        # Siblings remain pending for canonical Repair/next Learning and the
-        # portfolio backlog is untouched by this repair-focused phase.
-        order = family_frontier
+        # Execute the strongest oracle from every family first, then its
+        # siblings in the same bounded phase. Each completed experiment updates
+        # phase memory before the next provider, so a proven family hypothesis
+        # can accelerate siblings without skipping their own current-byte gates.
+        order = unique([*family_frontier, *family_deferred])
 
     queue["explicitLearningCohort"] = explicit_cohort
     queue["explicitLearningCohortCount"] = len(explicit_cohort)
@@ -2600,11 +2691,12 @@ def main() -> int:
     queue["fastRepairHandoffParallelExecutionEnabled"] = False
     queue["fastRepairHandoffFamilyFrontierProviders"] = family_frontier
     queue["fastRepairHandoffFamilyFrontierCount"] = len(family_frontier)
-    queue["fastRepairHandoffDeferredFamilySiblings"] = family_deferred
-    queue["fastRepairHandoffDeferredFamilySiblingCount"] = len(family_deferred)
+    queue["fastRepairHandoffDeferredFamilySiblings"] = []
+    queue["fastRepairHandoffDeferredFamilySiblingCount"] = 0
+    queue["fastRepairHandoffScheduledFamilySiblings"] = family_deferred
+    queue["fastRepairHandoffScheduledFamilySiblingCount"] = len(family_deferred)
     queue["fastRepairHandoffFamilyFrontierPolicy"] = (
-        "explicit-cohort-one-representative-per-causal-family-siblings-pending"
-        if explicit_cohort else "one-representative-per-causal-family-then-return-to-repair"
+        "strongest-representatives-first-then-siblings-with-phase-memory"
     )
     queue["fastRepairHandoffMaxAttemptsPerProviderThisPhase"] = 1 if fair_handoff else 0
     queue["fastRepairHandoffMaxEvolvedAttemptsPerProviderThisPhase"] = 3 if fair_handoff else 0
@@ -3077,6 +3169,10 @@ def main() -> int:
                                 phase_learning_state,
                                 no_mutation_entries,
                             )
+                            phase_learning_state = merge_phase_family_skill_priors(
+                                phase_learning_state,
+                                no_mutation_entries,
+                            )
                             write_json(phase_learning_state_path, phase_learning_state)
                     print(
                         "FIELD_BRAIN_LAB_SKIPPED "
@@ -3138,6 +3234,10 @@ def main() -> int:
                                 phase_learning_state,
                                 incomplete_entries,
                             )
+                            phase_learning_state = merge_phase_family_skill_priors(
+                                phase_learning_state,
+                                incomplete_entries,
+                            )
                             write_json(phase_learning_state_path, phase_learning_state)
                     print(
                         "FIELD_BRAIN_HANDOFF_SLICE_EXHAUSTED "
@@ -3169,6 +3269,10 @@ def main() -> int:
                     phase_experiment_ledger.extend(attempt_entries)
                     if attempt_entries:
                         phase_learning_state = merge_phase_learning_state(
+                            phase_learning_state,
+                            attempt_entries,
+                        )
+                        phase_learning_state = merge_phase_family_skill_priors(
                             phase_learning_state,
                             attempt_entries,
                         )
