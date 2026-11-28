@@ -147,14 +147,16 @@ def lane_for(group:dict[str,Any], *, authority_qualified:bool=False)->dict[str,A
     if scope=="transport":
         if authority_qualified:
             return {
-                "owner":"BRAIN_TRANSPORT",
-                "lane":"BRAIN_LEARNING",
-                "workflow":"brain-learning-lab.yml",
+                "owner":"CORE_CLIENT_TRANSPORT",
+                "lane":"CORE_CLIENT_LEARNING",
+                "workflow":"provider-waf-browser-session.yml",
                 "dispatchAllowed":True,
                 "mutatesProduction":False,
-                "fallbackLane":"WAF_TRANSPORT",
-                "strategyBlueprint":"qualified_authority_transport_learning_v1",
-                "decision":"address/backend authority is already qualified; learn request/runtime transport recovery before any Domain mutation",
+                "fallbackLane":"BRAIN_LEARNING",
+                "strategyBlueprint":"qualified_authority_transport_differential_v2",
+                "decision":"address/backend authority is already qualified; reproduce browser/direct/TV-OkHttp/Desktop-OkHttp/residential transport before any provider mutation",
+                "applicationValidated":False,
+                "applicationBlocker":"transport evidence may reclassify ownership; provider/Core publication still requires ordinary current-byte client validation",
             }
         return {
             "owner":"DOMAIN_TRANSPORT",
@@ -265,7 +267,10 @@ def build(batch:dict[str,Any],status:dict[str,Any],dynamic_repair:set[str] | Non
             if row["lane"]=="DOMAIN_REFRESH":
                 unexpected=[p for p in partition_providers if p not in current_authority]
             elif row["lane"]=="CORE_CLIENT_LEARNING":
-                unexpected=[p for p in partition_providers if p not in current_environment]
+                unexpected=[
+                    p for p in partition_providers
+                    if p not in current_environment and p not in current_repair
+                ]
             elif row["repairScope"]=="variant-coverage":
                 unexpected=[p for p in partition_providers if p not in current_dynamic]
             elif row["lane"]=="BRAIN_LEARNING":
