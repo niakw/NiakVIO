@@ -1196,7 +1196,15 @@ def validate_source_family_implementation(
             if any(alias.name not in allowed_imports for alias in node.names):
                 raise ValueError("source-family Lego may only import pure parser primitives")
         elif isinstance(node, ast.ImportFrom):
-            if node.module not in allowed_imports:
+            if node.module == "html_script_blocks":
+                # The matrix compiler owns this exact bounded parser primitive.
+                # Do not widen this into arbitrary internal-module imports.
+                if any(
+                    alias.name != "extract_script_blocks" or alias.asname
+                    for alias in node.names
+                ):
+                    raise ValueError("source-family Lego may only import extract_script_blocks from html_script_blocks")
+            elif node.module not in allowed_imports:
                 raise ValueError("source-family Lego may only import pure parser primitives")
         elif isinstance(node, ast.Call):
             fn = node.func
