@@ -8,6 +8,7 @@ retest = (ROOT / ".github/workflows/provider-retest.yml").read_text(encoding="ut
 fast = (ROOT / ".github/workflows/provider-fast-repair.yml").read_text(encoding="utf-8")
 remat = (ROOT / ".github/workflows/provider-remat-test.yml").read_text(encoding="utf-8")
 learn = (ROOT / ".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
+waf = (ROOT / ".github/workflows/provider-waf-browser-session.yml").read_text(encoding="utf-8")
 census = (ROOT / ".github/workflows/provider-census-sharded.yml").read_text(encoding="utf-8")
 workflow_gate = (ROOT / ".github/workflows/github-actions-gate.yml").read_text(encoding="utf-8")
 phase = json.loads((ROOT / "automation/execution-phase.json").read_text(encoding="utf-8"))
@@ -97,7 +98,14 @@ assert '      - "automation/execution-phase.json"' in workflow_gate
 harness_start = autopilot.index('if [ -n "$HARNESS" ]; then')
 harness_block = autopilot[harness_start:autopilot.index("      - uses: actions/upload-artifact@", harness_start)]
 assert "provider-waf-browser-session.yml" in harness_block
+assert "range(0,len(family),12)" in harness_block
+assert "FIELD_PROVIDER_AUTOPILOT_TRANSPORT_COHORT" in harness_block
+assert "owner=causal-client-transport" in harness_block
 assert "architecture_learning=false" in harness_block
+assert "provider-waf-transport-target-{0}" in waf
+assert "github.run_id" in waf
+assert "github.event_name != 'workflow_dispatch'" in waf
+assert 'targeted WAF cohort is capped at 12' in waf
 
 learning_start = autopilot.index('if [ -n "$LEARNING" ]; then', autopilot.index("# Learning debt"))
 learning_block = autopilot[learning_start:harness_start]
