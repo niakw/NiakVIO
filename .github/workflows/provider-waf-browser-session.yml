@@ -389,7 +389,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cp automation/provider-waf-browser-session-latest.json /tmp/provider-waf-browser-session-latest.json
+          cp automation/provider-waf-browser-session-latest.json /tmp/provider-waf-cohort-evidence.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
@@ -417,7 +417,16 @@ jobs:
               return 0
             fi
 
-            cp /tmp/provider-waf-browser-session-latest.json automation/provider-waf-browser-session-latest.json
+            # A targeted cohort may finish after several siblings already
+            # persisted. Merge its source-pinned evidence into the freshly
+            # fetched durable ledger before projecting census state. Never let
+            # completion order become evidence authority.
+            cp automation/provider-waf-browser-session-latest.json /tmp/provider-waf-durable-latest.json
+            python scripts/merge_waf_latest_evidence.py \
+              --previous /tmp/provider-waf-durable-latest.json \
+              --current /tmp/provider-waf-cohort-evidence.json \
+              --output /tmp/provider-waf-rebased-merged.json
+            mv /tmp/provider-waf-rebased-merged.json automation/provider-waf-browser-session-latest.json
             python scripts/merge_waf_census_transport.py \
               --status automation/provider-census-status.json \
               --waf automation/provider-waf-browser-session-latest.json \
