@@ -24,6 +24,13 @@ from pathlib import Path
 from typing import Any, Callable
 
 try:
+    from html_script_blocks import extract_script_elements
+except ImportError:
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from html_script_blocks import extract_script_elements
+
+try:
     from .catalogue_inline_episode_source import classify
 except ImportError:
     # importlib.spec_from_file_location (offline tests) does not add this
@@ -766,7 +773,7 @@ def _resolved_target_player_structure(body: str, page_url: str = "") -> dict[str
     iframe_count = min(8, len(re.findall(r"<iframe\b", lowered)))
     video_count = min(8, len(re.findall(r"<video\b", lowered)))
     source_count = min(16, len(re.findall(r"<source\b", lowered)))
-    script_tags = re.findall(r"<script\b([^>]*)>([\s\S]*?)</script\s*>", source, re.I)
+    script_tags = extract_script_elements(source, limit=64)
     external_script_count = min(
         16, sum(1 for attrs, _body in script_tags if re.search(r"\bsrc\s*=", attrs, re.I))
     )
