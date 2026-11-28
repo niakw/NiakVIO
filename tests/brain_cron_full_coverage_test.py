@@ -16,6 +16,7 @@ GLOBAL_FACTS = ROOT / "scripts/provider_patches/global_stream_facts_v1.py"
 READER_REPAIR = ROOT / "scripts/build_native_reader_brain_repair.py"
 RUN_SANDBOX = ROOT / "scripts/run_brain_learning_sandbox.py"
 LEARNING_QUEUE = ROOT / "scripts/run_brain_learning_queue.py"
+MEMORY_PUBLISHER = ROOT / "scripts/publish_brain_learning_memory.sh"
 QUICK_REPAIR = ROOT / "scripts/run_adaptive_quick_repair.py"
 LEARNING_LAB = ROOT / "engine_v2/scripts/learning-lab.mjs"
 OVERRIDES = ROOT / "provider-overrides.json"
@@ -71,6 +72,7 @@ def main() -> int:
     facts_source = GLOBAL_FACTS.read_text(encoding="utf-8")
     sandbox_source = RUN_SANDBOX.read_text(encoding="utf-8")
     queue_source = LEARNING_QUEUE.read_text(encoding="utf-8")
+    memory_publisher = MEMORY_PUBLISHER.read_text(encoding="utf-8")
     quick_source = QUICK_REPAIR.read_text(encoding="utf-8")
     learning_source = LEARNING_LAB.read_text(encoding="utf-8")
     overrides = json.loads(OVERRIDES.read_text(encoding="utf-8"))
@@ -187,25 +189,28 @@ def main() -> int:
     assert "inputs.architecture_force == true" in concurrency, "Architecture FORCE must retain its dedicated lane"
     assert "inputs.architecture_force != true" not in concurrency, "targeted dispatch must not cancel in-flight Learning"
     assert "cancel-in-progress: ${{ github.event_name == 'push' }}" in concurrency, "only stale push-triggered Learning may be cancelled"
-    assert "group: niakvio-brain-learning-memory-publish" in workflow
+    assert "group: niakvio-brain-learning-memory-publish" not in workflow, "GitHub concurrency coalesces pending family memory writers"
     assert "group: niakvio-brain-repair-proposal-publish" in workflow
-    assert "group: niakvio-brain-architecture-proposal-publish" in workflow
+    assert "niakvio-brain-architecture-proposal-publish" in workflow
+    assert "niakvio-brain-architecture-validate-{0}" in workflow
     assert "- name: Assert proposal source SHA" in workflow
     assert "FIELD_BRAIN_PROPOSAL_SHA" in workflow
     assert "- name: Assert architecture proposal source SHA" in workflow
     assert "FIELD_BRAIN_ARCH_PROPOSAL_SHA" in workflow
     memory_publish = workflow.split("  publish-learning:", 1)[1].split("  publish-repair-proposal:", 1)[0]
-    assert 'TMP_BRANCH="brain-learning-memory-$GITHUB_RUN_ID"' in memory_publish
-    assert 'git switch --orphan "$TMP_BRANCH"' in memory_publish
-    assert 'git switch -C "$BRANCH" "refs/remotes/origin/$BRANCH"' not in memory_publish
-    assert 'git switch -C "$BRANCH" "$GITHUB_SHA"' not in memory_publish
-    assert '--force-with-lease="$BRANCH:$expected_sha"' in memory_publish
-    assert 'FIELD_BRAIN_MEMORY_PUBLISH mode=orphan-memory-only files=3' in memory_publish
-    assert "engine_v2/learning/llm-guidance.json" in memory_publish
+    assert "bash scripts/publish_brain_learning_memory.sh" in memory_publish
+    assert "concurrency:" not in memory_publish, "memory writers must use optimistic lease retries, not GitHub pending-run coalescing"
+    assert 'tmp_branch="brain-learning-memory-$GITHUB_RUN_ID-$attempt"' in memory_publisher
+    assert 'git switch --orphan "$tmp_branch"' in memory_publisher
+    assert '--force-with-lease="$BRANCH:$expected_sha"' in memory_publisher
+    assert 'FIELD_BRAIN_MEMORY_PUBLISH mode=orphan-memory-only files=3' in memory_publisher
+    assert "engine_v2/learning/llm-guidance.json" in memory_publisher
     assert "brain-sandbox/brain-llm/guidance.json" in workflow
-    assert "fresh orphan tree" in memory_publish
-    assert "FIELD_BRAIN_MEMORY_PUBLISH skipped=stale" in memory_publish
-    assert "candidate_ms=" in memory_publish and "existing_ms=" in memory_publish
+    assert "FIELD_BRAIN_MEMORY_PUBLISH skipped=stale" in memory_publisher
+    assert "candidate_ms=" in memory_publisher and "existing_ms=" in memory_publisher
+    assert 'for attempt in $(seq 1 "$MAX_ATTEMPTS")' in memory_publisher
+    assert "retry=true" in memory_publisher
+    assert "merge_brain_learning_latest_memory.py" in memory_publisher
     assert "FIELD_BRAIN_PR skipped=stale-source" in workflow
     assert "FIELD_BRAIN_ARCH_PR skipped=stale-source" in workflow
     assert 'git merge-base --is-ancestor "$GITHUB_SHA" "refs/remotes/origin/$BRANCH"' in workflow
