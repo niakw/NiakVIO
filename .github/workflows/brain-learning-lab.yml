@@ -1615,7 +1615,7 @@ jobs:
     if: needs.experiment.result == 'success'
     needs: experiment
     concurrency:
-      group: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true') || needs.experiment.outputs.architecture_force == 'true' && 'niakvio-brain-architecture-proposal-publish' || format('niakvio-brain-architecture-validate-{0}', github.run_id) }}
+      group: ${{ ((github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true') || needs.experiment.outputs.architecture_force == 'true') && 'niakvio-brain-architecture-proposal-publish' || format('niakvio-brain-architecture-validate-{0}', github.run_id) }}
       cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 10
