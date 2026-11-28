@@ -122,10 +122,15 @@ explicit_green_targets = mod.extract_status_targets(
     [],
     explicit_providers={"healthy", "authority-blocked"},
 )
-assert len(explicit_green_targets) == 2, explicit_green_targets
-assert {row["provider"] for row in explicit_green_targets} == {"healthy"}, explicit_green_targets
-assert {row["lane"] for row in explicit_green_targets} == {"movie", "tv"}, explicit_green_targets
-assert all(row["seedKind"] == "metadata-search" for row in explicit_green_targets), explicit_green_targets
+assert len(explicit_green_targets) == 3, explicit_green_targets
+assert {row["provider"] for row in explicit_green_targets} == {"healthy", "authority-blocked"}, explicit_green_targets
+assert {(row["provider"], row["lane"]) for row in explicit_green_targets} == {
+    ("healthy", "movie"), ("healthy", "tv"), ("authority-blocked", "movie"),
+}, explicit_green_targets
+assert all(
+    row["seedKind"] == ("metadata-search" if row["provider"] == "healthy" else "metadata-homepage")
+    for row in explicit_green_targets
+), explicit_green_targets
 
 search_targets = mod.extract_status_targets(
     {
