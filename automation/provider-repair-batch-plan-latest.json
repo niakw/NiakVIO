@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "46129675585",
+  "sourceRunId": "46129669597",
   "sourceTriggerSha": "ed7b2e8e3675a39f7ce004d1fd2c55b74e613552",
   "unresolvedProviderCount": 66,
   "dynamicVariantProviderCount": 6,
@@ -113,7 +113,7 @@
     "zone-telechargement"
   ],
   "dynamicVariantFallbackUsed": true,
-  "groupCount": 26,
+  "groupCount": 24,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -226,9 +226,8 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 7,
+      "providerCount": 6,
       "providers": [
-        "boredflix",
         "cinemabz",
         "frembed",
         "latestmovies",
@@ -279,6 +278,40 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
+      "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_zero_result|depth:chain",
+      "repairScope": "terminal-extraction",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "mixed_embed_resolver",
+      "causalIssueSignature": "network_zero_result",
+      "evidenceDepthSignature": "chain",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 3,
+      "providers": [
+        "corsflix",
+        "nakios",
+        "primewire"
+      ],
+      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [
+        "nakios"
+      ],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
       "groupId": "transport|html_scraper|runtime:html_scraper|issue:network_zero_result|depth:chain",
       "repairScope": "transport",
       "runtimeFamilies": [
@@ -299,8 +332,40 @@
       "providerCount": 3,
       "providers": [
         "fsharetv",
-        "reanime-to",
+        "rarefilmm",
         "vidlink"
+      ],
+      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "transport|html_scraper|runtime:html_scraper|issue:timeout|depth:chain",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "html_scraper"
+      ],
+      "runtimeFamilySignature": "html_scraper",
+      "causalIssueSignature": "timeout",
+      "evidenceDepthSignature": "chain",
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "timeout"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 3,
+      "providers": [
+        "anidb",
+        "flixhq",
+        "reanime-to"
       ],
       "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
       "selectionAuthorities": [
@@ -346,29 +411,30 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "terminal-extraction|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_zero_result|depth:chain",
-      "repairScope": "terminal-extraction",
+      "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:timeout|depth:chain",
+      "repairScope": "transport",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
       "runtimeFamilySignature": "mixed_embed_resolver",
-      "causalIssueSignature": "network_zero_result",
+      "causalIssueSignature": "timeout",
       "evidenceDepthSignature": "chain",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "chain"
       ],
       "dominantIssues": [
-        "network_zero_result"
+        "timeout"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 2,
+      "providerCount": 3,
       "providers": [
-        "corsflix",
-        "primewire"
+        "boredflix",
+        "hianime",
+        "vuflix"
       ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -429,68 +495,6 @@
       "providers": [
         "documentary-area",
         "watchott"
-      ],
-      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "transport|html_scraper|runtime:html_scraper|issue:timeout|depth:chain",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "html_scraper"
-      ],
-      "runtimeFamilySignature": "html_scraper",
-      "causalIssueSignature": "timeout",
-      "evidenceDepthSignature": "chain",
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "timeout"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 2,
-      "providers": [
-        "anidb",
-        "flixhq"
-      ],
-      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_http_error|depth:chain",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
-      "causalIssueSignature": "network_http_error",
-      "evidenceDepthSignature": "chain",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_http_error"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 2,
-      "providers": [
-        "movish",
-        "showbox"
       ],
       "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
       "selectionAuthorities": [
@@ -563,27 +567,27 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:timeout|depth:chain",
+      "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:waf_challenge|depth:chain",
       "repairScope": "transport",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
       "runtimeFamilySignature": "mixed_embed_resolver",
-      "causalIssueSignature": "timeout",
+      "causalIssueSignature": "waf_challenge",
       "evidenceDepthSignature": "chain",
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "chain"
       ],
       "dominantIssues": [
-        "timeout"
+        "waf_challenge"
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
       "providerCount": 2,
       "providers": [
-        "hianime",
-        "vuflix"
+        "film-a-revoir",
+        "movish"
       ],
       "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
       "selectionAuthorities": [
@@ -620,38 +624,6 @@
         "provider-census-status.json:brainCheckRequired"
       ],
       "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_zero_result|depth:chain",
-      "repairScope": "learning",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
-      "causalIssueSignature": "network_zero_result",
-      "evidenceDepthSignature": "chain",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_zero_result"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "nakios"
-      ],
-      "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [
-        "nakios"
-      ],
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -710,36 +682,6 @@
         "anime-sama"
       ],
       "action": "queue by signature for Brain learning; provider-local repair only after shared profiles fail",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "transport|html_scraper|runtime:html_scraper|issue:network_http_error|depth:chain",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "html_scraper"
-      ],
-      "runtimeFamilySignature": "html_scraper",
-      "causalIssueSignature": "network_http_error",
-      "evidenceDepthSignature": "chain",
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_http_error"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "rarefilmm"
-      ],
-      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -810,6 +752,36 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
+      "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_http_error|depth:chain",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "mixed_embed_resolver",
+      "causalIssueSignature": "network_http_error",
+      "evidenceDepthSignature": "chain",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_http_error"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "showbox"
+      ],
+      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
       "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:timeout|depth:none",
       "repairScope": "transport",
       "runtimeFamilies": [
@@ -830,38 +802,6 @@
       "providerCount": 1,
       "providers": [
         "anisama"
-      ],
-      "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "transport|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:waf_challenge|depth:lookup",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "mixed_embed_resolver",
-      "causalIssueSignature": "waf_challenge",
-      "evidenceDepthSignature": "lookup",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "residential-exit-native-reachable"
-      ],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "film-a-revoir"
       ],
       "action": "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
       "selectionAuthorities": [
