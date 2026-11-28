@@ -139,6 +139,8 @@ if codeql.count('- provider-disabled/**') < 2:
     errors.append('codeql.yml: provider-disabled/** must be excluded from maintained Python and JS Core analysis')
 if 'startswith("provider-disabled/")' not in codeql:
     errors.append('codeql.yml: alert cleanup must be scoped to provider-disabled/** only')
+if 'CodeQL · JS Active Providers' not in codeql or 'scripts/prune_codeql_generated_providers.py --root .' not in codeql:
+    errors.append('codeql.yml: exact production-manifest provider JS must be scanned after workspace-only retention pruning')
 # A stale legacy analysis configuration must not be recreated just to retire
 # an old alert. The dedicated cleanup workflow deletes only that obsolete
 # configuration after a clean exact-SHA maintained JS Core analysis.
@@ -182,6 +184,15 @@ source_pos = security_audit.find(source_marker)
 source_tail = security_audit[source_pos:source_pos + 900] if source_pos >= 0 else ''
 if '- provider-disabled/**' not in source_tail or '- provider-old/**' not in source_tail:
     errors.append('security-audit-now.yml: one-shot source CodeQL must exclude disabled/archive provider snapshots')
+if "startsWith(matrix.check_name, 'CodeQL · javascript-typescript · providers-')" not in security_audit or \
+        'scripts/prune_codeql_generated_providers.py --root .' not in security_audit:
+    errors.append('security-audit-now.yml: provider shards must scan only exact production-manifest JS while retaining history in git')
+
+catalogue_adapter = (WORKFLOWS / 'brain-catalogue-adapter-integration.yml').read_text(encoding='utf-8')
+if 'submodules: true' not in catalogue_adapter:
+    errors.append('brain-catalogue-adapter-integration.yml: trusted exact Brain gitlink checkout is required')
+if 'repository: niakw/NiakVIO-Brain-LLM' in catalogue_adapter or 'steps.pinned.outputs.sha' in catalogue_adapter:
+    errors.append('brain-catalogue-adapter-integration.yml: dynamic external Brain checkout is forbidden')
 
 
 brain_learning = (WORKFLOWS / 'brain-learning-lab.yml').read_text(encoding='utf-8')
