@@ -9483,7 +9483,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "NO PROOF",
+      "status": "PROVIDER NETWORK BLOCKED",
       "strategy": "mixed_embed_resolver"
     },
     "stigstream": {
@@ -10965,7 +10965,7 @@
     "vuflix": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=none",
+        "anime=chain_reached",
         "movie=none",
         "tv=chain_reached"
       ],
@@ -11169,7 +11169,7 @@
       "domainMemory": true,
       "evidenceDepth": [
         "movie=lookup_only",
-        "tv=lookup_only"
+        "tv=chain_reached"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -12006,8 +12006,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "46125826622",
-  "sourceSha": "e0dc46cf4f7843cd1b2f7d516a3dddb80d747a77",
+  "sourceRunId": "46129658051-post-repair-candidate",
+  "sourceSha": "ed7b2e8e3675a39f7ce004d1fd2c55b74e613552",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -12051,12 +12051,12 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "search",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "detail",
           "supportRatio": 1.0
         }
       ]
@@ -12071,7 +12071,7 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "search",
           "supportRatio": 1.0
         },
         {
@@ -12086,7 +12086,7 @@
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "detail",
           "supportRatio": 1.0
         }
       ]
