@@ -703,13 +703,29 @@ def learned_skills() -> dict[str, Any]:
             if str(value or "").strip()
         })
         current["providers"] = providers
+        for field in ("signatures", "capabilityStrategies", "observedPipelineStages"):
+            values = sorted({
+                str(value or "").strip().casefold() if field != "signatures" else str(value or "").strip()
+                for value in [*(current.get(field) or []), *(learned.get(field) or [])]
+                if str(value or "").strip()
+            })
+            current[field] = values[:96 if field == "signatures" else 24]
         current["validated"] = current.get("validated") is True or learned.get("validated") is True
         current["successCount"] = max(int(current.get("successCount") or 0), int(learned.get("successCount") or 0))
         current["failureCount"] = max(int(current.get("failureCount") or 0), int(learned.get("failureCount") or 0))
-        current["confidence"] = max(float(current.get("confidence") or 0.0), float(learned.get("confidence") or 0.0))
-        maturity_rank = {"experimental": 0, "candidate": 1, "trusted": 2}
-        if maturity_rank.get(str(learned.get("maturity") or "experimental"), 0) > maturity_rank.get(str(current.get("maturity") or "experimental"), 0):
-            current["maturity"] = learned.get("maturity")
+        total = int(current["successCount"]) + int(current["failureCount"])
+        current["confidence"] = round(int(current["successCount"]) / max(1, total), 4)
+        maturity_policy = policy().get("skillMaturity") or {}
+        trusted = (
+            int(current["successCount"]) >= int(maturity_policy.get("trustedSuccesses") or 3)
+            and len(providers) >= int(maturity_policy.get("trustedProviders") or 2)
+            and float(current["confidence"]) >= float(maturity_policy.get("minimumConfidence") or 0.8)
+        )
+        current["maturity"] = (
+            "trusted" if trusted
+            else "candidate" if int(current["successCount"]) >= int(maturity_policy.get("candidateSuccesses") or 2)
+            else "experimental"
+        )
         current["autoApply"] = False
     # A globally rejected Repair publication must not erase a strictly validated
     # provider-local success. Positive-program memory is sanitized DATA/prior only;
@@ -770,11 +786,29 @@ def learned_skills() -> dict[str, Any]:
         }
         if positive.get("source"):
             current["positiveProgramSource"] = str(positive.get("source"))
+
+    capabilities = config.get("provider_capabilities") if isinstance(config.get("provider_capabilities"), dict) else {}
+    for skill in merged.values():
+        if not isinstance(skill, dict) or skill.get("capabilityStrategies"):
+            continue
+        providers = [
+            str(value or "").strip().casefold().replace("_", "-")
+            for value in skill.get("providers") or []
+            if str(value or "").strip()
+        ]
+        strategies = {
+            str((capabilities.get(provider) or {}).get("strategy") or "").strip().casefold()
+            for provider in providers
+            if isinstance(capabilities.get(provider), dict)
+        }
+        strategies.discard("")
+        if len(strategies) == 1:
+            skill["capabilityStrategies"] = sorted(strategies)
     return merged
 
 
 def planner_learned_skills(mode: str) -> dict[str, Any]:
-    """Expose all skills to Learning; trusted transfer + strict same-provider positives to Repair."""
+    """Expose Learning memory safely: trusted transfer plus bounded family priors."""
     skills = learned_skills()
     if str(mode).casefold() == "learning":
         return skills
@@ -785,6 +819,9 @@ def planner_learned_skills(mode: str) -> dict[str, Any]:
     required_maturity = str(transfer.get("maturity") or "trusted")
     min_confidence = float(transfer.get("minimumConfidence") or maturity.get("minimumConfidence") or 0.8)
     min_providers = max(1, int(transfer.get("minimumDistinctProviders") or maturity.get("trustedProviders") or 2))
+    provisional_enabled = transfer.get("provisionalFamilyPriorEnabled") is True
+    provisional_min_successes = max(1, int(transfer.get("provisionalMinimumSuccesses") or 1))
+    provisional_max_failures = max(0, int(transfer.get("provisionalMaximumFailures") or 0))
     out: dict[str, Any] = {}
     for key, raw in skills.items():
         if not isinstance(raw, dict) or raw.get("validated") is not True:
@@ -800,20 +837,38 @@ def planner_learned_skills(mode: str) -> dict[str, Any]:
             and isinstance(raw.get("positiveProgramFingerprintsByProvider"), dict)
         )
         if strict_same_provider_positive:
-            # This is not learned-skill transfer. The JS planner will expose it
-            # only to the provider listed in this row and current-byte gates
-            # remain mandatory.
             out[str(key)] = raw
             continue
         if production.get("learnedSkillInputAllowed") is not True:
             continue
-        if str(raw.get("maturity") or "experimental") != required_maturity:
+        trusted = (
+            str(raw.get("maturity") or "experimental") == required_maturity
+            and float(raw.get("confidence") or 0.0) >= min_confidence
+            and len(providers) >= min_providers
+        )
+        if trusted:
+            out[str(key)] = raw
             continue
-        if float(raw.get("confidence") or 0.0) < min_confidence:
+        if not provisional_enabled:
             continue
-        if len(providers) < min_providers:
-            continue
-        out[str(key)] = raw
+        strategies = {
+            str(value or "").strip().casefold()
+            for value in raw.get("capabilityStrategies") or []
+            if str(value or "").strip()
+        }
+        successes = max(0, int(raw.get("successCount") or 0))
+        failures = max(0, int(raw.get("failureCount") or 0))
+        if (
+            providers
+            and strategies
+            and successes >= provisional_min_successes
+            and failures <= provisional_max_failures
+            and float(raw.get("confidence") or 0.0) >= min_confidence
+        ):
+            prior = copy.deepcopy(raw)
+            prior["familyPriorOnly"] = True
+            prior["autoApply"] = False
+            out[str(key)] = prior
     return out
 
 
