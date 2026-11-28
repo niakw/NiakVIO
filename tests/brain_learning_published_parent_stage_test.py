@@ -45,7 +45,18 @@ with tempfile.TemporaryDirectory() as directory:
     }
     reconstruction_registry = {
         "candidates": [
-            {"key": "local:alpha", "canonical_id": "alpha", "local_path": "providers/alpha.js", "sha256": sha(clean_alpha), "provider_base_reconstruction_required": False, "candidate_code_origin": "existing-niakvio-provider-base-v2"},
+            {
+                "key": "local:alpha",
+                "canonical_id": "alpha",
+                "local_path": "providers/alpha.js",
+                "sha256": sha(clean_alpha),
+                "upstream_sha256": sha(exact_alpha),
+                "patched_sha256": sha(clean_alpha),
+                "local_patches": [{"type": "patch_script", "script": "synthetic", "count": 1}],
+                "repair_history": [{"accepted": True, "profile": "synthetic"}],
+                "provider_base_reconstruction_required": False,
+                "candidate_code_origin": "existing-niakvio-provider-base-v2",
+            },
             {"key": "local:beta", "canonical_id": "beta", "local_path": "providers/beta.js", "sha256": sha(clean_beta), "provider_base_reconstruction_required": True, "candidate_code_origin": "new-niakvio-clean-seed"},
         ]
     }
@@ -61,6 +72,10 @@ with tempfile.TemporaryDirectory() as directory:
     assert rows["alpha"]["learning_parent_overlay_applied"] is True
     assert rows["alpha"]["learning_reconstruction_sha256"] == sha(clean_alpha)
     assert rows["alpha"]["provider_base_reconstruction_required"] is False
+    assert rows["alpha"]["upstream_sha256"] == sha(exact_alpha)
+    assert rows["alpha"]["patched_sha256"] == sha(exact_alpha)
+    assert rows["alpha"]["local_patches"] == []
+    assert rows["alpha"]["repair_history"] == []
 
     assert (output / "providers" / "beta.js").read_bytes() == clean_beta
     assert rows["beta"]["sha256"] == sha(clean_beta)
