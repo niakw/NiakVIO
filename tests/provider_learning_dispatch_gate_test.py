@@ -310,6 +310,91 @@ unavailable_repeat = module.select_execution_plan(
 )
 assert unavailable_repeat["eligibleProviders"] == [], unavailable_repeat
 
+# The newest causal group can close itself after all bounded production variants
+# plus the final Learning generations have executed negatively. Older exhausted
+# groups must not block a newer cause, so the gate evaluates only the newest group.
+policy = {
+    "production": {
+        "negativeExperimentMemory": {
+            "rotateExperimentAfterFailures": 1,
+            "maxVariantsPerSignature": 5,
+            "finalVariantGeneration": 2,
+            "maxLearningGenerationsPerSignature": 5,
+        }
+    }
+}
+exhausted_entries = []
+for variant in range(4):
+    exhausted_entries.append({
+        "providerId": "learn-only",
+        "failureClass": "search_gap",
+        "signature": "search-gap-exhausted",
+        "profile": "adaptive_runtime_recovery",
+        "experimentVariant": variant,
+        "experimentGeneration": 1,
+        "strategyImplementationFingerprint": (hex(variant + 1)[2:] * 64)[:64],
+        "executionObserved": True,
+        "causalExerciseObserved": True,
+        "lastOutcome": "rejected",
+        "successes": 0,
+        "consecutiveFailures": 1,
+        "lastSeenAt": f"2026-11-28T08:0{variant}:00+00:00",
+    })
+for generation in range(2, 6):
+    exhausted_entries.append({
+        "providerId": "learn-only",
+        "failureClass": "search_gap",
+        "signature": "search-gap-exhausted",
+        "profile": "adaptive_runtime_recovery",
+        "experimentVariant": 4,
+        "experimentGeneration": generation,
+        "strategyImplementationFingerprint": (hex(generation + 8)[2:] * 64)[:64],
+        "executionObserved": True,
+        "causalExerciseObserved": True,
+        "lastOutcome": "rejected",
+        "successes": 0,
+        "consecutiveFailures": 1,
+        "lastSeenAt": f"2026-11-28T08:{generation + 10:02d}:00+00:00",
+    })
+exhausted_memory = {"experimentMemory": {"entries": exhausted_entries}}
+exhausted_selection = module.select_execution_plan(
+    execution_plan,
+    {"providers": {}},
+    lane="BRAIN_LEARNING",
+    requested=["learn-only"],
+    learning_memory=exhausted_memory,
+    learning_policy=policy,
+)
+assert exhausted_selection["eligibleProviders"] == [], exhausted_selection
+assert exhausted_selection["suppressedExhaustedProviders"] == ["learn-only"], exhausted_selection
+
+newer_cause_memory = json.loads(json.dumps(exhausted_memory))
+newer_cause_memory["experimentMemory"]["entries"].append({
+    "providerId": "learn-only",
+    "failureClass": "playback_context_gap",
+    "signature": "newer-not-exhausted",
+    "profile": "adaptive_runtime_recovery",
+    "experimentVariant": 0,
+    "experimentGeneration": 1,
+    "strategyImplementationFingerprint": "f" * 64,
+    "executionObserved": True,
+    "causalExerciseObserved": True,
+    "lastOutcome": "rejected",
+    "successes": 0,
+    "consecutiveFailures": 1,
+    "lastSeenAt": "2026-11-28T09:00:00+00:00",
+})
+newer_cause = module.select_execution_plan(
+    execution_plan,
+    {"providers": {}},
+    lane="BRAIN_LEARNING",
+    requested=["learn-only"],
+    learning_memory=newer_cause_memory,
+    learning_policy=policy,
+)
+assert newer_cause["eligibleProviders"] == ["learn-only"], newer_cause
+assert newer_cause["suppressedExhaustedProviders"] == [], newer_cause
+
 harness_plan = module.select_execution_plan(
     execution_plan,
     {"providers": {}},
