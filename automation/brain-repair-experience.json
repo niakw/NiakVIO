@@ -6713,14 +6713,14 @@
         "/search/{slug}",
         "/recherche/{slug}"
       ],
-      "status": "PROVIDER NETWORK BLOCKED",
+      "status": "NO PROOF",
       "strategy": "mixed_embed_resolver"
     },
     "moviebox": {
       "domainMemory": true,
       "evidenceDepth": [
-        "movie=chain_reached",
-        "tv=chain_reached"
+        "movie=lookup_only",
+        "tv=lookup_only"
       ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
@@ -7048,7 +7048,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "PROVIDER JS BROKEN",
       "strategy": "mixed_embed_resolver"
     },
     "movy": {
@@ -8066,7 +8066,7 @@
       "routeTemplates": [
         "/?s={query}"
       ],
-      "status": "CHAIN REACHED",
+      "status": "PROVIDER JS BROKEN",
       "strategy": "mixed_embed_resolver"
     },
     "neko-sama": {
@@ -10534,7 +10534,7 @@
     "voiranime-homes": {
       "domainMemory": true,
       "evidenceDepth": [
-        "anime=lookup_only"
+        "anime=none"
       ],
       "hasApiRecipe": true,
       "hasProviderValuePlan": false,
@@ -12006,8 +12006,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "46135507418",
-  "sourceSha": "9724c9a4523d20432457fe0ea0d7422024d432ae",
+  "sourceRunId": "46137101022",
+  "sourceSha": "cb802b1065d388bdc9b4fe6cb779203587b1a6ca",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -12031,12 +12031,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "other",
           "supportRatio": 0.3333
         },
         {
           "providerSupport": 1,
-          "role": "other",
+          "role": "search",
           "supportRatio": 0.3333
         }
       ]
@@ -12051,12 +12051,12 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "search",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "detail",
           "supportRatio": 1.0
         }
       ]
@@ -12071,12 +12071,12 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "episode",
+          "role": "player",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
-          "role": "player",
+          "role": "search",
           "supportRatio": 1.0
         },
         {
@@ -12086,7 +12086,7 @@
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "episode",
           "supportRatio": 1.0
         }
       ]
