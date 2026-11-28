@@ -226,15 +226,20 @@ def _rebuild_replay(
             "publicationAuthority": False,
         }
     else:
-        attempt = cur.get("lastAttempt") if isinstance(cur.get("lastAttempt"), dict) else prev.get("lastAttempt")
-        attempt = copy.deepcopy(attempt) if isinstance(attempt, dict) else {
-            "available": False,
-            "providerCount": 0,
+        # Legacy/unreceipted runs predate exact provenance stamps. Preserve the
+        # historical bounded behavior: when the current run actually replayed
+        # providers, its own rows define lastAttempt; an offline run records an
+        # empty attempt but must not erase durable historical replay rows.
+        selected = cur_rows if cur.get("available") is True else []
+        selected_ids = sorted({_pid(row) for row in selected})
+        attempt = {
+            "available": cur.get("available") is True and bool(selected_ids),
+            "providerCount": len(selected_ids),
             "refreshedProviders": sorted(refreshed),
-            "replayedProviders": [],
-            "rawProviders": [],
-            "playableProviders": [],
-            "verifiedProviders": [],
+            "replayedProviders": selected_ids,
+            "rawProviders": sorted({_pid(row) for row in selected if int(row.get("raw") or 0) > 0}),
+            "playableProviders": sorted({_pid(row) for row in selected if int(row.get("playable") or 0) > 0}),
+            "verifiedProviders": sorted({_pid(row) for row in selected if int(row.get("verified") or 0) > 0}),
             "sourceNiakvioSha": "",
             "runId": "",
             "proofAuthority": False,
