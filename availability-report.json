@@ -1,14 +1,14 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-11-28T08:11:49.793822+00:00",
+  "generated_at": "2026-11-28T17:02:55.443497+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 74,
   "status_counts": {
-    "healthy": 7,
+    "healthy": 4,
     "reachable": 0,
     "blocked": 16,
-    "degraded": 0,
-    "no_streams": 46,
+    "degraded": 1,
+    "no_streams": 48,
     "provider_unreachable": 0,
     "runtime_error": 0,
     "unavailable": 5,
@@ -2425,18 +2425,14 @@
     },
     {
       "id": "kurage",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "kurage.live"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "kurage.live": {
           "last_checked_at": "2026-11-28T08:11:49.793822+00:00",
@@ -2469,18 +2465,14 @@
     },
     {
       "id": "meowtv",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
-      "hosts": [
-        "cdn.ngcloud.app"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "cdn2.slowcloud.live": {
           "last_checked_at": "2026-11-28T08:11:49.793822+00:00",
@@ -2914,17 +2906,15 @@
     },
     {
       "id": "mugiwarastream",
-      "status": "healthy",
+      "status": "degraded",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "gate-2-an-p.vmnow.online"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
       "response_categories": [
-        "playable"
+        "content_identity_mismatch"
       ],
       "host_health": {
         "prx-1328-ant.vmwesa.online": {
@@ -3093,11 +3083,11 @@
           "consecutive_blocked": 0
         },
         "prx-1356-ant-w.vmpx.online": {
-          "last_checked_at": "2026-11-27T00:43:29.907978+00:00",
-          "last_category": "not_returned",
+          "last_checked_at": "2026-11-28T17:02:55.443497+00:00",
+          "last_category": "content_identity_mismatch",
           "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
+          "http_status": 200,
+          "latency_ms": 363,
           "kind": "hls",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
