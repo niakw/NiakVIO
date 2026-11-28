@@ -4353,7 +4353,60 @@
       ],
       "transportDiagnosis": "content_reached_cross_transport",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 10504
+      "durationMs": 17188,
+      "residentialExitNodeProfile": {
+        "profile": "tailscale-residential-exit",
+        "outcome": "browser_content_reached",
+        "attemptCount": 1,
+        "clientProfileMatrix": [
+          {
+            "profile": "github-default-browser",
+            "outcome": "browser_content_reached",
+            "attemptCount": 1
+          },
+          {
+            "profile": "nuvio-tv-ua-browser",
+            "outcome": "browser_content_reached",
+            "attemptCount": 1
+          }
+        ],
+        "directHttpProfile": {
+          "profile": "nuvio-tv-direct-http-approx",
+          "outcome": "direct_http_content_reached",
+          "attemptCount": 1
+        },
+        "okHttpJvmProfile": {
+          "profile": "nuvio-tv-okhttp-jvm",
+          "outcome": "okhttp_jvm_content_reached",
+          "attemptCount": 1
+        },
+        "desktopOkHttpJvmProfile": {
+          "profile": "nuvio-desktop-okhttp-jvm",
+          "outcome": "okhttp_jvm_content_reached",
+          "attemptCount": 1
+        },
+        "contentProfiles": [
+          "github-default-browser",
+          "nuvio-tv-ua-browser",
+          "nuvio-tv-direct-http-approx",
+          "nuvio-tv-okhttp-jvm",
+          "nuvio-desktop-okhttp-jvm"
+        ]
+      },
+      "transportReceipt": {
+        "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
+        "providerBundleSha256": "718a7a758f899cf508f4ae164d054cbb546c3089ef63737c132cda943c4eecb7",
+        "runId": "46167041064",
+        "proofAuthority": false,
+        "publicationAuthority": false
+      },
+      "residentialReceipt": {
+        "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
+        "providerBundleSha256": "718a7a758f899cf508f4ae164d054cbb546c3089ef63737c132cda943c4eecb7",
+        "runId": "46167041064",
+        "proofAuthority": false,
+        "publicationAuthority": false
+      }
     },
     {
       "provider": "ihavenotv",
@@ -4496,7 +4549,60 @@
       ],
       "transportDiagnosis": "content_reached_cross_transport",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 9241
+      "durationMs": 17306,
+      "residentialExitNodeProfile": {
+        "profile": "tailscale-residential-exit",
+        "outcome": "browser_content_reached",
+        "attemptCount": 1,
+        "clientProfileMatrix": [
+          {
+            "profile": "github-default-browser",
+            "outcome": "browser_content_reached",
+            "attemptCount": 1
+          },
+          {
+            "profile": "nuvio-tv-ua-browser",
+            "outcome": "browser_content_reached",
+            "attemptCount": 1
+          }
+        ],
+        "directHttpProfile": {
+          "profile": "nuvio-tv-direct-http-approx",
+          "outcome": "direct_http_content_reached",
+          "attemptCount": 1
+        },
+        "okHttpJvmProfile": {
+          "profile": "nuvio-tv-okhttp-jvm",
+          "outcome": "okhttp_jvm_content_reached",
+          "attemptCount": 1
+        },
+        "desktopOkHttpJvmProfile": {
+          "profile": "nuvio-desktop-okhttp-jvm",
+          "outcome": "okhttp_jvm_content_reached",
+          "attemptCount": 1
+        },
+        "contentProfiles": [
+          "github-default-browser",
+          "nuvio-tv-ua-browser",
+          "nuvio-tv-direct-http-approx",
+          "nuvio-tv-okhttp-jvm",
+          "nuvio-desktop-okhttp-jvm"
+        ]
+      },
+      "transportReceipt": {
+        "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
+        "providerBundleSha256": "718a7a758f899cf508f4ae164d054cbb546c3089ef63737c132cda943c4eecb7",
+        "runId": "46167041064",
+        "proofAuthority": false,
+        "publicationAuthority": false
+      },
+      "residentialReceipt": {
+        "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
+        "providerBundleSha256": "718a7a758f899cf508f4ae164d054cbb546c3089ef63737c132cda943c4eecb7",
+        "runId": "46167041064",
+        "proofAuthority": false,
+        "publicationAuthority": false
+      }
     },
     {
       "provider": "kehflix",
@@ -7822,16 +7928,16 @@
       "contentProfiles": [],
       "transportDiagnosis": "waf_persisted_cross_transport",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 15826,
+      "durationMs": 6706,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
-        "attemptCount": 2,
+        "attemptCount": 1,
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
-            "outcome": "browser_content_reached",
-            "attemptCount": 2
+            "outcome": "browser_challenge_persisted",
+            "attemptCount": 1
           },
           {
             "profile": "nuvio-tv-ua-browser",
@@ -7841,40 +7947,17 @@
         ],
         "directHttpProfile": {
           "profile": "nuvio-tv-direct-http-approx",
-          "outcome": "direct_http_content_reached",
+          "outcome": "direct_http_challenge_persisted",
           "attemptCount": 1
         },
         "okHttpJvmProfile": {
           "profile": "nuvio-tv-okhttp-jvm",
-          "outcome": "okhttp_jvm_content_reached",
-          "attemptCount": 1
-        },
-        "desktopOkHttpJvmProfile": {
-          "profile": "nuvio-desktop-okhttp-jvm",
-          "outcome": "okhttp_jvm_content_reached",
+          "outcome": "okhttp_jvm_challenge_persisted",
           "attemptCount": 1
         },
         "contentProfiles": [
-          "github-default-browser",
-          "nuvio-tv-ua-browser",
-          "nuvio-tv-direct-http-approx",
-          "nuvio-tv-okhttp-jvm",
-          "nuvio-desktop-okhttp-jvm"
+          "nuvio-tv-ua-browser"
         ]
-      },
-      "transportReceipt": {
-        "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
-        "providerBundleSha256": "ca7f0ac1d251258c9b8bb08ef1bef9b36acc69afc17733c466e3069b0564e73e",
-        "runId": "46167050982",
-        "proofAuthority": false,
-        "publicationAuthority": false
-      },
-      "residentialReceipt": {
-        "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
-        "providerBundleSha256": "ca7f0ac1d251258c9b8bb08ef1bef9b36acc69afc17733c466e3069b0564e73e",
-        "runId": "46167050982",
-        "proofAuthority": false,
-        "publicationAuthority": false
       }
     },
     {
@@ -8029,16 +8112,16 @@
       "contentProfiles": [],
       "transportDiagnosis": "waf_persisted_cross_transport",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 15908,
+      "durationMs": 7188,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
-        "attemptCount": 2,
+        "attemptCount": 1,
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
-            "outcome": "browser_content_reached",
-            "attemptCount": 2
+            "outcome": "browser_challenge_persisted",
+            "attemptCount": 1
           },
           {
             "profile": "nuvio-tv-ua-browser",
@@ -8048,40 +8131,17 @@
         ],
         "directHttpProfile": {
           "profile": "nuvio-tv-direct-http-approx",
-          "outcome": "direct_http_content_reached",
+          "outcome": "direct_http_challenge_persisted",
           "attemptCount": 1
         },
         "okHttpJvmProfile": {
           "profile": "nuvio-tv-okhttp-jvm",
-          "outcome": "okhttp_jvm_content_reached",
-          "attemptCount": 1
-        },
-        "desktopOkHttpJvmProfile": {
-          "profile": "nuvio-desktop-okhttp-jvm",
-          "outcome": "okhttp_jvm_content_reached",
+          "outcome": "okhttp_jvm_challenge_persisted",
           "attemptCount": 1
         },
         "contentProfiles": [
-          "github-default-browser",
-          "nuvio-tv-ua-browser",
-          "nuvio-tv-direct-http-approx",
-          "nuvio-tv-okhttp-jvm",
-          "nuvio-desktop-okhttp-jvm"
+          "nuvio-tv-ua-browser"
         ]
-      },
-      "transportReceipt": {
-        "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
-        "providerBundleSha256": "ca7f0ac1d251258c9b8bb08ef1bef9b36acc69afc17733c466e3069b0564e73e",
-        "runId": "46167050982",
-        "proofAuthority": false,
-        "publicationAuthority": false
-      },
-      "residentialReceipt": {
-        "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
-        "providerBundleSha256": "ca7f0ac1d251258c9b8bb08ef1bef9b36acc69afc17733c466e3069b0564e73e",
-        "runId": "46167050982",
-        "proofAuthority": false,
-        "publicationAuthority": false
       }
     },
     {
@@ -9935,7 +9995,7 @@
   "residentialProviderReplay": {
     "available": true,
     "profile": "tailscale-residential-exit",
-    "providerCount": 48,
+    "providerCount": 49,
     "providers": [
       "1jour1film0626",
       "67movies",
@@ -9963,6 +10023,7 @@
       "franime",
       "french-anime",
       "fullanime",
+      "ihavenotv",
       "latestmovies",
       "mallumv",
       "moiflix",
@@ -11173,6 +11234,64 @@
         "identitySafe": true
       },
       {
+        "provider": "ihavenotv",
+        "providerArtifactSha256": "718a7a758f899cf508f4ae164d054cbb546c3089ef63737c132cda943c4eecb7",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_zero_before_provider_network"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
+          "providerBundleSha256": "718a7a758f899cf508f4ae164d054cbb546c3089ef63737c132cda943c4eecb7",
+          "runId": "46167041064",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
+      },
+      {
+        "provider": "ihavenotv",
+        "providerArtifactSha256": "718a7a758f899cf508f4ae164d054cbb546c3089ef63737c132cda943c4eecb7",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_zero_before_provider_network"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
+          "providerBundleSha256": "718a7a758f899cf508f4ae164d054cbb546c3089ef63737c132cda943c4eecb7",
+          "runId": "46167041064",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
+      },
+      {
         "provider": "latestmovies",
         "lane": "anime",
         "status": "no_streams",
@@ -11837,7 +11956,6 @@
       },
       {
         "provider": "voirserie",
-        "providerArtifactSha256": "ca7f0ac1d251258c9b8bb08ef1bef9b36acc69afc17733c466e3069b0564e73e",
         "lane": "movie",
         "status": "no_streams",
         "debugStage": "provider_waf_challenge",
@@ -11855,24 +11973,15 @@
         "playable": 0,
         "verified": 0,
         "contradictions": 0,
-        "identitySafe": true,
-        "residentialReplayReceipt": {
-          "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
-          "providerBundleSha256": "ca7f0ac1d251258c9b8bb08ef1bef9b36acc69afc17733c466e3069b0564e73e",
-          "runId": "46167050982",
-          "proofAuthority": false,
-          "publicationAuthority": false
-        }
+        "identitySafe": true
       },
       {
         "provider": "voirserie",
-        "providerArtifactSha256": "ca7f0ac1d251258c9b8bb08ef1bef9b36acc69afc17733c466e3069b0564e73e",
         "lane": "tv",
         "status": "no_streams",
         "debugStage": "provider_waf_challenge",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_network_exception",
           "provider_waf_challenge"
         ],
         "sampleStatuses": [
@@ -11885,14 +11994,7 @@
         "playable": 0,
         "verified": 0,
         "contradictions": 0,
-        "identitySafe": true,
-        "residentialReplayReceipt": {
-          "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
-          "providerBundleSha256": "ca7f0ac1d251258c9b8bb08ef1bef9b36acc69afc17733c466e3069b0564e73e",
-          "runId": "46167050982",
-          "proofAuthority": false,
-          "publicationAuthority": false
-        }
+        "identitySafe": true
       },
       {
         "provider": "vostfree",
@@ -12250,20 +12352,20 @@
         "youtitou"
       ],
       "replayedProviders": [
-        "voirserie"
+        "ihavenotv"
       ],
       "rawProviders": [],
       "playableProviders": [],
       "verifiedProviders": [],
       "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
-      "runId": "46167050982",
+      "runId": "46167041064",
       "proofAuthority": false,
       "publicationAuthority": false
     },
     "providerBundleDigestAuthority": "executed-global-vf-published-bytes"
   },
   "lastRefreshProviderFilter": [
-    "voirserie"
+    "ihavenotv"
   ],
   "residentialExitNodeLastAttempt": {
     "enabled": true,
@@ -12280,7 +12382,7 @@
   },
   "freshRunReceipt": {
     "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
-    "runId": "46167050982",
+    "runId": "46167041064",
     "providerCount": 1,
     "proofAuthority": false,
     "publicationAuthority": false
@@ -12288,13 +12390,13 @@
   "currentRefreshProviderCount": 1,
   "currentRefreshRowCount": 2,
   "currentRefreshCounts": {
-    "browser_challenge_persisted": 2
+    "browser_content_reached": 2
   },
   "historicalRetainedRowCount": 75,
   "historicalRetainedCounts": {
     "browser_challenge_observed": 4,
-    "browser_challenge_persisted": 30,
-    "browser_content_reached": 40,
+    "browser_challenge_persisted": 32,
+    "browser_content_reached": 38,
     "browser_inconclusive": 1
   },
   "staleCurrentRowsSuppressedProviders": []

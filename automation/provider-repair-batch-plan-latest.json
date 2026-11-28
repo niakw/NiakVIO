@@ -117,7 +117,7 @@
     "zone-telechargement"
   ],
   "dynamicVariantFallbackUsed": false,
-  "groupCount": 30,
+  "groupCount": 31,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -240,42 +240,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "not-applicable",
-      "causalIssueSignature": "not-applicable",
-      "evidenceDepthSignature": "not-applicable",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "residential-exit-native-reachable"
-      ],
-      "transportSignature": "residential-exit-native-reachable",
-      "providerCount": 4,
-      "providers": [
-        "dulourd",
-        "fexini",
-        "film-a-revoir",
-        "voirserie"
-      ],
-      "action": "domain/backend authority is unresolved, but current transport evidence must be reproduced through browser/native/residential clients before any Domain or provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "learning|mixed_embed_resolver|runtime:mixed_embed_resolver|issue:network_zero_result|depth:chain",
       "repairScope": "learning",
       "runtimeFamilies": [
@@ -301,6 +265,41 @@
         "neonflix"
       ],
       "action": "domain/backend authority is unresolved but is not a prerequisite for read-only Brain diagnosis; learn from current runtime evidence while keeping production mutation gated",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "not-applicable",
+      "causalIssueSignature": "not-applicable",
+      "evidenceDepthSignature": "not-applicable",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup",
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-native-reachable"
+      ],
+      "transportSignature": "residential-exit-native-reachable",
+      "providerCount": 3,
+      "providers": [
+        "dulourd",
+        "fexini",
+        "film-a-revoir"
+      ],
+      "action": "domain/backend authority is unresolved, but current transport evidence must be reproduced through browser/native/residential clients before any Domain or provider mutation",
       "selectionAuthorities": [
         "provider-census-status.json:brainCheckRequired"
       ],
@@ -682,6 +681,38 @@
       "providerCount": 1,
       "providers": [
         "watch-cartoon-online"
+      ],
+      "action": "domain/backend authority is unresolved, but current transport evidence must be reproduced through browser/native/residential clients before any Domain or provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-browser-reachable",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "not-applicable",
+      "causalIssueSignature": "not-applicable",
+      "evidenceDepthSignature": "not-applicable",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-browser-reachable"
+      ],
+      "transportSignature": "residential-exit-browser-reachable",
+      "providerCount": 1,
+      "providers": [
+        "voirserie"
       ],
       "action": "domain/backend authority is unresolved, but current transport evidence must be reproduced through browser/native/residential clients before any Domain or provider mutation",
       "selectionAuthorities": [
