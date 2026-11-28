@@ -245,26 +245,17 @@ jobs:
           # bounded cohort immediately; Learning remains globally serialized and
           # persists sanitized state/proposals before the next census.
           if [ -n "$LEARNING" ]; then
-            if lane_busy brain-learning-lab.yml; then
-              echo "FIELD_PROVIDER_AUTOPILOT deferred=BRAIN_LEARNING providers=$LEARNING reason=lane-in-flight-or-query-unavailable"
-            else
-            # Main-only execution policy: Learning persists knowledge/evidence,
-            # then canonical Repair/census consumes it. Never create repair PRs
-            # or proposal branches from Autopilot.
+            # Split current Learning debt into one oracle per causal family.
+            # Distinct targeted workflow concurrency groups may execute in
+            # parallel; each workflow keeps provider bytes isolated and the
+            # Learning publisher performs the deterministic memory merge.
             publish_proposal="false"
-            args=(
-              --repo "$GITHUB_REPOSITORY" --ref main
-              -f publish_proposal="$publish_proposal"
-              -f target_providers="$LEARNING"
-              -f slot_remaining_minutes=360
-              -f slot_phase=1
-            )
-            if [ "$FORCE_MODE" = "true" ]; then
-              args+=(-f architecture_force=true)
-            fi
-            gh workflow run brain-learning-lab.yml "${args[@]}"
-            echo "FIELD_PROVIDER_AUTOPILOT dispatch=BRAIN_LEARNING providers=$LEARNING immediate=true budget_minutes=360 force=$FORCE_MODE publish_proposal=$publish_proposal"
-            fi
+            ELIGIBLE_CSV="$LEARNING" \
+              FORCE_MODE="$FORCE_MODE" \
+              PUBLISH_PROPOSAL="$publish_proposal" \
+              MAX_COHORTS=8 \
+              bash scripts/dispatch_learning_family_cohorts.sh
+            echo "FIELD_PROVIDER_AUTOPILOT dispatch=BRAIN_LEARNING providers=$LEARNING immediate=true budget_minutes=90 force=$FORCE_MODE publish_proposal=$publish_proposal owner=parallel-family-learning"
           fi
 
           # Harness/Core-client debt may refresh transport evidence now.
