@@ -448,6 +448,45 @@ assert explicit_network["authorityRediscoveryQueue"] == ["blocked-net"], explici
 
 
 
+# Repeated overlays must keep refreshing network evidence after a previous
+# overlay already moved the provider to ROUTE PROVEN. This reproduces the
+# documentary-area/youtitou state: semantic network debt remains current even
+# though the literal status is no longer PROVIDER NETWORK BLOCKED.
+idempotent_baseline = {
+    "runId": "repair-authority",
+    "triggerSha": "repair-sha",
+    "repairQueue": [],
+    "environmentQueue": [],
+    "harnessQueue": [],
+    "authorityRediscoveryQueue": ["route-net"],
+    "authorityBlockedQueue": ["route-net"],
+    "symptomaticProviders": ["route-net"],
+    "brainQueue": ["route-net"],
+    "providers": [{
+        "provider": "route-net",
+        "status": "ROUTE PROVEN",
+        "color": "🟪",
+        "declaredLanes": ["movie"],
+        "evidenceDepth": ["movie=lookup_only"],
+        "dominantIssue": "provider_network_http_error",
+        "brainCheckRequired": True,
+        "statusRepairEligible": True,
+        "authorityRepairEligible": False,
+        "repairEligible": False,
+    }],
+}
+idempotent_waf = copy.deepcopy(explicit_network_waf)
+idempotent_waf["lastRefreshProviderFilter"] = ["route-net"]
+idempotent_waf["rows"][0]["provider"] = "route-net"
+idempotent_waf["residentialProviderReplay"]["rows"][0]["provider"] = "route-net"
+idempotent_waf["residentialProviderReplay"]["lastAttempt"]["replayedProviders"] = ["route-net"]
+idempotent = mod.merge_transport(idempotent_baseline, idempotent_waf)
+idempotent_row = idempotent["providers"][0]
+assert idempotent_row["status"] == "ROUTE PROVEN", idempotent_row
+assert idempotent_row["networkDifferentialClass"] == "github-native-route-reachable", idempotent_row
+assert idempotent_row["networkDifferentialEvidence"], idempotent_row
+assert idempotent["networkDifferentialUpdatedProviders"] == ["route-net"], idempotent
+
 # A full residential provider replay is stronger than the narrow transport
 # overlay, but only strict current playable + identity-safe proof may promote.
 functional_baseline = {
