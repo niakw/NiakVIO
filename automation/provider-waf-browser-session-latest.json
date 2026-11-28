@@ -6,46 +6,12 @@
   "targetCount": 95,
   "providerFilter": [],
   "attemptsPerTarget": 2,
-  "clientProfileMatrixEnabled": true,
+  "clientProfileMatrixEnabled": false,
   "clientProfiles": [
     {
       "id": "github-default-browser",
       "transportApproximation": "GitHub-hosted Chromium",
       "userAgent": "browser-default"
-    },
-    {
-      "id": "nuvio-tv-ua-browser",
-      "transportApproximation": "GitHub-hosted Chromium with audited NuvioTV default UA only",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      "nativeContract": {
-        "httpStack": "OkHttp",
-        "proxyPolicy": "Proxy.NO_PROXY",
-        "dnsPolicy": "IPv4FirstDns",
-        "redirects": "HTTP+SSL enabled"
-      }
-    },
-    {
-      "id": "nuvio-tv-okhttp-jvm",
-      "transportApproximation": "GitHub JVM OkHttp 4.12.0 with audited NuvioTV PluginRuntime policy",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      "nativeContractApproximation": {
-        "httpStack": "OkHttp 4.12.0",
-        "proxyPolicy": "Proxy.NO_PROXY",
-        "dnsPolicy": "IPv4FirstDns",
-        "redirects": "HTTP+SSL enabled",
-        "tlsRuntime": "GitHub JVM, not Android device"
-      }
-    },
-    {
-      "id": "nuvio-tv-direct-http-approx",
-      "transportApproximation": "GitHub libcurl with IPv4, NO_PROXY, redirects and audited NuvioTV UA",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      "nativeContractApproximation": {
-        "httpStack": "libcurl-not-OkHttp",
-        "proxyPolicy": "NO_PROXY",
-        "dnsPolicy": "IPv4 only",
-        "redirects": "enabled"
-      }
     }
   ],
   "limitations": [
@@ -2443,7 +2409,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4778,
+      "durationMs": 4370,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -2527,7 +2493,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 4261
+      "durationMs": 4415
     },
     {
       "provider": "animevost-fr",
@@ -3241,9 +3207,9 @@
     {
       "provider": "chillflix",
       "lane": "movie",
-      "publicUrl": "https://www.chillflix.lol/movie/299534",
+      "publicUrl": "https://www.chillflix.lol/movie/10195",
       "host": "www.chillflix.lol",
-      "path": "/movie/299534",
+      "path": "/movie/10195",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -3292,14 +3258,14 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3551
+      "durationMs": 4007
     },
     {
       "provider": "chillflix",
       "lane": "tv",
-      "publicUrl": "https://www.chillflix.lol/tv/87739",
+      "publicUrl": "https://www.chillflix.lol/tv/126308",
       "host": "www.chillflix.lol",
-      "path": "/tv/87739",
+      "path": "/tv/126308",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -3348,7 +3314,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3549
+      "durationMs": 3552
     },
     {
       "provider": "cinegram",
@@ -18711,54 +18677,15 @@
       "providerCount": 1,
       "refreshedProviders": [
         "1jour1film0626",
-        "67movies",
-        "allwish",
         "aniflix-uno",
-        "anikototv",
         "animejlprovider",
         "animeonsen",
         "animesalt",
         "animesultra",
-        "animevost-fr",
         "arrowtv",
         "chillflix",
         "cinegram",
-        "cinetimes",
-        "coflix",
-        "corsflix",
-        "documentary-area",
-        "dulourd",
-        "emnexmovies",
-        "fexini",
-        "film-a-revoir",
-        "flemmix",
-        "franime",
-        "french-anime",
-        "fullanime",
-        "hianime",
-        "ihavenotv",
-        "kehflix",
-        "mallumv",
-        "moiflix",
-        "moviebox",
-        "moviesmod",
-        "movy",
-        "primewire",
-        "purstream",
-        "rivestream-app",
-        "sadisflix",
-        "sekai",
-        "shuttletv",
-        "skstream",
-        "vidfast",
-        "vidrock",
-        "voirserie",
-        "vostfree",
-        "watch-cartoon-online",
-        "watchott",
-        "waveanime",
-        "yflix",
-        "youtitou"
+        "cinetimes"
       ],
       "replayedProviders": [
         "emnexmovies"
@@ -18775,12 +18702,15 @@
   },
   "lastRefreshProviderFilter": [
     "1jour1film0626",
+    "aniflix-uno",
+    "animejlprovider",
+    "animeonsen",
+    "animesalt",
+    "animesultra",
     "arrowtv",
+    "chillflix",
     "cinegram",
-    "cinetimes",
-    "dulourd",
-    "fexini",
-    "franime"
+    "cinetimes"
   ],
   "residentialExitNodeLastAttempt": {
     "enabled": true,
@@ -18802,30 +18732,27 @@
     "proofAuthority": false,
     "publicationAuthority": false
   },
-  "currentRefreshProviderCount": 7,
-  "currentRefreshRowCount": 15,
+  "currentRefreshProviderCount": 10,
+  "currentRefreshRowCount": 16,
   "currentRefreshCounts": {
-    "browser_content_reached": 15
+    "browser_challenge_persisted": 4,
+    "browser_content_reached": 12
   },
-  "historicalRetainedRowCount": 80,
+  "historicalRetainedRowCount": 79,
   "historicalRetainedCounts": {
     "browser_challenge_observed": 1,
-    "browser_challenge_persisted": 20,
-    "browser_content_reached": 50,
+    "browser_challenge_persisted": 16,
+    "browser_content_reached": 53,
     "browser_inconclusive": 6,
     "browser_timeout": 3
   },
   "staleCurrentRowsSuppressedProviders": [
+    "1jour1film0626",
     "aniflix-uno",
     "animejlprovider",
     "animeonsen",
-    "emnexmovies",
-    "film-a-revoir",
-    "fullanime",
-    "ihavenotv",
-    "rivestream-app",
-    "voirserie",
-    "watch-cartoon-online",
-    "waveanime"
+    "arrowtv",
+    "cinegram",
+    "cinetimes"
   ]
 }
