@@ -130,15 +130,15 @@ def causal_scope_for_row(
     authority_rediscovery:set[str],
     environment_owned:set[str],
 )->tuple[str,str]:
-    if provider in authority_rediscovery:
-        return (
-            "transport",
-            "current census authority is unresolved; refresh provider-owned domain/backend authority before any provider mutation",
-        )
     if provider in environment_owned:
         return (
             "harness-compatibility",
             "current census assigns transport/harness ownership; compare browser/native/residential transport before any provider mutation",
+        )
+    if provider in authority_rediscovery:
+        return (
+            "learning",
+            "domain/backend authority is unresolved but is not a prerequisite for read-only Brain diagnosis; learn from current runtime evidence while keeping production mutation gated",
         )
     if dynamic_debt and not brain_required:
         return (
