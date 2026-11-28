@@ -23,6 +23,11 @@ on:
         required: false
         default: ""
         type: string
+      dispatch_fingerprint:
+        description: Optional sanitized causal dispatch fingerprint; persisted only after a successful Learning sandbox
+        required: false
+        default: ""
+        type: string
       slot_remaining_minutes:
         description: Optional total Learning slot minutes including this phase; 0 keeps the normal one-hour run
         required: false
@@ -62,6 +67,7 @@ jobs:
       slot_phase: ${{ steps.learning-slot.outputs.phase }}
       target_provider: ${{ steps.learning-slot.outputs.target_provider }}
       target_providers: ${{ steps.learning-slot.outputs.target_providers }}
+      dispatch_fingerprint: ${{ steps.learning-slot.outputs.dispatch_fingerprint }}
       architecture_force: ${{ steps.learning-slot.outputs.architecture_force }}
     runs-on: ubuntu-latest
     env:
@@ -162,6 +168,7 @@ jobs:
           REQUESTED_PHASE: ${{ inputs.slot_phase || '1' }}
           REQUESTED_TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
           REQUESTED_TARGET_PROVIDERS: ${{ inputs.target_providers || '' }}
+          REQUESTED_DISPATCH_FINGERPRINT: ${{ inputs.dispatch_fingerprint || '' }}
           REQUESTED_ARCHITECTURE_FORCE: ${{ inputs.architecture_force || false }}
         run: |
           set -euo pipefail
@@ -172,6 +179,11 @@ jobs:
           if [ "$phase" -lt 1 ]; then phase=1; fi
           target_provider="${REQUESTED_TARGET_PROVIDER:-}"
           target_providers="${REQUESTED_TARGET_PROVIDERS:-}"
+          dispatch_fingerprint="$(printf '%s' "${REQUESTED_DISPATCH_FINGERPRINT:-}" | tr '[:upper:]' '[:lower:]' | xargs)"
+          if [ -n "$dispatch_fingerprint" ] && ! [[ "$dispatch_fingerprint" =~ ^[0-9a-f]{64}$ ]]; then
+            echo "invalid Learning dispatch fingerprint" >&2
+            exit 1
+          fi
           architecture_force="${REQUESTED_ARCHITECTURE_FORCE:-false}"
           if [ "$architecture_force" != "true" ]; then architecture_force=false; fi
           target_providers="$(python - "$target_providers" <<'PY'
@@ -365,6 +377,7 @@ jobs:
             echo "provider_filter=$provider_filter"
             echo "target_provider=$target_provider"
             echo "target_providers=$target_providers"
+            echo "dispatch_fingerprint=$dispatch_fingerprint"
             echo "architecture_force=$architecture_force"
           } >> "$GITHUB_OUTPUT"
           echo "FIELD_BRAIN_LONG_SLOT phase=$phase budget_minutes=$budget next_remaining_minutes=$next_remaining continue=$continue_slot fast_handoff=$fast_handoff provider_filter=${provider_filter:-none} target_provider=${target_provider:-none} target_providers=${target_providers:-none} architecture_force=$architecture_force"
@@ -1446,6 +1459,9 @@ jobs:
       - name: Update the single sanitized learning-memory ref
         id: publish-memory
         shell: bash
+        env:
+          LEARNING_DISPATCH_FINGERPRINT: ${{ needs.experiment.outputs.dispatch_fingerprint || '' }}
+          LEARNING_DISPATCH_PROVIDER: ${{ needs.experiment.outputs.target_providers || needs.experiment.outputs.target_provider || '' }}
         run: bash scripts/publish_brain_learning_memory.sh
 
       - name: Escalate exhausted targeted Learning to Brain architecture FORCE
