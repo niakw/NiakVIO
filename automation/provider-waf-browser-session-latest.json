@@ -6,46 +6,12 @@
   "targetCount": 77,
   "providerFilter": [],
   "attemptsPerTarget": 2,
-  "clientProfileMatrixEnabled": true,
+  "clientProfileMatrixEnabled": false,
   "clientProfiles": [
     {
       "id": "github-default-browser",
       "transportApproximation": "GitHub-hosted Chromium",
       "userAgent": "browser-default"
-    },
-    {
-      "id": "nuvio-tv-ua-browser",
-      "transportApproximation": "GitHub-hosted Chromium with audited NuvioTV default UA only",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      "nativeContract": {
-        "httpStack": "OkHttp",
-        "proxyPolicy": "Proxy.NO_PROXY",
-        "dnsPolicy": "IPv4FirstDns",
-        "redirects": "HTTP+SSL enabled"
-      }
-    },
-    {
-      "id": "nuvio-tv-okhttp-jvm",
-      "transportApproximation": "GitHub JVM OkHttp 4.12.0 with audited NuvioTV PluginRuntime policy",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      "nativeContractApproximation": {
-        "httpStack": "OkHttp 4.12.0",
-        "proxyPolicy": "Proxy.NO_PROXY",
-        "dnsPolicy": "IPv4FirstDns",
-        "redirects": "HTTP+SSL enabled",
-        "tlsRuntime": "GitHub JVM, not Android device"
-      }
-    },
-    {
-      "id": "nuvio-tv-direct-http-approx",
-      "transportApproximation": "GitHub libcurl with IPv4, NO_PROXY, redirects and audited NuvioTV UA",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      "nativeContractApproximation": {
-        "httpStack": "libcurl-not-OkHttp",
-        "proxyPolicy": "NO_PROXY",
-        "dnsPolicy": "IPv4 only",
-        "redirects": "enabled"
-      }
     }
   ],
   "limitations": [
@@ -1649,7 +1615,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3125
+      "durationMs": 4702
     },
     {
       "provider": "animejlprovider",
@@ -1705,7 +1671,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3072
+      "durationMs": 4483
     },
     {
       "provider": "animeonsen",
@@ -1965,7 +1931,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3219,
+      "durationMs": 4053,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -2049,7 +2015,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3028
+      "durationMs": 3933
     },
     {
       "provider": "animevost-fr",
@@ -2762,9 +2728,9 @@
     {
       "provider": "chillflix",
       "lane": "movie",
-      "publicUrl": "https://www.chillflix.lol/movie/475557",
+      "publicUrl": "https://www.chillflix.lol/movie/10195",
       "host": "www.chillflix.lol",
-      "path": "/movie/475557",
+      "path": "/movie/10195",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -2813,14 +2779,14 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2843
+      "durationMs": 3419
     },
     {
       "provider": "chillflix",
       "lane": "tv",
-      "publicUrl": "https://www.chillflix.lol/tv/71446",
+      "publicUrl": "https://www.chillflix.lol/tv/60574",
       "host": "www.chillflix.lol",
-      "path": "/tv/71446",
+      "path": "/tv/60574",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
@@ -2869,7 +2835,7 @@
       "contentProfiles": [],
       "transportDiagnosis": "browser_waf_persisted",
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2627
+      "durationMs": 3506
     },
     {
       "provider": "cinegram",
@@ -13559,50 +13525,15 @@
       "providerCount": 5,
       "refreshedProviders": [
         "1jour1film0626",
-        "67movies",
-        "allwish",
         "aniflix-uno",
         "animejlprovider",
         "animeonsen",
         "animesalt",
         "animesultra",
-        "animevost-fr",
         "arrowtv",
         "chillflix",
         "cinegram",
-        "cinetimes",
-        "coflix",
-        "corsflix",
-        "documentary-area",
-        "dulourd",
-        "fexini",
-        "film-a-revoir",
-        "flemmix",
-        "franime",
-        "french-anime",
-        "fullanime",
-        "ihavenotv",
-        "kehflix",
-        "mallumv",
-        "moiflix",
-        "moviebox",
-        "moviesmod",
-        "movy",
-        "primewire",
-        "purstream",
-        "sadisflix",
-        "sekai",
-        "shuttletv",
-        "skstream",
-        "vidfast",
-        "vidrock",
-        "voirserie",
-        "vostfree",
-        "watch-cartoon-online",
-        "watchott",
-        "waveanime",
-        "yflix",
-        "youtitou"
+        "cinetimes"
       ],
       "replayedProviders": [
         "1jour1film0626",
@@ -13623,8 +13554,13 @@
   },
   "lastRefreshProviderFilter": [
     "1jour1film0626",
+    "aniflix-uno",
+    "animejlprovider",
     "animeonsen",
+    "animesalt",
+    "animesultra",
     "arrowtv",
+    "chillflix",
     "cinegram",
     "cinetimes"
   ],
@@ -13648,17 +13584,24 @@
     "proofAuthority": false,
     "publicationAuthority": false
   },
-  "currentRefreshProviderCount": 5,
-  "currentRefreshRowCount": 10,
+  "currentRefreshProviderCount": 10,
+  "currentRefreshRowCount": 16,
   "currentRefreshCounts": {
+    "browser_challenge_persisted": 6,
     "browser_content_reached": 10
   },
-  "historicalRetainedRowCount": 67,
+  "historicalRetainedRowCount": 61,
   "historicalRetainedCounts": {
     "browser_challenge_observed": 1,
-    "browser_challenge_persisted": 25,
+    "browser_challenge_persisted": 19,
     "browser_content_reached": 40,
     "browser_inconclusive": 1
   },
-  "staleCurrentRowsSuppressedProviders": []
+  "staleCurrentRowsSuppressedProviders": [
+    "1jour1film0626",
+    "animeonsen",
+    "arrowtv",
+    "cinegram",
+    "cinetimes"
+  ]
 }
