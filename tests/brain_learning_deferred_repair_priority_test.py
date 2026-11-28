@@ -170,8 +170,15 @@ owner_census = {
 brain_owned, owner_authority = mod.brain_owned_current_repair_providers(
     owner_batch, owner_census
 )
-assert brain_owned == ["wookafr", "transport-brain"], brain_owned
+assert brain_owned == ["wookafr"], brain_owned
 assert owner_authority == "current-census-causal-execution-plan"
+owner_plan = mod.build_provider_execution_plan(owner_batch, owner_census)
+transport_execution = next(
+    row for row in owner_plan["executions"]
+    if "transport-brain" in row.get("providers", [])
+)
+assert transport_execution["lane"] == "CORE_CLIENT_LEARNING", transport_execution
+assert transport_execution["owner"] == "CORE_CLIENT_TRANSPORT", transport_execution
 
 stale_owned, stale_authority = mod.brain_owned_current_repair_providers(
     {**owner_batch, "sourceTriggerSha": "b" * 40}, owner_census
