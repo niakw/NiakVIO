@@ -7,8 +7,8 @@ target_providers: meowtv
 architecture_force: false
 causal_frontier: published_exact_parent_and_parent_scoped_negative_memory
 required_scope: targeted-learning
-retry_after_preflight_contract_fix: 1
-required_evidence: core-46094217748;parent-scope-green;published-parent-stage-green;concurrent-memory-merge-green;learning-run-46091684570
-causal_change: Execute from exact current published MeowTV bytes because clean reconstruction is not required. Historical negative experiments without matching parent SHA cannot veto current published-exact bytes. Persist any new experiment with parent SHA and authority through immutable attempt snapshot, sanitized plan, phase ledger and cross-day memory.
-proof_goal: FIELD_BRAIN_LEARNING_PARENT_STAGE published_exact=1; exact parent health remains healthy/playable before mutation; stale reconstruction negative contributes zero parent-applicable matches; any new experiment row carries parentArtifactSha256 + parentAuthority. No production publication.
+retry_after_fair_share_fix: 1
+required_evidence: publisher-retry-green-46095889582;parent-scope-green;published-parent-stage-green;single-oracle-120s
+causal_change: Execute from exact current published MeowTV bytes because clean reconstruction is not required. Historical negative experiments without matching parent SHA cannot veto current published-exact bytes. The single-family oracle now receives 120 seconds so one real experiment can finish; multi-provider fair share remains capped at 60 seconds.
+proof_goal: FIELD_BRAIN_LEARNING_PARENT_STAGE published_exact=1; baseline published parent healthy/playable; at least one generated/executed candidate or one explicit no-mutation causal verdict; any new experiment row carries parentArtifactSha256 + parentAuthority. No production publication.
 publication_policy: Learning is non-authoritative. Preserve four manifests, ProviderBase generation, 10-version JS retention and no native-hub46.
