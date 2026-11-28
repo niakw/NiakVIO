@@ -46,7 +46,10 @@ raw={
             "actions":["try candidate"],
             "capabilities":["search"],
             "providers":["a"],
-            "successCount":2,
+            "signatures":["sig-candidate"],
+            "capabilityStrategies":["mixed_embed_resolver"],
+            "observedPipelineStages":["player"],
+            "successCount":1,
             "failureCount":0,
             "validated":True,
             "confidence":1,
@@ -61,6 +64,9 @@ assert safe["learnedSkillCount"]==2,safe
 assert "proposals" not in safe,safe
 assert "experimentMemory" not in safe,safe
 assert safe["learnedSkills"]["trusted-demo"]["autoApply"] is False
+assert safe["learnedSkills"]["candidate-demo"]["signatures"] == ["sig-candidate"]
+assert safe["learnedSkills"]["candidate-demo"]["capabilityStrategies"] == ["mixed_embed_resolver"]
+assert safe["learnedSkills"]["candidate-demo"]["observedPipelineStages"] == ["player"]
 
 with TemporaryDirectory() as td:
     p=Path(td)/"learning.json"
@@ -69,9 +75,26 @@ with TemporaryDirectory() as td:
     skills=runtime.learned_skills()
     assert "trusted-demo" in skills,skills
     assert "candidate-demo" in skills,skills
+    original_policy=runtime.policy
+    runtime.policy=lambda:{
+        "production":{
+            "learnedSkillInputAllowed":True,
+            "learnedSkillTransferPolicy":{
+                "maturity":"trusted",
+                "minimumConfidence":0.8,
+                "minimumDistinctProviders":2,
+                "provisionalFamilyPriorEnabled":True,
+                "provisionalMinimumSuccesses":1,
+                "provisionalMaximumFailures":0,
+            },
+        },
+        "skillMaturity":{"minimumConfidence":0.8,"trustedProviders":2},
+    }
     production=runtime.planner_learned_skills("repair")
     assert "trusted-demo" in production,production
-    assert "candidate-demo" not in production,production
+    assert "candidate-demo" in production,production
+    assert production["candidate-demo"]["familyPriorOnly"] is True,production
+    runtime.policy=original_policy
 
 unsafe=dict(raw)
 unsafe["learnedSkills"]={
