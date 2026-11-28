@@ -101,11 +101,42 @@ def _refresh_authority_rows(
 
 def network_differential(waf: dict[str, Any], provider: str) -> dict[str, Any]:
     wanted = str(provider or "").strip().casefold()
+    receipt = waf.get("freshRunReceipt") if isinstance(waf.get("freshRunReceipt"), dict) else {}
+    receipt_sha = str(receipt.get("sourceNiakvioSha") or "")
+    receipt_run = str(receipt.get("runId") or "")
+    refreshed = {
+        str(value or "").strip().casefold()
+        for value in waf.get("lastRefreshProviderFilter") or []
+        if str(value or "").strip()
+    }
+
+    def current_transport_row(row: dict[str, Any]) -> bool:
+        seed = str(row.get("seedKind") or "")
+        transport_receipt = (
+            row.get("transportReceipt")
+            if isinstance(row.get("transportReceipt"), dict)
+            else {}
+        )
+        # Durable latest WAF evidence retains older rows. Once a fresh run
+        # receipt exists, accept only rows stamped by that exact run and, when
+        # present, inside its explicit refresh cohort. This lets an
+        # authority-independent metadata seed prove transport without allowing
+        # historical content reachability to rewrite current census causality.
+        if receipt_sha and receipt_run:
+            if refreshed and wanted not in refreshed:
+                return False
+            return (
+                str(transport_receipt.get("sourceNiakvioSha") or "") == receipt_sha
+                and str(transport_receipt.get("runId") or "") == receipt_run
+            )
+        # Legacy direct merge fixtures predate per-row transport receipts.
+        return seed == "network-failure-replay"
+
     rows = [
         row for row in waf.get("rows") or []
         if isinstance(row, dict)
         and str(row.get("provider") or "").strip().casefold() == wanted
-        and str(row.get("seedKind") or "") == "network-failure-replay"
+        and current_transport_row(row)
     ]
     if not rows:
         return {"classification": "no-network-differential-evidence", "evidence": []}
