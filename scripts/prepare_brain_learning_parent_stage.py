@@ -110,8 +110,9 @@ def prepare(
             continue
 
         pub_row = published[provider]
+        reconstruction_row = copy.deepcopy(row)
         source = resolve_inside(published_stage, pub_row)
-        destination = resolve_inside(output_stage, row)
+        destination = resolve_inside(output_stage, reconstruction_row)
         exact = source.read_bytes()
         digest = hashlib.sha256(exact).hexdigest()
         declared = str(pub_row.get("sha256") or "").strip().casefold()
@@ -119,30 +120,52 @@ def prepare(
             raise ValueError(f"{provider}: published stage digest mismatch")
         destination.write_bytes(exact)
 
-        row["sha256"] = digest
-        row["patched_sha256"] = digest
-        row["upstream_sha256"] = digest
-        row["bytes"] = len(exact)
-        # This isolated Learning stage copies an already-published immutable
-        # parent; it does not re-apply the production override pipeline. Keep
-        # structured provider authority from reconstruction, but clear
-        # stage-local patch/repair history so provenance cannot falsely claim a
-        # mutation where the exact parent SHA is unchanged.
+        # Product execution is defined by the complete published candidate
+        # contract, not by JS bytes alone. Reusing reconstruction metadata here
+        # can change supported lanes/runtime inputs and turn a healthy published
+        # provider into a false Learning negative. Start from the exact published
+        # candidate row, then retain only sandbox/reconstruction control fields
+        # that must not change the product-facing execution contract.
+        published_execution = copy.deepcopy(pub_row)
+        published_execution["local_path"] = str(reconstruction_row.get("local_path") or "")
+        published_execution["sha256"] = digest
+        published_execution["patched_sha256"] = digest
+        published_execution["upstream_sha256"] = digest
+        published_execution["bytes"] = len(exact)
+        published_execution["provider_base_reconstruction_required"] = False
+        if "repair_allowed" in reconstruction_row:
+            published_execution["repair_allowed"] = reconstruction_row.get("repair_allowed")
+        if reconstruction_row.get("candidate_code_origin"):
+            published_execution["candidate_code_origin"] = reconstruction_row.get("candidate_code_origin")
+        for key in (
+            "upstream_code_executed",
+            "legacy_provider_js_executed_for_reconstruction",
+        ):
+            if key in reconstruction_row:
+                published_execution[key] = reconstruction_row.get(key)
+
+        row.clear()
+        row.update(published_execution)
         row["local_patches"] = []
         row["repair_history"] = []
-        row["learning_parent_authority"] = "published-exact-current-bytes"
+        row["learning_parent_authority"] = "published-exact-current-candidate"
         row["learning_parent_overlay_applied"] = True
         row["learning_parent_published_exact_bytes"] = True
+        row["learning_parent_published_exact_metadata"] = True
         row["learning_parent_published_key"] = str(pub_row.get("key") or "")
         row["learning_parent_published_sha256"] = digest
+        row["learning_reconstruction_key"] = str(reconstruction_row.get("key") or "")
         row["learning_reconstruction_sha256"] = original_sha
+        row["learning_reconstruction_candidate_code_origin"] = str(
+            reconstruction_row.get("candidate_code_origin") or ""
+        )
         row["learning_parent_proof_authority"] = False
         row["learning_parent_publication_authority"] = False
         overlaid.append(provider)
 
     output_registry["learning_parent_stage"] = {
         "schemaVersion": 1,
-        "authority": "published-exact-parent-or-clean-reconstruction-required",
+        "authority": "published-exact-candidate-or-clean-reconstruction-required",
         "requestedProviders": requested,
         "overlaidPublishedExactProviders": overlaid,
         "retainedCleanReconstructionProviders": retained_reconstruction,
