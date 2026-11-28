@@ -1,14 +1,65 @@
 'use strict';
 
+const CAPTCHA_RESOURCE_HOSTS = new Set([
+  'google.com',
+  'www.google.com',
+  'gstatic.com',
+  'www.gstatic.com',
+  'www.recaptcha.net',
+  'hcaptcha.com',
+  'js.hcaptcha.com',
+]);
+
+function extractTitleText(source) {
+  const text = String(source || '');
+  const low = text.toLowerCase();
+  const start = low.indexOf('<title');
+  if (start < 0) return '';
+  const boundary = start + 6;
+  if (boundary < text.length && !/[\s/>]/.test(text[boundary])) return '';
+  const openEnd = text.indexOf('>', boundary);
+  if (openEnd < 0) return '';
+  const close = low.indexOf('</title', openEnd + 1);
+  if (close < 0) return '';
+  const closeBoundary = close + 7;
+  if (closeBoundary < text.length && !/[\s/>]/.test(text[closeBoundary])) return '';
+  return text.slice(openEnd + 1, close)
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+function hasCaptchaResource(source) {
+  const text = String(source || '');
+  const attr = /\b(?:src|href)\s*=\s*(["'])([^"']{1,2048})\1/gi;
+  let match;
+  while ((match = attr.exec(text)) !== null) {
+    let parsed;
+    try {
+      parsed = new URL(match[2], 'https://invalid.local/');
+    } catch {
+      continue;
+    }
+    if (!['http:', 'https:'].includes(parsed.protocol)) continue;
+    const host = parsed.hostname.toLowerCase();
+    const path = parsed.pathname.toLowerCase();
+    if (!CAPTCHA_RESOURCE_HOSTS.has(host)) continue;
+    if (
+      ((host === 'google.com' || host === 'www.google.com' || host === 'gstatic.com'
+        || host === 'www.gstatic.com' || host === 'www.recaptcha.net')
+        && path.startsWith('/recaptcha'))
+      || ((host === 'hcaptcha.com' || host === 'js.hcaptcha.com') && path === '/1/api.js')
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function challengeKind({ body = '', contentType = '', server = '', cfRay = '', cfMitigated = '' } = {}) {
   const type = String(contentType || '').toLowerCase();
-  const mime = type.split(';', 1)[0].trim();
-  const html = mime === 'text/html' || mime === 'application/xhtml+xml';
-  const script = new Set([
-    'application/javascript', 'text/javascript',
-    'application/x-javascript', 'text/x-javascript',
-    'application/ecmascript', 'text/ecmascript',
-  ]).has(mime);
+  const html = /text\/html/.test(type);
+  const script = /(?:application|text)\/(?:javascript|x-javascript|ecmascript)/.test(type);
   if (!html && !script) return '';
 
   const source = String(body || '').slice(0, 65536);
@@ -30,17 +81,12 @@ function challengeKind({ body = '', contentType = '', server = '', cfRay = '', c
 
   if (!html) return '';
 
-  const titleMatch = /<title\b[^>]*>([\s\S]{0,160}?)<\/title\s*>/i.exec(source);
-  const title = String(titleMatch?.[1] || '')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .toLowerCase();
+  const title = extractTitleText(source);
   const challengeTitle = /^(?:just a moment(?:\.{3})?|checking your browser(?: before accessing .+)?|verify you are human|attention required!?|security check)$/i.test(title);
 
   const captchaMarkup = (
     /\b(?:class|id)\s*=\s*["'][^"']*\b(?:g-recaptcha|h-captcha)\b/i.test(source)
-    || /(?:google\.com\/recaptcha|gstatic\.com\/recaptcha|hcaptcha\.com\/1\/api\.js)/i.test(source)
+    || hasCaptchaResource(source)
   );
   if (challengeTitle || captchaMarkup) {
     return (
