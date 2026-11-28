@@ -45,7 +45,11 @@ assert by["chain"]["lane"]=="FAST_REPAIR"
 transport_rows=[row for row in out["executions"] if row["repairScope"]=="transport"]
 network_row=next(row for row in transport_rows if row["providers"]==["network"])
 domain_row=next(row for row in transport_rows if row["providers"]==["domain"])
-assert network_row["lane"]=="BRAIN_LEARNING" and network_row["strategyBlueprint"]=="qualified_authority_transport_learning_v1"
+assert network_row["lane"]=="CORE_CLIENT_LEARNING"
+assert network_row["workflow"]=="provider-waf-browser-session.yml"
+assert network_row["strategyBlueprint"]=="qualified_authority_transport_differential_v2"
+assert network_row["mutatesProduction"] is False
+assert network_row["applicationValidated"] is False
 assert domain_row["lane"]=="DOMAIN_REFRESH" and domain_row["authorityQualified"] is False
 assert by["tls"]["lane"]=="CORE_CLIENT_LEARNING"
 assert by["tls"]["strategyBlueprint"]=="native_tls_browser_differential_v1"
