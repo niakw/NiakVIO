@@ -91,11 +91,12 @@
   ],
   "debugStageCounts": {
     "provider_network_exception": 9,
-    "provider_network_http_error": 29,
-    "provider_network_zero_result": 76,
+    "provider_network_http_error": 30,
+    "provider_network_zero_result": 71,
     "provider_returned_streams": 13,
-    "provider_waf_challenge": 43,
-    "timeout": 17
+    "provider_waf_challenge": 44,
+    "provider_zero_before_provider_network": 1,
+    "timeout": 19
   },
   "debugStageProviders": {
     "provider_network_exception": [
@@ -142,8 +143,6 @@
       "kurage",
       "latestmovies",
       "moviebite",
-      "movish",
-      "movix-fr",
       "nakios",
       "neobam",
       "neonflix",
@@ -152,7 +151,6 @@
       "primewire",
       "pstream",
       "rarefilmm",
-      "reanime-to",
       "shuttletv",
       "skstream",
       "uhdmovies",
@@ -199,6 +197,9 @@
       "watch-cartoon-online",
       "waveanime"
     ],
+    "provider_zero_before_provider_network": [
+      "vidrock"
+    ],
     "timeout": [
       "anidb",
       "anime-sama",
@@ -208,8 +209,8 @@
       "hianime",
       "movix-fr",
       "nakios",
+      "reanime-to",
       "sadisflix",
-      "showbox",
       "vuflix",
       "zone-streaming"
     ]
@@ -244,7 +245,7 @@
   "partialOkCount": 0,
   "partialOkProviders": [],
   "providerCount": 111,
-  "runId": 46164391891,
+  "runId": 46164580932,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
@@ -256,11 +257,12 @@
     "HARNESS/ENV BLOCKED": 7,
     "NO PROOF": 14,
     "PROOF REFRESH REQUIRED": 4,
-    "PROVIDER NETWORK BLOCKED": 8,
-    "REGRESSION PROVIDER": 5
+    "PROVIDER NETWORK BLOCKED": 7,
+    "REGRESSION PROVIDER": 5,
+    "ROUTE PROVEN": 1
   },
   "testedProviderCount": 95,
-  "triggerSha": "cfdf2e5bc4685b3c4e69840277b4b2bdfc901238",
+  "triggerSha": "80358bceb5a9a76172da449683dfcdfb80fb7a42",
   "verifiedProviderCount": 1,
   "verifiedProviders": [
     "moviebox"
