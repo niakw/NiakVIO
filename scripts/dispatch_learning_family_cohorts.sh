@@ -33,7 +33,7 @@ for cohort_filter in "${cohort_filters[@]}"; do
     --repo "$GITHUB_REPOSITORY" --ref main
     -f publish_proposal="$PUBLISH_PROPOSAL"
     -f target_providers="$cohort_filter"
-    -f slot_remaining_minutes=360
+    -f slot_remaining_minutes=90
     -f slot_phase=1
   )
   if [ "$FORCE_MODE" = "true" ]; then
