@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "authority": "provider-authority-arbiter-v1",
-  "censusStatusSource": "/home/runner/work/NiakVIO/NiakVIO/automation/provider-census-status.json",
+  "censusStatusSource": "/tmp/provider-census-preauthority.json",
   "productionFreshnessStatusSource": "persisted-all-scope",
   "policy": {
     "searchRole": "historical-supplement-only",
@@ -40,6 +40,7 @@
     "papadustream",
     "primewire",
     "purstream",
+    "sadisflix",
     "shuttletv",
     "webflix"
   ],
@@ -127,7 +128,6 @@
     "rivestream",
     "rivestream-app",
     "rivestream-ru",
-    "sadisflix",
     "sflix",
     "showbox",
     "skstream",
@@ -803,7 +803,7 @@
         "search_supplement_only",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "current_status:PROVIDER NETWORK BLOCKED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -920,7 +920,7 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:NO PROOF"
+        "current_status:HARNESS MISMATCH"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -1333,7 +1333,7 @@
         "authoritative_route_source",
         "current_bytes_lack_production_freshness_authority",
         "production_proof:no-current-byte-production-proof",
-        "current_status:PROVIDER JS BROKEN"
+        "current_status:CHAIN REACHED"
       ],
       "productionFreshnessAuthorized": false,
       "productionProofAuthority": "no-current-byte-production-proof"
@@ -1599,14 +1599,19 @@
     },
     {
       "provider": "sadisflix",
-      "action": "KEEP_DISABLED",
-      "repairEligible": false,
-      "confidence": "terminal",
-      "authorityClass": "disabled",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
       "failureCount": 0,
       "reasons": [
-        "already_disabled"
-      ]
+        "authoritative_route_source",
+        "current_bytes_lack_production_freshness_authority",
+        "production_proof:no-current-byte-production-proof",
+        "current_status:REGRESSION PROVIDER"
+      ],
+      "productionFreshnessAuthorized": false,
+      "productionProofAuthority": "no-current-byte-production-proof"
     },
     {
       "provider": "sflix",

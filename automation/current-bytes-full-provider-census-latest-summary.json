@@ -2,13 +2,12 @@
   "acceptanceBasis": "aggregate-operational-state-including-carried-evidence",
   "acceptanceReached": false,
   "acceptanceTarget": 84,
-  "acceptedPlayableProviderCount": 12,
+  "acceptedPlayableProviderCount": 11,
   "acceptedPlayableProviders": [
     "cinematheque-de-bretagne",
     "french-manga",
     "kurage",
     "movix-fr",
-    "nakios",
     "neko-sama",
     "papadustream",
     "purstream",
@@ -94,12 +93,11 @@
   ],
   "debugStageCounts": {
     "provider_network_exception": 9,
-    "provider_network_http_error": 28,
-    "provider_network_zero_result": 80,
-    "provider_returned_streams": 15,
-    "provider_returned_wrong_content": 1,
-    "provider_waf_challenge": 42,
-    "timeout": 12
+    "provider_network_http_error": 29,
+    "provider_network_zero_result": 75,
+    "provider_returned_streams": 14,
+    "provider_waf_challenge": 43,
+    "timeout": 17
   },
   "debugStageProviders": {
     "provider_network_exception": [
@@ -115,6 +113,7 @@
       "coflix",
       "documentary-area",
       "emnexmovies",
+      "film-a-revoir",
       "kehflix",
       "moiflix",
       "movieshunt",
@@ -133,11 +132,9 @@
       "allwish",
       "animesama-co",
       "animevostfr",
-      "boredflix",
       "cinemabz",
       "corsflix",
       "fawesome",
-      "film-a-revoir",
       "flixer",
       "frembed",
       "frenchstream",
@@ -147,7 +144,6 @@
       "latestmovies",
       "moviebite",
       "moviebox",
-      "movish",
       "movix-fr",
       "nakios",
       "neobam",
@@ -171,7 +167,6 @@
       "french-manga",
       "kurage",
       "movix-fr",
-      "nakios",
       "neko-sama",
       "papadustream",
       "purstream",
@@ -179,9 +174,6 @@
       "voiranime-homes",
       "wookafr",
       "zone-streaming"
-    ],
-    "provider_returned_wrong_content": [
-      "sadisflix"
     ],
     "provider_waf_challenge": [
       "1jour1film0626",
@@ -213,9 +205,12 @@
       "anidb",
       "anime-sama",
       "anisama",
+      "boredflix",
       "flixhq",
       "hianime",
+      "nakios",
       "reanime-to",
+      "sadisflix",
       "showbox",
       "vuflix",
       "zone-streaming"
@@ -251,29 +246,26 @@
   "partialOkCount": 0,
   "partialOkProviders": [],
   "providerCount": 111,
-  "runId": 46104028235,
+  "runId": 46104378678,
   "schemaVersion": 3,
   "scope": "merged-shards",
   "statusCounts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 18,
+    "CHAIN REACHED": 19,
     "DISABLED": 36,
     "FULL OK": 6,
     "HARNESS MISMATCH": 8,
     "HARNESS/ENV BLOCKED": 7,
-    "NO PROOF": 15,
+    "NO PROOF": 14,
     "PROOF REFRESH REQUIRED": 5,
-    "PROVIDER JS BROKEN": 2,
-    "PROVIDER NETWORK BLOCKED": 8,
-    "REGRESSION PROVIDER": 4,
-    "REGRESSION PROVIDER JS": 1
+    "PROVIDER JS BROKEN": 1,
+    "PROVIDER NETWORK BLOCKED": 9,
+    "REGRESSION PROVIDER": 5
   },
   "testedProviderCount": 95,
-  "triggerSha": "a826e9fa952ed7901a6523f95a070299948862b9",
+  "triggerSha": "9ec6a2614053e40b496b162b3406c9e2efdf3938",
   "verifiedProviderCount": 0,
   "verifiedProviders": [],
-  "wrongContentProviderCount": 1,
-  "wrongContentProviders": [
-    "sadisflix"
-  ]
+  "wrongContentProviderCount": 0,
+  "wrongContentProviders": []
 }
