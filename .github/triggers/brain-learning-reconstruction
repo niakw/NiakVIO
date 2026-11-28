@@ -1,5 +1,5 @@
 Brain exact-parent + parent-health parity replay — MeowTV oracle.
-requested_at: 2026-11-28
+requested_at: 2026-11-28T04:43:00+01:00
 budget_minutes: 90
 execution_mode: exact-published-candidate-parent-health-parity
 target_provider: meowtv
@@ -9,5 +9,5 @@ causal_frontier: published_exact_candidate_and_parent_health_parity
 required_scope: targeted-learning
 required_evidence: published-v3-parent-healthy;staging-learning-exact-candidate;deep-parent-parity;harness-parent-contradiction-nonnegative
 causal_change: Execute from the exact current published MeowTV candidate contract, including product-facing metadata. When the exact published parent is healthy/playable, compare parent and candidate with the same deep health policy; if the child baseline still contradicts the published parent before mutation, persist harness_parent_contradiction as executed_inconclusive with zero negative-memory failures.
-proof_goal: Published parent healthy/playable and internal baseline parity on the same exact candidate contract, or explicit FIELD_BRAIN_HARNESS_PARENT_CONTRADICTION with negative_memory=false. No production publication.
+proof_goal: Published parent healthy/playable and internal baseline parity on the same exact candidate contract; when no executable mutation is produced, FIELD_BRAIN_LAB_SKIPPED must suppress client replay and hidden-failure pollution. Any parent contradiction remains executed_inconclusive with zero failures/successes. No production publication.
 publication_policy: Learning is non-authoritative. Preserve four manifests, ProviderBase generation, 10-version JS retention and no native-hub46.
