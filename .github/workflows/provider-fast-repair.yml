@@ -497,6 +497,7 @@ jobs:
               fi
             fi
             ELIGIBLE_CSV="$eligible_csv" \
+              LEARNING_SELECTION="${selection:-}" \
               FORCE_MODE="$force_mode" \
               PUBLISH_PROPOSAL="$publish_proposal" \
               MAX_COHORTS=8 \
