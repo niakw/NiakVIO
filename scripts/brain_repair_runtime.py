@@ -2095,7 +2095,10 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
 
     sanitized_plans = {
         key: {
-            "providerId": row.get("providerId"), "failureClass": row.get("failureClass"),
+            "providerId": row.get("providerId"),
+            "parentArtifactSha256": row.get("parentArtifactSha256"),
+            "parentAuthority": row.get("parentAuthority"),
+            "failureClass": row.get("failureClass"),
             "brainVersion": row.get("brainVersion"),
             "signature": row.get("signature"), "action": row.get("action"),
             "exitReason": row.get("exitReason"),
