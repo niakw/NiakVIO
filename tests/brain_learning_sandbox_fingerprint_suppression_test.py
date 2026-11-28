@@ -24,10 +24,12 @@ base = {
     "lastOutcome": "rejected",
 }
 current = "b" * 64
+legacy_candidate = {}
 
 old_impl = {**base, "strategyImplementationFingerprint": "a" * 64}
 assert mod._negative_failure_count(
     [old_impl],
+    candidate=legacy_candidate,
     provider_id="representative",
     provider_version="*",
     signature="media_extraction_gap",
@@ -39,6 +41,7 @@ assert mod._negative_failure_count(
 same_impl = {**base, "strategyImplementationFingerprint": current}
 assert mod._negative_failure_count(
     [same_impl],
+    candidate=legacy_candidate,
     provider_id="representative",
     provider_version="*",
     signature="media_extraction_gap",
@@ -50,6 +53,7 @@ assert mod._negative_failure_count(
 legacy = {**base, "strategyImplementationFingerprint": ""}
 assert mod._negative_failure_count(
     [legacy],
+    candidate=legacy_candidate,
     provider_id="representative",
     provider_version="*",
     signature="media_extraction_gap",
@@ -67,10 +71,61 @@ other = {
 }
 assert mod._negative_failure_count(
     [other],
+    candidate=legacy_candidate,
     provider_id="representative",
     provider_version="*",
     signature="media_extraction_gap",
     profile="runtime_response_salvage_v1",
+    current_profile=base["profile"],
+    current_fingerprint=current,
+) == 3
+
+exact_parent = {
+    "learning_parent_authority": "published-exact-current-bytes",
+    "learning_parent_published_sha256": "c" * 64,
+    "sha256": "c" * 64,
+}
+# A legacy negative without parent-byte provenance cannot veto an exact current
+# published parent. Same-parent evidence still suppresses normally.
+assert mod._negative_failure_count(
+    [same_impl],
+    candidate=exact_parent,
+    provider_id="representative",
+    provider_version="*",
+    signature="media_extraction_gap",
+    profile=base["profile"],
+    current_profile=base["profile"],
+    current_fingerprint=current,
+) == 0
+
+wrong_parent = {
+    **same_impl,
+    "parentArtifactSha256": "d" * 64,
+    "parentAuthority": "published-exact-current-bytes",
+}
+assert mod._negative_failure_count(
+    [wrong_parent],
+    candidate=exact_parent,
+    provider_id="representative",
+    provider_version="*",
+    signature="media_extraction_gap",
+    profile=base["profile"],
+    current_profile=base["profile"],
+    current_fingerprint=current,
+) == 0
+
+same_parent = {
+    **same_impl,
+    "parentArtifactSha256": "c" * 64,
+    "parentAuthority": "published-exact-current-bytes",
+}
+assert mod._negative_failure_count(
+    [same_parent],
+    candidate=exact_parent,
+    provider_id="representative",
+    provider_version="*",
+    signature="media_extraction_gap",
+    profile=base["profile"],
     current_profile=base["profile"],
     current_fingerprint=current,
 ) == 3
