@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +26,57 @@ def load(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError(f"{path}: JSON object required")
     return value
+
+
+def _timestamp_rank(value: object) -> float:
+    text = str(value or "").strip()
+    if not text:
+        return 0.0
+    try:
+        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return 0.0
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return max(0.0, parsed.timestamp())
+
+
+def learning_recency(memory: dict[str, Any]) -> tuple[dict[str, float], dict[str, str]]:
+    latest_epoch: dict[str, float] = {}
+    latest_text: dict[str, str] = {}
+    experiment = memory.get("experimentMemory")
+    if isinstance(experiment, dict):
+        entries = experiment.get("entries") or []
+    else:
+        entries = memory.get("entries") or []
+    for row in entries:
+        if not isinstance(row, dict):
+            continue
+        provider = canon(row.get("providerId"))
+        if not provider:
+            continue
+        raw = str(row.get("lastSeenAt") or "").strip()
+        rank = _timestamp_rank(raw)
+        if rank >= latest_epoch.get(provider, 0.0):
+            latest_epoch[provider] = rank
+            if raw:
+                latest_text[provider] = raw
+
+    queue = memory.get("learningQueue")
+    if isinstance(queue, dict):
+        state = queue.get("providerState")
+        if isinstance(state, dict):
+            for raw_provider, row in state.items():
+                provider = canon(raw_provider)
+                if not provider or not isinstance(row, dict):
+                    continue
+                raw = str(row.get("lastAttemptAt") or "").strip()
+                rank = _timestamp_rank(raw)
+                if rank >= latest_epoch.get(provider, 0.0):
+                    latest_epoch[provider] = rank
+                    if raw:
+                        latest_text[provider] = raw
+    return latest_epoch, latest_text
 
 
 def evidence_rank(row: dict[str, Any]) -> int:
@@ -58,6 +110,7 @@ def plan(
     status: dict[str, Any],
     *,
     max_cohorts: int = 8,
+    learning_memory: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     eligible = []
     seen: set[str] = set()
@@ -109,25 +162,47 @@ def plan(
         families.setdefault(key, []).append(provider)
         family_meta[key] = family
 
-    def provider_rank(provider: str) -> tuple[int, int, str]:
+    recent_epoch, recent_text = learning_recency(learning_memory or {})
+
+    def provider_rank(provider: str) -> tuple[float, int, int, str]:
         row = by_provider.get(provider, {})
-        return (status_rank(row), evidence_rank(row), provider)
+        return (
+            recent_epoch.get(provider, 0.0),
+            status_rank(row),
+            evidence_rank(row),
+            provider,
+        )
 
     candidates: list[dict[str, Any]] = []
     for key, members in families.items():
         ranked = sorted(members, key=provider_rank)
         oracle = ranked[0]
+        family_last_epoch = max((recent_epoch.get(member, 0.0) for member in ranked), default=0.0)
+        family_last_text = ""
+        if family_last_epoch > 0:
+            family_last_text = max(
+                (
+                    recent_text.get(member, "")
+                    for member in ranked
+                    if recent_epoch.get(member, 0.0) == family_last_epoch
+                ),
+                default="",
+            )
         candidates.append({
             "familyKey": key,
             "provider": oracle,
             "providerFilter": oracle,
             "familyProviderCount": len(ranked),
             "deferredFamilyProviders": ranked[1:],
+            "providerLastAttemptAt": recent_text.get(oracle, ""),
+            "familyLastAttemptAt": family_last_text,
+            "familyLastAttemptEpoch": family_last_epoch,
             **family_meta[key],
         })
 
     candidates.sort(
         key=lambda row: (
+            float(row.get("familyLastAttemptEpoch") or 0.0),
             provider_rank(str(row["provider"])),
             str(row["familyKey"]),
         )
@@ -147,6 +222,8 @@ def plan(
         "maxCohorts": limit,
         "cohortCount": len(cohorts),
         "cohorts": cohorts,
+        "selectionPolicy": "least-recent-family-then-least-recent-member-then-status-depth",
+        "learningMemoryUsed": bool(learning_memory),
         "selectedProviders": sorted(selected),
         "deferredProviders": deferred,
         "safety": {
@@ -165,6 +242,7 @@ def main() -> int:
     parser.add_argument("--batch-plan", type=Path, required=True)
     parser.add_argument("--status", type=Path, required=True)
     parser.add_argument("--max-cohorts", type=int, default=8)
+    parser.add_argument("--learning-memory", type=Path, default=None)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
 
@@ -174,6 +252,11 @@ def main() -> int:
         load(args.batch_plan),
         load(args.status),
         max_cohorts=args.max_cohorts,
+        learning_memory=(
+            load(args.learning_memory)
+            if args.learning_memory is not None and args.learning_memory.is_file()
+            else {}
+        ),
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(
@@ -186,7 +269,8 @@ def main() -> int:
         f"families={output['familyCount']} cohorts={output['cohortCount']} "
         f"deferred={len(output['deferredProviders'])} "
         f"plan_current={str(output['batchPlanCurrent']).lower()} "
-        "authority=scheduling-only"
+        f"memory_used={str(output['learningMemoryUsed']).lower()} "
+        "policy=least-recent-family authority=scheduling-only"
     )
     return 0
 
