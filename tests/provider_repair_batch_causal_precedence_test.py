@@ -35,12 +35,23 @@ reclassified={
     ],
 }
 assert mod.action_for_row(reclassified,"none","waf_challenge")[0]=="learning"
+assert mod.causal_issue_for_row(reclassified)=="provider_zero_before_provider_network"
 not_reclassified={**reclassified,"residentialProviderReplayReclassified":False}
 assert mod.action_for_row(not_reclassified,"none","waf_challenge")[0]=="learning"
 missing_flag={k:v for k,v in reclassified.items() if k!="residentialProviderReplayReclassified"}
 assert mod.action_for_row(missing_flag,"none","waf_challenge")[0]=="learning"
 no_replay={**missing_flag,"residentialProviderReplayEvidence":[]}
 assert mod.action_for_row(no_replay,"none","waf_challenge")[0]=="learning"
+assert mod.causal_issue_for_row(no_replay)=="unknown"
+mixed_replay={
+    **reclassified,
+    "dominantIssue":"waf_challenge",
+    "residentialProviderReplayEvidence":[
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0",
+        "tv: status=no_streams, stage=provider_network_http_error, raw=0",
+    ],
+}
+assert mod.causal_issue_for_row(mixed_replay)=="waf_challenge"
 allwish_like={
     "status":"NO PROOF",
     "repairEligible":True,
