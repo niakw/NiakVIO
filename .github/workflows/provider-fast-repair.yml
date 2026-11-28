@@ -509,7 +509,7 @@ jobs:
           if [ "$remote_main" != "$GITHUB_SHA" ]; then
             echo "FIELD_PROVIDER_FAST_REPAIR_STALE source=$GITHUB_SHA remote=$remote_main"
             # Do not restart a zero-accepted Fast cohort for a metadata-only
-            # census/evidence commit. Preserve all runnable, generated-Lego,
+            # census/evidence commit. Preserve all runnable, generated-Bloc,
             # negative/positive Brain memory and explicit target differences.
             # Those CAN produce new experiments; metadata-only bumps cannot.
             if [ "$publication_allowed" != "true" ] &&
