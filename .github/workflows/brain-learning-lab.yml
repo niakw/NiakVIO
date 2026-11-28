@@ -240,6 +240,7 @@ jobs:
           census=json.load(open(sys.argv[2],encoding="utf-8"))
           repair={str(v or "").strip().lower().replace("_","-") for v in census.get("repairQueue") or [] if str(v or "").strip()}
           environment={str(v or "").strip().lower().replace("_","-") for v in census.get("environmentQueue") or [] if str(v or "").strip()}
+          authority={str(v or "").strip().lower().replace("_","-") for v in census.get("authorityRediscoveryQueue") or [] if str(v or "").strip()}
           plan=json.load(open("/tmp/current-learning-repair-batch-plan.json",encoding="utf-8"))
           same_run=str(plan.get("sourceRunId") or "")==str(census.get("runId") or "") and bool(census.get("runId"))
           same_run=same_run and bool(census.get("triggerSha")) and str(plan.get("sourceTriggerSha") or "").casefold()==str(census.get("triggerSha") or "").casefold()
@@ -260,7 +261,7 @@ jobs:
           }
           disabled={str(v or "").strip().lower().replace("_","-") for v in census.get("lifecycleDisabledQueue") or [] if str(v or "").strip()}
           disabled.update(str(row.get("provider") or "").strip().lower().replace("_","-") for row in census.get("providers") or [] if isinstance(row,dict) and str(row.get("status") or "").strip().casefold()=="disabled")
-          eligible=(repair|environment|dynamic|current) if force else (repair|environment|dynamic)
+          eligible=(repair|environment|authority|dynamic|current) if force else (repair|environment|authority|dynamic)
           eligible-=disabled
           # A routine multi-target dispatch can outlive a lifecycle change.
           # Drop only known disabled identities, never unknown or arbitrary scope.
@@ -271,23 +272,26 @@ jobs:
           missing=[v for v in requested if v not in eligible]
           if not requested: raise SystemExit("targeted Learning cohort is empty after lifecycle suppression")
           if missing:
-              scope="current non-disabled providers under explicit architecture FORCE" if force else "current repair/environment/dynamic-completeness queues"
+              scope="current non-disabled providers under explicit architecture FORCE" if force else "current repair/environment/authority-rediscovery/dynamic-completeness queues"
               raise SystemExit("targeted Learning cohort escaped "+scope+": "+",".join(missing))
           # Routine Learning remains exact current census debt scoped. Dynamic
           # completeness providers are admitted only from a same-run batch plan.
           # Explicit architecture FORCE may additionally inspect any current
           # non-disabled provider.
           environment_targets=[v for v in requested if v in environment]
-          completeness_targets=[v for v in requested if v in dynamic or (force and v not in repair and v not in environment)]
+          authority_targets=[v for v in requested if v in authority]
+          completeness_targets=[v for v in requested if v in dynamic or (force and v not in repair and v not in environment and v not in authority)]
           if force and any(v not in (repair|environment|dynamic) for v in requested):
               policy="explicit-force-completeness-learning"
           elif completeness_targets:
               policy="autopilot-targeted-completeness-learning"
           elif environment_targets:
               policy="autopilot-targeted-core-learning"
+          elif authority_targets:
+              policy="autopilot-targeted-authority-learning"
           else:
               policy="autopilot-targeted-learning"
-          data={"schemaVersion":1,"fastHandoff":True,"providerCount":len(requested),"providers":requested,"providerFilter":",".join(requested),"policy":policy,"environmentProviders":environment_targets,"completenessProviders":completeness_targets,"dynamicPlanSourceRunId":str(plan.get("sourceRunId") or "") if same_run else ""}
+          data={"schemaVersion":1,"fastHandoff":True,"providerCount":len(requested),"providers":requested,"providerFilter":",".join(requested),"policy":policy,"environmentProviders":environment_targets,"authorityRediscoveryProviders":authority_targets,"completenessProviders":completeness_targets,"dynamicPlanSourceRunId":str(plan.get("sourceRunId") or "") if same_run else ""}
           json.dump(data,open(sys.argv[3],"w",encoding="utf-8"),ensure_ascii=False,indent=2)
           PY
             fast_handoff=true
@@ -302,6 +306,11 @@ jobs:
           repair={
               str(value or '').strip().lower().replace('_','-')
               for value in census.get('repairQueue') or []
+              if str(value or '').strip()
+          }
+          authority={
+              str(value or '').strip().lower().replace('_','-')
+              for value in census.get('authorityRediscoveryQueue') or []
               if str(value or '').strip()
           }
           plan=json.load(open("/tmp/current-learning-repair-batch-plan.json",encoding="utf-8"))
@@ -324,7 +333,7 @@ jobs:
           }
           disabled={str(v or "").strip().lower().replace("_","-") for v in census.get("lifecycleDisabledQueue") or [] if str(v or "").strip()}
           disabled.update(str(row.get("provider") or "").strip().lower().replace("_","-") for row in census.get("providers") or [] if isinstance(row,dict) and str(row.get("status") or "").strip().casefold()=="disabled")
-          if target in disabled or (target not in repair and target not in dynamic and not (force and target in current)):
+          if target in disabled or (target not in repair and target not in authority and target not in dynamic and not (force and target in current)):
               raise SystemExit(f"target provider is not eligible for current Learning/FORCE scope: {target}")
           rows=handoff.get('providers') if isinstance(handoff.get('providers'),dict) else {}
           row=rows.get(target)
@@ -340,8 +349,9 @@ jobs:
               "providerCount": 1,
               "providers": [target],
               "providerFilter": target,
-              "policy": "explicit-force-completeness-learning" if force and target not in repair and target not in dynamic else ("autopilot-targeted-completeness-learning" if target in dynamic else "target-scoped-handoff"),
-              "completenessProviders": [target] if target in dynamic or target not in repair else [],
+              "policy": "explicit-force-completeness-learning" if force and target not in repair and target not in authority and target not in dynamic else ("autopilot-targeted-completeness-learning" if target in dynamic else ("autopilot-targeted-authority-learning" if target in authority else "target-scoped-handoff")),
+              "authorityRediscoveryProviders": [target] if target in authority else [],
+              "completenessProviders": [target] if target in dynamic or (force and target not in repair and target not in authority) else [],
               "dynamicPlanSourceRunId": str(plan.get("sourceRunId") or "") if same_run else "",
           }
           json.dump(data,open(sys.argv[4],"w",encoding="utf-8"),ensure_ascii=False,indent=2)
