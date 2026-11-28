@@ -42,6 +42,8 @@ from brain_source_family_state import (
 PLAYER_REQUEST_CONTRACT_PROFILE = "document_request_contract_mining_v2"
 PLAYER_REQUEST_CONTRACT_FAILURE = "media_extraction_gap"
 SESSION_BOOTSTRAP_FOLLOWUP_PROFILE = "provider_session_bootstrap_replay_v1"
+PLAYER_RESPONSE_FOLLOWUP_PROFILE = "media_response_shape_inference_v1"
+PLAYER_RESPONSE_FOLLOWUP_FAILURE = "media_extraction_gap"
 
 class BudgetExhausted(RuntimeError):
     """The bounded Learning work window ended; persist state and resume later."""
@@ -762,6 +764,91 @@ def network_causal_followup(
         "providerRequestDelta": str(int((source.get("networkExecutionDelta") or {}).get("providerRequestDelta") or 0)),
         "successfulProviderRequestDelta": str(int((source.get("networkExecutionDelta") or {}).get("successfulProviderRequestDelta") or 0)),
         "fourXxDelta": str(int(((source.get("networkExecutionDelta") or {}).get("statusBucketDelta") or {}).get("4xx") or 0)),
+        "deepestStage": str(summary.get("deepestStage") or "none"),
+    }
+
+
+def player_response_causal_followup(
+    state: dict[str, Any],
+    provider_id: str,
+) -> dict[str, str] | None:
+    """Reclassify a proven search-to-player gain as terminal response debt.
+
+    A search repair that causally advances into a successful player response has
+    already disproved "search is the deepest missing capability". If that child
+    still exposes no terminal media, the next bounded experiment must inspect the
+    response shape rather than rotate another search/route variant.
+
+    This remains diagnostic-only: no playback, proof, mutation or publication
+    authority is inferred from aggregate network telemetry.
+    """
+    memory = state.get("experimentMemory") if isinstance(state.get("experimentMemory"), dict) else {}
+    rows = [
+        row for row in memory.get("entries") or []
+        if isinstance(row, dict)
+        and norm(row.get("providerId")) == norm(provider_id)
+        and str(row.get("failureClass") or "").strip().casefold() == "search_gap"
+        and row.get("executionObserved") is True
+        and row.get("causalExerciseObserved") is not False
+        and str(row.get("lastOutcome") or "") in {
+            "rejected", "exploration_progress_nonpublishable",
+        }
+    ]
+    candidates: list[dict[str, Any]] = []
+    for row in rows:
+        summary = sanitize_network_execution_summary(row.get("networkExecutionSummary"))
+        delta = sanitize_network_execution_delta(row.get("networkExecutionDelta"))
+        if "providerRequestCount" not in summary or "providerRequestDelta" not in delta:
+            continue
+        requests = int(summary.get("providerRequestCount") or 0)
+        successful = int(summary.get("successfulProviderRequestCount") or 0)
+        network_failures = int(summary.get("networkFailureCount") or 0)
+        kinds = set(summary.get("responseKinds") or [])
+        deepest = str(summary.get("deepestStage") or "none")
+        request_delta = int(delta.get("providerRequestDelta") or 0)
+        successful_delta = int(delta.get("successfulProviderRequestDelta") or 0)
+        two_xx = int((summary.get("statusBuckets") or {}).get("2xx") or 0)
+        two_xx_delta = int((delta.get("statusBucketDelta") or {}).get("2xx") or 0)
+        candidate_deepest = str(delta.get("candidateDeepestStage") or "none")
+        parent_deepest = str(delta.get("parentDeepestStage") or "none")
+        if deepest != "player" or candidate_deepest != "player":
+            continue
+        if delta.get("stageAdvanced") is not True or int(delta.get("stageRankDelta") or 0) <= 0:
+            continue
+        if parent_deepest not in {"none", "search", "content_lookup", "detail", "episode"}:
+            continue
+        if requests <= 0 or successful <= 0 or two_xx <= 0:
+            continue
+        if request_delta <= 0 or successful_delta <= 0 or two_xx_delta <= 0:
+            continue
+        if successful * 2 < requests or network_failures >= successful:
+            continue
+        if "media" in kinds or "json" not in kinds:
+            continue
+        if kinds - {"html", "json", "text"}:
+            continue
+        candidates.append(row)
+
+    if not candidates:
+        return None
+    source = sorted(
+        candidates,
+        key=lambda row: str(row.get("lastSeenAt") or ""),
+        reverse=True,
+    )[0]
+    summary = sanitize_network_execution_summary(source.get("networkExecutionSummary"))
+    delta = sanitize_network_execution_delta(source.get("networkExecutionDelta"))
+    return {
+        "profile": PLAYER_RESPONSE_FOLLOWUP_PROFILE,
+        "failureClass": PLAYER_RESPONSE_FOLLOWUP_FAILURE,
+        "reason": "search_candidate_reached_successful_player_response_without_terminal_media",
+        "sourceProfile": str(source.get("profile") or ""),
+        "providerRequestCount": str(int(summary.get("providerRequestCount") or 0)),
+        "successfulProviderRequestCount": str(int(summary.get("successfulProviderRequestCount") or 0)),
+        "fourXxCount": str(int((summary.get("statusBuckets") or {}).get("4xx") or 0)),
+        "providerRequestDelta": str(int(delta.get("providerRequestDelta") or 0)),
+        "successfulProviderRequestDelta": str(int(delta.get("successfulProviderRequestDelta") or 0)),
+        "fourXxDelta": str(int((delta.get("statusBucketDelta") or {}).get("4xx") or 0)),
         "deepestStage": str(summary.get("deepestStage") or "none"),
     }
 
@@ -2855,6 +2942,11 @@ def main() -> int:
                         phase_learning_state,
                         provider_id,
                     )
+                    if followup is None:
+                        followup = player_response_causal_followup(
+                            phase_learning_state,
+                            provider_id,
+                        )
                     if followup is not None:
                         preferred_profile = followup["profile"]
                         preferred_failure_class = followup["failureClass"]
