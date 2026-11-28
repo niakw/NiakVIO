@@ -31,8 +31,13 @@ for needle in required:
 for needle in (
     'echo "published=false" >> "$GITHUB_OUTPUT"',
     'echo "published=true" >> "$GITHUB_OUTPUT"',
+    'dispatch_cohort=',
+    "IFS=',' read -r -a dispatch_providers",
+    'dispatch_provider="${dispatch_providers[0]}"',
+    'cohort=${dispatch_cohort:-none}',
 ):
     assert needle in publisher, needle
+assert "requires exactly one safe provider id" not in publisher
 
 # Repair-triggered Learning uses workflow_dispatch. It must not recursively
 # dispatch another Repair; only the explicit push-triggered handoff closes
