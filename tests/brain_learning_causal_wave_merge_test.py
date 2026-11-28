@@ -88,6 +88,8 @@ assert "scoped_order, batch_plan, info_by_id" in source
 assert "causal_family_frontier(order, batch_plan, by_id)" not in source
 assert 'queue["repairLearningDeferredPortfolioProviders"] = portfolio_deferred' in source
 assert 'p.add_argument("--provider-filter", default=""' in source
+assert 'p.add_argument("--batch-plan", type=Path' in source
+assert "batch_plan = load_json(args.batch_plan.resolve(), {})" in source
 assert "brain_owned_current_repair_providers(" in source
 assert "repair_learning_scope(" in source
 # Exact explicit-cohort behavior is exercised functionally in
