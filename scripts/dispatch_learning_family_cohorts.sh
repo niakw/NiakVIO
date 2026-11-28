@@ -8,6 +8,7 @@ PUBLISH_PROPOSAL="${PUBLISH_PROPOSAL:-false}"
 BATCH_PLAN="${BATCH_PLAN:-automation/provider-repair-batch-plan-latest.json}"
 STATUS="${STATUS:-automation/provider-census-status.json}"
 MAX_COHORTS="${MAX_COHORTS:-8}"
+MAX_FAMILY_PROVIDERS="${MAX_FAMILY_PROVIDERS:-8}"
 LEARNING_SELECTION="${LEARNING_SELECTION:-}"
 
 cohort_filters=()
@@ -31,6 +32,7 @@ else
     --batch-plan "$BATCH_PLAN"
     --status "$STATUS"
     --max-cohorts "$MAX_COHORTS"
+    --max-family-providers "$MAX_FAMILY_PROVIDERS"
     --output "$family_plan"
   )
   if [ -s "$learning_memory" ]; then
@@ -46,10 +48,11 @@ dispatch_failed=0
 for cohort_filter in "${cohort_filters[@]}"; do
   [ -n "$cohort_filter" ] || continue
   dispatch_fingerprint=""
+  cohort_oracle="${cohort_filter%%,*}"
   if [ -n "$LEARNING_SELECTION" ] && [ -s "$LEARNING_SELECTION" ]; then
-    dispatch_fingerprint="$(jq -r --arg provider "$cohort_filter" '.eligible[]? | select((.provider // "") == $provider) | .fingerprint // empty' "$LEARNING_SELECTION" | head -n 1)"
+    dispatch_fingerprint="$(jq -r --arg provider "$cohort_oracle" '.eligible[]? | select((.provider // "") == $provider) | .fingerprint // empty' "$LEARNING_SELECTION" | head -n 1)"
     if [ -n "$dispatch_fingerprint" ] && ! [[ "$dispatch_fingerprint" =~ ^[0-9a-f]{64}$ ]]; then
-      echo "invalid Learning dispatch fingerprint for $cohort_filter" >&2
+      echo "invalid Learning dispatch fingerprint for $cohort_oracle" >&2
       exit 1
     fi
   fi
@@ -98,7 +101,7 @@ if [ "$dispatched" -gt 0 ]; then
 else
   dispatched_any=false
 fi
-echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_PARALLEL eligible=$ELIGIBLE_CSV dispatched_cohorts=$dispatched failed_cohorts=$dispatch_failed family_deferred=$family_deferred learning_dispatch=$dispatched_any architecture_force=$FORCE_MODE publish_proposal=$PUBLISH_PROPOSAL"
+echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_PARALLEL eligible=$ELIGIBLE_CSV dispatched_cohorts=$dispatched failed_cohorts=$dispatch_failed family_deferred=$family_deferred max_family_providers=$MAX_FAMILY_PROVIDERS learning_dispatch=$dispatched_any architecture_force=$FORCE_MODE publish_proposal=$PUBLISH_PROPOSAL"
 
 # Dispatch failures never erase durable handoff debt. The parent Fast Repair
 # remains successful and a later Autopilot/scheduled Learning pass may retry.
