@@ -173,10 +173,22 @@ phase_success = {
     "executionObserved": True,
     "causalExerciseObserved": True,
 }
-phase_state = mod.merge_phase_family_skill_priors(base, [phase_success])
-family_key = "chain_terminal_gap:chain_terminal_extractor_v1:family:mixed_embed_resolver"
+phase_context = mod.causal_family_context({
+    "groups": [{
+        "groupId": "family-exact-a",
+        "providers": ["oracle-a", "sibling-a"],
+    }, {
+        "groupId": "family-exact-b",
+        "providers": ["foreign-a", "foreign-b"],
+    }]
+})
+phase_state = mod.merge_phase_family_skill_priors(base, [phase_success], phase_context)
+assert len(phase_state["learnedSkills"]) == 1, phase_state
+family_key = next(iter(phase_state["learnedSkills"]))
 skill = phase_state["learnedSkills"][family_key]
 assert skill["providers"] == ["oracle-a"], skill
+assert skill["familyPriorOnly"] is True, skill
+assert skill["familyEligibleProviders"] == ["oracle-a", "sibling-a"], skill
 assert skill["successCount"] == 1 and skill["failureCount"] == 0, skill
 assert skill["confidence"] == 1.0, skill
 assert skill["autoApply"] is False, skill
@@ -193,13 +205,29 @@ phase_failure = {
     "consecutiveFailures": 1,
     "lastOutcome": "rejected",
 }
-phase_state = mod.merge_phase_family_skill_priors(phase_state, [phase_failure])
+phase_state = mod.merge_phase_family_skill_priors(phase_state, [phase_failure], phase_context)
 skill = phase_state["learnedSkills"][family_key]
 assert skill["providers"] == ["oracle-a", "sibling-a"], skill
 assert skill["successCount"] == 1 and skill["failureCount"] == 1, skill
 assert skill["confidence"] == 0.5, skill
 foreign_failure = {**phase_failure, "capabilityStrategy": "direct_media"}
-unchanged = mod.merge_phase_family_skill_priors(base, [foreign_failure])
+unchanged = mod.merge_phase_family_skill_priors(base, [foreign_failure], phase_context)
 assert unchanged.get("learnedSkills") == {}, unchanged
+
+# The same profile/failure/runtime strategy in another causal group must create
+# a separate phase prior and cannot expand the first family's eligible siblings.
+foreign_success = {
+    **phase_success,
+    "providerId": "foreign-a",
+    "signature": "sig-foreign",
+}
+cross_state = mod.merge_phase_family_skill_priors(phase_state, [foreign_success], phase_context)
+assert len(cross_state["learnedSkills"]) == 2, cross_state
+skills = list(cross_state["learnedSkills"].values())
+eligible_sets = sorted(tuple(row["familyEligibleProviders"]) for row in skills)
+assert eligible_sets == [
+    ("foreign-a", "foreign-b"),
+    ("oracle-a", "sibling-a"),
+], eligible_sets
 
 print("Brain Learning causal-wave memory merge tests passed")
