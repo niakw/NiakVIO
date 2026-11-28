@@ -18,6 +18,9 @@ if str(SCRIPTS) not in sys.path:
 from provider_patch_blocks import (  # noqa: E402
     PROVIDER_BEGIN_MARKER,
     PROVIDER_END_MARKER,
+    assert_single_managed_fix,
+    decode_managed_data,
+    owned_span,
     replace_managed_fix,
 )
 
@@ -51,6 +54,34 @@ def harden_bundle(text: str) -> tuple[str, dict[str, Any]]:
         "providerMutation": False,
         "postBuildMutation": False,
         "mode": "preventive-core-lego",
+    }
+
+
+def validate_bundle(text: str) -> dict[str, Any]:
+    """Validate the managed security boundary semantically without rewriting bytes."""
+    source = str(text or "")
+    assert_single_managed_fix(source, MANAGED_FIX_ID)
+    span = owned_span(source, MANAGED_FIX_ID)
+    if span is None:
+        raise ValueError("provider security boundary is missing")
+    block = source[span[0]:span[1]]
+    expected_data = {
+        "revision": "preventive-core-security-v4",
+        "providerMutation": False,
+        "postBuildMutation": False,
+    }
+    if decode_managed_data(source, MANAGED_FIX_ID) != expected_data:
+        raise ValueError("provider security boundary metadata is stale")
+    if block.count(HOOK_MARKER) != 1:
+        raise ValueError("provider security boundary hook marker cardinality is invalid")
+    expected_statement = f"globalThis.{HOOK_BOUNDARY}=true;"
+    if block.count(expected_statement) != 1:
+        raise ValueError("provider security boundary executable contract is invalid")
+    return {
+        "changed": False,
+        "providerMutation": False,
+        "postBuildMutation": False,
+        "mode": "preventive-core-security-validation",
     }
 
 
