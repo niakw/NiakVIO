@@ -184,7 +184,7 @@
         "native-policy-reachable"
       ],
       "transportSignature": "native-policy-reachable",
-      "providerCount": 7,
+      "providerCount": 8,
       "providers": [
         "1jour1film0626",
         "arrowtv",
@@ -192,7 +192,8 @@
         "cinetimes",
         "dulourd",
         "fexini",
-        "franime"
+        "franime",
+        "fullanime"
       ],
       "action": "domain/backend authority is unresolved, but current transport evidence must be reproduced through browser/native/residential clients before any Domain or provider mutation",
       "selectionAuthorities": [
@@ -264,40 +265,6 @@
         "aniflix-uno",
         "animejlprovider",
         "ihavenotv"
-      ],
-      "action": "domain/backend authority is unresolved, but current transport evidence must be reproduced through browser/native/residential clients before any Domain or provider mutation",
-      "selectionAuthorities": [
-        "provider-census-status.json:brainCheckRequired"
-      ],
-      "dynamicVariantProviders": [],
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "runtimeFamilySignature": "not-applicable",
-      "causalIssueSignature": "not-applicable",
-      "evidenceDepthSignature": "not-applicable",
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "residential-exit-native-reachable"
-      ],
-      "transportSignature": "residential-exit-native-reachable",
-      "providerCount": 3,
-      "providers": [
-        "film-a-revoir",
-        "fullanime",
-        "voirserie"
       ],
       "action": "domain/backend authority is unresolved, but current transport evidence must be reproduced through browser/native/residential clients before any Domain or provider mutation",
       "selectionAuthorities": [
@@ -461,6 +428,39 @@
       "providers": [
         "animeonsen",
         "waveanime"
+      ],
+      "action": "domain/backend authority is unresolved, but current transport evidence must be reproduced through browser/native/residential clients before any Domain or provider mutation",
+      "selectionAuthorities": [
+        "provider-census-status.json:brainCheckRequired"
+      ],
+      "dynamicVariantProviders": [],
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|harness:residential-exit-native-reachable",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "runtimeFamilySignature": "not-applicable",
+      "causalIssueSignature": "not-applicable",
+      "evidenceDepthSignature": "not-applicable",
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-native-reachable"
+      ],
+      "transportSignature": "residential-exit-native-reachable",
+      "providerCount": 2,
+      "providers": [
+        "film-a-revoir",
+        "voirserie"
       ],
       "action": "domain/backend authority is unresolved, but current transport evidence must be reproduced through browser/native/residential clients before any Domain or provider mutation",
       "selectionAuthorities": [
