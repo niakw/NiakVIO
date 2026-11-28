@@ -572,4 +572,44 @@ assert queue.repair_parent_baseline_contradiction(
     published_info, matching_parent
 ) is None
 
+
+# Client replay is reserved for executable, validated mutations. Generation-only
+# debt must advance Brain memory without spending a TV/Desktop/Mobile Lab.
+assert queue.repair_executable_mutation_observed({
+    "validationStatus": "validated",
+    "report": {"rounds": [{
+        "attempts": [{"profile": "x", "status": "generated"}],
+        "accepted": [], "rejected": [], "exploration_progress": [],
+    }]},
+}) is True
+assert queue.repair_executable_mutation_observed({
+    "validationStatus": "validated",
+    "report": {"rounds": [{
+        "attempts": [{"profile": "x", "status": "not_generated"}],
+        "accepted": [], "rejected": [], "exploration_progress": [],
+    }]},
+}) is False
+assert queue.repair_executable_mutation_observed({
+    "validationStatus": "rejected_incomplete_child",
+    "report": {"rounds": [{
+        "attempts": [{"profile": "x", "status": "generated"}],
+        "accepted": [], "rejected": [], "exploration_progress": [],
+    }]},
+}) is False
+assert queue.repair_executable_mutation_observed({
+    "validationStatus": "validated",
+    "report": {"rounds": [{
+        "attempts": [],
+        "accepted": [],
+        "rejected": [{"profile": "x", "reason": "no_validated_improvement"}],
+        "exploration_progress": [],
+    }]},
+}) is True
+
+source = SCRIPT.read_text(encoding="utf-8")
+assert "FIELD_BRAIN_LAB_SKIPPED" in source
+assert '"status": "not_executed_no_mutation"' in source
+assert 'repair_executable_mutation_observed(repair)' in source
+assert 'not in {"playable", "not_executed_no_mutation"}' in source
+
 print("Brain fair-share exact experiment ledger contract passed")
