@@ -2035,6 +2035,7 @@ def repair_attempt(
     preferred_profile: str = "",
     preferred_failure_class: str = "",
     causal_failure_class: str = "",
+    require_published_parent_parity: bool = False,
 ) -> dict[str, Any]:
     env = os.environ.copy()
     env["NUVIO_BRAIN_TARGET_PROVIDER"] = provider_id
@@ -2059,6 +2060,15 @@ def repair_attempt(
             "proof_authority=false",
             flush=True,
         )
+    if require_published_parent_parity:
+        env["NUVIO_BRAIN_LEARNING_PARENT_PARITY_MODE"] = "deep"
+        print(
+            "FIELD_BRAIN_LEARNING_PARENT_PARITY_REQUEST "
+            f"provider={provider_id} mode=deep proof_authority=false",
+            flush=True,
+        )
+    else:
+        env.pop("NUVIO_BRAIN_LEARNING_PARENT_PARITY_MODE", None)
     env["NUVIO_BRAIN_LEARNING_STATE"] = str(previous_state_path)
     # The child planner imports brain_repair_runtime before sandbox main() runs,
     # so the previous sanitized Learning state must be present in the process
@@ -2850,6 +2860,10 @@ def main() -> int:
                         preferred_profile=preferred_profile,
                         preferred_failure_class=preferred_failure_class,
                         causal_failure_class=causal_failure_class,
+                        require_published_parent_parity=(
+                            str(info.get("status") or "").strip().casefold() == "healthy"
+                            or int(info.get("published_streams_playable") or 0) > 0
+                        ),
                     )
                     parent_contradiction = repair_parent_baseline_contradiction(info, repair)
                     if parent_contradiction is not None:
