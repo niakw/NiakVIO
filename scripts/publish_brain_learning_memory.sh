@@ -14,6 +14,19 @@ esac
 if [ "$MAX_ATTEMPTS" -lt 1 ]; then MAX_ATTEMPTS=1; fi
 if [ "$MAX_ATTEMPTS" -gt 12 ]; then MAX_ATTEMPTS=12; fi
 
+dispatch_fingerprint="$(printf '%s' "${LEARNING_DISPATCH_FINGERPRINT:-}" | tr '[:upper:]' '[:lower:]' | xargs)"
+dispatch_provider="$(printf '%s' "${LEARNING_DISPATCH_PROVIDER:-}" | tr '[:upper:]_' '[:lower:]-' | xargs)"
+if [ -n "$dispatch_fingerprint" ]; then
+  [[ "$dispatch_fingerprint" =~ ^[0-9a-f]{64}$ ]] || {
+    echo "invalid persisted Learning dispatch fingerprint" >&2
+    exit 1
+  }
+  [[ "$dispatch_provider" =~ ^[a-z0-9][a-z0-9-]{0,95}$ ]] || {
+    echo "Learning dispatch fingerprint requires exactly one safe provider id" >&2
+    exit 1
+  }
+fi
+
 candidate_root="$RUNNER_TEMP/brain-learning-memory-candidate-$GITHUB_RUN_ID"
 rm -rf "$candidate_root"
 mkdir -p "$candidate_root"
@@ -38,6 +51,7 @@ for attempt in $(seq 1 "$MAX_ATTEMPTS"); do
   cp "$candidate_root/guidance.json" brain-sandbox/brain-llm/guidance.json
   cp "$candidate_root/base.json" brain-learning-input/previous.json
   rm -f "$RUNNER_TEMP/brain-learning-existing.json" "$RUNNER_TEMP/brain-learning-existing-guidance.json"
+  rm -f "$RUNNER_TEMP/brain-learning-dispatch-ledger.json" "$RUNNER_TEMP/brain-learning-dispatch-selection.json"
 
   git fetch --quiet origin main || true
   git fetch --force origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH" >/dev/null 2>&1 || true
@@ -51,6 +65,33 @@ for attempt in $(seq 1 "$MAX_ATTEMPTS"); do
   if git cat-file -e "refs/remotes/origin/$BRANCH:engine_v2/learning/llm-guidance.json" 2>/dev/null; then
     git show "refs/remotes/origin/$BRANCH:engine_v2/learning/llm-guidance.json" > "$RUNNER_TEMP/brain-learning-existing-guidance.json"
     existing_guidance_source="$(node -e "const fs=require('fs');const x=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+'/brain-learning-existing-guidance.json','utf8'));process.stdout.write(String(x.sourceSha||''))")"
+  fi
+
+  if git cat-file -e "refs/remotes/origin/$BRANCH:engine_v2/learning/dispatch-ledger.json" 2>/dev/null; then
+    git show "refs/remotes/origin/$BRANCH:engine_v2/learning/dispatch-ledger.json" > "$RUNNER_TEMP/brain-learning-dispatch-ledger.json"
+  elif [ -s automation/provider-learning-dispatch-ledger.json ]; then
+    cp automation/provider-learning-dispatch-ledger.json "$RUNNER_TEMP/brain-learning-dispatch-ledger.json"
+  else
+    printf '%s\n' '{"schemaVersion":2,"providers":{},"privateContentRetained":false}' > "$RUNNER_TEMP/brain-learning-dispatch-ledger.json"
+  fi
+  if [ -n "$dispatch_fingerprint" ]; then
+    python - "$dispatch_provider" "$dispatch_fingerprint" "$RUNNER_TEMP/brain-learning-dispatch-selection.json" <<'PY'
+import json,sys
+provider,fingerprint,path=sys.argv[1:]
+json.dump({
+    "schemaVersion": 1,
+    "eligible": [{
+        "provider": provider,
+        "fingerprint": fingerprint,
+        "signatureHash": fingerprint[:20],
+    }],
+},open(path,"w",encoding="utf-8"),ensure_ascii=False,indent=2)
+PY
+    python scripts/provider_learning_dispatch_gate.py mark \
+      --ledger "$RUNNER_TEMP/brain-learning-dispatch-ledger.json" \
+      --selection "$RUNNER_TEMP/brain-learning-dispatch-selection.json" \
+      --learning-run-id "$GITHUB_RUN_ID"
+    echo "FIELD_BRAIN_DISPATCH_LEDGER_MARK provider=$dispatch_provider fingerprint=${dispatch_fingerprint:0:12} execution=successful-sandbox"
   fi
 
   if [ -n "$existing_guidance_source" ] && [ "$candidate_guidance_source" != "$existing_guidance_source" ]; then
@@ -110,11 +151,12 @@ for attempt in $(seq 1 "$MAX_ATTEMPTS"); do
   cp brain-learning-output/latest.json engine_v2/learning/latest.json
   cp brain-learning-output/latest.md engine_v2/learning/latest.md
   cp brain-sandbox/brain-llm/guidance.json engine_v2/learning/llm-guidance.json
-  git add engine_v2/learning/latest.json engine_v2/learning/latest.md engine_v2/learning/llm-guidance.json
+  cp "$RUNNER_TEMP/brain-learning-dispatch-ledger.json" engine_v2/learning/dispatch-ledger.json
+  git add engine_v2/learning/latest.json engine_v2/learning/latest.md engine_v2/learning/llm-guidance.json engine_v2/learning/dispatch-ledger.json
   git commit -m "brain: refresh sandbox repair learning" >/dev/null
 
   tracked="$(git ls-files | sort)"
-  expected="$(printf '%s\n' engine_v2/learning/latest.json engine_v2/learning/latest.md engine_v2/learning/llm-guidance.json | sort)"
+  expected="$(printf '%s\n' engine_v2/learning/latest.json engine_v2/learning/latest.md engine_v2/learning/llm-guidance.json engine_v2/learning/dispatch-ledger.json | sort)"
   test "$tracked" = "$expected" || {
     echo "refusing non-minimal Brain memory tree" >&2
     printf 'tracked:\n%s\n' "$tracked" >&2
@@ -122,7 +164,7 @@ for attempt in $(seq 1 "$MAX_ATTEMPTS"); do
   }
 
   if git push --force-with-lease="$BRANCH:$expected_sha" origin HEAD:"$BRANCH"; then
-    echo "FIELD_BRAIN_MEMORY_PUBLISH mode=orphan-memory-only files=3 attempt=$attempt lease_retry=true"
+    echo "FIELD_BRAIN_MEMORY_PUBLISH mode=orphan-memory-only files=4 attempt=$attempt lease_retry=true dispatch_marked=$([ -n "$dispatch_fingerprint" ] && echo true || echo false)"
     echo "published=true" >> "$GITHUB_OUTPUT"
     exit 0
   fi
