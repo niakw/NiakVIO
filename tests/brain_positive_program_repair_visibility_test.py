@@ -11,6 +11,19 @@ mod = importlib.util.module_from_spec(spec)
 assert spec and spec.loader
 spec.loader.exec_module(mod)
 
+assert mod.learned_skill_id(
+    {"failureClass": "search_gap", "capabilityStrategy": "mixed_embed_resolver"},
+    "adaptive_runtime_recovery",
+) == "search_gap:adaptive_runtime_recovery:family:mixed_embed_resolver"
+assert mod.learned_skill_id(
+    {"failureClass": "search_gap", "capabilityStrategy": "direct_media"},
+    "adaptive_runtime_recovery",
+) == "search_gap:adaptive_runtime_recovery:family:direct_media"
+assert mod.learned_skill_id(
+    {"failureClass": "search_gap"},
+    "adaptive_runtime_recovery",
+) == "search_gap:adaptive_runtime_recovery"
+
 positive = {
     "id": "media_extraction_gap:adaptive_runtime_recovery",
     "validated": True,
