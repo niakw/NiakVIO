@@ -479,6 +479,44 @@ exhausted_selection = module.select_execution_plan(
 assert exhausted_selection["eligibleProviders"] == [], exhausted_selection
 assert exhausted_selection["suppressedExhaustedProviders"] == ["learn-only"], exhausted_selection
 
+# Exhaustion is provider-local. A newly learned sibling skill is a distinct
+# causal method and may reopen the exhausted provider once.
+exhausted_family_plan = {
+    "executions": [{
+        "lane": "BRAIN_LEARNING",
+        "owner": "BRAIN_LEARNING",
+        "repairScope": "learning",
+        "capabilityStrategy": "mixed_embed_resolver",
+        "transportSignature": "not-applicable",
+        "dispatchAllowed": True,
+        "providers": ["learn-only", "learn-sibling"],
+    }]
+}
+exhausted_with_family_skill = json.loads(json.dumps(exhausted_memory))
+exhausted_with_family_skill["learnedSkills"] = {
+    "family:new-terminal-method": {
+        "id": "family:new-terminal-method",
+        "failureClass": "search_gap",
+        "profile": "document_request_contract_mining_v2",
+        "validated": True,
+        "providers": ["learn-sibling"],
+        "capabilityStrategies": ["mixed_embed_resolver"],
+        "successCount": 1,
+        "failureCount": 0,
+    }
+}
+family_reopens_exhausted = module.select_execution_plan(
+    exhausted_family_plan,
+    {"providers": {}},
+    lane="BRAIN_LEARNING",
+    requested=["learn-only"],
+    learning_memory=exhausted_with_family_skill,
+    learning_policy=policy,
+)
+assert family_reopens_exhausted["eligibleProviders"] == ["learn-only"], family_reopens_exhausted
+assert family_reopens_exhausted["suppressedExhaustedProviders"] == [], family_reopens_exhausted
+assert family_reopens_exhausted["eligible"][0]["learningFamilyEpochHash"]
+
 newer_cause_memory = json.loads(json.dumps(exhausted_memory))
 newer_cause_memory["experimentMemory"]["entries"].append({
     "providerId": "learn-only",
