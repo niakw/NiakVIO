@@ -661,6 +661,9 @@ function sanitizeMemoryEntry(raw) {
     lastReason: raw.lastReason ? sanitizeReason(raw.lastReason) : null,
     lastSeenAt: raw.lastSeenAt ? String(raw.lastSeenAt).slice(0, 48) : null,
     executionObserved,
+    ...(typeof raw.causalExerciseObserved === 'boolean'
+      ? { causalExerciseObserved: raw.causalExerciseObserved }
+      : {}),
     generationAttemptObserved: lastOutcome === 'not_generated' || raw.generationAttemptObserved === true,
     ...(networkExecutionSummary ? { networkExecutionSummary } : {}),
     ...(networkExecutionDelta ? { networkExecutionDelta } : {}),
