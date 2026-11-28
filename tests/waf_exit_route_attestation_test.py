@@ -70,6 +70,20 @@ assert "endpoint=3 curl_rc=28 available=false" in timing_trace.getvalue()
 assert "endpoint=1 curl_rc=28 time_namelookup_ms=50" in timing_trace.getvalue()
 assert "secret-address" not in timing_trace.getvalue()
 
+# Path telemetry is a hint, not a packet-path attestation or a prerequisite.
+def path_status(**fields):
+    return {
+        **selected,
+        "Peer": {"key": {"ID": "redacted", "Active": True, "Online": True, **fields}},
+    }
+assert mod.exit_path_hint(path_status(CurAddr="secret-endpoint", Relay="secret-region")) == "direct-hint"
+assert mod.exit_path_hint(path_status(PeerRelay="secret-peer", Relay="secret-region")) == "peer-relay-hint"
+assert mod.exit_path_hint(path_status(Relay="secret-region")) == "derp-hint"
+assert mod.exit_path_hint(path_status(Active=False, Relay="secret-region")) == "unknown"
+assert mod.exit_path_hint(path_status(ID="other", CurAddr="secret-endpoint")) == "unknown"
+assert mod.exit_path_hint(selected) == "unknown"
+assert mod.exit_path_hint({**selected, "Peer": {"a": path_status()["Peer"]["key"], "b": path_status()["Peer"]["key"]}}) == "unknown"
+
 original_which = mod.shutil.which
 original_run = mod.subprocess.run
 try:
