@@ -638,11 +638,10 @@ assert "FIELD_DOMAIN_PUBLICATION_REPLAYED evidence_only=true" in text
 assert 'python scripts/reapply_published_overrides.py --check' in text
 assert "FIELD_DOMAIN_PUBLICATION_SKIPPED reason=main_advanced" in text
 assert 'publication=false' in text
-assert 'requeue=(gh workflow run domain-refresh.yml --repo "$GITHUB_REPOSITORY" --ref main -f mode=quick)' in text
-assert 'if [ -n "$TARGET_PROVIDERS" ]; then requeue+=(-f target_providers="$TARGET_PROVIDERS"); fi' in text
-assert text.count('"${requeue[@]}" || true') == 2
-assert "reason=main_advanced targets=${TARGET_PROVIDERS:-all}" in text
-assert "reason=push_race targets=${TARGET_PROVIDERS:-all}" in text
+assert 'gh workflow run domain-refresh.yml --repo "$GITHUB_REPOSITORY" --ref main -f mode=quick' not in text
+assert "FIELD_DOMAIN_PUBLICATION_NOT_REQUEUED" in text
+assert "reason=main_advanced targets=${TARGET_PROVIDERS:-all} policy=manual-low-priority" in text
+assert "reason=push_race targets=${TARGET_PROVIDERS:-all} policy=manual-low-priority" in text
 from domain_refresh_publication_drift_gate import classify_drift
 safe, unsafe = classify_drift([
     "MEMORY.md",
