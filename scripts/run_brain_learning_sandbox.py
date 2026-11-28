@@ -79,6 +79,25 @@ def _version(candidate: dict[str, Any]) -> str:
     return str(metadata.get("version") or candidate.get("version") or "*").strip() or "*"
 
 
+def _parent_memory_applies(row: dict[str, Any], candidate: dict[str, Any]) -> bool:
+    current_sha = str(
+        candidate.get("learning_parent_published_sha256")
+        or candidate.get("sha256")
+        or ""
+    ).strip().casefold()
+    current_authority = str(candidate.get("learning_parent_authority") or "").strip().casefold()
+    if not current_authority and candidate.get("published_exact_bytes") is True:
+        current_authority = "published-exact-current-bytes"
+    remembered_sha = str(row.get("parentArtifactSha256") or "").strip().casefold()
+    current_valid = bool(re.fullmatch(r"[0-9a-f]{64}", current_sha))
+    remembered_valid = bool(re.fullmatch(r"[0-9a-f]{64}", remembered_sha))
+    if current_authority == "published-exact-current-bytes" and current_valid:
+        return remembered_valid and remembered_sha == current_sha
+    if current_valid and remembered_valid:
+        return remembered_sha == current_sha
+    return True
+
+
 def _matches(row: dict[str, Any], *, provider_id: str, provider_version: str, signature: str, profile: str) -> bool:
     row_provider = _norm(row.get("providerId"))
     if row_provider != provider_id:
@@ -96,6 +115,7 @@ def _matches(row: dict[str, Any], *, provider_id: str, provider_version: str, si
 def _negative_failure_count(
     rows: list[dict[str, Any]],
     *,
+    candidate: dict[str, Any],
     provider_id: str,
     provider_version: str,
     signature: str,
@@ -114,6 +134,8 @@ def _negative_failure_count(
             signature=signature,
             profile=profile,
         ):
+            continue
+        if not _parent_memory_applies(row, candidate):
             continue
         causal_exercise = row.get("causalExerciseObserved")
         if not isinstance(causal_exercise, bool):
@@ -312,6 +334,7 @@ def main() -> int:
         for profile in sorted(set(routine + broad)):
             failures = _negative_failure_count(
                 negative,
+                candidate=candidate,
                 provider_id=provider_id,
                 provider_version=provider_version,
                 signature=signature,
