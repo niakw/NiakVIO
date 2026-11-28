@@ -2872,9 +2872,12 @@ def main() -> int:
             provider_deadline = work_deadline
             if fair_handoff:
                 remaining_providers = max(1, len(order) - len(processed))
+                # The strongest representative is the family's causal oracle.
+                # Give it enough time to produce a complete verdict before siblings
+                # consume the shorter fanout slices.
                 fair_cap = (
                     FAIR_HANDOFF_SINGLE_ORACLE_SECONDS
-                    if len(order) == 1
+                    if len(order) == 1 or provider_id in set(family_frontier)
                     else FAIR_HANDOFF_MULTI_MAX_SECONDS
                 )
                 fair_seconds = max(
