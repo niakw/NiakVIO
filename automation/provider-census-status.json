@@ -1294,10 +1294,10 @@
         "anime=none",
         "tv=none"
       ],
-      "harnessTransportClass": "native-policy-reachable",
+      "harnessTransportClass": "residential-exit-native-reachable",
       "harnessTransportEvidence": [
-        "anime: browser=browser_content_reached, tv-browser=browser_timeout, okhttp=okhttp_jvm_content_reached, desktop-okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached",
-        "tv: browser=browser_content_reached, tv-browser=browser_timeout, okhttp=okhttp_jvm_content_reached, desktop-okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
+        "anime: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, desktop-okhttp=unknown, direct=unknown, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached",
+        "tv: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, desktop-okhttp=unknown, direct=unknown, residential-browser=browser_content_reached, residential-tv-browser=browser_timeout, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
       ],
       "authorityRepairEligible": false,
       "authorityAction": "REDISCOVER_SEARCH",
@@ -1316,12 +1316,7 @@
       "brainCheckRequired": true,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": false,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_waf_challenge, raw=0, playable=0, verified=0, identitySafe=true",
-        "tv: status=no_streams, stage=provider_waf_challenge, raw=0, playable=0, verified=0, identitySafe=true"
-      ]
+      "testedThisRun": false
     },
     {
       "provider": "emnexmovies",
@@ -1475,16 +1470,9 @@
       "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_network_exception, raw=0, playable=0, verified=0, identitySafe=true",
-        "movie: status=no_streams, stage=provider_network_exception, raw=0, playable=0, verified=0, identitySafe=true",
-        "tv: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayReclassified": true
+      "targetedTransportEvidence": []
     },
     {
       "provider": "film-a-revoir",
@@ -1530,14 +1518,9 @@
       "statusRepairEligible": true,
       "repairEligible": false,
       "testedThisRun": true,
-      "residentialProviderReplayClass": "no-verified-media",
-      "residentialProviderReplayEvidence": [
-        "movie: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
       "transportRepairEligible": true,
       "targetedTransportClass": "not-applicable",
-      "targetedTransportEvidence": [],
-      "residentialProviderReplayReclassified": true
+      "targetedTransportEvidence": []
     },
     {
       "provider": "flemmix",
@@ -2369,9 +2352,9 @@
     },
     {
       "provider": "moiflix",
-      "status": "PROVIDER NETWORK BLOCKED",
+      "status": "ROUTE PROVEN",
       "underlyingStatus": "",
-      "color": "🟤",
+      "color": "🟪",
       "declaredLanes": [
         "movie",
         "tv"
@@ -2407,11 +2390,25 @@
       ],
       "authorityKnown": true,
       "onboardingRuntimePlanState": "",
-      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
+      "action": "replay qualified route fixtures and finish terminal extraction/validation",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "transportRepairEligible": true,
+      "targetedTransportClass": "not-applicable",
+      "targetedTransportEvidence": [],
+      "residentialProviderReplayReclassified": true,
+      "networkDifferentialClass": "github-native-route-reachable",
+      "networkDifferentialEvidence": [
+        "movie: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-desktop-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached",
+        "tv: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-desktop-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-desktop-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
+      ]
     },
     {
       "provider": "moviebite",
@@ -5317,9 +5314,9 @@
     "HARNESS/ENV BLOCKED": 5,
     "NO PROOF": 21,
     "PROOF REFRESH REQUIRED": 4,
-    "PROVIDER NETWORK BLOCKED": 5,
+    "PROVIDER NETWORK BLOCKED": 4,
     "REGRESSION PROVIDER": 4,
-    "ROUTE PROVEN": 4
+    "ROUTE PROVEN": 5
   },
   "symptomaticProviders": [
     "1jour1film0626",
@@ -5654,8 +5651,8 @@
   },
   "targetedTransportBlockedQueue": [],
   "clientTransportGapQueue": [],
-  "harnessEvidenceRunId": "46167053101-waf-transport",
-  "harnessEvidenceSha": "eb0692a1331d81ab3f209b32760b9d99fa9246db",
+  "harnessEvidenceRunId": "46167059107-waf-transport",
+  "harnessEvidenceSha": "60b8a5db9470bbf1fd8befb66aa0d2291d4b8af3",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "1jour1film0626",
@@ -5664,24 +5661,26 @@
     "cinegram",
     "cinetimes",
     "dulourd",
-    "fexini",
-    "film-a-revoir",
+    "moiflix",
     "voirserie",
     "watch-cartoon-online",
     "waveanime"
   ],
-  "networkDifferentialUpdatedProviders": [],
+  "networkDifferentialUpdatedProviders": [
+    "moiflix"
+  ],
   "residentialProviderReplayPromotedProviders": [],
   "residentialProviderReplayReclassifiedProviders": [
-    "fexini",
-    "film-a-revoir"
+    "moiflix"
   ],
-  "residentialProviderReplayRepairableProviders": [],
+  "residentialProviderReplayRepairableProviders": [
+    "moiflix"
+  ],
   "residentialExitNodeEvidence": {
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 6,
+    "matchedProviderLanes": 2,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -5694,7 +5693,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 6,
+    "matchedProviderLanes": 2,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -6573,7 +6572,6 @@
       },
       {
         "provider": "dulourd",
-        "providerArtifactSha256": "3b1f6291c389b77e839bebb8c5197af5a6e6314b96e20b1b28e58e6c7dcc76fb",
         "lane": "anime",
         "status": "no_streams",
         "debugStage": "provider_waf_challenge",
@@ -6591,18 +6589,10 @@
         "playable": 0,
         "verified": 0,
         "contradictions": 0,
-        "identitySafe": true,
-        "residentialReplayReceipt": {
-          "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
-          "providerBundleSha256": "3b1f6291c389b77e839bebb8c5197af5a6e6314b96e20b1b28e58e6c7dcc76fb",
-          "runId": "46167053101",
-          "proofAuthority": false,
-          "publicationAuthority": false
-        }
+        "identitySafe": true
       },
       {
         "provider": "dulourd",
-        "providerArtifactSha256": "3b1f6291c389b77e839bebb8c5197af5a6e6314b96e20b1b28e58e6c7dcc76fb",
         "lane": "tv",
         "status": "no_streams",
         "debugStage": "provider_waf_challenge",
@@ -6620,14 +6610,7 @@
         "playable": 0,
         "verified": 0,
         "contradictions": 0,
-        "identitySafe": true,
-        "residentialReplayReceipt": {
-          "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
-          "providerBundleSha256": "3b1f6291c389b77e839bebb8c5197af5a6e6314b96e20b1b28e58e6c7dcc76fb",
-          "runId": "46167053101",
-          "proofAuthority": false,
-          "publicationAuthority": false
-        }
+        "identitySafe": true
       },
       {
         "provider": "emnexmovies",
@@ -6694,44 +6677,12 @@
       },
       {
         "provider": "fexini",
-        "providerArtifactSha256": "d4180ab67b4c395cf5ed23f1db46d6e695e7f37fe350420693c272463c9c499a",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_network_exception",
+        "debugStage": "provider_network_http_error",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_network_exception",
-          "provider_network_zero_result"
-        ],
-        "sampleStatuses": [
-          "no_streams"
-        ],
-        "sampleProgressStages": [
-          "chain_reached",
-          "none"
-        ],
-        "raw": 0,
-        "playable": 0,
-        "verified": 0,
-        "contradictions": 0,
-        "identitySafe": true,
-        "residentialReplayReceipt": {
-          "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
-          "providerBundleSha256": "d4180ab67b4c395cf5ed23f1db46d6e695e7f37fe350420693c272463c9c499a",
-          "runId": "46167053101",
-          "proofAuthority": false,
-          "publicationAuthority": false
-        }
-      },
-      {
-        "provider": "fexini",
-        "providerArtifactSha256": "d4180ab67b4c395cf5ed23f1db46d6e695e7f37fe350420693c272463c9c499a",
-        "lane": "movie",
-        "status": "no_streams",
-        "debugStage": "provider_network_exception",
-        "sampleCount": 4,
-        "sampleDebugStages": [
-          "provider_network_exception",
+          "provider_network_http_error",
           "provider_network_zero_result"
         ],
         "sampleStatuses": [
@@ -6745,55 +6696,61 @@
         "playable": 0,
         "verified": 0,
         "contradictions": 0,
-        "identitySafe": true,
-        "residentialReplayReceipt": {
-          "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
-          "providerBundleSha256": "d4180ab67b4c395cf5ed23f1db46d6e695e7f37fe350420693c272463c9c499a",
-          "runId": "46167053101",
-          "proofAuthority": false,
-          "publicationAuthority": false
-        }
+        "identitySafe": true
       },
       {
         "provider": "fexini",
-        "providerArtifactSha256": "d4180ab67b4c395cf5ed23f1db46d6e695e7f37fe350420693c272463c9c499a",
-        "lane": "tv",
+        "lane": "movie",
         "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
+        "debugStage": "provider_network_http_error",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_network_exception",
+          "provider_network_http_error",
           "provider_network_zero_result"
         ],
         "sampleStatuses": [
           "no_streams"
         ],
         "sampleProgressStages": [
-          "chain_reached",
+          "lookup_only",
           "none"
         ],
         "raw": 0,
         "playable": 0,
         "verified": 0,
         "contradictions": 0,
-        "identitySafe": true,
-        "residentialReplayReceipt": {
-          "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
-          "providerBundleSha256": "d4180ab67b4c395cf5ed23f1db46d6e695e7f37fe350420693c272463c9c499a",
-          "runId": "46167053101",
-          "proofAuthority": false,
-          "publicationAuthority": false
-        }
+        "identitySafe": true
+      },
+      {
+        "provider": "fexini",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "sampleCount": 4,
+        "sampleDebugStages": [
+          "provider_network_http_error",
+          "provider_network_zero_result"
+        ],
+        "sampleStatuses": [
+          "no_streams"
+        ],
+        "sampleProgressStages": [
+          "lookup_only",
+          "none"
+        ],
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
       },
       {
         "provider": "film-a-revoir",
-        "providerArtifactSha256": "26c63ad4e882429d9ab7f7e03db08a8a68acc9a6f37c57fae0d89ecf97583c32",
         "lane": "movie",
         "status": "no_streams",
         "debugStage": "provider_network_zero_result",
         "sampleCount": 4,
         "sampleDebugStages": [
-          "provider_network_exception",
           "provider_network_zero_result"
         ],
         "sampleStatuses": [
@@ -6806,14 +6763,7 @@
         "playable": 0,
         "verified": 0,
         "contradictions": 0,
-        "identitySafe": true,
-        "residentialReplayReceipt": {
-          "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
-          "providerBundleSha256": "26c63ad4e882429d9ab7f7e03db08a8a68acc9a6f37c57fae0d89ecf97583c32",
-          "runId": "46167053101",
-          "proofAuthority": false,
-          "publicationAuthority": false
-        }
+        "identitySafe": true
       },
       {
         "provider": "flemmix",
@@ -7096,7 +7046,14 @@
         "playable": 0,
         "verified": 0,
         "contradictions": 0,
-        "identitySafe": true
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
+          "providerBundleSha256": "4facc83345873e17afab1b3d9d6ddb4b902b8caf5e2df9c8fa85d57ac691970f",
+          "runId": "46167059107",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
       },
       {
         "provider": "moiflix",
@@ -7118,7 +7075,14 @@
         "playable": 0,
         "verified": 0,
         "contradictions": 0,
-        "identitySafe": true
+        "identitySafe": true,
+        "residentialReplayReceipt": {
+          "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
+          "providerBundleSha256": "4facc83345873e17afab1b3d9d6ddb4b902b8caf5e2df9c8fa85d57ac691970f",
+          "runId": "46167059107",
+          "proofAuthority": false,
+          "publicationAuthority": false
+        }
       },
       {
         "provider": "moviebox",
@@ -8004,7 +7968,7 @@
     },
     "lastAttempt": {
       "available": true,
-      "providerCount": 3,
+      "providerCount": 1,
       "refreshedProviders": [
         "1jour1film0626",
         "67movies",
@@ -8053,15 +8017,13 @@
         "youtitou"
       ],
       "replayedProviders": [
-        "dulourd",
-        "fexini",
-        "film-a-revoir"
+        "moiflix"
       ],
       "rawProviders": [],
       "playableProviders": [],
       "verifiedProviders": [],
       "sourceNiakvioSha": "fb7da8b0f712a018cd85854bf1a60e145d85444b",
-      "runId": "46167053101",
+      "runId": "46167059107",
       "proofAuthority": false,
       "publicationAuthority": false
     },
